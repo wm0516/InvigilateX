@@ -13,6 +13,10 @@ def home():
                                output=backend.meters_feet(float(text)),
                                user_text=text)
 
+@app.route("/testing")
+def test():
+    return "<p> Testing new route endpoint!</>"
+
 # This must be at the bottom, outside of any functions
 if __name__ == "__main__":
     app.run()
