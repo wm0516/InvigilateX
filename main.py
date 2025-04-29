@@ -3,15 +3,16 @@ import backend
 
 app = Flask(__name__)
 
-@app.route("/", methods = ["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "GET":
         return render_template("index.html")
     if request.method == "POST":
         text = request.form.get('textbox')
         return render_template("index.html",
-                               output = backend.meters_feet(float(text)),
-                               user_text = text)
-        
-    if __name__ == "__main__":
-        app.run()
+                               output=backend.meters_feet(float(text)),
+                               user_text=text)
+
+# This must be at the bottom, outside of any functions
+if __name__ == "__main__":
+    app.run()
