@@ -37,10 +37,10 @@
     <form method="POST">
         <title>Login Here</title>
         <label>Username:</label>
-        <input type="text" name="textbox" value="{{ user_text }}"><br>
-        <label>Password:</label><br>
-        <label>{{ output | safe }}</label><br>
-        <button type="submit" name="submit">Convert</button>
+        <input type="text" name="textbox" value="{{ login_text }}"><br>
+        <label>Password:</label>
+        <input type="password" name="password" value="{{ password_text }}"><br>
+        <button type="submit" name="login">Login</button>
     </form>
 
     
