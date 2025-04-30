@@ -21,5 +21,6 @@ def second_page():
                                user_text=text)
     return render_template("second.html")
 
+
 if __name__ == "__main__":
     app.run()
