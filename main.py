@@ -3,7 +3,7 @@ import backend
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/login_page", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
         text = request.form.get('textbox')
