@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Meters to Feet (Index)</title>
     <style>
         body {
             margin: 0;
@@ -15,36 +14,41 @@
 
         form {
             text-align: center;
-            padding: 20px;
+            width: 60vh;
+            padding: 100px;
             border: 2px solid #ccc;
             border-radius: 10px;
             background-color: #f9f9f9;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
-        input[type="text"] {
+        input[type="text"],
+        input[type="password"] {
             padding: 5px;
             margin: 10px 0;
         }
 
         button {
+            width: 20vh;
             padding: 8px 16px;
             margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <form method="POST">
-        <label>Meters:</label><br>
-        <input type="text" name="textbox" value="{{ user_text }}"><br>
-        <label>Feet:</label><br>
-        <label>{{ output | safe }}</label><br>
-        <button type="submit" name="submit">Convert</button>
-    </form>
-
-    <br>
-    <a href="{{ url_for('second_page') }}">
-        <button type="button">Change Page</button>
-    </a>
+    <div>
+        <form method="POST">
+            <h1 style="text-align: center;">Login Here</h1>
+            <label>Username:</label><br>
+            <input type="text" name="textbox" value="{{ login_text }}"><br><br>
+            <label>Password:</label><br>
+            <input type="password" name="password" value="{{ password_text }}"><br><br>
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="{{ url_for('second_page') }}">
+                    <button type="submit" name="login">Login</button>
+                </a>
+            </div>
+        </form>
+    </div>
 </body>
 </html>
