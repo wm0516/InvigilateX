@@ -33,20 +33,22 @@
     </style>
 </head>
 <body>
-    <h1>Login Here</h1>
-    <br>
+    <div>
+        <h1 style="text-align: center;">Login Here</h1>
 
-    <form method="POST">
-        <label>Username:</label>
-        <input type="text" name="textbox" value="{{ login_text }}"><br>
-        <label>Password:</label>
-        <input type="password" name="password" value="{{ password_text }}"><br>
-        <button type="submit" name="login">Login</button>
-    </form>
-    <br>
+        <form method="POST">
+            <label>Username:</label><br>
+            <input type="text" name="textbox" value="{{ login_text }}"><br>
+            <label>Password:</label><br>
+            <input type="password" name="password" value="{{ password_text }}"><br><br>
+            <button type="submit" name="login">Login</button>
+        </form>
 
-    <a href="{{ url_for('second_page') }}">
-        <button type="button">Change Page</button>
-    </a>
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="{{ url_for('second_page') }}">
+                <button type="button">Change Page</button>
+            </a>
+        </div>
+    </div>
 </body>
 </html>
