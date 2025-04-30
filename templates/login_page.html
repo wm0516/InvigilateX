@@ -26,7 +26,6 @@
         input[type="text"],
         input[type="password"] {
             width: 25vh;
-            height: 5vh;
             padding: 5px;
             margin: 10px 0;
         }
@@ -41,9 +40,9 @@
 <body>
     <div>
         <form method="POST">
-            <h2 style="text-align: center;">Login Here</h2>
+            <h1 style="text-align: center;">Login Here</h1>
             <br><br>
-            <input type="text" name="textbox" placeholder="Username" value="{{ login_text }}">
+            <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
             <br>
             <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
             <br>
