@@ -7,10 +7,10 @@ app = Flask(__name__)
 def home():
     if request.method == "POST":
         text = request.form.get('textbox')
-        return render_template("index.html",
+        return render_template("login_page.html",
                                output=backend.meters_feet(float(text)),
                                user_text=text)
-    return render_template("index.html")
+    return render_template("login_page.html")
 
 @app.route("/second", methods=["GET", "POST"])
 def second_page():
