@@ -13,7 +13,7 @@ def login():
         # You could validate here, then redirect or process login
         return redirect(url_for('second_page'))
 
-    return render_template('index.html', login_text=login_text, password_text=password_text)
+    return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
 @app.route('/second')
 def second_page():
