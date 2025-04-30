@@ -4,6 +4,7 @@ import backend
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
+# def home(), the home mean the page URL
 def home():
     if request.method == "POST":
         text = request.form.get('textbox')
