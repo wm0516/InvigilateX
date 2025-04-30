@@ -13,9 +13,15 @@ def home():
                                output=backend.meters_feet(float(text)),
                                user_text=text)
 
-@app.route("/testing")
-def test():
-    return "<p> Testing new route endpoint!</>"
+@app.route("/testing", methods=["GET", "POST"])
+def home():
+    if request.method == "GET":
+        return render_template("second.html")
+    if request.method == "POST":
+        text = request.form.get('textbox')
+        return render_template("second.html",
+                               output=backend.meters_feet(float(text)),
+                               user_text=text)
 
 # This must be at the bottom, outside of any functions
 if __name__ == "__main__":
