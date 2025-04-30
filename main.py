@@ -3,7 +3,7 @@ import backend
 
 app = Flask(__name__)
 
-@app.route("/login_page", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
         text = request.form.get('textbox')
@@ -21,6 +21,5 @@ def second_page():
                                user_text=text)
     return render_template("second.html")
 
-
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
