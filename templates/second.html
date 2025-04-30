@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meters to Feet</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+
+        form {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            padding: 5px;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 8px 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form method="POST">
+        <label>Meters:</label><br>
+        <input type="text" name="textbox" value="{{ user_text }}"><br>
+        <label>Feet:</label><br>
+        <label>{{ output | safe }}</label><br>
+        <button type="submit" name="submit">Convert</button>
+    </form>
+
+    <br>
+    <a href="{{ url_for('home') }}">
+        <button type="button">Change Page</button>
+    </a>
+</body>
+</html>
