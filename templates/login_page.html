@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Login_Page</title>
+
     <style>
         body {
             margin: 0;
@@ -10,8 +11,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: Arial, sans-serif;
             background-image: url("../src/INTI_PIC.png");
+            font-family: Arial, sans-serif;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -24,7 +25,7 @@
             border: 2px solid #ccc;
             border-radius: 10px;
             margin-top: 20px;
-            background-color: rgba(255, 255, 255, 0.9); /* semi-transparent */
+            /*background-color: rgba(255, 255, 255, 0.9);*/ /* semi-transparent */
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
@@ -43,18 +44,6 @@
     </style>
 </head>
 <body>
-    <form method="POST">
-        <h1>Login Here</h1>
-        <br><br>
-        <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
-        <br>
-        <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
-        <br>
-        <div style="text-align: center; margin-top: 10px;">
-            <a href="{{ url_for('second_page') }}">
-                <button type="submit" name="login">Login</button>
-            </a>
-        </div>
-    </form>
+
 </body>
 </html>
