@@ -14,7 +14,7 @@
 
         form {
             text-align: center;
-            padding: 150px;
+            padding: 100px;
             border: 2px solid #ccc;
             border-radius: 10px;
             background-color: #f9f9f9;
@@ -28,6 +28,7 @@
         }
 
         button {
+            width: 100vh;
             padding: 8px 16px;
             margin-top: 10px;
         }
@@ -35,9 +36,8 @@
 </head>
 <body>
     <div>
-        <h1 style="text-align: center;">Login Here</h1>
-
         <form method="POST">
+            <h1 style="text-align: center;">Login Here</h1>
             <label>Username:</label><br>
             <input type="text" name="textbox" value="{{ login_text }}"><br><br>
             <label>Password:</label><br>
