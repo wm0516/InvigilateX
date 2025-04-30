@@ -14,7 +14,7 @@
 
         form {
             text-align: center;
-            padding: 200px;
+            padding: 150px;
             border: 2px solid #ccc;
             border-radius: 10px;
             background-color: #f9f9f9;
@@ -39,17 +39,15 @@
 
         <form method="POST">
             <label>Username:</label><br>
-            <input type="text" name="textbox" value="{{ login_text }}"><br>
+            <input type="text" name="textbox" value="{{ login_text }}"><br><br>
             <label>Password:</label><br>
             <input type="password" name="password" value="{{ password_text }}"><br><br>
-            <button type="submit" name="login">Login</button>
+            <div style="text-align: center; margin-top: 10px;">
+                <a href="{{ url_for('second_page') }}">
+                    <button type="submit" name="login">Login</button>
+                </a>
+            </div>
         </form>
-
-        <div style="text-align: center; margin-top: 10px;">
-            <a href="{{ url_for('second_page') }}">
-                <button type="button">Change Page</button>
-            </a>
-        </div>
     </div>
 </body>
 </html>
