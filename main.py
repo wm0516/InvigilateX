@@ -1,28 +1,25 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for, redirect
 import backend
 
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def home():
-    if request.method == "GET":
-        return render_template("index.html")
     if request.method == "POST":
         text = request.form.get('textbox')
         return render_template("index.html",
                                output=backend.meters_feet(float(text)),
                                user_text=text)
+    return render_template("index.html")
 
-@app.route("/testing", methods=["GET", "POST"])
-def home():
-    if request.method == "GET":
-        return render_template("second.html")
+@app.route("/second", methods=["GET", "POST"])
+def second_page():
     if request.method == "POST":
         text = request.form.get('textbox')
         return render_template("second.html",
                                output=backend.meters_feet(float(text)),
                                user_text=text)
+    return render_template("second.html")
 
-# This must be at the bottom, outside of any functions
 if __name__ == "__main__":
     app.run()
