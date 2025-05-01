@@ -20,8 +20,9 @@ def second_page():
     return render_template('second.html')
 
 @app.route('/forgotPassword')
-def forgotPassowrd_page():
+def forgot_password_page():
     return render_template('forgot_password.html')
+
 
 @app.route('/register')
 def register_page():
