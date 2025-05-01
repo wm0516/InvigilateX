@@ -38,6 +38,7 @@ button {
 
 .otp-frame {
     display: flex;
+    justify-content: center;  /* centers items horizontally */
     gap: 15px; /*Spacing between each box*/
 }
 
