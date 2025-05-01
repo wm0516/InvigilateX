@@ -15,18 +15,20 @@ def login():
 
     return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
+
 @app.route('/second')
 def second_page():
     return render_template('second.html')
 
+
 @app.route('/forgotPassword')
 def forgot_password_page():
-    return render_template('forgot_password.html')
+    return render_template('forgotPassword_page.html')
 
 
 @app.route('/register')
 def register_page():
-    return render_template('register.html')
+    return render_template('register_page.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
