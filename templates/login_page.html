@@ -14,7 +14,7 @@
         <br>
 
         <div style="text-align: right;">
-            <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
+            <a href oncclick="showAlert()">Forgot Password</a>
         </div>
 
         <div class="button-frame">
@@ -28,5 +28,12 @@
         </div>
 
     </form>
+
+    <script>
+        function showAlert() {
+            alert("This is an alert message");
+        }
+    </script>
+
 </body>
 </html>
