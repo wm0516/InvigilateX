@@ -17,15 +17,15 @@ def login():
 
 @app.route('/second')
 def second_page():
-    return "You have logged in!"
+    return render_template('second.html')
 
 @app.route('/forgotPassword')
 def forgotPassowrd_page():
-    return redirect(url_for('forgotPassword_page'))
+    return render_template('forgot_password.html')
 
 @app.route('/register')
 def register_page():
-    return redirect(url_for('register_page'))
+    return render_template('register.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
