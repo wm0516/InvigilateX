@@ -19,5 +19,13 @@ def login():
 def second_page():
     return "You have logged in!"
 
+@app.route('/forgotPassword')
+def forgotPassowrd_page():
+    return redirect(url_for('forgotPassword_page'))
+
+@app.route('/register')
+def register_page():
+    return redirect(url_for('register_page'))
+
 if __name__ == '__main__':
     app.run(debug=True)
