@@ -14,8 +14,10 @@
         <br>
 
         <div style="text-align: right;">
-            <button oncclick="showAlert()">Forgot Password</button>
-        </div>
+            <button onclick="showAlert()" style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer;">
+              Forgot Password
+            </button>
+          </div>
 
         <div class="button-frame">
             <a href="{{ url_for('home_page') }}">
@@ -31,9 +33,9 @@
 
     <script>
         function showAlert() {
-            alert("This is an alert message");
+          alert("This is an alert message");
         }
-    </script>
+      </script>
 
 </body>
 </html>
