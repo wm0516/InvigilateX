@@ -29,7 +29,7 @@
         input[type="text"],
         input[type="password"] {
             width: 25vh;
-            padding: 5px;
+            padding: 10px;
             margin: 10px 0;
         }
 
@@ -48,11 +48,25 @@
         <br>
         <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
         <br>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="{{ url_for('second_page') }}">
+                <button type="submit" name="login">Forgot Password</button>
+            </a>
+        </div>
+
         <div style="text-align: center; margin-top: 10px;">
             <a href="{{ url_for('second_page') }}">
                 <button type="submit" name="login">Login</button>
             </a>
         </div>
+
+        <div style="text-align: center; margin-top: 10px;">
+            <a href="{{ url_for('second_page') }}">
+                <button type="submit" name="login">Register Now</button>
+            </a>
+        </div>
+
     </form>
 </body>
 </html>
