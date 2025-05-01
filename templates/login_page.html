@@ -13,12 +13,6 @@
         <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
         <br>
 
-        <div style="text-align: right;">
-            <button onclick="showAlert()" style="background: none; border: none; color: blue; text-decoration: underline; cursor: pointer;">
-              Forgot Password
-            </button>
-          </div>
-
         <div class="button-frame">
             <a href="{{ url_for('home_page') }}">
                 <button type="submit" name="login">Login</button>
@@ -30,6 +24,12 @@
         </div>
 
     </form>
+    <div style="text-align: right;">
+        <button onclick="showAlert()" style="background: none; border: none; 
+        color: blue; text-decoration: underline; cursor: pointer;">
+        Forgot Password
+        </button>
+    </div>
 
     <script>
         function showAlert() {
