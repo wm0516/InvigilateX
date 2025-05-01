@@ -11,14 +11,14 @@ def login():
         login_text = request.form.get('textbox', '')
         password_text = request.form.get('password', '')
         # You could validate here, then redirect or process login
-        return redirect(url_for('second_page'))
+        return redirect(url_for('home_page'))
 
     return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
 
-@app.route('/second')
-def second_page():
-    return 'Login'
+@app.route('/home')
+def home_page():
+    return render_template('home_page.html')
 
 
 @app.route('/forgotPassword')
