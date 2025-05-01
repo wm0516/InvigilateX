@@ -6,7 +6,7 @@ body {
     align-items: center;
     justify-content: flex-start;
     margin-left: 70px;
-    background-image: url("../static/static_pic/INTI_PIC.png");
+    background-image: url("../static_pic/INTI_PIC.png");
     background-position: center;
     background-repeat: no-repeat;
 }
