@@ -7,7 +7,7 @@
         body {
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 70vh;
             display: flex;
             align-items: center;
             justify-content: flex-start;
@@ -16,10 +16,11 @@
             background-position: center;
             background-repeat: no-repeat;
         }
+
         form {
             text-align: center;
             width: 30vh;
-            padding: 100px;
+            padding: 70px;
             border: 2px solid #ccc;
             border-radius: 10px;
             background-color: #fff;
@@ -34,7 +35,7 @@
         }
 
         button {
-            width: 20vh;
+            width: 25vh;
             padding: 8px 16px;
             margin-top: 20px;
         }
@@ -49,7 +50,7 @@
         <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
         <br>
 
-        <div style="text-align: left; margin: 10px 0;">
+        <div style="text-align: right; margin: 10px 0;">
             <a href="{{ url_for('second_page') }}">Forgot Password?</a>
         </div>
 
@@ -59,10 +60,8 @@
             </a>
         </div>
 
-        <div style="text-align: center; margin-top: 10px;">
-            <a href="{{ url_for('second_page') }}">
-                <button type="submit" name="login">Register Now </button>
-            </a>
+        <div style="text-align: center; margin: 10px 0;">
+            <a href="{{ url_for('second_page') }}">Register</a>
         </div>
 
     </form>
