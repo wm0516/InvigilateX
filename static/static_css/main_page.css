@@ -7,9 +7,9 @@ body {
     justify-content: flex-start;
     margin-left: 70px;
     background-image: url("../static_pic/INTI_PIC_22.png");
-    background-size: auto;
-    background-repeat: no-repeat;
-}
+    background-size: cover;           /* Make it fill the page */
+    background-position: center;      /* Center it */
+    background-repeat: no-repeat;     /* No tiling */
 
 form {
     text-align: center;
