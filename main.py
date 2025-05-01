@@ -25,6 +25,14 @@ def home_page():
 def forgot_password_page():
     return render_template('forgotPassword_page.html')
 
+@app.route('/forgotPassword_OTP')
+def forgot_password_OTP_page():
+    return render_template('forgotPasswordOTP_page.html')
+
+@app.route('/resetPassword')
+def reset_password_page():
+    return render_template('resetPassword.html')
+
 
 @app.route('/register')
 def register_page():
