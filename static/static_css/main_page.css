@@ -39,6 +39,7 @@ button {
 .otp-frame {
     display: flex;
     gap: 10px; /*Spacing between each box*/
+    align-items: center;
 }
 
 .otp-input {
