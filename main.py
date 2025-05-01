@@ -18,7 +18,7 @@ def login():
 
 @app.route('/second')
 def second_page():
-    return render_template('second.html')
+    return 'Login'
 
 
 @app.route('/forgotPassword')
