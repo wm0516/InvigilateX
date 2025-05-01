@@ -31,7 +31,7 @@ def forgot_password_OTP_page():
 
 @app.route('/resetPassword')
 def reset_password_page():
-    return render_template('resetPassword.html')
+    return render_template('resetPassword_page.html')
 
 
 @app.route('/register')
