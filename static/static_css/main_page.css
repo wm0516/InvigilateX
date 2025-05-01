@@ -13,7 +13,7 @@ body {
 
 form {
     text-align: center;
-    width: 20vh;
+    width: 30vh;
     padding: 70px;
     border: 2px solid #ccc;
     border-radius: 10px;
@@ -27,7 +27,7 @@ input[type="email"],
 input[type="tel"] {
     width: 25vh;
     padding: 10px;
-    margin: 10px 0;
+    margin: 5% 0;
 }
 
 button {
