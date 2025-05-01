@@ -22,7 +22,9 @@ form {
 }
 
 input[type="text"],
-input[type="password"] {
+input[type="password"] 
+input[type="email"] 
+input[type="number"] {
     width: 25vh;
     padding: 10px;
     margin: 10px 0;
