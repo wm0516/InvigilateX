@@ -2,7 +2,8 @@
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
     background-size: contain;
-    background-position: left 50px top 30px;
+    /*background-position: left 50px top 30px;*/
+    background-position: left top;
     height: 100px;
     width: 100%;
 }
@@ -12,7 +13,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    /*background-image: url("../static_pic/INTI_PIC.png");*/
+    background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
