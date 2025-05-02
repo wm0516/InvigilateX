@@ -1,10 +1,11 @@
-
-
 body {
     margin: 0;
     padding: 0;
     display: flex;
-    margin-left: 70px;
+    flex-direction: column;       /* Stack elements vertically */
+    align-items: center;          /* Center horizontally */
+    justify-content: center;      /* Center vertically */
+    min-height: 100vh;            /* Take full height */
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
