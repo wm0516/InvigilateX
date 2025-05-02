@@ -5,7 +5,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    padding: 10px;
+    padding: 5px;
     height: 100px;
     width: 100%;
     z-index: 10;
@@ -24,9 +24,6 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
-    
-    margin-top: 120px;
-    margin-left: 70px;
 }
 
 /* Frame form*/
