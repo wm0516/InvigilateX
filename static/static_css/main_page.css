@@ -17,7 +17,7 @@ body {
     align-items: flex-start;     /* Align items to the left */
     padding-left: 70px;          /* Add 70px space on the left */
     justify-content: center;      /* Center vertically */
-    min-height: 50vh;            /* Take full height */
+    min-height: 100vh;            /* Take full height */
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
