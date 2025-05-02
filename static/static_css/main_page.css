@@ -4,7 +4,6 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    margin-bottom: 120px;
     margin: 10px;
     height: 100px;
     width: 100%;
@@ -25,6 +24,7 @@ body {
 /* Frame form*/
 
 form {
+    margin-top: 150px;
     margin-left: 70px;
     text-align: center;
     width: 30vh;
