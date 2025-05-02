@@ -3,9 +3,8 @@ body {
     padding: 0;
     display: flex;
     flex-direction: column;       /* Stack elements vertically */
-    align-items: center;          /* Center horizontally */
     justify-content: center;      /* Center vertically */
-    min-height: 100vh;            /* Take full height */
+    margin-left: 70px;
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
