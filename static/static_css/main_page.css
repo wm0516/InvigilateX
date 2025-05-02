@@ -3,8 +3,6 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    margin: 0%;
-    padding: 0%;
     height: 200px; /* <--- Important */
     width: 100%;    /* Optional: full width */
 }
