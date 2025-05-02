@@ -1,3 +1,7 @@
+.heading {
+    background-image: url("../static_pic/INTI_LOGO.png");
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -41,19 +45,26 @@ button {
     margin-top: 25px;
 }
 
-/* For OTP*/
-.otp-frame {
-    display: flex;
-    justify-content: center;  /* centers items horizontally */
-    gap: 15px; /*Spacing between each box*/
-}
-
-/* For OTP*/
+/* For every click button frame*/
 .button-frame {
     text-align: center;
     margin-top: 10px;
 }
 
+.noBold {
+    font-weight: normal;
+}
+
+
+
+
+
+
+
+
+
+
+/* Will be deleted*/
 /* For OTP*/
 .otp-input {
     width: 40px;
@@ -63,6 +74,10 @@ button {
     border-radius: 5px;
 }
 
-.noBold {
-    font-weight: normal;
+/* For OTP */
+.otp-frame {
+    display: flex;
+    justify-content: center;  /* centers items horizontally */
+    gap: 15px; /*Spacing between each box*/
 }
+
