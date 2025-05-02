@@ -4,7 +4,8 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    padding: 50px;
+    margin-left: 15px;
+    margin-top: 15px;
     height: 100px;
     width: 100%;
 }
