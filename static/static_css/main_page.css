@@ -2,7 +2,7 @@
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
     background-size: contain;
-    background-position: left top 10px;
+    background-position: left top;
     padding-top: 20px;      /* Adds internal spacing from top */
     padding-left: 40px;     /* Optional: spacing from left */
     height: 100px;
