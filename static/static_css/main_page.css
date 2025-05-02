@@ -1,10 +1,14 @@
 .heading {
-    background-image: url("../static_pic/INTI_LOGO.png");
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
-    height: 100px; /* <--- Important */
-    width: 100%;    /* Optional: full width */
+    position: fixed; /* Keeps it at the top even when scrolling */
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 10px 20px;
+    background-color: #f5f5f5;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 1px solid #ccc;
 }
 
 body {
