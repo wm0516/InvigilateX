@@ -1,14 +1,10 @@
-/* Reset browser defaults */
-html, body {
-    margin: 0;
-    padding: 0;
-}
-
 .heading {
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
+    margin: 0%;
+    padding: 0%;
     height: 200px; /* <--- Important */
     width: 100%;    /* Optional: full width */
 }
