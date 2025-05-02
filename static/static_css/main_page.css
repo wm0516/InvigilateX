@@ -13,6 +13,7 @@ body {
     background-repeat: no-repeat;
 }
 
+/* Frame form*/
 form {
     text-align: center;
     width: 30vh;
@@ -23,6 +24,7 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Input section*/
 input[type="text"],
 input[type="password"], 
 input[type="email"], 
@@ -32,27 +34,35 @@ input[type="tel"] {
     margin: 5% 0;
 }
 
+/* Button format*/
 button {
     width: 25vh;
     padding: 8px 16px;
     margin-top: 25px;
 }
 
+/* For OTP*/
 .otp-frame {
     display: flex;
     justify-content: center;  /* centers items horizontally */
     gap: 15px; /*Spacing between each box*/
 }
 
+/* For OTP*/
 .button-frame {
     text-align: center;
     margin-top: 10px;
 }
 
+/* For OTP*/
 .otp-input {
     width: 40px;
     height: 40px;
     text-align: center;
     border: 1px solid #ccc;
     border-radius: 5px;
+}
+
+.noBold {
+    font-weight: normal;
 }
