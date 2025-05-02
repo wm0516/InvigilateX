@@ -1,32 +1,37 @@
+/* Heading stays fixed at the top */
 .heading {
+    position: absolute;
+    top: 0;
+    left: 0;
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    height: 100px; /* <--- Important */
-    width: 100%;    /* Optional: full width */
-    margin-bottom: 120px;
+    height: 100px;
+    width: 100%;
+    z-index: 10;
 }
 
-
+/* Body handles background and centering */
 body {
     margin: 0;
     padding: 0;
+    height: 100vh;
     display: flex;
-    flex-direction: column;       /* Stack elements vertically */
-    align-items: flex-start;     /* Align items to the left */
-    padding-left: 70px;          /* Add 70px space on the left */
+    align-items: flex-start;      /* Align child to left */
     justify-content: center;      /* Center vertically */
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
-    margin-top: 100px;
     background-position: center;
     background-repeat: no-repeat;
+    position: relative;
 }
 
 /* Frame form*/
 
 form {
+    margin-top: 120px;
+    margin-left: 70px;
     text-align: center;
     width: 30vh;
     padding: 50px;
