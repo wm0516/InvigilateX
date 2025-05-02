@@ -4,7 +4,6 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
-    flex-direction: column;  /* Stack elements vertically */
     margin-left: 70px;
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
