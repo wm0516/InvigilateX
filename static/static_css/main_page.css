@@ -5,12 +5,14 @@
     background-position: left top;
     height: 100px; /* <--- Important */
     width: 100%;    /* Optional: full width */
+    margin-bottom: 100px;
 }
 
 body {
     margin: 0;
     padding: 0;
     height: 100vh;
+    display: flex;
     align-items: center;
     justify-content: flex-start;
     margin-top: 120px; /* Added space between heading and body */
