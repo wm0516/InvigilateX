@@ -1,18 +1,10 @@
-.heading {
-    background-image: url("../static_pic/INTI_LOGO.png");
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: left top;
-    height: 100px; /* <--- Important */
-    width: 100%;    /* Optional: full width */
-}
+
 
 body {
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;  /* Stack elements vertically */
-    margin-top: 120px;
     margin-left: 70px;
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
