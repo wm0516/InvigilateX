@@ -5,18 +5,16 @@
     background-position: left top;
     height: 100px; /* <--- Important */
     width: 100%;    /* Optional: full width */
-    margin-bottom: 100px;
+    margin-bottom: 100px;  /* Space between heading and body content */
 }
 
 body {
     margin: 0;
     padding: 0;
-    height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    margin-top: 120px; /* Added space between heading and body */
-    margin-left: 0;    /* Adjusted left margin */
+    flex-direction: column;  /* Stack elements vertically */
+    align-items: center;     /* Center content horizontally */
+    justify-content: flex-start;  /* Align content at the top */
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
