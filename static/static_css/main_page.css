@@ -1,5 +1,8 @@
 .heading {
     background-image: url("../static_pic/INTI_LOGO.png");
+    height: 100px; /* Add height or it won't be visible */
+    background-size: contain;
+    background-repeat: no-repeat;
 }
 
 body {
