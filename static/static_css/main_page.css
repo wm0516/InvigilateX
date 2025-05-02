@@ -11,11 +11,11 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    /*display: flex;*/
+    display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-top: 100px;
-    margin-left: 100px;
+    margin-top: 120px; /* Added space between heading and body */
+    margin-left: 0;    /* Adjusted left margin */
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
