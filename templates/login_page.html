@@ -2,13 +2,13 @@
 <html>
 <head>
     <title>Login_Page</title>
-    <div class="heading"></div>
     <link rel="stylesheet" href="{{ url_for('static', filename='static_css/main_page.css') }}">
 </head>
 
 <body>
     <form method="POST">
         <h1>Login Here</h1>
+        <div class="heading"></div>
         <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
         <br>
         <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
