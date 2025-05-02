@@ -4,7 +4,8 @@
     background-size: contain;
     background-position: left 50px top;
     /*background-position: left top;*/
-    height: 120px;
+    margin-top: 10px;
+    height: 90px;
     width: 100%;
 }
 
