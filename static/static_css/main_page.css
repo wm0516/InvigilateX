@@ -2,7 +2,7 @@
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
     background-size: contain;
-    background-position: center;
+    background-position:left top;
     height: 100px; /* <--- Important */
     width: 100%;    /* Optional: full width */
 }
