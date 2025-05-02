@@ -5,10 +5,9 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    padding: 5px;
+    padding: 10px;
     height: 100px;
     width: 100%;
-    z-index: 10;
 }
 
 /* Body handles background and centering */
@@ -29,8 +28,7 @@ body {
 /* Frame form*/
 
 form {
-    margin-top: 120px;
-    margin-left: 70px;
+    align-items: left 70px;
     text-align: center;
     width: 30vh;
     padding: 50px;
