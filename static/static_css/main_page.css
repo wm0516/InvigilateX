@@ -3,7 +3,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top;
-    height: 200px; /* <--- Important */
+    height: 100px; /* <--- Important */
     width: 100%;    /* Optional: full width */
 }
 
