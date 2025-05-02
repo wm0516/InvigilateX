@@ -1,7 +1,7 @@
 .heading {
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
-    background-size: auto 100%;
+    background-size: contain;
     background-position: left 50px top 30px;
     /*background-position: left top;*/
     height: 100px;
@@ -23,7 +23,7 @@ body {
 /* Frame form*/
 
 form {
-    margin-top: 150px;
+    margin-top: 200px;
     margin-left: 70px;
     text-align: center;
     width: 30vh;
