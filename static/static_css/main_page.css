@@ -3,8 +3,7 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left 50px top;
-    /*background-position: left top;*/
-    margin-top: 10px;
+    margin-top: 20px;
     height: 90px;
     width: 100%;
 }
@@ -13,7 +12,7 @@
 body {
     margin: 0;
     padding: 0;
-    height: 100vh;
+    height: 90vh;
     background-image: url("../static_pic/INTI_PIC.png");
     background-size: contain;
     background-position: center;
