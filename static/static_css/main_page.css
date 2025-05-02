@@ -3,8 +3,8 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: left top 10px;
-    padding-top: 10px;      /* Adds internal spacing from top */
-    padding-left: 10px;     /* Optional: spacing from left */
+    padding-top: 20px;      /* Adds internal spacing from top */
+    padding-left: 40px;     /* Optional: spacing from left */
     height: 100px;
     width: 100%;
 }
