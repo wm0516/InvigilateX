@@ -18,6 +18,13 @@
             <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
         </div>
 
+        <div style="text-align: right;">
+            <button onclick="showAlert()" style="background: none; border: none; 
+            color: blue; text-decoration: underline; cursor: pointer;">
+            Forgot Password
+            </button>
+        </div>
+
         <div class="button-frame">
             <a href="{{ url_for('home_page') }}">
                 <button type="submit" name="login">Login</button>
@@ -28,12 +35,7 @@
             <a href="{{ url_for('register_page') }}">Register</a>
         </div>
 
-        <div style="text-align: right;">
-            <button onclick="showAlert()" style="background: none; border: none; 
-            color: blue; text-decoration: underline; cursor: pointer;">
-            Forgot Password
-            </button>
-        </div>
+       
 
     </form>
     
