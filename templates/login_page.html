@@ -28,13 +28,15 @@
             <a href="{{ url_for('register_page') }}">Register</a>
         </div>
 
+        <div style="text-align: right;">
+            <button onclick="showAlert()" style="background: none; border: none; 
+            color: blue; text-decoration: underline; cursor: pointer;">
+            Forgot Password
+            </button>
+        </div>
+
     </form>
-    <div style="text-align: right;">
-        <button onclick="showAlert()" style="background: none; border: none; 
-        color: blue; text-decoration: underline; cursor: pointer;">
-        Forgot Password
-        </button>
-    </div>
+    
 
     <script>
         function showAlert() {
