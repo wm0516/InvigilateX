@@ -10,10 +10,21 @@
 
     <form method="POST">
         <h1>Register as New User</h1>
-        <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
+        <input type="text" name="username" placeholder="Full Name as IC" size="12" value="{{ username_text }}">
         <br>
-        <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
+        <input type="text" name="userid" placeholder="Staff ID" value="{{ userid_text }}">
         <br>
+        <input type="text" name="department" placeholder="Department" size="12" value="{{ department_text }}">
+        <br>
+        <input type="email" name="email" placeholder="Email Address" value="{{ email_text }}">
+        <br>
+        <input type="tel" name="contact" placeholder="Contact Number" size="12" value="{{ contact_text }}">
+        <br>
+        <input type="password" name="password1" placeholder="Password" value="{{ password1_text }}">
+        <br>
+        <input type="password" name="password2" placeholder=" Confirm Password" value="{{ password2_text }}">
+        <br>
+
 
         <div class="button-frame">
             <a href="{{ url_for('login') }}">
