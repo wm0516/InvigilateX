@@ -61,7 +61,11 @@ button {
     font-weight: normal;
 }
 
-
+.form-left, .form-right {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+}
 
 
 
