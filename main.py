@@ -28,7 +28,6 @@ def forgot_password_page():
 def reset_password_page():
     return render_template('resetPassword_page.html')
 
-
 @app.route('/register')
 def register_page():
     return render_template('register_page.html')
