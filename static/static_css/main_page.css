@@ -43,14 +43,14 @@ input[type="text"],
 input[type="password"], 
 input[type="email"], 
 input[type="tel"] {
-    width: 20vh;
+    width: 25vh;
     padding: 10px;
     margin: 5% 0;
 }
 
 /* Button format*/
 button {
-    width: 20vh;
+    width: 25vh;
     padding: 8px 16px;
     margin-top: 25px;
 }
@@ -75,6 +75,7 @@ button {
     display: flex;
     flex-direction: column;
     width: 48%;
+    padding: 10px;
 }
 
 
