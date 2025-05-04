@@ -20,7 +20,6 @@ def login():
 def home_page():
     return render_template('home_page.html')
 
-
 @app.route('/forgotPassword')
 def forgot_password_page():
     return render_template('forgotPassword_page.html')
