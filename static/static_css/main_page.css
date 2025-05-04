@@ -1,3 +1,4 @@
+/* Heading pictures on top left page*/
 .heading {
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
@@ -21,7 +22,6 @@ body {
 }
 
 /* Frame form*/
-
 form {
     margin-top: 150px;
     margin-left: 70px;
@@ -34,8 +34,9 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Special form width for register page*/ 
 form.form_register {
-    width: 50vh;
+    width: 55vh;
 }
 
 /* Input section*/
@@ -61,20 +62,23 @@ button {
     margin-top: 10px;
 }
 
+/* To remove bold*/
 .span {
     font-weight: normal;
 }
 
+/* Frame for register page*/
 .form-container {
     display: flex;
     justify-content: space-between;
     gap: 20px;
 }
 
+/* Frame for register page to perform left and right*/
 .form-left, .form-right {
     display: flex;
     flex-direction: column;
-    width: 48%;
+    width: 20%;
     padding: 10px;
 }
 
