@@ -43,14 +43,14 @@ input[type="text"],
 input[type="password"], 
 input[type="email"], 
 input[type="tel"] {
-    width: 25vh;
+    width: 20vh;
     padding: 10px;
     margin: 5% 0;
 }
 
 /* Button format*/
 button {
-    width: 25vh;
+    width: 20vh;
     padding: 8px 16px;
     margin-top: 25px;
 }
