@@ -63,7 +63,7 @@ def forgot_password_page():
 
 
 
-@app.route('/resetPassword')
+@app.route('/resetPassword', methods=['GET', 'POST'])
 def reset_password_page():
     if request.method == 'POST':
         password_text_1 = request.form.get('password1', '')
