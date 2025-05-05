@@ -10,7 +10,9 @@ def login():
         # You could validate here, then redirect or process login
         return redirect(url_for('home_page'))
 
-    return render_template('login_page.html', login_text=login_text, password_text=password_text)
+    return render_template('login_page.html')
+
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
@@ -39,9 +41,13 @@ def register_page():
     return render_template('register_page.html')
 
 
+
+
 @app.route('/home')
 def home_page():
     return render_template('home_page.html')
+
+
 
 @app.route('/forgotPassword')
 def forgot_password_page():
@@ -55,6 +61,8 @@ def forgot_password_page():
     
     return render_template('forgotPassword_page.html')
 
+
+
 @app.route('/resetPassword')
 def reset_password_page():
     if request.method == 'POST':
@@ -67,6 +75,9 @@ def reset_password_page():
         return redirect(url_for('login'))
 
     return render_template('resetPassword_page.html')
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
