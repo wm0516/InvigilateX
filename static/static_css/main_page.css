@@ -14,7 +14,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    background-image: url("../static_pic/INTI_PIC.png");
+    /*background-image: url("../static_pic/INTI_PIC.png");*/
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -24,7 +24,6 @@ body {
 /* Frame form*/
 form {
     margin-top: 150px;
-    margin-left: 70px;
     text-align: center;
     width: 30vh;
     padding: 50px;
