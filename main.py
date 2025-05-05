@@ -20,7 +20,7 @@ def login():
 
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register')
 def register():
     return render_template('home_page.html')
 
