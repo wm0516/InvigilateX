@@ -16,7 +16,7 @@ def login():
     return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
 @app.route('/register', methods=['GET', 'POST'])
-def register():
+def register_page():
     if request.method == 'POST':
         # Retrieve form data
         userid_text = request.form['userid']
