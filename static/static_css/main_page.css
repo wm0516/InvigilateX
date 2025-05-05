@@ -33,7 +33,6 @@ form {
 .form-container {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
 }
 
 /* Frame for register page to perform left and right*/
