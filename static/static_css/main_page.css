@@ -35,7 +35,7 @@ input[type="password"],
 input[type="email"], 
 input[type="tel"] {
     width: 25vh;
-    margin: 5% 0;
+    padding: 10px;
 }
 
 /* Button format*/
