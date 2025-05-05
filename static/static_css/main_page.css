@@ -3,10 +3,7 @@
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
     background-size: contain;
-    background-position: left 50px top;
-    margin-top: 20px;
-    height: 90px;
-    width: 100%;
+    background-position: center;
 }
 
 /* Body handles background and centering */
@@ -14,13 +11,8 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    display: flex; /* Needed for centering */
     justify-content: center; /* Horizontal center */
     align-items: center; /* Vertical center */
-    /*background-image: url("../static_pic/INTI_PIC.png");*/
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
     position: relative;
     overflow: hidden;
 }
