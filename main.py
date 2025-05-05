@@ -17,6 +17,7 @@ def login_page():
         else:
             # Your login validation logic here
             # If login fails, set error_message again
+            return redirect(url_for('home_page'))
             pass
 
     return render_template('login_page.html', error_message=error_message)
@@ -44,7 +45,7 @@ def register_page():
         if password1_text != password2_text:
             error_message = "Passwords do not match."
 
-        return redirect(url_for('home_page'))
+        return redirect(url_for('login_page'))
 
     return render_template('register_page.html', error_message=error_message)
 
