@@ -44,7 +44,7 @@ def register_page():
         if password1_text != password2_text:
             error_message = "Passwords do not match."
 
-        return redirect(url_for('home'))
+        return redirect(url_for('home_page'))
 
     return render_template('register_page.html', error_message=error_message)
 
