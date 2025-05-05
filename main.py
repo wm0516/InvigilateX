@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+import re
 
 app = Flask(__name__)
 
@@ -47,6 +48,8 @@ def register_page():
         # Validation
         if not all([userid_text, username_text, department_text, email_text, contact_text]):
             error_message = "All fields are required."
+        elif not re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email_text):
+            error_message = "Email must be a valid '@newinti.edu.my' address."
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
