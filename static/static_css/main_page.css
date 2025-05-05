@@ -32,7 +32,7 @@ form {
 /* Frame for register page*/
 .form-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
 }
 
 /* Frame for register page to perform left and right*/
@@ -41,12 +41,6 @@ form {
     flex-direction: column;
 }
 
-.form-middle {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;  /* Vertically center */
-    align-items: center;      /* Horizontally center */
-}
 
 /* Input section*/
 input,
