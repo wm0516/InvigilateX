@@ -8,6 +8,11 @@ def login():
         login_text = request.form.get('textbox', '')
         password_text = request.form.get('password', '')
         # You could validate here, then redirect or process login
+        
+        if not (login_text and password_text):
+            error_message = "Passwords do not match."
+            return render_template('resetPassword_page.html', error_message=error_message)
+        
         return redirect(url_for('home_page'))
 
     return render_template('login_page.html')
@@ -25,9 +30,6 @@ def register_page():
         contact_text = request.form.get('contact', '')
         password1_text = request.form.get('password1', '')
         password2_text = request.form.get('password2', '')
-
-        # Debug print
-        print("Form values received:", userid_text, username_text, department_text, email_text, contact_text)
 
         # Validate fields
         if not (userid_text and username_text and department_text and email_text and contact_text):
