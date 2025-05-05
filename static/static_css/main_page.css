@@ -42,14 +42,13 @@ form {
 }
 
 /* Input section*/
-input[type="text"],
-input[type="password"], 
-input[type="email"], 
-input[type="tel"],
+input,
 select {
     width: 25vh;
     padding: 10px;
     margin: 1% 0;
+    box-sizing: border-box;  /* Ensure padding and border are included in the total width */
+    display: inline-block;  /* Align with the other form elements */
 }
 
 /* Button format*/
