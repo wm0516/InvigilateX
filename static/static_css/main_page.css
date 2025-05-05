@@ -42,7 +42,6 @@ form {
     flex-direction: column;
 }
 
-
 /* Input section*/
 input[type="text"],
 input[type="password"], 
@@ -64,6 +63,7 @@ button {
 .button-frame {
     text-align: center;
     margin-top: 10px;
+    gap: 10px;
 }
 
 /* To remove bold*/
