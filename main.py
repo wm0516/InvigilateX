@@ -10,8 +10,8 @@ def login():
         # You could validate here, then redirect or process login
         
         if not (login_text and password_text):
-            error_message = "Passwords do not match."
-            return render_template('resetPassword_page.html', error_message=error_message)
+            error_message = "Field can't be empty."
+            return render_template('login_page.html', error_message=error_message)
         
         return redirect(url_for('home_page'))
 
