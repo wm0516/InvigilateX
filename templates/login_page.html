@@ -9,22 +9,20 @@
     <form method="POST">
         <div class="heading"></div>
         <br>
-        <h1>Login Here</h1>pip install Flask
+        <h1>Login Here</h1>
         <br>
         <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
         <br>
         <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
-    
+        
         <div class="button-frame">
-            <a href="{{ url_for('home_page') }}">
-                <button type="submit" name="login">Login</button>
-            </a>
+            <button type="submit" name="login">Login</button>
             <br><br>
             <a href="{{ url_for('register_page') }}">Register</a>
             <br><br>
             <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
         </div>
-
     </form>
+    
 </body>
 </html>
