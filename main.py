@@ -1,7 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for
-from database import get_db_connection
-from backend import insert_user_to_db
-from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 
@@ -33,15 +30,6 @@ def register():
         # Validate passwords match
         if password1 != password2:
             return "Passwords do not match."
-
-        # Hash password
-        hashed_password = generate_password_hash(password1)
-
-        # Insert into the database using the new function
-        success, error = insert_user_to_db(userid, username, department, email, contact, hashed_password)
-
-        if not success:
-            return f"Error: {error}"
 
         return redirect(url_for('login'))
 
