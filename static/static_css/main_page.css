@@ -20,6 +20,7 @@ body {
 /* Frame form */
 form {
     text-align: center;
+    display: flex;
     width: 60vh;
     padding: 50px;
     border: 2px solid #ccc;
