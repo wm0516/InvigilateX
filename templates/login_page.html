@@ -15,18 +15,22 @@
         <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
     
         <div class="button-frame">
+            <a href="{{ url_for('home_page') }}">
+                <button type="submit" name="login">Login</button>
+            </a>
+            <a href="{{ url_for('register_page') }}">Register</a>
             <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
         </div>
 
         <div class="button-frame">
-            <a href="{{ url_for('home_page') }}">
-                <button type="submit" name="login">Login</button>
-            </a>
+            <a href="{{ url_for('register_page') }}">Register</a>
+            <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
         </div>
 
         <div class="button-frame">
-            <a href="{{ url_for('register_page') }}">Register</a>
+            <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
         </div>
+
 
     </form>
 </body>
