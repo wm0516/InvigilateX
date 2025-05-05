@@ -25,18 +25,13 @@ body {
 form {
     margin-top: 150px;
     text-align: center;
-    width: 30vh;
+    width: 60vh;
+    background-position: center;
     padding: 50px;
     border: 2px solid #ccc;
     border-radius: 10px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-/* Special form width for register page*/ 
-form.form_register {
-    margin-left: 40px;
-    width: 55vh;
 }
 
 /* Input section*/
