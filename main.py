@@ -3,19 +3,27 @@ from flask import Flask, render_template, request, redirect, url_for
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
-def login():
+def login_page():
+    login_text = ''
+    password_text = ''
+    error_message = ''
+
     if request.method == 'POST':
         login_text = request.form.get('textbox', '')
         password_text = request.form.get('password', '')
-        # You could validate here, then redirect or process login
-        
-        if not (login_text and password_text):
-            error_message = "Field can't be empty."
-            return render_template('login_page.html', error_message=error_message)
-        
-        return redirect(url_for('home_page'))
 
-    return render_template('login_page.html')
+        if not login_text or not password_text:
+            error_message = "Both fields are required."
+        else:
+            # Your login validation logic here
+            # If login fails, set error_message again
+            pass
+
+    return render_template('login_page.html', 
+                           login_text=login_text, 
+                           password_text=password_text,
+                           error_message=error_message)
+
 
 
 
