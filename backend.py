@@ -1,6 +1,6 @@
 # db_operations.py
 
-from database.py import get_db_connection  # Import the function to get DB connection
+from database import get_db_connection  # Import the function to get DB connection
 
 def insert_user_to_db(userid, username, department, email, contact, password):
     db = get_db_connection()  # Establish DB connection
