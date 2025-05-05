@@ -43,7 +43,6 @@ form {
 }
 
 
-
 /* Input section*/
 input[type="text"],
 input[type="password"], 
@@ -51,7 +50,7 @@ input[type="email"],
 input[type="tel"] {
     width: 25vh;
     padding: 10px;
-    margin: 5% 0;
+    margin: 1% 0;
 }
 
 /* Button format*/
