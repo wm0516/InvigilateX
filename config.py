@@ -5,7 +5,7 @@ from flask_mail import Mail
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '0efa50f2ad0a21e3fd7e7344d3e48380'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://TomazHayden:roottoor@TomazHayden.mysql.pythonanywhere-services.com/TomazHayden$CourseXcel'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'wmm+InvigilateX_database://TomazHayden:roottoor@TomazHayden.wmm.pythonanywhere-services.com/TomazHayden$CourseXcel'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -32,4 +32,4 @@ with app.app_context():
     db.session.remove()
     db.engine.dispose()
 
-from main import main
+from main import admin_routes, po_routes, lecturer_routes, subject_routes
