@@ -36,9 +36,16 @@ form {
 }
 
 /* Frame for register page to perform left and right*/
-.form-left, .form-right, .form-middle{
+.form-left, .form-right {
     display: flex;
     flex-direction: column;
+}
+
+.form-middle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* vertical center */
+    align-items: center;  
 }
 
 /* Input section*/
