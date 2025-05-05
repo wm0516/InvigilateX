@@ -62,7 +62,14 @@ def register():
 
         return redirect(url_for('login'))
 
-    return render_template('register.html')
+    return render_template('register.html',
+                        username_text=username,
+                        userid_text=userid,
+                        department_text=department,
+                        email_text=email,
+                        contact_text=contact,
+                        password1_text=password1,
+                        password2_text=password2)
 
 
 @app.route('/home')
