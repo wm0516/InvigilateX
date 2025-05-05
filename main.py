@@ -19,16 +19,14 @@ def login_page():
             # If login fails, set error_message again
             pass
 
-    return render_template('login_page.html', 
-                           login_text=login_text, 
-                           password_text=password_text,
-                           error_message=error_message)
+    return render_template('login_page.html', error_message=error_message)
 
 
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    error_message = None
     if request.method == 'POST':
         # Safely retrieve form values
         userid_text = request.form.get('userid', '')
@@ -48,7 +46,7 @@ def register_page():
 
         return redirect(url_for('home'))
 
-    return render_template('register_page.html')
+    return render_template('register_page.html', error_message=error_message)
 
 
 
@@ -61,6 +59,7 @@ def home_page():
 
 @app.route('/forgotPassword', methods=['GET', 'POST'])  # Allow both GET and POST
 def forgot_password_page():
+    error_message = None
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '')  # Get email from form
         
@@ -69,12 +68,13 @@ def forgot_password_page():
         
         return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
 
-    return render_template('forgotPassword_page.html')
+    return render_template('forgotPassword_page.html', error_message=error_message)
 
 
 
 @app.route('/resetPassword', methods=['GET', 'POST'])
 def reset_password_page():
+    error_message = None
     if request.method == 'POST':
         password_text_1 = request.form.get('password1', '')
         password_text_2 = request.form.get('password2', '')
@@ -84,7 +84,7 @@ def reset_password_page():
 
         return redirect(url_for('login'))
 
-    return render_template('resetPassword_page.html')
+    return render_template('resetPassword_page.html', error_message=error_message)
 
 
 
