@@ -13,12 +13,6 @@
         <br>
         <h1>Login Here</h1><br>
 
-        {% if error_message %}
-        <div class="alert">
-            <strong>Error:</strong> {{ error_message }}
-        </div>
-        {% endif %}
-
         <div class="form-container">
             <div class="form-middle">
                 <label class="text-position">Username</label>
@@ -26,7 +20,13 @@
         
                 <label class="text-position">Password</label>
                 <input type="password" name="password" value="{{ password_text }}">
-                
+
+                {% if error_message %}
+                <div class="alert">
+                    <strong>Error:</strong> {{ error_message }}
+                </div>
+                {% endif %}
+                        
                 <div class="button-frame">
                     <button type="submit" name="login">Login</button>
                     <br><br>
@@ -36,6 +36,7 @@
                 </div>
             </div>
         </div>
+        
 
     
     </form>
