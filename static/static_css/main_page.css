@@ -44,8 +44,8 @@ form {
 .form-middle {
     display: flex;
     flex-direction: column;
-    justify-content: center; /* vertical center */
-    align-items: center;  
+    justify-content: center;  /* Vertically center */
+    align-items: center;      /* Horizontally center */
 }
 
 /* Input section*/
