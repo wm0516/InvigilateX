@@ -4,9 +4,6 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    login_text = ""
-    password_text = ""
-    
     if request.method == 'POST':
         login_text = request.form.get('textbox', '')
         password_text = request.form.get('password', '')
@@ -37,7 +34,7 @@ def register_page():
         if password1_text != password2_text:
             return "Passwords do not match."
 
-        return redirect(url_for('login'))
+        return redirect(url_for('home'))
 
     return render_template('register_page.html')
 
@@ -48,10 +45,27 @@ def home_page():
 
 @app.route('/forgotPassword')
 def forgot_password_page():
+    if request.method == 'POST':
+        forgot_email_text = request.form.get('email', '')
+
+        if not forgot_email_text:
+            return "Field can't be empty."
+        
+        return redirect(url_for('reset_password_page'))
+    
     return render_template('forgotPassword_page.html')
 
 @app.route('/resetPassword')
 def reset_password_page():
+    if request.method == 'POST':
+        password_text_1 = request.form.get('password1', '')
+        password_text_2 = request.form.get('password2', '')
+
+        if password_text_1 != password_text_2:
+            return "Passwords do not match."
+
+        return redirect(url_for('login'))
+
     return render_template('resetPassword_page.html')
 
 if __name__ == '__main__':
