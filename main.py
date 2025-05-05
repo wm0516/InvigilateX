@@ -19,7 +19,7 @@ def login():
     return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
 @app.route('/register')
-def register():
+def register_page():
     return render_template('register_page.html')
 
 
