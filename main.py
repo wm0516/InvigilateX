@@ -1,9 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
-import pymysql
 
 app = Flask(__name__)
-
-
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -21,7 +18,6 @@ def login():
 @app.route('/register')
 def register_page():
     return render_template('register_page.html')
-
 
 @app.route('/home')
 def home_page():
