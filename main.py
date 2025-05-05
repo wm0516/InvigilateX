@@ -7,7 +7,7 @@ app = Flask(__name__)
 db = pymysql.connect(
     host="wmm.mysql.pythonanywhere-services.com",
     user="wmm",
-    password="Law204500",
+    password="Pythonanywhere",
     database="wmm$InvigilateX"
 )
 
@@ -28,48 +28,7 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    username = ""
-    userid = ""
-    department = ""
-    email = ""
-    contact = ""
-    password1 = ""
-    password2 = ""
-
-    if request.method == 'POST':
-        # Get data from form
-        username = request.form['username']
-        userid = request.form['userid']
-        department = request.form['department']
-        email = request.form['email']
-        contact = request.form['contact']
-        password1 = request.form['password1']
-        password2 = request.form['password2']
-
-        # Check passwords match
-        if password1 != password2:
-            return "Passwords do not match"
-
-        # Insert into database
-        cursor = db.cursor()
-        sql = """
-            INSERT INTO users (username, userid, department, email, contact, password)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(sql, (username, userid, department, email, contact, password1))
-        db.commit()
-        cursor.close()
-
-        return redirect(url_for('login'))
-
-    return render_template('register.html',
-                        username_text=username,
-                        userid_text=userid,
-                        department_text=department,
-                        email_text=email,
-                        contact_text=contact,
-                        password1_text=password1,
-                        password2_text=password2)
+    return render_template('home_page.html')
 
 
 @app.route('/home')
