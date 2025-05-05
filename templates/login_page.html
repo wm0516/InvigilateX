@@ -21,7 +21,7 @@
                 <label class="text-position">Password</label>
                 <input type="password" name="password" value="{{ password_text }}">
 
-                {% if error_message %}
+                {% if error_message and request.method == 'POST' %}
                 <div class="alert">
                     <strong>Error:</strong> {{ error_message }}
                 </div>
