@@ -41,10 +41,10 @@ def register_page():
 
         # Validate fields
         if not (userid_text and username_text and department_text and email_text and contact_text):
-            return "Field can't be empty."
+            error_message = "Both fields are required."
 
         if password1_text != password2_text:
-            return "Passwords do not match."
+            error_message = "Passwords do not match."
 
         return redirect(url_for('home'))
 
@@ -65,7 +65,7 @@ def forgot_password_page():
         forgot_email_text = request.form.get('email', '')  # Get email from form
         
         if not forgot_email_text:
-            return "Field can't be empty."
+            error_message = "Field can't be empty."
         
         return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
 
@@ -80,7 +80,7 @@ def reset_password_page():
         password_text_2 = request.form.get('password2', '')
 
         if password_text_1 != password_text_2:
-            return "Passwords do not match."
+            error_message = "Passwords do not match."
 
         return redirect(url_for('login'))
 
