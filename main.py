@@ -27,6 +27,9 @@ def register():
         password1_text = request.form['password1']
         password2_text = request.form['password2']
 
+        # Print form data for debugging
+        print(f"Form data: {userid_text}, {username_text}, {department_text}, {email_text}, {contact_text}")
+
         # Validate passwords match
         if password1_text != password2_text:
             return "Passwords do not match."
@@ -34,6 +37,7 @@ def register():
         if not (userid_text and username_text and department_text and email_text and contact_text):
             return "Field can't be empty."
 
+        # If everything is fine, redirect to login
         return redirect(url_for('login'))
 
     return render_template('register.html')
