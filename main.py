@@ -26,6 +26,13 @@ def login_page():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    userid_text = ''
+    username_text = ''
+    department_text = ''
+    email_text = ''
+    contact_text = ''
+    password1_text = ''
+    password2_text = ''
     error_message = None
 
     if request.method == 'POST':
@@ -61,6 +68,7 @@ def home_page():
 
 @app.route('/forgotPassword', methods=['GET', 'POST'])  # Allow both GET and POST
 def forgot_password_page():
+    forgot_email_text = ''
     error_message = None
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '')  # Get email from form
@@ -76,6 +84,8 @@ def forgot_password_page():
 
 @app.route('/resetPassword', methods=['GET', 'POST'])
 def reset_password_page():
+    password_text_1 = ''
+    password_text_2 = ''
     error_message = None
     if request.method == 'POST':
         password_text_1 = request.form.get('password1', '')
