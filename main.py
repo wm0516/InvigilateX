@@ -1,6 +1,15 @@
 from flask import Flask, render_template, request, redirect, url_for
+import pymysql
 
 app = Flask(__name__)
+
+# Database connection
+db = pymysql.connect(
+    host="wmm.mysql.pythonanywhere-services.com",
+    user="wmm",
+    password="Law204500",
+    database="wmm$InvigilateX"
+)
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -28,9 +37,35 @@ def forgot_password_page():
 def reset_password_page():
     return render_template('resetPassword_page.html')
 
-@app.route('/register')
-def register_page():
-    return render_template('register_page.html')
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        # Get data from form
+        username = request.form['username']
+        userid = request.form['userid']
+        department = request.form['department']
+        email = request.form['email']
+        contact = request.form['contact']
+        password1 = request.form['password1']
+        password2 = request.form['password2']
+
+        # Check passwords match
+        if password1 != password2:
+            return "Passwords do not match"
+
+        # Insert into database
+        cursor = db.cursor()
+        sql = """
+            INSERT INTO users (username, userid, department, email, contact, password)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(sql, (username, userid, department, email, contact, password1))
+        db.commit()
+        cursor.close()
+
+        return redirect(url_for('login'))
+
+    return render_template('register.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
