@@ -19,7 +19,8 @@ def login_page():
             # If login fails, set error_message again
             return redirect(url_for('home_page'))
 
-    return render_template('login_page.html', error_message=error_message)
+    return render_template('login_page.html', login_text=login_text,
+                           password_text=password_text, error_message=error_message)
 
 
 
@@ -44,7 +45,9 @@ def register_page():
         else:
             return redirect(url_for('login_page'))
 
-    return render_template('register_page.html', error_message=error_message)
+    return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
+                           department_text=department_text, email_text=email_text, contact_text=contact_text,
+                            password1_text=password1_text, password2_text=password2_text, error_message=error_message)
 
 
 
@@ -67,7 +70,7 @@ def forgot_password_page():
         else:
             return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
 
-    return render_template('forgotPassword_page.html', error_message=error_message)
+    return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
 
@@ -85,7 +88,8 @@ def reset_password_page():
         else:
             return redirect(url_for('login_page'))
 
-    return render_template('resetPassword_page.html', error_message=error_message)
+    return render_template('resetPassword_page.html', password_text_1=password_text_1,
+                           password_text_2=password_text_2, error_message=error_message)
 
 
 
