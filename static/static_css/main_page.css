@@ -72,7 +72,7 @@ button {
 /* Show those text position*/
 .text-position {
     display: block;
-    text-align: left;
+    text-align: center;
     margin-bottom: 5px;
 }
 
