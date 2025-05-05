@@ -6,7 +6,7 @@ app = Flask(__name__)
 def login_page():
     login_text = ''
     password_text = ''
-    error_message = ''
+    error_message = None
 
     if request.method == 'POST':
         login_text = request.form.get('textbox', '')
