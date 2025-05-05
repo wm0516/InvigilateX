@@ -10,20 +10,25 @@
         <div class="heading"></div>
         <br>
         <h1>Login Here</h1><br>
-
-        <label class="text-position">Username</label>
-        <input type="text" name="textbox" value="{{ login_text }}"><br>
-
-        <label class="text-position">Password</label>
-        <input type="password" name="password" value="{{ password_text }}">
+        <div class="form-container">
+            <div class="form-middle">
+                <label class="text-position">Username</label>
+                <input type="text" name="textbox" value="{{ login_text }}"><br><br>
         
-        <div class="button-frame">
-            <button type="submit" name="login">Login</button>
-            <br><br>
-            <a href="{{ url_for('register_page') }}">Register</a>
-            <br><br>
-            <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
+                <label class="text-position">Password</label>
+                <input type="password" name="password" value="{{ password_text }}">
+                
+                <div class="button-frame">
+                    <button type="submit" name="login">Login</button>
+                    <br><br>
+                    <a href="{{ url_for('register_page') }}">Register</a>
+                    <br><br>
+                    <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
+                </div>
+            </div>
         </div>
+
+    
     </form>
     
 </body>
