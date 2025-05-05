@@ -10,9 +10,10 @@
         <div class="heading"></div>
         <br>
         <h1>Login Here</h1>
-        <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
-        <br>
-        <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
+        <div class="form-container">
+            <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
+            <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
+        </div>
 
         <div class="button-frame">
             <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
