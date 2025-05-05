@@ -3,13 +3,7 @@ import pymysql
 
 app = Flask(__name__)
 
-# Database connection
-db = pymysql.connect(
-    host="wmm.mysql.pythonanywhere-services.com",
-    user="wmm",
-    password="Pythonanywhere",
-    database="wmm$InvigilateX"
-)
+
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
