@@ -9,11 +9,13 @@
     <form method="POST">
         <div class="heading"></div>
         <br>
-        <h1>Login Here</h1>
-        <br>
-        <input type="text" name="textbox" placeholder="Username" size="12" value="{{ login_text }}">
-        <br>
-        <input type="password" name="password" placeholder="Password" value="{{ password_text }}">
+        <h1>Login Here</h1><br>
+
+        <label class="text-position">Username</label>
+        <input type="text" name="textbox" value="{{ login_text }}"><br>
+
+        <label class="text-position">Password</label>
+        <input type="password" name="password" value="{{ password_text }}">
         
         <div class="button-frame">
             <button type="submit" name="login">Login</button>
