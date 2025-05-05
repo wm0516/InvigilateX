@@ -19,17 +19,20 @@ def login():
 def register():
     if request.method == 'POST':
         # Retrieve form data
-        userid = request.form['userid']
-        username = request.form['username']
-        department = request.form['department']
-        email = request.form['email']
-        contact = request.form['contact']
-        password1 = request.form['password1']
-        password2 = request.form['password2']
+        userid_text = request.form['userid']
+        username_text = request.form['username']
+        department_text = request.form['department']
+        email_text = request.form['email']
+        contact_text = request.form['contact']
+        password1_text = request.form['password1']
+        password2_text = request.form['password2']
 
         # Validate passwords match
-        if password1 != password2:
+        if password1_text != password2_text:
             return "Passwords do not match."
+        
+        if not (userid_text and username_text and department_text and email_text and contact_text):
+            return "Field can't be empty."
 
         return redirect(url_for('login'))
 
