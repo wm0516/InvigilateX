@@ -2,8 +2,9 @@
 .heading {
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
+    background-position: left top;
+    height: 90px;
+    width: 100%;
 }
 
 /* Body handles background and centering */
@@ -11,10 +12,9 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    justify-content: center; /* Horizontal center */
-    align-items: center; /* Vertical center */
-    position: relative;
-    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Frame form */
