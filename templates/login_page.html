@@ -6,17 +6,17 @@
 </head>
 
 <body>
-    <div class="heading"></div>
-    <br>
-    <h1>Login Here</h1><br>
-    
-    {% if error_message %}
-    <div class="alert">
-        <strong>Error:</strong> {{ error_message }}
-    </div>
-    {% endif %}
-    
     <form method="POST">
+        <div class="heading"></div>
+        <br>
+        <h1>Login Here</h1><br>
+
+        {% if error_message %}
+        <div class="alert">
+            <strong>Error:</strong> {{ error_message }}
+        </div>
+        {% endif %}
+
         <div class="form-container">
             <div class="form-middle">
                 <label class="text-position">Username</label>
