@@ -36,6 +36,7 @@ form {
 
 /* Special form width for register page*/ 
 form.form_register {
+    margin-left: 40px;
     width: 55vh;
 }
 
