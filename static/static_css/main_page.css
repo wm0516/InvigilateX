@@ -69,6 +69,13 @@ button {
     font-weight: normal;
 }
 
+/* Show those text position*/
+.text-position {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
 
 
 
