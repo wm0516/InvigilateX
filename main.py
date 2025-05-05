@@ -40,7 +40,7 @@ def register_page():
         # If everything is fine, redirect to login
         return redirect(url_for('login'))
 
-    return render_template('register.html')
+    return render_template('register_page.html')
 
 @app.route('/home')
 def home_page():
