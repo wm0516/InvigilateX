@@ -18,11 +18,9 @@ def login():
 
     return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
-
-
 @app.route('/register')
 def register():
-    return render_template('home_page.html')
+    return render_template('register_page.html')
 
 
 @app.route('/home')
