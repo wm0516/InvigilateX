@@ -49,16 +49,16 @@ def home_page():
 
 
 
-@app.route('/forgotPassword')
+@app.route('/forgotPassword', methods=['GET', 'POST'])  # Allow both GET and POST
 def forgot_password_page():
     if request.method == 'POST':
-        forgot_email_text = request.form.get('email', '')
-
+        forgot_email_text = request.form.get('email', '')  # Get email from form
+        
         if not forgot_email_text:
             return "Field can't be empty."
         
-        return redirect(url_for('reset_password_page'))
-    
+        return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
+
     return render_template('forgotPassword_page.html')
 
 
