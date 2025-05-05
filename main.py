@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-import re
+from backend import *
 
 app = Flask(__name__)
 
@@ -15,6 +15,7 @@ def login_page():
 
         if not all([login_text, password_text]):
             error_message = "Both fields are required."
+        # Direct show not found in database without the format
         else:
             # Your login validation logic here
             # If login fails, set error_message again
@@ -48,8 +49,12 @@ def register_page():
         # Validation
         if not all([userid_text, username_text, department_text, email_text, contact_text]):
             error_message = "All fields are required."
-        elif not re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email_text):
-            error_message = "Email must be a valid '@newinti.edu.my' address."
+        elif not email_format(email_text):
+            error_message = "Wrong Email Address format"
+        elif not contact_format(contact_text):
+            error_message = "Wrong Contact Number format"
+        elif not password_format(password1_text) or not password_format(password2_text):
+            error_message = "Wrong Password format"
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
@@ -78,6 +83,7 @@ def forgot_password_page():
         
         if not forgot_email_text:
             error_message = "Field can't be empty."
+        # Direct show not found in database without the format
         else:
             return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
 
@@ -96,8 +102,10 @@ def reset_password_page():
 
         if password_text_1 != password_text_2:
             error_message = "Passwords do not match."
-        if not all([password_text_1, password_text_2]):
+        elif not all([password_text_1, password_text_2]):
             error_message = "All fields are required."
+        elif not password_format(password_text_1) or not password_format(password_text_2):
+            error_message = "Wrong Password format"
         else:
             return redirect(url_for('login_page'))
 
