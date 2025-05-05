@@ -15,8 +15,19 @@
             <div class="form-left">
                 <input type="text" name="username" placeholder="Full Name as IC" value="{{ username_text }}">
                 <input type="text" name="userid" placeholder="Staff ID" value="{{ userid_text }}">
-                <input type="text" name="department" placeholder="Department" value="{{ department_text }}">
-                <input type="email" name="email" placeholder="Email Address" value="{{ email_text }}" pattern="[a-zA-Z0-9._%+-]+@newinti\.edu\.my">
+                <select name="department" placeholder="Department" value="{{ department_text }}">
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="SOC">SCHOOL OF COMPUTING(SOC)</option>
+                    <option value="SOE">SCHOOL OF ENGINEERING(SOE)</option>
+                    <option value="CEPS">CEPS</option>
+                    <option value="CADP">CADP</option>
+                    <option value="SOBIZ">SOBIZ</option>
+                    <option value="MPU">MPU</option>
+                    <option value="CAE">CAE</option>
+                    <option value="RD">RD</option>
+                    <option value="SOHOS">SOHOS</option>
+                </select>
+                <input type="text" name="email" placeholder="Email Address" value="{{ email_text }}" pattern="[a-zA-Z0-9._%+-]+@newinti\.edu\.my">
             </div>
     
             <div class="form-right">
