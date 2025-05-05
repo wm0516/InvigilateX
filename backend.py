@@ -1,21 +1,16 @@
-# db_operations.py
+import re
 
-from database import get_db_connection  # Import the function to get DB connection
+# Email format
+def email_format(email):
+    return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
 
-def insert_user_to_db(userid, username, department, email, contact, password):
-    db = get_db_connection()  # Establish DB connection
-    try:
-        with db.cursor() as cursor:
-            sql = """
-                INSERT INTO Users (userid, username, department, email, contact, password)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(sql, (userid, username, department, email, contact, password))
-            db.commit()  # Commit changes to the DB
-        return True, None  # Success
-    except pymysql.IntegrityError:
-        return False, "Staff ID already exists."  # Handle unique constraint violations (e.g., duplicate staff ID)
-    except Exception as e:
-        return False, str(e)  # Return error message for any other exceptions
-    finally:
-        db.close()  # Ensure DB connection is closed after the operation
+# Contact number format
+def contact_format(contact):
+    return bool(re.match(r"^01\d{8,9}$", contact))
+
+# Password format
+def password_format(password):
+    return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
+
+# Staff Id format
+# Pending
