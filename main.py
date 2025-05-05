@@ -18,7 +18,6 @@ def login_page():
             # Your login validation logic here
             # If login fails, set error_message again
             return redirect(url_for('home_page'))
-            pass
 
     return render_template('login_page.html', error_message=error_message)
 
@@ -41,11 +40,10 @@ def register_page():
         # Validate fields
         if not (userid_text and username_text and department_text and email_text and contact_text):
             error_message = "Both fields are required."
-
         if password1_text != password2_text:
             error_message = "Passwords do not match."
-
-        return redirect(url_for('login_page'))
+        else:
+            return redirect(url_for('login_page'))
 
     return render_template('register_page.html', error_message=error_message)
 
@@ -66,8 +64,8 @@ def forgot_password_page():
         
         if not forgot_email_text:
             error_message = "Field can't be empty."
-        
-        return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
+        else:
+            return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
 
     return render_template('forgotPassword_page.html', error_message=error_message)
 
@@ -82,8 +80,8 @@ def reset_password_page():
 
         if password_text_1 != password_text_2:
             error_message = "Passwords do not match."
-
-        return redirect(url_for('login'))
+        else:
+            return redirect(url_for('login_page'))
 
     return render_template('resetPassword_page.html', error_message=error_message)
 
