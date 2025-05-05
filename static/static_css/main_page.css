@@ -36,7 +36,7 @@ form {
 }
 
 /* Frame for register page to perform left and right*/
-.form-left, .form-right {
+.form-left, .form-right, .form-middle{
     display: flex;
     flex-direction: column;
 }
@@ -72,7 +72,7 @@ button {
 /* Show those text position*/
 .text-position {
     display: block;
-    text-align: center;
+    text-align: left;
     margin-bottom: 5px;
 }
 
