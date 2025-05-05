@@ -18,30 +18,29 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
     if request.method == 'POST':
-        # Retrieve form data
-        userid_text = request.form['userid']
-        username_text = request.form['username']
-        department_text = request.form['department']
-        email_text = request.form['email']
-        contact_text = request.form['contact']
-        password1_text = request.form['password1']
-        password2_text = request.form['password2']
+        # Safely retrieve form values
+        userid_text = request.form.get('userid', '')
+        username_text = request.form.get('username', '')
+        department_text = request.form.get('department', '')
+        email_text = request.form.get('email', '')
+        contact_text = request.form.get('contact', '')
+        password1_text = request.form.get('password1', '')
+        password2_text = request.form.get('password2', '')
 
-        # Print form data for debugging
-        print(f"Form data: {userid_text}, {username_text}, {department_text}, {email_text}, {contact_text}")
+        # Debug print
+        print("Form values received:", userid_text, username_text, department_text, email_text, contact_text)
 
-        # Validate passwords match
-        if password1_text != password2_text:
-            return "Passwords do not match."
-        
+        # Validate fields
         if not (userid_text and username_text and department_text and email_text and contact_text):
             return "Field can't be empty."
 
+        if password1_text != password2_text:
+            return "Passwords do not match."
 
-        # If everything is fine, redirect to login
         return redirect(url_for('login'))
 
     return render_template('register_page.html')
+
 
 @app.route('/home')
 def home_page():
