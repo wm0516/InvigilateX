@@ -34,7 +34,7 @@ def register_page():
         if password1_text != password2_text:
             return "Passwords do not match."
         
-        if not (userid_text and username_text and department_text and email_text and contact_text):
+        if not (userid_text and username_text and department_text == "" and email_text and contact_text):
             return "Field can't be empty."
 
         # If everything is fine, redirect to login
