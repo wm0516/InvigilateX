@@ -5,5 +5,5 @@ def get_db_connection():
         host='wmm.mysql.pythonanywhere-services.com',
         user='wmm',
         password='Pythonanywhere',
-        database='wmm$InvigilateX'
+        database='wmm$InvigilateX_database'
     )
