@@ -58,7 +58,7 @@ def register_page():
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
-            flash("Register successful! Please log in.", "success")
+            # flash("Register successful! Please log in.", "success")
             return redirect(url_for('login_page'))
 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
