@@ -13,10 +13,17 @@
         <br>
         <div class="form-container">
             <div class="form-left">
-                <lable text="Username1">Username</lable><br>
-                <input type="text" name="username" placeholder="Full Name as IC" value="{{ username_text }}">
-                <input type="text" name="userid" placeholder="Staff ID" value="{{ userid_text }}">
-                <select name="department" placeholder="Department" value="{{ department_text }}">
+                <label class="text-position">Full Name as IC</label><br>
+                <input type="text" name="username" value="{{ username_text }}">
+                
+                <label class="text-position">Staff ID</label><br>
+                <input type="text" name="userid" value="{{ userid_text }}">
+
+                <label class="text-position">Email Address</label><br>
+                <input type="text" name="email" value="{{ email_text }}" pattern="[a-zA-Z0-9._%+-]+@newinti\.edu\.my$">
+
+                <label class="text-position">Department</label><br>
+                <select name="department" value="{{ department_text }}">
                     <option value="" disabled selected>Select Department</option>
                     <option value="SOC">SCHOOL OF COMPUTING(SOC)</option>
                     <option value="SOE">SCHOOL OF ENGINEERING(SOE)</option>
@@ -28,13 +35,17 @@
                     <option value="RD">RD</option>
                     <option value="SOHOS">SOHOS</option>
                 </select>
-                <input type="text" name="email" placeholder="Email Address" value="{{ email_text }}" pattern="[a-zA-Z0-9._%+-]+@newinti\.edu\.my$">
             </div>
     
             <div class="form-right">
-                <input type="tel" name="contact" placeholder="Contact Number" value="{{ contact_text }}" pattern="^01\d{8,9}$">
-                <input type="password" name="password1" placeholder="Password" value="{{ password1_text }}">
-                <input type="password" name="password2" placeholder="Confirm Password" value="{{ password2_text }}">
+                <label class="text-position">Contact Number</label><br>
+                <input type="tel" name="contact" value="{{ contact_text }}" pattern="^01\d{8,9}$">
+
+                <label class="text-position">Password</label><br>
+                <input type="password" name="password1" value="{{ password1_text }}">
+
+                <label class="text-position">Confirm Password</label><br>
+                <input type="password" name="password2" value="{{ password2_text }}">
             </div>
         </div>
 
