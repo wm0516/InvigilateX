@@ -28,6 +28,20 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Frame for register page*/
+.form-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Frame for register page to perform left and right*/
+.form-left, .form-right {
+    display: flex;
+    flex-direction: column;
+}
+
+
 
 /* Input section*/
 input[type="text"],
@@ -57,18 +71,6 @@ button {
     font-weight: normal;
 }
 
-/* Frame for register page*/
-.form-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-
-/* Frame for register page to perform left and right*/
-.form-left, .form-right {
-    display: flex;
-    flex-direction: column;
-}
 
 
 
