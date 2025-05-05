@@ -45,7 +45,7 @@ form {
 input[type="text"],
 input[type="password"], 
 input[type="email"], 
-input[type="tel"]
+input[type="tel"],
 select {
     width: 25vh;
     padding: 10px;
