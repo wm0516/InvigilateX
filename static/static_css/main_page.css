@@ -2,7 +2,7 @@
 .heading {
     background-image: url("../static_pic/INTI_LOGO.png");
     background-repeat: no-repeat;
-    background-position: left top;
+    background-position: center;
     height: 90px;
     width: 100%;
 }
@@ -35,7 +35,6 @@ input[type="password"],
 input[type="email"], 
 input[type="tel"] {
     width: 25vh;
-    padding: 10px;
     margin: 5% 0;
 }
 
