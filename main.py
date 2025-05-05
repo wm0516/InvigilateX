@@ -25,20 +25,17 @@ def login():
     return render_template('login_page.html', login_text=login_text, password_text=password_text)
 
 
-@app.route('/home')
-def home_page():
-    return render_template('home_page.html')
-
-@app.route('/forgotPassword')
-def forgot_password_page():
-    return render_template('forgotPassword_page.html')
-
-@app.route('/resetPassword')
-def reset_password_page():
-    return render_template('resetPassword_page.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    username = ""
+    userid = ""
+    department = ""
+    email = ""
+    contact = ""
+    password1 = ""
+    password2 = ""
+
     if request.method == 'POST':
         # Get data from form
         username = request.form['username']
@@ -66,6 +63,19 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
+
+@app.route('/home')
+def home_page():
+    return render_template('home_page.html')
+
+@app.route('/forgotPassword')
+def forgot_password_page():
+    return render_template('forgotPassword_page.html')
+
+@app.route('/resetPassword')
+def reset_password_page():
+    return render_template('resetPassword_page.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
