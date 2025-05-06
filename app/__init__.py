@@ -3,7 +3,15 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 
+# Initialize extensions
+db = SQLAlchemy()
+bcrypt = Bcrypt()
+mail = Mail()
+
+# Create the Flask app
 app = Flask(__name__)
+
+# Configure the app
 app.config['SECRET_KEY'] = '0efa50f2ad0a21e3fd7e7344d3e48380'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wmm:Pythonanywhere@wmm.mysql.pythonanywhere-services.com/wmm$InvigilateX_database'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -21,9 +29,10 @@ app.config['MAIL_USERNAME'] = 'minglw04@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jsco bvwc qpor fvku'
 app.config['MAIL_DEFAULT_SENDER'] = 'minglw04@gmail.com'
 
-db = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-mail = Mail(app)
+# Initialize extensions with app
+db.init_app(app)
+bcrypt.init_app(app)
+mail.init_app(app)
 
-# ✅ THIS is the missing piece
-from . import routes
+# Import routes at the bottom to avoid circular imports
+from app import routes
