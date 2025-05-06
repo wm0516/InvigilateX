@@ -29,13 +29,18 @@ app.config['MAIL_USERNAME'] = 'minglw04@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jsco bvwc qpor fvku'
 app.config['MAIL_DEFAULT_SENDER'] = 'minglw04@gmail.com'
 
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = True  # True in production (HTTPS)
-
 # Initialize extensions with app
 db.init_app(app)
 bcrypt.init_app(app)
 mail.init_app(app)
+
+# Test database connection
+with app.app_context():
+    try:
+        db.engine.connect()
+        print("Successfully connected to the database!")
+    except Exception as e:
+        print("Failed to connect to the database:", str(e))
 
 # Import routes at the bottom to avoid circular imports
 from app import routes
