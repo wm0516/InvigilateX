@@ -80,14 +80,16 @@ def forgot_password_page():
         if not forgot_email_text:
             error_message = "Field can't be empty."
         else:
-            reset_link = url_for('resetPassword_page', _external=True)
+            reset_link = url_for('reset_password_page', _external=True)
             msg = Message('Reset Your Password', recipients=[forgot_email_text])
             msg.body = f'Click the link to reset your password: {reset_link}'
             try:
                 mail.send(msg)
-                return f"<h3>Reset email sent to {forgot_email_text}!</h3><a href='/'>Back</a>"
+                flash(f"Reset email sent to {forgot_email_text}!")
             except Exception as e:
-                return f"<h3>Failed to send email. Error: {str(e)}</h3><a href='/'>Back</a>"
+                flash(f"Failed to send email. Error: {str(e)}")
+                # return f"<h3>Failed to send email. Error: {str(e)}</h3><a href='/'>Back</a>"
+
 
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
