@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template_string, render_template, redirect, url_for
 from flask_mail import Mail, Message
 
-app = Flask(__name__)
+app = Flask(__name__,template_folder='app')
 
 # Email configuration
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -45,13 +45,15 @@ def send_reset_email():
     except Exception as e:
         return f"<h3>Failed to send email. Error: {str(e)}</h3><a href='/'>Back</a>"
 
+
+
 @app.route('/reset_password_page', methods=['GET', 'POST'])
 def reset_password_page():
     if request.method == 'POST':
         new_password = request.form['new_password']
         # You can save the new password here (in DB, file, etc.)
         return "<h3>Password has been reset successfully!</h3><a href='/'>Back</a>"
-    return render_template('resetPassword_page.html')
+    return render_template('forgotPassword_page.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
