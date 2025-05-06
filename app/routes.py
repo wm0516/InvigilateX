@@ -80,7 +80,7 @@ def forgot_password_page():
         if not forgot_email_text:
             error_message = "Field can't be empty."
         else:
-            reset_link = url_for('reset_password_page', _external=True)
+            reset_link = url_for('resetPassword_page', _external=True)
             msg = Message('Reset Your Password', recipients=[forgot_email_text])
             msg.body = f'Click the link to reset your password: {reset_link}'
             try:
