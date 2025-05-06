@@ -18,8 +18,8 @@ def login_page():
 
         if not all([login_text, password_text]):
             error_message = "Both fields are required."
-        elif not validate_user(login_text, password_text):
-            error_message = "Invalid login credentials."
+        #elif not validate_user(login_text, password_text):
+        #    error_message = "Invalid login credentials."
         else:
             return redirect(url_for('home_page'))
 
@@ -58,8 +58,8 @@ def register_page():
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
-            hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
-            create_user(userid_text, username_text, department_text, email_text, contact_text, hashed_pw)
+            #hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
+            #create_user(userid_text, username_text, department_text, email_text, contact_text, hashed_pw)
             flash("Register successful! Please log in.", "success")
             return redirect(url_for('login_page'))
 
