@@ -26,19 +26,18 @@
                 <input type="text" name="email" value="{{ email_text }}"><br>
 
                 <label class="text-position">Department</label>
-                <select name="department">
-                    <option value="" disabled {% if not department_text %}selected{% endif %}>Select Department</option>
-                    <option value="SOC" {% if department_text = 'SOC' %}selected{% endif %}>SCHOOL OF COMPUTING(SOC)</option>
-                    <option value="SOE" {% if department_text = 'SOE' %}selected{% endif %}>SCHOOL OF ENGINEERING(SOE)</option>
-                    <option value="CEPS" {% if department_text = 'CEPS' %}selected{% endif %}>CEPS</option>
-                    <option value="CADP" {% if department_text = 'CADP' %}selected{% endif %}>CADP</option>
-                    <option value="SOBIZ" {% if department_text = 'SOBIZ' %}selected{% endif %}>SOBIZ</option>
-                    <option value="MPU" {% if department_text = 'MPU' %}selected{% endif %}>MPU</option>
-                    <option value="CAE" {% if department_text = 'CAE' %}selected{% endif %}>CAE</option>
-                    <option value="RD" {% if department_text = 'RD' %}selected{% endif %}>RD</option>
-                    <option value="SOHOS" {% if department_text = 'SOHOS' %}selected{% endif %}>SOHOS</option>
+                <select name="department" value="{{ department_text }}">
+                    <option value="" disabled selected>Select Department</option>
+                    <option value="SOC">SCHOOL OF COMPUTING(SOC)</option>
+                    <option value="SOE">SCHOOL OF ENGINEERING(SOE)</option>
+                    <option value="CEPS">CEPS</option>
+                    <option value="CADP">CADP</option>
+                    <option value="SOBIZ">SOBIZ</option>
+                    <option value="MPU">MPU</option>
+                    <option value="CAE">CAE</option>
+                    <option value="RD">RD</option>
+                    <option value="SOHOS">SOHOS</option>
                 </select>
-                
             </div>
     
             <div class="form-right">
