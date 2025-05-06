@@ -1,4 +1,4 @@
-import pymysql
+'''import pymysql
 
 def get_db_connection():
     return pymysql.connect(
@@ -7,3 +7,4 @@ def get_db_connection():
         password='Pythonanywhere',
         database='wmm$InvigilateX_database'
     )
+'''
