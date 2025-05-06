@@ -5,7 +5,7 @@ from flask_mail import Mail, Message
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '0efa50f2ad0a21e3fd7e7344d3e48380'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'wmm+InvigilateX_database://TomazHayden:roottoor@TomazHayden.wmm.pythonanywhere-services.com/TomazHayden$CourseXcel'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wmm:Pythonanywhere@wmm.mysql.pythonanywhere-services.com/wmm$InvigilateX_database'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
