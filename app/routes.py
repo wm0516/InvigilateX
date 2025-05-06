@@ -57,7 +57,7 @@ def register_page():
         else:
             #hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             #create_user(userid_text, username_text, department_text, email_text, contact_text, hashed_pw)
-            flash("Register successful! Please log in.", "success")
+            flash("Register successful! Log in with your registered email adress.", "success")
             return redirect(url_for('login_page'))
 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
@@ -79,17 +79,22 @@ def forgot_password_page():
 
         if not forgot_email_text:
             error_message = "Field can't be empty."
+        # change it to check with database
+        # elif not email_format(forgot_email_text):
+        #   error_message = "Wrong Email Address format"
         else:
             reset_link = url_for('reset_password_page', _external=True)
             msg = Message('Reset Your Password', recipients=[forgot_email_text])
             msg.body = f'Click the link to reset your password: {reset_link}'
             try:
                 mail.send(msg)
-                flash(f"Reset email sent to {forgot_email_text}!")
+                # Set the flash message
+                flash(f"Reset email sent to {forgot_email_text}!", "success")
+                return redirect(url_for('login_page'))
             except Exception as e:
+                # pass
                 flash(f"Failed to send email. Error: {str(e)}")
-                # return f"<h3>Failed to send email. Error: {str(e)}</h3><a href='/'>Back</a>"
-
+                return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
