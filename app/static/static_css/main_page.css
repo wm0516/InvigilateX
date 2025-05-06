@@ -1,0 +1,91 @@
+/* Heading pictures on top left page*/
+.heading {
+    background-image: url("../static_pic/INTI_LOGO.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 90px;
+    width: 100%;
+}
+
+/* Body handles background and centering */
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Frame form */
+form {
+    text-align: center;
+    display: center;
+    width: 55vh;
+    padding: 50px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Frame for register page*/
+.form-container {
+    display: flex;
+    justify-content: center;
+}
+
+/* Frame for register page to perform left and right*/
+.form-left, .form-right {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* Input section*/
+input,
+select {
+    width: 25vh;
+    padding: 10px;
+    margin: 1% 0;
+    box-sizing: border-box;  /* Ensure padding and border are included in the total width */
+    display: inline-block;  /* Align with the other form elements */
+}
+
+/* Button format*/
+button {
+    width: 25vh;
+    padding: 8px 16px;
+    margin-top: 25px;
+}
+
+/* For every click button frame*/
+.button-frame {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* To remove bold*/
+.span {
+    font-weight: normal;
+}
+
+/* Show those text position*/
+.text-position {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+}
+
+/* Alert frame*/
+.alert {
+    color: white;
+    background-color: red;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 15px;
+}
+
+
+
+
