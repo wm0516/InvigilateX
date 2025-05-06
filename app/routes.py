@@ -116,7 +116,7 @@ def reset_password_page():
             error_message = "Wrong Password format"
         else:
             # Update logic for user's password
-            flash("Password reset successful! Please log in.", "success")
+            flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('login_page'))
 
     return render_template('resetPassword_page.html', password_text_1=password_text_1,
