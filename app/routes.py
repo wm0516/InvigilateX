@@ -1,12 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash
 from flask_mail import Message
-from flask import current_app
-from . import db, bcrypt, mail
+from app import app, db, bcrypt, mail
 from .backend import *
 
-bp = Blueprint('main', __name__)
-
-@bp.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login_page():
     login_text = ''
     password_text = ''
@@ -27,7 +24,7 @@ def login_page():
                            password_text=password_text, error_message=error_message)
 
 
-@bp.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register_page():
     userid_text = ''
     username_text = ''
@@ -68,12 +65,12 @@ def register_page():
                            password2_text=password2_text, error_message=error_message)
 
 
-@bp.route('/home')
+@app.route('/home')
 def home_page():
     return render_template('home_page.html')
 
 
-@bp.route('/forgotPassword', methods=['GET', 'POST'])
+@app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
     forgot_email_text = ''
     error_message = None
@@ -95,7 +92,7 @@ def forgot_password_page():
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
-@bp.route('/resetPassword', methods=['GET', 'POST'])
+@app.route('/resetPassword', methods=['GET', 'POST'])
 def reset_password_page():
     password_text_1 = ''
     password_text_2 = ''
