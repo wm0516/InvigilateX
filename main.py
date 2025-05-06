@@ -1,5 +1,7 @@
 from flask import Flask, flash, render_template, request, redirect, url_for
 from backend import *
+from config import *
+
 
 app = Flask(__name__)
 
@@ -61,10 +63,10 @@ def register_page():
             # flash("Register successful! Please log in.", "success")
             return redirect(url_for('login_page'))
 
+    # Will not return department_text because it is a dropdown list 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
-                           department_text=department_text, email_text=email_text, contact_text=contact_text,
-                            password1_text=password1_text, password2_text=password2_text, error_message=error_message)
-
+                           email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
+                           password2_text=password2_text, error_message=error_message)
 
 
 
@@ -72,7 +74,6 @@ def register_page():
 @app.route('/home')
 def home_page():
     return render_template('home_page.html')
-
 
 
 @app.route('/forgotPassword', methods=['GET', 'POST'])  # Allow both GET and POST
@@ -86,6 +87,15 @@ def forgot_password_page():
             error_message = "Field can't be empty."
         # Direct show not found in database without the format
         else:
+            reset_link = url_for('reset_password_page', external=True)
+            msg = Message('Reset Your Password', recipients=[forgot_email_text])
+            msg.body = f'Click the link to reset your password: {reset_link}'
+            try:
+                mail.send(msg)
+                return f"<h3>Reset email sent to {forgot_email_text}!</h3><a href='/'>Back</a>"
+            except Exception as e:
+                return f"<h3>Failed to send email. Error: {str(e)}</h3><a href='/'>Back</a>"
+
             return redirect(url_for('reset_password_page'))  # Redirect to reset page after form submission
 
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
