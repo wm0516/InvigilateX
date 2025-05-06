@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Login_Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='static_css/main_page.css') }}">
+</head>
+
+<body>
+    <form method="POST">
+        <div class="heading"></div>
+        <br>
+        <h1>Login Here</h1><br>
+
+        <div class="form-container">
+            <div class="form-middle">
+                <label class="text-position">Email Address</label>
+                <input type="email" name="textbox" value="{{ login_text }}"><br><br>
+        
+                <label class="text-position">Password</label>
+                <input type="password" name="password" value="{{ password_text }}">
+
+                {% if error_message and request.method == 'POST' %}
+                <div class="alert">
+                    <strong>Error:</strong> {{ error_message }}
+                </div>
+                {% endif %}
+                        
+                <div class="button-frame">
+                    <button type="submit" name="login">Login</button>
+                    <br><br>
+                    <a href="{{ url_for('register_page') }}">Register</a>
+                    <br><br>
+                    <a href="{{ url_for('forgot_password_page') }}">Forgot Password</a>
+                </div>
+            </div>
+        </div>
+        
+
+    
+    </form>
+    
+</body>
+</html>
