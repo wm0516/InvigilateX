@@ -29,6 +29,9 @@ app.config['MAIL_USERNAME'] = 'minglw04@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jsco bvwc qpor fvku'
 app.config['MAIL_DEFAULT_SENDER'] = 'minglw04@gmail.com'
 
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = True  # True in production (HTTPS)
+
 # Initialize extensions with app
 db.init_app(app)
 bcrypt.init_app(app)
