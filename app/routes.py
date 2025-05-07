@@ -41,7 +41,7 @@ def register_page():
 
     if request.method == 'POST':
         userid_text = request.form.get('userid', '').strip()
-        username_text = request.form.get('username', '').strip().isupper
+        username_text = request.form.get('username', '').strip()
         department_text = request.form.get('department', '').strip()
         email_text = request.form.get('email', '').strip()
         contact_text = request.form.get('contact', '').strip()
@@ -77,7 +77,7 @@ def register_page():
             hashed_pw = generate_password_hash(password1_text)
             new_user = User(
                 userid=userid_text,
-                username=username_text,
+                username=username_text.upper,
                 department=department_text,
                 email=email_text,
                 contact=contact_text,
