@@ -5,6 +5,8 @@ from .backend import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import *
 
+
+# login page (done with checking email address and hash password)
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
     login_text = ''
@@ -31,7 +33,7 @@ def login_page():
 
 
 
-# register page (done)
+# register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
     userid_text = ''
@@ -109,11 +111,13 @@ def forgot_password_page():
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '')
 
+        # Check if a user with the given email exists
+        user = User.query.filter_by(email=forgot_email_text).first()
+
         if not forgot_email_text:
-            error_message = "Field can't be empty."
-        # change it to check with database
-        # elif not email_format(forgot_email_text):
-        #   error_message = "Wrong Email Address format"
+            error_message = "Email address are required."
+        elif not user:
+            error_message = "Invalid Email address."
         else:
             reset_link = url_for('reset_password_page', _external=True)
             msg = Message('Reset Your Password', recipients=[forgot_email_text])
