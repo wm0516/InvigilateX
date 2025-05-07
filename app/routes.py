@@ -4,9 +4,10 @@ from app import app, db, mail
 from .backend import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import *
+from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-
+bcrypt = Bcrypt()
 
 
 # login page (done with checking email address and hash password)
@@ -25,7 +26,7 @@ def login_page():
 
         if not login_text or not password_text:
             error_message = "Both fields are required."
-        elif not user or not check_password_hash(user.password, password_text):
+        elif not user or not bcrypt.check_password_hash(user.password, password_text):
             error_message = "Invalid Email address or password."
         else:
             # Successful login
@@ -82,14 +83,14 @@ def register_page():
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
-            hashed_pw = generate_password_hash(password1_text)
+            hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
-                userid=userid_text,
-                username=username_text.upper(),
-                department=department_text,
-                email=email_text,
-                contact=contact_text,
-                password=hashed_pw
+                userid = userid_text,
+                username = username_text.upper(),
+                department = department_text,
+                email = email_text,
+                contact = contact_text,
+                password = hashed_pw
             )
             db.session.add(new_user)
             db.session.commit()
@@ -130,15 +131,15 @@ def forgot_password_page():
                 msg = Message('InvigilateX - Password Reset Request', recipients=[forgot_email_text])
                 msg.body = f'''Hi,
 
-                    We received a request to reset your password for your InvigilateX account.
+                We received a request to reset your password for your InvigilateX account.
 
-                    To reset your password, please click the link below:
-                    {reset_link}
+                To reset your password, please click the link below:
+                {reset_link}
 
-                    If you did not request this change, please ignore this email.
+                If you did not request this change, please ignore this email.
 
-                    Thank you,
-                    The InvigilateX Team'''
+                Thank you,
+                The InvigilateX Team'''
                 try:
                     mail.send(msg)
                     # Set the flash message
@@ -175,10 +176,10 @@ def reset_password_page(token):
         elif not password_format(password_text_1):
             error_message = "Wrong password format."
         else:
-            hashed_pw = generate_password_hash(password_text_1)
+            hashed_pw = bcrypt.generate_password_hash(password_text_1).decode('utf-8')
             user = User.query.filter_by(email=email).first()
             if user:
-                user.password(hashed_pw)
+                user.password = hashed_pw
                 db.session.commit()
                 flash("Password reset successful! Log in with your new password.", "success")
                 return redirect(url_for('login_page'))
