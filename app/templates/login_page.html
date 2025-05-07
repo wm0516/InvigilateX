@@ -26,9 +26,11 @@
         <h1>Login Here</h1><br>
         
         <div class="form-container">
-            <label class="text-position">Email Address</label>
-            <input type="email" name="textbox" value="{{ login_text }}"><br><br>
-    
+            <div class="input-container">
+                <label class="text-position">Email Address</label>
+                <input type="email" name="textbox" value="{{ login_text }}"><br><br>
+            </div>
+
             <div class="password-container">
                 <label class="text-position">Password</label>
                 <input type="password" name="password" value="{{ password_text }}">
@@ -37,13 +39,12 @@
                 </button>
             </div>
             
-            <div>
-                {% if error_message and request.method == 'POST' %}
-                <div class="alert">
-                    <strong>Error:</strong> {{ error_message }}
-                </div>
-                {% endif %}
+            {% if error_message and request.method == 'POST' %}
+            <div class="alert">
+                <strong>Error:</strong> {{ error_message }}
             </div>
+            {% endif %}
+            
             
                 
             <!-- Include your JavaScript -->
