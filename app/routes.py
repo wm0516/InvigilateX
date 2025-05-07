@@ -2,6 +2,9 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_mail import Message
 from app import app, db, bcrypt, mail
 from .backend import *
+from werkzeug.security import generate_password_hash
+import mysql.connector
+
 
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
@@ -55,6 +58,27 @@ def register_page():
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
+# Hash password
+            hashed_pw = generate_password_hash(password1_text)
+            print(f"hashed_pw")
+
+            # Check if userid already exists
+            db.execute("SELECT userid FROM User WHERE userid = %s", (userid_text,))
+            if db.fetchone():
+                error_message = "UserID already exists. Please choose another."
+            else:
+                print(f"saving into database ing....")
+                # Insert into MySQL
+                insert_query = """
+                INSERT INTO User (userid, username, department, email, contact, password)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                db.execute(insert_query, (
+                    userid_text, username_text, department_text, email_text, contact_text, hashed_pw
+                ))
+                print(f"great congrat, save into database")
+                db.commit()
+
             #hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             #create_user(userid_text, username_text, department_text, email_text, contact_text, hashed_pw)
             flash("Register successful! Log in with your registered email adress.", "success")
