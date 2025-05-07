@@ -114,8 +114,6 @@ def forgot_password_page():
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '').strip()
 
-
-
         if not forgot_email_text:
             error_message = "Email address are required."
         else:
@@ -128,8 +126,19 @@ def forgot_password_page():
             else:
                 token = serializer.dumps(forgot_email_text, salt='password-reset-salt')
                 reset_link = url_for('reset_password_page', token=token, _external=True)
-                msg = Message('Reset Your Password', recipients=[forgot_email_text])
-                msg.body = f'Click the link to reset your password: {reset_link}'
+
+                msg = Message('InvigilateX - Password Reset Request', recipients=[forgot_email_text])
+                msg.body = f'''Hi,
+
+                    We received a request to reset your password for your InvigilateX account.
+
+                    To reset your password, please click the link below:
+                    {reset_link}
+
+                    If you did not request this change, please ignore this email.
+
+                    Thank you,
+                    The InvigilateX Team'''
                 try:
                     mail.send(msg)
                     # Set the flash message
@@ -166,9 +175,10 @@ def reset_password_page(token):
         elif not password_format(password_text_1):
             error_message = "Wrong password format."
         else:
+            hashed_pw = generate_password_hash(password_text_1)
             user = User.query.filter_by(email=email).first()
             if user:
-                user.set_password(password_text_1)
+                user.password(hashed_pw)
                 db.session.commit()
                 flash("Password reset successful! Log in with your new password.", "success")
                 return redirect(url_for('login_page'))
