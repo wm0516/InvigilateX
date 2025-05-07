@@ -24,6 +24,12 @@
         <div class="heading"></div>
         <br>
         <h1>Login Here</h1><br>
+        
+        {% if error_message and request.method == 'POST' %}
+        <div class="alert">
+            <strong>Error:</strong> {{ error_message }}
+        </div>
+        {% endif %}
 
         <div class="form-container">
             <div class="form-middle">
@@ -40,12 +46,6 @@
                 
                 <!-- Include your JavaScript -->
                 <script src="{{ url_for('static', filename='js/toggle_password.js') }}"></script>
-
-                {% if error_message and request.method == 'POST' %}
-                <div class="alert">
-                    <strong>Error:</strong> {{ error_message }}
-                </div>
-                {% endif %}
                         
                 <div class="button-frame">
                     <button type="submit" name="login">Login</button>
