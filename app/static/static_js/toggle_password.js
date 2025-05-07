@@ -1,25 +1,18 @@
-
-/* Toggle password function*/ 
-function togglePasswordVisibility() {
+document.addEventListener('DOMContentLoaded', function() {
     const toggleButtons = document.querySelectorAll('.toggle-password-btn');
 
     toggleButtons.forEach(button => {
-        button.addEventListener('click', function () {
+        button.addEventListener('click', function() {
             const input = this.parentElement.querySelector('input');
             const icon = this.querySelector('i');
 
-            if (input.getAttribute('type') === 'password') {
-                input.setAttribute('type', 'text');
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
-                input.setAttribute('type', 'password');
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         });
     });
-}
-window.onload = function() {
-    togglePasswordVisibility();
-};
+});
