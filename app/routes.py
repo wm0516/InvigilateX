@@ -27,6 +27,7 @@ def login_page():
                            password_text=password_text, error_message=error_message)
 
 
+# register page
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
     userid_text = ''
@@ -39,13 +40,20 @@ def register_page():
     error_message = None
 
     if request.method == 'POST':
-        userid_text = request.form.get('userid', '')
-        username_text = request.form.get('username', '')
-        department_text = request.form.get('department', '')
-        email_text = request.form.get('email', '')
-        contact_text = request.form.get('contact', '')
+        userid_text = request.form.get('userid', '').strip()
+        username_text = request.form.get('username', '').strip()
+        department_text = request.form.get('department', '').strip()
+        email_text = request.form.get('email', '').strip()
+        contact_text = request.form.get('contact', '').strip()
         password1_text = request.form.get('password1', '')
         password2_text = request.form.get('password2', '')
+
+        # Check if any user exists with same userid, email, or contact
+        user_exists = User.query.filter(
+            (User.userid == userid_text) | 
+            (User.email == email_text) | 
+            (User.contact == contact_text)
+        ).first()
 
         if not all([userid_text, username_text, department_text, email_text, contact_text]):
             error_message = "All fields are required."
@@ -57,6 +65,13 @@ def register_page():
             error_message = "Wrong Password format"
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
+        elif user_exists:
+            if user_exists.userid == userid_text:
+                error_message = "User ID already exists."
+            elif user_exists.email == email_text:
+                error_message = "Email address already registered."
+            elif user_exists.contact == contact_text:
+                error_message = "Contact number already registered."
         else:
             hashed_pw = generate_password_hash(password1_text)
             new_user = User(
@@ -69,41 +84,13 @@ def register_page():
             )
             db.session.add(new_user)
             db.session.commit()
-            print(f"Register successfully!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") 
             flash("Register successful! Log in with your registered email address.", "success")
-            return redirect(url_for('login_page'))
-
-
-
-            # Hash password
-            hashed_pw = generate_password_hash(password1_text)
-            print(f"hashed_pw")
-
-            # Check if userid already exists
-            db.execute("SELECT userid FROM User WHERE userid = %s", (userid_text,))
-            if db.fetchone():
-                error_message = "UserID already exists. Please choose another."
-            else:
-                print(f"saving into database ing....")
-                # Insert into MySQL
-                insert_query = """
-                INSERT INTO User (userid, username, department, email, contact, password)
-                VALUES (%s, %s, %s, %s, %s, %s)
-                """
-                db.execute(insert_query, (
-                    userid_text, username_text, department_text, email_text, contact_text, hashed_pw
-                ))
-                print(f"great congrat, save into database")
-                db.commit()
-
-            #hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
-            #create_user(userid_text, username_text, department_text, email_text, contact_text, hashed_pw)
-            flash("Register successful! Log in with your registered email adress.", "success")
             return redirect(url_for('login_page'))
 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
                            password2_text=password2_text, error_message=error_message)
+
 
 
 @app.route('/home')
@@ -133,7 +120,7 @@ def forgot_password_page():
                 flash(f"Reset email sent to {forgot_email_text}!", "success")
                 return redirect(url_for('login_page'))
             except Exception as e:
-                # pass
+                # if unable to send email
                 flash(f"Failed to send email. Error: {str(e)}")
                 return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
