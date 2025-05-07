@@ -3,6 +3,7 @@ from flask_mail import Message
 from app import app, db, mail
 from .backend import *
 from werkzeug.security import generate_password_hash
+from .database import *
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -57,6 +58,23 @@ def register_page():
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
+            hashed_pw = generate_password_hash(password1_text)
+            new_user = User(
+                userid=userid_text,
+                username=username_text,
+                department=department_text,
+                email=email_text,
+                contact=contact_text,
+                password=hashed_pw
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            print(f"Register successfully!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!") 
+            flash("Register successful! Log in with your registered email address.", "success")
+            return redirect(url_for('login_page'))
+
+
+
             # Hash password
             hashed_pw = generate_password_hash(password1_text)
             print(f"hashed_pw")
