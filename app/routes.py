@@ -2,9 +2,8 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_mail import Message
 from app import app, db, mail
 from .backend import *
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from .database import *
-
 
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
@@ -16,18 +15,23 @@ def login_page():
         login_text = request.form.get('textbox', '')
         password_text = request.form.get('password', '')
 
-        if not all([login_text, password_text]):
+        # Check if a user with the given email exists
+        user = User.query.filter_by(email=login_text).first()
+
+        if not login_text or not password_text:
             error_message = "Both fields are required."
-        #elif not validate_user(login_text, password_text):
-        #    error_message = "Invalid login credentials."
+        elif not user or not check_password_hash(user.password, password_text):
+            error_message = "Invalid Email address or password."
         else:
+            # Successful login
             return redirect(url_for('home_page'))
 
     return render_template('login_page.html', login_text=login_text,
                            password_text=password_text, error_message=error_message)
 
 
-# register page
+
+# register page (done)
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
     userid_text = ''
@@ -72,8 +76,6 @@ def register_page():
             error_message = "Wrong Password format"
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
-
-
         else:
             hashed_pw = generate_password_hash(password1_text)
             new_user = User(
