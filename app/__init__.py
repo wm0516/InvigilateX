@@ -3,38 +3,33 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 import pymysql
+from .database import *
 
 print("1")
-
-
-
-print("2")
 
 # Create the Flask application
 app = Flask(__name__)
 
 print("3")
 
-# Application Configuration
-app.config.update(
-    SECRET_KEY='0efa50f2ad0a21e3fd7e7344d3e48380',
-    SQLALCHEMY_DATABASE_URI='mysql+pymysql://wmm:Pythonanywhere@wmm.mysql.pythonanywhere-services.com:3306/wmm$InvigilateX_database?charset=utf8mb4',
-    SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SQLALCHEMY_ENGINE_OPTIONS={
-        'pool_recycle': 299,
-        'pool_pre_ping': True,
-        'pool_size': 5,
-        'max_overflow': 10,
-        'connect_args': {'connect_timeout': 10}
-    },
-    UPLOAD_FOLDER='uploads',
-    MAIL_SERVER='smtp.gmail.com',
-    MAIL_PORT=587,
-    MAIL_USE_TLS=True,
-    MAIL_USERNAME='minglw04@gmail.com',
-    MAIL_PASSWORD='jsco bvwc qpor fvku',
-    MAIL_DEFAULT_SENDER='minglw04@gmail.com'
-)
+app.config['SECRET_KEY'] = '0efa50f2ad0a21e3fd7e7344d3e48380'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wmm:Pythonanywhere@wmm.mysql.pythonanywhere-services.com:3306/wmm$InvigilateX_Database'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 200,
+    'pool_pre_ping': True,
+    'pool_size': 10,
+    'max_overflow': 5
+}
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'minglw04@gmail.com'
+app.config['MAIL_PASSWORD'] = 'jsco bvwc qpor fvku'
+app.config['MAIL_DEFAULT_SENDER'] = 'minglw04@gmail.com'
+
 
 print("4")
 # Initialize extensions
@@ -51,6 +46,7 @@ def test_database_connection():
             print("7")
             print("Hi database")
             conn = db.engine.connect()
+            print("connected")
             print("\033[92m" + "✓ Successfully connected to the database!" + "\033[0m")
             print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI'].split('@')[-1]}")
             conn.close()
