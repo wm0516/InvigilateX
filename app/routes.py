@@ -75,7 +75,7 @@ def register_page():
 
 
         else:
-            hashed_pw = generate_password_hash(password1_text)
+            hashed_pw = generate_password_hash(password1_text, method="pbkdf2_sha256")
             new_user = User(
                 userid=userid_text,
                 username=username_text.upper(),
