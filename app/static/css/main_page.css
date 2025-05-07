@@ -30,6 +30,16 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;   /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    height: 100%;          /* Take full height of the form */
+}
+
+
 /* Frame for register page*/
 /*.form-container {
     display: flex;
@@ -40,6 +50,14 @@ form {
 .form-left, .form-right {
     display: flex;
     flex-direction: column;
+}
+
+.input-container, .password-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align label and input */
+    position: relative;
+    margin-bottom: 15px;
 }
 
 /* Input section*/
@@ -87,11 +105,7 @@ button {
     margin-top: 15px;
 }
 
-.password-container, .input-container {
-    position: flex;
-    display: center;
-    width: 25vh; /* Ensure it takes full width */
-}
+
 
 .toggle-password-btn {
     position: absolute;
