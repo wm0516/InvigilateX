@@ -58,7 +58,7 @@ def register_page():
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
         else:
-# Hash password
+            # Hash password
             hashed_pw = generate_password_hash(password1_text)
             print(f"hashed_pw")
 
