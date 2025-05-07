@@ -49,6 +49,7 @@ select {
     margin: 1% 0;
     box-sizing: border-box;  /* Ensure padding and border are included in the total width */
     display: inline-block;  /* Align with the other form elements */
+    position: relative;
 }
 
 /* Button format*/
@@ -85,7 +86,7 @@ button {
     margin-top: 15px;
 }
 
-.password-container {
+.input-container {
     position: relative;
     display: inline-block;
     width: 25vh; /* Ensure it takes full width */
@@ -105,14 +106,3 @@ button {
     padding: 0;
     color: #555;
 }
-
-/*
-input,
-select {
-    width: 25vh;
-    padding: 10px;
-    margin: 1% 0;
-    box-sizing: border-box; 
-    display: inline-block;  
-}
-*/
