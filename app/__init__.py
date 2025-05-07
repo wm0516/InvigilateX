@@ -4,13 +4,16 @@ from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 import pymysql
 
-# Initialize extensions
-db = SQLAlchemy()
-bcrypt = Bcrypt()
-mail = Mail()
+print("1")
+
+
+
+print("2")
 
 # Create the Flask application
 app = Flask(__name__)
+
+print("3")
 
 # Application Configuration
 app.config.update(
@@ -33,15 +36,20 @@ app.config.update(
     MAIL_DEFAULT_SENDER='minglw04@gmail.com'
 )
 
-# Initialize extensions with the app
-db.init_app(app)
-bcrypt.init_app(app)
-mail.init_app(app)
+print("4")
+# Initialize extensions
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+mail = Mail(app)
+print("5")
 
 # Database Connection Test
 def test_database_connection():
+    print("6")
     with app.app_context():
         try:
+            print("7")
+            print("Hi database")
             conn = db.engine.connect()
             print("\033[92m" + "✓ Successfully connected to the database!" + "\033[0m")
             print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI'].split('@')[-1]}")
@@ -56,13 +64,23 @@ def test_database_connection():
             print("3. Ensure your account allows external connections")
             print("4. Try connecting from a different network")
             return False
+        
+print("8")
 
 # Test the connection when starting the app
-if __name__ == '__main__':
+# if __name__ == '__main__':
+with app.app_context():
+    print("9")
     if test_database_connection():
         print("Application is ready to run!")
     else:
         print("Fix database connection issues before proceeding")
 
+print("10. After __main__ check")  # Debug point 10
+
 # Import routes (must be after app creation to avoid circular imports)
-from app import routes
+try:
+    from app import routes
+    print("11. Routes imported successfully")  # Debug point 11
+except ImportError as e:
+    print(f"12. Failed to import routes: {e}")  
