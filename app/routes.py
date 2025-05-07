@@ -41,7 +41,7 @@ def register_page():
 
     if request.method == 'POST':
         userid_text = request.form.get('userid', '').strip()
-        username_text = request.form.get('username', '').strip()
+        username_text = request.form.get('username', '').strip().isupper
         department_text = request.form.get('department', '').strip()
         email_text = request.form.get('email', '').strip()
         contact_text = request.form.get('contact', '').strip()
