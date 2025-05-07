@@ -12,14 +12,6 @@ app = Flask(__name__)
 
 print("3")
 
-connection = pymysql.connect(
-    host="WM05.mysql.pythonanywhere-services.com",
-    user="WM05",
-    password="Pythonanywhere",
-    database="WM05$InvigilateX"
-)
-print("Connected successfully!")
-connection.close()
 
 
 # database password: Pythonanywhere 
