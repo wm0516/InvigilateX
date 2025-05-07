@@ -17,7 +17,7 @@ body {
 form {
     text-align: center;
     width: 55px;
-    padding: 40px;
+    padding: 50px;
     border: 2px solid #ccc;
     border-radius: 10px;
     background: #fff;
@@ -28,8 +28,6 @@ form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
-    margin-top: 20px;
 }
 
 .input-container, .password-container {
@@ -44,21 +42,28 @@ label {
     margin-bottom: 5px;
 }
 
-input {
-    width: 100%;
+input, select {
+    width: 25vh;
     padding: 10px;
+    margin: 1% 0;
     box-sizing: border-box;
 }
 
 button {
-    width: 100%;
-    padding: 10px;
-    margin-top: 20px;
+    width: 25vh;
+    padding: 8px 16px;
+    margin-top: 25px;
 }
 
 .button-frame {
+    text-align: center;
     margin-top: 30px;
+    padding: 10px;
 }
+
+.span {
+    font-weight: normal;
+}  
 
 .alert {
     color: white;
