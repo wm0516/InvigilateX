@@ -55,8 +55,13 @@ def register_page():
             (User.contact == contact_text)
         ).first()
 
-        if not all([userid_text, username_text, department_text, email_text, contact_text]):
-            error_message = "All fields are required."
+        if user_exists:
+            if user_exists.userid == userid_text:
+                error_message = "User ID already exists."
+            elif user_exists.email == email_text:
+                error_message = "Email address already registered."
+            elif user_exists.contact == contact_text:
+                error_message = "Contact number already registered."
         elif not email_format(email_text):
             error_message = "Wrong Email Address format"
         elif not contact_format(contact_text):
@@ -65,13 +70,9 @@ def register_page():
             error_message = "Wrong Password format"
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
-        elif user_exists:
-            if user_exists.userid == userid_text:
-                error_message = "User ID already exists."
-            elif user_exists.email == email_text:
-                error_message = "Email address already registered."
-            elif user_exists.contact == contact_text:
-                error_message = "Contact number already registered."
+        elif not all([userid_text, username_text, department_text, email_text, contact_text]):
+            error_message = "All fields are required."
+
         else:
             hashed_pw = generate_password_hash(password1_text)
             new_user = User(
