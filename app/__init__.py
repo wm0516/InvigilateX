@@ -12,8 +12,20 @@ app = Flask(__name__)
 
 print("3")
 
+connection = pymysql.connect(
+    host="WM05.mysql.pythonanywhere-services.com",
+    user="WM05",
+    password="Pythonanywhere",
+    database="WM05$InvigilateX"
+)
+print("Connected successfully!")
+connection.close()
+
+
+# database password: Pythonanywhere 
+
 app.config['SECRET_KEY'] = '0efa50f2ad0a21e3fd7e7344d3e48380'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wmm:Pythonanywhere@wmm.mysql.pythonanywhere-services.com:3306/wmm$InvigilateX_Database'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://WM05:Pythonanywhere@WM05.mysql.pythonanywhere-services.com/WM05$InvigilateX'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
