@@ -47,31 +47,3 @@ except ImportError as e:
     print(f"12. Failed to import routes: {e}")  
 
 
-
-    
-'''
-# Database Connection Test
-def test_database_connection():
-    print("6")
-    with app.app_context():
-        try:
-            print("7")
-            print("Hi database")
-            conn = db.engine.connect()
-            print("connected")
-            print("\033[92m" + "✓ Successfully connected to the database!" + "\033[0m")
-            print(f"Database: {app.config['SQLALCHEMY_DATABASE_URI'].split('@')[-1]}")
-            conn.close()
-            return True
-        except Exception as e:
-            print("\033[91m" + "✗ Database connection failed:" + "\033[0m")
-            print(f"Error: {str(e)}")
-            print("\nTroubleshooting Steps:")
-            print("1. Verify your PythonAnywhere MySQL credentials")
-            print("2. Check your IP is whitelisted in PythonAnywhere")
-            print("3. Ensure your account allows external connections")
-            print("4. Try connecting from a different network")
-            return False
-
-print("8")
-'''
