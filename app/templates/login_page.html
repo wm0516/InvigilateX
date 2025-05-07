@@ -27,9 +27,18 @@
                 <label class="text-position">Email Address</label>
                 <input type="email" name="textbox" value="{{ login_text }}"><br><br>
         
-                <label class="text-position">Password</label>
-                <input type="password" name="password" value="{{ password_text }}">
+                <div>
+                    <label class="text-position">Password</label>
+                    <input type="password" name="password" value="{{ password_text }}">
+                    <button class="toggle-password-btn">
+                        <i class="fa fa-eye"></i> <!-- Initial eye icon -->
+                    </button>
+                </div>
+            
+                <!-- Link to the external JS file -->
+                <script src="togglePassword.js"></script>
 
+                
                 {% if error_message and request.method == 'POST' %}
                 <div class="alert">
                     <strong>Error:</strong> {{ error_message }}
