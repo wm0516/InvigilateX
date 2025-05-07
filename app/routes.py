@@ -1,9 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_mail import Message
-from app import app, db, bcrypt, mail
+from app import app, db, mail
 from .backend import *
 from werkzeug.security import generate_password_hash
-import mysql.connector
 
 
 @app.route('/', methods=['GET', 'POST'])
