@@ -30,13 +30,39 @@
                 <div>
                     <label class="text-position">Password</label>
                     <input type="password" name="password" value="{{ password_text }}">
-                    <button type="button"class="toggle-password-eye">
-                        <i class="fas fa-eye"></i>
+                    <button class="toggle-password-btn">
+                        <i class="fa fa-eye"></i> <!-- Initial eye icon -->
                     </button>
                 </div>
             
-                <!-- Link to the external JS file -->
-                <script src="togglePassword.js"></script>
+                  <!-- Include your JavaScript -->
+                <script>
+                    /* Toggle password function*/ 
+                    function togglePasswordVisibility() {
+                        const toggleButtons = document.querySelectorAll('.toggle-password-btn');
+
+                        toggleButtons.forEach(button => {
+                            button.addEventListener('click', function () {
+                                const input = this.parentElement.querySelector('input');
+                                const icon = this.querySelector('i');
+
+                                if (input.getAttribute('type') === 'password') {
+                                    input.setAttribute('type', 'text');
+                                    icon.classList.remove('fa-eye');
+                                    icon.classList.add('fa-eye-slash');
+                                } else {
+                                    input.setAttribute('type', 'password');
+                                    icon.classList.remove('fa-eye-slash');
+                                    icon.classList.add('fa-eye');
+                                }
+                            });
+                        });
+                    }
+
+                    window.onload = function() {
+                        togglePasswordVisibility();
+                    };
+                </script>
 
 
                 {% if error_message and request.method == 'POST' %}
