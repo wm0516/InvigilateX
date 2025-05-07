@@ -16,7 +16,7 @@ body {
 
 form {
     text-align: center;
-    width: 55px;
+    width: 55vh;
     padding: 50px;
     border: 2px solid #ccc;
     border-radius: 10px;
@@ -34,10 +34,8 @@ form {
 }
 
 .input-container, .password-container {
-    width: 70%;
-    position: relative;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
 }
 
 label {
