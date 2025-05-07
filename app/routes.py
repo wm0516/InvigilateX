@@ -4,6 +4,9 @@ from app import app, db, mail
 from .backend import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import *
+from itsdangerous import URLSafeTimedSerializer
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
 
 
 # login page (done with checking email address and hash password)
@@ -112,14 +115,15 @@ def forgot_password_page():
         forgot_email_text = request.form.get('email', '')
 
         # Check if a user with the given email exists
-        user = User.query.filter_by(email=forgot_email_text).first()
+        user = User.query.filter_by(email=forgot_email_text).first() 
 
         if not forgot_email_text:
             error_message = "Email address are required."
         elif not user:
             error_message = "Invalid Email address."
         else:
-            reset_link = url_for('reset_password_page', _external=True)
+            token = serializer.dumps(forgot_email_text, salt='password-reset-salt')
+            reset_link = url_for('reset_password_page', token=token, _external=True)
             msg = Message('Reset Your Password', recipients=[forgot_email_text])
             msg.body = f'Click the link to reset your password: {reset_link}'
             try:
@@ -135,25 +139,36 @@ def forgot_password_page():
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
-@app.route('/resetPassword', methods=['GET', 'POST'])
-def reset_password_page():
+@app.route('/resetPassword/<token>', methods=['GET', 'POST'])
+def reset_password_page(token):
     password_text_1 = ''
     password_text_2 = ''
     error_message = None
+
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour
+    except Exception:
+        flash("The reset link is invalid or has expired.", "danger")
+        return redirect(url_for('forgot_password_page'))
+
     if request.method == 'POST':
         password_text_1 = request.form.get('password1', '')
         password_text_2 = request.form.get('password2', '')
 
-        if password_text_1 != password_text_2:
-            error_message = "Passwords do not match."
-        elif not all([password_text_1, password_text_2]):
+        if not all([password_text_1, password_text_2]):
             error_message = "All fields are required."
+        elif password_text_1 != password_text_2:
+            error_message = "Passwords do not match."
         elif not password_format(password_text_1):
-            error_message = "Wrong Password format"
+            error_message = "Wrong password format."
         else:
-            # Update logic for user's password
-            flash("Password reset successful! Log in with your new password.", "success")
-            return redirect(url_for('login_page'))
+            user = User.query.filter_by(email=email).first()
+            if user:
+                user.set_password(password_text_1)
+                db.session.commit()
+                flash("Password reset successful! Log in with your new password.", "success")
+                return redirect(url_for('login_page'))
+            else:
+                error_message = "User not found."
 
-    return render_template('resetPassword_page.html', password_text_1=password_text_1,
-                           password_text_2=password_text_2, error_message=error_message)
+    return render_template('resetPassword_page.html', error_message=error_message)
