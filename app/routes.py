@@ -112,29 +112,33 @@ def forgot_password_page():
     forgot_email_text = ''
     error_message = None
     if request.method == 'POST':
-        forgot_email_text = request.form.get('email', '')
+        forgot_email_text = request.form.get('email', '').strip()
 
-        # Check if a user with the given email exists
-        user = User.query.filter_by(email=forgot_email_text).first() 
+
 
         if not forgot_email_text:
             error_message = "Email address are required."
-        elif not user:
-            error_message = "Invalid Email address."
         else:
-            token = serializer.dumps(forgot_email_text, salt='password-reset-salt')
-            reset_link = url_for('reset_password_page', token=token, _external=True)
-            msg = Message('Reset Your Password', recipients=[forgot_email_text])
-            msg.body = f'Click the link to reset your password: {reset_link}'
-            try:
-                mail.send(msg)
-                # Set the flash message
-                flash(f"Reset email sent to {forgot_email_text}!", "success")
-                return redirect(url_for('login_page'))
-            except Exception as e:
-                # if unable to send email
-                flash(f"Failed to send email. Error: {str(e)}")
-                return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
+            # Check if a user with the given email exists
+            user = User.query.filter_by(email=forgot_email_text).first() 
+
+            if not user:
+                error_message = "Invalid Email address."
+            
+            else:
+                token = serializer.dumps(forgot_email_text, salt='password-reset-salt')
+                reset_link = url_for('reset_password_page', token=token, _external=True)
+                msg = Message('Reset Your Password', recipients=[forgot_email_text])
+                msg.body = f'Click the link to reset your password: {reset_link}'
+                try:
+                    mail.send(msg)
+                    # Set the flash message
+                    flash(f"Reset email sent to {forgot_email_text}!", "success")
+                    return redirect(url_for('login_page'))
+                except Exception as e:
+                    # if unable to send email
+                    flash(f"Failed to send email. Error: {str(e)}")
+                    return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
