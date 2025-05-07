@@ -21,6 +21,7 @@ body {
 form {
     text-align: center;
     justify-content: center;
+    align-items: center;
     display: center;
     width: 55vh;
     padding: 50px;
@@ -33,7 +34,6 @@ form {
 .form-container {
     display: flex;
     flex-direction: column;
-    align-items: center;   /* Center horizontally */
     justify-content: center; /* Center vertically */
 }
 
