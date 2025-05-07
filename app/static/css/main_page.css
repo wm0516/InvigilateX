@@ -20,7 +20,8 @@ body {
 /* Frame form */
 form {
     text-align: center;
-    display: center;
+    display: center flex;
+    justify-content: center;
     width: 55vh;
     padding: 50px;
     border: 2px solid #ccc;
@@ -31,8 +32,8 @@ form {
 
 /* Frame for register page*/
 .form-container {
-    display: flex;
-    justify-content: center;
+    /*display: flex;
+    justify-content: center;*/
 }
 
 /* Frame for register page to perform left and right*/
@@ -86,7 +87,7 @@ button {
     margin-top: 15px;
 }
 
-.input-container {
+.password-container {
     position: relative;
     display: inline-block;
     width: 25vh; /* Ensure it takes full width */
