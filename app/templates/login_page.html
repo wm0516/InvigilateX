@@ -30,13 +30,13 @@
                 <label class="text-position">Email Address</label>
                 <input type="email" name="textbox" value="{{ login_text }}"><br><br>
         
-                
-                <label class="text-position">Password</label>
-                <input type="password" name="password" value="{{ password_text }}">
-                <button type="button" class="toggle-password-btn">
-                    <i class="fas fa-eye"></i>
-                </button>
-               
+                <div class="password-container">
+                    <label class="text-position">Password</label>
+                    <input type="password" name="password" value="{{ password_text }}">
+                    <button type="button" class="toggle-password-btn">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 
                 {% if error_message and request.method == 'POST' %}
                 <div class="alert">
