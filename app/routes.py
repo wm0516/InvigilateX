@@ -9,7 +9,6 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-
 # login page (done with checking email address and hash password)
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
@@ -34,8 +33,6 @@ def login_page():
 
     return render_template('login_page.html', login_text=login_text,
                            password_text=password_text, error_message=error_message)
-
-
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
@@ -102,12 +99,7 @@ def register_page():
                            password2_text=password2_text, error_message=error_message)
 
 
-
-@app.route('/home')
-def home_page():
-    return render_template('home_page.html')
-
-
+# forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
     forgot_email_text = ''
@@ -153,6 +145,7 @@ def forgot_password_page():
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
+# reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
 def reset_password_page(token):
     password_text_1 = ''
@@ -187,3 +180,8 @@ def reset_password_page(token):
                 error_message = "User not found."
 
     return render_template('resetPassword_page.html', error_message=error_message)
+
+# home page (start with this!!!!!!!!!!!!!!)
+@app.route('/home')
+def home_page():
+    return render_template('home_page.html')
