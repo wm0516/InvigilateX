@@ -1,11 +1,10 @@
-'''import pymysql
+from app import db
 
-def get_db_connection():
-    return pymysql.connect(
-        host='wmm.mysql.pythonanywhere-services.com',
-        user='wmm',
-        password='Pythonanywhere',
-        database='wmm$InvigilateX_database'
-    )
-'''
-
+class User(db.Model):
+    __tablename__ = 'User'
+    userid = db.Column(db.String(50), primary_key=True)
+    username = db.Column(db.String(100))
+    department = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    contact = db.Column(db.String(20))
+    password = db.Column(db.String(255))
