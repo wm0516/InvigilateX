@@ -41,7 +41,6 @@ form {
     flex-direction: column;
 }
 
-
 /* Input section*/
 input,
 select {
@@ -89,7 +88,7 @@ button {
 .password-container {
     position: relative;
     display: inline-block;
-    width: 100%; /* Ensure it takes full width */
+    width: 25vh; /* Ensure it takes full width */
 }
 
 .toggle-password-btn {
@@ -106,3 +105,14 @@ button {
     padding: 0;
     color: #555;
 }
+
+/*
+input,
+select {
+    width: 25vh;
+    padding: 10px;
+    margin: 1% 0;
+    box-sizing: border-box; 
+    display: inline-block;  
+}
+*/
