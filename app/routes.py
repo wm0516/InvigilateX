@@ -155,7 +155,7 @@ def reset_password_page(token):
         password_text_1 = request.form.get('password1', '').strip()
         password_text_2 = request.form.get('password2', '').strip()
 
-        if not all([password_text_1, password_text_2]):
+        if not password_text_1 or not password_text_2:
             error_message = "All fields are required."
         elif password_text_1 != password_text_2:
             error_message = "Passwords do not match."
