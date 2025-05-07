@@ -36,9 +36,31 @@
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
-                        
+                
+                <script>
+                    window.onload = function() {
+                        const toggleButtons = document.querySelectorAll('.toggle-password-btn');
+
+                        toggleButtons.forEach(button => {
+                            button.addEventListener('click', function () {
+                                const input = this.parentElement.querySelector('input');
+                                const icon = this.querySelector('i');
+
+                                if (input.getAttribute('type') === 'password') {
+                                    input.setAttribute('type', 'text');
+                                    icon.classList.remove('fa-eye');
+                                    icon.classList.add('fa-eye-slash');
+                                } else {
+                                    input.setAttribute('type', 'password');
+                                    icon.classList.remove('fa-eye-slash');
+                                    icon.classList.add('fa-eye');
+                                }
+                            });
+                        });
+                    };
+                </script>
                 <!-- Include your JavaScript -->
-                <script src="{{ url_for('static', filename='js/toggle_password.js') }}"></script>
+                
 
                 {% if error_message and request.method == 'POST' %}
                 <div class="alert">
