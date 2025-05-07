@@ -70,7 +70,7 @@ button {
 /* To remove bold*/
 .span {
     font-weight: normal;
-}
+}   
 
 /* Show those text position*/
 .text-position {
@@ -89,8 +89,8 @@ button {
 }
 
 .password-container, .input-container {
-    position: relative;
-    display: inline-block;
+    position: flex;
+    display: center;
     width: 25vh; /* Ensure it takes full width */
 }
 
