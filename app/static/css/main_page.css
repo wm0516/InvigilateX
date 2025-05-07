@@ -86,7 +86,7 @@ button {
     margin-top: 15px;
 }
 
-.password-container {
+.input-container {
     position: relative;
     display: inline-block;
     width: 25vh; /* Ensure it takes full width */
