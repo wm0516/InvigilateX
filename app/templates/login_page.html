@@ -25,13 +25,12 @@
         <br>
         <h1>Login Here</h1><br>
         
-        {% if error_message and request.method == 'POST' %}
-        <div class="alert">
-            <strong>Error:</strong> {{ error_message }}
-        </div>
-        {% endif %}
-
         <div class="form-container">
+            {% if error_message and request.method == 'POST' %}
+            <div class="alert">
+                <strong>Error:</strong> {{ error_message }}
+            </div>
+            {% endif %}
             <div class="form-middle">
                 <label class="text-position">Email Address</label>
                 <input type="email" name="textbox" value="{{ login_text }}"><br><br>
