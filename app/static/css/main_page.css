@@ -30,20 +30,12 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
-
 .form-container {
     display: flex;
     flex-direction: column;
     align-items: center;   /* Center horizontally */
     justify-content: center; /* Center vertically */
 }
-
-
-/* Frame for register page*/
-/*.form-container {
-    display: flex;
-    justify-content: center;
-}*/
 
 /* Frame for register page to perform left and right*/
 .form-left, .form-right {
