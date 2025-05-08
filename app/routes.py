@@ -24,7 +24,8 @@ def login_page():
         if not valid:
             error_message = result
         else:
-            session['user_id'] = result.id  # Store the user ID in session
+            session['user_id'] = result  # Store the user ID in session
+            error_message = f"Debug: Logged in as user ID = {session['user_id']}"
             return redirect(url_for('home_page'))
 
     return render_template('login_page.html', login_text=login_text,
