@@ -18,7 +18,7 @@ def login_page():
 
     if request.method == 'POST':
         login_text = request.form.get('textbox', '').strip()
-        password_text = request.form.get('password', '')
+        password_text = request.form.get('password', '').strip()
 
         valid, result = check_login(login_text, password_text)
         if not valid:
@@ -49,8 +49,8 @@ def register_page():
         department_text = request.form.get('department', '').strip()
         email_text = request.form.get('email', '').strip()
         contact_text = request.form.get('contact', '').strip()
-        password1_text = request.form.get('password1', '')
-        password2_text = request.form.get('password2', '')
+        password1_text = request.form.get('password1', '').strip()
+        password2_text = request.form.get('password2', '').strip()
 
         # Check if any user exists with same userid, email, or contact
         user_exists = User.query.filter(
@@ -154,8 +154,8 @@ def reset_password_page(token):
         return redirect(url_for('forgot_password_page'))
 
     if request.method == 'POST':
-        password_text_1 = request.form.get('password1', '')
-        password_text_2 = request.form.get('password2', '')
+        password_text_1 = request.form.get('password1', '').strip()
+        password_text_2 = request.form.get('password2', '').strip()
 
         if not password_text_1 or not password_text_2:
             error_message = "All fields are required."
