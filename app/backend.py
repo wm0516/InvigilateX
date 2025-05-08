@@ -28,7 +28,7 @@ def contact_format(contact):
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
-
+# Check login validate
 def check_login(login_email, login_password):
     if not login_email or not login_password:
         return False, "Both fields are required."
