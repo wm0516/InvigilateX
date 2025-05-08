@@ -72,10 +72,10 @@ def register_page():
             error_message = "Wrong Email Address format"
         elif not contact_format(contact_text):
             error_message = "Wrong Contact Number format"
-        elif not password_format(password1_text):
-            error_message = "Wrong Password format"
         elif password1_text != password2_text:
             error_message = "Passwords do not match."
+        elif not password_format(password1_text):
+            error_message = "Wrong password format."
         else:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
