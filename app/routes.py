@@ -24,8 +24,8 @@ def login_page():
         if not valid:
             error_message = result
         else:
-            user = result
-            session['user_id'] = user.id  # Store the user ID in session
+            # user = result
+            # session['user_id'] = user.id  # Store the user ID in session
             return redirect(url_for('home_page'))
 
     return render_template('login_page.html', login_text=login_text,
@@ -183,8 +183,8 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    user_id = session.get('user_id')
-    g.user = User.query.get(user_id) if user_id else None
-    message = f"The userID is {user_id}"  # use f-string for formatting
-    return render_template('home_page.html', message=message)
+    # user_id = session.get('user_id')
+    # g.user = User.query.get(user_id) if user_id else None
+    # message = f"The userID is {user_id}"  # use f-string for formatting
+    return render_template('home_page.html')#, message=message)
 
