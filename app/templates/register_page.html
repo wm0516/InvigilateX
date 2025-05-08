@@ -47,19 +47,24 @@
 
                 <div class="password-container">
                     <label class="text-position">Password</label>
-                    <input type="password" name="password" value="{{ password1_text }}">
+                    <input type="password" name="password1" value="{{ password1_text }}">
                     <button type="button" class="toggle-password-btn">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div><br>
-
+    
                 <div class="password-container">
                     <label class="text-position"> Confirm Password</label>
-                    <input type="password" name="password" value="{{ password2_text }}">
+                    <input type="password" name="password2" value="{{ password2_text }}">
                     <button type="button" class="toggle-password-btn">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
+
+
+
+
+
                 <!-- Include your JavaScript -->
                 <script src="{{ url_for('static', filename='js/toggle_password.js') }}"></script>
             </div>
