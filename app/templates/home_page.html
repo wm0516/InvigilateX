@@ -10,7 +10,7 @@
         {% with messages = get_flashed_messages() %}  <!-- Remove with_categories -->
             {% if messages %}
                 {% for message in messages %}
-                    <div style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc; margin: 5px;">
+                    <div style="background: #f0f0f0; padding: 10px; border: 1px solid #000; margin: 5px;">
                         DEBUG: {{ message }}
                     </div>
                 {% endfor %}
