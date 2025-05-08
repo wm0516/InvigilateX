@@ -28,6 +28,7 @@ def contact_format(contact):
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
+
 def check_login(login_email, login_password):
     if not login_email or not login_password:
         return False, "Both fields are required."
@@ -37,7 +38,7 @@ def check_login(login_email, login_password):
     if not user or not bcrypt.check_password_hash(user.password, login_password):
         return False, "Invalid Email address or password."
 
-    return True, user
+    return True, user.userid
 
 # Staff Id format
 # Pending
