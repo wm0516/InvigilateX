@@ -181,6 +181,8 @@ def reset_password_page(token):
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
     user_id = session.get('user_id')  # Retrieve user ID from session
+    flash(f"Logged in as User ID: {user_id}")
+
     
     if user_id:
         message = f"Logged in as User ID: {user_id}"
