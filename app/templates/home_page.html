@@ -7,16 +7,16 @@
 
 <body>
     <form method="POST">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-            {{ message }}
-            </div>
-        {% endfor %}
-        {% endif %}
+        {% with messages = get_flashed_messages() %}  <!-- Remove with_categories -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc; margin: 5px;">
+                        DEBUG: {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
         {% endwith %}
-    </form>
+        </form>
 </body>
 
 </html>
