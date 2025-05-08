@@ -177,11 +177,14 @@ def reset_password_page(token):
 
     return render_template('resetPassword_page.html', error_message=error_message)
 
+
+
+
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    error_message = ''
     user_id = session.get('user_id')
     g.user = User.query.get(user_id) if user_id else None
-    error_message = "The userID is {user_id}"
-    return render_template('home_page.html', error_message=error_message)
+    message = f"The userID is {user_id}"  # use f-string for formatting
+    return render_template('home_page.html', message=message)
+
