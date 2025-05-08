@@ -1,6 +1,5 @@
-from flask import render_template, request, redirect, url_for, flash, session, g
-from flask_mail import Message
-from app import app, db, mail
+from flask import render_template, request, redirect, url_for, flash, session
+from app import app, db
 from .backend import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import *
@@ -113,38 +112,24 @@ def forgot_password_page():
 # reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
 def reset_password_page(token):
-    password_text_1 = ''
-    password_text_2 = ''
     error_message = None
-
-    try:
-        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour
-    except Exception:
-        flash("The reset link is invalid or has expired.", "danger")
-        return redirect(url_for('forgot_password_page'))
-
+    
     if request.method == 'POST':
         password_text_1 = request.form.get('password1', '').strip()
         password_text_2 = request.form.get('password2', '').strip()
-
-        if not password_text_1 or not password_text_2:
-            error_message = "All fields are required."
-        elif password_text_1 != password_text_2:
-            error_message = "Passwords do not match."
-        elif not password_format(password_text_1):
-            error_message = "Wrong password format."
-        else:
-            hashed_pw = bcrypt.generate_password_hash(password_text_1).decode('utf-8')
-            user = User.query.filter_by(email=email).first()
-            if user:
-                user.password = hashed_pw
-                db.session.commit()
-                flash("Password reset successful! Log in with your new password.", "success")
-                return redirect(url_for('login_page'))
-            else:
-                error_message = "User not found."
-
+        
+        user, error_message = check_resetPassword(
+            token, 
+            password_text_1, 
+            password_text_2
+        )
+        
+        if user and not error_message:
+            flash("Password reset successful! Log in with your new password.", "success")
+            return redirect(url_for('login_page'))
+    
     return render_template('resetPassword_page.html', error_message=error_message)
+
 
 
 # home page (start with this!!!!!!!!!!!!!!)
