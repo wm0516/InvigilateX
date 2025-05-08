@@ -12,6 +12,8 @@ bcrypt = Bcrypt()
 # login page (done with checking email address and hash password)
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
+    login_text = ''
+    password_text = ''
     error_message = None
 
     if request.method == 'POST':
@@ -25,13 +27,20 @@ def login_page():
             session['user_id'] = result  # Store the user ID in session
             return redirect(url_for('home_page'))
 
-    return render_template('login_page.html', login_text=login_text,
+    return render_template('login_page.html', login_text=login_text, 
                            password_text=password_text, error_message=error_message)
 
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    userid_text = ''
+    username_text = ''
+    department_text = ''
+    email_text = ''
+    contact_text = ' '
+    password1_text = ''
+    password2_text = ''
     error_message = None
 
     if request.method == 'POST':
@@ -81,6 +90,7 @@ def register_page():
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
+    forgot_email_text = ''
     error_message = None
 
     if request.method == 'POST':
@@ -103,6 +113,8 @@ def forgot_password_page():
 # reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
 def reset_password_page(token):
+    password_text_1 = ''
+    password_text_2 = ''
     error_message = None
 
     try:
