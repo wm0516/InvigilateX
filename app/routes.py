@@ -25,7 +25,6 @@ def login_page():
             error_message = result
         else:
             session['user_id'] = result  # Store the user ID in session
-            error_message = f"Debug: Logged in as user ID = {session['user_id']}"
             return redirect(url_for('home_page'))
 
     return render_template('login_page.html', login_text=login_text,
@@ -178,12 +177,10 @@ def reset_password_page(token):
     return render_template('resetPassword_page.html', error_message=error_message)
 
 
-
-
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    user_id = session.get('user_id')
+    user_id = session.get('user_id')  # Retrieve user ID from session
     
     if user_id:
         message = f"Logged in as User ID: {user_id}"
