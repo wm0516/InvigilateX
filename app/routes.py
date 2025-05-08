@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session, g
 from flask_mail import Message
 from app import app, db, mail
 from .backend import *
@@ -20,19 +20,17 @@ def login_page():
         login_text = request.form.get('textbox', '')
         password_text = request.form.get('password', '')
 
-        # Check if a user with the given email exists
-        user = User.query.filter_by(email=login_text).first()
-
-        if not login_text or not password_text:
-            error_message = "Both fields are required."
-        elif not user or not bcrypt.check_password_hash(user.password, password_text):
-            error_message = "Invalid Email address or password."
+        valid, result = check_login(login_text, password_text)
+        if not valid:
+            error_message = result
         else:
-            # Successful login
+            user = result
+            session['user_id'] = user.id  # Store the user ID in session
             return redirect(url_for('home_page'))
 
     return render_template('login_page.html', login_text=login_text,
                            password_text=password_text, error_message=error_message)
+
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
@@ -180,6 +178,10 @@ def reset_password_page(token):
     return render_template('resetPassword_page.html', error_message=error_message)
 
 # home page (start with this!!!!!!!!!!!!!!)
-@app.route('/home')
+@app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    return render_template('home_page.html')
+    error_message = ''
+    user_id = session.get('user_id')
+    g.user = User.query.get(user_id) if user_id else None
+    error_message = "The userID is {user_id}"
+    return render_template('home_page.html', error_message=error_message)
