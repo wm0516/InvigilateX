@@ -1,10 +1,9 @@
 import re
-from . import db
 from flask_bcrypt import Bcrypt
 from .database import *
 from flask import redirect, url_for, flash
 from flask_mail import Message
-from app import app, db, mail
+from app import app, mail
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -79,6 +78,30 @@ The InvigilateX Team'''
     except Exception as e:
         return False, f"Failed to send email. Error: {str(e)}"
 
+
+
+def check_resetPassword(token, resetPassword1, resetPassword2):
+    try:
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour
+    except Exception:
+        return None, "The reset link is invalid or has expired."
+
+    if not resetPassword1 or not resetPassword2:
+        return None, "All fields are required."
+    elif resetPassword1 != resetPassword2:
+        return None, "Passwords do not match."
+    elif not password_format(resetPassword1):
+        return None, "Wrong password format."
+    
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return None, "User not found."
+    
+    hashed_pw = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
+    user.password = hashed_pw
+    db.session.commit()
+    
+    return user, None
 
 
 
