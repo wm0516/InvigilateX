@@ -17,7 +17,7 @@ def login_page():
     error_message = None
 
     if request.method == 'POST':
-        login_text = request.form.get('textbox', '')
+        login_text = request.form.get('textbox', '').strip()
         password_text = request.form.get('password', '')
 
         valid, result = check_login(login_text, password_text)
