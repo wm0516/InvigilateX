@@ -98,7 +98,6 @@ def register_page():
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
                            password2_text=password2_text, error_message=error_message)
 
-
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
@@ -143,7 +142,6 @@ def forgot_password_page():
                     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
     return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
-
 
 # reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
