@@ -49,8 +49,8 @@ def register_page():
         department_text = request.form.get('department', '').strip()
         email_text = request.form.get('email', '').strip()
         contact_text = request.form.get('contact', '').strip()
-        password1_text = request.form.get('password1', '').strip()
-        password2_text = request.form.get('password2', '').strip()
+        password1_text = request.form.get('password1', '')
+        password2_text = request.form.get('password2', '')
 
         # Check if any user exists with same userid, email, or contact
         user_exists = User.query.filter(
@@ -154,8 +154,8 @@ def reset_password_page(token):
         return redirect(url_for('forgot_password_page'))
 
     if request.method == 'POST':
-        password_text_1 = request.form.get('password1', '').strip()
-        password_text_2 = request.form.get('password2', '').strip()
+        password_text_1 = request.form.get('password1', '')
+        password_text_2 = request.form.get('password2', '')
 
         if not password_text_1 or not password_text_2:
             error_message = "All fields are required."
@@ -180,10 +180,10 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
+    # Now able to get the user who is login
     user_id = session.get('user_id')  # Retrieve user ID from session
     flash(f"Logged in as User ID: {user_id}")
 
-    
     if user_id:
         message = f"Logged in as User ID: {user_id}"
     else:
