@@ -9,13 +9,12 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
+# Initialize error_message empty for all
+error_message = None
+
 # login page (done with checking email address and hash password)
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
-    login_text = ''
-    password_text = ''
-    error_message = None
-
     if request.method == 'POST':
         login_text = request.form.get('textbox', '').strip()
         password_text = request.form.get('password', '').strip()
@@ -34,15 +33,6 @@ def login_page():
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
-    userid_text = ''
-    username_text = ''
-    department_text = ''
-    email_text = ''
-    contact_text = ''
-    password1_text = ''
-    password2_text = ''
-    error_message = None
-
     if request.method == 'POST':
         userid_text = request.form.get('userid', '').strip()
         username_text = request.form.get('username', '').strip()
@@ -52,20 +42,11 @@ def register_page():
         password1_text = request.form.get('password1', '').strip()
         password2_text = request.form.get('password2', '').strip()
 
-        # Check if any user exists with same userid, email, or contact
-        user_exists = User.query.filter(
-            (User.userid == userid_text) | 
-            (User.email == email_text) | 
-            (User.contact == contact_text)
-        ).first()
-
-        if user_exists:
-            if user_exists.userid == userid_text:
-                error_message = "User ID already exists."
-            elif user_exists.email == email_text:
-                error_message = "Email address already registered."
-            elif user_exists.contact == contact_text:
-                error_message = "Contact number already registered."
+        # Use the new check_register function
+        is_valid, error_message = check_register(userid_text, email_text, contact_text)
+        
+        if not is_valid:
+            pass  # error_message is already set
         elif not all([userid_text, username_text, department_text, email_text, contact_text]):
             error_message = "All fields are required."
         elif not email_format(email_text):
@@ -95,50 +76,26 @@ def register_page():
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
                            password2_text=password2_text, error_message=error_message)
 
+
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
-    forgot_email_text = ''
-    error_message = None
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '').strip()
 
         if not forgot_email_text:
-            error_message = "Email address are required."
+            error_message = "Email address is required."
         else:
-            # Check if a user with the given email exists
-            user = User.query.filter_by(email=forgot_email_text).first() 
-
-            if not user:
-                error_message = "Invalid Email address."
-            
+            success, message = check_forgotPasswordEmail(forgot_email_text)
+            if not success:
+                error_message = message
             else:
-                token = serializer.dumps(forgot_email_text, salt='password-reset-salt')
-                reset_link = url_for('reset_password_page', token=token, _external=True)
+                return redirect(url_for('login_page'))
 
-                msg = Message('InvigilateX - Password Reset Request', recipients=[forgot_email_text])
-                msg.body = f'''Hi,
+    return render_template('forgotPassword_page.html', 
+                         forgot_email_text=forgot_email_text, 
+                         error_message=error_message)
 
-                We received a request to reset your password for your InvigilateX account.
-
-                To reset your password, please click the link below:
-                {reset_link}
-
-                If you did not request this change, please ignore this email.
-
-                Thank you,
-                The InvigilateX Team'''
-                try:
-                    mail.send(msg)
-                    # Set the flash message
-                    flash(f"Reset email sent to {forgot_email_text}!", "success")
-                    return redirect(url_for('login_page'))
-                except Exception as e:
-                    # if unable to send email
-                    flash(f"Failed to send email. Error: {str(e)}")
-                    return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
-
-    return render_template('forgotPassword_page.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 # reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
@@ -182,10 +139,10 @@ def reset_password_page(token):
 def home_page():
     # Now able to get the user who is login
     user_id = session.get('user_id')  # Retrieve user ID from session
-    flash(f"Logged in as User ID: {user_id}")
+    flash(f"(flash) Logged in as User ID: {user_id}")
 
     if user_id:
-        message = f"Logged in as User ID: {user_id}"
+        message = f"(message) Logged in as User ID: {user_id}"
     else:
         message = "Guest user - not logged in"
     
