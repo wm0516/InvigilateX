@@ -182,11 +182,10 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    email = session.get('email', 'Guest')
     user_id = session.get('user_id')
     
     if user_id:
-        message = f"Logged in as User ID: {user_id} (Email: {email})"
+        message = f"Logged in as User ID: {user_id}"
     else:
         message = "Guest user - not logged in"
     
