@@ -9,12 +9,11 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-# Initialize error_message empty for all
-error_message = None
-
 # login page (done with checking email address and hash password)
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
+    error_message = None
+
     if request.method == 'POST':
         login_text = request.form.get('textbox', '').strip()
         password_text = request.form.get('password', '').strip()
@@ -33,6 +32,8 @@ def login_page():
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
+    error_message = None
+
     if request.method == 'POST':
         userid_text = request.form.get('userid', '').strip()
         username_text = request.form.get('username', '').strip()
@@ -80,6 +81,8 @@ def register_page():
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
+    error_message = None
+
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '').strip()
 
@@ -100,8 +103,6 @@ def forgot_password_page():
 # reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
 def reset_password_page(token):
-    password_text_1 = ''
-    password_text_2 = ''
     error_message = None
 
     try:
@@ -137,6 +138,8 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
+    message = ''
+
     # Now able to get the user who is login
     user_id = session.get('user_id')  # Retrieve user ID from session
     flash(f"(flash) Logged in as User ID: {user_id}")
