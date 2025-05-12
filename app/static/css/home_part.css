@@ -9,8 +9,7 @@ body {
 }
 
 .heading {
-    background: url("../pic/INTI_LOGO.png") center no-repeat;
-    margin-left: 70px;
+    background: url("../pic/INTI_LOGO.png") left 70px no-repeat;
     height: 90px;
     width: 100%;
 }
