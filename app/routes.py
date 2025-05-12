@@ -135,6 +135,7 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
+    user_id = ''
     message = ''
 
     # Now able to get the user who is login
@@ -146,4 +147,4 @@ def home_page():
     else:
         message = "Guest user - not logged in"
     
-    return render_template('home_page.html', message=message)
+    return render_template('home_page.html', user_id = user_id, message=message)
