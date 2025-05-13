@@ -47,3 +47,7 @@ form {
     text-align: left;
     width: 20%;
 }
+
+.display_name {
+    width: 60%
+}
