@@ -1,7 +1,8 @@
 from flask import render_template, request, redirect, url_for, flash, session
 from app import app, db
 from .backend import *
-from werkzeug.security import generate_password_hash, check_password_hash
+from .database import *
+# from werkzeug.security import generate_password_hash, check_password_hash
 from .database import *
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
@@ -78,7 +79,7 @@ def register_page():
             )
             db.session.add(new_user)
             db.session.commit()
-            flash("Register successful! Log in with your registered email address.", "success")
+            flash("{userid}Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login_page'))
 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
