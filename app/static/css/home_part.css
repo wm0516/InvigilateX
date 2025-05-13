@@ -37,10 +37,13 @@ form {
 
 .user-details {
     font-weight: normal;
+    font-size: large;
     text-align: left;
+    margin-right: 10px;
 }
 
 .logout-btn {
     width: 15vh;
-    margin: 30px;
+    margin: 10px;
+    padding: 10px;
 }
