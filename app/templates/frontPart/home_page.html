@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_part.css') }}">
+</head>
+<body>
+    <form method="POST">
+        <div class= "header-container">
+            <div class="heading"></div>
+            <div class="user-info">
+                <div class="user-details">
+                    {{user_name}} <br>
+                    {{user_id}} <br>
+                    {{user_department}}
+                </div>
+                <button class="logout-btn" type="button">Logout</button>
+            </div>
+        </div>
+        
+        <br>
+        <h1 style="text-align: center;">Welcome to Exam Invigilation Management System</h1>
+        <br>
+
+        <div class="menu-container">
+        <div class="menu-grid">
+            <!-- Row 1 First Fesatures to upload merge schedule files--> 
+            <div class="menu-section">
+                <h2>Upload File</h2>
+                <ul>
+                    <li>Upload File</li>
+                    <li>View Previous File</li>
+                    <li>Download File in PDF</li>
+                </ul>
+            </div>
+
+            <!-- Row 1 Second Fesatures to input exam details--> 
+            <div class="menu-section">
+                <h2>Input Exam Details</h2>
+                <ul>
+                    <li>Add New Exam</li>
+                    <li>Edit/Delete Existing Exam</li>
+                    <li>Download All in Excel</li>
+                </ul>
+            </div>
+
+            <!-- Row 2 First auto generated scdehule-->
+            <div class="menu-section">
+                <h2>Generate Exam Schedule</h2>
+                <ul>
+                    <li>Generate Schedule</li>
+                    <li>View Current Schedule</li>
+                    <li>Email out this Schedule</li>
+                    <li>Download Schedule</li>
+                </ul>
+            </div>
+
+            <!-- Row 2 Second on managing lecturers-->
+            <div class="menu-section">
+                <h2>Settings</h2>
+                <ul>
+                    <li>View All Lecturers</li>
+                    <li>Disable a Lecturer</li>
+                    <li>View All Dean</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
