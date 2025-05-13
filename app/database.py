@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 # db.Time -> time format
 # db.Integer -> number
 
-class User(db.Model):
+'''class User(db.Model):
     __tablename__ = 'User'
     # using the mapped[str] to set the variables
     # Else if not using in this way, need a long code to perform this logic
@@ -22,7 +22,18 @@ class User(db.Model):
         self.department = department
         self.email = email
         self.contact = contact
-        self.password = password
+        self.password = password'''
+
+
+class User(db.Model):
+    __tablename__ = 'User'
+
+    userid = db.Column(db.String(50), primary_key=True)
+    username = db.Column(db.String(100))
+    department = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    contact = db.Column(db.Integer)
+    password = db.Column(db.String(255))
 
 
 class Exam(db.Model):
