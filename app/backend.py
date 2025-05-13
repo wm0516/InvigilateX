@@ -20,6 +20,9 @@ def contact_format(contact):
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
+# Staff Id format
+# Pending
+
 # Check login validate
 def check_login(loginEmail, loginPassword):
     if not loginEmail or not loginPassword:
@@ -78,8 +81,7 @@ The InvigilateX Team'''
     except Exception as e:
         return False, f"Failed to send email. Error: {str(e)}"
 
-
-
+# Check the both password and update the latest password based on the token (that user)
 def check_resetPassword(token, resetPassword1, resetPassword2):
     try:
         email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour
@@ -110,8 +112,5 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 
 
 
-
-# Staff Id format
-# Pending
 
 
