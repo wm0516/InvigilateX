@@ -135,13 +135,21 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    user_id = ''
+    # Retrieve user ID from session
+    user_id = session.get('user_id')
     message = ''
+    user = User.query.get(user_id)
 
-    # Now able to get the user who is login
-    user_id = session.get('user_id')  # Retrieve user ID from session
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            message = f"(message) Logged in as {user.username} (User ID: {user_id})"
+        else:
+            message = f"(message) User ID {user_id} not found"
+
     # user_name = User.query.filter_by(user_id).first()
-    flash(f"(flash) Logged in as User ID: {user_id}")
+    # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
 
     if user_id:
         message = f"(message) Logged in as User ID: {user_id}"
