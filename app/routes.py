@@ -77,7 +77,7 @@ def register_page():
             )
             db.session.add(new_user)
             db.session.commit()
-            flash(f"User {new_user.username} Register successful! Log in with your registered email address.", "success")
+            flash(f"Register successful! Log in with your registered email address.", "success")
             # flash("{new_user}Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login_page'))
 
