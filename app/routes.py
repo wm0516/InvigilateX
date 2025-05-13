@@ -160,7 +160,7 @@ def logout():
     # Redirect to login page
     return redirect(url_for('login_page'))  # Make sure you have a 'login_page' route
 
-@app.route('/home/upload')
+@app.route('/home/uploadFile')
 def upload_file():
     user_id = session.get('user_id')
     user = User.query.get(user_id)
