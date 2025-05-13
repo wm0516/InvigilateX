@@ -32,7 +32,6 @@ form {
     display: flex;
     justify-content: flex-end; /* aligns children to the right */
     align-items: center;
-    width: 60%;
     border: 2px solid #ccc;
     border-radius: 10px;
     background: #fff;
@@ -44,6 +43,7 @@ form {
     font-size: large;
     text-align: left;
     margin-right: 10px;
+    margin-left: 15px;
 }
 
 .logout-btn {
@@ -65,10 +65,11 @@ form {
 }
 
 .menu-section {
-    background-color: white;
-    border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .submenu ul {
