@@ -9,8 +9,8 @@ body {
 }
 
 .heading {
-    background: url("../pic/INTI_LOGO.png") left 70px no-repeat;
-    height: 90px;
+    background: url("../pic/INTI_LOGO.png") left no-repeat;
+    height: 100px;
     width: 100%;
 }
 
@@ -24,4 +24,11 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     justify-content: center;
     display: center;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
 }
