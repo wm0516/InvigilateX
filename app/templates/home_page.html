@@ -7,16 +7,6 @@
 
 <body>
     <form method="POST">
-        {% with messages = get_flashed_messages() %}  <!-- Remove with_categories -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div style="background: #f0f0f0; padding: 10px; border: 1px solid #000; margin: 5px;">
-                        DEBUG: {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-
         <div class="flex-container">
             <div class="heading"></div>
             
