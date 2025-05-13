@@ -14,6 +14,15 @@ class User(db.Model):
     contact = db.Column(db.Integer(20))
     password = db.Column(db.String(255))
 
+    def __init__(self, userid: str, username: str, department: str, email: str, contact: str, password: str):
+        self.userid = userid
+        self.username = username
+        self.department = department
+        self.email = email
+        self.contact = contact
+        self.password = password
+
+
 class Exam(db.Model):
     __tablename__ = 'Exam'
     examCourseCode = db.Column(db.String(50), primary_key=True)
