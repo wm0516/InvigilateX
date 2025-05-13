@@ -152,12 +152,11 @@ def home_page():
             user_name = user.username
             user_department = user.department   
             flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-            message = f"(message) Logged in as {user.username} (User ID: {user_id})"
         else:
-            message = f"(message) User ID {user_id} not found"
+            pass
 
     # user_name = User.query.filter_by(user_id).first()
     # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
 
     
-    return render_template('home_page.html', user_id = user_id, user_name=user_name, user_department=user_department, message=message)
+    return render_template('home_page.html', user_id = user_id, user_name=user_name, user_department=user_department)
