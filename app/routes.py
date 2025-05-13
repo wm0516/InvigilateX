@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session
 from app import app, db
-from backend import *
-from database import *
+from .backend import *
+from .database import *
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -75,7 +75,7 @@ def register_page():
                 contact = contact_text,
                 password = hashed_pw
             )
-            
+
             db.session.add(new_user)
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.", "success")
