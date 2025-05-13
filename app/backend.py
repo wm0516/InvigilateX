@@ -1,7 +1,7 @@
 import re
 from flask_bcrypt import Bcrypt
 from .database import *
-from flask import redirect, url_for, flash
+from flask import url_for, flash
 from flask_mail import Message
 from app import app, mail
 from itsdangerous import URLSafeTimedSerializer
