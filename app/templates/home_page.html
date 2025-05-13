@@ -19,12 +19,15 @@
 
 
         <div class="heading">
-            <h1>WELCOME BACK {{user_name}}</h1><br>
+            {% if user_name %}
+                <h1>WELCOME BACK, {{ user_name }}!</h1>
+            {% else %}
+                <h1>WELCOME, GUEST!</h1>
+                <p>Please <a href="/login">log in</a> to access your account</p>
+            {% endif %}
         </div>
-        <br>
-        
 
-        
+            
 
         </form>
 </body>
