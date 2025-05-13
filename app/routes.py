@@ -68,8 +68,7 @@ def register_page():
         else:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
-                # userid = userid_text,
-                userid = 'as',
+                userid = userid_text,
                 username = username_text.upper(),
                 department = department_text,
                 email = email_text,
@@ -144,12 +143,14 @@ def home_page():
     message = ''
     user = User.query.get(user_id)
     user_name = ''
+    user_department = ''
 
     if user_id:
         # Query the user from the database
         user = User.query.get(user_id)
         if user:
             user_name = user.username
+            user_department = user.department   
             flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
             message = f"(message) Logged in as {user.username} (User ID: {user_id})"
         else:
@@ -159,4 +160,4 @@ def home_page():
     # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
 
     
-    return render_template('home_page.html', user_id = user_id, user_name=user_name, message=message)
+    return render_template('home_page.html', user_id = user_id, user_name=user_name, user_department=user_department, message=message)
