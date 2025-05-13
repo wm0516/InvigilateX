@@ -131,7 +131,6 @@ def reset_password_page(token):
     return render_template('frontPart/resetPassword_page.html', error_message=error_message)
 
 
-
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
@@ -155,4 +154,4 @@ def home_page():
     # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
 
     
-    return render_template('frontPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department)
+    return render_template('mainPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department)
