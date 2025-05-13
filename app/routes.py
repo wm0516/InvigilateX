@@ -139,11 +139,13 @@ def home_page():
     user_id = session.get('user_id')
     message = ''
     user = User.query.get(user_id)
+    user_name = ''
 
     if user_id:
         # Query the user from the database
         user = User.query.get(user_id)
         if user:
+            user_name = user.username
             flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
             message = f"(message) Logged in as {user.username} (User ID: {user_id})"
         else:
@@ -153,4 +155,4 @@ def home_page():
     # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
 
     
-    return render_template('home_page.html', user_id = user_id, message=message)
+    return render_template('home_page.html', user_id = user_id, user_name=user_name, message=message)
