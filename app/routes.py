@@ -144,6 +144,7 @@ def home_page():
         # Query the user from the database
         user = User.query.get(user_id)
         if user:
+            flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
             message = f"(message) Logged in as {user.username} (User ID: {user_id})"
         else:
             message = f"(message) User ID {user_id} not found"
@@ -151,9 +152,5 @@ def home_page():
     # user_name = User.query.filter_by(user_id).first()
     # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
 
-    if user_id:
-        message = f"(message) Logged in as User ID: {user_id}"
-    else:
-        message = "Guest user - not logged in"
     
     return render_template('home_page.html', user_id = user_id, message=message)
