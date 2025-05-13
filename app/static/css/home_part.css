@@ -1,29 +1,20 @@
 body {
     margin: 0;
     padding: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
     background-color: #f5f5f5;
 }
 
-.heading {
-    background: url("../pic/INTI_LOGO.png") left no-repeat;
-    height: 100px;
-    width: 40%;
-}
-
 form {
-    text-align: center;
     width: 130vh;
     padding: 50px;
     border: 2px solid #ccc;
     border-radius: 10px;
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    justify-content: center;
-    display: center;
+    text-align: center;
 }
 
 .flex-container {
@@ -33,21 +24,25 @@ form {
     padding: 20px;
 }
 
-.button-logout {
-    width: 15vh;
-    margin: 30px;
+.heading {
+    background: url("../pic/INTI_LOGO.png") left no-repeat;
+    height: 100px;
+    width: 40%;
 }
 
-.span {
-    font-weight: normal;
-}  
-
-.menu_display_name {
+.user-info {
     display: flex;
-    text-align: left;
-    width: 20%;
+    align-items: center;
+    gap: 30px;
+    width: 60%;
 }
 
-.display_name {
-    width: 60%
+.user-details {
+    font-weight: normal;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.logout-btn {
+    width: 15vh;
 }
