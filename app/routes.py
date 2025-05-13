@@ -76,7 +76,6 @@ def register_page():
                 password = hashed_pw
             )
             
-
             db.session.add(new_user)
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.")
