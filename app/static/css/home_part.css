@@ -14,14 +14,12 @@ form {
     border-radius: 10px;
     background: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    text-align: center;
 }
 
-.flex-container {
+.header-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
+    justify-content: space-between; /* pushes heading left and user-info right */
+    width: 100%;
 }
 
 .heading {
@@ -32,17 +30,18 @@ form {
 
 .user-info {
     display: flex;
+    justify-content: flex-end; /* aligns children to the right */
     align-items: center;
-    gap: 30px;
+    gap: 30px; /* space between user-details and logout button */
     width: 60%;
 }
 
 .user-details {
     font-weight: normal;
-    text-align: left;
-    flex-grow: 1;
+    text-align: right; /* aligns text to right */
 }
 
 .logout-btn {
     width: 15vh;
+    margin: 30px;
 }
