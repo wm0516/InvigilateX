@@ -32,13 +32,12 @@ form {
     display: flex;
     justify-content: flex-end; /* aligns children to the right */
     align-items: center;
-    gap: 30px; /* space between user-details and logout button */
     width: 60%;
 }
 
 .user-details {
     font-weight: normal;
-    text-align: right; /* aligns text to right */
+    text-align: left;
 }
 
 .logout-btn {
