@@ -152,6 +152,8 @@ def home_page():
 
     # user_name = User.query.filter_by(user_id).first()
     # flash(f"(flash) Logged in as User ID: {user_id}, User Name: {user.username}" )
+    return render_template('frontPart/login_page.html')
+
 
     
     return render_template('mainPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department)
