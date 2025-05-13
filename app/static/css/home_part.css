@@ -19,8 +19,8 @@ form {
 .header-container {
     display: flex;
     justify-content: space-between;
-    width: 90%;
-    margin: 50px;
+    margin-left: 100px;
+    margin-right: 100px;
 }
 
 .heading {
