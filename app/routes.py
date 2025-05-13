@@ -75,6 +75,7 @@ def register_page():
                 contact = contact_text,
                 password = hashed_pw
             )
+            
             db.session.add(new_user)
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.", "success")
