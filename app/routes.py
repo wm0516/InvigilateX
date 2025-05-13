@@ -68,8 +68,8 @@ def register_page():
         else:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
-                userid = '',
-                userid = userid_text,
+                # userid = userid_text,
+                userid = 'as',
                 username = username_text.upper(),
                 department = department_text,
                 email = email_text,
