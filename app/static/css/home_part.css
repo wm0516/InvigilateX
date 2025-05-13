@@ -11,7 +11,7 @@ body {
 .heading {
     background: url("../pic/INTI_LOGO.png") left no-repeat;
     height: 100px;
-    width: 100%;
+    width: 40%;
 }
 
 form {
@@ -31,4 +31,10 @@ form {
     justify-content: space-between;
     align-items: center;
     padding: 20px;
+}
+
+button {
+    width: 10vh;
+    padding: 8px 16px;
+    margin-top: 25px;
 }
