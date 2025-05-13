@@ -1,29 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home_Page</title>
+    <title>Home Page</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home_part.css') }}">
 </head>
-
 <body>
     <form method="POST">
         <div class="flex-container">
             <div class="heading"></div>
-            
-            <div class="menu_display_name">
-                <div class="display_name ">
-                    <h4 class="span">
-                        {{user_name}} <br>
-                        {{user_id}} <br>
-                        {{user_department}}
-                    </h4>
-                </div>
-                
-                 <button class="button-logout" type="button">Logout</button>
+            <div class="user-info">
+                <h4 class="user-details">
+                    {{user_name}} <br>
+                    {{user_id}} <br>
+                    {{user_department}}
+                </h4>
+                <button class="logout-btn" type="button">Logout</button>
             </div>
         </div>
-
-        </form>
+    </form>
 </body>
-
 </html>
