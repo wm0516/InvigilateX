@@ -1,11 +1,13 @@
 body {
     margin: 0;
-    padding: 0;
+    padding: 20;
     min-height: 100vh;
     display: grid;
     place-items: center;
     background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
 }
+
 
 form {
     width: 60%;
@@ -53,12 +55,7 @@ form {
     padding: 10px;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    margin: 0;
-    padding: 20px;
-}
+
 
 .menu-container {
     max-width: 1000px;
@@ -100,17 +97,3 @@ body {
     border-bottom: none;
 }
 
-.menu-section li strong {
-    color: #2980b9;
-}
-
-.submenu ul {
-    padding-left: 20px;
-    margin-top: 5px;
-}
-
-.submenu li {
-    border-bottom: none;
-    font-size: 0.9em;
-    color: #7f8c8d;
-}
