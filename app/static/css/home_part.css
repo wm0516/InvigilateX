@@ -42,3 +42,7 @@ button {
 .span {
     font-weight: normal;
 }  
+
+.menu_display_name {
+    text-align: left;
+}
