@@ -53,7 +53,8 @@ form {
     padding: 10px;
     text-align: center;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    background-color: #ff0000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .menu-container {
