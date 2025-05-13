@@ -8,7 +8,6 @@ body {
     font-family: Arial, sans-serif;
 }
 
-
 form {
     width: 60%;
     padding: 50px;
@@ -95,3 +94,18 @@ form {
     border-bottom: none;
 }
 
+.submenu ul {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.submenu li {
+    border-bottom: none;
+    font-size: 0.9em;
+    color: #7f8c8d;
+}
+
+.text-style {
+    font-weight: normal;
+    text-decoration: none;
+}
