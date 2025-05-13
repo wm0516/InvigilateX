@@ -140,7 +140,6 @@ def reset_password_page(token):
 def home_page():
     # Retrieve user ID from session
     user_id = session.get('user_id')
-    message = ''
     user = User.query.get(user_id)
     user_name = ''
     user_department = ''
@@ -151,7 +150,7 @@ def home_page():
         if user:
             user_name = user.username
             user_department = user.department   
-            flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
         else:
             pass
 
