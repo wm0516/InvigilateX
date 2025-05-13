@@ -68,6 +68,7 @@ def register_page():
         else:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
+                userid = '',
                 userid = userid_text,
                 username = username_text.upper(),
                 department = department_text,
@@ -75,9 +76,11 @@ def register_page():
                 contact = contact_text,
                 password = hashed_pw
             )
+            
 
             db.session.add(new_user)
             db.session.commit()
+            flash(f"Register successful! Log in with your registered email address.")
             flash(f"Register successful! Log in with your registered email address.", "success")
             # flash("{new_user}Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login_page'))
