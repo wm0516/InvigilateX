@@ -11,7 +11,7 @@ class User(db.Model):
     username = db.Column(db.String(100))
     department = db.Column(db.String(100))
     email = db.Column(db.String(100))
-    contact = db.Column(db.Integer(20))
+    contact = db.Column(db.String(20))
     password = db.Column(db.String(255))
 
     def __init__(self, userid: str, username: str, department: str, email: str, contact: str, password: str):
