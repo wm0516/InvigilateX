@@ -23,7 +23,7 @@ def login_page():
             error_message = result
         else:
             session['user_id'] = result  # Store the user ID in session
-            return redirect(url_for('frontPart/home_page'))
+            return redirect(url_for('home_page'))
 
     return render_template('frontPart/login_page.html', login_text=login_text, 
                            password_text=password_text, error_message=error_message)
@@ -79,7 +79,7 @@ def register_page():
             db.session.add(new_user)
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.", "success")
-            return redirect(url_for('frontPart/login_page'))
+            return redirect(url_for('login_page'))
 
     return render_template('frontPart/register_page.html', userid_text=userid_text, username_text=username_text, 
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
@@ -102,7 +102,7 @@ def forgot_password_page():
             if not success:
                 error_message = message
             else:
-                return redirect(url_for('frontPart/login_page'))
+                return redirect(url_for('login_page'))
 
     return render_template('frontPart/forgotPassword_page.html', 
                          forgot_email_text=forgot_email_text, 
@@ -126,7 +126,7 @@ def reset_password_page(token):
         
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
-            return redirect(url_for('frontPart/login_page'))
+            return redirect(url_for('login_page'))
     
     return render_template('frontPart/resetPassword_page.html', error_message=error_message)
 
