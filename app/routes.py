@@ -135,20 +135,17 @@ def reset_password_page(token):
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
 def home_page():
-    user_id = session.get('user_id')  # Retrieve user ID from session
+    user_id = ''
     message = ''
-    user_name = None  # Initialize user_name as None
+
+    # Now able to get the user who is login
+    user_id = session.get('user_id')  # Retrieve user ID from session
+    # user_name = User.query.filter_by(user_id).first()
+    flash(f"(flash) Logged in as User ID: {user_id}")
 
     if user_id:
-        # Correct way to filter by user_id
-        user = User.query.filter_by(user_id=user_id).first()
-        if user:
-            user_name = user.username  # Assuming your User model has a 'username' field
-            message = f"(message) Logged in as {user_name} (ID: {user_id})"
-            flash(f"Logged in as {user_name}")
-        else:
-            message = f"(message) User ID {user_id} not found"
+        message = f"(message) Logged in as User ID: {user_id}"
     else:
         message = "Guest user - not logged in"
     
-    return render_template('home_page.html', user_id=user_id, user_name=user_name, message=message)
+    return render_template('home_page.html', user_id = user_id, message=message)
