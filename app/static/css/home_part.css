@@ -19,7 +19,8 @@ form {
 .header-container {
     display: flex;
     justify-content: space-between; /* pushes heading left and user-info right */
-    width: 100%;
+    width: 95%;
+    margin: 20px;
 }
 
 .heading {
