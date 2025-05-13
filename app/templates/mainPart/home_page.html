@@ -40,6 +40,7 @@
             <!-- Row 1 Second Fesatures to input exam details--> 
             <div class="menu-section">
                 <h2>Input Exam Details</h2>
+                <a href="{{ url_for('exam_input') }}"><h2>Input Exam Details</h2></a>
                 <ul>
                     <li>Add New Exam</li>
                     <li>Edit/Delete Existing Exam</li>
@@ -50,6 +51,7 @@
             <!-- Row 2 First auto generated scdehule-->
             <div class="menu-section">
                 <h2>Generate Exam Schedule</h2>
+                <a href="{{ url_for('auto_generate') }}"><h2>Generate Exam Schedule</h2></a>
                 <ul>
                     <li>Generate Schedule</li>
                     <li>View Current Schedule</li>
@@ -61,6 +63,7 @@
             <!-- Row 2 Second on managing lecturers-->
             <div class="menu-section">
                 <h2>Settings</h2>
+                <a href="{{ url_for('assign_lecturer') }}"><h2>Settings</h2></a>
                 <ul>
                     <li>View All Lecturers</li>
                     <li>Disable a Lecturer</li>
