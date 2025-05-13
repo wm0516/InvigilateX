@@ -2,8 +2,6 @@ from flask import render_template, request, redirect, url_for, flash, session
 from app import app, db
 from .backend import *
 from .database import *
-# from werkzeug.security import generate_password_hash, check_password_hash
-from .database import *
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -55,7 +53,7 @@ def register_page():
         # Use the new check_register function
         is_valid, error_message = check_register(userid_text, email_text, contact_text)
         
-        '''if not is_valid:
+        if not is_valid:
             pass  # error_message is already set
         elif not all([userid_text, username_text, department_text, email_text, contact_text]):
             error_message = "All fields are required."
@@ -67,20 +65,20 @@ def register_page():
             error_message = "Passwords do not match."
         elif not password_format(password1_text):
             error_message = "Wrong password format."
-        else:'''
-        hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
-        new_user = User(
-            userid = userid_text,
-            username = username_text.upper(),
-            department = department_text,
-            email = email_text,
-            contact = contact_text,
-            password = hashed_pw
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        flash("{userid}Register successful! Log in with your registered email address.", "success")
-        return redirect(url_for('login_page'))
+        else:
+            hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
+            new_user = User(
+                userid = userid_text,
+                username = username_text.upper(),
+                department = department_text,
+                email = email_text,
+                contact = contact_text,
+                password = hashed_pw
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            flash("{}Register successful! Log in with your registered email address.", "success")
+            return redirect(url_for('login_page'))
 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
