@@ -160,10 +160,9 @@ def logout():
     # Redirect to login page
     return redirect(url_for('login_page'))  # Make sure you have a 'login_page' route
 
-@app.route('/upload')
+@app.route('/home/upload')
 def upload_file():
-    # Clear the session
-    # Redirect to login page
-    # return redirect(url_for('login_page'))  # Make sure you have a 'login_page' route
+    # return redirect(url_for('home_page')) 
     return render_template('mainPart/upload_file.html')
+
 
