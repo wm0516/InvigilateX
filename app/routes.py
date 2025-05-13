@@ -162,6 +162,6 @@ def home_page():
 @app.route('/logout')
 def logout():
     # Clear the session
-    # session.clear()
+    session.clear()
     # Redirect to login page
-    return redirect(url_for('frontPart/login_page.html'))  # Make sure you have a 'login_page' route
+    return redirect(url_for('login_page'))  # Make sure you have a 'login_page' route
