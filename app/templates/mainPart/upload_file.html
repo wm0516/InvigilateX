@@ -15,7 +15,7 @@
                     {{user_department}}
                 </div>
                 <!-- <button class="logout-btn" type="button">Logout</button> -->
-                <a href="{{ url_for('logout') }}" class="logout-btn" type="button">Logout</a>
+                <a href="{{ url_for('logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
                 
             </div>
         </div>
@@ -25,50 +25,63 @@
         <br>
 
         <div class="menu-container">
-        <div class="menu-grid">
-            <!-- Row 1 First Fesatures to upload merge schedule files--> 
-            <div class="menu-section">
-                <h2>Upload File</h2><br>
-                <a href="{{ url_for('upload_file') }}"><h2>Upload File</h2></a>
-                <ul>
-                    <li>Upload File</li>
-                    <li>View Previous File</li>
-                    <li>Download File in PDF</li>
-                </ul>
-            </div>
+            <div class="menu-grid">
+                <!-- Row 1 First Fesatures to upload merge schedule files--> 
+                <div class="menu-section">
+                    <!--   <h2>Upload File</h2><br>  -->
+                    <a href="{{ url_for('upload_file')}}" style="text-decoration: none;"><h2>Upload File</h2></a>
+                    <li class="submenu">
+                        <strong>  Purpose:</strong>
+                        <ul>
+                            <li>Upload merged lecturer schedule files</li>
+                            <li>Access and review combined lecturer timetables</li>
+                        </ul>
+                    </li>
+                </div>
 
-            <!-- Row 1 Second Fesatures to input exam details--> 
-            <div class="menu-section">
-                <h2>Input Exam Details</h2>
-                <a href="{{ url_for('exam_input') }}"><h2>Input Exam Details</h2></a>
-                <ul>
-                    <li>Add New Exam</li>
-                    <li>Edit/Delete Existing Exam</li>
-                    <li>Download All in Excel</li>
-                </ul>
-            </div>
+                <!-- Row 1 Second Fesatures to input exam details--> 
+                <div class="menu-section">
+                    <!-- <h2>Input Exam Details</h2>  -->
+                    <a href="{{ url_for('exam_input')}}" style="text-decoration: none;"><h2>Input Exam Details</h2></a>
+                    <li class="submenu">
+                        <strong>  Functionality:</strong>
+                        <ul>
+                            <li>Create new exam sessions</li>
+                            <li>Modify or remove existing exam sessions</li>
+                            <li>Export exam schedules to PDF</li>
+                            <li>Browse all current exam sessions</li>
+                        </ul>
+                    </li>
+                </div>
 
-            <!-- Row 2 First auto generated scdehule-->
-            <div class="menu-section">
-                <h2>Generate Exam Schedule</h2>
-                <a href="{{ url_for('auto_generate') }}"><h2>Generate Exam Schedule</h2></a>
-                <ul>
-                    <li>Generate Schedule</li>
-                    <li>View Current Schedule</li>
-                    <li>Email out this Schedule</li>
-                    <li>Download Schedule</li>
-                </ul>
-            </div>
+                <!-- Row 2 First auto generated scdehule-->
+                <div class="menu-section">
+                    <!-- <h2>Generate Exam Schedule</h2> -->
+                    <a href="{{ url_for('auto_generate')}}" style="text-decoration: none;"><h2>Generate Exam Schedule</h2></a>
+                    <li class="submenu">
+                        <strong>  Functionality:</strong>
+                        <ul>
+                            <li>Automatically assign examiners based on availability</li>
+                            <li>Review and manage generated exam timetables</li>
+                            <li>Distribute schedules via email</li>
+                            <li>Download schedule in PDF format</li>
+                        </ul>
+                    </li>
+                </div>
 
-            <!-- Row 2 Second on managing lecturers-->
-            <div class="menu-section">
-                <h2>Settings</h2>
-                <a href="{{ url_for('assign_lecturer') }}"><h2>Settings</h2></a>
-                <ul>
-                    <li>View All Lecturers</li>
-                    <li>Disable a Lecturer</li>
-                    <li>View All Dean</li>
-                </ul>
+                <!-- Row 2 Second on managing lecturers-->
+                <div class="menu-section">
+                <!-- <h2>Settings</h2> -->
+                    <a href="{{ url_for('assign_lecturer')}}" style="text-decoration: none;"><h2>Settings</h2></a>
+                    <li class="submenu">
+                        <strong>  Account Controls: </strong>
+                        <ul>
+                            <li>Manage all lecturer accounts</li>
+                            <li>Deactivate lecturer access (preserves data)</li>
+                            <li>Review dean accounts</li>
+                        </ul>
+                    </li>
+                </div>
             </div>
         </div>
     </div>
