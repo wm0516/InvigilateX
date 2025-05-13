@@ -37,7 +37,7 @@ form {
     align-items: center;
     background-color: white;
     border-radius: 8px;
-    padding: 20px;
+    padding: 10px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
@@ -51,11 +51,9 @@ form {
 
 .logout-btn {
     width: 10vh;
-    margin: 10px;
     padding: 10px;
+    text-align: center;
 }
-
-
 
 .menu-container {
     max-width: 1000px;
