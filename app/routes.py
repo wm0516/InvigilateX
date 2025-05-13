@@ -77,7 +77,8 @@ def register_page():
             )
             db.session.add(new_user)
             db.session.commit()
-            flash("{userid} Register successful! Log in with your registered email address.", "success")
+            flash(f"User {new_user.username} Register successful! Log in with your registered email address.", "success")
+            # flash("{new_user}Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login_page'))
 
     return render_template('register_page.html', userid_text=userid_text, username_text=username_text, 
