@@ -152,7 +152,7 @@ def home_page():
 
     return render_template('mainPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department)
 
-
+# Logout button from homepage to login page
 @app.route('/logout')
 def logout():
     # Clear the session
@@ -162,7 +162,79 @@ def logout():
 
 @app.route('/home/upload')
 def upload_file():
-    # return redirect(url_for('home_page')) 
-    return render_template('mainPart/upload_file.html')
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/upload_file.html', user_id = user_id, user_name=user_name, user_department=user_department)
+
+@app.route('/home/examInput')
+def exam_input():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/input_exam.html', user_id = user_id, user_name=user_name, user_department=user_department)
+
+
+@app.route('/home/autoGenerate')
+def auto_generate():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/generate_schedule.html', user_id = user_id, user_name=user_name, user_department=user_department)
+
+@app.route('/home/assignLecture')
+def assign_lecturer():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/assign_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department)
 
 
