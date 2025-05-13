@@ -33,10 +33,9 @@ form {
     padding: 20px;
 }
 
-button {
+.button-logout {
     width: 15vh;
-    padding: 8px 16px;
-    margin-top: 25px;
+    margin: 30px;
 }
 
 .span {
@@ -44,5 +43,7 @@ button {
 }  
 
 .menu_display_name {
+    display: flex;
     text-align: left;
+    width: 20%;
 }
