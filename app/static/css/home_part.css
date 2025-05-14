@@ -17,6 +17,7 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Heading frame layout */
 .header-container {
     display: flex;
     justify-content: space-between;
@@ -24,12 +25,14 @@ form {
     margin-right: 5%;
 }
 
+/* INTI logo layout */
 .heading {
     background: url("../pic/INTI_LOGO.png") left no-repeat;
     height: 100px;
     width: 40%;
 }
 
+/* User Info layout include logout button */
 .user-info {
     display: flex;
     justify-content: flex-end; /* aligns children to the right */
@@ -40,6 +43,7 @@ form {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
+/* User Info layout */
 .user-details {
     font-weight: normal;
     font-size: small;
@@ -48,6 +52,7 @@ form {
     margin-left: 10px;
 }
 
+/* logout button layout */ 
 .logout-btn {
     width: 45%;
     padding: 10px;
@@ -57,17 +62,20 @@ form {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Main menu container layout (big frame) */
 .menu-container {
     max-width: 1000px;
     margin: 0 auto;
 }
 
+/* Main menu container layout (frame divide in the big frame) */
 .menu-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
+/* Main menu container layout (small frame that divide in the big frame) */
 .menu-section {
     background-color: white;
     border-radius: 8px;
@@ -75,6 +83,7 @@ form {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
+/* Title with the layout of each frame */
 .menu-section h2 {
     color: #2c3e50;
     border-bottom: 2px solid #3498db;
@@ -82,11 +91,13 @@ form {
     margin-top: 0;
 }
 
+/* Subtitle heading with the layout of each frame */
 .menu-section ul {
     list-style-type: none;
     padding-left: 0;
 }
 
+/* Subtitle contents with the layout of each frame */
 .menu-section li {
     padding: 5px 0;
     margin-left: 2%;
@@ -94,22 +105,29 @@ form {
     color: #34495e;
 }
 
+/* Subtitle last line contents with the layout of each frame */
 .menu-section li:last-child {
     border-bottom: none;
 }
 
+/* Subtitle heading style */
 .submenu ul {
     padding-left: 20px;
     margin-top: 5px;
 }
 
+/* Subtitle contetts style */
 .submenu li {
     border-bottom: none;
     font-size: 0.9em;
     color: #7f8c8d;
 }
 
+/* Text inside the frame with no style */ 
 .text-style {
     font-weight: normal;
     text-decoration: none;
 }
+
+
+
