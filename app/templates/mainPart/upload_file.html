@@ -20,7 +20,26 @@
             </div>
         </div>
 
-        <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
+        <!-- One div for table switching page -->
+
+        <div class="menu-container">
+            <div class="menu-grid">
+                <!-- Row 1 First Fesatures to upload merge schedule files--> 
+                <div class="menu-section">
+                    <!--   <h2>Upload File</h2><br>  -->
+                    <a href="{{ url_for('upload_file')}}" style="text-decoration: none;"><h2>Upload File</h2></a>
+                    <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
+                    <li class="submenu">
+                        <strong>  Purpose:</strong>
+                        <ul>
+                            <li>Upload merged lecturer schedule files</li>
+                            <li>Access and review combined lecturer timetables</li>
+                        </ul>
+                    </li>
+                </div>
+            </div>
+        </div>  
+
 
 
         
