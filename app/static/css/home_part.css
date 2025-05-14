@@ -20,7 +20,7 @@ form {
 /* Heading frame layout */
 .header-container {
     display: flex;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
     margin-left: 5%;
     margin-right: 5%;
 }
@@ -29,7 +29,7 @@ form {
 .heading {
     background: url("../pic/INTI_LOGO.png") left no-repeat;
     height: 100px;
-    width: 40%;
+    width: 35%;
 }
 
 /* User Info layout include logout button */
