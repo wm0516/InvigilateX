@@ -64,32 +64,71 @@ form {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Main menu container layout (big frame) */
+
+/* Text inside the frame with no style */ 
+.text-style {
+    font-weight: normal;
+    text-decoration: none;
+}
+
+
+
+
+/* Main container */
 .menu-container {
     max-width: 1000px;
     margin: 0 auto;
 }
 
-/* Main menu container layout (frame divide in the big frame) */
-.menu-grid {
-    display: grid;
-    gap: 20px;
+/* Tab navigation styling */
+.tab-nav {
+    display: flex;
+    border-bottom: 1px solid #3498db;
 }
 
-/* Main menu container layout (small frame that divide in the big frame) */
-.menu-section {
+.tab-link {
+    padding: 10px 20px;
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    margin-right: 5px;
+    border-radius: 5px 5px 0 0;
+    transition: all 0.3s;
+}
+
+.tab-link:hover {
+    background-color: #e9ecef;
+}
+
+.tab-link.active {
     background-color: white;
-    border-radius: 8px;
+    color: #3498db;
+    font-weight: bold;
+    border-bottom: 1px solid white;
+    margin-bottom: -1px;
+}
+
+/* Tab content styling */
+.tab-content {
+    background-color: white;
+    border-radius: 0 8px 8px 8px;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* Title with the layout of each frame */
-.menu-section h2 {
-    color: #2c3e50;
-    border-bottom: 2px solid #3498db;
-    padding-bottom: 10px;
-    margin-top: 0;
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Content section styling */
+.menu-section {
+    padding: 10px;
 }
 
 /* Subtitle heading with the layout of each frame */
@@ -123,12 +162,4 @@ form {
     font-size: 0.9em;
     color: #7f8c8d;
 }
-
-/* Text inside the frame with no style */ 
-.text-style {
-    font-weight: normal;
-    text-decoration: none;
-}
-
-
 
