@@ -73,7 +73,6 @@ form {
 /* Main menu container layout (frame divide in the big frame) */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
 
