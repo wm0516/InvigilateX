@@ -64,6 +64,34 @@ form {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+/* Main menu container layout (big frame) */
+.menu-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Main menu container layout (frame divide in the big frame) */
+.menu-grid {
+    display: grid;
+    gap: 20px;
+}
+
+/* Main menu container layout (small frame that divide in the big frame) */
+.menu-section {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Title with the layout of each frame */
+.menu-section h2 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
 
 /* Text inside the frame with no style */ 
 .text-style {
