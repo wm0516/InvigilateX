@@ -20,9 +20,9 @@ form {
 /* Heading frame layout */
 .header-container {
     display: flex;
-    /*justify-content: space-between;*/
+    /*justify-content: space-between;
     margin-left: 5%;
-    margin-right: 5%;
+    margin-right: 5%; */
 }
 
 /* INTI logo layout */
