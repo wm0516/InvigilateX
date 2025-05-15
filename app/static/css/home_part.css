@@ -192,10 +192,15 @@ form {
     color: #7f8c8d;
 }
 
-input, button {
+input {
     width: 100%;
 }
 
+button {
+    width: 25vh;
+    padding: 8px 16px;
+    margin-top: 25px;
+}
 
 
 .input-frame {
