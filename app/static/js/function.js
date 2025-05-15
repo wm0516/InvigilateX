@@ -23,22 +23,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     tabLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            // Only prevent default if it's a tab without href (should stay on same page)
-            if (!this.getAttribute('href')) {
-                e.preventDefault();
-                
-                // Remove active class from all tabs and panes
-                document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-                
-                // Add active class to clicked tab and corresponding pane
-                this.classList.add('active');
-                const tabId = this.getAttribute('data-tab');
-                if (tabId && document.getElementById(tabId)) {
-                    document.getElementById(tabId).classList.add('active');
-                }
+            const href = this.getAttribute('href');
+            const tabId = this.getAttribute('data-tab');
+            
+            // If the link has NO href (should stay on same page)
+            if (!href) {
+                e.preventDefault(); // Prevent navigation
+                switchTab(tabId);   // Switch tab content
             }
-            // If it has href, let the browser handle navigation naturally
+            // Otherwise, let the browser handle navigation normally
         });
     });
+
+    // Function to handle tab switching
+    function switchTab(tabId) {
+        // Remove active class from all tabs and panes
+        document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        
+        // Add active class to clicked tab and corresponding pane
+        const activeTab = document.querySelector(`.tab-link[data-tab="${tabId}"]`);
+        const activePane = document.getElementById(tabId);
+        
+        if (activeTab) activeTab.classList.add('active');
+        if (activePane) activePane.classList.add('active');
+    }
 });
