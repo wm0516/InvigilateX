@@ -82,7 +82,11 @@ form {
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    /* Extra */
+    border: 1px solid #ddd;
+    box-sizing: border-box;
 }
+
 
 /* Title with the layout of each frame */
 .menu-section h2 {
