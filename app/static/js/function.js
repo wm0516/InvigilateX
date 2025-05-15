@@ -38,3 +38,41 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 */
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Map URL endpoints to tab IDs
+    const routeToTab = {
+        '/home_page': 'home',
+        '/upload_file': 'upload',
+        '/exam_input': 'exam',
+        '/auto_generate': 'generate',
+        '/assign_lecturer': 'settings'
+    };
+
+    // Get current path and find matching tab
+    const currentPath = window.location.pathname;
+    let activeTabId = 'home'; // Default fallback
+
+    for (const [route, tabId] of Object.entries(routeToTab)) {
+        if (currentPath.includes(route)) {
+            activeTabId = tabId;
+            break;
+        }
+    }
+
+    // Update active tab UI
+    document.querySelectorAll('.tab-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-tab') === activeTabId) {
+            link.classList.add('active');
+        }
+    });
+
+    // Optional: Highlight corresponding tab content pane
+    document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+        if (pane.id === activeTabId) {
+            pane.classList.add('active');
+        }
+    });
+});
