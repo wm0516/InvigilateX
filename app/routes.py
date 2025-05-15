@@ -150,7 +150,7 @@ def home_page():
         else:
             pass
 
-    return render_template('mainPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department)
+    return render_template('mainPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='home')
 
 # Logout button from homepage to login page
 @app.route('/logout')
@@ -177,7 +177,7 @@ def upload_file():
         else:
             pass
 
-    return render_template('mainPart/upload_file.html', user_id = user_id, user_name=user_name, user_department=user_department)
+    return render_template('mainPart/upload_file.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='upload')
 
 @app.route('/home/examInput')
 def exam_input():
@@ -196,7 +196,7 @@ def exam_input():
         else:
             pass
 
-    return render_template('mainPart/input_exam.html', user_id = user_id, user_name=user_name, user_department=user_department)
+    return render_template('mainPart/input_exam.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='examInput')
 
 
 @app.route('/home/autoGenerate')
@@ -216,7 +216,7 @@ def auto_generate():
         else:
             pass
 
-    return render_template('mainPart/generate_schedule.html', user_id = user_id, user_name=user_name, user_department=user_department)
+    return render_template('mainPart/generate_schedule.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='autoGenerate')
 
 @app.route('/home/assignLecture')
 def assign_lecturer():
@@ -235,6 +235,6 @@ def assign_lecturer():
         else:
             pass
 
-    return render_template('mainPart/assign_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department)
+    return render_template('mainPart/assign_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='assign')
 
 
