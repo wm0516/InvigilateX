@@ -17,35 +17,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
+// Simple tab switching functionality
 document.addEventListener('DOMContentLoaded', function() {
     const tabLinks = document.querySelectorAll('.tab-link');
     
     tabLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            const tabId = this.getAttribute('data-tab');
+            e.preventDefault();
             
-            // If the link has NO href (should stay on same page)
-            if (!href) {
-                e.preventDefault(); // Prevent navigation
-                switchTab(tabId);   // Switch tab content
-            }
-            // Otherwise, let the browser handle navigation normally
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            
+            // Add active class to clicked tab and corresponding pane
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
         });
     });
-
-    // Function to handle tab switching
-    function switchTab(tabId) {
-        // Remove active class from all tabs and panes
-        document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        
-        // Add active class to clicked tab and corresponding pane
-        const activeTab = document.querySelector(`.tab-link[data-tab="${tabId}"]`);
-        const activePane = document.getElementById(tabId);
-        
-        if (activeTab) activeTab.classList.add('active');
-        if (activePane) activePane.classList.add('active');
-    }
 });
+
