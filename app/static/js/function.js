@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+/*
 // Simple tab switching functionality
 document.addEventListener('DOMContentLoaded', function() {
     const tabLinks = document.querySelectorAll('.tab-link');
@@ -36,4 +37,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-
+*/
