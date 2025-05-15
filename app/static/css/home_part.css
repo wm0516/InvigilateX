@@ -199,7 +199,7 @@ form {
     align-items: flex-start;
     padding: 20px;
     margin: 20px auto;
-    width: 40%;
+    width: 60%;
     border-radius: 8px;
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
@@ -207,7 +207,7 @@ form {
 }
 
 .small-frame {
-    width: 100%;
+    width: 95%;
     padding: 10px;
     margin: 10px 0;
     background-color: #f9f9f9;
@@ -220,11 +220,6 @@ form {
     border: none;
     background: transparent;
     font-size: 1em;
-}
-
-.big-frame label {
-    margin-bottom: 10px;
-    font-weight: bold;
 }
 
 .big-frame button {
