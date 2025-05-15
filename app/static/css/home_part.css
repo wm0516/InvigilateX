@@ -192,9 +192,11 @@ form {
     color: #7f8c8d;
 }
 
-input {
+input, button {
     width: 100%;
 }
+
+
 
 .input-frame {
     display: flex;
@@ -207,5 +209,4 @@ input {
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     border: 1px solid #ccc;
-    font-size: medium;
 }
