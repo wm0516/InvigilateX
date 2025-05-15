@@ -36,15 +36,15 @@
 
             <a href="{{ url_for('exam_input')}}" 
                class="tab-link {% if active_tab == 'examInput' %}active{% endif %}" 
-               data-tab="upload">Input Exam Details</a>
+               data-tab="examInput">Input Exam Details</a>
 
             <a href="{{ url_for('auto_generate')}}" 
                class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
-               data-tab="upload">Generate Exam Schedule</a>
+               data-tab="autoGenerate">Generate Exam Schedule</a>
 
             <a href="{{ url_for('assign_lecturer')}}" 
                class="tab-link {% if active_tab == 'assign' %}active{% endif %}" 
-               data-tab="upload">Assign Lecturer</a>
+               data-tab="assign">Assign Lecturer</a>
         </div>
 
         <!-- Content block for child templates -->
