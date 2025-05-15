@@ -192,21 +192,11 @@ form {
     color: #7f8c8d;
 }
 
-input {
-    width: 100%;
-}
-
-button {
-    width: 25vh;
-    padding: 8px 16px;
-    margin-top: 25px;
-}
-
-
 .input-frame {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     padding: 20px;
     margin: 20px auto;
     width: 40%;
@@ -214,4 +204,20 @@ button {
     background-color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     border: 1px solid #ccc;
+}
+
+.input-frame input {
+    width: 100%;
+    margin: 10px 0;
+}
+
+.input-frame button {
+    width: 25vh;
+    padding: 8px 16px;
+    margin-top: 25px;
+    align-self: center; /* Center the button horizontally */
+}
+
+.input-frame label {
+    margin-bottom: 10px;
 }
