@@ -5,7 +5,6 @@ body {
     display: grid;
     place-items: center;
     background-color: #f5f5f5;
-    /* font-family: Arial, sans-serif; */
 }
 
 form {
@@ -21,8 +20,6 @@ form {
 .header-container {
     display: flex;
     justify-content: space-between;
-    /*margin-left: 5%;
-    margin-right: 5%; */
 }
 
 /* INTI logo layout */
@@ -35,7 +32,7 @@ form {
 /* User Info layout include logout button */
 .user-info {
     display: flex;
-    justify-content: flex-end; /* aligns children to the right */
+    justify-content: flex-end; 
     align-items: center;
     background-color: white;
     border-radius: 8px;
