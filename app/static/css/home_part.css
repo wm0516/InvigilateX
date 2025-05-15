@@ -193,16 +193,18 @@ form {
 }
 
 input {
-    width: 30%;
-    padding: 10px;
-    margin: 1% auto;
-    box-sizing: border-box;
+    width: 100%；
 }
 
 .input-frame {
     display: flex;
     justify-content: center;
+    align-items: center;
+    padding: 20px;
+    margin: 20px auto;
+    width: 40%;
     border-radius: 8px;
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ccc;
 }
