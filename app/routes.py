@@ -224,7 +224,7 @@ def auto_generate():
 
     return render_template('mainPart/generate_schedule.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='autoGenerate')
 
-@app.route('/home/assignLecture')
+@app.route('/home/assignLecturer')
 def assign_lecturer():
     user_id = session.get('user_id')
     user = User.query.get(user_id)
