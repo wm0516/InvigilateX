@@ -14,6 +14,12 @@ def login_page():
     password_text = ''
     error_message = None
 
+    # For debug
+    if request.method == 'POST':
+        return redirect(url_for('home_page'))   
+     
+    # Need Uncommand back 
+    '''
     if request.method == 'POST':
         login_text = request.form.get('textbox', '').strip()
         password_text = request.form.get('password', '').strip()
@@ -24,6 +30,7 @@ def login_page():
         else:
             session['user_id'] = result  # Store the user ID in session
             return redirect(url_for('home_page'))
+    '''
 
     return render_template('frontPart/login_page.html', login_text=login_text, 
                            password_text=password_text, error_message=error_message)
