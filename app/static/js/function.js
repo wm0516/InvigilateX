@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const routeToTab = {
         '/home_page': 'home',
         '/home/uploadFile': 'upload',
-        '/home/examInput': 'exam',
-        '/home/autoGenerate': 'generate',
-        '/home/assignLecturer': 'settings'
+        '/home/examInput': 'examInput',
+        '/home/autoGenerate': 'autoGenerate',
+        '/home/assignLecturer': 'assign'
     };
 
     // Get current path and find matching tab
