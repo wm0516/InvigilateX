@@ -192,3 +192,9 @@ form {
     color: #7f8c8d;
 }
 
+input {
+    width: 25vh;
+    padding: 10px;
+    margin: 1% 0;
+    box-sizing: border-box;
+}
