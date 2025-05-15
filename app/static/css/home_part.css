@@ -192,7 +192,7 @@ form {
     color: #7f8c8d;
 }
 
-.input-frame {
+.big-frame {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -206,18 +206,30 @@ form {
     border: 1px solid #ccc;
 }
 
-.input-frame input {
+.small-frame {
     width: 100%;
+    padding: 10px;
     margin: 10px 0;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    border: 1px solid #ddd;
 }
 
-.input-frame button {
+.small-frame input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 1em;
+}
+
+.big-frame label {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.big-frame button {
     width: 25vh;
     padding: 8px 16px;
     margin-top: 25px;
-    align-self: center; /* Center the button horizontally */
-}
-
-.input-frame label {
-    margin-bottom: 10px;
+    align-self: center;
 }
