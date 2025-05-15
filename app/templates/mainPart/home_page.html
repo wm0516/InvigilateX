@@ -38,66 +38,7 @@
             <!-- Tab content container -->
             <div class="tab-content">
                 <div id="home" class="tab-pane active">
-                    <div class="menu-container">
-                        <div class="menu-grid" style="display: grid; grid-template-columns: repeat(2, 1fr);">
-                            <!-- Row 1 First Fesatures to upload merge schedule files--> 
-                            <div class="menu-section">
-                                <!--   <h2>Upload File</h2><br>  -->
-                                <a href="{{ url_for('upload_file')}}" style="text-decoration: none;"><h2>Upload File</h2></a>
-                                <li class="submenu">
-                                    <strong>  Purpose:</strong>
-                                    <ul>
-                                        <li>Upload merged lecturer schedule files</li>
-                                        <li>Access and review combined lecturer timetables</li>
-                                    </ul>
-                                </li>
-                            </div>
-
-                            <!-- Row 1 Second Fesatures to input exam details--> 
-                            <div class="menu-section">
-                                <!-- <h2>Input Exam Details</h2>  -->
-                                <a href="{{ url_for('exam_input')}}" style="text-decoration: none;"><h2>Input Exam Details</h2></a>
-                                <li class="submenu">
-                                    <strong>  Functionality:</strong>
-                                    <ul>
-                                        <li>Create new exam sessions</li>
-                                        <li>Modify or remove existing exam sessions</li>
-                                        <li>Export exam schedules to PDF</li>
-                                        <li>Browse all current exam sessions</li>
-                                    </ul>
-                                </li>
-                            </div>
-
-                            <!-- Row 2 First auto generated scdehule-->
-                            <div class="menu-section">
-                                <!-- <h2>Generate Exam Schedule</h2> -->
-                                <a href="{{ url_for('auto_generate')}}" style="text-decoration: none;"><h2>Generate Exam Schedule</h2></a>
-                                <li class="submenu">
-                                    <strong>  Functionality:</strong>
-                                    <ul>
-                                        <li>Automatically assign examiners based on availability</li>
-                                        <li>Review and manage generated exam timetables</li>
-                                        <li>Distribute schedules via email</li>
-                                        <li>Download schedule in PDF format</li>
-                                    </ul>
-                                </li>
-                            </div>
-
-                            <!-- Row 2 Second on managing lecturers-->
-                            <div class="menu-section">
-                            <!-- <h2>Settings</h2> -->
-                                <a href="{{ url_for('assign_lecturer')}}" style="text-decoration: none;"><h2>Settings</h2></a>
-                                <li class="submenu">
-                                    <strong>  Account Controls: </strong>
-                                    <ul>
-                                        <li>Manage all lecturer accounts</li>
-                                        <li>Deactivate lecturer access (preserves data)</li>
-                                        <li>Review dean accounts</li>
-                                    </ul>
-                                </li>
-                            </div>
-                        </div>
-                    </div>
+                    
                 </div>
                 
                 <!-- Upload File content  -->
