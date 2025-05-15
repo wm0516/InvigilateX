@@ -7,28 +7,44 @@
 <body>
     <form method="POST">
         <!-- Shared header/navigation -->
-        <div class="header-container">
-            <!-- ... your user info/logout ... -->
+
+        <div class= "header-container">
+            <div class="heading"></div>
+            <div class="user-info">
+                <div class="user-details">
+                    {{user_name}} <br>
+                    {{user_id}} <br>
+                    {{user_department}}
+                </div>
+                <!-- <button class="logout-btn" type="button">Logout</button> -->
+                <a href="{{ url_for('logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
+                
+            </div>
         </div>
+        <br><br>
+
 
         <!-- Dynamic tab navigation -->
         <div class="tab-nav">
             <a href="{{ url_for('home_page')}}" 
                class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
                data-tab="home">Home</a>
+
             <a href="{{ url_for('upload_file')}}" 
                class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
                data-tab="upload">Upload File</a>
+
             <a href="{{ url_for('exam_input')}}" 
                class="tab-link {% if active_tab == 'examInput' %}active{% endif %}" 
                data-tab="upload">Input Exam Details</a>
+
             <a href="{{ url_for('auto_generate')}}" 
                class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
                data-tab="upload">Generate Exam Schedule</a>
+
             <a href="{{ url_for('assign_lecturer')}}" 
                class="tab-link {% if active_tab == 'assign' %}active{% endif %}" 
-               data-tab="upload">Settings</a>
-            <!-- Repeat for other tabs -->
+               data-tab="upload">Assign Lecturer</a>
         </div>
 
         <!-- Content block for child templates -->
