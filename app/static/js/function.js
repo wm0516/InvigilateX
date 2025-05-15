@@ -43,10 +43,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Map URL endpoints to tab IDs
     const routeToTab = {
         '/home_page': 'home',
-        '/upload_file': 'upload',
-        '/exam_input': 'exam',
-        '/auto_generate': 'generate',
-        '/assign_lecturer': 'settings'
+        '/home/uploadFile': 'upload',
+        '/home/examInput': 'exam',
+        '/home/autoGenerate': 'generate',
+        '/home/assignLecturer': 'settings'
     };
 
     // Get current path and find matching tab
