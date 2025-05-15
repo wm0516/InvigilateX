@@ -17,22 +17,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Simple tab switching functionality
+
 document.addEventListener('DOMContentLoaded', function() {
     const tabLinks = document.querySelectorAll('.tab-link');
     
     tabLinks.forEach(link => {
         link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all tabs and panes
-            document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding pane
-            this.classList.add('active');
-            const tabId = this.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
+            // Only prevent default if it's a tab without href (should stay on same page)
+            if (!this.getAttribute('href')) {
+                e.preventDefault();
+                
+                // Remove active class from all tabs and panes
+                document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding pane
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                if (tabId && document.getElementById(tabId)) {
+                    document.getElementById(tabId).classList.add('active');
+                }
+            }
+            // If it has href, let the browser handle navigation naturally
         });
     });
 });
