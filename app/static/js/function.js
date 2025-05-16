@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const routeToTab = {
         '/home_page': 'home',
         '/home/uploadFile': 'upload',
-        '/home/examInput': 'examInput',
+        '/home/manageExam': 'manageExam',
         '/home/autoGenerate': 'autoGenerate',
         '/home/assignLecturer': 'assign'
     };
