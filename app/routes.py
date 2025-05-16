@@ -185,6 +185,13 @@ def upload_file():
 
     return render_template('mainPart/upload_file.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='upload')
 
+
+
+
+
+
+
+
 @app.route('/home/examInput')
 def exam_input():
     user_id = session.get('user_id')
@@ -203,7 +210,6 @@ def exam_input():
             pass
 
     return render_template('mainPart/input_exam.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='examInput')
-
 
 @app.route('/home/autoGenerate')
 def auto_generate():
