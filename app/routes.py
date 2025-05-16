@@ -192,8 +192,8 @@ def upload_file():
 
 
 
-@app.route('/home/examInput')
-def exam_input():
+@app.route('/home/addNewExam')
+def add_new_exam():
     user_id = session.get('user_id')
     user = User.query.get(user_id)
     user_name = ''
@@ -209,7 +209,7 @@ def exam_input():
         else:
             pass
 
-    return render_template('mainPart/input_exam.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='examInput')
+    return render_template('mainPart/add_new_exam.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='examInput')
 
 @app.route('/home/autoGenerate')
 def auto_generate():
