@@ -7,37 +7,15 @@
 
         <!-- Dynamic tab navigation -->
         <div class="tab-nav">
-            <a href="{{ url_for('home_page')}}" 
+            <a href="{{ url_for('lecturer_timetable')}}" 
                class="tab-link {% if active_tab == 'lecturerTimetable' %}active{% endif %}" 
                data-tab="lecturerTimetable">Lecturers Timetable</a>
 
-            <a href="{{ url_for('home_page')}}" 
+            <a href="{{ url_for('exam_details')}}" 
                class="tab-link {% if active_tab == 'examDetails' %}active{% endif %}" 
                data-tab="examDetails">Exam Details</a>
         </div>
         <br>
-
-        <div class="menu-section">
-            <h2>Upload File</h2>
-            <div class="big-frame">
-                <label>Upload Masterfile</label>
-                <div class="small-frame">
-                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls" required>
-                </div>
-                <button type="submit">Upload and Process</button>
-            </div>
-        </div>
-
-        <div class="menu-section">
-            <h2>Table Record</h2>
-            <li class="submenu">
-                <strong>Purpose:</strong>
-                <ul>
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
-                </ul>
-            </li>
-        </div>
     </div>
 {% endblock %}
 
