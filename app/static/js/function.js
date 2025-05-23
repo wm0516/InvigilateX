@@ -43,15 +43,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
     const mainRouteToTab = {
         '/home_page': 'home',
-        '/home/uploadFile/lecturerTimetable': 'lecturerTimetable',
+        '/home/uploadLecturerTimetable': 'uploadlLecturerTimetable',
         '/home/autoGenerate': 'autoGenerate',
         '/home/manageLecturer': 'manage',
     };
 
     // File upload sub-tabs (only relevant when in upload section)
     const uploadRouteToTab = {
-        '/home/uploadFile/lecturerTimetable': 'lecturerTimetable',
-        '/home/uploadFile/examDetails': 'examDetails'
+        '/home/uploadLecturerTimetable': 'uploadlLecturerTimetable',
+        '/home/uploadExamDetails': 'uploadExamDetails',
     };
 
     const currentPath = window.location.pathname;
