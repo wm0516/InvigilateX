@@ -188,29 +188,6 @@ def upload_file():
 
 
 
-
-
-
-
-@app.route('/home/manageExam')
-def manage_exam():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
-
-    if user_id:
-        # Query the user from the database
-        user = User.query.get(user_id)
-        if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
-
-    return render_template('mainPart/manage_exam.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='manageExam')
-
 @app.route('/home/autoGenerate')
 def auto_generate():
     user_id = session.get('user_id')
@@ -230,8 +207,8 @@ def auto_generate():
 
     return render_template('mainPart/generate_schedule.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='autoGenerate')
 
-@app.route('/home/assignLecturer')
-def assign_lecturer():
+@app.route('/home/manageLecturer')
+def manage_lecturer():
     user_id = session.get('user_id')
     user = User.query.get(user_id)
     user_name = ''
@@ -247,6 +224,6 @@ def assign_lecturer():
         else:
             pass
 
-    return render_template('mainPart/assign_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='assign')
+    return render_template('mainPart/manage_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='manage')
 
 
