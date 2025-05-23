@@ -185,9 +185,6 @@ def upload_file():
 
     return render_template('mainPart/upload_file.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='upload')
 
-
-
-
 @app.route('/home/autoGenerate')
 def auto_generate():
     user_id = session.get('user_id')
@@ -225,5 +222,45 @@ def manage_lecturer():
             pass
 
     return render_template('mainPart/manage_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='manage')
+
+
+@app.route('/home/uploadFile/lecturerTimetable')
+def lecturer_timetable():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/lecturerTimetable.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='lecturerTimetable')
+
+
+@app.route('/home/uploadFile/examDetails')
+def exam_details():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/examDetails.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='examDetails')
 
 
