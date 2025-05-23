@@ -33,10 +33,6 @@
                class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
                data-tab="upload">Upload File</a>
 
-            <a href="{{ url_for('manage_exam')}}" 
-               class="tab-link {% if active_tab == 'manageExam' %}active{% endif %}" 
-               data-tab="manageExam">Manage Exam Sessions</a>
-
             <a href="{{ url_for('auto_generate')}}" 
                class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
                data-tab="autoGenerate">Generate Exam Schedule</a>
