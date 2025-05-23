@@ -4,6 +4,19 @@
 {% block content %}
     <div class="menu-grid">
         <!-- Row 1 First Fesatures to upload merge schedule files--> 
+
+        <!-- Dynamic tab navigation -->
+        <div class="tab-nav">
+            <a href="{{ url_for('home_page')}}" 
+               class="tab-link {% if active_tab == 'lecturerTimetable' %}active{% endif %}" 
+               data-tab="home">Lecturers Timetable</a>
+
+            <a href="{{ url_for('home_page')}}" 
+               class="tab-link {% if active_tab == 'examDetails' %}active{% endif %}" 
+               data-tab="upload">Exam Details</a>
+        </div>
+        <br>
+
         <div class="menu-section">
             <h2>Upload File</h2>
             <div class="big-frame">
@@ -32,6 +45,7 @@
  upload file have 2
  1. masterfile, all lecturer timetblae
  2. the generete timetable provided from row A to R based on each column heading
+  -> 
 
 
 -->
