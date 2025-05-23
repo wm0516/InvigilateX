@@ -84,8 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Then handle upload sub-tabs if we're in the upload section
-    if (activeMainTabId === 'lecturerTimetable') {
-        let activeUploadTabId = 'lecturerTimetable'; // Default fallback
+    if (activeMainTabId === 'uploadlLecturerTimetable') {
+        let activeUploadTabId = 'uploadlLecturerTimetable'; // Default fallback
         for (const [route, tabId] of Object.entries(uploadRouteToTab)) {
             if (currentPath.includes(route)) {
                 activeUploadTabId = tabId;
