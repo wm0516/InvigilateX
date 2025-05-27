@@ -6,20 +6,33 @@
     <div class="menu-grid">
         <div class="menu-section">
             <div class="big-frame">
-                <h2>Upload ExamFile</h2>
+                <h2>Upload Masterfile</h2>
                 <div class="small-frame">
                     <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
                 </div>
-                <button type="submit">Upload and Process</button>
+                <button type="submit">Upload</button>
             </div>
 
             <div class="menu-section">
                 <h2>Table Record</h2>
-                <tr>
-                    <th>a</th>
-                    <th>b</th>
-                    <th>c</th>
-                </tr>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>ID</th>
+                            <th>Department</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{user_name}}</td>
+                            <td>{{user_id}}</td>
+                            <td>{{user_department}}</td>
+                            <td>{{user_email}}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>  
     </div>
