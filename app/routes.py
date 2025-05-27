@@ -34,7 +34,6 @@ def login_page():
     return render_template('frontPart/login.html', login_text=login_text, 
                            password_text=password_text, error_message=error_message)
 
-
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
@@ -91,7 +90,6 @@ def register_page():
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
                            password2_text=password2_text, error_message=error_message)
 
-
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgot_password_page():
@@ -114,7 +112,6 @@ def forgot_password_page():
                          forgot_email_text=forgot_email_text, 
                          error_message=error_message)
 
-
 # reset password page (done after reset password based on that user password)
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
 def reset_password_page(token):
@@ -136,28 +133,6 @@ def reset_password_page(token):
     
     return render_template('frontPart/resetPassword.html', error_message=error_message)
 
-
-# home page (start with this!!!!!!!!!!!!!!)
-@app.route('/home', methods=['GET', 'POST'])
-def homepage():
-    # Retrieve user ID from session
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
-
-    if user_id:
-        # Query the user from the database
-        user = User.query.get(user_id)
-        if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
-
-    return render_template('mainPart/homepage.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='home')
-
 # Logout button from homepage to login page
 @app.route('/logout')
 def logout():
@@ -166,99 +141,55 @@ def logout():
     # Redirect to login page
     return redirect(url_for('login_page'))  # Make sure you have a 'login_page' route
 
-@app.route('/home/autoGenerate')
-def auto_generate():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
 
+
+
+
+@app.context_processor
+def inject_user_data():
+    user_id = session.get('user_id')
     if user_id:
-        # Query the user from the database
         user = User.query.get(user_id)
         if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
+            return {
+                'user_id': user_id,
+                'user_name': user.username,
+                'user_department': user.department
+                # 'user_email': user.email
+                # 'user_contact': user.contact
+            }
+    return {
+        'user_id': None,
+        'user_name': '',
+        'user_department': '',
+        'user_email': '',
+        'user_contact': ''
+    }
 
-    return render_template('mainPart/generateSchedule.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='autoGenerate')
+
+# home page (start with this!!!!!!!!!!!!!!)
+@app.route('/home', methods=['GET', 'POST'])
+def homepage():
+    return render_template('mainPart/homepage.html', active_tab='home')
+
+@app.route('/home/autoGenerate')
+def auto_generate():
+    return render_template('mainPart/generateSchedule.html', active_tab='autoGenerate')
 
 @app.route('/home/manageLecturer')
 def manage_lecturer():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
-
-    if user_id:
-        # Query the user from the database
-        user = User.query.get(user_id)
-        if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
-
-    return render_template('mainPart/manageLecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='manage')
-
+    return render_template('mainPart/manageLecturer.html', active_tab='manage')
 
 @app.route('/home/uploadLecturerTimetable')
 def upload_lecturer_timetable():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
-
-    if user_id:
-        # Query the user from the database
-        user = User.query.get(user_id)
-        if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
-
-    return render_template('mainPart/uploadLecturerTimetable.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='uploadLecturerTimetable')
+    return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
 
 @app.route('/home/uploadExamDetails')
 def upload_exam_details():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
-
-    if user_id:
-        # Query the user from the database
-        user = User.query.get(user_id)
-        if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
-
-    return render_template('mainPart/uploadExamDetails.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='uploadExamDetails')
+    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
 
 @app.route('/home/upload')
 def upload():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    user_name = ''
-    user_department = ''
+    return render_template('mainPart/upload.html', active_tab='upload')
 
-    if user_id:
-        # Query the user from the database
-        user = User.query.get(user_id)
-        if user:
-            user_name = user.username
-            user_department = user.department   
-            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
-        else:
-            pass
-
-    return render_template('mainPart/upload.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='upload')
 
