@@ -26,9 +26,9 @@
                class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
                data-tab="home">Home</a>
 
-            <a href="{{ url_for('upload_lecturer_timetable')}}" 
-               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-               data-tab="uploadLecturerTimetable">Upload File</a>
+            <a href="{{ url_for('upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Upload File</a>
 
             <a href="{{ url_for('auto_generate')}}" 
                class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
