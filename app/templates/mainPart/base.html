@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,15 +13,13 @@
                 {{user_id}} <br>
                 {{user_department}}
             </div>
-            <!-- <button class="logout-btn" type="button">Logout</button> -->
             <a href="{{ url_for('logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
         </div>
     </div>
-
 </head>
 <body>
     <form method="POST">
-        <!-- Dynamic tab navigation -->
+        <!-- Main tab navigation -->
         <div class="tab-nav">
             <a href="{{ url_for('homepage')}}" 
                class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
@@ -39,6 +38,25 @@
                data-tab="manage">Assign Lecturer</a>
         </div>
         <br>
+
+        <!-- Sub-tab navigation (only shown when on upload section) -->
+        {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
+        <div class="menu-grid">
+            <div class="sub-tab-nav">
+                <a href="{{ url_for('upload')}}" 
+                   class="sub-tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+                   data-tab="upload">Lecturers Timetable</a>
+
+                <a href="{{ url_for('upload_lecturer_timetable')}}" 
+                   class="sub-tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
+                   data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+
+                <a href="{{ url_for('upload_exam_details')}}" 
+                   class="sub-tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
+                   data-tab="uploadExamDetails">Exam Details</a>
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Content block for child templates -->
         {% block content %}{% endblock %}
