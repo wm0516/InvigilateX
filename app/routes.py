@@ -243,4 +243,22 @@ def upload_exam_details():
 
     return render_template('mainPart/uploadExamDetails.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='uploadExamDetails')
 
+@app.route('/home/upload')
+def upload():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    user_name = ''
+    user_department = ''
+
+    if user_id:
+        # Query the user from the database
+        user = User.query.get(user_id)
+        if user:
+            user_name = user.username
+            user_department = user.department   
+            # flash(f"(flash){user} Logged in as User ID: {user_id}, User Name: {user.username}" )
+        else:
+            pass
+
+    return render_template('mainPart/upload.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='upload')
 
