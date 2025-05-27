@@ -26,6 +26,7 @@ form {
 .heading {
     background: url("../pic/INTI_LOGO.png") left no-repeat;
     width: 40%;
+    height: 100px;
 }
 
 /* User Info layout include logout button */
