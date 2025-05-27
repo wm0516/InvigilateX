@@ -4,25 +4,26 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home_part.css') }}">
 
-    <div class="header-container">
-        <div class="heading">
-            <!-- Add your heading here -->
-            <h1>Exam Scheduling System</h1>
-        </div>
+    <div class= "header-container">
+        <div class="heading"></div>
         <div class="user-info">
             <div class="user-details">
                 {{user_name}} <br>
                 {{user_id}} <br>
                 {{user_department}}
             </div>
+            <!-- <button class="logout-btn" type="button">Logout</button> -->
             <a href="{{ url_for('logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
         </div>
     </div>
+
 </head>
 <body>
     <form method="POST">
         <!-- Shared header/navigation -->
+
         <br><br>
+
 
         <!-- Dynamic tab navigation -->
         <div class="tab-nav">
