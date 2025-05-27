@@ -1,6 +1,5 @@
 body {
     margin: 0;
-    padding: 20;
     min-height: 100vh;
     display: grid;
     place-items: center;
@@ -28,7 +27,7 @@ form {
 /* INTI logo layout */
 .heading {
     background: url("../pic/INTI_LOGO.png") left no-repeat;
-    width: 30%;
+    width: 40%;
 }
 
 /* User Info layout include logout button */
