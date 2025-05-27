@@ -1,0 +1,44 @@
+<!-- upload.html -->
+{% extends "mainPart/baseUpload.html" %}
+{% block title %}UploadExam{% endblock %}
+{% block content %}
+    <div class="menu-grid">
+        <!-- Dynamic tab navigation -->
+        <div class="tab-nav">
+            <a href="{{ url_for('upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Lecturers Timetable</a>
+
+            <a href="{{ url_for('upload_lecturer_timetable')}}" 
+               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
+               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+
+            <a href="{{ url_for('upload_exam_details')}}" 
+               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
+               data-tab="uploadExamDetails">Exam Details</a>
+        </div>
+
+        <!-- Row 1 First Fesatures to upload merge schedule files--> 
+        <div class="menu-section">
+            <h2>Upload File</h2>
+            <div class="big-frame">
+                <label>Upload Masterfile</label>
+                <div class="small-frame">
+                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
+                </div>
+                <button type="submit">Upload and Process</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2>Table Record</h2>
+            <li class="submenu">
+                <strong>Purpose:</strong>
+                <ul>
+                    <li>Upload merged lecturer schedule files</li>
+                    <li>Access and review combined lecturer timetables</li>
+                </ul>
+            </li>
+        </div>
+    </div>
+{% endblock %}
