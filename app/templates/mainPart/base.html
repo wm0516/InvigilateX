@@ -42,7 +42,7 @@
         <!-- Sub-tab navigation (only shown when on upload section) -->
         {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
         <div class="menu-grid">
-            <div class="sub-tab-nav">
+            <div class="tab-nav">
                 <a href="{{ url_for('upload')}}" 
                    class="sub-tab-link {% if active_tab == 'upload' %}active{% endif %}" 
                    data-tab="upload">Lecturers Timetable</a>
