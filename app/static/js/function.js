@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
     const mainRouteToTab = {
         '/home_page': 'home',
-        '/home/uploadLecturerTimetable': 'uploadlLecturerTimetable',
+        '/home/upload': 'upload',
         '/home/autoGenerate': 'autoGenerate',
         '/home/manageLecturer': 'manage',
     };
@@ -84,8 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Then handle upload sub-tabs if we're in the upload section
-    if (activeMainTabId === 'uploadlLecturerTimetable') {
-        let activeUploadTabId = 'uploadlLecturerTimetable'; // Default fallback
+    if (activeMainTabId === 'upload') {
+        let activeUploadTabId = 'upload'; // Default fallback
         for (const [route, tabId] of Object.entries(uploadRouteToTab)) {
             if (currentPath.includes(route)) {
                 activeUploadTabId = tabId;
