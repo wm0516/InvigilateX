@@ -139,7 +139,7 @@ def reset_password_page(token):
 
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/home', methods=['GET', 'POST'])
-def home_page():
+def homepage():
     # Retrieve user ID from session
     user_id = session.get('user_id')
     user = User.query.get(user_id)
