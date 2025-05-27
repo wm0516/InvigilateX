@@ -1,0 +1,27 @@
+<!-- upload.html -->
+{% extends "mainPart/base.html" %}
+{% block title %}Upload{% endblock %}
+{% block content %}
+    <div class="menu-grid">
+        <!-- Dynamic tab navigation -->
+        <div class="tab-nav">
+            <a href="{{ url_for('upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Lecturers Timetable</a>
+
+            <a href="{{ url_for('upload_lecturer_timetable')}}" 
+               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
+               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+
+            <a href="{{ url_for('upload_exam_details')}}" 
+               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
+               data-tab="uploadExamDetails">Exam Details</a>
+        </div>
+    </div>
+    <br>
+    {{user_id}}
+
+    <!-- 
+    Show all the upload file by category like the main dashboard
+    -->
+{% endblock %}
