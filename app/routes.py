@@ -154,9 +154,9 @@ def inject_user_data():
             return {
                 'user_id': user_id,
                 'user_name': user.username,
-                'user_department': user.department
-                # 'user_email': user.email
-                # 'user_contact': user.contact
+                'user_department': user.department,
+                'user_email': user.email,
+                'user_contact': user.contact
             }
     return {
         'user_id': None,
