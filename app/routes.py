@@ -144,7 +144,7 @@ def logout():
 
 
 
-
+# Once login sucessful, it will kept all that user data and just use when need
 @app.context_processor
 def inject_user_data():
     user_id = session.get('user_id')
