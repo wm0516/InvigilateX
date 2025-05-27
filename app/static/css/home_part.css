@@ -20,8 +20,6 @@ form {
     display: flex;
     justify-content: space-between;
     width: 90%;
-    margin-left: 5%;
-    margin-right: 5%;
 }
 
 /* INTI logo layout */
@@ -45,7 +43,7 @@ form {
 /* User Info layout */
 .user-details {
     font-weight: normal;
-    font-size: small;
+    font-size: medium;
     text-align: left;
     margin-right: 10px;
     margin-left: 10px;
