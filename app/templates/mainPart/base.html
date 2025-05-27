@@ -3,7 +3,7 @@
 <head>
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home_part.css') }}">
-    
+    <!-- Shared header/navigation -->
     <div class= "header-container">
         <div class="heading"></div>
         <div class="user-info">
@@ -20,11 +20,6 @@
 </head>
 <body>
     <form method="POST">
-        <!-- Shared header/navigation -->
-
-        <br><br>
-
-
         <!-- Dynamic tab navigation -->
         <div class="tab-nav">
             <a href="{{ url_for('home_page')}}" 
