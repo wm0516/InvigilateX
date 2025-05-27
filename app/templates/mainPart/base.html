@@ -43,16 +43,16 @@
         {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
         <div class="tab-nav">
             <a href="{{ url_for('upload')}}" 
-                class="sub-tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-                data-tab="upload">Lecturers Timetable</a>
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Lecturers Timetable</a>
 
             <a href="{{ url_for('upload_lecturer_timetable')}}" 
-                class="sub-tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-                data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
+               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
 
             <a href="{{ url_for('upload_exam_details')}}" 
-                class="sub-tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-                data-tab="uploadExamDetails">Exam Details</a>
+               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
+               data-tab="uploadExamDetails">Exam Details</a>
         </div>
         {% endif %}
 
