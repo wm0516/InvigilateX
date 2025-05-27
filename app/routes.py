@@ -16,7 +16,7 @@ def login_page():
 
     # For debug
     '''if request.method == 'POST':
-        return redirect(url_for('home_page'))'''   
+        return redirect(url_for('homepage'))'''   
      
     # Need Uncommand back 
     if request.method == 'POST':
@@ -28,10 +28,10 @@ def login_page():
             error_message = result
         else:
             session['user_id'] = result  # Store the user ID in session
-            return redirect(url_for('home_page'))
+            return redirect(url_for('homepage'))
     
 
-    return render_template('frontPart/login_page.html', login_text=login_text, 
+    return render_template('frontPart/login.html', login_text=login_text, 
                            password_text=password_text, error_message=error_message)
 
 
@@ -87,7 +87,7 @@ def register_page():
             flash(f"Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login_page'))
 
-    return render_template('frontPart/register_page.html', userid_text=userid_text, username_text=username_text, 
+    return render_template('frontPart/register.html', userid_text=userid_text, username_text=username_text, 
                            email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
                            password2_text=password2_text, error_message=error_message)
 
@@ -110,7 +110,7 @@ def forgot_password_page():
             else:
                 return redirect(url_for('login_page'))
 
-    return render_template('frontPart/forgotPassword_page.html', 
+    return render_template('frontPart/forgotPassword.html', 
                          forgot_email_text=forgot_email_text, 
                          error_message=error_message)
 
@@ -134,7 +134,7 @@ def reset_password_page(token):
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('login_page'))
     
-    return render_template('frontPart/resetPassword_page.html', error_message=error_message)
+    return render_template('frontPart/resetPassword.html', error_message=error_message)
 
 
 # home page (start with this!!!!!!!!!!!!!!)
@@ -156,7 +156,7 @@ def homepage():
         else:
             pass
 
-    return render_template('mainPart/home_page.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='home')
+    return render_template('mainPart/homepage.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='home')
 
 # Logout button from homepage to login page
 @app.route('/logout')
@@ -183,7 +183,7 @@ def auto_generate():
         else:
             pass
 
-    return render_template('mainPart/generate_schedule.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='autoGenerate')
+    return render_template('mainPart/generateSchedule.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='autoGenerate')
 
 @app.route('/home/manageLecturer')
 def manage_lecturer():
@@ -202,7 +202,7 @@ def manage_lecturer():
         else:
             pass
 
-    return render_template('mainPart/manage_lecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='manage')
+    return render_template('mainPart/manageLecturer.html', user_id = user_id, user_name=user_name, user_department=user_department, active_tab='manage')
 
 
 @app.route('/home/uploadLecturerTimetable')
