@@ -1,42 +1,26 @@
 <!-- upload.html -->
-{% extends "mainPart/base.html" %}
+{% extends "mainPart/baseUpload.html" %}
 {% block title %}UploadTimetable{% endblock %}
 {% block content %}
-    <div class="menu-grid">
-        <!-- Dynamic tab navigation -->
-        <div class="tab-nav">
-            <a href="{{ url_for('upload')}}" 
-               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-               data-tab="upload">Lecturers Timetable</a>
 
-            <a href="{{ url_for('upload_lecturer_timetable')}}" 
-               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
-
-            <a href="{{ url_for('upload_exam_details')}}" 
-               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-               data-tab="uploadExamDetails">Exam Details</a>
-        </div>
-
-        <div class="menu-section">
-            <h2>Upload File</h2>
-            <div class="big-frame">
-                <label>Upload Masterfile</label>
-                <div class="small-frame">
-                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
-                </div>
-                <button type="submit">Upload and Process</button>
+    <div class="menu-section">
+        <h2>Upload File</h2>
+        <div class="big-frame">
+            <label>Upload Masterfile</label>
+            <div class="small-frame">
+                <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
             </div>
+            <button type="submit">Upload and Process</button>
         </div>
+    </div>
 
-        <div class="menu-section">
-            <h2>Table Record</h2>
-            <tr>
-                <th>a</th>
-                <th>b</th>
-                <th>c</th>
-            </tr>
-            
-        </div>
+    <div class="menu-section">
+        <h2>Table Record</h2>
+        <tr>
+            <th>a</th>
+            <th>b</th>
+            <th>c</th>
+        </tr>
+        
     </div>
 {% endblock %}
