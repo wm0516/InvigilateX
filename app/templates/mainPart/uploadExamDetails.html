@@ -3,25 +3,28 @@
 {% block title %}UploadExam{% endblock %}
 {% block content %}
     <!-- Row 1 First Fesatures to upload merge schedule files--> 
-    <div class="menu-section">
-        <h2>Upload File</h2>
-        <div class="big-frame">
-            <label>Upload Masterfile</label>
-            <div class="small-frame">
-                <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
-            </div>
-            <button type="submit">Upload and Process</button>
-        </div>
-    </div>
+    <div class="menu-grid">
 
-    <div class="menu-section">
-        <h2>Table Record</h2>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
-            </ul>
-        </li>
+        <div class="menu-section">
+            <h2>Upload File</h2>
+            <div class="big-frame">
+                <label>Upload Masterfile</label>
+                <div class="small-frame">
+                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
+                </div>
+                <button type="submit">Upload and Process</button>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2>Table Record</h2>
+            <li class="submenu">
+                <strong>Purpose:</strong>
+                <ul>
+                    <li>Upload merged lecturer schedule files</li>
+                    <li>Access and review combined lecturer timetables</li>
+                </ul>
+            </li>
+        </div>
     </div>
 {% endblock %}
