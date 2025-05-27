@@ -48,16 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
         '/home/manageLecturer': 'manage',
     };
 
-    // File upload sub-tabs (only relevant when in upload section)
+    // File upload sub-tabs
     const uploadRouteToTab = {
-        '/home/uploadLecturerTimetable': 'uploadlLecturerTimetable',
+        '/home/uploadLecturerTimetable': 'uploadLecturerTimetable', // Fixed typo
         '/home/uploadExamDetails': 'uploadExamDetails',
     };
 
     const currentPath = window.location.pathname;
     
-    // First handle main navigation tabs
-    let activeMainTabId = 'home'; // Default fallback
+    // Handle main navigation tabs
+    let activeMainTabId = 'home';
     for (const [route, tabId] of Object.entries(mainRouteToTab)) {
         if (currentPath.includes(route)) {
             activeMainTabId = tabId;
@@ -65,27 +65,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Update main tab UI only if elements exist
-    const mainTabLinks = document.querySelectorAll('.main-nav .tab-link');
-    if (mainTabLinks.length > 0) {
-        mainTabLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('data-tab') === activeMainTabId) {
-                link.classList.add('active');
-            }
-        });
+    // Update main tab UI
+    document.querySelectorAll('.main-nav .tab-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-tab') === activeMainTabId) {
+            link.classList.add('active');
+        }
+    });
 
-        document.querySelectorAll('.main-tab-pane').forEach(pane => {
-            pane.classList.remove('active');
-            if (pane.id === activeMainTabId) {
-                pane.classList.add('active');
-            }
-        });
-    }
-
-    // Then handle upload sub-tabs if we're in the upload section
+    // Handle upload sub-tabs if we're in the upload section
     if (activeMainTabId === 'upload') {
-        let activeUploadTabId = 'upload'; // Default fallback
+        let activeUploadTabId = 'upload';
         for (const [route, tabId] of Object.entries(uploadRouteToTab)) {
             if (currentPath.includes(route)) {
                 activeUploadTabId = tabId;
@@ -93,22 +83,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Update upload tab UI only if elements exist
-        const uploadTabLinks = document.querySelectorAll('.upload-sub-nav .tab-link');
-        if (uploadTabLinks.length > 0) {
-            uploadTabLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('data-tab') === activeUploadTabId) {
-                    link.classList.add('active');
-                }
-            });
-
-            document.querySelectorAll('.upload-tab-pane').forEach(pane => {
-                pane.classList.remove('active');
-                if (pane.id === activeUploadTabId) {
-                    pane.classList.add('active');
-                }
-            });
-        }
+        // Update upload tab UI
+        document.querySelectorAll('.upload-sub-nav .sub-tab-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('data-tab') === activeUploadTabId) {
+                link.classList.add('active');
+            }
+        });
     }
 });
