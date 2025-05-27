@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
     const mainRouteToTab = {
-        '/home_page': 'home',
+        '/homepage': 'home',
         '/home/upload': 'upload',
         '/home/autoGenerate': 'autoGenerate',
         '/home/manageLecturer': 'manage',
