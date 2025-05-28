@@ -74,3 +74,63 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* read upload file function */
+document.addEventListener('DOMContentLoaded', function() {
+    setupExamDetails();
+
+    const examLastUploaded = localStorage.getItem('examLastUploaded');
+    if (examLastUploaded) {
+        const examLastUploadedLabel = document.getElementById('examLastUploadedLabel');
+        if (examLastUploadedLabel) {
+            examLastUploadedLabel.textContent = `Last Uploaded: ${examLastUploaded}`;
+        }
+    }
+});
+
+function setupExamDetails() {
+    const uploadExamDetails = document.getElementById('uploadExamDetails');    
+    if (uploadExamDetails && !uploadExamDetails.dataset.listenerAttached) {
+        uploadExamDetails.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const file = document.getElementById('exam_file').files[0];
+
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            fetch('/home/uploadExamDetails', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // Handle Flask redirect (for flash messages)
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.success) {
+                    alert(data.message);
+                    if (data.warnings) {
+                        data.warnings.forEach(warning => alert('Warning: ' + warning));
+                    }
+                    const currentDate = new Date();
+                    const formattedDate = currentDate.toLocaleString('en-GB', {
+                        weekday: 'short', year: '2-digit', month: 'short', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
+                    });
+                    localStorage.setItem('examLastUploaded', formattedDate);
+                    window.location.reload(true);
+                }
+            })
+            .catch(error => {
+                alert('Upload failed: ' + error.message);
+            });
+        });
+        uploadExamDetails.dataset.listenerAttached = "true";
+    }
+}
