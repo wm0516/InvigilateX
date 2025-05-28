@@ -202,6 +202,7 @@ def upload():
 def upload_exam_details():
     exam_data=''
     if request.method == 'POST':
+        flash(f"{request.files}")
         if 'exam_file' not in request.files:
             flash('No file uploaded 123')
             return redirect(request.url)
