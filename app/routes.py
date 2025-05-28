@@ -213,9 +213,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def upload_exam_details():
     exam_data=''
     if request.method == 'POST':
-        if 'master_file' not in request.files:
-            flash('No file uploaded')
-            return redirect(request.url)
+        # if 'master_file' not in request.files:
+        #    flash('No file uploaded')
+        #    return redirect(request.url)
         
         file = request.files['master_file']
         
