@@ -76,52 +76,55 @@ document.addEventListener('DOMContentLoaded', function() {
 /* read upload file function */
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('exam_list');
+    const resultDiv = document.getElementById('uploadResult');
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
-        const fileInput = document.getElementById('exam_list');
         const file = fileInput.files[0];
 
         if (!file) {
-            alert('Please select a file to upload.');
-            return; 
+        alert('Please select a file to upload.');
+        return;
         }
 
-        const formData = new FormData(form);
+        // Create a new FormData object and append the file manually
+        const formData = new FormData();
+        formData.append('exam_file', file);
 
         try {
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
+        const response = await fetch('/home/uploadExamDetails', {
+            method: 'POST',
+            body: formData
+            // IMPORTANT: Do NOT set Content-Type header manually when sending FormData!
+        });
 
-            const contentType = response.headers.get('content-type');
-            const resultDiv = document.getElementById('uploadResult');
-
-            if (contentType.includes('application/json')) {
-                const data = await response.json();
-                if (data.error) {
-                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
-                } else {
-                    resultDiv.innerHTML = `
-                        <p style="color:green;">${data.message}</p>
-                        <strong>Columns:</strong> ${data.columns.join(', ')}<br>
-                        <strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>
-                    `;
-                    localStorage.setItem('examLastUploaded', new Date().toLocaleString());
-                }
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data.error) {
+            resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
             } else {
-                const text = await response.text();
-                resultDiv.innerHTML = `<p>${text}</p>`;
+            resultDiv.innerHTML = `
+                <p style="color:green;">${data.message}</p>
+                <strong>Columns:</strong> ${data.columns ? data.columns.join(', ') : 'N/A'}<br>
+                <strong>Preview:</strong> <pre>${data.preview ? JSON.stringify(data.preview, null, 2) : ''}</pre>
+            `;
+            localStorage.setItem('examLastUploaded', new Date().toLocaleString());
             }
+        } else {
+            const text = await response.text();
+            resultDiv.innerHTML = `<p>${text}</p>`;
+        }
         } catch (err) {
-            alert('Upload failed: ' + err.message);
+        alert('Upload failed: ' + err.message);
         }
     });
 
+    // Show last uploaded time if available
     const lastUploaded = localStorage.getItem('examLastUploaded');
     if (lastUploaded) {
-        const resultDiv = document.getElementById('uploadResult');
         resultDiv.innerHTML += `<p><small>Last Uploaded: ${lastUploaded}</small></p>`;
     }
 });
