@@ -42,8 +42,8 @@ with app.app_context():
 # Import routes (must be after app creation to avoid circular imports)
 try:
     from app import routes
-    print("11. Routes imported successfully")  # Debug point 11
+    print("Routes imported successfully")  # Debug point 11
 except ImportError as e:
-    print(f"12. Failed to import routes: {e}")  
+    print(f"Failed to import routes: {e}")  
 
 
