@@ -92,7 +92,7 @@ function setupExamDetails() {
         uploadExamDetails.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const fileInput = document.getElementById('exam_file');
+            const fileInput = document.getElementById('exam_list');
             const file = fileInput.files[0];
             
             if (!file) {
