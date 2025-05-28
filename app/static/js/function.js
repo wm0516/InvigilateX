@@ -123,17 +123,17 @@ function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  setupFileUpload({
-    formId: 'uploadExamForm',
-    fileInputId: 'exam_list',
-    uploadUrl: '/home/uploadExamDetails',
-    resultDivId: 'examUploadResult'   // changed here
-  });
+    setupFileUpload({
+        formId: 'uploadLecturerForm',
+        fileInputId: 'lecturer_list',
+        uploadUrl: '/home/uploadLecturerTimetable',
+        resultDivId: 'lecturerUploadResult'
+    });
 
-  setupFileUpload({
-    formId: 'uploadLecturerForm',
-    fileInputId: 'lecturer_list',
-    uploadUrl: '/home/uploadLecturerTimetable',
-    resultDivId: 'lecturerUploadResult'
-  });
+    setupFileUpload({
+        formId: 'uploadExamForm',
+        fileInputId: 'exam_list',
+        uploadUrl: '/home/uploadExamDetails',
+        resultDivId: 'examUploadResult' 
+    });
 });
