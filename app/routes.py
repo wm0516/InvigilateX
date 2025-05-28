@@ -257,62 +257,67 @@ def upload_lecturer_timetable():
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
-    if 'exam_file' not in request.files:
-        return jsonify({'success': False, 'message': 'No file uploaded'})
+    if request.method == 'POST':
 
-    file = request.files['exam_file']
-    file_stream = BytesIO(file.read())
-    records_added = 0
-    errors = []
-    warnings = []
+        if 'exam_file' not in request.files:
+            return jsonify({'success': False, 'message': 'No file uploaded'})
 
-    try:
-        excel_file = pd.ExcelFile(file_stream)
+        file = request.files['exam_file']
+        file_stream = BytesIO(file.read())
+        records_added = 0
+        errors = []
+        warnings = []
+
+        try:
+            excel_file = pd.ExcelFile(file_stream)
+            
+            for sheet_name in excel_file.sheet_names:
+                current_app.logger.info(f"Processing sheet: {sheet_name}")
+
+                try:
+                    # ✅ Only reads columns A to I, skips the first row (headers start from row 2)
+                    df = pd.read_excel(
+                        excel_file,
+                        sheet_name=sheet_name,
+                        usecols="A:I",
+                        skiprows=1
+                    )
+
+                    # ✅ Assign expected column names
+                    df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
+
+                    # ➕ You can add further logic to insert or process the data here.
+                    records_added += len(df)
+
+                except Exception as e:
+                    error_msg = f"Error processing sheet '{sheet_name}': {str(e)}"
+                    errors.append(error_msg)
+                    current_app.logger.error(error_msg)
+                    continue
+
+            response_data = {
+                'success': True,
+                'message': f'Successfully processed {records_added} record(s).'
+            }
+
+            if warnings:
+                response_data['warnings'] = warnings
+            if errors:
+                response_data['errors'] = errors
+
+            return jsonify(response_data)
+
+        except Exception as e:
+            error_msg = f"Error processing file: {str(e)}"
+            current_app.logger.error(error_msg)
+            return jsonify({
+                'success': False,
+                'message': error_msg
+            })
         
-        for sheet_name in excel_file.sheet_names:
-            current_app.logger.info(f"Processing sheet: {sheet_name}")
+    return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
 
-            try:
-                # ✅ Only reads columns A to I, skips the first row (headers start from row 2)
-                df = pd.read_excel(
-                    excel_file,
-                    sheet_name=sheet_name,
-                    usecols="A:I",
-                    skiprows=1
-                )
-
-                # ✅ Assign expected column names
-                df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
-
-                # ➕ You can add further logic to insert or process the data here.
-                records_added += len(df)
-
-            except Exception as e:
-                error_msg = f"Error processing sheet '{sheet_name}': {str(e)}"
-                errors.append(error_msg)
-                current_app.logger.error(error_msg)
-                continue
-
-        response_data = {
-            'success': True,
-            'message': f'Successfully processed {records_added} record(s).'
-        }
-
-        if warnings:
-            response_data['warnings'] = warnings
-        if errors:
-            response_data['errors'] = errors
-
-        return jsonify(response_data)
-
-    except Exception as e:
-        error_msg = f"Error processing file: {str(e)}"
-        current_app.logger.error(error_msg)
-        return jsonify({
-            'success': False,
-            'message': error_msg
-        })
-    
+        
 
 
 
