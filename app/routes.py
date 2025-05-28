@@ -207,37 +207,30 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Ensure the upload directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
-    exam_data=''
     if request.method == 'POST':
+        # Check if the file part is present
         if 'master_file' not in request.files:
-            flash('No file part')
+            flash('No file uploaded')
             return redirect(request.url)
         
         file = request.files['master_file']
-        
-        if not file or not file.filename:
-            flash('No selected file')
+
+        # Check if a file is selected
+        if file.filename == '':
+            flash('No file selected')
             return redirect(request.url)
 
-        if file:
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            try:
-                df = pd.read_excel(filepath)  # Use pd.read_csv() if using .csv files
-                exam_data = df.to_dict(orient='records')  # Converts DataFrame to a list of dicts
-
-                print(df.head())  # Debugging
-                return "File uploaded and read successfully!"
-            except Exception as e:
-                flash(f"Error reading Excel file: {e}")
-                return redirect(request.url)
-
-        flash('Invalid file type. Only Excel files are supported.')
-        return redirect(request.url)
+        try:
+            # Read the Excel file directly from the uploaded file stream
+            df = pd.read_excel(file)
+            exam_data = df.to_dict(orient='records')
+            return render_template('mainPart/uploadExamDetails.html', exam_data=exam_data)
+        except Exception as e:
+            flash(f"Error reading Excel file: {e}")
+            return redirect(request.url)
 
     return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails', exam_data=exam_data)
 
