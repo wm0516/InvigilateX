@@ -87,50 +87,44 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function setupExamDetails() {
-    const uploadExamDetails = document.getElementById('uploadExamDetails');    
+    const uploadExamDetails = document.getElementById('uploadExamDetails');
     if (uploadExamDetails && !uploadExamDetails.dataset.listenerAttached) {
         uploadExamDetails.addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const formData = new FormData(this);
-            const file = document.getElementById('exam_file').files[0];
-
+            
+            const fileInput = document.getElementById('exam_file');
+            const file = fileInput.files[0];
+            
             if (!file) {
                 alert('Please select a file');
                 return;
             }
 
+            // Create new FormData and append the file properly
+            const formData = new FormData();
+            formData.append('exam_file', file);  // Must match the name attribute in HTML
+
             fetch('/home/uploadExamDetails', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                // Don't set Content-Type header - let the browser set it automatically
+                // with the proper boundary for multipart/form-data
             })
             .then(response => {
                 if (response.redirected) {
-                    // Handle Flask redirect (for flash messages)
                     window.location.href = response.url;
                     return;
                 }
                 return response.json();
             })
             .then(data => {
-                if (data && data.success) {
-                    alert(data.message);
-                    if (data.warnings) {
-                        data.warnings.forEach(warning => alert('Warning: ' + warning));
-                    }
-                    const currentDate = new Date();
-                    const formattedDate = currentDate.toLocaleString('en-GB', {
-                        weekday: 'short', year: '2-digit', month: 'short', day: '2-digit',
-                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-                    });
-                    localStorage.setItem('examLastUploaded', formattedDate);
-                    window.location.reload(true);
-                }
+                // Handle response
             })
             .catch(error => {
+                console.error('Error:', error);
                 alert('Upload failed: ' + error.message);
             });
-        });
+        }); 
         uploadExamDetails.dataset.listenerAttached = "true";
     }
 }
