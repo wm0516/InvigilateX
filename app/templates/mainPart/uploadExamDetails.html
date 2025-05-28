@@ -3,17 +3,6 @@
 
 {% block content %}
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
-
     <div class="menu-section">
         <div class="main-frame">
             <h2>Upload Exam File</h2>
