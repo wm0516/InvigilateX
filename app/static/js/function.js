@@ -1,3 +1,4 @@
+/* toggle function*/
 document.addEventListener('DOMContentLoaded', function() {
     const toggleButtons = document.querySelectorAll('.toggle-password-btn');
 
@@ -17,28 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/*
-// Simple tab switching functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const tabLinks = document.querySelectorAll('.tab-link');
-    
-    tabLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Remove active class from all tabs and panes
-            document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding pane
-            this.classList.add('active');
-            const tabId = this.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
-        });
-    });
-});
-*/
-
+/* tab function*/
 document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
     const mainRouteToTab = {
@@ -91,4 +71,46 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+});
+
+/* read upload file function */
+document.getElementById('uploadFile').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+
+        // Check if "Plan" sheet exists
+        if (!workbook.SheetNames.includes("Plan")) {
+            alert("Sheet 'Plan' not found in Excel file.");
+            return;
+        }
+
+        const worksheet = workbook.Sheets["Plan"];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        const tableBody = document.getElementById('examTableBody');
+        tableBody.innerHTML = ""; // Clear old data
+
+        jsonData.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${row["Date"]}</td>
+                <td>${row["Day"]}</td>
+                <td>${row["Start"]}</td>
+                <td>${row["End"]}</td>
+                <td>${row["Program"]}</td>
+                <td>${row["Course/Sec"]}</td>
+                <td>${row["Lecturer"]}</td>
+                <td>${row["No Of"]}</td>
+                <td>${row["Room"]}</td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    };
+
+    reader.readAsArrayBuffer(file);
 });
