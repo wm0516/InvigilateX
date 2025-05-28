@@ -100,6 +100,12 @@ form {
     text-decoration: none;
 }
 
+.tab-frame {
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
 
 
 
