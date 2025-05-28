@@ -162,19 +162,22 @@ input[type="file"] {
     font-size: medium;
 }
 
+
+.button-wrapper {
+    display: flex;
+    justify-content: center; /* Horizontally centers the button */
+    background-color: #0056b3;
+}
+
 .button-wrapper button {
     padding: 12px 24px;
-    font-size: 1.1rem; /* or use 'large' */
+    font-size: 1.1rem;
     border: none;
     border-radius: 6px;
     background-color: #007bff;
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
-}
-
-.button-wrapper button:hover {
-    background-color: #0056b3;
 }
 
 
