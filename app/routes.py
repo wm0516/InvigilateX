@@ -209,6 +209,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
+    exam_data=''
     if request.method == 'POST':
         if 'master_file' not in request.files:
             flash('No file part')
@@ -227,6 +228,8 @@ def upload_exam_details():
 
             try:
                 df = pd.read_excel(filepath)  # Use pd.read_csv() if using .csv files
+                exam_data = df.to_dict(orient='records')  # Converts DataFrame to a list of dicts
+
                 print(df.head())  # Debugging
                 return "File uploaded and read successfully!"
             except Exception as e:
@@ -236,7 +239,7 @@ def upload_exam_details():
         flash('Invalid file type. Only Excel files are supported.')
         return redirect(request.url)
 
-    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
+    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails', exam_data=exam_data)
 
 
 
