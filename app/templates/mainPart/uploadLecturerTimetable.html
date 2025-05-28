@@ -13,44 +13,42 @@
     </ul>
   {% endif %}
 {% endwith %}
-    <div class="menu-grid">
 
-        <div class="menu-section">
-            <div class="big-frame">
-                <h2>Upload Masterfile</h2>
-                <div class="small-frame">
-                    <form id="uploadLecturerList" method="POST" enctype="multipart/form-data">
-                        <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
-                        <button type="submit">Upload</button>
-                    </form>
-                </div>  
-            </div>
-        </div>  
-
-        <div class="menu-section">
-            <h2>Table Record</h2>
-            <div class="user-table-container">
-                <table class="user-data-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>ID</th>
-                            <th>Department</th>
-                            <th>Email</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>{{user_name}}</td>
-                            <td>{{user_id}}</td>
-                            <td>{{user_department}}</td>
-                            <td>{{user_email}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+    <div class="menu-section">
+        <div class="big-frame">
+            <h2>Upload Masterfile</h2>
+            <div class="small-frame">
+                <form id="uploadLecturerList" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
+                    <button type="submit">Upload</button>
+                </form>
+            </div>  
         </div>
     </div>  
+
+    <div class="menu-section">
+        <h2>Table Record</h2>
+        <div class="user-table-container">
+            <table class="user-data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{user_name}}</td>
+                        <td>{{user_id}}</td>
+                        <td>{{user_department}}</td>
+                        <td>{{user_email}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
