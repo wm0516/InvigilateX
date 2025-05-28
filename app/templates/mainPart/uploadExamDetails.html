@@ -17,13 +17,36 @@
 
         <div class="menu-section">
             <h2>Table Record</h2>
-            <li class="submenu">
-                <strong>Purpose:</strong>
-                <ul>
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
-                </ul>
-            </li>
+            <div class="user-table-container">
+                <table class="user-data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Course</th>
+                            <th>Section</th>
+                            <th>Lecturer</th>
+                            <th>No of </th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{user_name}}</td>
+                            <td>{{user_id}}</td>
+                            <td>{{user_department}}</td>
+                            <td>{{user_email}}</td>
+                            <td>{{user_name}}</td>
+                            <td>{{user_id}}</td>
+                            <td>{{user_department}}</td>
+                            <td>{{user_email}}</td>
+                            <td>{{user_name}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}
