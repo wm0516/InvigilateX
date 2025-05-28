@@ -1,6 +1,5 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
+from flask import render_template, request, redirect, url_for, flash, session
 from app import app
-from werkzeug.utils import secure_filename
 import os
 import pandas as pd
 from .backend import *
@@ -9,7 +8,6 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-
 
 
 
@@ -192,11 +190,17 @@ def manage_lecturer():
 def upload_lecturer_timetable():
     return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
 
+@app.route('/home/upload')
+def upload():
+    return render_template('mainPart/upload.html', active_tab='upload')
+
+
+
 
 
 # Configurations
 UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
-ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
+ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'xlsm'}
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -210,30 +214,28 @@ def allowed_file(filename):
 def upload_exam_details():
     if request.method == 'POST':
         if 'master_file' not in request.files:
-            return render_template('mainPart/upload.html', error="No file part in the request.")
+            return render_template('uploadExamDetails.html', error="No file part in the request.", active_tab='uploadExamDetails')
 
         file = request.files['master_file']
 
         if file.filename == '':
-            return render_template('mainPart/upload.html', error="No selected file.")
+            return render_template('uploadExamDetails.html', error="No selected file.", active_tab='uploadExamDetails')
 
         if file and allowed_file(file.filename):
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename) # type: ignore
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
 
             try:
                 df = pd.read_excel(filepath, sheet_name='Plan')
                 exam_data = df.to_dict('records')
                 os.remove(filepath)
-                return render_template('mainPart/upload.html', exam_data=exam_data)
+                return render_template('uploadExamDetails.html', exam_data=exam_data, active_tab='uploadExamDetails')
 
             except Exception as e:
-                return render_template('mainPart/uploadExamDetails.html', error=f"Error processing file: {str(e)}")
-
+                return render_template('uploadExamDetails.html', error=f"Error processing file: {str(e)}", active_tab='uploadExamDetails')
+    
     return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
 
-@app.route('/home/upload')
-def upload():
-    return render_template('mainPart/upload.html', active_tab='upload')
+
 
 
