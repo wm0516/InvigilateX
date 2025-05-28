@@ -118,7 +118,21 @@ form {
 
 
 
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
+.input-wrapper {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+}
 
 
 
@@ -222,6 +236,8 @@ form {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     border: 1px solid #ccc;
 }
+
+
 
 .small-frame {
     width: 95%;
