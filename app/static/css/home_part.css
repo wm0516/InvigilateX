@@ -7,11 +7,12 @@ body {
 form {
     width: 93%;
     padding: 20px;
-    border: 2px solid #ccc;
+    /* border: 2px solid #ccc; */
     border-radius: 10px;
-    background: #fff;
+    /* background: #fff; */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    margin-top: 3%;
+    /* margin-top: 3%; */
+    font-size: medium;
 }
 
 /* Heading frame layout */
