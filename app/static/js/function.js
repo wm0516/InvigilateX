@@ -74,51 +74,66 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* read upload file function */
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('uploadForm');
-    const fileInput = document.getElementById('exam_list');
-    const resultDiv = document.getElementById('uploadResult');
+function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
+  const form = document.getElementById(formId);
+  const fileInput = document.getElementById(fileInputId);
+  const resultDiv = document.getElementById(resultDivId);
 
-    form.addEventListener('submit', async function (e) {
-        e.preventDefault();
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-        const file = fileInput.files[0];
+    const file = fileInput.files[0];
 
-        if (!file) {
-        alert('Please select a file to upload.');
-        return;
-        }
+    if (!file) {
+      alert('Please select a file to upload.');
+      return;
+    }
 
-        // Create a new FormData object and append the file manually
-        const formData = new FormData();
-        formData.append('exam_file', file);
+    const formData = new FormData();
+    const fileKey = fileInput.name;
+    formData.append(fileKey, file);
 
-        try {
-        const response = await fetch('/home/uploadExamDetails', {
-            method: 'POST',
-            body: formData
-            // IMPORTANT: Do NOT set Content-Type header manually when sending FormData!
-        });
+    try {
+      const response = await fetch(uploadUrl, {
+        method: 'POST',
+        body: formData
+      });
 
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-            const data = await response.json();
-            if (data.error) {
-            resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
-            } else {
-            resultDiv.innerHTML = `
-                <p style="color:green;">${data.message}</p>
-                <strong>Columns:</strong> ${data.columns ? data.columns.join(', ') : 'N/A'}<br>
-                <strong>Preview:</strong> <pre>${data.preview ? JSON.stringify(data.preview, null, 2) : ''}</pre>
-            `;
-            localStorage.setItem('examLastUploaded', new Date().toLocaleString());
-            }
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await response.json();
+        if (data.error) {
+          resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
         } else {
-            const text = await response.text();
-            resultDiv.innerHTML = `<p>${text}</p>`;
+          resultDiv.innerHTML = `
+            <p style="color:green;">${data.message}</p>
+            <strong>Columns:</strong> ${data.columns ? data.columns.join(', ') : 'N/A'}<br>
+            <strong>Preview:</strong> <pre>${data.preview ? JSON.stringify(data.preview, null, 2) : ''}</pre>
+          `;
+          localStorage.setItem(fileKey + 'LastUploaded', new Date().toLocaleString());
         }
-        } catch (err) {
-        alert('Upload failed: ' + err.message);
-        }
-    });
+      } else {
+        const text = await response.text();
+        resultDiv.innerHTML = `<p>${text}</p>`;
+      }
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  setupFileUpload({
+    formId: 'uploadExamForm',
+    fileInputId: 'exam_list',
+    uploadUrl: '/home/uploadExamDetails',
+    resultDivId: 'examUploadResult'   // changed here
+  });
+
+  setupFileUpload({
+    formId: 'uploadLecturerForm',
+    fileInputId: 'lecturer_list',
+    uploadUrl: '/home/uploadLecturerTimetable',
+    resultDivId: 'lecturerUploadResult'
+  });
 });
