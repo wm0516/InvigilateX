@@ -2,6 +2,17 @@
 {% block title %}Upload Exam{% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
 <div class="menu-grid">
     <div class="menu-section">
         <div class="big-frame">
@@ -12,7 +23,7 @@
                 </form>
             </div>
             <button type="submit">Upload</button>
-            <br>
+            <br>    
             <small class="form-text text-muted">
                 Sheet names should start with: C (Certificate), CF (Foundation), D (Diploma), B (Degree). Others will be categorized as "Others".
             </small>    
