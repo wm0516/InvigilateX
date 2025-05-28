@@ -218,7 +218,7 @@ def upload_exam_details():
             return render_template('upload.html', error="No selected file.")
 
         if file and allowed_file(file.filename):
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename) # type: ignore
             file.save(filepath)
 
             try:
