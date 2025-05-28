@@ -191,20 +191,7 @@ def auto_generate():
 def manage_lecturer():
     return render_template('mainPart/manageLecturer.html', active_tab='manage')
 
-@app.route('/home/uploadLecturerTimetable', methods=['GET', 'POST'])
-def upload_lecturer_timetable():
 
-    if request.method == 'POST':
-        flash(f"{request.method}")
-        flash(f"{request.files}")
-        flash(f"{request.form}")
-        if 'lecturer_file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-
-
-
-    return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
 
 @app.route('/home/upload')
 def upload():
@@ -221,10 +208,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-@app.route('/')
-def index():
-    return render_template('upload.html')
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
@@ -260,6 +243,45 @@ def upload_exam_details():
             return jsonify({'error': f'Failed to read Excel file: {str(e)}'}), 500
         
     return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails', exam_data=exam_data)
+
+
+@app.route('/home/uploadLecturerTimetable', methods=['GET', 'POST'])
+def upload_lecturer_timetable():
+    if request.method == 'POST':
+        flash(f"{request.method}")
+        flash(f"{request.files}")
+        flash(f"{request.form}")
+
+        if 'lecturer_file' not in request.files:
+            flash('No file part')
+            return jsonify({'error': 'No file part in the request'}), 400
+
+        file = request.files['lecturer_file']
+
+        if file.filename == '':
+            return jsonify({'error': 'No selected file'}), 400
+        
+        if file.filename is None:
+            return jsonify({'error': 'Filename is missing.'}), 400
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        try:
+            df = pd.read_excel(filepath)
+            return jsonify({
+                'message': 'Lecturer timetable file uploaded and read successfully!',
+                'columns': df.columns.tolist(),
+                'preview': df.head(3).to_dict(orient='records')
+            })
+        except Exception as e:
+            return jsonify({'error': f'Failed to read Excel file: {str(e)}'}), 500
+
+    return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
+
+
+
 
 
 '''
