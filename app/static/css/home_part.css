@@ -125,8 +125,12 @@ form {
 }
 
 .input-wrapper {
-    display: flex;
+    display: flex;;
     justify-content: flex-start;
+}
+
+input[type="file"] {
+    font-size: medium;
 }
 
 .button-wrapper {
