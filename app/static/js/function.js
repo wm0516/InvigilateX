@@ -121,10 +121,4 @@ document.addEventListener('DOMContentLoaded', function () {
         alert('Upload failed: ' + err.message);
         }
     });
-
-    // Show last uploaded time if available
-    const lastUploaded = localStorage.getItem('examLastUploaded');
-    if (lastUploaded) {
-        resultDiv.innerHTML += `<p><small>Last Uploaded: ${lastUploaded}</small></p>`;
-    }
 });
