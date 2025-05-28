@@ -16,25 +16,19 @@
 <div class="menu-grid">
     <div class="menu-section">
         <div class="big-frame">
-            
-            <form id="uploadExamDetails" method="POST" enctype="multipart/form-data">
-                <div class="small-frame">
-                    <h2>Upload Exam File</h2>
-                    <input type="file" id="examFile" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
-                    <small class="form-text text-muted">
-                        Sheet names should match the department codes in the Departments table.
-                    </small>
-                </div>
-                <button type="submit">Upload and Process</button>
-            </form>  
+            <h2>Upload Exam File</h2>
+            <div class="small-frame">
+                 <form id="uploadExamDetails" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="exam_file" accept=".xlsx,.xls,.xlsm" required>
+                </form>
+            </div>
+            <button type="submit">Upload</button>
+            <br>    
+            <small class="form-text text-muted">
+                Sheet names should start with: C (Certificate), CF (Foundation), D (Diploma), B (Degree). Others will be categorized as "Others".
+            </small>    
         </div>
     </div>  
-
-
-
-
-
-
 
 
 
