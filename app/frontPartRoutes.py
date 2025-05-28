@@ -138,29 +138,10 @@ def reset_password_page(token):
 
 
 
-# login page (done with checking email address and hash password)
-@app.route('/', methods=['GET', 'POST'])
-def login_page():
-    login_text = ''
-    password_text = ''
-    error_message = None
-
-    # For debug
-    '''if request.method == 'POST':
-        return redirect(url_for('homepage'))'''   
-     
-    # Need Uncommand back 
-    if request.method == 'POST':
-        login_text = request.form.get('textbox', '').strip()
-        password_text = request.form.get('password', '').strip()
-
-        valid, result = check_login(login_text, password_text)
-        if not valid:
-            error_message = result
-        else:
-            session['user_id'] = result  # Store the user ID in session
-            return redirect(url_for('homepage'))
-    
-
-    return render_template('frontPart/login.html', login_text=login_text, 
-                           password_text=password_text, error_message=error_message)
+# Logout button from homepage to login page
+@app.route('/logout')
+def logout():
+    # Clear the session
+    session.clear()
+    # Redirect to login page
+    return redirect(url_for('login_page'))  # Make sure you have a 'login_page' route
