@@ -2,21 +2,21 @@
 {% extends "mainPart/base.html" %}
 {% block title %}Manage{% endblock %}
 {% block content %}
-    <div class="menu-grid">
-        <!-- Row 1 First Fesatures to upload merge schedule files--> 
-        <div class="menu-section">
-            <h2>Assign Lecturer</h2>
-            <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
-            <li class="submenu">
-                <strong>  Account Controls: </strong>
-                <ul>
-                    <li>Manage all lecturer accounts</li>
-                    <li>Deactivate lecturer access (preserves data)</li>
-                    <li>Review dean accounts</li>
-                </ul>
-            </li>
-        </div>
+
+    <!-- Row 1 First Fesatures to upload merge schedule files--> 
+    <div class="menu-section">
+        <h2>Assign Lecturer</h2>
+        <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
+        <li class="submenu">
+            <strong>  Account Controls: </strong>
+            <ul>
+                <li>Manage all lecturer accounts</li>
+                <li>Deactivate lecturer access (preserves data)</li>
+                <li>Review dean accounts</li>
+            </ul>
+        </li>
     </div>
+
 {% endblock %}
 
 <!--
