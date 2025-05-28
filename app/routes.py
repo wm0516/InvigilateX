@@ -179,8 +179,12 @@ def inject_user_data():
 def homepage():
     return render_template('mainPart/homepage.html', active_tab='home')
 
-@app.route('/home/autoGenerate')
+@app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def auto_generate():
+    if request.method == 'POST':
+        flash(f"{request.method}")
+        flash(f"{request.files}")
+        flash(f"{request.form}")
     return render_template('mainPart/generateSchedule.html', active_tab='autoGenerate')
 
 @app.route('/home/manageLecturer')
