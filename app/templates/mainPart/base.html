@@ -17,47 +17,49 @@
     </div>
 </head>
 <body>
-    <!-- Main tab navigation -->
-    <div class="tab-nav">
-        <a href="{{ url_for('homepage')}}" 
-            class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
-            data-tab="home">Home</a>
+    <form method="POST">
+        <!-- Main tab navigation -->
+        <div class="tab-nav">
+            <a href="{{ url_for('homepage')}}" 
+               class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
+               data-tab="home">Home</a>
 
-        <a href="{{ url_for('upload')}}" 
-            class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-            data-tab="upload">Upload File</a>
+            <a href="{{ url_for('upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Upload File</a>
 
-        <a href="{{ url_for('auto_generate')}}" 
-            class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
-            data-tab="autoGenerate">Generate Exam Schedule</a>
+            <a href="{{ url_for('auto_generate')}}" 
+               class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
+               data-tab="autoGenerate">Generate Exam Schedule</a>
 
-        <a href="{{ url_for('manage_lecturer')}}" 
-            class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
-            data-tab="manage">Assign Lecturer</a>
-    </div>
-    <br>
+            <a href="{{ url_for('manage_lecturer')}}" 
+               class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
+               data-tab="manage">Assign Lecturer</a>
+        </div>
+        <br>
 
-    <!-- Sub-tab navigation (only shown when on upload section) -->
-    {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
-    <div class="tab-nav">
-        <a href="{{ url_for('upload')}}" 
-            class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-            data-tab="upload">Lecturers Timetable</a>
+        <!-- Sub-tab navigation (only shown when on upload section) -->
+        {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
+        <div class="tab-nav">
+            <a href="{{ url_for('upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Lecturers Timetable</a>
 
-        <a href="{{ url_for('upload_lecturer_timetable')}}" 
-            class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-            data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+            <a href="{{ url_for('upload_lecturer_timetable')}}" 
+               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
+               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
 
-        <a href="{{ url_for('upload_exam_details')}}" 
-            class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-            data-tab="uploadExamDetails">Exam Details</a>
-    </div>
-    {% endif %}
+            <a href="{{ url_for('upload_exam_details')}}" 
+               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
+               data-tab="uploadExamDetails">Exam Details</a>
+        </div>
+        {% endif %}
 
-    <!-- Content block for child templates -->
-    {% block content %}{% endblock %}
+        <!-- Content block for child templates -->
+        {% block content %}{% endblock %}
 
-    <!-- Shared JavaScript -->
-    <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+        <!-- Shared JavaScript -->
+        <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+    </form>
 </body>
 </html>
