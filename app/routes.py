@@ -214,14 +214,14 @@ def upload_exam_details():
         # Check if the POST request has the file part
         if 'file' not in request.files:
             flash('No file part')
-            return redirect(request.url)
+            return redirect('upload_exam_details')
         
         file = request.files['file']
         
         # If user does not select a file
         if not file or not file.filename:
             flash('No selected file')
-            return redirect(request.url)
+            return redirect('upload_exam_details')
 
         # Validate file type
         if file:
@@ -239,10 +239,10 @@ def upload_exam_details():
                 return "File uploaded and read successfully!"
             except Exception as e:
                 flash(f"Error reading CSV: {e}")
-                return redirect(request.url)
+                return redirect('upload_exam_details')
         else:
             flash('Invalid file type. Only CSV files are supported.')
-            return redirect(request.url)
+            return redirect('upload_exam_details')
 
     # Render the upload page
     return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
