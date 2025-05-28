@@ -3,14 +3,13 @@ from app import app
 import os
 import pandas as pd
 from werkzeug.utils import secure_filename
+from werkzeug.exceptions import RequestEntityTooLarge
 from .backend import *
 from .database import *
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-
-
 
 
 
@@ -198,50 +197,116 @@ def upload():
 
 
 
-
 # Configurations
-# Set the upload folder
 UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'xlsm'}
+MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+
+app.config.update(
+    UPLOAD_FOLDER=UPLOAD_FOLDER,
+    MAX_CONTENT_LENGTH=MAX_FILE_SIZE
+)
 
 # Ensure the upload directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+def allowed_file(filename):
+    """Check if the filename has an allowed extension"""
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def validate_exam_data(df):
+    """Validate the structure of the uploaded exam data"""
+    required_columns = {'Date', 'Day', 'Start', 'End', 'Program', 
+                       'Course/Sec', 'Lecturer', 'No Of', 'Room'}
+    if not required_columns.issubset(df.columns):
+        missing = required_columns - set(df.columns)
+        raise ValueError(f"Missing required columns: {missing}")
+    return True
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
-    exam_data=''
+    exam_data = []
     if request.method == 'POST':
-        if 'exam_file' not in request.files:
-            flash('No file uploaded')
-            return redirect(request.url)
-        
-        file = request.files['exam_file']
-        
-        if not file or not file.filename:
-            flash('No file selected')
-            return redirect(request.url)
-
-        if file:
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            try:
-                df = pd.read_excel(filepath)  # Use pd.read_csv() if using .csv files
-                exam_data = df.to_dict(orient='records')  # Converts DataFrame to a list of dicts
-
-                print(df.head())  # Debugging
-                return "File uploaded and read successfully!"
-            except Exception as e:
-                flash(f"Error reading Excel file: {e}")
+        try:
+            # Debugging info
+            app.logger.debug(f"Request files: {request.files}")
+            
+            # Check if file was uploaded
+            if 'exam_file' not in request.files:
+                flash('No file uploaded', 'error')
                 return redirect(request.url)
+            
+            file = request.files['exam_file']
+            
+            # Check if file was selected and has a filename
+            if not file or not file.filename:
+                flash('No file selected', 'error')
+                return redirect(request.url)
+            
+            # Ensure filename is a string (not None)
+            filename = file.filename if file.filename else ''
+            if not filename:
+                flash('Invalid filename', 'error')
+                return redirect(request.url)
+            
+            # Validate file type
+            if not allowed_file(filename):
+                flash('Invalid file type. Only Excel files (.xlsx, .xls, .xlsm) are supported.', 'error')
+                return redirect(request.url)
+            
+            # Secure filename and save
+            secure_name = secure_filename(filename)  # Now guaranteed to be str
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], secure_name)
+            file.save(filepath)
+            app.logger.info(f"File saved to: {filepath}")
+            
+            # Read and validate Excel file
+            try:
+                df = pd.read_excel(filepath)
+                validate_exam_data(df)
+                exam_data = df.to_dict(orient='records')
+                app.logger.info("Data loaded successfully")
+                
+                # Clean up - remove the uploaded file after processing
+                try:
+                    os.remove(filepath)
+                    app.logger.info(f"Temporary file removed: {filepath}")
+                except Exception as e:
+                    app.logger.error(f"Error removing temporary file: {e}")
+                
+                flash('File uploaded and processed successfully!', 'success')
+                return render_template('mainPart/uploadExamDetails.html', 
+                                    active_tab='uploadExamDetails', 
+                                    exam_data=exam_data)
+            
+            except ValueError as ve:
+                flash(f'Invalid file format: {str(ve)}', 'error')
+                app.logger.error(f"Validation error: {ve}")
+            except Exception as e:
+                flash(f'Error reading Excel file: {str(e)}', 'error')
+                app.logger.error(f"Excel read error: {e}")
+            
+            # Remove file if there was an error processing it
+            try:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            except Exception as e:
+                app.logger.error(f"Error cleaning up file: {e}")
+            
+            return redirect(request.url)
+        
+        except RequestEntityTooLarge:
+            flash('File too large. Maximum size is 16MB.', 'error')
+            app.logger.warning("File size exceeded limit")
+            return redirect(request.url)
+        
+        except Exception as e:
+            flash(f'An unexpected error occurred: {str(e)}', 'error')
+            app.logger.error(f"Unexpected error: {e}")
+            return redirect(request.url)
 
-        flash('Invalid file type. Only Excel files are supported.')
-        return redirect(request.url)
-
-    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails', exam_data=exam_data)
-
-
-
+    # GET request
+    return render_template('mainPart/uploadExamDetails.html', 
+                         active_tab='uploadExamDetails', 
+                         exam_data=exam_data)
