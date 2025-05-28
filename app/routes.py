@@ -187,8 +187,19 @@ def auto_generate():
 def manage_lecturer():
     return render_template('mainPart/manageLecturer.html', active_tab='manage')
 
-@app.route('/home/uploadLecturerTimetable')
+@app.route('/home/uploadLecturerTimetable', methods=['GET', 'POST'])
 def upload_lecturer_timetable():
+
+    if request.method == 'POST':
+        flash(f"{request.method}")
+        flash(f"{request.files}")
+        flash(f"{request.form}")
+        if 'lecturer_file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+
+
+
     return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
 
 @app.route('/home/upload')
