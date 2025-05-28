@@ -213,10 +213,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def upload_exam_details():
     exam_data = ''
     if request.method == 'POST':
-        flash(f"{request.method}")
-        flash(f"{request.files}")
-        flash(f"{request.form}")
-        flash(f"Files keys: {list(request.files.keys())}")
+        #flash(f"{request.method}")
+        #flash(f"{request.files}")
+        #flash(f"{request.form}")
+        #flash(f"Files keys: {list(request.files.keys())}")
         if 'exam_file' not in request.files:
             return jsonify({'error': 'No file part in the request'}), 400
 
@@ -248,9 +248,9 @@ def upload_exam_details():
 @app.route('/home/uploadLecturerTimetable', methods=['GET', 'POST'])
 def upload_lecturer_timetable():
     if request.method == 'POST':
-        flash(f"{request.method}")
-        flash(f"{request.files}")
-        flash(f"{request.form}")
+        #flash(f"{request.method}")
+        #flash(f"{request.files}")
+        #flash(f"{request.form}")
 
         if 'lecturer_file' not in request.files:
             flash('No file part')
