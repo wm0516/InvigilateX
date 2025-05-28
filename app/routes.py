@@ -1,7 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify, current_app
 from app import app
 import os
-import io
+from io import BytesIO
 import pandas as pd
 from werkzeug.utils import secure_filename
 from .backend import *
@@ -257,107 +257,54 @@ def upload_lecturer_timetable():
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
-    print("upload_timetable route hit")
-    if 'timetable_file' not in request.files:
+    if 'exam_file' not in request.files:
         return jsonify({'success': False, 'message': 'No file uploaded'})
-    
-    file = request.files['timetable_file']
-    records_processed = 0
+
+    file = request.files['exam_file']
+    file_stream = BytesIO(file.read())
+    records_added = 0
     errors = []
-    timetable_data = []
-    
+    warnings = []
+
     try:
-        # Convert FileStorage to bytes and create ExcelFile
-        file_bytes = file.read()
-        excel_file = pd.ExcelFile(io.BytesIO(file_bytes))
+        excel_file = pd.ExcelFile(file_stream)
         
         for sheet_name in excel_file.sheet_names:
             current_app.logger.info(f"Processing sheet: {sheet_name}")
-            
+
             try:
+                # ✅ Only reads columns A to I, skips the first row (headers start from row 2)
                 df = pd.read_excel(
-                    io.BytesIO(file_bytes),
+                    excel_file,
                     sheet_name=sheet_name,
-                    usecols="A:J",  # Columns A to J (Date to Room)
-                    header=0,       # First row is header
-                    dtype=str       # Read all as strings to avoid type issues
+                    usecols="A:I",
+                    skiprows=1
                 )
-                
-                # Clean up column names
-                df.columns = [col.strip() for col in df.columns]
-                
-                # Process each row
-                for index, row in df.iterrows():
-                    try:
-                        # Skip empty rows
-                        if pd.isna(row['Date']) or pd.isna(row['Start']):
-                            continue
-                            
-                        # Create a clean record dictionary
-                        record = {
-                            'date': str(row['Date']).strip(),
-                            'day': str(row['Day']).strip(),
-                            'start_time': str(row['Start']).strip(),
-                            'end_time': str(row['End']).strip(),
-                            'program': str(row['Program']).strip(),
-                            'course_section': str(row['Course/Sec']).strip(),
-                            'lecturer': str(row['Lecturer']).strip(),
-                            'student_count': str(row['No Of']).strip(),
-                            'room': str(row['Room']).strip() if 'Room' in row and not pd.isna(row['Room']) else '',
-                            'sheet_name': sheet_name,
-                            'row_number': int(str(index)) + 2  # Safe conversion to Excel row number
-                        }
-                        
-                        # Clean lecturer name (remove extra commas/spaces)
-                        record['lecturer'] = ', '.join(
-                            [part.strip() for part in record['lecturer'].split(',')]
-                        )
-                        
-                        # Parse date if needed (format: "3/7/2025")
-                        try:
-                            record['parsed_date'] = pd.to_datetime(record['date'], format='%d/%m/%Y').date()
-                        except:
-                            record['parsed_date'] = None
-                        
-                        # Parse times if needed (format: "9:00 AM")
-                        try:
-                            record['parsed_start'] = pd.to_datetime(record['start_time'], format='%I:%M %p').time()
-                            record['parsed_end'] = pd.to_datetime(record['end_time'], format='%I:%M %p').time()
-                        except:
-                            record['parsed_start'] = None
-                            record['parsed_end'] = None
-                        
-                        timetable_data.append(record)
-                        records_processed += 1
-                        
-                    except Exception as e:
-                        error_msg = f"Error in sheet {sheet_name}, row {int(str(index)) + 2}: {str(e)}"
-                        errors.append(error_msg)
-                        current_app.logger.error(error_msg)
-                        continue
-                
+
+                # ✅ Assign expected column names
+                df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
+
+                # ➕ You can add further logic to insert or process the data here.
+                records_added += len(df)
+
             except Exception as e:
-                error_msg = f"Error processing sheet {sheet_name}: {str(e)}"
+                error_msg = f"Error processing sheet '{sheet_name}': {str(e)}"
                 errors.append(error_msg)
                 current_app.logger.error(error_msg)
                 continue
-        
-        # Prepare response with the first few records as preview
-        preview = timetable_data[:5] if len(timetable_data) > 5 else timetable_data
-        
+
         response_data = {
             'success': True,
-            'message': f'Successfully processed {records_processed} timetable entries',
-            'total_records': len(timetable_data),
-            'preview': preview,
-            'columns': list(timetable_data[0].keys()) if timetable_data else []
+            'message': f'Successfully processed {records_added} record(s).'
         }
-        
+
+        if warnings:
+            response_data['warnings'] = warnings
         if errors:
             response_data['errors'] = errors
-        
+
         return jsonify(response_data)
-        
+
     except Exception as e:
         error_msg = f"Error processing file: {str(e)}"
         current_app.logger.error(error_msg)
@@ -365,15 +312,7 @@ def upload_exam_details():
             'success': False,
             'message': error_msg
         })
-
-
-
-
-
-
-
-
-
+    
 
 
 
