@@ -5,7 +5,7 @@ body {
 }
 
 form {
-    width: 93%;
+    width: 96%;
     padding: 20px;
     /* border: 2px solid #ccc; */
     border-radius: 10px;
@@ -162,11 +162,20 @@ input[type="file"] {
     font-size: medium;
 }
 
-.button-wrapper {
-    display: flex;
-    justify-content: center;
+.button-wrapper button {
+    padding: 12px 24px;
+    font-size: 1.1rem; /* or use 'large' */
+    border: none;
+    border-radius: 6px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
+.button-wrapper button:hover {
+    background-color: #0056b3;
+}
 
 
 
