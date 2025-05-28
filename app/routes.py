@@ -206,7 +206,7 @@ def upload_exam_details():
         flash(f"{request.files}")
         flash(f"{request.form}")
         if 'exam_file' not in request.files:
-            flash('No file uploaded 123')
+            flash('No file part')
             return redirect(request.url)
         
         file = request.files['exam_file']
