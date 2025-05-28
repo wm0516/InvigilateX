@@ -2,6 +2,18 @@
 {% extends "mainPart/base.html" %}
 {% block title %}Automation{% endblock %}
 {% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
     <div class="menu-grid">
         <!-- Row 1 First Fesatures to upload merge schedule files--> 
         <div class="menu-section">
