@@ -245,4 +245,3 @@ def upload_exam_details():
 
 
 
-
