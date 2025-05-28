@@ -19,7 +19,6 @@
         </div>
     </div>
 
-    {% if exam_data %}
     <div class="menu-section">
         <h2>Exam Table</h2>
         <div class="user-table-container">
@@ -38,24 +37,26 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in exam_data %}
-                    <tr>
-                        <td>{{ row['Date'] }}</td>
-                        <td>{{ row['Day'] }}</td>
-                        <td>{{ row['Start'] }}</td>
-                        <td>{{ row['End'] }}</td>
-                        <td>{{ row['Program'] }}</td>
-                        <td>{{ row['Course/Sec'] }}</td>
-                        <td>{{ row['Lecturer'] }}</td>
-                        <td>{{ row['No Of'] }}</td>
-                        <td>{{ row['Room'] }}</td>
-                    </tr>
-                    {% endfor %}
+                    {% if exam_data %}
+                        {% for row in exam_data %}
+                        <tr>
+                            <td>{{ row['Date'] }}</td>
+                            <td>{{ row['Day'] }}</td>
+                            <td>{{ row['Start'] }}</td>
+                            <td>{{ row['End'] }}</td>
+                            <td>{{ row['Program'] }}</td>
+                            <td>{{ row['Course/Sec'] }}</td>
+                            <td>{{ row['Lecturer'] }}</td>
+                            <td>{{ row['No Of'] }}</td>
+                            <td>{{ row['Room'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>
     </div>
-    {% endif %}
+    
 
 </div>
 {% endblock %}
