@@ -198,17 +198,6 @@ def upload():
 
 
 
-
-# Configurations
-# Set the upload folder
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Ensure the upload directory exists
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-
-
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
     exam_data=''
