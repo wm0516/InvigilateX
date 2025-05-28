@@ -166,7 +166,6 @@ input[type="file"] {
 .button-wrapper {
     display: flex;
     justify-content: center; /* Horizontally centers the button */
-    background-color: #0056b3;
 }
 
 .button-wrapper button {
@@ -178,6 +177,7 @@ input[type="file"] {
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 25%;
 }
 
 
