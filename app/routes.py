@@ -212,11 +212,11 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def upload_exam_details():
     if request.method == 'POST':
         # Check if the POST request has the file part
-        if 'file' not in request.files:
+        if 'master_file' not in request.files:
             flash('No file part')
             return redirect('upload_exam_details')
         
-        file = request.files['file']
+        file = request.files['master_file']
         
         # If user does not select a file
         if not file or not file.filename:
