@@ -63,48 +63,58 @@
 </div>
 
 <script>
-    const form = document.getElementById('uploadForm');
-    form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('uploadForm');
         const fileInput = document.getElementById('exam_list');
-        const file = fileInput.files[0];
+        const resultDiv = document.getElementById('uploadResult');
 
-        if (!file) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const file = fileInput.files[0];
+
+            if (!file) {
             alert('Please select a file to upload.');
             return;
-        }
+            }
 
-        const formData = new FormData();
-        formData.append('exam_file', file); // Make sure name matches Flask
+            // Create a new FormData object and append the file manually
+            const formData = new FormData();
+            formData.append('exam_file', file);
 
-        try {
+            try {
             const response = await fetch('/home/uploadExamDetails', {
                 method: 'POST',
                 body: formData
+                // IMPORTANT: Do NOT set Content-Type header manually when sending FormData!
             });
 
-            const contentType = response.headers.get('content-type');
-            const resultDiv = document.getElementById('uploadResult');
-
+            const contentType = response.headers.get('content-type') || '';
             if (contentType.includes('application/json')) {
                 const data = await response.json();
                 if (data.error) {
-                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
                 } else {
-                    resultDiv.innerHTML = `
-                        <p style="color:green;">${data.message}</p>
-                        <strong>Columns:</strong> ${data.columns.join(', ')}<br>
-                        <strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>
-                    `;
-                    localStorage.setItem('examLastUploaded', new Date().toLocaleString());
+                resultDiv.innerHTML = `
+                    <p style="color:green;">${data.message}</p>
+                    <strong>Columns:</strong> ${data.columns ? data.columns.join(', ') : 'N/A'}<br>
+                    <strong>Preview:</strong> <pre>${data.preview ? JSON.stringify(data.preview, null, 2) : ''}</pre>
+                `;
+                localStorage.setItem('examLastUploaded', new Date().toLocaleString());
                 }
             } else {
                 const text = await response.text();
                 resultDiv.innerHTML = `<p>${text}</p>`;
             }
-        } catch (err) {
+            } catch (err) {
             alert('Upload failed: ' + err.message);
+            }
+        });
+
+        // Show last uploaded time if available
+        const lastUploaded = localStorage.getItem('examLastUploaded');
+        if (lastUploaded) {
+            resultDiv.innerHTML += `<p><small>Last Uploaded: ${lastUploaded}</small></p>`;
         }
     });
 
