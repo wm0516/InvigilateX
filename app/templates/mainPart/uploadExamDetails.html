@@ -18,8 +18,9 @@
         <div class="big-frame">
             <h2>Upload Exam File</h2>
             <div class="small-frame">
-                <form id="uploadFile" method="POST" enctype="multipart/form-data">
-                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="file" name="master_file">
+                    <button type="submit">Upload</button>
                 </form>
             </div>
             <button type="submit">Upload</button>
