@@ -53,14 +53,14 @@
     </div>
     {% endif %}
 
-    <!-- Content block for child templates -->
-    {% block content %}{% endblock %}
+   
 
     <!-- Shared JavaScript -->
     <script src="{{ url_for('static', filename='js/function.js') }}"></script>
     
 </head>
 <body>
-    
+     <!-- Content block for child templates -->
+    {% block content %}{% endblock %}
 </body>
 </html>
