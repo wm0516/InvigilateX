@@ -69,10 +69,9 @@ form {
 
 /* Main menu container layout (frame divide in the big frame) */
 .menu-grid {
+    width: 95%;
     display: grid;
-    gap: 20px;
 }
-
 /* Main menu container layout (small frame that divide in the big frame) */
 .menu-section {
     background-color: white;
