@@ -6,14 +6,16 @@
     <div class="menu-section">
         <div class="big-frame">
             <h2>Upload Exam File</h2>
-            <form class="small-frame" id="uploadFile" method="POST" enctype="multipart/form-data">
-                <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
-                <button type="submit">Upload</button>
-            </form> 
+            <div class="small-frame">
+                <form id="uploadFile" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
+                    <button type="submit">Upload</button>
+                </form>
+            </div>
             <br>
             <small class="form-text text-muted">
                 Sheet names should start with: C (Certificate), CF (Foundation), D (Diploma), B (Degree). Others will be categorized as "Others".
-            </small>
+            </small>    
         </div>
     </div>  
 
