@@ -1,44 +1,143 @@
-<!-- upload.html -->
-{% extends "mainPart/baseUpload.html" %}
-{% block title %}UploadExam{% endblock %}
+{% extends "mainPart/base.html" %}
+{% block title %}Upload Exam{% endblock %}
+
 {% block content %}
-    <div class="menu-grid">
-        <!-- Dynamic tab navigation -->
-        <div class="tab-nav">
-            <a href="{{ url_for('upload')}}" 
-               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-               data-tab="upload">Lecturers Timetable</a>
 
-            <a href="{{ url_for('upload_lecturer_timetable')}}" 
-               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 
-            <a href="{{ url_for('upload_exam_details')}}" 
-               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-               data-tab="uploadExamDetails">Exam Details</a>
-        </div>
 
-        <!-- Row 1 First Fesatures to upload merge schedule files--> 
-        <div class="menu-section">
-            <h2>Upload File</h2>
-            <div class="big-frame">
-                <label>Upload Masterfile</label>
-                <div class="small-frame">
-                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
-                </div>
-                <button type="submit">Upload and Process</button>
+<div class="menu-grid">
+    <div class="menu-section">
+    <!--
+        <div class="big-frame">
+            <h2>Upload Exam File</h2>
+            <div class="small-frame">
+                <form id="uploadExamDetails" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
+                    <button type="submit">Upload</button>
+                </form>
+                <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+                <div id="examLastUploadedLabel" style="margin-top: 10px;"></div>
             </div>
+            
+            <br>    
+            <small class="form-text text-muted">
+                Sheet names should start with: C (Certificate), CF (Foundation), D (Diploma), B (Degree). Others will be categorized as "Others".
+            </small>    
         </div>
+    </div>  
+    -->
+    <h2>Upload Exam File</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="uploadResult" style="margin-top: 20px;"></div>
 
-        <div class="menu-section">
-            <h2>Table Record</h2>
-            <li class="submenu">
-                <strong>Purpose:</strong>
-                <ul>
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
-                </ul>
-            </li>
+
+
+
+    <div class="menu-section">
+        <h2>Table Record</h2>
+        <div class="user-table-container">
+            <table class="user-data-table">
+                <thead>
+                    <tr>
+                        <th>Exam Date</th>
+                        <th>Exam Day</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Course Code</th>
+                        <th>Section</th>
+                        <th>Lecturer</th>
+                        <th>No. of Students</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if exam_data %}
+                        {% for row in exam_data %}
+                        <tr>
+                            <td>{{ row['Date'] }}</td>
+                            <td>{{ row['Day'] }}</td>
+                            <td>{{ row['Start'] }}</td>
+                            <td>{{ row['End'] }}</td>
+                            <td>{{ row['Program'] }}</td>
+                            <td>{{ row['Course/Sec'] }}</td>
+                            <td>{{ row['Lecturer'] }}</td>
+                            <td>{{ row['No Of'] }}</td>
+                            <td>{{ row['Room'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
         </div>
     </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('uploadForm');
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('exam_list');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a file to upload.');
+                return; 
+            }
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const contentType = response.headers.get('content-type');
+                const resultDiv = document.getElementById('uploadResult');
+
+                if (contentType.includes('application/json')) {
+                    const data = await response.json();
+                    if (data.error) {
+                        resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <p style="color:green;">${data.message}</p>
+                            <strong>Columns:</strong> ${data.columns.join(', ')}<br>
+                            <strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>
+                        `;
+                        localStorage.setItem('examLastUploaded', new Date().toLocaleString());
+                    }
+                } else {
+                    const text = await response.text();
+                    resultDiv.innerHTML = `<p>${text}</p>`;
+                }
+            } catch (err) {
+                alert('Upload failed: ' + err.message);
+            }
+        });
+
+        const lastUploaded = localStorage.getItem('examLastUploaded');
+        if (lastUploaded) {
+            const resultDiv = document.getElementById('uploadResult');
+            resultDiv.innerHTML += `<p><small>Last Uploaded: ${lastUploaded}</small></p>`;
+        }
+    });
+
+
+
+</script>
 {% endblock %}
