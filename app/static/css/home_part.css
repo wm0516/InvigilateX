@@ -115,7 +115,66 @@ form {
     margin: 0 auto;
 }
 
+
+
+
+
+/* Container frame for tab navigation */
+.tab-nav {
+    border: 2px solid #333;  /* Frame border around tabs */
+    background-color: #f8f8f8;  /* Light background for tab container */
+    padding: 0 10px;  /* Padding on left and right */
+    margin-top: 10px;  /* Space below the header */
+    display: flex;  /* Use flexbox to align tabs horizontally */
+    align-items: center;  /* Vertically center text in tabs */
+    height: 40px;  /* Fixed height for tabs */
+    gap: 10px;  /* Space between each tab */
+}
+
+/* Individual tab links */
+.tab-link {
+    display: flex;
+    justify-content: center;  /* Center text horizontally */
+    align-items: center;      /* Center text vertically */
+    height: 30px;             /* Height of each tab */
+    padding: 0 15px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    border-radius: 4px;
+    background-color: #ddd;
+    cursor: pointer;
+    white-space: nowrap;  /* Prevent text from wrapping */
+    user-select: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Active tab styling */
+.tab-link.active {
+    background-color: #333;
+    color: white;
+}
+
+/* Optional: hover effect */
+.tab-link:hover:not(.active) {
+    background-color: #bbb;
+    color: #000;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* Tab navigation styling */
+/*
 .tab-nav {
     display: flex;
     border-bottom: 1px solid #3498db;
@@ -144,6 +203,10 @@ form {
     border-bottom: 1px solid white;
     margin-bottom: -1px;
 }
+*/
+
+
+
 
 /* Tab content styling */
 .tab-content {
