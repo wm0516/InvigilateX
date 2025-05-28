@@ -116,8 +116,6 @@ form {
 }
 
 
-
-
 .form-wrapper {
     display: flex;
     flex-direction: column;
@@ -129,6 +127,41 @@ form {
     justify-content: flex-start;
 }
 
+
+
+.main-frame {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    margin: 30px auto;
+    width: 60%;
+    border-radius: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.form-frame {
+    width: 100%;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.input-frame {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f1f1f1;
+}
+
 input[type="file"] {
     font-size: medium;
 }
@@ -137,6 +170,12 @@ input[type="file"] {
     display: flex;
     justify-content: center;
 }
+
+
+
+
+
+
 
 
 
