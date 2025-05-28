@@ -252,6 +252,7 @@ def upload_exam_details():
         flash(f"{request.method}")
         flash(f"{request.files}")
         flash(f"{request.form}")
+        flash(f"Files keys: {list(request.files.keys())}")
         if 'exam_file' not in request.files:
             flash('No file part')
             return redirect(request.url)
