@@ -18,16 +18,14 @@
     <div class="menu-section">
         <div class="big-frame">
             <h2>Upload Exam File</h2>
-            <div class="small-frame">
-                <form id="uploadForm" enctype="multipart/form-data">
-                    <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
-                </form>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
                 <button type="submit">Upload</button>
-            </div>  
+            </form>
+            <div id="uploadResult" style="margin-top: 20px;"></div>
         </div>
     </div>  
 
-    <div id="uploadResult" style="margin-top: 20px;"></div>
 
     <div class="menu-section">
         <h2>Table Record</h2>
