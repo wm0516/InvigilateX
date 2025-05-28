@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from app import app
 import os
 import pandas as pd
@@ -214,8 +214,7 @@ def upload_exam_details():
     exam_data=''
     if request.method == 'POST':
         if 'exam_file' not in request.files:
-            flash('No file uploaded')
-            return redirect(request.url)
+            return jsonify({'success': False, 'message': 'No file uploaded'})
         
         file = request.files['exam_file']
         
