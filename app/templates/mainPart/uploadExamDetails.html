@@ -15,44 +15,44 @@
                 Sheet names should start with: C (Certificate), CF (Foundation), D (Diploma), B (Degree). Others will be categorized as "Others".
             </small>
         </div>
-
-        <div class="menu-section">
-            <h2>Table Record</h2>
-            <div class="user-table-container">
-                <table class="user-data-table">
-                    <thead>
-                        <tr>
-                            <th>Exam Date</th>
-                            <th>Exam Day</th>
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>Course Code</th>
-                            <th>Section</th>
-                            <th>Lecturer</th>
-                            <th>No. of Students</th>
-                            <th>Room</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if exam_data %}
-                            {% for row in exam_data %}
-                            <tr>
-                                <td>{{ row['Date'] }}</td>
-                                <td>{{ row['Day'] }}</td>
-                                <td>{{ row['Start'] }}</td>
-                                <td>{{ row['End'] }}</td>
-                                <td>{{ row['Program'] }}</td>
-                                <td>{{ row['Course/Sec'] }}</td>
-                                <td>{{ row['Lecturer'] }}</td>
-                                <td>{{ row['No Of'] }}</td>
-                                <td>{{ row['Room'] }}</td>
-                            </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>  
+
+    <div class="menu-section">
+        <h2>Table Record</h2>
+        <div class="user-table-container">
+            <table class="user-data-table">
+                <thead>
+                    <tr>
+                        <th>Exam Date</th>
+                        <th>Exam Day</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Course Code</th>
+                        <th>Section</th>
+                        <th>Lecturer</th>
+                        <th>No. of Students</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if exam_data %}
+                        {% for row in exam_data %}
+                        <tr>
+                            <td>{{ row['Date'] }}</td>
+                            <td>{{ row['Day'] }}</td>
+                            <td>{{ row['Start'] }}</td>
+                            <td>{{ row['End'] }}</td>
+                            <td>{{ row['Program'] }}</td>
+                            <td>{{ row['Course/Sec'] }}</td>
+                            <td>{{ row['Lecturer'] }}</td>
+                            <td>{{ row['No Of'] }}</td>
+                            <td>{{ row['Room'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% endblock %}
