@@ -210,12 +210,12 @@ def allowed_file(filename):
 def upload_exam_details():
     if request.method == 'POST':
         if 'master_file' not in request.files:
-            return render_template('upload.html', error="No file part in the request.")
+            return render_template('mainPart/upload.html', error="No file part in the request.")
 
         file = request.files['master_file']
 
         if file.filename == '':
-            return render_template('upload.html', error="No selected file.")
+            return render_template('mainPart/upload.html', error="No selected file.")
 
         if file and allowed_file(file.filename):
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename) # type: ignore
