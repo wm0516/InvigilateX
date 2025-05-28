@@ -9,14 +9,11 @@
             <div class="big-frame">
                 <h2>Upload Masterfile</h2>
                 <div class="small-frame">
-
                     <form id="uploadLecturerList" method="POST" enctype="multipart/form-data">
                         <input type="file" id="lecturerList" name="lecturer_file" accept=".xlsx,.xls" required>
                         <button type="submit">Upload</button>
                     </form>
-                    <input type="file" id="masterfile" name="master_file" accept=".xlsx,.xls,.xlsm" required>
-                </div>
-                <button type="submit">Upload</button>
+                </div>  
             </div>
         </div>  
 
@@ -44,7 +41,7 @@
             </div>
         </div>
     </div>  
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             setupLecturerForm();
