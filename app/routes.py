@@ -207,47 +207,36 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Ensure the upload directory exists
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
     if request.method == 'POST':
-        # Check if the POST request has the file part
         if 'master_file' not in request.files:
             flash('No file part')
-            return redirect('upload_exam_details')
+            return redirect(request.url)
         
         file = request.files['master_file']
         
-        # If user does not select a file
         if not file or not file.filename:
             flash('No selected file')
-            return redirect('upload_exam_details')
+            return redirect(request.url)
 
-        # Validate file type
         if file:
-            # Secure the filename
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
-            # Save the file
             file.save(filepath)
-            
-            # Read the CSV
+
             try:
-                df = pd.read_csv(filepath)
-                print(df.head())  # For testing/debugging
+                df = pd.read_excel(filepath)  # Use pd.read_csv() if using .csv files
+                print(df.head())  # Debugging
                 return "File uploaded and read successfully!"
             except Exception as e:
-                flash(f"Error reading CSV: {e}")
-                return redirect('upload_exam_details')
-        else:
-            flash('Invalid file type. Only CSV files are supported.')
-            return redirect('upload_exam_details')
+                flash(f"Error reading Excel file: {e}")
+                return redirect(request.url)
 
-    # Render the upload page
+        flash('Invalid file type. Only Excel files are supported.')
+        return redirect(request.url)
+
     return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
-
-
 
 
 
