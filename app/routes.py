@@ -315,7 +315,7 @@ def upload_exam_details():
                 'message': error_msg
             })
         
-    return render_template('mainPart/uploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
+    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
 
         
 
