@@ -1,4 +1,4 @@
-from flask import render_template, request, flash, session, jsonify, current_app
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, current_app
 from app import app
 import os
 from io import BytesIO
@@ -10,6 +10,8 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
+
+
 
 
 
@@ -59,6 +61,8 @@ def manage_lecturer():
 @app.route('/home/upload')
 def upload():
     return render_template('mainPart/upload.html', active_tab='upload')
+
+
 
 
 
@@ -175,7 +179,7 @@ def upload_exam_details():
                 'message': error_msg
             })
         
-    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
+    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadLecturerTimetable')
 
         
 
