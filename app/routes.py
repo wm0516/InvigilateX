@@ -12,6 +12,9 @@ bcrypt = Bcrypt()
 
 
 
+
+
+
 # login page (done with checking email address and hash password)
 @app.route('/', methods=['GET', 'POST'])
 def login_page():
@@ -222,7 +225,7 @@ def upload_exam_details():
                 df = pd.read_excel(filepath, sheet_name='Plan')
                 exam_data = df.to_dict('records')
                 os.remove(filepath)
-                return render_template('upload.html', exam_data=exam_data)
+                return render_template('mainPart/upload.html', exam_data=exam_data)
 
             except Exception as e:
                 return render_template('mainPart/uploadExamDetails.html', error=f"Error processing file: {str(e)}")
