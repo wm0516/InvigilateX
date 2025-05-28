@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, session
 from app import app
 import os
 import pandas as pd
+from werkzeug.utils import secure_filename
 from .backend import *
 from .database import *
 from flask_bcrypt import Bcrypt
@@ -199,42 +200,54 @@ def upload():
 
 
 # Configurations
-UPLOAD_FOLDER = os.path.join(app.root_path, 'uploads')
-ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'xlsm'}
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-
+# Set the upload folder
+UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# Ensure the upload directory exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
     if request.method == 'POST':
-        if 'master_file' not in request.files:
-            return render_template('uploadExamDetails.html', error="No file part in the request.", active_tab='uploadExamDetails')
+        # Check if the POST request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        
+        file = request.files['file']
+        
+        # If user does not select a file
+        if not file or not file.filename:
+            flash('No selected file')
+            return redirect(request.url)
 
-        file = request.files['master_file']
-
-        if file.filename == '':
-            return render_template('uploadExamDetails.html', error="No selected file.", active_tab='uploadExamDetails')
-
-        if file and allowed_file(file.filename):
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+        # Validate file type
+        if file:
+            # Secure the filename
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            # Save the file
             file.save(filepath)
-
+            
+            # Read the CSV
             try:
-                df = pd.read_excel(filepath, sheet_name='Plan')
-                exam_data = df.to_dict('records')
-                os.remove(filepath)
-                return render_template('uploadExamDetails.html', exam_data=exam_data, active_tab='uploadExamDetails')
-
+                df = pd.read_csv(filepath)
+                print(df.head())  # For testing/debugging
+                return "File uploaded and read successfully!"
             except Exception as e:
-                return render_template('uploadExamDetails.html', error=f"Error processing file: {str(e)}", active_tab='uploadExamDetails')
-    
+                flash(f"Error reading CSV: {e}")
+                return redirect(request.url)
+        else:
+            flash('Invalid file type. Only CSV files are supported.')
+            return redirect(request.url)
+
+    # Render the upload page
     return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails')
+
+
 
 
 
