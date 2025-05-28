@@ -74,9 +74,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /* read upload file function */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     setupExamDetails();
 
+    // Optional: Load and display the last uploaded info
     const examLastUploaded = localStorage.getItem('examLastUploaded');
     if (examLastUploaded) {
         const examLastUploadedLabel = document.getElementById('examLastUploadedLabel');
@@ -89,42 +90,46 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupExamDetails() {
     const uploadExamDetails = document.getElementById('uploadExamDetails');
     if (uploadExamDetails && !uploadExamDetails.dataset.listenerAttached) {
-        uploadExamDetails.addEventListener('submit', function(e) {
+        uploadExamDetails.addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const fileInput = document.getElementById('exam_list');
             const file = fileInput.files[0];
-            
+
             if (!file) {
-                alert('Please select a file');
+                alert('Please select a file to upload.');
                 return;
             }
 
-            // Create new FormData and append the file properly
-            const formData = new FormData();
-            formData.append('exam_file', file);  // Must match the name attribute in HTML
+            // Create FormData from the form — includes all fields
+            const form = document.getElementById('uploadExamDetails');
+            const formData = new FormData(form);
 
             fetch('/home/uploadExamDetails', {
                 method: 'POST',
                 body: formData,
-                // Don't set Content-Type header - let the browser set it automatically
-                // with the proper boundary for multipart/form-data
+                // DO NOT manually set headers; let the browser handle multipart/form-data
             })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Handle response
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Upload failed: ' + error.message);
-            });
-        }); 
-        uploadExamDetails.dataset.listenerAttached = "true";
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    return response.json(); // If your Flask route returns JSON
+                })
+                .then(data => {
+                    // Optional: Handle the response JSON here
+                    console.log('Upload response:', data);
+                    alert('File uploaded successfully!');
+                    localStorage.setItem('examLastUploaded', new Date().toLocaleString());
+                })
+                .catch(error => {
+                    console.error('Error during upload:', error);
+                    alert('Upload failed: ' + error.message);
+                });
+        });
+
+        // Prevent multiple bindings
+        uploadExamDetails.dataset.listenerAttached = 'true';
     }
 }
