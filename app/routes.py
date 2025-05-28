@@ -200,6 +200,38 @@ def upload():
 
 @app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
 def upload_exam_details():
+
+    '''
+    if 'exam_file' not in request.files:
+        return redirect(request.url)
+    
+    file = request.files['exam_file']
+
+    try:
+        excel_file = pd.ExcelFile(file)
+
+        for sheet_name in excel_file.sheet_names:
+            current_app.logger.info(f"Processing sheet: {sheet_name}")
+            # department_code = sheet_name.strip().upper()
+
+            try:
+                df = pd.read_excel(
+                    excel_file,
+                    sheet_name=sheet_name,
+                    usecold="A:c"
+                )
+
+                df.columns = ['Name', 'Email', 'Level']
+
+            except:
+                pass
+
+    except:
+        pass
+    '''
+
+
+
     exam_data=''
     if request.method == 'POST':
         flash(f"{request.method}")
