@@ -183,7 +183,7 @@ def inject_user_data():
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/adminHome', methods=['GET', 'POST'])
 def admin_homepage():
-    return render_template('adminPart/adminHomepage.html', active_tab='home')
+    return render_template('adminPart/adminHomepage.html', active_tab='admin_hometab')
 
 @app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def admin_autoGenerate():
@@ -191,15 +191,15 @@ def admin_autoGenerate():
         flash(f"{request.method}")
         flash(f"{request.files}")
         flash(f"{request.form}")
-    return render_template('adminPart/adminAutoSchedule.html', active_tab='autoGenerate')
+    return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab')
 
 @app.route('/adminHome/manageLecturer')
 def admin_manageLecturer():
-    return render_template('adminPart/adminManageLecturer.html', active_tab='manage')
+    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab')
 
 @app.route('/adminHome/upload')
 def admin_upload():
-    return render_template('adminPart/adminUpload.html', active_tab='upload')
+    return render_template('adminPart/adminUpload.html', active_tab='admin_uploadtab')
 
 
 
@@ -246,14 +246,7 @@ def admin_uploadLecturerTimetable():
         except Exception as e:
             return jsonify({'error': f'Failed to read Excel file: {str(e)}'}), 500
 
-    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='uploadLecturerTimetable')
-
-
-
-
-
-
-
+    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab')
 
 
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
@@ -316,7 +309,7 @@ def admin_uploadExamDetails():
                 'message': error_msg
             })
         
-    return render_template('adminPart/adminUploadExamDetails.html', active_tab='uploadExamDetails')
+    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab')
 
         
 
