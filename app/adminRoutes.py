@@ -252,6 +252,7 @@ def admin_uploadLecturerTimetable():
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
 def admin_uploadExamDetails():
     if request.method == 'POST':
+        flash(f"request.files")
         if 'exam_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
