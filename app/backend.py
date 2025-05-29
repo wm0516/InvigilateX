@@ -119,8 +119,17 @@ def unique_examDetails(exam_CourseSectionCode, exam_Date, exam_StartTime, exam_E
 
     return True, ""
 
+def unique_LecturerDetails(lecturer_id, lecturer_email, lecturer_contact):
+    exam_exists = ExamDetails.query.filter_by(
+        lecturerID=lecturer_id,
+        lecturerEmail=lecturer_email,
+        lecturerContact=lecturer_contact,
+    ).first()
 
+    if exam_exists:
+        return False, "Duplicate entry exists with same ID, email, and contact."
 
+    return True, ""
 
 
 
