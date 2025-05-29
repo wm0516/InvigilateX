@@ -76,16 +76,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-/* admin read upload file function */
-function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
-    const form = document.getElementById(formId);
-    const fileInput = document.getElementById(fileInputId);
-    const resultDiv = document.getElementById(resultDivId);
+/* Lecturer Timetable Upload - Self-contained */
+function setupLecturerUpload() {
+    const form = document.getElementById('uploadLecturerForm');
+    const fileInput = document.getElementById('lecturer_list');
+    const resultDiv = document.getElementById('lecturerUploadResult');
 
     // Debug: Verify elements exist
-    if (!form) console.error(`Form with ID ${formId} not found`);
-    if (!fileInput) console.error(`File input with ID ${fileInputId} not found`);
-    if (!resultDiv) console.error(`Result div with ID ${resultDivId} not found`);
+    if (!form) console.error('Form with ID uploadLecturerForm not found');
+    if (!fileInput) console.error('File input with ID lecturer_list not found');
+    if (!resultDiv) console.error('Result div with ID lecturerUploadResult not found');
     if (!form || !fileInput || !resultDiv) return;
 
     form.addEventListener('submit', async function (e) {
@@ -93,18 +93,17 @@ function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('Please select a file to upload.');
+            alert('Please select a lecturer timetable file to upload.');
             return;
         }
 
         const formData = new FormData();
-        const fileKey = fileInput.name;
-        formData.append(fileKey, file);
+        formData.append('lecturer_list', file);
 
         try {
-            resultDiv.innerHTML = '<p>Uploading... please wait</p>';
+            resultDiv.innerHTML = '<p>Uploading lecturer timetable... please wait</p>';
             
-            const response = await fetch(uploadUrl, {
+            const response = await fetch('/adminHome/uploadLecturerTimetable', {
                 method: 'POST',
                 body: formData
             });
@@ -116,11 +115,11 @@ function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
                     resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
                 } else {
                     resultDiv.innerHTML = `
-                        <p style="color:green;">${data.message || 'File uploaded successfully!'}</p>
+                        <p style="color:green;">${data.message || 'Lecturer timetable uploaded successfully!'}</p>
                         ${data.columns ? `<strong>Columns:</strong> ${data.columns.join(', ')}<br>` : ''}
                         ${data.preview ? `<strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>` : ''}
                     `;
-                    localStorage.setItem(fileKey + 'LastUploaded', new Date().toLocaleString());
+                    localStorage.setItem('lecturer_listLastUploaded', new Date().toLocaleString());
                 }
             } else {
                 const text = await response.text();
@@ -128,28 +127,70 @@ function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
             }
         } catch (err) {
             resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
-            console.error('Upload error:', err);
+            console.error('Lecturer upload error:', err);
         }
     });
 }
 
-// Initialize both upload forms when DOM is loaded
-document.addEventListener('DOMContentLoaded', function () {
-    // Lecturer timetable upload
-    setupFileUpload({
-        formId: 'uploadLecturerForm',
-        fileInputId: 'lecturer_list',
-        uploadUrl: '/adminHome/uploadLecturerTimetable',
-        resultDivId: 'lecturerUploadResult'
-    });
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 
-    // Exam details upload
-    setupFileUpload({
-        formId: 'uploadExamForm',
-        fileInputId: 'exam_list',
-        uploadUrl: '/adminHome/uploadExamDetails',
-        resultDivId: 'examUploadResult' 
-    });
 
-    console.log('File upload forms initialized');
-});
+/* Exam Details Upload - Self-contained */
+function setupExamUpload() {
+    const form = document.getElementById('uploadExamForm');
+    const fileInput = document.getElementById('exam_list');
+    const resultDiv = document.getElementById('examUploadResult');
+
+    // Debug: Verify elements exist
+    if (!form) console.error('Form with ID uploadExamForm not found');
+    if (!fileInput) console.error('File input with ID exam_list not found');
+    if (!resultDiv) console.error('Result div with ID examUploadResult not found');
+    if (!form || !fileInput || !resultDiv) return;
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select an exam details file to upload.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('exam_list', file);
+
+        try {
+            resultDiv.innerHTML = '<p>Uploading exam details... please wait</p>';
+            
+            const response = await fetch('/adminHome/uploadExamDetails', {
+                method: 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p style="color:green;">${data.message || 'Exam details uploaded successfully!'}</p>
+                        ${data.columns ? `<strong>Columns:</strong> ${data.columns.join(', ')}<br>` : ''}
+                        ${data.preview ? `<strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>` : ''}
+                    `;
+                    localStorage.setItem('exam_listLastUploaded', new Date().toLocaleString());
+                }
+            } else {
+                const text = await response.text();
+                resultDiv.innerHTML = `<p>${text}</p>`;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
+            console.error('Exam upload error:', err);
+        }
+    });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupExamUpload);
