@@ -138,7 +138,6 @@ def lecturer_resetPassword(token):
     
     return render_template('lecturerPart/lecturerResetPassword.html', error_message=error_message)
 
-'''
 # Logout button from homepage to login page
 @app.route('/lecturerLogout')
 def lecturer_logout():
@@ -146,7 +145,6 @@ def lecturer_logout():
     session.clear()
     # Redirect to login page
     return redirect(url_for('lecturer_login')) 
-'''
     
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/lecturerHome', methods=['GET', 'POST'])
