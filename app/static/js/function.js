@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Lecturer Timetable Upload - Self-contained */
 function setupLecturerUpload() {
     const form = document.getElementById('uploadLecturerForm');
-    const fileInput = document.getElementById('lecturer_list');
+    const fileInput = document.getElementById('lecturer_file');
     const resultDiv = document.getElementById('lecturerUploadResult');
 
     // Debug: Verify elements exist
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 /* Exam Details Upload - Self-contained */
 function setupExamUpload() {
     const form = document.getElementById('uploadExamForm');
-    const fileInput = document.getElementById('exam_list');
+    const fileInput = document.getElementById('exam_file');
     const resultDiv = document.getElementById('examUploadResult');
 
     // Debug: Verify elements exist
