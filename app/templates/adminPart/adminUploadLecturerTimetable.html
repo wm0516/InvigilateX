@@ -14,34 +14,42 @@
                     </div>
                     <div class="button-wrapper">
                         <button type="submit">Upload</button>
-                        <br>
-                        <div id="lecturerUploadResult"></div>
                     </div>
+                    <!-- Result feedback -->
+                    <div id="lecturerUploadResult" style="text-align: center;"></div>
                 </form>
             </div>
         </div>
 
         <h2>Table Record</h2>
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>ID</th>
-                        <th>Department</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{user_name}}</td>
-                        <td>{{user_id}}</td>
-                        <td>{{user_department}}</td>
-                        <td>{{user_email}}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+    <label>
+    </label>
+
+
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Lecturer ID</th>
+                    <th>Lecturer Name</th>
+                    <th>Lecturer Department</th>
+                    <th>Lecturer Email</th>
+                    <th>Lecturer Contact</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in exam_data %}
+                <tr>
+                    <td>{{ row.lecturerID  }}</td>
+                    <td>{{ row.lecturerName }}</td>
+                    <td>{{ row.lecturerDepartment }}</td>
+                    <td>{{ row.lecturerEmail }}</td>
+                    <td>{{ row.lecturerContact }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     </div>
 <script src="{{ url_for('static', filename='js/function.js') }}"></script>
 
