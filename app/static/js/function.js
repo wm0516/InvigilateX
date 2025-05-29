@@ -138,15 +138,20 @@ function setupLecturerUpload() {
 
 /* Exam Details Upload - Self-contained */
 // Initialize when DOM is loaded
+
+
+
+
 document.addEventListener('DOMContentLoaded', setupExamUpload);
 
 function setupExamUpload() {
     const form = document.getElementById('uploadExamForm');
-    const fileInput = document.getElementById('exam_list');
+    const fileInput = document.getElementById('exam_file');
     const resultDiv = document.getElementById('examUploadResult');
+    const tableBody = document.querySelector('.user-data-table tbody');
 
-    if (!form || !fileInput || !resultDiv) {
-        console.error('Upload form or input or result div not found');
+    if (!form || !fileInput || !resultDiv || !tableBody) {
+        console.error('One or more elements not found');
         return;
     }
 
@@ -176,17 +181,35 @@ function setupExamUpload() {
                 const data = await response.json();
 
                 if (data.success) {
-                    resultDiv.innerHTML = `
-                        <p style="color:green;">${data.message || 'Upload successful!'}</p>
-                        ${data.records && data.records.length > 0 ? `
-                            <strong>Preview:</strong>
-                            <pre>${JSON.stringify(data.records.slice(0, 5), null, 2)}</pre>
-                        ` : ''}
-                        ${data.errors && data.errors.length > 0 ? `
+                    resultDiv.innerHTML = `<p style="color:green;">${data.message || 'Upload successful!'}</p>`;
+
+                    if (Array.isArray(data.records)) {
+                        data.records.forEach(record => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${record.Date}</td>
+                                <td>${record.Day}</td>
+                                <td>${record.Start}</td>
+                                <td>${record.End}</td>
+                                <td>${record.Program}</td>
+                                <td>${record.CourseSec}</td>
+                                <td>${record.Lecturer}</td>
+                                <td>${record.NumOf}</td>
+                                <td>${record.Room}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
+
+                    if (data.errors && data.errors.length > 0) {
+                        resultDiv.innerHTML += `
                             <strong style="color:red;">Errors:</strong>
                             <ul>${data.errors.map(err => `<li>${err}</li>`).join('')}</ul>
-                        ` : ''}
-                    `;
+                        `;
+                    }
+
+                    // Clear file input
+                    fileInput.value = "";
 
                 } else {
                     resultDiv.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
