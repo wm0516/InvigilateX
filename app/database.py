@@ -35,29 +35,15 @@ class User(db.Model):
     password = db.Column(db.String(255))
 
 
-class Exam(db.Model):
-    __tablename__ = 'Exam'
-    examCourseCode = db.Column(db.String(50), primary_key=True)
-    examProgram = db.Column(db.String(100))
-    examSection = db.Column(db.String(100))  
-    examDate = db.Column(db.Date)  
-    examTimePeriod = db.Column(db.Time)  
-    examLecturer = db.Column(db.String(100))
-    examNoOfCandidates = db.Column(db.Integer) 
-    examVenue = db.Column(db.String(100)) 
-
-
-class ExamSchedule(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    exam_date = db.Column(db.Date, nullable=False)
-    day = db.Column(db.String(10), nullable=False)
-    start_time = db.Column(db.String(20), nullable=False)
-    end_time = db.Column(db.String(20), nullable=False)
-    program = db.Column(db.String(10), nullable=False)
-    course_sec = db.Column(db.String(50), nullable=False)
-    lecturer = db.Column(db.String(255), nullable=False)
-    num_of_students = db.Column(db.Integer, nullable=False)
-    room = db.Column(db.String(50), nullable=True)
-
-
+class ExamDetails(db.model):
+    __tablename__ = 'ExamDetails'
+    examDate = db.Column(db.Date, nullable=False)
+    examDay = db.Column(db.String(10), nullable=False)
+    examStartTime = db.Column(db.String(20), nullable=False)
+    examEndTime = db.Column(db.String(20), nullable=False)
+    examProgramCode = db.Column(db.String(10), nullable=False)
+    examCourseSectionCode = db.Column(db.String(20), primary_key=True)
+    examLecturer = db.Column(db.String(255), nullable=False)
+    examTotalStudent = db.Column(db.Integer, nullable=False)
+    examVenue = db.Column(db.String(50), nullable=True)
 
