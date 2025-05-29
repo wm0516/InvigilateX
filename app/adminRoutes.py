@@ -212,35 +212,100 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
     if request.method == 'POST':
-        #flash(f"{request.method}")
-        #flash(f"{request.files}")
-        #flash(f"{request.form}")
-
         if 'lecturer_file' not in request.files:
             flash('No file part')
-            return jsonify({'error': 'No file part in the request'}), 400
+            return jsonify({'success': False, 'message': 'No file uploaded'})
 
         file = request.files['lecturer_file']
+        file_stream = BytesIO(file.read())
 
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
-        
-        if file.filename is None:
-            return jsonify({'error': 'Filename is missing.'}), 400
-
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        records_added = 0
+        processed_records = []
+        errors = []
 
         try:
-            df = pd.read_excel(filepath)
+            excel_file = pd.ExcelFile(file_stream)
+
+            for sheet_name in excel_file.sheet_names:
+                try:
+                    df = pd.read_excel(
+                        excel_file,
+                        sheet_name=sheet_name,
+                        usecols="A:E",
+                        skiprows=1
+                    )
+                    df.columns = ['ID', 'Name', 'Department', 'Email', 'Contact']
+                    df.reset_index(drop=True, inplace=True)
+
+                    for index, row in df.iterrows():
+                        try:
+                            lecturer_id = str(row['ID'])
+                            lecturer_name = str(row['Name'])
+                            lecturer_department = row['Department']
+                            lecturer_email = str(row['Email'])
+                            lecturer_contact = row['Contact']
+
+                            is_valid, error_message = unique_LecturerDetails(
+                                lecturer_id, lecturer_email, lecturer_contact
+                            )
+
+                            if not is_valid:
+                                row_number = index + 2 if isinstance(index, int) else str(index)
+                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
+                                continue
+
+                            class LecturerDetails(db.Model):
+                                __tablename__ = 'LecturerDetails'
+                                lecturerID = db.Column(db.String(20), primary_key=True)
+                                lecturerName = db.Column(db.String(100))
+                                lecturerDepartment =db.Column(db.String(100))
+                                lecturerEmail = db.Column(db.String(100))
+                                lecturerContact =db.Column(db.Integer)
+
+                            lecturer = LecturerDetails(
+                                lecturerID = lecturer_id,
+                                lecturerName = lecturer_name,
+                                lecturerDepartment = lecturer_department,
+                                lecturerEmail = lecturer_email,
+                                lecturerContact = lecturer_contact
+                            )
+
+                            db.session.add(lecturer)
+                            records_added += 1
+
+                            processed_records.append({
+                                'ID': lecturer.lecturerID,
+                                'Name': lecturer.lecturerName,
+                                'Department': lecturer.lecturerDepartment,
+                                'Email': lecturer.lecturerEmail,
+                                'Contact': lecturer.lecturerContact
+                            })
+
+                        except Exception as row_err:
+                            pass
+
+                    db.session.commit()
+
+                except Exception as sheet_err:
+                    pass
+            # Final response
+            if records_added > 0:
+                message = f"Successful upload {records_added} record(s)"
+                success = True
+            else:
+                message = "No data uploaded"
+                success = False
+
             return jsonify({
-                'message': 'Lecturer timetable file uploaded and read successfully!',
-                'columns': df.columns.tolist(),
-                'preview': df.head(3).to_dict(orient='records')
+                'success': success,
+                'message': message,
+                'records': processed_records,
+                'errors': errors
             })
+
         except Exception as e:
-            return jsonify({'error': f'Failed to read Excel file: {str(e)}'}), 500
+            current_app.logger.error(f"File processing error: {str(e)}")
+            return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
 
     return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab')
 
