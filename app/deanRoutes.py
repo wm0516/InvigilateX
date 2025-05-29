@@ -119,7 +119,7 @@ def dean_forgotPassword():
 
 # reset password page (done after reset password based on that user password)
 @app.route('/deanResetPassword/<token>', methods=['GET', 'POST'])
-def admin_resetPassword(token):
+def dean_resetPassword(token):
     error_message = None
     
     if request.method == 'POST':
@@ -138,6 +138,7 @@ def admin_resetPassword(token):
     
     return render_template('deanPart/deanResetPassword.html', error_message=error_message)
 
+'''
 # Logout button from homepage to login page
 @app.route('/deanLogout')
 def dean_logout():
@@ -145,5 +146,9 @@ def dean_logout():
     session.clear()
     # Redirect to login page
     return redirect(url_for('dean_login')) 
+'''
 
-
+# home page (start with this!!!!!!!!!!!!!!)
+@app.route('/deanHome', methods=['GET', 'POST'])
+def dean_homepage():
+    return render_template('deanPart/deanHomepage.html', active_tab='home')
