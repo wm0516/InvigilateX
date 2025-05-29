@@ -182,7 +182,11 @@ input[type="file"] {
 
 
 
-
+.flashes {
+  color: red;
+  font-weight: bold;
+  list-style: none;
+}
 
 
 
