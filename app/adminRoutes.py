@@ -212,6 +212,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
     if request.method == 'POST':
+        flash(f"request.files: {request.files}")
+        flash(f"request.form: {request.form}")
+        flash(f"request.method: {request.method}")
+
         if 'lecturer_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
