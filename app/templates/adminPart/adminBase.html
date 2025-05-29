@@ -23,20 +23,20 @@
     <!-- Main tab navigation -->
         <div class="tab-nav">
             <a href="{{ url_for('admin_homepage')}}" 
-               class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
-               data-tab="home">Home</a>
+               class="tab-link {% if active_tab == 'admin_hometab' %}active{% endif %}" 
+               data-tab="admin_hometab">Home</a>
 
             <a href="{{ url_for('admin_upload')}}" 
-               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-               data-tab="upload">Upload File</a>
+               class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}" 
+               data-tab="admin_uploadtab">Upload File</a>
 
             <a href="{{ url_for('admin_autoGenerate')}}" 
-               class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
-               data-tab="autoGenerate">Generate Exam Schedule</a>
+               class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}" 
+               data-tab="admin_autoGeneratetab">Generate Exam Schedule</a>
 
             <a href="{{ url_for('admin_manageLecturer')}}" 
-               class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
-               data-tab="manage">Assign Lecturer</a>
+               class="tab-link {% if active_tab == 'admin_managetab' %}active{% endif %}" 
+               data-tab="admin_managetab">Assign Lecturer</a>
         </div>
         
         <!-- Sub-tab navigation (only shown when on upload section) -->
@@ -44,16 +44,16 @@
         <br>
         <div class="tab-nav">
             <a href="{{ url_for('admin_upload')}}" 
-               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-               data-tab="upload">Lecturers Timetable</a>
+               class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}" 
+               data-tab="admin_uploadtab">Lecturers Timetable</a>
 
             <a href="{{ url_for('admin_uploadLecturerTimetable')}}" 
-               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+               class="tab-link {% if active_tab == 'admin_uploadLecturerTimetabletab' %}active{% endif %}" 
+               data-tab="admin_uploadLecturerTimetabletab">Lecturers Timetable</a>
 
             <a href="{{ url_for('admin_uploadExamDetails')}}" 
-               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-               data-tab="uploadExamDetails">Exam Details</a>
+               class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}" 
+               data-tab="admin_uploadExamDetailstab">Exam Details</a>
         </div>
         {% endif %}
         <br>
