@@ -252,9 +252,6 @@ def admin_uploadLecturerTimetable():
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
 def admin_uploadExamDetails():
     if request.method == 'POST':
-        flash(f"request.files")
-        flash(f"request.form")
-        flash(f"request.method")
         if 'exam_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
@@ -276,7 +273,7 @@ def admin_uploadExamDetails():
                         usecols="A:I",
                         skiprows=1
                     )
-                    df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'CourseSec', 'Lecturer', 'NumOf', 'Room']
+                    df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
                     df.reset_index(drop=True, inplace=True)
 
                     for index, row in df.iterrows():
@@ -287,10 +284,10 @@ def admin_uploadExamDetails():
                                 examStartTime=str(row['Start']),
                                 examEndTime=str(row['End']),
                                 examProgramCode=row['Program'],
-                                examCourseSectionCode=row['Course/Sec'],
+                                examCourseSectionCode=row['CourseSec'],
                                 examLecturer=row['Lecturer'],
-                                examTotalStudent=int(row['No Of']),
-                                examVenue=row.get('Room', '') if pd.notna(row.get('Room')) else ''
+                                examTotalStudent=int(row['NumOf']),
+                                examVenue=row['Room'] if pd.notna(row['Room']) else ''
                             )
                             db.session.add(exam)
                             records_added += 1
@@ -301,9 +298,9 @@ def admin_uploadExamDetails():
                                 'Start': exam.examStartTime,
                                 'End': exam.examEndTime,
                                 'Program': exam.examProgramCode,
-                                'CourseSec': exam.examCourseSectionCode,
+                                'Course/Sec': exam.examCourseSectionCode,
                                 'Lecturer': exam.examLecturer,
-                                'NumOf': exam.examTotalStudent,
+                                'No Of': exam.examTotalStudent,
                                 'Room': exam.examVenue
                             })
 
@@ -327,145 +324,6 @@ def admin_uploadExamDetails():
             current_app.logger.error(f"File processing error: {str(e)}")
             return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
 
-    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab')
-        
-
-
-'''
-@app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
-def upload_exam_details():
-    exam_data = ''
-    if request.method == 'POST':
-        #flash(f"{request.method}")
-        #flash(f"{request.files}")
-        #flash(f"{request.form}")
-        #flash(f"Files keys: {list(request.files.keys())}")
-        if 'exam_file' not in request.files:
-            return jsonify({'error': 'No file part in the request'}), 400
-
-        file = request.files['exam_file']
-        try:
-            excel_file = pd.ExcelFile(file)
-
-            for sheet_name in excel_file.sheet_names:
-                current_app.logger.info(f"Processing sheet: {sheet_name}")
-                department_code = sheet_name.strip().upper()
-            pass
-        except:
-            pass
-
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
-        
-        if file.filename is None:
-            return jsonify({'error': 'Filename is missing.'}), 400
-
-        filename = secure_filename(file.filename)
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
-
-        try:
-            df = pd.read_excel(filepath)
-            return jsonify({
-                'message': 'File uploaded and read successfully!',
-                'columns': df.columns.tolist(),
-                'preview': df.head(3).to_dict(orient='records')
-            })
-        except Exception as e:
-            return jsonify({'error': f'Failed to read Excel file: {str(e)}'}), 500
-        
-    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails', exam_data=exam_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
-def upload_exam_details():
-    exam_data=''
-    if request.method == 'POST':
-        flash(f"{request.method}")
-        flash(f"{request.files}")
-        flash(f"{request.form}")
-        flash(f"Files keys: {list(request.files.keys())}")
-        if 'exam_file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        
-        file = request.files['exam_file']
-        
-        if not file or not file.filename:
-            flash('No file selected')
-            return redirect(request.url)
-
-        if file:
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-
-            try:
-                df = pd.read_excel(filepath)  # Use pd.read_csv() if using .csv files
-                exam_data = df.to_dict(orient='records')  # Converts DataFrame to a list of dicts
-
-                print(df.head())  # Debugging
-                return "File uploaded and read successfully!"
-            except Exception as e:
-                flash(f"Error reading Excel file: {e}")
-                return redirect(request.url)
-
-        flash('Invalid file type. Only Excel files are supported.')
-        return redirect(request.url)
-
-    return render_template('mainPart/uploadExamDetails.html', active_tab='uploadExamDetails', exam_data=exam_data)
-'''
-
-
-'''
-if 'exam_file' not in request.files:
-    return redirect(request.url)
-
-file = request.files['exam_file']
-
-try:
-    excel_file = pd.ExcelFile(file)
-
-    for sheet_name in excel_file.sheet_names:
-        current_app.logger.info(f"Processing sheet: {sheet_name}")
-        # department_code = sheet_name.strip().upper()
-
-        try:
-            df = pd.read_excel(
-                excel_file,
-                sheet_name=sheet_name,
-                usecold="A:c"
-            )
-
-            df.columns = ['Name', 'Email', 'Level']
-
-        except:
-            pass
-
-except:
-    pass
-'''
+    # GET request
+    exam_data = ExamDetails.query.all()
+    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab', exam_data=exam_data)
