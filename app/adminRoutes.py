@@ -13,10 +13,9 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-
 @app.route('/')
 def index():
-    return redirect(url_for('adminLogin'))
+    return redirect(url_for('admin_login'))
 
 # login page (done with checking email address and hash password)
 @app.route('/adminLogin', methods=['GET', 'POST'])
