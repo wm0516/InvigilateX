@@ -50,17 +50,18 @@ class ExamDetails(db.Model):
     examVenue = db.Column(db.String(50), nullable=True)
     '''
     CREATE TABLE ExamDetails (
-    examID INT INCREMENT PRIMARY KEY,
-    examDate DATE,
-    examDay VARCHAR(10),
-    examStartTime VARCHAR(20),
-    examEndTime VARCHAR(20),
-    examProgramCode VARCHAR(10),
-    examCourseSectionCode VARCHAR(20),
-    examLecturer VARCHAR(255),
-    examTotalStudent INT,
-    examVenue VARCHAR(50)
+        examID INT AUTO_INCREMENT PRIMARY KEY,
+        examDate DATE,
+        examDay VARCHAR(10),
+        examStartTime VARCHAR(20),
+        examEndTime VARCHAR(20),
+        examProgramCode VARCHAR(10),
+        examCourseSectionCode VARCHAR(20),
+        examLecturer VARCHAR(255),
+        examTotalStudent INT,
+        examVenue VARCHAR(50)
     );
+
     '''
 
 class LecturerDetails(db.Model):
@@ -71,11 +72,11 @@ class LecturerDetails(db.Model):
     lecturerEmail = db.Column(db.String(100))
     lecturerContact =db.Column(db.Integer)
     '''
-    CREATE TABLE LecturerDetails (
-    lecturerID VARCHAR(20) PRIMARY KEY,
-    lecturerName VARCHAR(100),
-    lecturerDepartment VARCHAR(100),
-    lecturerEmail VARCHAR(100),
-    lecturerContact INT
+    CREATE TABLE LecturerDetails (  
+        lecturerID VARCHAR(20) PRIMARY KEY,
+        lecturerName VARCHAR(100),
+        lecturerDepartment VARCHAR(100),
+        lecturerEmail VARCHAR(100),
+        lecturerContact INT
     );
     '''
