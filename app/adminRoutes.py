@@ -142,12 +142,18 @@ def admin_resetPassword(token):
     return render_template('adminPart/adminResetPassword.html', error_message=error_message)
 
 # Logout button from homepage to login page
+'''
 @app.route('/adminLogout')
 def admin_logout():
     # Clear the session
     session.clear()
     # Redirect to login page
     return redirect(url_for('admin_login')) 
+'''
+
+
+
+
 
 
 
