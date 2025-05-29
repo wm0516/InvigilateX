@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 function setupLecturerUpload() {
     const form = document.getElementById('/adminHome/uploadLecturerTimetable');
-    const fileInput = document.getElementById('lecturer_file');
+    const fileInput = document.getElementById('lecturer_list');
     const resultDiv = document.getElementById('lecturerUploadResult');
 
     // Debug: Verify elements exist
@@ -139,9 +139,10 @@ function setupLecturerUpload() {
 /* Exam Details Upload - Self-contained */
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', setupExamUpload);
+
 function setupExamUpload() {
     const form = document.getElementById('uploadExamForm');
-    const fileInput = document.getElementById('exam_file');
+    const fileInput = document.getElementById('exam_list');
     const resultDiv = document.getElementById('examUploadResult');
 
     if (!form || !fileInput || !resultDiv) {
@@ -187,7 +188,7 @@ function setupExamUpload() {
                         ` : ''}
                     `;
 
-                    // Optionally refresh the page to see updated table
+                    // Reload page to refresh exam table
                     setTimeout(() => location.reload(), 3000);
 
                 } else {
