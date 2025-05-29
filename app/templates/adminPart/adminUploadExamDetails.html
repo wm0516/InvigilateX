@@ -12,22 +12,11 @@
                 </div>
                 <div class="button-wrapper">
                     <button type="submit">Upload</button>
-                    <!-- Result feedback -->
-                    <div id="examUploadResult" style="margin-top:20px;"></div>
                 </div>
+                <!-- Result feedback -->
+                <div id="examUploadResult" style="text-align: center;"></div>
             </form>
         </div>
-
-        <!-- Flash messages -->
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flashes">
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-        {% endwith %}
     </div>
 
     <h2>Table Record</h2>
