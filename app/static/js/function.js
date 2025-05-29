@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload({
         formId: 'uploadLecturerForm',
         fileInputId: 'lecturer_list',
-        uploadUrl: 'adminHome/uploadLecturerTimetable',
+        uploadUrl: '/adminHome/uploadLecturerTimetable',
         resultDivId: 'lecturerUploadResult'
     });
 
@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload({
         formId: 'uploadExamForm',
         fileInputId: 'exam_list',
-        uploadUrl: 'adminHome/uploadExamDetails',
+        uploadUrl: '/adminHome/uploadExamDetails',
         resultDivId: 'examUploadResult' 
     });
 
