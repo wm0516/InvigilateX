@@ -147,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload({
         formId: 'uploadExamForm',
         fileInputId: 'exam_list',
-        uploadUrl: '/adminHome/uploadExamDetails',
+        uploadUrl: 'adminHome/uploadExamDetails',
         resultDivId: 'examUploadResult' 
     });
 
