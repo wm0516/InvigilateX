@@ -301,8 +301,9 @@ def admin_uploadLecturerTimetable():
         except Exception as e:
             current_app.logger.error(f"File processing error: {str(e)}")
             return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
-
-    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab')
+        
+    lecturer_data = LecturerDetails.query.all()
+    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', lecturer_data=lecturer_data)
 
 
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
