@@ -22,22 +22,22 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
     const mainRouteToTab = {
-        '/homepage': 'home',
-        '/home/upload': 'upload',
-        '/home/autoGenerate': 'autoGenerate',
-        '/home/manageLecturer': 'manage',
+        '/adminHome': 'admin_hometab',
+        '/adminHome/upload': 'admin_uploadtab',
+        '/adminHome/autoGenerate': 'admin_autoGeneratetab',
+        '/adminHome/manageLecturer': 'admin_managetab',
     };
 
     // File upload sub-tabs
     const uploadRouteToTab = {
-        '/home/uploadLecturerTimetable': 'uploadLecturerTimetable', // Fixed typo
-        '/home/uploadExamDetails': 'uploadExamDetails',
+        '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab', 
+        '/adminHome/uploadExamDetails': 'admin_uploadExamDetailstab',
     };
 
     const currentPath = window.location.pathname;
     
     // Handle main navigation tabs
-    let activeMainTabId = 'home';
+    let activeMainTabId = 'admin_hometab';
     for (const [route, tabId] of Object.entries(mainRouteToTab)) {
         if (currentPath.includes(route)) {
             activeMainTabId = tabId;
@@ -54,8 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle upload sub-tabs if we're in the upload section
-    if (activeMainTabId === 'upload') {
-        let activeUploadTabId = 'upload';
+    if (activeMainTabId === 'admin_uploadtab') {
+        let activeUploadTabId = 'admin_uploadtab';
         for (const [route, tabId] of Object.entries(uploadRouteToTab)) {
             if (currentPath.includes(route)) {
                 activeUploadTabId = tabId;
@@ -72,6 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+
+
+
 
 /* read upload file function */
 function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
