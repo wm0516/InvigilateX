@@ -165,7 +165,7 @@ function setupExamUpload() {
         }
 
         const formData = new FormData();
-        formData.append('exam_list', file);
+        formData.append('exam_file', file);
 
         resultDiv.innerHTML = '<p>Uploading exam details... please wait</p>';
 
