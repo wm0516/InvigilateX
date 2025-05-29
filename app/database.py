@@ -35,6 +35,7 @@ class User(db.Model):
     password = db.Column(db.String(255))
 
 
+# Use examID as PK because the auto increment only able with PK
 class ExamDetails(db.Model):
     __tablename__ = 'ExamDetails'
     examID = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -47,3 +48,34 @@ class ExamDetails(db.Model):
     examLecturer = db.Column(db.String(255), nullable=False)
     examTotalStudent = db.Column(db.Integer, nullable=False)
     examVenue = db.Column(db.String(50), nullable=True)
+    '''
+    CREATE TABLE ExamDetails (
+    examID INT INCREMENT PRIMARY KEY,
+    examDate DATE,
+    examDay VARCHAR(10),
+    examStartTime VARCHAR(20),
+    examEndTime VARCHAR(20),
+    examProgramCode VARCHAR(10),
+    examCourseSectionCode VARCHAR(20),
+    examLecturer VARCHAR(255),
+    examTotalStudent INT,
+    examVenue VARCHAR(50)
+    );
+    '''
+
+class LecturerDetails(db.Model):
+    __tablename__ = 'LecturerDetails'
+    lecturerID = db.Column(db.String(20), primary_key=True)
+    lecturerName = db.Column(db.String(100))
+    lecturerDepartment =db.Column(db.String(100))
+    lecturerEmail = db.Column(db.String(100))
+    lecturerContact =db.Column(db.Integer)
+    '''
+    CREATE TABLE LecturerDetails (
+    lecturerID VARCHAR(20) PRIMARY KEY,
+    lecturerName VARCHAR(100),
+    lecturerDepartment VARCHAR(100),
+    lecturerEmail VARCHAR(100),
+    lecturerContact INT
+    );
+    '''
