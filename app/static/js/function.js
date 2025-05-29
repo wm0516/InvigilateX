@@ -140,8 +140,6 @@ function setupLecturerUpload() {
 // Initialize when DOM is loaded
 
 
-
-
 document.addEventListener('DOMContentLoaded', setupExamUpload);
 
 function setupExamUpload() {
@@ -180,40 +178,35 @@ function setupExamUpload() {
             if (contentType.includes('application/json')) {
                 const data = await response.json();
 
-                if (data.success) {
-                    resultDiv.innerHTML = `<p style="color:green;">${data.message || 'Upload successful!'}</p>`;
+                resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
 
-                    if (Array.isArray(data.records)) {
-                        data.records.forEach(record => {
-                            const row = document.createElement('tr');
-                            row.innerHTML = `
-                                <td>${record.Date}</td>
-                                <td>${record.Day}</td>
-                                <td>${record.Start}</td>
-                                <td>${record.End}</td>
-                                <td>${record.Program}</td>
-                                <td>${record["Course/Sec"]}</td>
-                                <td>${record.Lecturer}</td>
-                                <td>${record["No Of"]}</td>
-                                <td>${record.Room}</td>
-                            `;
-                            tableBody.appendChild(row);
-                        });
-                    }
-
-                    if (data.errors && data.errors.length > 0) {
-                        resultDiv.innerHTML += `
-                            <strong style="color:red;">Errors:</strong>
-                            <ul>${data.errors.map(err => `<li>${err}</li>`).join('')}</ul>
+                if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                    data.records.forEach(record => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${record.Date}</td>
+                            <td>${record.Day}</td>
+                            <td>${record.Start}</td>
+                            <td>${record.End}</td>
+                            <td>${record.Program}</td>
+                            <td>${record["Course/Sec"]}</td>
+                            <td>${record.Lecturer}</td>
+                            <td>${record["No Of"]}</td>
+                            <td>${record.Room}</td>
                         `;
-                    }
-
-                    // Clear file input
-                    fileInput.value = "";
-
-                } else {
-                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
+                        tableBody.appendChild(row);
+                    });
                 }
+
+                // Optional: show errors
+                if (data.errors && data.errors.length > 0) {
+                    resultDiv.innerHTML += `
+                        <strong style="color:red;">Errors:</strong>
+                        <ul>${data.errors.map(err => `<li>${err}</li>`).join('')}</ul>
+                    `;
+                }
+
+                fileInput.value = ""; // Clear file input
             } else {
                 const text = await response.text();
                 resultDiv.innerHTML = `<p>${text}</p>`;
@@ -224,3 +217,4 @@ function setupExamUpload() {
         }
     });
 }
+
