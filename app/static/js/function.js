@@ -96,12 +96,12 @@ function setupLecturerUpload() {
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('Please select an exam file to upload.');
+            alert('Please select an lecturer file to upload.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('exam_file', file);
+        formData.append('lecturer_file', file);
 
         resultDiv.innerHTML = '<p>Uploading lecturer details... please wait</p>';
 
