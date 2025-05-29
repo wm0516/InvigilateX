@@ -47,5 +47,17 @@ class Exam(db.Model):
     examVenue = db.Column(db.String(100)) 
 
 
+class ExamSchedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    exam_date = db.Column(db.Date, nullable=False)
+    day = db.Column(db.String(10), nullable=False)
+    start_time = db.Column(db.String(20), nullable=False)
+    end_time = db.Column(db.String(20), nullable=False)
+    program = db.Column(db.String(10), nullable=False)
+    course_sec = db.Column(db.String(50), nullable=False)
+    lecturer = db.Column(db.String(255), nullable=False)
+    num_of_students = db.Column(db.Integer, nullable=False)
+    room = db.Column(db.String(50), nullable=True)
+
 
 
