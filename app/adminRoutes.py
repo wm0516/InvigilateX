@@ -222,7 +222,7 @@ def admin_uploadLecturerTimetable():
         file = request.files['lecturer_file']
         file_stream = BytesIO(file.read())
 
-        records_added = 0
+        lecturer_records_added = 0
         processed_records = []
         errors = []
 
@@ -266,7 +266,7 @@ def admin_uploadLecturerTimetable():
                             )
 
                             db.session.add(lecturer)
-                            records_added += 1
+                            lecturer_records_added += 1
 
                             processed_records.append({
                                 'ID': lecturer.lecturerID,
@@ -284,8 +284,8 @@ def admin_uploadLecturerTimetable():
                 except Exception as sheet_err:
                     pass
             # Final response
-            if records_added > 0:
-                message = f"Successful upload {records_added} record(s)"
+            if lecturer_records_added > 0:
+                message = f"Successful upload {lecturer_records_added} record(s)"
                 success = True
             else:
                 message = "No data uploaded"
@@ -314,7 +314,7 @@ def admin_uploadExamDetails():
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
 
-        records_added = 0
+        exam_records_added = 0
         processed_records = []
         errors = []
 
@@ -361,7 +361,7 @@ def admin_uploadExamDetails():
                             )
 
                             db.session.add(exam)
-                            records_added += 1
+                            exam_records_added += 1
 
                             processed_records.append({
                                 'Date': exam.examDate.strftime('%Y-%m-%d'),
@@ -383,8 +383,8 @@ def admin_uploadExamDetails():
                 except Exception as sheet_err:
                     pass
             # Final response
-            if records_added > 0:
-                message = f"Successful upload {records_added} record(s)"
+            if exam_records_added > 0:
+                message = f"Successful upload {exam_records_added} record(s)"
                 success = True
             else:
                 message = "No data uploaded"
