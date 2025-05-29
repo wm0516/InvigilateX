@@ -77,6 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 /* Lecturer Timetable Upload - Self-contained */
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 function setupLecturerUpload() {
     const form = document.getElementById('/adminHome/uploadLecturerTimetable');
     const fileInput = document.getElementById('lecturer_file');
@@ -132,65 +134,72 @@ function setupLecturerUpload() {
     });
 }
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 
 
 /* Exam Details Upload - Self-contained */
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupExamUpload);
 function setupExamUpload() {
-    const form = document.getElementById('/adminHome/uploadExamDetails');
+    const form = document.getElementById('uploadExamForm');
     const fileInput = document.getElementById('exam_file');
     const resultDiv = document.getElementById('examUploadResult');
 
-    // Debug: Verify elements exist
-    if (!form) console.error('Form with ID /adminHome/uploadExamDetails not found');
-    if (!fileInput) console.error('File input with ID exam_list not found');
-    if (!resultDiv) console.error('Result div with ID examUploadResult not found');
-    if (!form || !fileInput || !resultDiv) return;
+    if (!form || !fileInput || !resultDiv) {
+        console.error('Upload form or input or result div not found');
+        return;
+    }
 
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('Please select an exam details file to upload.');
+            alert('Please select an exam file to upload.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('exam_list', file);
+        formData.append('exam_file', file);
+
+        resultDiv.innerHTML = '<p>Uploading exam details... please wait</p>';
 
         try {
-            resultDiv.innerHTML = '<p>Uploading exam details... please wait</p>';
-            
             const response = await fetch('/adminHome/uploadExamDetails', {
                 method: 'POST',
                 body: formData
             });
 
             const contentType = response.headers.get('content-type') || '';
+
             if (contentType.includes('application/json')) {
                 const data = await response.json();
-                if (data.error) {
-                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
-                } else {
+
+                if (data.success) {
                     resultDiv.innerHTML = `
-                        <p style="color:green;">${data.message || 'Exam details uploaded successfully!'}</p>
-                        ${data.columns ? `<strong>Columns:</strong> ${data.columns.join(', ')}<br>` : ''}
-                        ${data.preview ? `<strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>` : ''}
+                        <p style="color:green;">${data.message || 'Upload successful!'}</p>
+                        ${data.records && data.records.length > 0 ? `
+                            <strong>Preview:</strong>
+                            <pre>${JSON.stringify(data.records.slice(0, 5), null, 2)}</pre>
+                        ` : ''}
+                        ${data.errors && data.errors.length > 0 ? `
+                            <strong style="color:red;">Errors:</strong>
+                            <ul>${data.errors.map(err => `<li>${err}</li>`).join('')}</ul>
+                        ` : ''}
                     `;
-                    localStorage.setItem('exam_listLastUploaded', new Date().toLocaleString());
+
+                    // Optionally refresh the page to see updated table
+                    setTimeout(() => location.reload(), 3000);
+
+                } else {
+                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
                 }
             } else {
                 const text = await response.text();
                 resultDiv.innerHTML = `<p>${text}</p>`;
             }
-        } catch (err) {
-            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
-            console.error('Exam upload error:', err);
+        } catch (error) {
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${error.message}</p>`;
+            console.error(error);
         }
     });
 }
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', setupExamUpload);
