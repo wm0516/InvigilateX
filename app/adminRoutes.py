@@ -252,22 +252,21 @@ def admin_uploadLecturerTimetable():
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
 def admin_uploadExamDetails():
     if request.method == 'POST':
-        flash(f"request.files")
-        flash(f"request.form")
-        flash(f"request.method")
         if 'exam_file' not in request.files:
-            return jsonify({'success': False, 'message': 'No file uploaded'})
+            flash('No file part in the request.')
+            return redirect(url_for('admin_uploadExamDetails'))
 
         file = request.files['exam_file']
-        file_stream = BytesIO(file.read())
+        if file.filename == '':
+            flash('No selected file.')
+            return redirect(url_for('admin_uploadExamDetails'))
 
+        file_stream = BytesIO(file.read())
         records_added = 0
-        processed_records = []
         errors = []
 
         try:
             excel_file = pd.ExcelFile(file_stream)
-
             for sheet_name in excel_file.sheet_names:
                 try:
                     df = pd.read_excel(
@@ -290,48 +289,33 @@ def admin_uploadExamDetails():
                                 course_sec=row['CourseSec'],
                                 lecturer=row['Lecturer'],
                                 num_of_students=int(row['NumOf']),
-                                room=row.get('Room', '') if pd.notna(row.get('Room')) else ''
+                                room=row['Room'] if pd.notna(row['Room']) else ''
                             )
                             db.session.add(exam)
                             records_added += 1
-
-                            processed_records.append({
-                                'Date': exam.exam_date.strftime('%Y-%m-%d'),
-                                'Day': exam.day,
-                                'Start': exam.start_time,
-                                'End': exam.end_time,
-                                'Program': exam.program,
-                                'CourseSec': exam.course_sec,
-                                'Lecturer': exam.lecturer,
-                                'NumOf': exam.num_of_students,
-                                'Room': exam.room
-                            })
-
                         except Exception as row_err:
                             row_number = index + 2 if isinstance(index, int) else str(index)
                             errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {str(row_err)}")
 
-
                     db.session.commit()
-
                 except Exception as sheet_err:
                     errors.append(f"Error processing sheet '{sheet_name}': {str(sheet_err)}")
                     current_app.logger.error(sheet_err)
 
-            return jsonify({
-                'success': True,
-                'message': f'Successfully added {records_added} record(s).',
-                'records': processed_records,
-                'errors': errors
-            })
+            if records_added:
+                flash(f"Successfully added {records_added} record(s).")
+            if errors:
+                flash("Some errors occurred:\n" + "\n".join(errors))
 
         except Exception as e:
             current_app.logger.error(f"File processing error: {str(e)}")
-            return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
+            flash(f"Error processing file: {str(e)}")
 
-    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab')
-        
+        return redirect(url_for('admin_uploadExamDetails'))
 
+    # GET method: Load records from database
+    exam_data = ExamSchedule.query.order_by(ExamSchedule.exam_date.asc()).all()
+    return render_template('adminPart/adminUploadExamDetails.html', exam_data=exam_data)
 
 
 '''
