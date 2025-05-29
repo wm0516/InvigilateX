@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_part.css') }}">
+    <!-- Shared header/navigation -->
+    <div class= "header-container">
+        <div class="heading"></div>
+        <div class="user-info">
+            <div class="user-details">
+                {{user_name}} <br>
+                {{user_id}} <br>
+                {{user_department}}
+            </div>
+            <a href="{{ url_for('admin_logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
+        </div>
+    </div>
+</head>
+<body>
+    <br>
+    <br>
+    <div class="menu-grid">
+    <!-- Main tab navigation -->
+        <div class="tab-nav">
+            <a href="{{ url_for('admin_homepage')}}" 
+               class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
+               data-tab="home">Home</a>
+
+            <a href="{{ url_for('admin_upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Upload File</a>
+
+            <a href="{{ url_for('admin_autoGenerate')}}" 
+               class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
+               data-tab="autoGenerate">Generate Exam Schedule</a>
+
+            <a href="{{ url_for('admin_manageLecturer')}}" 
+               class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
+               data-tab="manage">Assign Lecturer</a>
+        </div>
+        <br>
+
+        <!-- Sub-tab navigation (only shown when on upload section) -->
+        {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
+        <div class="tab-nav">
+            <a href="{{ url_for('admin_upload')}}" 
+               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
+               data-tab="upload">Lecturers Timetable</a>
+
+            <a href="{{ url_for('admin_uploadLecturerTimetable')}}" 
+               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
+               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+
+            <a href="{{ url_for('admin_uploadExamDetails')}}" 
+               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
+               data-tab="uploadExamDetails">Exam Details</a>
+        </div>
+        {% endif %}
+        <br>
+        <!-- Content block for child templates -->
+        {% block content %}{% endblock %}
+
+        <!-- Shared JavaScript -->
+        <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+    </div>
+</body>
+</html>
