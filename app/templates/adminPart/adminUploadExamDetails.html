@@ -24,6 +24,7 @@
         <table class="user-data-table">
             <thead>
                 <tr>
+                    <th>Exam ID</th>
                     <th>Exam Date</th>
                     <th>Exam Day</th>
                     <th>Start Time</th>
@@ -38,6 +39,7 @@
             <tbody>
                 {% for row in exam_data %}
                 <tr>
+                    <td>{{ row.examID  }}</td>
                     <td>{{ row.examDate }}</td>
                     <td>{{ row.examDay }}</td>
                     <td>{{ row.examStartTime }}</td>
