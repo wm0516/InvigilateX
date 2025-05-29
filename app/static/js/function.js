@@ -198,14 +198,6 @@ function setupExamUpload() {
                     });
                 }
 
-                // Optional: show errors
-                if (data.errors && data.errors.length > 0) {
-                    resultDiv.innerHTML += `
-                        <strong style="color:red;">Errors:</strong>
-                        <ul>${data.errors.map(err => `<li>${err}</li>`).join('')}</ul>
-                    `;
-                }
-
                 fileInput.value = ""; // Clear file input
             } else {
                 const text = await response.text();
