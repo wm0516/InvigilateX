@@ -12,12 +12,11 @@
                 </div>
                 <div class="button-wrapper">
                     <button type="submit">Upload</button>
+                    <!-- Result feedback -->
+                    <div id="examUploadResult" style="margin-top:20px;"></div>
                 </div>
             </form>
         </div>
-
-        <!-- Result feedback -->
-        <div id="examUploadResult" style="margin-top:20px;"></div>
 
         <!-- Flash messages -->
         {% with messages = get_flashed_messages() %}
@@ -41,7 +40,7 @@
                     <th>Start Time</th>
                     <th>End Time</th>
                     <th>Program Code</th>
-                    <th>Course Section</th>
+                    <th>Course/Section</th>
                     <th>Lecturer</th>
                     <th>No. of Students</th>
                     <th>Room</th>
