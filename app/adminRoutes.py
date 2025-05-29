@@ -285,8 +285,8 @@ def admin_uploadExamDetails():
 
                             if not is_valid:
                                 row_number = index + 2 if isinstance(index, int) else str(index)
-                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {str(row_err)}")
-                                continue  # Skip this duplicate
+                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
+                                continue
 
                             exam = ExamDetails(
                                 examDate=exam_date,
@@ -325,9 +325,17 @@ def admin_uploadExamDetails():
                     errors.append(f"Error processing sheet '{sheet_name}': {str(sheet_err)}")
                     current_app.logger.error(sheet_err)
 
+            # Final response
+            if records_added > 0:
+                message = "Successful"
+                success = True
+            else:
+                message = "No data uploaded"
+                success = False
+
             return jsonify({
-                'success': True,
-                'message': f'Successfully added {records_added} record(s).',
+                'success': success,
+                'message': message,
                 'records': processed_records,
                 'errors': errors
             })
