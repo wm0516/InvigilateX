@@ -35,7 +35,7 @@ class User(db.Model):
     password = db.Column(db.String(255))
 
 
-class ExamDetails(db.model):
+class ExamDetails(db.MModel):
     __tablename__ = 'ExamDetails'
     examDate = db.Column(db.Date, nullable=False)
     examDay = db.Column(db.String(10), nullable=False)
