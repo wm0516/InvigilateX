@@ -106,6 +106,21 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
     return user, None
 
 
+def unique_examDetails(exam_CourseSectionCode, exam_Date, exam_StartTime, exam_EndTime):
+    exam_exists = ExamDetails.query.filter_by(
+        examDate=exam_Date,
+        examStartTime=exam_StartTime,
+        examEndTime=exam_EndTime,
+        examCourseSectionCode=exam_CourseSectionCode
+    ).first()
+
+    if exam_exists:
+        return False, "Duplicate entry exists with same course/section, date, and time."
+
+    return True, ""
+
+
+
 
 
 
