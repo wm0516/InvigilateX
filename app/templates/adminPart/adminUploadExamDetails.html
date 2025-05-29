@@ -2,25 +2,21 @@
 {% block title %}Admin UploadExam{% endblock %}
 
 {% block content %}
+<div class="menu-section">
+    <div class="main-frame">
+        <h2>Upload Exam File</h2>
+        <div class="form-frame">
+            <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
+                <div class="input-frame">
+                    <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
+                </div>
+                <div class="button-wrapper">
+                    <button type="submit">Upload</button>
+                </div>
+            </form>
+        </div>
 
-
-
-
-    <div class="menu-section">
-        <div class="main-frame">
-            <h2>Upload Exam File</h2>
-            <div class="form-frame">
-                <form id="uploadExamForm" enctype="multipart/form-data">
-                    <div class="input-frame">
-                        <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
-                    </div>
-                    <div class="button-wrapper">
-                        <button type="submit">Upload</button>
-                        <br>
-                        <div id="examUploadResult"></div>
-                    </div>
-                </form>
-            </div>
+        <!-- Flash messages -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class="flashes">
@@ -30,51 +26,40 @@
             </ul>
         {% endif %}
         {% endwith %}
-
-
-
-        </div>
-
-
-
-
-        <h2>Table Record</h2>
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Exam Date</th>
-                        <th>Exam Day</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
-                        <th>Course Code</th>
-                        <th>Section</th>
-                        <th>Lecturer</th>
-                        <th>No. of Students</th>
-                        <th>Room</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if exam_data %}
-                        {% for row in exam_data %}
-                        <tr>
-                            <td>{{ row['Date'] }}</td>
-                            <td>{{ row['Day'] }}</td>
-                            <td>{{ row['Start'] }}</td>
-                            <td>{{ row['End'] }}</td>
-                            <td>{{ row['Program'] }}</td>
-                            <td>{{ row['Course/Sec'] }}</td>
-                            <td>{{ row['Lecturer'] }}</td>
-                            <td>{{ row['No Of'] }}</td>
-                            <td>{{ row['Room'] }}</td>
-                        </tr>
-                        {% endfor %}
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
     </div>
-<script src="{{ url_for('static', filename='js/function.js') }}"></script>
 
-
+    <h2>Table Record</h2>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Exam Date</th>
+                    <th>Exam Day</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Course Code</th>
+                    <th>Section</th>
+                    <th>Lecturer</th>
+                    <th>No. of Students</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in exam_data %}
+                <tr>
+                    <td>{{ row.exam_date }}</td>
+                    <td>{{ row.day }}</td>
+                    <td>{{ row.start_time }}</td>
+                    <td>{{ row.end_time }}</td>
+                    <td>{{ row.program }}</td>
+                    <td>{{ row.course_sec }}</td>
+                    <td>{{ row.lecturer }}</td>
+                    <td>{{ row.num_of_students }}</td>
+                    <td>{{ row.room }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
