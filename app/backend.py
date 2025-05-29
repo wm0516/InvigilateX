@@ -120,7 +120,7 @@ def unique_examDetails(exam_CourseSectionCode, exam_Date, exam_StartTime, exam_E
     return True, ""
 
 def unique_LecturerDetails(lecturer_id, lecturer_email, lecturer_contact):
-    lecturer_exists = ExamDetails.query.filter_by(
+    lecturer_exists = LecturerDetails.query.filter_by(
         lecturerID=lecturer_id,
         lecturerEmail=lecturer_email,
         lecturerContact=lecturer_contact,
