@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/* tab function*/
+/* admin hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
     const mainRouteToTab = {
@@ -76,8 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
-/* read upload file function */
+/* admin read upload file function */
 function setupFileUpload({ formId, fileInputId, uploadUrl, resultDivId }) {
     const form = document.getElementById(formId);
     const fileInput = document.getElementById(fileInputId);
