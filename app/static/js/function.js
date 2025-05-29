@@ -192,9 +192,9 @@ function setupExamUpload() {
                                 <td>${record.Start}</td>
                                 <td>${record.End}</td>
                                 <td>${record.Program}</td>
-                                <td>${record.CourseSec}</td>
+                                <td>${record["Course/Sec"]}</td>
                                 <td>${record.Lecturer}</td>
-                                <td>${record.NumOf}</td>
+                                <td>${record["No Of"]}</td>
                                 <td>${record.Room}</td>
                             `;
                             tableBody.appendChild(row);
