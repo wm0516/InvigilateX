@@ -284,9 +284,9 @@ def admin_uploadExamDetails():
                                 examStartTime=str(row['Start']),
                                 examEndTime=str(row['End']),
                                 examProgramCode=row['Program'],
-                                examCourseSectionCode=row['CourseSec'],
+                                examCourseSectionCode=row['Course/Sec'],
                                 examLecturer=row['Lecturer'],
-                                examTotalStudent=int(row['NumOf']),
+                                examTotalStudent=int(row['No Of']),
                                 examVenue=row['Room'] if pd.notna(row['Room']) else ''
                             )
                             db.session.add(exam)
