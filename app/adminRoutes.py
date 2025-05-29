@@ -281,30 +281,30 @@ def admin_uploadExamDetails():
 
                     for index, row in df.iterrows():
                         try:
-                            exam = ExamSchedule(
-                                exam_date=pd.to_datetime(row['Date']).date(),
-                                day=row['Day'],
-                                start_time=str(row['Start']),
-                                end_time=str(row['End']),
-                                program=row['Program'],
-                                course_sec=row['CourseSec'],
-                                lecturer=row['Lecturer'],
-                                num_of_students=int(row['NumOf']),
-                                room=row.get('Room', '') if pd.notna(row.get('Room')) else ''
+                            exam = ExamDetails(
+                                examDate=pd.to_datetime(row['Date']).date(),
+                                examDay=row['Day'],
+                                examStartTime=str(row['Start']),
+                                examEndTime=str(row['End']),
+                                examProgramCode=row['Program'],
+                                examCourseSectionCode=row['Course/Sec'],
+                                examLecturer=row['Lecturer'],
+                                examTotalStudent=int(row['No Of']),
+                                examVenue=row.get('Room', '') if pd.notna(row.get('Room')) else ''
                             )
                             db.session.add(exam)
                             records_added += 1
 
                             processed_records.append({
-                                'Date': exam.exam_date.strftime('%Y-%m-%d'),
-                                'Day': exam.day,
-                                'Start': exam.start_time,
-                                'End': exam.end_time,
-                                'Program': exam.program,
-                                'CourseSec': exam.course_sec,
-                                'Lecturer': exam.lecturer,
-                                'NumOf': exam.num_of_students,
-                                'Room': exam.room
+                                'Date': exam.examDate.strftime('%Y-%m-%d'),
+                                'Day': exam.examDay,
+                                'Start': exam.examStartTime,
+                                'End': exam.examEndTime,
+                                'Program': exam.examProgramCode,
+                                'CourseSec': exam.examCourseSectionCode,
+                                'Lecturer': exam.examLecturer,
+                                'NumOf': exam.examTotalStudent,
+                                'Room': exam.examVenue
                             })
 
                         except Exception as row_err:
