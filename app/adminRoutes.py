@@ -244,9 +244,9 @@ def admin_uploadLecturerTimetable():
                         try:
                             lecturer_id = str(row['ID'])
                             lecturer_name = str(row['Name'])
-                            lecturer_department = row['Department']
+                            lecturer_department = str(row['Department'])
                             lecturer_email = str(row['Email'])
-                            lecturer_contact = row['Contact']
+                            lecturer_contact = int(row['Contact'])
 
                             is_valid, error_message = unique_LecturerDetails(
                                 lecturer_id, lecturer_email, lecturer_contact
@@ -256,14 +256,6 @@ def admin_uploadLecturerTimetable():
                                 row_number = index + 2 if isinstance(index, int) else str(index)
                                 errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
                                 continue
-
-                            class LecturerDetails(db.Model):
-                                __tablename__ = 'LecturerDetails'
-                                lecturerID = db.Column(db.String(20), primary_key=True)
-                                lecturerName = db.Column(db.String(100))
-                                lecturerDepartment =db.Column(db.String(100))
-                                lecturerEmail = db.Column(db.String(100))
-                                lecturerContact =db.Column(db.Integer)
 
                             lecturer = LecturerDetails(
                                 lecturerID = lecturer_id,
