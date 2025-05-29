@@ -78,12 +78,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Lecturer Timetable Upload - Self-contained */
 function setupLecturerUpload() {
-    const form = document.getElementById('uploadLecturerForm');
+    const form = document.getElementById('/adminHome/uploadLecturerTimetable');
     const fileInput = document.getElementById('lecturer_file');
     const resultDiv = document.getElementById('lecturerUploadResult');
 
     // Debug: Verify elements exist
-    if (!form) console.error('Form with ID uploadLecturerForm not found');
+    if (!form) console.error('Form with ID /adminHome/uploadLecturerTimetable not found');
     if (!fileInput) console.error('File input with ID lecturer_list not found');
     if (!resultDiv) console.error('Result div with ID lecturerUploadResult not found');
     if (!form || !fileInput || !resultDiv) return;
@@ -138,12 +138,12 @@ document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 
 /* Exam Details Upload - Self-contained */
 function setupExamUpload() {
-    const form = document.getElementById('uploadExamForm');
+    const form = document.getElementById('/adminHome/uploadExamDetails');
     const fileInput = document.getElementById('exam_file');
     const resultDiv = document.getElementById('examUploadResult');
 
     // Debug: Verify elements exist
-    if (!form) console.error('Form with ID uploadExamForm not found');
+    if (!form) console.error('Form with ID /adminHome/uploadExamDetails not found');
     if (!fileInput) console.error('File input with ID exam_list not found');
     if (!resultDiv) console.error('Result div with ID examUploadResult not found');
     if (!form || !fileInput || !resultDiv) return;
