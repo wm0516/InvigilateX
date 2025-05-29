@@ -213,7 +213,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def admin_uploadLecturerTimetable():
     if request.method == 'POST':
         if 'lecturer_file' not in request.files:
-            flash('No file part')
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
         file = request.files['lecturer_file']
