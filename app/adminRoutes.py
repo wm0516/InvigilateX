@@ -253,6 +253,8 @@ def admin_uploadLecturerTimetable():
 def admin_uploadExamDetails():
     if request.method == 'POST':
         flash(f"request.files")
+        flash(f"request.form")
+        flash(f"request.method")
         if 'exam_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
