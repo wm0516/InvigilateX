@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', setupExamUpload);
 
 function setupExamUpload() {
     const form = document.getElementById('uploadExamForm');
-    const fileInput = document.getElementById('exam_file');
+    const fileInput = document.getElementById('exam_list');
     const resultDiv = document.getElementById('examUploadResult');
     const tableBody = document.querySelector('.user-data-table tbody');
 
