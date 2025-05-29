@@ -324,7 +324,7 @@ def admin_uploadExamDetails():
                     pass
             # Final response
             if records_added > 0:
-                message = "Successful"
+                message = "Successful upload {records_added} record(s)"
                 success = True
             else:
                 message = "No data uploaded"
