@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 
 
 # login page (done with checking email address and hash password)
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/adminLogin', methods=['GET', 'POST'])
 def admin_login():
     login_text = ''
     password_text = ''
@@ -40,7 +40,7 @@ def admin_login():
     return render_template('adminPart/adminLogin.html', login_text=login_text, password_text=password_text, error_message=error_message)
 
 # register page (done with all input validation and userID as Primary Key)
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/adminRegister', methods=['GET', 'POST'])
 def admin_register():
     userid_text = ''
     username_text = ''
@@ -96,7 +96,7 @@ def admin_register():
                            password2_text=password2_text, error_message=error_message)
 
 # forgot password page (done when the email exist in database will send reset email link)
-@app.route('/forgotPassword', methods=['GET', 'POST'])
+@app.route('/adminForgotPassword', methods=['GET', 'POST'])
 def admin_forgotPassword():
     forgot_email_text = ''
     error_message = None
@@ -118,7 +118,7 @@ def admin_forgotPassword():
                          error_message=error_message)
 
 # reset password page (done after reset password based on that user password)
-@app.route('/resetPassword/<token>', methods=['GET', 'POST'])
+@app.route('/adminResetPassword/<token>', methods=['GET', 'POST'])
 def admin_resetPassword(token):
     error_message = None
     
@@ -139,12 +139,12 @@ def admin_resetPassword(token):
     return render_template('adminPart/adminResetPassword.html', error_message=error_message)
 
 # Logout button from homepage to login page
-@app.route('/logout')
+@app.route('/adminLogout')
 def admin_logout():
     # Clear the session
     session.clear()
     # Redirect to login page
-    return redirect(url_for('admin_login'))  # Make sure you have a 'login_page' route
+    return redirect(url_for('admin_login')) 
 
 
 
@@ -173,7 +173,7 @@ def inject_user_data():
 
 
 # home page (start with this!!!!!!!!!!!!!!)
-@app.route('/home', methods=['GET', 'POST'])
+@app.route('/adminHome', methods=['GET', 'POST'])
 def admin_homepage():
     return render_template('adminPart/adminHomepage.html', active_tab='home')
 
@@ -185,11 +185,11 @@ def admin_autoGenerate():
         flash(f"{request.form}")
     return render_template('adminPart/adminAutoSchedule.html', active_tab='autoGenerate')
 
-@app.route('/home/manageLecturer')
+@app.route('/adminHome/manageLecturer')
 def admin_manageLecturer():
     return render_template('adminPart/adminManageLecturer.html', active_tab='manage')
 
-@app.route('/home/upload')
+@app.route('/adminHome/upload')
 def admin_upload():
     return render_template('adminPart/adminUpload.html', active_tab='upload')
 
@@ -205,7 +205,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route('/home/uploadLecturerTimetable', methods=['GET', 'POST'])
+@app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
     if request.method == 'POST':
         #flash(f"{request.method}")
@@ -248,7 +248,7 @@ def admin_uploadLecturerTimetable():
 
 
 
-@app.route('/home/uploadExamDetails', methods=['GET', 'POST'])
+@app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
 def admin_uploadExamDetails():
     if request.method == 'POST':
 
