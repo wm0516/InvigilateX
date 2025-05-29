@@ -188,9 +188,6 @@ function setupExamUpload() {
                         ` : ''}
                     `;
 
-                    // Reload page to refresh exam table
-                    setTimeout(() => location.reload(), 3000);
-
                 } else {
                     resultDiv.innerHTML = `<p style="color:red;">Error: ${data.message}</p>`;
                 }
