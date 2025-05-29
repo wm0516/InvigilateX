@@ -278,17 +278,32 @@ def admin_uploadExamDetails():
 
                     for index, row in df.iterrows():
                         try:
+                            exam_date = pd.to_datetime(row['Date']).date()
+                            exam_start = str(row['Start'])
+                            exam_end = str(row['End'])
+                            exam_course = row['Course/Sec']
+
+                            is_valid, error_message = unique_examDetails(
+                                exam_course, exam_date, exam_start, exam_end
+                            )
+
+                            if not is_valid:
+                                row_number = index + 2 if isinstance(index, int) else str(index)
+                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {str(row_err)}")
+                                continue  # Skip this duplicate
+
                             exam = ExamDetails(
-                                examDate=pd.to_datetime(row['Date']).date(),
+                                examDate=exam_date,
                                 examDay=row['Day'],
-                                examStartTime=str(row['Start']),
-                                examEndTime=str(row['End']),
+                                examStartTime=exam_start,
+                                examEndTime=exam_end,
                                 examProgramCode=row['Program'],
-                                examCourseSectionCode=row['Course/Sec'],
+                                examCourseSectionCode=exam_course,
                                 examLecturer=row['Lecturer'],
                                 examTotalStudent=int(row['No Of']),
                                 examVenue=row['Room'] if pd.notna(row['Room']) else ''
                             )
+
                             db.session.add(exam)
                             records_added += 1
 
@@ -307,6 +322,7 @@ def admin_uploadExamDetails():
                         except Exception as row_err:
                             row_number = index + 2 if isinstance(index, int) else str(index)
                             errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {str(row_err)}")
+
                     db.session.commit()
 
                 except Exception as sheet_err:
@@ -326,4 +342,6 @@ def admin_uploadExamDetails():
 
     # GET request
     exam_data = ExamDetails.query.all()
-    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab', exam_data=exam_data)
+    return render_template('adminPart/adminUploadExamDetails.html',
+                           active_tab='admin_uploadExamDetailstab',
+                           exam_data=exam_data)
