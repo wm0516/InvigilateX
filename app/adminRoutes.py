@@ -316,15 +316,12 @@ def admin_uploadExamDetails():
                             })
 
                         except Exception as row_err:
-                            row_number = index + 2 if isinstance(index, int) else str(index)
-                            errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {str(row_err)}")
+                            pass
 
                     db.session.commit()
 
                 except Exception as sheet_err:
-                    errors.append(f"Error processing sheet '{sheet_name}': {str(sheet_err)}")
-                    current_app.logger.error(sheet_err)
-
+                    pass
             # Final response
             if records_added > 0:
                 message = "Successful"
