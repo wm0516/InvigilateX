@@ -38,6 +38,11 @@ def admin_login():
             return redirect(url_for('admin_homepage'))
     '''
     if request.method == 'POST':
+        login_text = request.form.get('textbox', '').strip()
+        password_text = request.form.get('password', '').strip()
+
+        valid, result = check_login(login_text, password_text)
+        session['user_id'] = result  # Store the user ID in session
         return redirect(url_for('admin_homepage'))
 
     return render_template('adminPart/adminLogin.html', login_text=login_text, password_text=password_text, error_message=error_message)
