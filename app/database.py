@@ -37,7 +37,7 @@ class User(db.Model):
 
 class ExamDetails(db.Model):
     __tablename__ = 'ExamDetails'
-    examId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    examID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     examDate = db.Column(db.Date, nullable=False)
     examDay = db.Column(db.String(10), nullable=False)
     examStartTime = db.Column(db.String(20), nullable=False)
