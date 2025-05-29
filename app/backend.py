@@ -60,7 +60,7 @@ def check_forgotPasswordEmail(forgotEmail):
         return False, "Invalid Email Address."
 
     token = serializer.dumps(forgotEmail, salt='password-reset-salt')
-    reset_link = url_for('reset_password_page', token=token, _external=True)
+    reset_link = url_for('admin_resetPassword', token=token, _external=True)
 
     msg = Message('InvigilateX - Password Reset Request', recipients=[forgotEmail])
     msg.body = f'''Hi,
