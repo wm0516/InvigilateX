@@ -1,69 +1,196 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/home_part.css') }}">
-    <!-- Shared header/navigation -->
-    <div class= "header-container">
-        <div class="heading"></div>
-        <div class="user-info">
-            <div class="user-details">
-                {{user_name}} <br>
-                {{user_id}} <br>
-                {{user_department}}
-            </div>
-            <a href="{{ url_for('logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
-        </div>
-    </div>
-</head>
-<body>
-    <!-- Main tab navigation -->
-    <div class="menu-grid">
-        <div class="menu-section">
-            <div class="tab-nav">
-                <a href="{{ url_for('homepage')}}" 
-                    class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
-                    data-tab="home">Home</a>
+/* toggle function*/
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButtons = document.querySelectorAll('.toggle-password-btn');
 
-                <a href="{{ url_for('upload')}}" 
-                    class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-                    data-tab="upload">Upload File</a>
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
 
-                <a href="{{ url_for('auto_generate')}}" 
-                    class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
-                    data-tab="autoGenerate">Generate Exam Schedule</a>
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    });
+});
 
-                <a href="{{ url_for('manage_lecturer')}}" 
-                    class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
-                    data-tab="manage">Assign Lecturer</a>
-            </div>
-            <br>
+/* admin hompage tab function*/
+document.addEventListener('DOMContentLoaded', function() {
+    // Main navigation tabs
+    const mainRouteToTab = {
+        '/adminHome': 'admin_hometab',
+        '/adminHome/upload': 'admin_uploadtab',
+        '/adminHome/autoGenerate': 'admin_autoGeneratetab',
+        '/adminHome/manageLecturer': 'admin_managetab',
+    };
 
-            <!-- Sub-tab navigation (only shown when on upload section) -->
-            {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
-            <div class="tab-nav">
-                <a href="{{ url_for('upload')}}" 
-                    class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-                    data-tab="upload">Lecturers Timetable</a>
+    // File upload sub-tabs
+    const uploadRouteToTab = {
+        '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab', 
+        '/adminHome/uploadExamDetails': 'admin_uploadExamDetailstab',
+    };
 
-                <a href="{{ url_for('upload_lecturer_timetable')}}" 
-                    class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-                    data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
+    const currentPath = window.location.pathname;
+    
+    // Handle main navigation tabs
+    let activeMainTabId = 'admin_hometab';
+    for (const [route, tabId] of Object.entries(mainRouteToTab)) {
+        if (currentPath.includes(route)) {
+            activeMainTabId = tabId;
+            break;
+        }
+    }
 
-                <a href="{{ url_for('upload_exam_details')}}" 
-                    class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-                    data-tab="uploadExamDetails">Exam Details</a>
-            </div>
-            {% endif %}
+    // Update main tab UI
+    document.querySelectorAll('.main-nav .tab-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('data-tab') === activeMainTabId) {
+            link.classList.add('active');
+        }
+    });
 
-            <!-- Content block for child templates -->
-            {% block content %}{% endblock %}
+    // Handle upload sub-tabs if we're in the upload section
+    if (activeMainTabId === 'admin_uploadtab') {
+        let activeUploadTabId = 'admin_uploadtab';
+        for (const [route, tabId] of Object.entries(uploadRouteToTab)) {
+            if (currentPath.includes(route)) {
+                activeUploadTabId = tabId;
+                break;
+            }
+        }
 
-            <!-- Shared JavaScript -->
-            <script src="{{ url_for('static', filename='js/function.js') }}"></script>
-        </div>
-    </div>
-</body>
-</html>
+        // Update upload tab UI
+        document.querySelectorAll('.upload-sub-nav .sub-tab-link').forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('data-tab') === activeUploadTabId) {
+                link.classList.add('active');
+            }
+        });
+    }
+});
 
 
+
+
+/* Lecturer Timetable Upload - Self-contained */
+function setupLecturerUpload() {
+    const form = document.getElementById('uploadLecturerForm');
+    const fileInput = document.getElementById('lecturer_list');
+    const resultDiv = document.getElementById('lecturerUploadResult');
+
+    // Debug: Verify elements exist
+    if (!form) console.error('Form with ID uploadLecturerForm not found');
+    if (!fileInput) console.error('File input with ID lecturer_list not found');
+    if (!resultDiv) console.error('Result div with ID lecturerUploadResult not found');
+    if (!form || !fileInput || !resultDiv) return;
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select a lecturer timetable file to upload.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('lecturer_list', file);
+
+        try {
+            resultDiv.innerHTML = '<p>Uploading lecturer timetable... please wait</p>';
+            
+            const response = await fetch('/adminHome/uploadLecturerTimetable', {
+                method: 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p style="color:green;">${data.message || 'Lecturer timetable uploaded successfully!'}</p>
+                        ${data.columns ? `<strong>Columns:</strong> ${data.columns.join(', ')}<br>` : ''}
+                        ${data.preview ? `<strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>` : ''}
+                    `;
+                    localStorage.setItem('lecturer_listLastUploaded', new Date().toLocaleString());
+                }
+            } else {
+                const text = await response.text();
+                resultDiv.innerHTML = `<p>${text}</p>`;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
+            console.error('Lecturer upload error:', err);
+        }
+    });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupLecturerUpload);
+
+
+/* Exam Details Upload - Self-contained */
+function setupExamUpload() {
+    const form = document.getElementById('uploadExamForm');
+    const fileInput = document.getElementById('exam_list');
+    const resultDiv = document.getElementById('examUploadResult');
+
+    // Debug: Verify elements exist
+    if (!form) console.error('Form with ID uploadExamForm not found');
+    if (!fileInput) console.error('File input with ID exam_list not found');
+    if (!resultDiv) console.error('Result div with ID examUploadResult not found');
+    if (!form || !fileInput || !resultDiv) return;
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select an exam details file to upload.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('exam_list', file);
+
+        try {
+            resultDiv.innerHTML = '<p>Uploading exam details... please wait</p>';
+            
+            const response = await fetch('/adminHome/uploadExamDetails', {
+                method: 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await response.json();
+                if (data.error) {
+                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <p style="color:green;">${data.message || 'Exam details uploaded successfully!'}</p>
+                        ${data.columns ? `<strong>Columns:</strong> ${data.columns.join(', ')}<br>` : ''}
+                        ${data.preview ? `<strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>` : ''}
+                    `;
+                    localStorage.setItem('exam_listLastUploaded', new Date().toLocaleString());
+                }
+            } else {
+                const text = await response.text();
+                resultDiv.innerHTML = `<p>${text}</p>`;
+            }
+        } catch (err) {
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
+            console.error('Exam upload error:', err);
+        }
+    });
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupExamUpload);
