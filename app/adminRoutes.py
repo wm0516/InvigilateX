@@ -252,65 +252,81 @@ def admin_uploadLecturerTimetable():
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
 def admin_uploadExamDetails():
     if request.method == 'POST':
-
         if 'exam_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
+
         records_added = 0
+        processed_records = []
         errors = []
-        warnings = []
 
         try:
             excel_file = pd.ExcelFile(file_stream)
-            
-            for sheet_name in excel_file.sheet_names:
-                current_app.logger.info(f"Processing sheet: {sheet_name}")
 
+            for sheet_name in excel_file.sheet_names:
                 try:
-                    # ✅ Only reads columns A to I, skips the first row (headers start from row 2)
                     df = pd.read_excel(
                         excel_file,
                         sheet_name=sheet_name,
                         usecols="A:I",
                         skiprows=1
                     )
+                    df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'CourseSec', 'Lecturer', 'NumOf', 'Room']
+                    df.reset_index(drop=True, inplace=True)
 
-                    # ✅ Assign expected column names
-                    df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
+                    for index, row in df.iterrows():
+                        try:
+                            exam = ExamSchedule(
+                                exam_date=pd.to_datetime(row['Date']).date(),
+                                day=row['Day'],
+                                start_time=str(row['Start']),
+                                end_time=str(row['End']),
+                                program=row['Program'],
+                                course_sec=row['CourseSec'],
+                                lecturer=row['Lecturer'],
+                                num_of_students=int(row['NumOf']),
+                                room=row.get('Room', '') if pd.notna(row.get('Room')) else ''
+                            )
+                            db.session.add(exam)
+                            records_added += 1
 
-                    # ➕ You can add further logic to insert or process the data here.
-                    records_added += len(df)
+                            processed_records.append({
+                                'Date': exam.exam_date.strftime('%Y-%m-%d'),
+                                'Day': exam.day,
+                                'Start': exam.start_time,
+                                'End': exam.end_time,
+                                'Program': exam.program,
+                                'CourseSec': exam.course_sec,
+                                'Lecturer': exam.lecturer,
+                                'NumOf': exam.num_of_students,
+                                'Room': exam.room
+                            })
 
-                except Exception as e:
-                    error_msg = f"Error processing sheet '{sheet_name}': {str(e)}"
-                    errors.append(error_msg)
-                    current_app.logger.error(error_msg)
-                    continue
+                        except Exception as row_err:
+                            row_number = index + 2 if isinstance(index, int) else str(index)
+                            errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {str(row_err)}")
 
-            response_data = {
+
+                    db.session.commit()
+
+                except Exception as sheet_err:
+                    errors.append(f"Error processing sheet '{sheet_name}': {str(sheet_err)}")
+                    current_app.logger.error(sheet_err)
+
+            return jsonify({
                 'success': True,
-                'message': f'Successfully processed {records_added} record(s).'
-            }
-
-            if warnings:
-                response_data['warnings'] = warnings
-            if errors:
-                response_data['errors'] = errors
-
-            return jsonify(response_data)
+                'message': f'Successfully added {records_added} record(s).',
+                'records': processed_records,
+                'errors': errors
+            })
 
         except Exception as e:
-            error_msg = f"Error processing file: {str(e)}"
-            current_app.logger.error(error_msg)
-            return jsonify({
-                'success': False,
-                'message': error_msg
-            })
-        
-    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab')
+            current_app.logger.error(f"File processing error: {str(e)}")
+            return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
 
+    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab')
         
 
 
