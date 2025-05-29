@@ -1,0 +1,39 @@
+<!-- upload.html -->
+{% extends "mainPart/base.html" %}
+{% block title %}Automation{% endblock %}
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flashes">
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
+    <!-- Row 1 First Fesatures to upload merge schedule files--> 
+    <div class="menu-section">
+        <h2>Generate Exam Schedule</h2>
+        <form id="uploadExamDetails" method="POST" enctype="multipart/form-data">
+            <input type="file" accept=".xlsx,.xls" required>
+            <button type="submit">Upload</button>
+        </form> 
+        <li class="submenu">
+            <strong>  Functionality:</strong>
+            <ul>
+                <li>Automatically assign examiners based on availability</li>
+                <li>Review and manage generated exam timetables</li>
+                <li>Distribute schedules via email</li>
+                <li>Download schedule in PDF format</li>
+            </ul>
+        </li>
+    </div>
+
+{% endblock %}
+
+<!--
+
+-->
