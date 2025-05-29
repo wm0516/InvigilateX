@@ -403,6 +403,4 @@ def admin_uploadExamDetails():
 
     # GET request
     exam_data = ExamDetails.query.all()
-    return render_template('adminPart/adminUploadExamDetails.html',
-                           active_tab='admin_uploadExamDetailstab',
-                           exam_data=exam_data)
+    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab', exam_data=exam_data)
