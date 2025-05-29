@@ -38,10 +38,10 @@
                class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
                data-tab="manage">Assign Lecturer</a>
         </div>
-        <br>
-
+        
         <!-- Sub-tab navigation (only shown when on upload section) -->
         {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
+        <br>
         <div class="tab-nav">
             <a href="{{ url_for('admin_upload')}}" 
                class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
