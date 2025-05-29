@@ -80,59 +80,80 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', setupLecturerUpload);
 function setupLecturerUpload() {
-    const form = document.getElementById('/adminHome/uploadLecturerTimetable');
+    const form = document.getElementById('uploadLecturerForm');
     const fileInput = document.getElementById('lecturer_list');
     const resultDiv = document.getElementById('lecturerUploadResult');
+    const tableBody = document.querySelector('.user-data-table tbody');
 
-    // Debug: Verify elements exist
-    if (!form) console.error('Form with ID /adminHome/uploadLecturerTimetable not found');
-    if (!fileInput) console.error('File input with ID lecturer_list not found');
-    if (!resultDiv) console.error('Result div with ID lecturerUploadResult not found');
-    if (!form || !fileInput || !resultDiv) return;
+
+    if (!form || !fileInput || !resultDiv || !tableBody) {
+        console.error('One or more elements not found');
+        return;
+    }
 
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('Please select a lecturer timetable file to upload.');
+            alert('Please select an exam file to upload.');
             return;
         }
 
         const formData = new FormData();
-        formData.append('lecturer_list', file);
+        formData.append('exam_file', file);
+
+        resultDiv.innerHTML = '<p>Uploading lecturer details... please wait</p>';
 
         try {
-            resultDiv.innerHTML = '<p>Uploading lecturer timetable... please wait</p>';
-            
             const response = await fetch('/adminHome/uploadLecturerTimetable', {
                 method: 'POST',
                 body: formData
             });
 
             const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
+
+             if (contentType.includes('application/json')) {
                 const data = await response.json();
-                if (data.error) {
-                    resultDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
-                } else {
-                    resultDiv.innerHTML = `
-                        <p style="color:green;">${data.message || 'Lecturer timetable uploaded successfully!'}</p>
-                        ${data.columns ? `<strong>Columns:</strong> ${data.columns.join(', ')}<br>` : ''}
-                        ${data.preview ? `<strong>Preview:</strong> <pre>${JSON.stringify(data.preview, null, 2)}</pre>` : ''}
-                    `;
-                    localStorage.setItem('lecturer_listLastUploaded', new Date().toLocaleString());
+
+                resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
+
+                if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                    data.records.forEach(record => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${record.ID}</td>
+                            <td>${record.Name}</td>
+                            <td>${record.Department}</td>
+                            <td>${record.Email}</td>
+                            <td>${record.Contact}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
                 }
+                fileInput.value = ""; // Clear file input
             } else {
                 const text = await response.text();
                 resultDiv.innerHTML = `<p>${text}</p>`;
             }
-        } catch (err) {
-            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
-            console.error('Lecturer upload error:', err);
+        } catch (error) {
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${error.message}</p>`;
+            console.error(error);
         }
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
