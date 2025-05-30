@@ -14,31 +14,63 @@ class Admin(db.Model):
     adminDepartment = db.Column(db.String(20)) # Level mean access (admin with higher access, level 3 (able to view all dean and lecturer))
     adminLevel = db.Column(db.String(10))
     adminEmail = db.Column(db.String(50))
-    adminContact = db.Column(db.Integer)
+    adminContact = db.Column(db.String(15))
     adminPassword = db.Column(db.String(255))
+    '''
+    CREATE TABLE Admin (
+        adminId VARCHAR(20) PRIMARY KEY,
+        adminName VARCHAR(255),
+        adminDepartment VARCHAR(20),
+        adminLevel VARCHAR(10),
+        adminEmail VARCHAR(50),
+        adminContact VARCHAR(15),
+        adminPassword VARCHAR(255)
+    );
+    '''
 
 # Dean record after register 
 class Dean(db.Model):
     __tablename__ = 'Dean'
     deanId = db.Column(db.String(20), primary_key=True)
     deanName = db.Column(db.String(255))
+    # Department and Level dean set by default
     deanDepartment = db.Column(db.String(20))
     deanLevel = db.Column(db.Integer) # Level mean access (dean with middle access, level 2 (able to view own lecturer))
     deanEmail = db.Column(db.String(50))
-    deanContact = db.Column(db.Integer)
+    deanContact = db.Column(db.String(15))
     deanPassword = db.Column(db.String(255))
+    '''
+    CREATE TABLE Dean (
+        deanId VARCHAR(20) PRIMARY KEY,
+        deanName VARCHAR(255),
+        deanDepartment VARCHAR(20),
+        deanLevel INT,
+        deanEmail VARCHAR(50),
+        deanContact VARCHAR(15),
+        deanPassword VARCHAR(255)
+    );
+    '''
 
 class Lecturer(db.Model):
     __tablename__ = 'Lecturer'
     lecturerId = db.Column(db.String(20), primary_key=True)
-    lecturerName = db.Column(db.String(100))
-    lecturerDepartment =db.Column(db.String(100))
+    lecturerName = db.Column(db.String(255))
+    lecturerDepartment =db.Column(db.String(20))
     lecturerLevel = db.Column(db.Integer) # Level mean access (admin with lower access, level 1 (only able to view own data))
-    lecturerEmail = db.Column(db.String(100))
-    lecturerContact =db.Column(db.Integer)
+    lecturerEmail = db.Column(db.String(50))
+    lecturerContact = db.Column(db.String(15))
     lecturerPassword = db.Column(db.String(255))
-
-
+    '''
+    CREATE TABLE Lecturer (
+        lecturerId VARCHAR(20) PRIMARY KEY,
+        lecturerName VARCHAR(255),
+        lecturerDepartment VARCHAR(100),
+        lecturerLevel INT,
+        lecturerEmail VARCHAR(50),
+        lecturerContact VARCHAR(15)
+        lecturerPassword VARCHAR(255)
+    );
+    '''
 
 # Use examID as PK because the auto increment only able with PK
 # Update: using examCourseSectionCode as PK
@@ -67,5 +99,4 @@ class ExamDetails(db.Model):
         examTotalStudent INT,
         examVenue VARCHAR(50)
     );
-
     '''
