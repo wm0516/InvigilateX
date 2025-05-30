@@ -115,9 +115,9 @@ function setupLecturerUpload() {
 
              if (contentType.includes('application/json')) {
                 const data = await response.json();
-                const errorDiv = document.getElementById('lecturerUploadErrors');
+                //const errorDiv = document.getElementById('lecturerUploadErrors');
                 resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
-                errorDiv.innerHTML = ''; // Clear previous
+                //errorDiv.innerHTML = ''; // Clear previous
 
                 if (data.success && Array.isArray(data.records) && data.records.length > 0) {
                     data.records.forEach((record, i) => {
@@ -132,13 +132,13 @@ function setupLecturerUpload() {
                         `;
                         tableBody.appendChild(row);
                     });
-                } else {
-                    const errorList = data.errors && data.errors.length
-                        ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
-                        : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
+                } //else {
+                  //  const errorList = data.errors && data.errors.length
+                  //     ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
+                  //      : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
 
-                    errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
-                }
+                   //  errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
+                //}
                 fileInput.value = ""; // Clear file input
             } else {
                 const text = await response.text();
