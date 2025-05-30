@@ -121,7 +121,7 @@ function setupLecturerUpload() {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${i + 1}</td> <!-- Row number starting from 1 -->
-                            <td>${record.ID}</td>
+                            <td>${record.Id}</td>
                             <td>${record.Name}</td>
                             <td>${record.Department}</td>
                             <td>${record.Email}</td>
