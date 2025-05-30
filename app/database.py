@@ -15,12 +15,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 # UPDATE Lecturer SET lecturerEmail='p21013604@student.newinti.edu.my' WHERE lecturerId='123'; 
 
 
-
-
-
-
 class User(db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'User'
     # Refer to Staff ID
     userId = db.Column(db.String(20), primary_key=True)
     # Refer to Staff Name
