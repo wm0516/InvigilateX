@@ -241,7 +241,7 @@ def admin_uploadLecturerTimetable():
                         try:
                             lecturer_id = str(row['Id'])
                             lecturer_name = str(row['Name'])
-                            lecturer_department = str(row['Department'])
+                            lecturer_department = str(row['Department']).upper()    
                             lecturer_email = str(row['Email'])
                             lecturer_contact = int(row['Contact'])
                             # Normalize and map role string
