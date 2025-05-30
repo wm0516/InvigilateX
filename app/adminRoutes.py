@@ -85,7 +85,7 @@ def admin_register():
                 userLevel = '3',
                 userEmail = adminEmail_text,
                 userContact = adminContact_text,
-                userPassword = hashed_pw
+                userPassword = hashed_pw,
                 userStatus = True
             )
             
