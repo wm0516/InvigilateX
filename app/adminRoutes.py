@@ -225,7 +225,7 @@ def admin_uploadLecturerTimetable():
                     df = pd.read_excel(
                         excel_file,
                         sheet_name=sheet_name,
-                        usecols="A:E",
+                        usecols="A:F",
                         skiprows=1
                     )
                     df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
