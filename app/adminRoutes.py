@@ -225,12 +225,12 @@ def admin_uploadLecturerTimetable():
                         usecols="A:E",
                         skiprows=1
                     )
-                    df.columns = ['ID', 'Name', 'Department', 'Email', 'Contact']
+                    df.columns = ['Id', 'Name', 'Department', 'Email', 'Contact']
                     df.reset_index(drop=True, inplace=True)
 
                     for index, row in df.iterrows():
                         try:
-                            lecturer_id = str(row['ID'])
+                            lecturer_id = str(row['Id'])
                             lecturer_name = str(row['Name'])
                             lecturer_department = str(row['Department'])
                             lecturer_email = str(row['Email'])
