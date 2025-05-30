@@ -212,10 +212,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
     if request.method == 'POST':
-        flash(f"request.files: {request.files}")
-        flash(f"request.form: {request.form}")
-        flash(f"request.method: {request.method}")
-
         if 'lecturer_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
@@ -228,7 +224,6 @@ def admin_uploadLecturerTimetable():
 
         try:
             excel_file = pd.ExcelFile(file_stream)
-
             for sheet_name in excel_file.sheet_names:
                 try:
                     df = pd.read_excel(
@@ -247,7 +242,7 @@ def admin_uploadLecturerTimetable():
                             lecturer_department = str(row['Department'])
                             lecturer_email = str(row['Email'])
                             lecturer_contact = int(row['Contact'])
-                            '''
+                            
                             is_valid, error_message = unique_LecturerDetails(
                                 lecturer_id, lecturer_email, lecturer_contact
                             )
@@ -256,7 +251,7 @@ def admin_uploadLecturerTimetable():
                                 row_number = index + 2 if isinstance(index, int) else str(index)
                                 errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
                                 continue
-                            '''
+                            
                             lecturer = LecturerDetails(
                                 lecturerID = lecturer_id,
                                 lecturerName = lecturer_name,
