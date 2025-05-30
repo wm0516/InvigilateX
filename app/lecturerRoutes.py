@@ -70,14 +70,15 @@ def lecturer_register():
             error_message = "Wrong password format."
         else:
             hashed_pw = bcrypt.generate_password_hash(lecturerPassword1_text).decode('utf-8')
-            new_lecturer = Lecturer(
-                lecturerId = lecturerId_text,
-                lecturerName = lecturerName_text.upper(),
-                lecturerDepartment = lecturerDepartment_text,
-                lecturerLevel = '1',
-                lecturerEmail = lecturerEmail_text,
-                lecturerContact = lecturerContact_text,
-                lecturerPassword = hashed_pw
+            new_lecturer = User(
+                userId = lecturerId_text,
+                userName = lecturerName_text.upper(),
+                userDepartment = lecturerDepartment_text,
+                userLevel = '1',
+                userEmail = lecturerEmail_text,
+                userContact = lecturerContact_text,
+                userPassword = hashed_pw
+                userStatus = True
             )
             db.session.add(new_lecturer)
             db.session.commit()
@@ -120,7 +121,7 @@ def lecturer_resetPassword(token):
         lecturer_password_text_1 = request.form.get('password1', '').strip()
         lecturer_password_text_2 = request.form.get('password2', '').strip()
         
-        user, error_message = check_resetPassword('lecturer', token, lecturer_password_text_1, lecturer_password_text_2)
+        user, error_message = check_resetPassword(token, lecturer_password_text_1, lecturer_password_text_2)
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('lecturer_login'))
@@ -150,7 +151,8 @@ def inject_lecturer_data():
                 'lecturer_department': lecturer.lecturerDepartment,
                 'lecturer_level': lecturer.lecturerLevel,
                 'lecturer_email': lecturer.lecturerEmail,
-                'lecturer_contact' : lecturer.lecturerContact
+                'lecturer_contact' : lecturer.lecturerContact,
+                'lecturer_status': lecturer.userStatus
             }
     return {
         'lecturer_id': None,
@@ -158,7 +160,8 @@ def inject_lecturer_data():
         'lecturer_department': '',
         'lecturer_level': '',
         'lecturer_email': '',
-        'lecturer_contact': '' 
+        'lecturer_contact': '',
+        'lecturer_status': ''
     }
 
 
