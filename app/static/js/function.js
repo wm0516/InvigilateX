@@ -128,8 +128,7 @@ function setupLecturerUpload() {
                             <td>${record.Role}</td>
                             <td>${record.Email}</td>
                             <td>${record.Contact}</td>
-                            <td>1<td>
-                            <td>1</td>
+                            <td>Deactivated</td>
                         `;
                         tableBody.appendChild(row);
                     });
