@@ -50,12 +50,13 @@
                 {% for row in lecturer_data %}
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <td>{{ row.lecturerId  }}</td>
-                    <td>{{ row.lecturerName }}</td>
-                    <td>{{ row.lecturerDepartment }}</td>
-                    <td>{{ row.lecturerEmail }}</td>
-                    <td>{{ row.lecturerContact }}</td>
-                    <td></td>
+                    <td>{{ row.userId  }}</td>
+                    <td>{{ row.userName }}</td>
+                    <td>{{ row.userDepartment }}</td>
+                    <td>{{ row.lecturerLevel }}</td>
+                    <td>{{ row.userEmail }}</td>
+                    <td>{{ row.userContact }}</td>
+                    <td>{{ row.userStatus }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
