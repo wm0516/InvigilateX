@@ -14,6 +14,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 # UPDATE Admin SET adminEmail='p21013604@student.newinti.edu.my' WHERE adminId='123'; -> changing the data
 # UPDATE Lecturer SET lecturerEmail='p21013604@student.newinti.edu.my' WHERE lecturerId='123'; 
 
+
+
+
+
+
 class User(db.Model):
     __tablename__ = 'user'
     # Refer to Staff ID
