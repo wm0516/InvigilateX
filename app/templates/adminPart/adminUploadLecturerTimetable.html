@@ -50,13 +50,34 @@
                 {% for row in user_data %}
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <td>{{ row.userId  }}</td>
+                    <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userDepartment }}</td>
-                    <td>{{ row.lecturerLevel }}</td>
+
+                    <!-- Role Name based on userLevel -->
+                    <td>
+                        {% if row.userLevel == 1 %}
+                            Lecturer
+                        {% elif row.userLevel == 2 %}
+                            Dean
+                        {% elif row.userLevel == 3 %}
+                            Admin
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+
                     <td>{{ row.userEmail }}</td>
                     <td>{{ row.userContact }}</td>
-                    <td>{{ row.userStatus }}</td>
+
+                    <!-- User status: Activated / Deactivated -->
+                    <td>
+                        {% if row.userStatus %}
+                            Activated
+                        {% else %}
+                            Deactivated
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
