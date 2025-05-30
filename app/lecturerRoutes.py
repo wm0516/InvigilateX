@@ -17,21 +17,21 @@ bcrypt = Bcrypt()
 # login page (done with checking email address and hash password)
 @app.route('/lecturerLogin', methods=['GET', 'POST'])
 def lecturer_login():
-    login_text = ''
-    password_text = ''
+    lecturer_login_text = ''
+    lecturer_password_text = ''
     error_message = None
 
     if request.method == 'POST':
-        login_text = request.form.get('textbox', '').strip()
-        password_text = request.form.get('password', '').strip()
-        valid, result = check_login('lecturer', login_text, password_text)
+        lecturer_login_text = request.form.get('textbox', '').strip()
+        lecturer_password_text = request.form.get('password', '').strip()
+        valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
             error_message = result
         else:
             session['lecturer_id'] = result  # Store the user ID in session
             return redirect(url_for('lecturer_homepage'))
 
-    return render_template('lecturerPart/lecturerLogin.html', login_text=login_text, password_text=password_text, error_message=error_message)
+    return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, lecturer_password_text=lecturer_password_text, error_message=error_message)
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/lecturerRegister', methods=['GET', 'POST'])
@@ -91,39 +91,42 @@ def lecturer_register():
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/lecturerForgotPassword', methods=['GET', 'POST'])
 def lecturer_forgotPassword():
-    forgot_email_text = ''
+    lecturer_forgot_email_text = ''
     error_message = None
 
     if request.method == 'POST':
-        forgot_email_text = request.form.get('email', '').strip()
-        if not forgot_email_text:
+        lecturer_forgot_email_text = request.form.get('email', '').strip()
+        if not lecturer_forgot_email_text:
             error_message = "Email address is required."
         else:
-            success, message = check_forgotPasswordEmail('lecturer', forgot_email_text)
+            success, message = check_forgotPasswordEmail('lecturer', lecturer_forgot_email_text)
             if not success:
                 error_message = message
             else:
                 return redirect(url_for('lecturer_login'))
 
     return render_template('lecturerPart/lecturerForgotPassword.html', 
-                         forgot_email_text=forgot_email_text, 
+                         lecturer_forgot_email_text=lecturer_forgot_email_text, 
                          error_message=error_message)
 
 # reset password page (done after reset password based on that user password)
 @app.route('/lecturerResetPassword/<token>', methods=['GET', 'POST'])
 def lecturer_resetPassword(token):
+    lecturer_password_text_1 = ''
+    lecturer_password_text_2 = ''
     error_message = None
     
     if request.method == 'POST':
-        password_text_1 = request.form.get('password1', '').strip()
-        password_text_2 = request.form.get('password2', '').strip()
+        lecturer_password_text_1 = request.form.get('password1', '').strip()
+        lecturer_password_text_2 = request.form.get('password2', '').strip()
         
-        user, error_message = check_resetPassword('lecturer', token, password_text_1, password_text_2)
+        user, error_message = check_resetPassword('lecturer', token, lecturer_password_text_1, lecturer_password_text_2)
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('lecturer_login'))
     
-    return render_template('lecturerPart/lecturerResetPassword.html', error_message=error_message)
+    return render_template('lecturerPart/lecturerResetPassword.html', lecturer_password_text_1=lecturer_password_text_1, 
+                           lecturer_password_text_2=lecturer_password_text_2, error_message=error_message)
 
 # Logout button from homepage to login page
 @app.route('/lecturerLogout')
