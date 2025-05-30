@@ -117,6 +117,7 @@ function setupLecturerUpload() {
                 errorDiv.innerHTML = ''; // Clear previous
 
                 if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                    tableBody.innerHTML = ''; // Clear existing table content before rendering new data
                     data.records.forEach((record, i) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -190,6 +191,7 @@ function setupExamUpload() {
                 errorDiv.innerHTML = ''; // Clear previous
 
                  if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                    tableBody.innerHTML = ''; // Clear existing table content before rendering new data
                     data.records.forEach((record, i) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
