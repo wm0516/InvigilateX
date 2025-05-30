@@ -290,8 +290,8 @@ def admin_uploadLecturerTimetable():
             })
 
         except Exception as e:
-            current_app.logger.error(f"File processing error: {str(e)}")
-            return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
+            current_app.logger.error("File processing error: File upload in wrong format")
+            return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
         
     lecturer_data = LecturerDetails.query.all()
     return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', lecturer_data=lecturer_data)
@@ -390,8 +390,8 @@ def admin_uploadExamDetails():
             })
 
         except Exception as e:
-            current_app.logger.error(f"File processing error: {str(e)}")
-            return jsonify({'success': False, 'message': f"Error processing file: {str(e)}"})
+            current_app.logger.error("File processing error: File upload in wrong format")
+            return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
 
     # GET request
     exam_data = ExamDetails.query.all()
