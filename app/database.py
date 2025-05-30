@@ -11,6 +11,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 # SHOW TABLES;                  -> display out all the table created
 # DROP TABLE (tableName);       -> to delete that table
 # SELECT * FROM (tableName);    -> display out that table data
+# UPDATE Admin SET adminEmail='p21013604@student.newinti.edu.my' WHERE adminId='123'; -> changing the data
+# UPDATE Dean SET deanEmail='p21013604@student.newinti.edu.my' WHERE deanId='123'; 
 
 # Admin record after register
 class Admin(db.Model):
