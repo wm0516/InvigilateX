@@ -146,7 +146,7 @@ def inject_dean_data():
                 'dean_id': deanId,
                 'dean_name': dean.userName,
                 'dean_department': dean.userDepartment,
-                'dean_level': 'Dean',
+                'dean_level': dean.userLevel,
                 'dean_email': dean.userEmail,
                 'dean_contact' : dean.userContact,
                 'dean_status': dean.userStatus
