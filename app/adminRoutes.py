@@ -297,8 +297,8 @@ def admin_uploadLecturerTimetable():
             current_app.logger.error("File processing error: File upload in wrong format")
             return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
         
-    lecturer_data = Lecturer.query.all()
-    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', lecturer_data=lecturer_data)
+    user_data = User.query.all()
+    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
 
 
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
