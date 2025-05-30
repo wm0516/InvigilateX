@@ -160,7 +160,7 @@ def inject_admin_data():
                 'admin_id': adminId,
                 'admin_name': admin.userName,
                 'admin_department': admin.userDepartment,
-                'admin_level': 'Lecturer',
+                'admin_level': admin.userLevel,
                 'admin_email': admin.userEmail,
                 'admin_contact' : admin.userContact,
                 'admin_status': admin.userStatus
