@@ -254,7 +254,7 @@ def admin_uploadLecturerTimetable():
                                 userDepartment = lecturer_department,
                                 userLevel = '1', # LecturerLevel is set by default
                                 userEmail = lecturer_email,
-                                userContact = lecturer_contact
+                                userContact = lecturer_contact,
                                 userStatus = False
                             )
 
