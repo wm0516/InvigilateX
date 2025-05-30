@@ -279,7 +279,7 @@ def admin_uploadLecturerTimetable():
                 except Exception as sheet_err:
                     pass
             # Final response
-            if lecturer_records_added > 0:
+            if is_valid and lecturer_records_added > 0:
                 message = f"Successful upload {lecturer_records_added} record(s)"
                 success = True
             else:
@@ -379,7 +379,7 @@ def admin_uploadExamDetails():
                 except Exception as sheet_err:
                     pass
             # Final response
-            if exam_records_added > 0:
+            if is_valid and exam_records_added > 0:
                 message = f"Successful upload {exam_records_added} record(s)"
                 success = True
             else:
