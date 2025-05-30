@@ -7,6 +7,11 @@
         <h2>Upload Masterfile</h2>
         <div class="form-frame">
             <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
+                <div style="text-align: center;">
+                    <label>
+                        <br>Upload file 1st row must be empty and format with ID, Name, Department, Email, Contact
+                    </label>
+                </div>
                 <div class="input-frame">
                     <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required>
                 </div>
