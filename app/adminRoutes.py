@@ -231,14 +231,22 @@ def admin_uploadLecturerTimetable():
                     df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
                     df.reset_index(drop=True, inplace=True)
 
+                    role_mapping = {
+                        'lecturer': 1,
+                        'dean': 2,
+                        'admin': 3
+                    }
+
                     for index, row in df.iterrows():
                         try:
                             lecturer_id = str(row['Id'])
                             lecturer_name = str(row['Name'])
                             lecturer_department = str(row['Department'])
-                            lecturer_role = str(row['Role'])
                             lecturer_email = str(row['Email'])
                             lecturer_contact = int(row['Contact'])
+                            # Normalize and map role string
+                            lecturer_role_str = str(row['Role']).strip().lower()
+                            lecturer_role = role_mapping.get(lecturer_role_str)
                             
                             is_valid, error_message = unique_LecturerDetails(
                                 lecturer_id, lecturer_email, lecturer_contact
