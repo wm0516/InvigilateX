@@ -38,7 +38,8 @@ def admin_login():
             session['admin_id'] = result  # Store the user ID in session
             return redirect(url_for('admin_homepage'))
 
-    return render_template('adminPart/adminLogin.html', error_message=error_message)
+    return render_template('adminPart/adminLogin.html', login_text=login_text,
+                           password_text=password_text, error_message=error_message)
 
 
 # register page (done with all input validation and userID as Primary Key)
@@ -92,7 +93,9 @@ def admin_register():
             flash(f"Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('admin_login'))
 
-    return render_template('adminPart/adminRegister.html', error_message=error_message)
+    return render_template('adminPart/adminRegister.html', adminId_text=adminId_text, adminName_text=adminnNme_text, 
+                           adminEmail_text=adminEmail_text, adminContact_text=adminContact_text, adminPassword1_text=adminPassword1_text, 
+                           adminPassword2_text=adminPassword2_text, error_message=error_message)
 
 
 # forgot password page (done when the email exist in database will send reset email link)
@@ -113,7 +116,7 @@ def admin_forgotPassword():
             else:
                 return redirect(url_for('admin_login'))
 
-    return render_template('adminPart/adminForgotPassword.html', error_message=error_message)
+    return render_template('adminPart/adminForgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
 # reset password page (done after reset password based on that user password)
@@ -130,7 +133,8 @@ def admin_resetPassword(token):
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('admin_login'))
         
-    return render_template('adminPart/adminResetPassword.html', error_message=error_message)
+    return render_template('adminPart/adminResetPassword.html', password_text_1=password_text_1, 
+                           password_text_2=password_text_2, error_message=error_message)
 
 
 # Logout button from homepage to login page
@@ -144,7 +148,7 @@ def admin_logout():
 
 # Once login sucessful, it will kept all that user data and just use when need
 @app.context_processor
-def inject_user_data():
+def inject_admin_data():
     adminId = session.get('admin_id')
     if adminId:
         admin = Admin.query.get(adminId)
@@ -240,10 +244,10 @@ def admin_uploadLecturerTimetable():
                                 continue
                             
                             lecturer = Lecturer(
-                                lecturerID = lecturer_id,
+                                lecturerId = lecturer_id,
                                 lecturerName = lecturer_name,
                                 lecturerDepartment = lecturer_department,
-                                lecturerLevel = 'Lecturer', # LecturerLevel is set by default
+                                lecturerLevel = '1', # LecturerLevel is set by default
                                 lecturerEmail = lecturer_email,
                                 lecturerContact = lecturer_contact
                             )
@@ -252,7 +256,7 @@ def admin_uploadLecturerTimetable():
                             lecturer_records_added += 1
 
                             processed_records.append({
-                                'ID': lecturer.lecturerID,
+                                'ID': lecturer.lecturerId,
                                 'Name': lecturer.lecturerName,
                                 'Department': lecturer.lecturerDepartment,
                                 'Email': lecturer.lecturerEmail,
@@ -285,7 +289,7 @@ def admin_uploadLecturerTimetable():
             current_app.logger.error("File processing error: File upload in wrong format")
             return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
         
-    lecturer_data = LecturerDetails.query.all()
+    lecturer_data = Lecturer.query.all()
     return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', lecturer_data=lecturer_data)
 
 
