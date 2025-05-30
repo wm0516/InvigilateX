@@ -17,21 +17,21 @@ bcrypt = Bcrypt()
 # login page (done with checking email address and hash password)
 @app.route('/deanLogin', methods=['GET', 'POST'])
 def dean_login():
-    login_text = ''
-    password_text = ''
+    dean_login_text = ''
+    dean_password_text = ''
     error_message = None
 
     if request.method == 'POST':
-        login_text = request.form.get('textbox', '').strip()
-        password_text = request.form.get('password', '').strip()
-        valid, result = check_login('dean', login_text, password_text)
+        dean_login_text = request.form.get('textbox', '').strip()
+        dean_password_text = request.form.get('password', '').strip()
+        valid, result = check_login('dean', dean_login_text, dean_password_text)
         if not valid:
             error_message = result
         else:
             session['dean_id'] = result  # Store the user ID in session
             return redirect(url_for('dean_homepage'))
         
-    return render_template('deanPart/deanLogin.html', login_text=login_text, password_text=password_text, error_message=error_message)
+    return render_template('deanPart/deanLogin.html', dean_login_text=dean_login_text, dean_password_text=dean_password_text, error_message=error_message)
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/deanRegister', methods=['GET', 'POST'])
@@ -91,37 +91,39 @@ def dean_register():
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/deanForgotPassword', methods=['GET', 'POST'])
 def dean_forgotPassword():
-    forgot_email_text = ''
+    dean_forgot_email_text = ''
     error_message = None
 
     if request.method == 'POST':
-        forgot_email_text = request.form.get('email', '').strip()
-        if not forgot_email_text:
+        dean_forgot_email_text = request.form.get('email', '').strip()
+        if not dean_forgot_email_text:
             error_message = "Email address is required."
         else:
-            success, message = check_forgotPasswordEmail('dean', forgot_email_text)
+            success, message = check_forgotPasswordEmail('dean', dean_forgot_email_text)
             if not success:
                 error_message = message
             else:
                 return redirect(url_for('dean_login'))
 
-    return render_template('deanPart/deanForgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
+    return render_template('deanPart/deanForgotPassword.html', dean_forgot_email_text=dean_forgot_email_text, error_message=error_message)
 
 # reset password page (done after reset password based on that user password)
 @app.route('/deanResetPassword/<token>', methods=['GET', 'POST'])
 def dean_resetPassword(token):
+    dean_password_text_1 = ''
+    dean_password_text_2 = ''
     error_message = None
     
     if request.method == 'POST':
-        password_text_1 = request.form.get('password1', '').strip()
-        password_text_2 = request.form.get('password2', '').strip()
+        dean_password_text_1 = request.form.get('password1', '').strip()
+        dean_password_text_2 = request.form.get('password2', '').strip()
         
-        user, error_message = check_resetPassword('dean', token, password_text_1, password_text_2)
+        user, error_message = check_resetPassword('dean', token, dean_password_text_1, dean_password_text_2)
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('dean_login'))
     
-    return render_template('deanPart/deanResetPassword.html', password_text_1=password_text_1, password_text_2=password_text_2, error_message=error_message)
+    return render_template('deanPart/deanResetPassword.html', dean_password_text_1=dean_password_text_1, dean_password_text_2=dean_password_text_2, error_message=error_message)
 
 # Logout button from homepage to login page
 @app.route('/deanLogout')
