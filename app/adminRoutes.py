@@ -240,7 +240,7 @@ def admin_uploadLecturerTimetable():
                     for index, row in df.iterrows():
                         try:
                             lecturer_id = str(row['Id'])
-                            lecturer_name = str(row['Name'])
+                            lecturer_name = str(row['Name']).upper()
                             lecturer_department = str(row['Department']).upper()    
                             lecturer_email = str(row['Email'])
                             lecturer_contact = int(row['Contact'])
