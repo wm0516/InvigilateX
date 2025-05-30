@@ -119,9 +119,10 @@ function setupLecturerUpload() {
                 resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
 
                 if (data.success && Array.isArray(data.records) && data.records.length > 0) {
-                    data.records.forEach(record => {
+                    data.records.forEach((record, i) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
+                            <td>${i + 1}</td> <!-- Row number starting from 1 -->
                             <td>${record.ID}</td>
                             <td>${record.Name}</td>
                             <td>${record.Department}</td>
@@ -202,9 +203,10 @@ function setupExamUpload() {
                 resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
 
                 if (data.success && Array.isArray(data.records) && data.records.length > 0) {
-                    data.records.forEach(record => {
+                    data.records.forEach((record, i) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
+                            <td>${i + 1}</td> <!-- Row number starting from 1 -->
                             <td>${record.Date}</td>
                             <td>${record.Day}</td>
                             <td>${record.Start}</td>
