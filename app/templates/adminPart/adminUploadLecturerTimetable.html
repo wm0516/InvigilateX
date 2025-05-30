@@ -49,6 +49,7 @@
         <table class="user-data-table">
             <thead>
                 <tr>
+                    <th>No</th>
                     <th>Lecturer ID</th>
                     <th>Lecturer Name</th>
                     <th>Lecturer Department</th>
@@ -59,6 +60,7 @@
             <tbody>
                 {% for row in lecturer_data %}
                 <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.lecturerID  }}</td>
                     <td>{{ row.lecturerName }}</td>
                     <td>{{ row.lecturerDepartment }}</td>
