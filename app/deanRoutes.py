@@ -55,7 +55,7 @@ def dean_register():
         deanPassword2_text = request.form.get('password2', '').strip()
 
         # Use the new check_register function
-        is_valid, error_message = check_register('dean', deanId_text, deanEmail_text, deanContact_text)
+        is_valid, error_message = check_register(deanId_text, deanEmail_text, deanContact_text)
         if not is_valid:
             pass  # error_message is already set
         elif not all([deanId_text, deanName_text, deanDepartment_text, deanEmail_text, deanContact_text]):
@@ -70,14 +70,15 @@ def dean_register():
             error_message = "Wrong password format."
         else:
             hashed_pw = bcrypt.generate_password_hash(deanPassword1_text).decode('utf-8')
-            new_dean = Dean(
-                deanId = deanId_text,
-                deanName = deanName_text.upper(),
-                deanDepartment = deanDepartment_text,
-                deanLevel = '2',
-                deanEmail = deanEmail_text,
-                deanContact = deanContact_text,
-                deanPassword = hashed_pw
+            new_dean = User(
+                userId = deanId_text,
+                userName = deanName_text.upper(),
+                userDepartment = deanDepartment_text,
+                userLevel = '2',
+                userEmail = deanEmail_text,
+                userContact = deanContact_text,
+                userPassword = hashed_pw
+                userStatus = True
             )
             
             db.session.add(new_dean)
@@ -139,15 +140,16 @@ def dean_logout():
 def inject_dean_data():
     deanId = session.get('dean_id')
     if deanId:
-        dean = Dean.query.get(deanId)
+        dean = User.query.get(deanId)
         if dean:
             return {
                 'dean_id': deanId,
-                'dean_name': dean.deanName,
-                'dean_department': dean.deanDepartment,
-                'dean_level': dean.deanLevel,
-                'dean_email': dean.deanEmail,
-                'dean_contact' : dean.deanContact
+                'dean_name': dean.userName,
+                'dean_department': dean.userDepartment,
+                'dean_level': dean.userLevel,
+                'dean_email': dean.userEmail,
+                'dean_contact' : dean.userContact,
+                'dean_status': dean.userStatus
             }
     return {
         'dean_id': None,
@@ -155,7 +157,8 @@ def inject_dean_data():
         'dean_department': '',
         'dean_level': '',
         'dean_email': '',
-        'dean_contact': '' 
+        'dean_contact': '' ,
+        'dean_status': ''
     }
 
 
