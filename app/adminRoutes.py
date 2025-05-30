@@ -228,7 +228,7 @@ def admin_uploadLecturerTimetable():
                         usecols="A:E",
                         skiprows=1
                     )
-                    df.columns = ['Id', 'Name', 'Department', 'Email', 'Contact']
+                    df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
                     df.reset_index(drop=True, inplace=True)
 
                     for index, row in df.iterrows():
@@ -236,6 +236,7 @@ def admin_uploadLecturerTimetable():
                             lecturer_id = str(row['Id'])
                             lecturer_name = str(row['Name'])
                             lecturer_department = str(row['Department'])
+                            lecturer_role = str(row['Role'])
                             lecturer_email = str(row['Email'])
                             lecturer_contact = int(row['Contact'])
                             
@@ -252,7 +253,7 @@ def admin_uploadLecturerTimetable():
                                 userId = lecturer_id,
                                 userName = lecturer_name,
                                 userDepartment = lecturer_department,
-                                userLevel = '1', # LecturerLevel is set by default
+                                userLevel = lecturer_role,
                                 userEmail = lecturer_email,
                                 userContact = lecturer_contact,
                                 userStatus = False
