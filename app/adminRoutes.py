@@ -22,24 +22,24 @@ def index():
 # login page (done with checking email address and hash password)
 @app.route('/adminLogin', methods=['GET', 'POST'])
 def admin_login():
-    login_text = ''
-    password_text = ''
+    admin_login_text = ''
+    admin_password_text = ''
     error_message = None
 
     # Need Uncommand back 
     if request.method == 'POST':
-        login_text = request.form.get('textbox', '').strip()
-        password_text = request.form.get('password', '').strip()
+        admin_login_text = request.form.get('textbox', '').strip()
+        admin_password_text = request.form.get('password', '').strip()
 
-        valid, result = check_login('admin', login_text, password_text)
+        valid, result = check_login('admin', admin_login_text, admin_password_text)
         if not valid:
             error_message = result
         else:
             session['admin_id'] = result  # Store the user ID in session
             return redirect(url_for('admin_homepage'))
 
-    return render_template('adminPart/adminLogin.html', login_text=login_text,
-                           password_text=password_text, error_message=error_message)
+    return render_template('adminPart/adminLogin.html', admin_login_text=admin_login_text,
+                           admin_password_text=admin_password_text, error_message=error_message)
 
 
 # register page (done with all input validation and userID as Primary Key)
@@ -101,40 +101,42 @@ def admin_register():
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/adminForgotPassword', methods=['GET', 'POST'])
 def admin_forgotPassword():
-    forgot_email_text = ''
+    admin_forgot_email_text = ''
     error_message = None
 
     if request.method == 'POST':
-        forgot_email_text = request.form.get('email', '').strip()
+        admin_forgot_email_text = request.form.get('email', '').strip()
 
-        if not forgot_email_text:
+        if not admin_forgot_email_text:
             error_message = "Email address is required."
         else:
-            success, message = check_forgotPasswordEmail('admin', forgot_email_text)
+            success, message = check_forgotPasswordEmail('admin', admin_forgot_email_text)
             if not success:
                 error_message = message
             else:
                 return redirect(url_for('admin_login'))
 
-    return render_template('adminPart/adminForgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
+    return render_template('adminPart/adminForgotPassword.html', admin_forgot_email_text=admin_forgot_email_text, error_message=error_message)
 
 
 # reset password page (done after reset password based on that user password)
 @app.route('/adminResetPassword/<token>', methods=['GET', 'POST'])
 def admin_resetPassword(token):
+    admin_password_text_1 = ''
+    admin_password_text_2 = ''
     error_message = None
     
     if request.method == 'POST':
-        password_text_1 = request.form.get('password1', '').strip()
-        password_text_2 = request.form.get('password2', '').strip()
+        admin_password_text_1 = request.form.get('password1', '').strip()
+        admin_password_text_2 = request.form.get('password2', '').strip()
 
-        admin, error_message = check_resetPassword('admin', token, password_text_1, password_text_2)
+        admin, error_message = check_resetPassword('admin', token, admin_password_text_1, admin_password_text_2)
         if admin and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('admin_login'))
         
-    return render_template('adminPart/adminResetPassword.html', password_text_1=password_text_1, 
-                           password_text_2=password_text_2, error_message=error_message)
+    return render_template('adminPart/adminResetPassword.html', admin_password_text_1=admin_password_text_1, 
+                           admin_password_text_2=admin_password_text_2, error_message=error_message)
 
 
 # Logout button from homepage to login page
