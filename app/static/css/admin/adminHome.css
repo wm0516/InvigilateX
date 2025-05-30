@@ -166,6 +166,7 @@ input[type="file"] {
 .button-wrapper {
     display: flex;
     justify-content: center; /* Horizontally centers the button */
+    text-align: center;
 }
 
 .button-wrapper button {
