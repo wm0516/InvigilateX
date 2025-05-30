@@ -147,11 +147,11 @@ def inject_lecturer_data():
         if lecturer:
             return {
                 'lecturer_id': lecturerId,
-                'lecturer_name': lecturer.lecturerName,
-                'lecturer_department': lecturer.lecturerDepartment,
+                'lecturer_name': lecturer.userName,
+                'lecturer_department': lecturer.userDepartment,
                 'lecturer_level': 'Lecturer',
-                'lecturer_email': lecturer.lecturerEmail,
-                'lecturer_contact' : lecturer.lecturerContact,
+                'lecturer_email': lecturer.userEmail,
+                'lecturer_contact' : lecturer.userContact,
                 'lecturer_status': lecturer.userStatus
             }
     return {
