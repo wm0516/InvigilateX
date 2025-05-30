@@ -183,10 +183,6 @@ def admin_homepage():
 
 @app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def admin_autoGenerate():
-    if request.method == 'POST':
-        flash(f"{request.method}")
-        flash(f"{request.files}")
-        flash(f"{request.form}")
     return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab')
 
 @app.route('/adminHome/manageLecturer')
