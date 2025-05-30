@@ -36,27 +36,28 @@ class User(db.Model):
 
 
 # Use examID as PK because the auto increment only able with PK
+# Update: using examCourseSectionCode as PK
 class ExamDetails(db.Model):
     __tablename__ = 'ExamDetails'
-    examID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # examID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     examDate = db.Column(db.Date, nullable=False)
     examDay = db.Column(db.String(10), nullable=False)
     examStartTime = db.Column(db.String(20), nullable=False)
     examEndTime = db.Column(db.String(20), nullable=False)
     examProgramCode = db.Column(db.String(10), nullable=False)
-    examCourseSectionCode = db.Column(db.String(20), nullable=False)
+    examCourseSectionCode = db.Column(db.String(20), primary_key=True,)
     examLecturer = db.Column(db.String(255), nullable=False)
     examTotalStudent = db.Column(db.Integer, nullable=False)
     examVenue = db.Column(db.String(50), nullable=True)
     '''
+    examID INT AUTO_INCREMENT PRIMARY KEY,
     CREATE TABLE ExamDetails (
-        examID INT AUTO_INCREMENT PRIMARY KEY,
         examDate DATE,
         examDay VARCHAR(10),
         examStartTime VARCHAR(20),
         examEndTime VARCHAR(20),
         examProgramCode VARCHAR(10),
-        examCourseSectionCode VARCHAR(20),
+        examCourseSectionCode VARCHAR(20) PRIMARY KEY,
         examLecturer VARCHAR(255),
         examTotalStudent INT,
         examVenue VARCHAR(50)
