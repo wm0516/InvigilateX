@@ -143,11 +143,11 @@ def inject_dean_data():
         if dean:
             return {
                 'dean_id': deanId,
-                'dean_name': dean.adminName,
-                'dean_department': dean.adminDepartment,
-                'dean_level': dean.adminLevel,
-                'dean_email': dean.adminEmail,
-                'dean_contact' : dean.adminContact
+                'dean_name': dean.deanName,
+                'dean_department': dean.deanDepartment,
+                'dean_level': dean.deanLevel,
+                'dean_email': dean.deanEmail,
+                'dean_contact' : dean.deanContact
             }
     return {
         'dean_id': None,
