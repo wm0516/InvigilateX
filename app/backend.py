@@ -153,6 +153,7 @@ def unique_examDetails(exam_CourseSectionCode, exam_Date, exam_StartTime, exam_E
 
     return True, ""
 
+
 # (Need double check the purpose) Check upload lecturer
 def unique_LecturerDetails(id, email, contact):
     exists = Lecturer.query.filter(
