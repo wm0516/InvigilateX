@@ -62,7 +62,7 @@ def admin_register():
         adminPassword2_text = request.form.get('password2', '').strip()
 
         # Use the new check_register function
-        is_valid, error_message = check_register('admin', adminId_text, adminEmail_text, adminContact_text)
+        is_valid, error_message = check_register(adminId_text, adminEmail_text, adminContact_text)
         
         if not is_valid:
             pass  # error_message is already set
@@ -78,14 +78,15 @@ def admin_register():
             error_message = "Wrong password format."
         else:
             hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
-            new_admin = Admin(
-                adminId = adminId_text,
-                adminName = adminnNme_text.upper(),
-                adminDepartment = 'Admin',
-                adminLevel = '3',
-                adminEmail = adminEmail_text,
-                adminContact = adminContact_text,
-                adminPassword = hashed_pw
+            new_admin = User(
+                userId = adminId_text,
+                userName = adminnNme_text.upper(),
+                userDepartment = 'Admin',
+                userLevel = '3',
+                userEmail = adminEmail_text,
+                userContact = adminContact_text,
+                userPassword = hashed_pw
+                userStatus = True
             )
             
             db.session.add(new_admin)
@@ -153,15 +154,16 @@ def admin_logout():
 def inject_admin_data():
     adminId = session.get('admin_id')
     if adminId:
-        admin = Admin.query.get(adminId)
+        admin = User.query.get(adminId)
         if admin:
             return {
                 'admin_id': adminId,
-                'admin_name': admin.adminName,
-                'admin_department': admin.adminDepartment,
-                'admin_level': admin.adminLevel,
-                'admin_email': admin.adminEmail,
-                'admin_contact' : admin.adminContact
+                'admin_name': admin.userName,
+                'admin_department': admin.userDepartment,
+                'admin_level': admin.userLevel,
+                'admin_email': admin.userEmail,
+                'admin_contact' : admin.userContact,
+                'admin_status': admin.userStatus
             }
     return {
         'admin_id': None,
@@ -169,7 +171,8 @@ def inject_admin_data():
         'admin_department': '',
         'admin_level': '',
         'admin_email': '',
-        'admin_contact': '' 
+        'admin_contact': '',
+        'admin_status': ''
     }
 
 
@@ -245,13 +248,14 @@ def admin_uploadLecturerTimetable():
                                 errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
                                 continue
                             
-                            lecturer = Lecturer(
-                                lecturerId = lecturer_id,
-                                lecturerName = lecturer_name,
-                                lecturerDepartment = lecturer_department,
-                                lecturerLevel = '1', # LecturerLevel is set by default
-                                lecturerEmail = lecturer_email,
-                                lecturerContact = lecturer_contact
+                            lecturer = User(
+                                userId = lecturer_id,
+                                userName = lecturer_name,
+                                userDepartment = lecturer_department,
+                                userLevel = '1', # LecturerLevel is set by default
+                                userEmail = lecturer_email,
+                                userContact = lecturer_contact
+                                userStatus = False
                             )
 
                             db.session.add(lecturer)
@@ -262,7 +266,8 @@ def admin_uploadLecturerTimetable():
                                 'Name': lecturer.lecturerName,
                                 'Department': lecturer.lecturerDepartment,
                                 'Email': lecturer.lecturerEmail,
-                                'Contact': lecturer.lecturerContact
+                                'Contact': lecturer.lecturerContact,
+                                'Status': lecturer.userStatus
                             })
 
                         except Exception as row_err:
