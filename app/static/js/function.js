@@ -122,11 +122,14 @@ function setupLecturerUpload() {
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${i + 1}</td> <!-- Row number starting from 1 -->
-                            <td>${record.Id}</td>
+                            <td>${record.ID}</td>
                             <td>${record.Name}</td>
                             <td>${record.Department}</td>
+                            <td>${record.Role}</td>
                             <td>${record.Email}</td>
                             <td>${record.Contact}</td>
+                            <td>1<td>
+                            <td>1</td>
                         `;
                         tableBody.appendChild(row);
                     });
