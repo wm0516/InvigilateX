@@ -5,6 +5,13 @@ from sqlalchemy.orm import Mapped, mapped_column
 # db.Time -> time format
 # db.Integer -> number
 
+# In MySQL
+# SHOW DATABASES;               -> display out all the database created
+# USE WM05$InvigilateX;         -> use this database
+# SHOW TABLES;                  -> display out all the table created
+# DROP TABLE (tableName);       -> to delete that table
+# SELECT * FROM (tableName);    -> display out that table data
+
 # Admin record after register
 class Admin(db.Model):
     __tablename__ = 'Admin'
@@ -51,6 +58,7 @@ class Dean(db.Model):
     );
     '''
 
+
 class Lecturer(db.Model):
     __tablename__ = 'Lecturer'
     lecturerId = db.Column(db.String(20), primary_key=True)
@@ -67,7 +75,7 @@ class Lecturer(db.Model):
         lecturerDepartment VARCHAR(100),
         lecturerLevel INT,
         lecturerEmail VARCHAR(50),
-        lecturerContact VARCHAR(15)
+        lecturerContact VARCHAR(15),
         lecturerPassword VARCHAR(255)
     );
     '''
