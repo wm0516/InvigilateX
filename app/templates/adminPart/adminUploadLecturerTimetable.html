@@ -39,6 +39,10 @@
                     <th>Lecturer Department</th>
                     <th>Lecturer Email</th>
                     <th>Lecturer Contact</th>
+                    <th>Status</th> <!-- 
+                    If upload only -> no register, 
+                    if lecturer register self ->register, 
+                    if register data no similar with register -> wrong data-->
                 </tr>
             </thead>
             <tbody>
@@ -50,6 +54,7 @@
                     <td>{{ row.lecturerDepartment }}</td>
                     <td>{{ row.lecturerEmail }}</td>
                     <td>{{ row.lecturerContact }}</td>
+                    <td></td>
                 </tr>
                 {% endfor %}
             </tbody>
