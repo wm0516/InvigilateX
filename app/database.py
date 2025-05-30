@@ -14,7 +14,39 @@ from sqlalchemy.orm import Mapped, mapped_column
 # UPDATE Admin SET adminEmail='p21013604@student.newinti.edu.my' WHERE adminId='123'; -> changing the data
 # UPDATE Lecturer SET lecturerEmail='p21013604@student.newinti.edu.my' WHERE lecturerId='123'; 
 
-# Admin record after register
+class User(db.Model):
+    __tablename__ = 'user'
+    # Refer to Staff ID
+    userId = db.Column(db.String(20), primary_key=True)
+    # Refer to Staff Name
+    userName = db.Column(db.String(255))
+    # Lecturer and Dean have this selection, Admin will automatic set as Admin
+    userDepartment = db.Column(db.String(20))
+    # Lecturer = 1, Dean = 2, Admin = 3 (Admin with higher level to access of)
+    userLevel = db.Column(db.Integer)
+    # Refer to Staff INTI email
+    userEmail = db.Column(db.String(50))
+    # Refer to Staff Contact Number
+    userContact = db.Column(db.String(15))
+    # Refer to Staff Password
+    userPassword = db.Column(db.String(255))
+    # Refer to Staff Account Status, if by self register as 'Active', if by upload as 'Deactived"
+    userStatus = db.Column(db.String(15))
+    '''
+    CREATE TABLE User (
+        userId VARCHAR(20) NOT NULL PRIMARY KEY,
+        userName VARCHAR(255),
+        userDepartment VARCHAR(20),
+        userLevel INT,
+        userEmail VARCHAR(50),
+        userContact VARCHAR(15),
+        userPassword VARCHAR(255),
+        userStatus VARCHAR(15)
+    );
+    '''
+
+
+# (Not Used) Admin database
 class Admin(db.Model):
     __tablename__ = 'Admin'
     adminId = db.Column(db.String(20), primary_key=True)
@@ -37,7 +69,7 @@ class Admin(db.Model):
     );
     '''
 
-# Dean record after register 
+# (Not Used) Dean database
 class Dean(db.Model):
     __tablename__ = 'Dean'
     deanId = db.Column(db.String(20), primary_key=True)
@@ -60,7 +92,7 @@ class Dean(db.Model):
     );
     '''
 
-
+# (Not Used) Lecturer database
 class Lecturer(db.Model):
     __tablename__ = 'Lecturer'
     lecturerId = db.Column(db.String(20), primary_key=True)
