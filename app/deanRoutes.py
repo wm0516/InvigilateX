@@ -21,79 +21,72 @@ def dean_login():
     password_text = ''
     error_message = None
 
-    # Need Uncommand back 
-    '''
     if request.method == 'POST':
         login_text = request.form.get('textbox', '').strip()
         password_text = request.form.get('password', '').strip()
-
-        valid, result = check_login(login_text, password_text)
+        valid, result = check_login('dean', login_text, password_text)
         if not valid:
             error_message = result
         else:
-            session['user_id'] = result  # Store the user ID in session
+            session['dean_id'] = result  # Store the user ID in session
             return redirect(url_for('dean_homepage'))
-    '''
-    if request.method == 'POST':
-        return redirect(url_for('dean_homepage'))
-
+        
     return render_template('deanPart/deanLogin.html', login_text=login_text, password_text=password_text, error_message=error_message)
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/deanRegister', methods=['GET', 'POST'])
 def dean_register():
-    userid_text = ''
-    username_text = ''
-    department_text = ''
-    email_text = ''
-    contact_text = ' '
-    password1_text = ''
-    password2_text = ''
+    deanId_text = ''
+    deanName_text = ''
+    deanDepartment_text = ''
+    deanEmail_text = ''
+    deanContact_text = ' '
+    deanPassword1_text = ''
+    deanPassword2_text = ''
     error_message = None
 
     if request.method == 'POST':
-        userid_text = request.form.get('userid', '').strip()
-        username_text = request.form.get('username', '').strip()
-        department_text = request.form.get('department', '').strip()
-        email_text = request.form.get('email', '').strip()
-        contact_text = request.form.get('contact', '').strip()
-        password1_text = request.form.get('password1', '').strip()
-        password2_text = request.form.get('password2', '').strip()
+        deanId_text = request.form.get('userid', '').strip()
+        deanName_text = request.form.get('username', '').strip()
+        deanDepartment_text = request.form.get('department', '').strip()
+        deanEmail_text = request.form.get('email', '').strip()
+        deanContact_text = request.form.get('contact', '').strip()
+        deanPassword1_text = request.form.get('password1', '').strip()
+        deanPassword2_text = request.form.get('password2', '').strip()
 
         # Use the new check_register function
-        is_valid, error_message = check_register(userid_text, email_text, contact_text)
-        
+        is_valid, error_message = check_register('dean', deanId_text, deanEmail_text, deanContact_text)
         if not is_valid:
             pass  # error_message is already set
-        elif not all([userid_text, username_text, department_text, email_text, contact_text]):
+        elif not all([deanId_text, deanName_text, deanDepartment_text, deanEmail_text, deanContact_text]):
             error_message = "All fields are required."
-        elif not email_format(email_text):
+        elif not email_format(deanEmail_text):
             error_message = "Wrong Email Address format"
-        elif not contact_format(contact_text):
+        elif not contact_format(deanContact_text):
             error_message = "Wrong Contact Number format"
-        elif password1_text != password2_text:
+        elif deanPassword1_text != deanPassword2_text:
             error_message = "Passwords do not match."
-        elif not password_format(password1_text):
+        elif not password_format(deanPassword1_text):
             error_message = "Wrong password format."
         else:
-            hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
-            new_user = User(
-                userid = userid_text,
-                username = username_text.upper(),
-                department = department_text,
-                email = email_text,
-                contact = contact_text,
-                password = hashed_pw
+            hashed_pw = bcrypt.generate_password_hash(deanPassword1_text).decode('utf-8')
+            new_dean = Dean(
+                deanId = deanId_text,
+                deanName = deanName_text.upper(),
+                deanDepartment = deanDepartment_text,
+                deanLevel = '2',
+                deanEmail = deanEmail_text,
+                deanContact = deanContact_text,
+                deanPassword = hashed_pw
             )
             
-            db.session.add(new_user)
+            db.session.add(new_dean)
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('dean_login'))
 
-    return render_template('deanPart/deanRegister.html', userid_text=userid_text, username_text=username_text, 
-                           email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
-                           password2_text=password2_text, error_message=error_message)
+    return render_template('deanPart/deanRegister.html', deanId_text=deanId_text, deanName_text=deanName_text, deanDepartment_text=deanDepartment_text,
+                            deanEmail_text=deanEmail_text, deanPassword1_text=deanPassword1_text, deanPassword2_text=deanPassword2_text, error_message=error_message)
 
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/deanForgotPassword', methods=['GET', 'POST'])
@@ -103,19 +96,16 @@ def dean_forgotPassword():
 
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '').strip()
-
         if not forgot_email_text:
             error_message = "Email address is required."
         else:
-            success, message = check_forgotPasswordEmail(forgot_email_text)
+            success, message = check_forgotPasswordEmail('dean', forgot_email_text)
             if not success:
                 error_message = message
             else:
                 return redirect(url_for('dean_login'))
 
-    return render_template('deanPart/deanForgotPassword.html', 
-                         forgot_email_text=forgot_email_text, 
-                         error_message=error_message)
+    return render_template('deanPart/deanForgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 # reset password page (done after reset password based on that user password)
 @app.route('/deanResetPassword/<token>', methods=['GET', 'POST'])
@@ -126,17 +116,12 @@ def dean_resetPassword(token):
         password_text_1 = request.form.get('password1', '').strip()
         password_text_2 = request.form.get('password2', '').strip()
         
-        user, error_message = check_resetPassword(
-            token, 
-            password_text_1, 
-            password_text_2
-        )
-        
+        user, error_message = check_resetPassword('dean', token, password_text_1, password_text_2)
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('dean_login'))
     
-    return render_template('deanPart/deanResetPassword.html', error_message=error_message)
+    return render_template('deanPart/deanResetPassword.html', password_text_1=password_text_1, password_text_2=password_text_2, error_message=error_message)
 
 # Logout button from homepage to login page
 @app.route('/deanLogout')
@@ -145,6 +130,31 @@ def dean_logout():
     session.clear()
     # Redirect to login page
     return redirect(url_for('dean_login')) 
+
+
+# Once login sucessful, it will kept all that user data and just use when need
+@app.context_processor
+def inject_dean_data():
+    deanId = session.get('dean_id')
+    if deanId:
+        dean = Dean.query.get(deanId)
+        if dean:
+            return {
+                'dean_id': deanId,
+                'dean_name': dean.adminName,
+                'dean_department': dean.adminDepartment,
+                'dean_level': dean.adminLevel,
+                'dean_email': dean.adminEmail,
+                'dean_contact' : dean.adminContact
+            }
+    return {
+        'dean_id': None,
+        'dean_name': '',
+        'dean_department': '',
+        'dean_level': '',
+        'dean_email': '',
+        'dean_contact': '' 
+    }
 
 
 # home page (start with this!!!!!!!!!!!!!!)
