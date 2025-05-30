@@ -28,84 +28,42 @@ def check_login(role, loginEmail, loginPassword):
     if not loginEmail or not loginPassword:
         return False, "Both fields are required."
 
-    role_mapping = {
-        'admin': {
-            'model': Admin,
-            'email_field': 'adminEmail',
-            'password_field': 'adminPassword',
-            'id_field': 'adminId',
-        },
-        'dean': {
-            'model': Dean,
-            'email_field': 'deanEmail',
-            'password_field': 'deanPassword',
-            'id_field': 'deanId',
-        },
-        'lecturer': {
-            'model': Lecturer,
-            'email_field': 'lecturerEmail',
-            'password_field': 'lecturerPassword',
-            'id_field': 'lecturerId',
-        }
+    user = User.query.filter_by(userEmail=loginEmail).first()
+
+    if not user or not bcrypt.check_password_hash(user.userPassword, loginPassword):
+        return False, "Invalid email or password."
+
+    level_to_role = {
+        3: 'admin',
+        2: 'dean',
+        1: 'lecturer'
     }
 
-    if role not in role_mapping:
-        return False, "Invalid role."
+    user_role = level_to_role.get(user.userLevel)
+    if not user_role:
+        return False, "User role is not recognized."
 
-    mapping = role_mapping[role]
-    model = mapping['model']
-    email_field = getattr(model, mapping['email_field'])
+    # Enforce access control if role is required
+    if role and user_role != role:
+        return False, f"No access to the {role} page."
 
-    user = model.query.filter(email_field == loginEmail).first()
+    return True, user.userId
 
-    if not user or not bcrypt.check_password_hash(getattr(user, mapping['password_field']), loginPassword):
-        return False, "Invalid Email address or password."
-
-    return True, getattr(user, mapping['id_field'])
 
 # Check registerID, registerEmail, registerContact can't be same as inside database based on role
-def check_register(role, registerID, registerEmail, registerContact):
-    role_mapping = {
-        'admin': {
-            'model': Admin,
-            'id_field': 'adminId',
-            'email_field': 'adminEmail',
-            'contact_field': 'adminContact',
-        },
-        'dean': {
-            'model': Dean,
-            'id_field': 'deanId',
-            'email_field': 'deanEmail',
-            'contact_field': 'deanContact',
-        },
-        'lecturer': {
-            'model': Lecturer,
-            'id_field': 'lecturerId',
-            'email_field': 'lecturerEmail',
-            'contact_field': 'lecturerContact',
-        }
-    }
-
-    if role not in role_mapping:
-        return False, "Invalid role."
-
-    model = role_mapping[role]['model']
-    id_field = getattr(model, role_mapping[role]['id_field'])
-    email_field = getattr(model, role_mapping[role]['email_field'])
-    contact_field = getattr(model, role_mapping[role]['contact_field'])
-
-    existing_user = model.query.filter(
-        (id_field == registerID) |
-        (email_field == registerEmail) |
-        (contact_field == registerContact)
+def check_register(registerID, registerEmail, registerContact):
+    existing_user = User.query.filter(
+        (User.userId == registerID) |
+        (User.userEmail == registerEmail) |
+        (User.userContact == registerContact)
     ).first()
 
     if existing_user:
-        if getattr(existing_user, role_mapping[role]['id_field']) == registerID:
+        if existing_user.userId == registerID:
             return False, "User ID already exists."
-        elif getattr(existing_user, role_mapping[role]['email_field']) == registerEmail:
+        elif existing_user.userEmail == registerEmail:
             return False, "Email address already registered."
-        elif getattr(existing_user, role_mapping[role]['contact_field']) == registerContact:
+        elif existing_user.userContact == registerContact:
             return False, "Contact number already registered."
 
     return True, ""
@@ -113,41 +71,24 @@ def check_register(role, registerID, registerEmail, registerContact):
 
 # Check the Email validate or not and send reset password link based on that Email
 def check_forgotPasswordEmail(role, forgotEmail):
-    role_mapping = {
-        'admin': {
-            'model': Admin,
-            'email_field': 'adminEmail',
-            'page_field': 'admin_resetPassword',
-        },
-        'dean': {
-            'model': Dean,
-            'email_field': 'deanEmail',
-            'page_field': 'dean_resetPassword',
-        },
-        'lecturer': {
-            'model': Lecturer,
-            'email_field': 'lecturerEmail',
-            'page_field': 'lecturer_resetPassword',
-        }
-    }
+    role_levels = {'admin': 3, 'dean': 2, 'lecturer': 1}
 
-    if role not in role_mapping:
+    if role not in role_levels:
         return False, "Invalid role."
 
-    mapping = role_mapping[role]
-    model = mapping['model']
-    email_field = getattr(model, mapping['email_field'])
-
-    user = model.query.filter(email_field == forgotEmail).first()
-
+    user = User.query.filter_by(userEmail=forgotEmail).first()
     if not user:
         return False, "Invalid Email Address."
 
-    token = serializer.dumps(forgotEmail, salt='password-reset-salt')
-    reset_link = url_for(mapping['page_field'], token=token, _external=True)
+    if user.userLevel != role_levels[role]:
+        return False, f"No access to the {role} reset page."
 
-    msg = Message('InvigilateX - Password Reset Request', recipients=[forgotEmail])
-    msg.body = f'''Hi,
+    try:
+        token = serializer.dumps(forgotEmail, salt='password-reset-salt')
+        reset_link = url_for(f"{role}_resetPassword", token=token, _external=True)
+
+        msg = Message('InvigilateX - Password Reset Request', recipients=[forgotEmail])
+        msg.body = f'''Hi,
 
 We received a request to reset your password for your InvigilateX account.
 
@@ -158,8 +99,7 @@ If you did not request this change, please ignore this email.
 
 Thank you,  
 The InvigilateX Team'''
-    
-    try:
+
         mail.send(msg)
         flash(f"Reset email sent to {forgotEmail}!", "success")
         return True, None
@@ -176,47 +116,27 @@ def check_resetPassword(role, token, resetPassword1, resetPassword2):
 
     if not resetPassword1 or not resetPassword2:
         return None, "All fields are required."
-    elif resetPassword1 != resetPassword2:
+    if resetPassword1 != resetPassword2:
         return None, "Passwords do not match."
-    elif not password_format(resetPassword1):
+    if not password_format(resetPassword1):
         return None, "Wrong password format."
 
-    # Role mapping
-    role_mapping = {
-        'admin': {
-            'model': Admin,
-            'email_field': 'adminEmail',
-            'password_field': 'adminPassword'
-        },
-        'dean': {
-            'model': Dean,
-            'email_field': 'deanEmail',
-            'password_field': 'deanPassword'
-        },
-        'lecturer': {
-            'model': Lecturer,
-            'email_field': 'lecturerEmail',
-            'password_field': 'lecturerPassword'
-        }
-    }
-
-    if role not in role_mapping:
+    role_levels = {'admin': 3, 'dean': 2, 'lecturer': 1}
+    if role not in role_levels:
         return None, "Invalid role."
 
-    mapping = role_mapping[role]
-    model = mapping['model']
-    email_column = getattr(model, mapping['email_field'])
-    user = model.query.filter(email_column == email).first()
-
+    user = User.query.filter_by(userEmail=email).first()
     if not user:
-        return None, f"{role.capitalize()} not found."
+        return None, "User not found."
+
+    if user.userLevel != role_levels[role]:
+        return None, f"No access to reset password as {role}."
 
     # Update password
-    hashed_pw = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
-    setattr(user, mapping['password_field'], hashed_pw)
-
+    user.userPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
     db.session.commit()
     return user, None
+
 
 
 # Check no duplicate exam sessions occur
