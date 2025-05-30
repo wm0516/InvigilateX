@@ -262,11 +262,12 @@ def admin_uploadLecturerTimetable():
                             lecturer_records_added += 1
 
                             processed_records.append({
-                                'ID': lecturer.lecturerId,
-                                'Name': lecturer.lecturerName,
-                                'Department': lecturer.lecturerDepartment,
-                                'Email': lecturer.lecturerEmail,
-                                'Contact': lecturer.lecturerContact,
+                                'ID': lecturer.userId,
+                                'Name': lecturer.userName,
+                                'Department': lecturer.userDepartment,
+                                'Role': lecturer.userLevel,
+                                'Email': lecturer.userEmail,
+                                'Contact': lecturer.userContact,
                                 'Status': lecturer.userStatus
                             })
 
