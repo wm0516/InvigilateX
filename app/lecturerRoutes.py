@@ -143,13 +143,13 @@ def lecturer_logout():
 def inject_lecturer_data():
     lecturerId = session.get('lecturer_id')
     if lecturerId:
-        lecturer = Lecturer.query.get(lecturerId)
+        lecturer = User.query.get(lecturerId)
         if lecturer:
             return {
                 'lecturer_id': lecturerId,
                 'lecturer_name': lecturer.userName,
                 'lecturer_department': lecturer.userDepartment,
-                'lecturer_level': 'Lecturer',
+                'lecturer_level': lecturer.userLevel,
                 'lecturer_email': lecturer.userEmail,
                 'lecturer_contact' : lecturer.userContact,
                 'lecturer_status': lecturer.userStatus
