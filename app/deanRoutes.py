@@ -77,7 +77,7 @@ def dean_register():
                 userLevel = '2',
                 userEmail = deanEmail_text,
                 userContact = deanContact_text,
-                userPassword = hashed_pw
+                userPassword = hashed_pw,
                 userStatus = True
             )
             
