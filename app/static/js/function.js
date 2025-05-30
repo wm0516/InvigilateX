@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
 /* admin hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
     // Main navigation tabs
@@ -74,8 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-
-
 /* Lecturer Timetable Upload - Self-contained */
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', setupLecturerUpload);
@@ -84,7 +83,6 @@ function setupLecturerUpload() {
     const fileInput = document.getElementById('lecturer_list');
     const resultDiv = document.getElementById('lecturerUploadResult');
     const tableBody = document.querySelector('.user-data-table tbody');
-
 
     if (!form || !fileInput || !resultDiv || !tableBody) {
         console.error('One or more elements not found');
@@ -112,12 +110,11 @@ function setupLecturerUpload() {
             });
 
             const contentType = response.headers.get('content-type') || '';
-
              if (contentType.includes('application/json')) {
                 const data = await response.json();
-                //const errorDiv = document.getElementById('lecturerUploadErrors');
+                const errorDiv = document.getElementById('lecturerUploadErrors');
                 resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
-                //errorDiv.innerHTML = ''; // Clear previous
+                errorDiv.innerHTML = ''; // Clear previous
 
                 if (data.success && Array.isArray(data.records) && data.records.length > 0) {
                     data.records.forEach((record, i) => {
@@ -132,13 +129,13 @@ function setupLecturerUpload() {
                         `;
                         tableBody.appendChild(row);
                     });
-                } //else {
-                  //  const errorList = data.errors && data.errors.length
-                  //     ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
-                  //      : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
+                } else {
+                    const errorList = data.errors && data.errors.length
+                        ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
+                        : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
 
-                   //  errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
-                //}
+                    errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
+                }
                 fileInput.value = ""; // Clear file input
             } else {
                 const text = await response.text();
@@ -152,25 +149,9 @@ function setupLecturerUpload() {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Exam Details Upload - Self-contained */
 // Initialize when DOM is loaded
-
-
 document.addEventListener('DOMContentLoaded', setupExamUpload);
-
 function setupExamUpload() {
     const form = document.getElementById('uploadExamForm');
     const fileInput = document.getElementById('exam_list');
@@ -193,7 +174,6 @@ function setupExamUpload() {
 
         const formData = new FormData();
         formData.append('exam_file', file);
-
         resultDiv.innerHTML = '<p>Uploading exam details... please wait</p>';
 
         try {
@@ -203,13 +183,13 @@ function setupExamUpload() {
             });
 
             const contentType = response.headers.get('content-type') || '';
-
             if (contentType.includes('application/json')) {
                 const data = await response.json();
-
+                const errorDiv = document.getElementById('examUploadErrors');
                 resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
+                errorDiv.innerHTML = ''; // Clear previous
 
-                if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                 if (data.success && Array.isArray(data.records) && data.records.length > 0) {
                     data.records.forEach((record, i) => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -226,8 +206,13 @@ function setupExamUpload() {
                         `;
                         tableBody.appendChild(row);
                     });
-                }
+                } else {
+                    const errorList = data.errors && data.errors.length
+                        ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
+                        : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
 
+                    errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
+                }
                 fileInput.value = ""; // Clear file input
             } else {
                 const text = await response.text();
