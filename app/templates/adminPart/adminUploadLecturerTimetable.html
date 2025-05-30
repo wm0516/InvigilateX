@@ -2,48 +2,26 @@
 {% extends "adminPart/adminBase.html" %}
 {% block title %}Admin UploadTimetable{% endblock %}
 {% block content %}
-
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
-
-    <div class="menu-section">
-
-
-        <div class="main-frame">
-            <h2>Upload Masterfile</h2>
-            <div class="form-frame">
-                <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
-                    <div class="input-frame">
-                        <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required>
-                    </div>
-                    <div class="button-wrapper">
-                        <button type="submit">Upload</button>
-                    </div>
-                    <!-- Result feedback -->
-                    <div id="lecturerUploadResult" style="text-align: center;"></div>
-                </form>
-            </div>
+<div class="menu-section">
+    <div class="main-frame">
+        <h2>Upload Masterfile</h2>
+        <div class="form-frame">
+            <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
+                <div class="input-frame">
+                    <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required>
+                </div>
+                <div class="button-wrapper">
+                    <button type="submit">Upload</button>
+                </div>
+                <!-- Result feedback -->
+                <div id="lecturerUploadResult" style="text-align: center;"></div>
+            </form>
         </div>
+    </div>
 
-
-
-
-
-
-
-
-        <h2>Table Record</h2>
+    <h2>Table Record</h2>
     <label>
     </label>
-
 
     <div class="user-table-container">
         <table class="user-data-table">
@@ -71,7 +49,7 @@
             </tbody>
         </table>
     </div>
-    </div>
+</div>
 <script src="{{ url_for('static', filename='js/function.js') }}"></script>
 
 
