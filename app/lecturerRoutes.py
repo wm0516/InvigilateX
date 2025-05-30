@@ -55,7 +55,7 @@ def lecturer_register():
         lecturerPassword2_text = request.form.get('password2', '').strip()
 
         # Use the new check_register function
-        is_valid, error_message = check_register('lecturer', lecturerId_text, lecturerEmail_text, lecturerContact_text)
+        is_valid, error_message = check_register(lecturerId_text, lecturerEmail_text, lecturerContact_text)
         if not is_valid:
             pass  # error_message is already set
         elif not all([lecturerId_text, lecturerName_text, lecturerDepartment_text, lecturerEmail_text, lecturerContact_text]):
@@ -121,7 +121,7 @@ def lecturer_resetPassword(token):
         lecturer_password_text_1 = request.form.get('password1', '').strip()
         lecturer_password_text_2 = request.form.get('password2', '').strip()
         
-        user, error_message = check_resetPassword(token, lecturer_password_text_1, lecturer_password_text_2)
+        user, error_message = check_resetPassword('lecturer', token, lecturer_password_text_1, lecturer_password_text_2)
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('lecturer_login'))
@@ -149,7 +149,7 @@ def inject_lecturer_data():
                 'lecturer_id': lecturerId,
                 'lecturer_name': lecturer.lecturerName,
                 'lecturer_department': lecturer.lecturerDepartment,
-                'lecturer_level': lecturer.lecturerLevel,
+                'lecturer_level': 'Lecturer',
                 'lecturer_email': lecturer.lecturerEmail,
                 'lecturer_contact' : lecturer.lecturerContact,
                 'lecturer_status': lecturer.userStatus
@@ -166,9 +166,6 @@ def inject_lecturer_data():
 
 
 
-
-
-    
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/lecturerHome', methods=['GET', 'POST'])
 def lecturer_homepage():
