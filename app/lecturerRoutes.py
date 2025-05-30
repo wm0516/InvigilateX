@@ -21,79 +21,72 @@ def lecturer_login():
     password_text = ''
     error_message = None
 
-    # Need Uncommand back 
-    '''
     if request.method == 'POST':
         login_text = request.form.get('textbox', '').strip()
         password_text = request.form.get('password', '').strip()
-
-        valid, result = check_login(login_text, password_text)
+        valid, result = check_login('lecturer', login_text, password_text)
         if not valid:
             error_message = result
         else:
-            session['user_id'] = result  # Store the user ID in session
+            session['lecturer_id'] = result  # Store the user ID in session
             return redirect(url_for('lecturer_homepage'))
-    '''
-    if request.method == 'POST':
-        return redirect(url_for('lecturer_homepage'))
 
     return render_template('lecturerPart/lecturerLogin.html', login_text=login_text, password_text=password_text, error_message=error_message)
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/lecturerRegister', methods=['GET', 'POST'])
 def lecturer_register():
-    userid_text = ''
-    username_text = ''
-    department_text = ''
-    email_text = ''
-    contact_text = ' '
-    password1_text = ''
-    password2_text = ''
+    lecturerId_text = ''
+    lecturerName_text = ''
+    lecturerDepartment_text = ''
+    lecturerEmail_text = ''
+    lecturerContact_text = ' '
+    lecturerPassword1_text = ''
+    lecturerPassword2_text = ''
     error_message = None
 
     if request.method == 'POST':
-        userid_text = request.form.get('userid', '').strip()
-        username_text = request.form.get('username', '').strip()
-        department_text = request.form.get('department', '').strip()
-        email_text = request.form.get('email', '').strip()
-        contact_text = request.form.get('contact', '').strip()
-        password1_text = request.form.get('password1', '').strip()
-        password2_text = request.form.get('password2', '').strip()
+        lecturerId_text = request.form.get('userid', '').strip()
+        lecturerName_text = request.form.get('username', '').strip()
+        lecturerDepartment_text = request.form.get('department', '').strip()
+        lecturerEmail_text = request.form.get('email', '').strip()
+        lecturerContact_text = request.form.get('contact', '').strip()
+        lecturerPassword1_text = request.form.get('password1', '').strip()
+        lecturerPassword2_text = request.form.get('password2', '').strip()
 
         # Use the new check_register function
-        is_valid, error_message = check_register(userid_text, email_text, contact_text)
-        
+        is_valid, error_message = check_register('lecturer', lecturerId_text, lecturerEmail_text, lecturerContact_text)
         if not is_valid:
             pass  # error_message is already set
-        elif not all([userid_text, username_text, department_text, email_text, contact_text]):
+        elif not all([lecturerId_text, lecturerName_text, lecturerDepartment_text, lecturerEmail_text, lecturerContact_text]):
             error_message = "All fields are required."
-        elif not email_format(email_text):
+        elif not email_format(lecturerEmail_text):
             error_message = "Wrong Email Address format"
-        elif not contact_format(contact_text):
+        elif not contact_format(lecturerContact_text):
             error_message = "Wrong Contact Number format"
-        elif password1_text != password2_text:
+        elif lecturerPassword1_text != lecturerPassword2_text:
             error_message = "Passwords do not match."
-        elif not password_format(password1_text):
+        elif not password_format(lecturerPassword1_text):
             error_message = "Wrong password format."
         else:
-            hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
-            new_user = User(
-                userid = userid_text,
-                username = username_text.upper(),
-                department = department_text,
-                email = email_text,
-                contact = contact_text,
-                password = hashed_pw
+            hashed_pw = bcrypt.generate_password_hash(lecturerPassword1_text).decode('utf-8')
+            new_lecturer = Lecturer(
+                lecturerId = lecturerId_text,
+                lecturerName = lecturerName_text.upper(),
+                lecturerDepartment = lecturerDepartment_text,
+                lecturerLevel = '1',
+                lecturerEmail = lecturerEmail_text,
+                lecturerContact = lecturerContact_text,
+                lecturerPassword = hashed_pw
             )
-            
-            db.session.add(new_user)
+            db.session.add(new_lecturer)
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('lecturer_login'))
 
-    return render_template('lecturerPart/lecturerRegister.html', userid_text=userid_text, username_text=username_text, 
-                           email_text=email_text, contact_text=contact_text, password1_text=password1_text, 
-                           password2_text=password2_text, error_message=error_message)
+    return render_template('lecturerPart/lecturerRegister.html', lecturerId_text=lecturerId_text, lecturerName_text=lecturerName_text, 
+                           lecturerDepartment_text=lecturerDepartment_text, lecturerEmail_text=lecturerEmail_text, lecturerContact_text=lecturerContact_text, 
+                           lecturerPassword1_text=lecturerPassword1_text, lecturerPassword2_text=lecturerPassword2_text, error_message=error_message)
 
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/lecturerForgotPassword', methods=['GET', 'POST'])
@@ -103,11 +96,10 @@ def lecturer_forgotPassword():
 
     if request.method == 'POST':
         forgot_email_text = request.form.get('email', '').strip()
-
         if not forgot_email_text:
             error_message = "Email address is required."
         else:
-            success, message = check_forgotPasswordEmail(forgot_email_text)
+            success, message = check_forgotPasswordEmail('lecturer', forgot_email_text)
             if not success:
                 error_message = message
             else:
@@ -126,12 +118,7 @@ def lecturer_resetPassword(token):
         password_text_1 = request.form.get('password1', '').strip()
         password_text_2 = request.form.get('password2', '').strip()
         
-        user, error_message = check_resetPassword(
-            token, 
-            password_text_1, 
-            password_text_2
-        )
-        
+        user, error_message = check_resetPassword('lecturer', token, password_text_1, password_text_2)
         if user and not error_message:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('lecturer_login'))
@@ -145,6 +132,36 @@ def lecturer_logout():
     session.clear()
     # Redirect to login page
     return redirect(url_for('lecturer_login')) 
+
+
+# Once login sucessful, it will kept all that user data and just use when need
+@app.context_processor
+def inject_lecturer_data():
+    lecturerId = session.get('lecturer_id')
+    if lecturerId:
+        lecturer = Lecturer.query.get(lecturerId)
+        if lecturer:
+            return {
+                'lecturer_id': lecturerId,
+                'lecturer_name': lecturer.adminName,
+                'lecturer_department': lecturer.adminDepartment,
+                'lecturer_level': lecturer.adminLevel,
+                'lecturer_email': lecturer.adminEmail,
+                'lecturer_contact' : lecturer.adminContact
+            }
+    return {
+        'lecturer_id': None,
+        'lecturer_name': '',
+        'lecturer_department': '',
+        'lecturer_level': '',
+        'lecturer_email': '',
+        'lecturer_contact': '' 
+    }
+
+
+
+
+
     
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/lecturerHome', methods=['GET', 'POST'])
