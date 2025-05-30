@@ -77,7 +77,7 @@ def lecturer_register():
                 userLevel = '1',
                 userEmail = lecturerEmail_text,
                 userContact = lecturerContact_text,
-                userPassword = hashed_pw
+                userPassword = hashed_pw,
                 userStatus = True
             )
             db.session.add(new_lecturer)
