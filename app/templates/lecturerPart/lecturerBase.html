@@ -28,19 +28,19 @@
         <div class="tab-nav">
             <a href="{{ url_for('lecturer_homepage')}}" 
                class="tab-link {% if active_tab == 'lecturer_hometab' %}active{% endif %}" 
-               data-tab="home">Home</a>
+               data-tab="lecturer_hometab">Home</a>
 
             <a href="{{ url_for('lecturer_timetable')}}" 
                class="tab-link {% if active_tab == 'lecturer_timetabletab' %}active{% endif %}" 
-               data-tab="upload">Timetable</a>
+               data-tab="lecturer_timetabletab">Timetable</a>
 
             <a href="{{ url_for('lecturer_invigilationTimetable')}}" 
                class="tab-link {% if active_tab == 'lecturer_invigilationTimetabletab' %}active{% endif %}" 
-               data-tab="autoGenerate">Invigilation Timetable</a>
+               data-tab="lecturer_invigilationTimetabletab">Invigilation Timetable</a>
 
             <a href="{{ url_for('lecturer_profile')}}" 
                class="tab-link {% if active_tab == 'lecturer_profiletab' %}active{% endif %}" 
-               data-tab="manage">Profile</a>
+               data-tab="lecturer_profiletab">Profile</a>
         </div>
         <br>
         <!-- Content block for child templates -->

@@ -530,6 +530,57 @@ def admin_uploadLecturerList():
 
 
 
+@app.route('/adminHome/profile', methods=['GET', 'POST'])
+def admin_profile():
+    adminId = session.get('admin_id')
+    admin = User.query.filter_by(userId=adminId).first()
+    
+    # Pre-fill existing data
+    adminContact_text = ''
+    adminPassword1_text = ''
+    adminPassword2_text = ''
+    error_message = None
+
+    if request.method == 'POST':
+        adminContact_text = request.form.get('contact', '').strip()
+        adminPassword1_text = request.form.get('password1', '').strip()
+        adminPassword2_text = request.form.get('password2', '').strip()
+
+        # Error checks
+        if adminContact_text and not contact_format(adminContact_text):
+            error_message = "Wrong Contact Number format"
+        elif adminPassword1_text or adminPassword2_text:
+            if adminPassword1_text != adminPassword2_text:
+                error_message = "Passwords do not match."
+
+        if error_message:
+            flash(error_message, 'error')
+        elif not adminContact_text and not adminPassword1_text:
+            flash("Nothing to update", 'info')
+        else:
+            if admin:
+                if adminContact_text:
+                    admin.userContact = adminContact_text
+                if adminPassword1_text:
+                    hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
+                    admin.userPassword = hashed_pw
+
+                db.session.commit()
+                flash("Successfully updated", 'success')
+                return redirect(url_for('admin_profile'))
+
+
+    return render_template(
+        'adminPart/adminProfile.html',
+        active_tab='admin_profiletab',
+        admin_name=admin.userName if admin else '',
+        admin_id=admin.userId if admin else '',
+        admin_email=admin.userEmail if admin else '',
+        adminContact_text=adminContact_text,
+        adminPassword1_text=adminPassword1_text,
+        adminPassword2_text=adminPassword2_text,
+        error_message=error_message
+    )
 
 
 

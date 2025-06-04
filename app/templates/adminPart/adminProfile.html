@@ -1,0 +1,64 @@
+{% extends "adminPart/adminBase.html" %}
+{% block title %}Admin Profile{% endblock %}
+{% block content %}
+
+<div class="menu-section">
+    <div class="main-frame">
+        <form method="post" style="align-self: center; width: 50%">
+            <h1>Profile</h1>
+            <br>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                <div class="form-left">
+                    <label class="text-position">Full Name as per IC</label>
+                    <input type="text" name="username" value="{{ lecturer_name }}" readonly><br>
+                    
+                    <label class="text-position">Staff ID</label>
+                    <input type="text" name="userid" value="{{ lecturer_id }}" readonly><br>
+
+                    <label class="text-position">Email Address</label>
+                    <input type="text" name="email" value="{{ lecturer_email }}" readonly><br>=
+                </div>
+                <br>
+
+                <div class="form-right">
+                    <label class="text-position">Contact Number</label>
+                    <input type="tel" name="contact" value="{{ lecturerContact_text }}"><br>  
+
+                    <div class="password-container">
+                        <label class="text-position">Password</label>
+                        <input type="password" name="password1" value="{{ lecturerPassword1_text }}">
+                        <button type="button" class="toggle-password-btn">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div><br>
+        
+                    <div class="password-container">
+                        <label class="text-position"> Confirm Password</label>
+                        <input type="password" name="password2" value="{{ lecturerPassword2_text }}">
+                        <button type="button" class="toggle-password-btn">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <br>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            <div class="button-wrapper">
+                    <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+{% endblock %}

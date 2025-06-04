@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>{% block title %}{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/adminHome.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Shared header/navigation -->
     <div class= "header-container">
         <div class="heading"></div>
@@ -38,6 +41,10 @@
             <a href="{{ url_for('admin_manageLecturer')}}" 
                class="tab-link {% if active_tab == 'admin_managetab' %}active{% endif %}" 
                data-tab="admin_managetab">Assign Lecturer</a>
+            
+            <a href="{{ url_for('admin_profile')}}" 
+               class="tab-link {% if active_tab == 'admin_profiletab' %}active{% endif %}" 
+               data-tab="admin_profiletab">Assign Lecturer</a>
         </div>
         
         <!-- Sub-tab navigation (only shown when on upload section) -->
