@@ -173,7 +173,7 @@ def lecturer_homepage():
 
 @app.route('/lecturerHome/timetables', methods=['GET', 'POST'])
 def lecturer_timetables():
-    return render_template('lecturerPart/lecturertimetables.html', active_tab='lecturer_timetablestab')
+    return render_template('lecturerPart/lecturerTimetable.html', active_tab='lecturer_timetablestab')
 
 @app.route('/lecturerHome/status', methods=['GET', 'POST'])
 def lecturer_status():
