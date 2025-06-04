@@ -60,6 +60,7 @@ button {
     width: 25vh;
     padding: 8px 16px;
     margin-top: 25px;
+    background-color: #007bff;
 }
 
 .button-frame {
