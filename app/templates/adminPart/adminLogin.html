@@ -13,9 +13,11 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
+                    {% if category != 'login_error' %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -47,9 +49,11 @@
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
+                            {% if category == 'login_error' %}
+                            <div class="alert alert-{{ category }}">
+                                <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                            </div>
+                            {% endif %}
                         {% endfor %}
                     {% endif %}
                 {% endwith %}
