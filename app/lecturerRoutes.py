@@ -228,67 +228,7 @@ def lecturer_profile():
     return render_template(
         'lecturerPart/lecturerProfile.html',
         active_tab='lecturer_profiletab',
-        lecturerDepartment=lecturerDepartment_text,
-        lecturerContact=lecturerContact_text,
         error_message=error_message
     )
 
 
-
-
-
-
-
-def lecturer_register():
-    lecturerId_text = ''
-    lecturerName_text = ''
-    lecturerDepartment_text = ''
-    lecturerEmail_text = ''
-    lecturerContact_text = ' '
-    lecturerPassword1_text = ''
-    lecturerPassword2_text = ''
-    error_message = None
-
-    if request.method == 'POST':
-        lecturerId_text = request.form.get('userid', '').strip()
-        lecturerName_text = request.form.get('username', '').strip()
-        lecturerDepartment_text = request.form.get('department', '').strip()
-        lecturerEmail_text = request.form.get('email', '').strip()
-        lecturerContact_text = request.form.get('contact', '').strip()
-        lecturerPassword1_text = request.form.get('password1', '').strip()
-        lecturerPassword2_text = request.form.get('password2', '').strip()
-
-        # Use the new check_register function
-        is_valid, error_message = check_register(lecturerId_text, lecturerEmail_text, lecturerContact_text)
-        if not is_valid:
-            pass  # error_message is already set
-        elif not all([lecturerId_text, lecturerName_text, lecturerDepartment_text, lecturerEmail_text, lecturerContact_text]):
-            error_message = "All fields are required."
-        elif not email_format(lecturerEmail_text):
-            error_message = "Wrong Email Address format"
-        elif not contact_format(lecturerContact_text):
-            error_message = "Wrong Contact Number format"
-        elif lecturerPassword1_text != lecturerPassword2_text:
-            error_message = "Passwords do not match."
-        elif not password_format(lecturerPassword1_text):
-            error_message = "Wrong password format."
-        else:
-            hashed_pw = bcrypt.generate_password_hash(lecturerPassword1_text).decode('utf-8')
-            new_lecturer = User(
-                userId = lecturerId_text,
-                userName = lecturerName_text.upper(),
-                userDepartment = lecturerDepartment_text,
-                userLevel = '1',
-                userEmail = lecturerEmail_text,
-                userContact = lecturerContact_text,
-                userPassword = hashed_pw,
-                userStatus = True
-            )
-            db.session.add(new_lecturer)
-            db.session.commit()
-            flash(f"Register successful! Log in with your registered email address.", "success")
-            return redirect(url_for('lecturer_login'))
-
-    return render_template('lecturerPart/lecturerRegister.html', lecturerId_text=lecturerId_text, lecturerName_text=lecturerName_text, 
-                           lecturerDepartment_text=lecturerDepartment_text, lecturerEmail_text=lecturerEmail_text, lecturerContact_text=lecturerContact_text, 
-                           lecturerPassword1_text=lecturerPassword1_text, lecturerPassword2_text=lecturerPassword2_text, error_message=error_message)
