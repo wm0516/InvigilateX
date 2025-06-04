@@ -143,3 +143,53 @@ class ExamDetails(db.Model):
         examVenue VARCHAR(50)
     );
     '''
+
+class LecturerTimetables(db.Model):
+    __tablename__ = 'LecturerTimetables'
+    lecturerId = db.Column(db.String(20), primary_key=True)
+    lecturerMon = db.Column(db.String(255), nullable=False)
+    lecturerTues = db.Column(db.String(255), nullable=False)
+    lecturerWed = db.Column(db.String(255), nullable=False)
+    lecturerThurs = db.Column(db.String(255), nullable=False)
+    lecturerFri = db.Column(db.String(255), nullable=False)
+    '''
+    CREATE TABLE LecturerTimetables (
+        lecturerId VARCHAR(20) NOT NULL,
+        lecturerMon VARCHAR(255) NOT NULL,
+        lecturerTues VARCHAR(255) NOT NULL,
+        lecturerWed VARCHAR(255) NOT NULL,
+        lecturerThurs VARCHAR(255) NOT NULL,
+        lecturerFri VARCHAR(255) NOT NULL,
+        PRIMARY KEY (lecturerId)
+    );
+    '''
+
+class Invigilation(db.Model):
+    __tablename__ = 'Invigilation'
+    invigilationCourseSectionCode = db.Column(db.String(20), primary_key=True)
+    invigilationLecturerId = db.Column(db.String(20), nullable=False)
+    invigilationInvigilatorId1 = db.Column(db.String(20), nullable=False)
+    invigilationInvigilatorId2 = db.Column(db.String(20), nullable=False)
+    invigilationStartTime = db.Column(db.String(20), nullable=False)
+    invigilationEndTime = db.Column(db.String(20), nullable=False)
+    invigilationCheckIn = db.Column(db.String(20), nullable=False)
+    invigilationCheckOut = db.Column(db.String(20), nullable=False)
+    invigilationProgramCode = db.Column(db.String(10), nullable=False)
+    invigilationTotalCandidates = db.Column(db.Integer, nullable=False)
+    invigilationVenue = db.Column(db.String(50), nullable=True)
+    '''
+    CREATE TABLE Invigilation (
+        invigilationCourseSectionCode VARCHAR(20) PRIMARY KEY,
+        invigilationLecturerId VARCHAR(20) NOT NULL,
+        invigilationInvigilatorId1 VARCHAR(20) NOT NULL,
+        invigilationInvigilatorId2 VARCHAR(20) NOT NULL,
+        invigilationStartTime VARCHAR(20) NOT NULL,
+        invigilationEndTime VARCHAR(20) NOT NULL,
+        invigilationCheckIn VARCHAR(20) NOT NULL,
+        invigilationCheckOut VARCHAR(20) NOT NULL,
+        invigilationProgramCode VARCHAR(10) NOT NULL,
+        invigilationTotalCandidates INT NOT NULL,
+        invigilationVenue VARCHAR(50)
+    );
+    '''
+

@@ -169,4 +169,17 @@ def inject_lecturer_data():
 # home page (start with this!!!!!!!!!!!!!!)
 @app.route('/lecturerHome', methods=['GET', 'POST'])
 def lecturer_homepage():
-    return render_template('lecturerPart/lecturerHomepage.html', active_tab='home')
+    return render_template('lecturerPart/lecturerHomepage.html', active_tab='lecturer_hometab')
+
+@app.route('lecturerHome/timetables', methods=['GET', 'POST'])
+def lecturer_timetables():
+    return render_template('lecturerPart/lecturerTimetables.html', active_tab='lecturer_timetablestab')
+
+@app.route('lecturerHome/status', methods=['GET', 'POST'])
+def lecturer_status():
+    return render_template('lecturerPart/lecturerStatus.html', active_tab='lecturer_statustab')
+
+@app.route('lecturerHome/profile', methods=['GET', 'POST'])
+def lecturer_profile():
+    return render_template('lecturerPart/lecturerProfile.html', active_tab='lecturer_profiletab')
+
