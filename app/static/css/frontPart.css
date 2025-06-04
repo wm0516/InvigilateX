@@ -55,7 +55,7 @@ input, select {
     margin: 1% 0;
     box-sizing: border-box;
 }
-
+/*
 button {
     width: 25vh;
     padding: 8px 16px;
@@ -68,6 +68,28 @@ button {
     margin-top: 20px;
     padding: 10px;
 }
+*/
+
+
+.button-frame {
+    display: flex;
+    justify-content: center; /* Horizontally centers the button */
+}
+
+.button-frame button {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 25%;
+}
+
+
+
 
 .span {
     font-weight: normal;
