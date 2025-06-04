@@ -32,7 +32,7 @@ def admin_login():
         valid, result = check_login('admin', admin_login_text, admin_password_text)
         if not valid:
             error_message = result  # Get the error message from check_login
-            flash(error_message, 'error')  # Show it using flash
+            flash(error_message, 'login_error')  # Show it using flash
         else:
             session['admin_id'] = result
             return redirect(url_for('admin_homepage'))

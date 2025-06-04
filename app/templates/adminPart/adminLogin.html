@@ -10,17 +10,13 @@
 <body>
     <form method="POST">
         <!-- Showing any of alert message -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    {% if category != 'login_error' %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                    {% endif %}
-                {% endfor %}
+        {% for category, message in flashed_messages %}
+            {% if category != 'login_error' %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ category.capitalize() }}:</strong> {{ message }}
+            </div>
             {% endif %}
-        {% endwith %}
+        {% endfor %}
 
         <div class="heading"></div>
         <br>
@@ -45,18 +41,15 @@
             </div>
             
             <!-- Show any message of doesn't match the require of input -->
-            <div>
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            {% if category == 'login_error' %}
-                            <div class="alert alert-{{ category }}">
-                                <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                            </div>
-                            {% endif %}
-                        {% endfor %}
+            <div>   
+                <!-- Bottom alert section: Show only login_error messages -->
+                {% for category, message in flashed_messages %}
+                    {% if category == 'login_error' %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
                     {% endif %}
-                {% endwith %}
+                {% endfor %}
             </div>
             
             <!-- Javascript control the password toggle -->
