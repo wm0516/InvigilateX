@@ -26,10 +26,9 @@ def lecturer_login():
         lecturer_password_text = request.form.get('password', '').strip()
         valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
-            error_message = result
+            if error_message:
+                flash(error_message, 'error')
         
-        if error_message:
-            flash(error_message, 'error')
         else:
             session['lecturer_id'] = result
             flash("Login successful!", 'success')

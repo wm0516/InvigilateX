@@ -33,9 +33,11 @@ def admin_login():
 
         valid, result = check_login('admin', admin_login_text, admin_password_text)
         if not valid:
-            error_message = result
+            if error_message:
+                flash(error_message, 'error')
         else:
-            session['admin_id'] = result  # Store the user ID in session
+            session['admin_id'] = result
+            flash("Login successful!", "success")
             return redirect(url_for('admin_homepage'))
 
     return render_template('adminPart/adminLogin.html', admin_login_text=admin_login_text,
@@ -76,6 +78,9 @@ def admin_register():
             error_message = "Passwords do not match."
         elif not password_format(adminPassword1_text):
             error_message = "Wrong password format."
+
+        if error_message:
+            flash(error_message, 'error')
         else:
             hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
             new_admin = User(
@@ -93,7 +98,7 @@ def admin_register():
             db.session.commit()
             flash(f"Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('admin_login'))
-
+        
     return render_template('adminPart/adminRegister.html', adminId_text=adminId_text, adminName_text=adminnNme_text, 
                            adminEmail_text=adminEmail_text, adminContact_text=adminContact_text, adminPassword1_text=adminPassword1_text, 
                            adminPassword2_text=adminPassword2_text, error_message=error_message)
@@ -110,11 +115,16 @@ def admin_forgotPassword():
 
         if not admin_forgot_email_text:
             error_message = "Email address is required."
+        
+        if error_message:
+            flash(error_message, 'error')
         else:
             success, message = check_forgotPasswordEmail('admin', admin_forgot_email_text)
             if not success:
                 error_message = message
+                flash(str(error_message), 'error')
             else:
+                flash("Reset link sent to your email address.", 'success')
                 return redirect(url_for('admin_login'))
 
     return render_template('adminPart/adminForgotPassword.html', admin_forgot_email_text=admin_forgot_email_text, error_message=error_message)
@@ -132,7 +142,9 @@ def admin_resetPassword(token):
         admin_password_text_2 = request.form.get('password2', '').strip()
 
         admin, error_message = check_resetPassword('admin', token, admin_password_text_1, admin_password_text_2)
-        if admin and not error_message:
+        if error_message:
+            flash(error_message, 'error')
+        elif admin:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('admin_login'))
         
