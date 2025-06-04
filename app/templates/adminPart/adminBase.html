@@ -42,7 +42,7 @@
         
         <!-- Sub-tab navigation (only shown when on upload section) -->
         {% if active_tab == 'admin_uploadtab' or active_tab == 'admin_uploadLecturerTimetabletab' or 
-            active_tab == 'admin_uploadExamDetailstab' or active_tab == 'admin_uploadExamDetailstab' %}
+            active_tab == 'admin_uploadLecturerListtab' or active_tab == 'admin_uploadExamDetailstab' %}
         <br>
         <div class="tab-nav">
             <a href="{{ url_for('admin_upload')}}" 
