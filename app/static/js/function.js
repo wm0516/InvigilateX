@@ -75,6 +75,85 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+/* Lecturer List Upload - Self-contained */
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupLecturerListUpload);
+function setupLecturerListUpload() {
+    const form = document.getElementById('uploadLecturerListForm');
+    const fileInput = document.getElementById('lecturerList_list');
+    const resultDiv = document.getElementById('lecturerListUploadResult');
+    const tableBody = document.querySelector('.user-data-table tbody');
+
+    if (!form || !fileInput || !resultDiv || !tableBody) {
+        console.error('One or more elements not found');
+        return;
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select an lecturer file to upload.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('lecturerList_file', file);
+
+        resultDiv.innerHTML = '<p>Uploading lecturer details... please wait</p>';
+
+        try {
+            const response = await fetch('/adminHome/uploadLecturerList', {
+                method: 'POST',
+                body: formData
+            });
+
+            const contentType = response.headers.get('content-type') || '';
+             if (contentType.includes('application/json')) {
+                const data = await response.json();
+                const errorDiv = document.getElementById('lecturerListUploadErrors');
+                resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
+                errorDiv.innerHTML = ''; // Clear previous
+
+                if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                    tableBody.innerHTML = ''; // Clear existing table content before rendering new data
+                    data.records.forEach((record, i) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${i + 1}</td> <!-- Row number starting from 1 -->
+                            <td>${record.ID}</td>
+                            <td>${record.Name}</td>
+                            <td>${record.Department}</td>
+                            <td>${record.Role}</td>
+                            <td>${record.Email}</td>
+                            <td>${record.Contact}</td>
+                            <td>Deactivated</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const errorList = data.errors && data.errors.length
+                        ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
+                        : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
+
+                    errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
+                }
+                fileInput.value = ""; // Clear file input
+            } else {
+                const text = await response.text();
+                resultDiv.innerHTML = `<p>${text}</p>`;
+            }
+        } catch (error) {
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${error.message}</p>`;
+            console.error(error);
+        }
+    });
+}
+
+
+
+
 /* Lecturer Timetable Upload - Self-contained */
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', setupLecturerUpload);
@@ -150,6 +229,7 @@ function setupLecturerUpload() {
         }
     });
 }
+
 
 
 /* Exam Details Upload - Self-contained */

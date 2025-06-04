@@ -52,6 +52,10 @@
                class="tab-link {% if active_tab == 'admin_uploadLecturerTimetabletab' %}active{% endif %}" 
                data-tab="admin_uploadLecturerTimetabletab">Lecturers Timetable</a>
 
+            <a href="{{ url_for('admin_uploadLecturerList')}}" 
+               class="tab-link {% if active_tab == 'admin_uploadLecturerListtab' %}active{% endif %}" 
+               data-tab="admin_uploadLecturerListtab">Lecturers Timetable</a>
+
             <a href="{{ url_for('admin_uploadExamDetails')}}" 
                class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}" 
                data-tab="admin_uploadExamDetailstab">Exam Details</a>

@@ -1,0 +1,96 @@
+<!-- upload.html -->
+{% extends "adminPart/adminBase.html" %}
+{% block title %}Admin UploadTimetable{% endblock %}
+{% block content %}
+<div class="menu-section">
+    <div class="main-frame">
+        <h2>Upload Masterfile</h2>
+        <div class="form-frame">
+            <form id="uploadLecturerListForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
+                <div style="text-align: center; margin-bottom: 2%;">
+                    <label>
+                        Upload file 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
+                    </label>
+                </div>
+                <div class="input-frame">
+                    <input type="file" id="lecturerList_list" name="lecturerList_file" accept=".xlsx,.xls,.xlsm" required>
+                </div>
+                <div class="button-wrapper">
+                    <button type="submit">Upload</button>
+                </div>
+                <!-- Result feedback -->
+                <div id="lecturerListUploadResult" style="text-align: center;"></div>
+                <div id="lecturerListUploadErrors" style="text-align: center;"></div>
+            </form>
+        </div>
+    </div>
+
+    <h2>Table Record</h2>
+    <label>
+        To Do: <br>
+        1. Allow edit based on the Id <br>
+        2. Deactivated will send an email to the upload email address for activation link <br>
+        Question: <br>
+        1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
+        2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
+    </label>
+
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Role Based</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Status</th> <!-- 
+                    If upload only -> no register, 
+                    if lecturer register self ->register, 
+                    if register data no similar with register -> wrong data-->
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in user_data %}
+                <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ row.userId }}</td>
+                    <td>{{ row.userName }}</td>
+                    <td>{{ row.userDepartment }}</td>
+
+                    <!-- Role Name based on userLevel -->
+                    <td>
+                        {% if row.userLevel == 1 %}
+                            Lecturer
+                        {% elif row.userLevel == 2 %}
+                            Dean
+                        {% elif row.userLevel == 3 %}
+                            Admin
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+
+                    <td>{{ row.userEmail }}</td>
+                    <td>{{ row.userContact }}</td>
+
+                    <!-- User status: Activated / Deactivated -->
+                    <td>
+                        {% if row.userStatus|int == 1 %}
+                            Activated
+                        {% else %}
+                            Deactivated
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/function.js') }}"></script>
+
+
+{% endblock %}

@@ -409,3 +409,119 @@ def admin_uploadExamDetails():
     # GET request
     exam_data = ExamDetails.query.all()
     return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab', exam_data=exam_data)
+
+
+@app.route('/adminHome/uploadLecturerList', methods=['GET', 'POST'])
+def admin_uploadLecturerList():
+    if request.method == 'POST':
+        if 'lecturerList_file' not in request.files:
+            return jsonify({'success': False, 'message': 'No file uploaded'})
+
+        file = request.files['lecturerList_file']
+        file_stream = BytesIO(file.read())
+
+        lecturer_list_added = 0
+        processed_records = []
+        errors = []
+
+        try:
+            excel_file = pd.ExcelFile(file_stream)
+            for sheet_name in excel_file.sheet_names:
+                try:
+                    df = pd.read_excel(
+                        excel_file,
+                        sheet_name=sheet_name,
+                        usecols="A:F",
+                        skiprows=1
+                    )
+                    df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
+                    df.reset_index(drop=True, inplace=True)
+
+                    role_mapping = {
+                        'lecturer': 1,
+                        'dean': 2,
+                        'admin': 3
+                    }
+
+                    for index, row in df.iterrows():
+                        try:
+                            lecturer_id = str(row['Id'])
+                            lecturer_name = str(row['Name']).upper()
+                            lecturer_department = str(row['Department']).upper()    
+                            lecturer_email = str(row['Email'])
+                            lecturer_contact = int(row['Contact'])
+                            # Normalize and map role string
+                            lecturer_role_str = str(row['Role']).strip().lower()
+                            lecturer_role = role_mapping.get(lecturer_role_str)
+                            
+                            is_valid, error_message = unique_LecturerDetails(
+                                lecturer_id, lecturer_email, lecturer_contact
+                            )
+
+                            if not is_valid:
+                                row_number = index + 2 if isinstance(index, int) else str(index)
+                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
+                                continue
+                            
+                            lecturer = User(
+                                userId = lecturer_id,
+                                userName = lecturer_name,
+                                userDepartment = lecturer_department,
+                                userLevel = lecturer_role,
+                                userEmail = lecturer_email,
+                                userContact = lecturer_contact,
+                                userStatus = False
+                            )
+
+                            db.session.add(lecturer)
+                            lecturer_records_added += 1
+
+                            processed_records.append({
+                                'ID': lecturer.userId,
+                                'Name': lecturer.userName,
+                                'Department': lecturer.userDepartment,
+                                'Role': lecturer.userLevel,
+                                'Email': lecturer.userEmail,
+                                'Contact': lecturer.userContact,
+                                'Status': lecturer.userStatus
+                            })
+
+                        except Exception as row_err:
+                            pass
+
+                    db.session.commit()
+
+                except Exception as sheet_err:
+                    pass
+            # Final response
+            if is_valid and lecturer_records_added > 0:
+                message = f"Successful upload {lecturer_records_added} record(s)"
+                success = True
+            else:
+                message = "No data uploaded"
+                success = False
+
+            return jsonify({
+                'success': success,
+                'message': message,
+                'records': processed_records,
+                'errors': errors
+            })
+
+        except Exception as e:
+            current_app.logger.error("File processing error: File upload in wrong format")
+            return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
+        
+    user_data = User.query.all()
+    return render_template('adminPart/adminUploadLecturerList.html', active_tab='admin_uploadLecturerListtab', user_data=user_data)
+
+
+
+
+
+
+
+
+
+
+
