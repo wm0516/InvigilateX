@@ -233,7 +233,7 @@ input[type="file"] {
 }
 
 
-.alert-error, .alert-input_error {
+.alert-error, .alert-warning {
   background-color: #f8d7da;
   color: #721c24;
 }
