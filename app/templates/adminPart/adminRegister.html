@@ -17,22 +17,22 @@
         <div style="display: flex; flex-direction: row; justify-content: space-between;">
             <div class="form-left">
                 <label class="text-position">Full Name as per IC</label>
-                <input type="text" value="{{ adminName_text }}"><br>
+                <input type="text" name="username" value="{{ adminName_text }}"><br>
                 
                 <label class="text-position">Staff ID</label>
-                <input type="text" value="{{ adminId_text }}"><br>
+                <input type="text" name="userid" value="{{ adminId_text }}"><br>
 
                 <label class="text-position">Email Address</label>
-                <input type="text" value="{{ adminEmail_text }}"><br>
+                <input type="text" name="email" value="{{ adminEmail_text }}"><br>
             </div>
     
             <div class="form-right">
                 <label class="text-position">Contact Number</label>
-                <input type="tel" value="{{ adminContact_text }}"><br>  
+                <input type="tel" name="contact" value="{{ adminContact_text }}"><br>  
 
                 <div class="password-container">
                     <label class="text-position">Password</label>
-                    <input type="password" value="{{ adminPassword1_text }}">
+                    <input type="password" name="password1" value="{{ adminPassword1_text }}">
                     <button type="button" class="toggle-password-btn">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -40,7 +40,7 @@
     
                 <div class="password-container">
                     <label class="text-position"> Confirm Password</label>
-                    <input type="password" value="{{ adminPassword2_text }}">
+                    <input type="password" name="password2" value="{{ adminPassword2_text }}">
                     <button type="button" class="toggle-password-btn">
                         <i class="fas fa-eye"></i>
                     </button>
@@ -60,7 +60,7 @@
 
         <!-- Button frame with standard-->
         <div class="button-frame">
-            <button type="submit">Submit</button>
+            <button type="submit" name="register">Submit</button>
             <br><br>
             <a href="{{ url_for('admin_login') }}">Back to Login</a>
         </div>
