@@ -23,22 +23,25 @@ def index():
 def admin_login():
     admin_login_text = ''
     admin_password_text = ''
-    error_message = None
 
-    # Need Uncommand back 
     if request.method == 'POST':
         admin_login_text = request.form.get('textbox', '').strip()
         admin_password_text = request.form.get('password', '').strip()
+        
+        # First check for empty fields
+        if not admin_login_text or not admin_password_text:
+            flash("Please fill in all fields", 'input_error')  # Using 'input_error' category
+            return render_template('adminPart/adminLogin.html', admin_login_text=admin_login_text, admin_password_text=admin_password_text)
+        
+        # Then check the login credentials
         valid, result = check_login('admin', admin_login_text, admin_password_text)
         if not valid:
-            error_message = result  # Get the error message from check_login
-            flash(error_message, 'login_error')  # Show it using flash
+            flash(result, 'login_error')  # Show it using flash
         else:
             session['admin_id'] = result
             return redirect(url_for('admin_homepage'))
-
-    return render_template('adminPart/adminLogin.html', admin_login_text=admin_login_text,
-                           admin_password_text=admin_password_text, error_message=error_message)
+        
+    return render_template('adminPart/adminLogin.html', admin_login_text=admin_login_text, admin_password_text=admin_password_text)
 
 
 # register page (done with all input validation and userID as Primary Key)

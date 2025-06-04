@@ -9,9 +9,9 @@
 
 <body>
     <form method="POST">
-        <!-- Showing any of alert message -->
-        {% for category, message in flashed_messages %}
-            {% if category != 'login_error' %}
+        <!-- Top alert section: Show all except input_error and login_error -->
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            {% if category not in ['input_error', 'login_error'] %}
             <div class="alert alert-{{ category }}">
                 <strong>{{ category.capitalize() }}:</strong> {{ message }}
             </div>
@@ -40,18 +40,17 @@
                 </button>
             </div>
             
-            <!-- Show any message of doesn't match the require of input -->
+             <!-- Bottom alert section: Show only input_error and login_error messages -->
             <div>   
-                <!-- Bottom alert section: Show only login_error messages -->
-                {% for category, message in flashed_messages %}
-                    {% if category == 'login_error' %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    {% if category in ['input_error', 'login_error'] %}
                     <div class="alert alert-{{ category }}">
                         <strong>{{ category.capitalize() }}:</strong> {{ message }}
                     </div>
                     {% endif %}
                 {% endfor %}
             </div>
-            
+
             <!-- Javascript control the password toggle -->
             <script src="{{ url_for('static', filename='js/function.js') }}"></script>
             
@@ -67,3 +66,4 @@
     </form>
 </body>
 </html>
+

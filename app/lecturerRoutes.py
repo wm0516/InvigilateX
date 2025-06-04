@@ -19,21 +19,25 @@ bcrypt = Bcrypt()
 def lecturer_login():
     lecturer_login_text = ''
     lecturer_password_text = ''
-    error_message = None
 
     if request.method == 'POST':
         lecturer_login_text = request.form.get('textbox', '').strip()
         lecturer_password_text = request.form.get('password', '').strip()
+        
+        # First check for empty fields
+        if not lecturer_login_text or not lecturer_password_text:
+            flash("Please fill in all fields", 'input_error')  # Using 'input_error' category
+            return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, lecturer_password_text=lecturer_password_text)
+        
+        # Then check the login credentials
         valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
-            error_message = result  # Get the error message from check_login
-            flash(error_message, 'login_error')  # Show it using flash
+            flash(result, 'login_error')  # Show it using flash
         else:
             session['lecturer_id'] = result
             return redirect(url_for('lecturer_homepage'))
         
-    return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, 
-                           lecturer_password_text=lecturer_password_text, error_message=error_message)
+    return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, lecturer_password_text=lecturer_password_text)
 
 
 # register page (done with all input validation and userID as Primary Key)
