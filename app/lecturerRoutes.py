@@ -26,13 +26,13 @@ def lecturer_login():
         
         # First check for empty fields
         if not lecturer_login_text or not lecturer_password_text:
-            flash("Please fill in all fields", 'warning')  # Using 'input_error' category
+            flash("Please fill in all fields", 'input_error')  # Using 'input_error' category
             return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, lecturer_password_text=lecturer_password_text)
         
         # Then check the login credentials
         valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
-            flash(result, 'warning')  # Show it using flash
+            flash(result, 'input_error')  # Show it using flash
         else:
             session['lecturer_id'] = result
             return redirect(url_for('lecturer_homepage'))

@@ -45,7 +45,7 @@
             <div>   
                 {% for category, message in get_flashed_messages(with_categories=true) %}
                     {% if category in ['warning'] %}
-                    <div class="alert alert-{{ category }}">
+                    <div class="alert input_error">
                         <strong>{{ category.capitalize() }}:</strong> {{ message }}
                     </div>
                     {% endif %}
