@@ -12,7 +12,7 @@
     <form method="POST">
         <!-- Top alert section: Show all except input_error and login_error -->
         {% for category, message in get_flashed_messages(with_categories=true) %}
-            {% if category not in ['input_error', 'login_error'] %}
+            {% if category not in ['input_error'] %}
             <div class="alert alert-{{ category }}">
                 <strong>{{ category.capitalize() }}:</strong> {{ message }}
             </div>
@@ -44,7 +44,7 @@
             <!-- Bottom alert section: Show only input_error and login_error messages -->
             <div>   
                 {% for category, message in get_flashed_messages(with_categories=true) %}
-                    {% if category in ['input_error', 'login_error'] %}
+                    {% if category in ['input_error'] %}
                     <div class="alert alert-{{ category }}">
                         <strong>{{ category.capitalize() }}:</strong> {{ message }}
                     </div>

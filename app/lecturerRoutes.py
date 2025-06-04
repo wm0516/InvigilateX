@@ -32,7 +32,7 @@ def lecturer_login():
         # Then check the login credentials
         valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
-            flash(result, 'login_error')  # Show it using flash
+            flash(result, 'input_error')  # Show it using flash
         else:
             session['lecturer_id'] = result
             return redirect(url_for('lecturer_homepage'))
