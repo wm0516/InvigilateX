@@ -4,68 +4,69 @@
 
 <div class="menu-section">
     <div class="main-frame">
-        
-        <br>
-        <h1>Profile</h1>
-        <br>
-        <div style="display: flex; flex-direction: row; justify-content: space-between;">
-            <div class="form-left">
-                <label class="text-position">Full Name as per IC</label>
-                <input type="text" name="username" value="{{ lecturerName_text }}" readonly><br>
-                
-                <label class="text-position">Staff ID</label>
-                <input type="text" name="userid" value="{{ lecturerId_text }}" readonly><br>
-
-                <label class="text-position">Email Address</label>
-                <input type="text" name="email" value="{{ lecturerEmail_text }}" readonly><br>
-
-                <label class="text-position">Department</label>
-                <select name="department" value="{{ lecturerDepartment_text }}">
-                    <option value="" disabled selected>Select Department</option>
-                    <option value="CADP - CENTRE OF AUSTRALIAN DEGREE PROGRAM">(CADP) CENTRE OF AUSTRALIAN DEGREE PROGRAM</option>
-                    <option value="CAE - CENTRE OF AMERICAN STUDENT">(CAE) CENTRE OF AMERICAN STUDENT</option>
-                    <option value="CEPS - CENTRE OF EXCELLENT FOR PRE-UNIVERSITY STUDIES">(CEPS) CENTRE OF EXCELLENT FOR PRE-UNIVERSITY STUDIES</option>
-                    <option value="LCMPU - LANGUAGE CENTRE">(LCMPU) LANGUAGE CENTRE</option>
-                    <option value="SOBIZ - SCHOOL OF BUSINESS">(SOBIZ) SCHOOL OF BUSINESS</option>
-                    <option value="SOC - SCHOOL OF COMPUTING">(SOC) SCHOOL OF COMPUTING</option>
-                    <option value="SOE - SCHOOL OF ENGINEERING">(SOE) SCHOOL OF ENGINEERING</option>
-                    <option value="SOHOS - SCHOOL OF HOSPITALITY AND CULINARY ARTS">(SOHOS) SCHOOL OF HOSPITALITY AND CULINARY ARTS</option>
-                </select>
-            </div>
+        <form style= "align-self: center; width: 50%">
             <br>
+            <h1>Profile</h1>
+            <br>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                <div class="form-left">
+                    <label class="text-position">Full Name as per IC</label>
+                    <input type="text" name="username" value="{{ lecturerName_text }}" readonly><br>
+                    
+                    <label class="text-position">Staff ID</label>
+                    <input type="text" name="userid" value="{{ lecturerId_text }}" readonly><br>
 
-            <div class="form-right">
-                <label class="text-position">Contact Number</label>
-                <input type="tel" name="contact" value="{{ lecturerContact_text }}"><br>  
+                    <label class="text-position">Email Address</label>
+                    <input type="text" name="email" value="{{ lecturerEmail_text }}" readonly><br>
 
-                <div class="password-container">
-                    <label class="text-position">Password</label>
-                    <input type="password" name="password1" value="{{ lecturerPassword1_text }}">
-                    <button type="button" class="toggle-password-btn">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div><br>
+                    <label class="text-position">Department</label>
+                    <select name="department" value="{{ lecturerDepartment_text }}">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="CADP - CENTRE OF AUSTRALIAN DEGREE PROGRAM">(CADP) CENTRE OF AUSTRALIAN DEGREE PROGRAM</option>
+                        <option value="CAE - CENTRE OF AMERICAN STUDENT">(CAE) CENTRE OF AMERICAN STUDENT</option>
+                        <option value="CEPS - CENTRE OF EXCELLENT FOR PRE-UNIVERSITY STUDIES">(CEPS) CENTRE OF EXCELLENT FOR PRE-UNIVERSITY STUDIES</option>
+                        <option value="LCMPU - LANGUAGE CENTRE">(LCMPU) LANGUAGE CENTRE</option>
+                        <option value="SOBIZ - SCHOOL OF BUSINESS">(SOBIZ) SCHOOL OF BUSINESS</option>
+                        <option value="SOC - SCHOOL OF COMPUTING">(SOC) SCHOOL OF COMPUTING</option>
+                        <option value="SOE - SCHOOL OF ENGINEERING">(SOE) SCHOOL OF ENGINEERING</option>
+                        <option value="SOHOS - SCHOOL OF HOSPITALITY AND CULINARY ARTS">(SOHOS) SCHOOL OF HOSPITALITY AND CULINARY ARTS</option>
+                    </select>
+                </div>
+                <br>
 
-                <div class="password-container">
-                    <label class="text-position">Confirm Password</label>
-                    <input type="password" name="password2" value="{{ lecturerPassword2_text }}">
-                    <button type="button" class="toggle-password-btn">
-                        <i class="fas fa-eye"></i>
-                    </button>
+                <div class="form-right">
+                    <label class="text-position">Contact Number</label>
+                    <input type="tel" name="contact" value="{{ lecturerContact_text }}"><br>  
+
+                    <div class="password-container">
+                        <label class="text-position">Password</label>
+                        <input type="password" name="password1" value="{{ lecturerPassword1_text }}">
+                        <button type="button" class="toggle-password-btn">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div><br>
+
+                    <div class="password-container">
+                        <label class="text-position">Confirm Password</label>
+                        <input type="password" name="password2" value="{{ lecturerPassword2_text }}">
+                        <button type="button" class="toggle-password-btn">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {% if error_message and request.method == 'POST' %}
-        <div class="alert">
-            <strong>Error:</strong> {{ error_message }}
-        </div>
-        {% endif %}
+            {% if error_message and request.method == 'POST' %}
+            <div class="alert">
+                <strong>Error:</strong> {{ error_message }}
+            </div>
+            {% endif %}
 
-        <br>
-        <div class="button-wrapper">
-                <button type="submit">Submit</button>
-        </div>
+            <br>
+            <div class="button-wrapper">
+                    <button type="submit">Submit</button>
+            </div>
+        </form>
     </div>
 </div>
 
