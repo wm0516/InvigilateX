@@ -18,7 +18,6 @@ bcrypt = Bcrypt()
 def index():
     return redirect(url_for('admin_login'))
 
-
 # login page (done with checking email address and hash password)
 @app.route('/adminLogin', methods=['GET', 'POST'])
 def admin_login():
@@ -30,11 +29,10 @@ def admin_login():
     if request.method == 'POST':
         admin_login_text = request.form.get('textbox', '').strip()
         admin_password_text = request.form.get('password', '').strip()
-
         valid, result = check_login('admin', admin_login_text, admin_password_text)
         if not valid:
-            if error_message:
-                flash(error_message, 'error')
+            error_message = result  # Get the error message from check_login
+            flash(error_message, 'error')  # Show it using flash
         else:
             session['admin_id'] = result
             return redirect(url_for('admin_homepage'))
@@ -551,13 +549,12 @@ def admin_profile():
             error_message = "Wrong Contact Number format"
         elif adminContact_text and not is_valid:
             error_message = message
-            flash(str(error_message), 'error')
         elif adminPassword1_text or adminPassword2_text:
             if adminPassword1_text != adminPassword2_text:
                 error_message = "Passwords do not match."
 
         if error_message:
-            flash(error_message, 'error')
+            flash(str(error_message), 'error')
         elif not adminContact_text and not adminPassword1_text:
             flash("Nothing to update", 'info')
         else:

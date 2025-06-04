@@ -26,8 +26,8 @@ def lecturer_login():
         lecturer_password_text = request.form.get('password', '').strip()
         valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
-            if error_message:
-                flash(error_message, 'error')
+            error_message = result  # Get the error message from check_login
+            flash(error_message, 'error')  # Show it using flash
         else:
             session['lecturer_id'] = result
             return redirect(url_for('lecturer_homepage'))
@@ -221,13 +221,12 @@ def lecturer_profile():
             error_message = "Wrong Contact Number format"
         elif lecturerContact_text and not is_valid:
             error_message = message
-            flash(str(error_message), 'error')
         elif lecturerPassword1_text or lecturerPassword2_text:
             if lecturerPassword1_text != lecturerPassword2_text:
                 error_message = "Passwords do not match."
 
         if error_message:
-            flash(error_message, 'error')
+            flash(str(error_message), 'error')
         elif not lecturerDepartment_text and not lecturerContact_text and not lecturerPassword1_text:
             flash("Nothing to update", 'info')
         else:
