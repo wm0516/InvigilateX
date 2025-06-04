@@ -548,6 +548,8 @@ def admin_profile():
         # Error checks
         if adminContact_text and not contact_format(adminContact_text):
             error_message = "Wrong Contact Number format"
+        elif adminContact_text and not check_contact(adminContact_text):
+            error_message = "Contact number already registered."
         elif adminPassword1_text or adminPassword2_text:
             if adminPassword1_text != adminPassword2_text:
                 error_message = "Passwords do not match."
