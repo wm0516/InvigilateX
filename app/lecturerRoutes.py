@@ -184,6 +184,7 @@ def lecturer_invigilationTimetable():
 def lecturer_profile():
     lecturerId = session.get('lecturer_id')
     lecturer = User.query.filter_by(userId=lecturerId).first()
+    print(f"lecturer id is: {lecturerId}")
     
     # Pre-fill existing data
     lecturerDepartment_text = lecturer.userDepartment if lecturer else ''
@@ -198,23 +199,31 @@ def lecturer_profile():
         lecturerPassword1_text = request.form.get('password1', '').strip()
         lecturerPassword2_text = request.form.get('password2', '').strip()
 
-        if not contact_format(lecturerContact_text):
+        # Error checks
+        if lecturerContact_text and not contact_format(lecturerContact_text):
             error_message = "Wrong Contact Number format"
-        elif lecturerPassword1_text != lecturerPassword2_text:
-            error_message = "Passwords do not match."
+        elif lecturerPassword1_text or lecturerPassword2_text:
+            if lecturerPassword1_text != lecturerPassword2_text:
+                error_message = "Passwords do not match."
 
         if error_message:
             flash(error_message, 'error')
+        elif not lecturerDepartment_text and not lecturerContact_text and not lecturerPassword1_text:
+            flash("Nothing to update", 'info')
         else:
-            hashed_pw = bcrypt.generate_password_hash(lecturerPassword1_text).decode('utf-8')
             if lecturer:
-                lecturer.userDepartment = lecturerDepartment_text
-                lecturer.userContact = lecturerContact_text
-                lecturer.userPassword = hashed_pw
-                db.session.commit()
+                if lecturerDepartment_text:
+                    lecturer.userDepartment = lecturerDepartment_text
+                if lecturerContact_text:
+                    lecturer.userContact = lecturerContact_text
+                if lecturerPassword1_text:
+                    hashed_pw = bcrypt.generate_password_hash(lecturerPassword1_text).decode('utf-8')
+                    lecturer.userPassword = hashed_pw
 
+                db.session.commit()
                 flash("Successfully updated", 'success')
                 return redirect(url_for('lecturer_profile'))
+
 
     return render_template(
         'lecturerPart/lecturerProfile.html',
