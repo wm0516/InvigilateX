@@ -27,11 +27,17 @@ def lecturer_login():
         valid, result = check_login('lecturer', lecturer_login_text, lecturer_password_text)
         if not valid:
             error_message = result
+        
+        if error_message:
+            flash(error_message, 'error')
         else:
-            session['lecturer_id'] = result  # Store the user ID in session
+            session['lecturer_id'] = result
+            flash("Login successful!", 'success')
             return redirect(url_for('lecturer_homepage'))
+        
+    return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, 
+                           lecturer_password_text=lecturer_password_text, error_message=error_message)
 
-    return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, lecturer_password_text=lecturer_password_text, error_message=error_message)
 
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/lecturerRegister', methods=['GET', 'POST'])
@@ -68,6 +74,9 @@ def lecturer_register():
             error_message = "Passwords do not match."
         elif not password_format(lecturerPassword1_text):
             error_message = "Wrong password format."
+
+        if error_message:
+            flash(error_message, 'error')
         else:
             hashed_pw = bcrypt.generate_password_hash(lecturerPassword1_text).decode('utf-8')
             new_lecturer = User(
@@ -89,6 +98,7 @@ def lecturer_register():
                            lecturerDepartment_text=lecturerDepartment_text, lecturerEmail_text=lecturerEmail_text, lecturerContact_text=lecturerContact_text, 
                            lecturerPassword1_text=lecturerPassword1_text, lecturerPassword2_text=lecturerPassword2_text, error_message=error_message)
 
+
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/lecturerForgotPassword', methods=['GET', 'POST'])
 def lecturer_forgotPassword():
@@ -99,16 +109,22 @@ def lecturer_forgotPassword():
         lecturer_forgot_email_text = request.form.get('email', '').strip()
         if not lecturer_forgot_email_text:
             error_message = "Email address is required."
+
+        if error_message:
+            flash(error_message, 'error')
         else:
             success, message = check_forgotPasswordEmail('lecturer', lecturer_forgot_email_text)
             if not success:
                 error_message = message
+                flash(str(error_message), 'error')
             else:
+                flash("Reset link sent to your email address.", 'success')
                 return redirect(url_for('lecturer_login'))
 
-    return render_template('lecturerPart/lecturerForgotPassword.html', 
-                         lecturer_forgot_email_text=lecturer_forgot_email_text, 
-                         error_message=error_message)
+    return render_template('lecturerPart/lecturerForgotPassword.html', lecturer_forgot_email_text=lecturer_forgot_email_text, error_message=error_message)
+
+
+
 
 # reset password page (done after reset password based on that user password)
 @app.route('/lecturerResetPassword/<token>', methods=['GET', 'POST'])
@@ -122,10 +138,12 @@ def lecturer_resetPassword(token):
         lecturer_password_text_2 = request.form.get('password2', '').strip()
         
         user, error_message = check_resetPassword('lecturer', token, lecturer_password_text_1, lecturer_password_text_2)
-        if user and not error_message:
+        if error_message:
+            flash(error_message, 'error')
+        elif user:
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('lecturer_login'))
-    
+
     return render_template('lecturerPart/lecturerResetPassword.html', lecturer_password_text_1=lecturer_password_text_1, 
                            lecturer_password_text_2=lecturer_password_text_2, error_message=error_message)
 
