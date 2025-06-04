@@ -1,10 +1,10 @@
 <!-- upload.html -->
 {% extends "adminPart/adminBase.html" %}
-{% block title %}Admin UploadTimetable{% endblock %}
+{% block title %}Admin UploadLecturerTimetable{% endblock %}
 {% block content %}
 <div class="menu-section">
     <div class="main-frame">
-        <h2>Upload Masterfile</h2>
+        <h2>Upload Lecturer Timetable</h2>
         <div class="form-frame">
             <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
                 <div style="text-align: center; margin-bottom: 2%;">
