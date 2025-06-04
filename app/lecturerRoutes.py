@@ -231,8 +231,8 @@ def lecturer_profile():
         lecturer_name=lecturer.userName if lecturer else '',
         lecturer_id=lecturer.userId if lecturer else '',
         lecturer_email=lecturer.userEmail if lecturer else '',
-        lecturerDepartment_text=lecturer.userDepartment if request.method == 'GET' and lecturer else lecturerDepartment_text,
-        lecturerContact_text=lecturer.userContact if request.method == 'GET' and lecturer else lecturerContact_text,
+        lecturerDepartment_text=lecturerDepartment_text,
+        lecturerContact_text=lecturerContact_text,
         lecturerPassword1_text=lecturerPassword1_text,
         lecturerPassword2_text=lecturerPassword2_text,
         error_message=error_message
