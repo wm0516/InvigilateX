@@ -4,6 +4,16 @@
 
 <div class="menu-section">
     <div class="main-frame">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ category.capitalize() }}:</strong> {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
         <form style= "align-self: center; width: 50%">
             <h1>Profile</h1>
             <br>
@@ -54,13 +64,6 @@
                     </div>
                 </div>
             </div>
-
-            {% if error_message and request.method == 'POST' %}
-            <div class="alert">
-                <strong>Error:</strong> {{ error_message }}
-            </div>
-            {% endif %}
-
             <br>
             <div class="button-wrapper">
                     <button type="submit">Submit</button>
