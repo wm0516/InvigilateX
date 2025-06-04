@@ -4,21 +4,20 @@
 
 <div class="menu-section">
     <div class="main-frame">
-        <form method="POST">
-            <div class="heading"></div>
+        <form>
             <br>
-            <h1>Register as New Lecturer</h1>
+            <h1>Profile</h1>
             <br>
             <div style="display: flex; flex-direction: row; justify-content: space-between;">
                 <div class="form-left">
                     <label class="text-position">Full Name as per IC</label>
-                    <input type="text" name="username" value="{{ lecturerName_text }}"><br>
+                    <input type="text" name="username" value="{{ lecturerName_text }}" readonly><br>
                     
                     <label class="text-position">Staff ID</label>
-                    <input type="text" name="userid" value="{{ lecturerId_text }}"><br>
+                    <input type="text" name="userid" value="{{ lecturerId_text }}" readonly><br>
 
                     <label class="text-position">Email Address</label>
-                    <input type="text" name="email" value="{{ lecturerEmail_text }}"><br>
+                    <input type="text" name="email" value="{{ lecturerEmail_text }}" readonly><br>
 
                     <label class="text-position">Department</label>
                     <select name="department" value="{{ lecturerDepartment_text }}">
@@ -64,8 +63,6 @@
 
             <div class="button-frame">
                 <button type="submit" name="register">Submit</button>
-                <br><br>
-                <a href="{{ url_for('lecturer_login') }}">Back to Login</a>
             </div>
         </form>
     </div>
