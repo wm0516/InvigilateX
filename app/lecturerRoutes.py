@@ -213,12 +213,15 @@ def lecturer_profile():
         lecturerContact_text = request.form.get('contact', '').strip()
         lecturerPassword1_text = request.form.get('password1', '').strip()
         lecturerPassword2_text = request.form.get('password2', '').strip()
+        is_valid, message = check_contact(lecturerContact_text)
+
 
         # Error checks
         if lecturerContact_text and not contact_format(lecturerContact_text):
             error_message = "Wrong Contact Number format"
-        elif lecturerContact_text and not check_contact(lecturerContact_text):
-            error_message = "Contact number already registered."
+        elif lecturerContact_text and not is_valid:
+            error_message = message
+            flash(str(error_message), 'error')
         elif lecturerPassword1_text or lecturerPassword2_text:
             if lecturerPassword1_text != lecturerPassword2_text:
                 error_message = "Passwords do not match."
@@ -240,7 +243,6 @@ def lecturer_profile():
                 db.session.commit()
                 flash("Successfully updated", 'success')
                 return redirect(url_for('lecturer_profile'))
-
 
     return render_template(
         'lecturerPart/lecturerProfile.html',

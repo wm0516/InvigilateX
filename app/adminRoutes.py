@@ -544,12 +544,14 @@ def admin_profile():
         adminContact_text = request.form.get('contact', '').strip()
         adminPassword1_text = request.form.get('password1', '').strip()
         adminPassword2_text = request.form.get('password2', '').strip()
+        is_valid, message = check_contact(adminContact_text)
 
         # Error checks
         if adminContact_text and not contact_format(adminContact_text):
             error_message = "Wrong Contact Number format"
-        elif adminContact_text and not check_contact(adminContact_text):
-            error_message = "Contact number already registered."
+        elif adminContact_text and not is_valid:
+            error_message = message
+            flash(str(error_message), 'error')
         elif adminPassword1_text or adminPassword2_text:
             if adminPassword1_text != adminPassword2_text:
                 error_message = "Passwords do not match."
