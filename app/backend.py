@@ -20,6 +20,15 @@ def contact_format(contact):
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
+# Check unique contact 
+def check_contact(contact):
+    existing = User.query.filter(User.userContact == contact).first()
+    if existing:
+        return False, "Contact number already registered."
+
+    return True, ""
+
+
 # Staff Id format
 # Pending
 

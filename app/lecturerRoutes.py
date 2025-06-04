@@ -28,10 +28,8 @@ def lecturer_login():
         if not valid:
             if error_message:
                 flash(error_message, 'error')
-        
         else:
             session['lecturer_id'] = result
-            flash("Login successful!", 'success')
             return redirect(url_for('lecturer_homepage'))
         
     return render_template('lecturerPart/lecturerLogin.html', lecturer_login_text=lecturer_login_text, 

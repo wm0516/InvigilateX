@@ -37,7 +37,6 @@ def admin_login():
                 flash(error_message, 'error')
         else:
             session['admin_id'] = result
-            flash("Login successful!", "success")
             return redirect(url_for('admin_homepage'))
 
     return render_template('adminPart/adminLogin.html', admin_login_text=admin_login_text,
