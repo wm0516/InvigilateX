@@ -25,7 +25,6 @@ def check_contact(contact):
     existing = User.query.filter(User.userContact == contact).first()
     if existing:
         return False, "Contact number already registered."
-
     return True, ""
 
 
