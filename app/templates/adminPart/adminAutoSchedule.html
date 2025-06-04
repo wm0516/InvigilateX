@@ -3,14 +3,15 @@
 {% block title %}Admin Automation{% endblock %}
 {% block content %}
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
 {% endwith %}
 
 
