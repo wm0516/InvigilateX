@@ -153,7 +153,7 @@ class LecturerTimetable(db.Model):
     lecturerThurs = db.Column(db.String(255), nullable=False)
     lecturerFri = db.Column(db.String(255), nullable=False)
     '''
-    CREATE TABLE LecturerTimetables (
+    CREATE TABLE LecturerTimetable (
         lecturerId VARCHAR(20) NOT NULL,
         lecturerMon VARCHAR(255) NOT NULL,
         lecturerTues VARCHAR(255) NOT NULL,

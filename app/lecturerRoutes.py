@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, current_app
+from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from app import app
 from .backend import *
 from .database import *
@@ -187,8 +187,8 @@ def lecturer_profile():
     print(f"lecturer id is: {lecturerId}")
     
     # Pre-fill existing data
-    lecturerDepartment_text = lecturer.userDepartment if lecturer else ''
-    lecturerContact_text = lecturer.userContact if lecturer else ''
+    lecturerDepartment_text = ''
+    lecturerContact_text = ''
     lecturerPassword1_text = ''
     lecturerPassword2_text = ''
     error_message = None
