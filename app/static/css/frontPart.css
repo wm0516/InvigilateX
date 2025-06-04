@@ -87,7 +87,7 @@ button {
     cursor: pointer;
     margin-top: 25px;
     transition: background-color 0.3s ease;
-    width: 50%;
+    width: 25vh;
 }
 
 
