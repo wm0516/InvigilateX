@@ -1,5 +1,10 @@
 {% extends "lecturerPart/lecturerBase.html" %}
 {% block title %}Lecturer Profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/frontPart.css') }}">
+{% endblock %}
+
 {% block content %}
 
 <div class="menu-section">
