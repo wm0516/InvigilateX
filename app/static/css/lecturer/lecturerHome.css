@@ -22,6 +22,11 @@ input, select {
     box-sizing: border-box;
 }
 
+.form-left, .form-right {
+    display: flex;
+    flex-direction: column;
+}
+
 /* Heading frame layout */
 .header-container {
     display: flex;
