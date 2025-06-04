@@ -41,7 +41,8 @@
         </div>
         
         <!-- Sub-tab navigation (only shown when on upload section) -->
-        {% if active_tab == 'admin_uploadtab' or active_tab == 'admin_uploadLecturerTimetabletab' or active_tab == 'admin_uploadExamDetailstab' %}
+        {% if active_tab == 'admin_uploadtab' or active_tab == 'admin_uploadLecturerTimetabletab' or 
+            active_tab == 'admin_uploadExamDetailstab' or active_tab == 'admin_uploadExamDetailstab' %}
         <br>
         <div class="tab-nav">
             <a href="{{ url_for('admin_upload')}}" 
@@ -54,7 +55,7 @@
 
             <a href="{{ url_for('admin_uploadLecturerList')}}" 
                class="tab-link {% if active_tab == 'admin_uploadLecturerListtab' %}active{% endif %}" 
-               data-tab="admin_uploadLecturerListtab">Lecturers Timetable</a>
+               data-tab="admin_uploadLecturerListtab">Lecturers List</a>
 
             <a href="{{ url_for('admin_uploadExamDetails')}}" 
                class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}" 
