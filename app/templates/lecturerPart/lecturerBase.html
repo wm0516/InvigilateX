@@ -27,13 +27,13 @@
                class="tab-link {% if active_tab == 'lecturer_hometab' %}active{% endif %}" 
                data-tab="home">Home</a>
 
-            <a href="{{ url_for('lecturer_timetables')}}" 
-               class="tab-link {% if active_tab == 'lecturer_timetablestab' %}active{% endif %}" 
-               data-tab="upload">Timetables</a>
+            <a href="{{ url_for('lecturer_timetabls')}}" 
+               class="tab-link {% if active_tab == 'lecturer_timetabletab' %}active{% endif %}" 
+               data-tab="upload">Timetable</a>
 
-            <a href="{{ url_for('lecturer_status')}}" 
-               class="tab-link {% if active_tab == 'lecturer_statustab' %}active{% endif %}" 
-               data-tab="autoGenerate">Status</a>
+            <a href="{{ url_for('lecturer_invigilationTimetable')}}" 
+               class="tab-link {% if active_tab == 'lecturer_invigilationTimetabletab' %}active{% endif %}" 
+               data-tab="autoGenerate">Invigilation Timetable</a>
 
             <a href="{{ url_for('lecturer_profile')}}" 
                class="tab-link {% if active_tab == 'lecturer_profiletab' %}active{% endif %}" 

@@ -172,12 +172,13 @@ def lecturer_homepage():
     return render_template('lecturerPart/lecturerHomepage.html', active_tab='lecturer_hometab')
 
 @app.route('/lecturerHome/timetables', methods=['GET', 'POST'])
-def lecturer_timetables():
-    return render_template('lecturerPart/lecturerTimetable.html', active_tab='lecturer_timetablestab')
+def lecturer_timetable():
+    timetable = Invigilation.query.all()
+    return render_template('lecturerPart/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable=timetable)
 
-@app.route('/lecturerHome/status', methods=['GET', 'POST'])
-def lecturer_status():
-    return render_template('lecturerPart/lecturerStatus.html', active_tab='lecturer_statustab')
+@app.route('/lecturerHome/invigilationTimetable', methods=['GET', 'POST'])
+def lecturer_invigilationTimetable():
+    return render_template('lecturerPart/lecturerInvigilationTimetable.html', active_tab='lecturer_invigilationTimetabletab')
 
 @app.route('/lecturerHome/profile', methods=['GET', 'POST'])
 def lecturer_profile():

@@ -144,8 +144,8 @@ class ExamDetails(db.Model):
     );
     '''
 
-class LecturerTimetables(db.Model):
-    __tablename__ = 'LecturerTimetables'
+class LecturerTimetable(db.Model):
+    __tablename__ = 'LecturerTimetable'
     lecturerId = db.Column(db.String(20), primary_key=True)
     lecturerMon = db.Column(db.String(255), nullable=False)
     lecturerTues = db.Column(db.String(255), nullable=False)
