@@ -21,9 +21,9 @@ class User(db.Model):
     userId = db.Column(db.String(20), primary_key=True)
     # Refer to Staff Name
     userName = db.Column(db.String(255))
-    # Lecturer and Dean have this selection, Admin will automatic set as Admin
+    # Lecturer and Dean have this selection
     userDepartment = db.Column(db.String(20))
-    # Lecturer = 1, Dean = 2, Admin = 3 (Admin with higher level to access of)
+    # Lecturer = 1, Dean = 2 (Dean with higher level to access of)
     userLevel = db.Column(db.Integer)
     # Refer to Staff INTI email
     userEmail = db.Column(db.String(50))
@@ -52,8 +52,7 @@ class Admin(db.Model):
     adminId = db.Column(db.String(20), primary_key=True)
     adminName = db.Column(db.String(255))
     # Department and Level admin set by default as admin
-    adminDepartment = db.Column(db.String(20)) # Level mean access (admin with higher access, level 3 (able to view all dean and lecturer))
-    adminLevel = db.Column(db.String(10))
+    adminDepartment = db.Column(db.String(20))
     adminEmail = db.Column(db.String(50))
     adminContact = db.Column(db.String(15))
     adminPassword = db.Column(db.String(255))
@@ -62,7 +61,6 @@ class Admin(db.Model):
         adminId VARCHAR(20) PRIMARY KEY,
         adminName VARCHAR(255),
         adminDepartment VARCHAR(20),
-        adminLevel VARCHAR(10),
         adminEmail VARCHAR(50),
         adminContact VARCHAR(15),
         adminPassword VARCHAR(255)

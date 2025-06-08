@@ -35,9 +35,15 @@ def check_contact(contact):
 def check_login(role, loginEmail, loginPassword):
     if not loginEmail or not loginPassword:
         return False, "Both fields are required."
+    
+    if role == 'admin':
+        admin = Admin.query.filter_by(adminEmail=loginEmail).first()
+        if admin and bcrypt.check_password_hash(admin.adminPassword, loginPassword):
+            return True, admin.adminId
+        else:
+            return False, "Invalid email or password."
 
     user = User.query.filter_by(userEmail=loginEmail).first()
-
     if not user or not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid email or password."
 
@@ -60,42 +66,67 @@ def check_login(role, loginEmail, loginPassword):
 
 # Check registerID, registerEmail, registerContact can't be same as inside database based on role
 def check_register(registerID, registerEmail, registerContact):
+    # Check in User table
     existing_user = User.query.filter(
         (User.userId == registerID) |
         (User.userEmail == registerEmail) |
         (User.userContact == registerContact)
     ).first()
+    
+    # Check in Admin table
+    existing_admin = Admin.query.filter(
+        (Admin.adminId == registerID) |
+        (Admin.adminEmail == registerEmail) |
+        (Admin.adminContact == registerContact)
+    ).first()
 
-    if existing_user:
-        if existing_user.userId == registerID:
-            return False, "User ID already exists."
-        elif existing_user.userEmail == registerEmail:
+    if existing_user or existing_admin:
+        if (existing_user and existing_user.userId == registerID) or \
+           (existing_admin and existing_admin.adminId == registerID):
+            return False, "ID already exists."
+        
+        if (existing_user and existing_user.userEmail == registerEmail) or \
+           (existing_admin and existing_admin.adminEmail == registerEmail):
             return False, "Email address already registered."
-        elif existing_user.userContact == registerContact:
+        
+        if (existing_user and existing_user.userContact == registerContact) or \
+           (existing_admin and existing_admin.adminContact == registerContact):
             return False, "Contact number already registered."
 
     return True, ""
 
 
+
 # Check the Email validate or not and send reset password link based on that Email
 def check_forgotPasswordEmail(role, forgotEmail):
-    role_levels = {'admin': 3, 'dean': 2, 'lecturer': 1}
+    role_levels = {
+        'admin': 3, 
+        'dean': 2, 
+        'lecturer': 1
+    }
 
     if role not in role_levels:
         return False, "Invalid role."
 
-    user = User.query.filter_by(userEmail=forgotEmail).first()
-    if not user:
-        return False, "Invalid Email Address."
-
-    if user.userLevel != role_levels[role]:
-        return False, f"No access to the {role} reset page."
+    if role == 'admin':
+        admin = Admin.query.filter_by(adminEmail=forgotEmail).first()
+        if not admin:
+            return False, "Invalid Email Address."
+        if admin.adminLevel != role_levels[role]:
+            return False, f"No access to the {role} reset page."
+    else:
+        user = User.query.filter_by(userEmail=forgotEmail).first()
+        if not user:
+            return False, "Invalid Email Address."
+        if user.userLevel != role_levels[role]:
+            return False, f"No access to the {role} reset page."
 
     try:
-        token = serializer.dumps(forgotEmail, salt='password-reset-salt')
+        email_to_reset = admin.adminEmail if role == 'admin' else user.userEmail
+        token = serializer.dumps(email_to_reset, salt='password-reset-salt')
         reset_link = url_for(f"{role}_resetPassword", token=token, _external=True)
 
-        msg = Message('InvigilateX - Password Reset Request', recipients=[forgotEmail])
+        msg = Message('InvigilateX - Password Reset Request', recipients=[email_to_reset])
         msg.body = f'''Hi,
 
 We received a request to reset your password for your InvigilateX account.
@@ -109,16 +140,21 @@ Thank you,
 The InvigilateX Team'''
 
         mail.send(msg)
-        flash(f"Reset email sent to {forgotEmail}!", "success")
+        flash(f"Reset email sent to {email_to_reset}!", "success")
         return True, None
     except Exception as e:
         return False, f"Failed to send email. Error: {str(e)}"
 
 
+
+
+
+
+
 # Check the both password and update the latest password based on the token (that user)
 def check_resetPassword(role, token, resetPassword1, resetPassword2):
     try:
-        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # 1 hour expiry
     except Exception:
         return None, "The reset link is invalid or has expired."
 
@@ -133,17 +169,36 @@ def check_resetPassword(role, token, resetPassword1, resetPassword2):
     if role not in role_levels:
         return None, "Invalid role."
 
-    user = User.query.filter_by(userEmail=email).first()
-    if not user:
-        return None, "User not found."
+    if role == 'admin':
+        admin = Admin.query.filter_by(adminEmail=email).first()
+        if not admin:
+            return None, "Admin not found."
+        if admin.adminLevel != role_levels[role]:
+            return None, f"No access to reset password as {role}."
 
-    if user.userLevel != role_levels[role]:
-        return None, f"No access to reset password as {role}."
+        # Update admin password
+        admin.adminPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
+        db.session.commit()
+        return admin, None
 
-    # Update password
-    user.userPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
-    db.session.commit()
-    return user, None
+    else:
+        user = User.query.filter_by(userEmail=email).first()
+        if not user:
+            return None, "User not found."
+        if user.userLevel != role_levels[role]:
+            return None, f"No access to reset password as {role}."
+
+        # Update user password
+        user.userPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
+        db.session.commit()
+        return user, None
+
+
+
+
+
+
+
 
 
 
