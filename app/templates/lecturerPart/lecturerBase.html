@@ -11,10 +11,13 @@
         <div class="heading"></div>
         <div class="user-info">
             <div class="user-details">
-                {{lecturer_name}} <br>
-                {{lecturer_id}} <br>
-                {{lecturer_department}} <br>
-                {{lecturer_level}}
+                {{ lecturer_name }} <br>
+                {{ lecturer_id }} <br>
+                {% if lecturer_level == 2 %}
+                    Dean - {{ lecturer_department }}
+                {% else %}
+                    {{ lecturer_department }}
+                {% endif %}
             </div>
             <a href="{{ url_for('lecturer_logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
         </div>

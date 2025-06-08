@@ -22,10 +22,13 @@ def password_format(password):
 
 # Check unique contact 
 def check_contact(contact):
-    existing = User.query.filter(User.userContact == contact).first()
-    if existing:
+    existing_user = User.query.filter(User.userContact == contact).first()
+    existing_admin = Admin.query.filter(Admin.adminContact == contact).first()
+
+    if existing_user or existing_admin:
         return False, "Contact number already registered."
     return True, ""
+
 
 
 # Staff Id format
