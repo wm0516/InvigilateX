@@ -48,7 +48,7 @@ def admin_login():
 @app.route('/adminRegister', methods=['GET', 'POST'])
 def admin_register():
     adminId_text = ''
-    adminnNme_text = ''
+    adminName_text = ''
     adminEmail_text = ''
     adminContact_text = ' '
     adminPassword1_text = ''
@@ -57,7 +57,7 @@ def admin_register():
 
     if request.method == 'POST':
         adminId_text = request.form.get('userid', '').strip()
-        adminnNme_text = request.form.get('username', '').strip()
+        adminName_text = request.form.get('username', '').strip()
         adminEmail_text = request.form.get('email', '').strip()
         adminContact_text = request.form.get('contact', '').strip()
         adminPassword1_text = request.form.get('password1', '').strip()
@@ -68,7 +68,7 @@ def admin_register():
         
         if not is_valid:
             pass  # error_message is already set
-        elif not all([adminId_text, adminnNme_text, adminEmail_text, adminContact_text]):
+        elif not all([adminId_text, adminName_text, adminEmail_text, adminContact_text]):
             error_message = "All fields are required."
         elif not email_format(adminEmail_text):
             error_message = "Wrong Email Address format"
@@ -85,13 +85,11 @@ def admin_register():
             hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
             new_admin = Admin(
                 adminId = adminId_text,
-                adminName = adminnNme_text.upper(),
+                adminName = adminName_text.upper(),
                 adminDepartment = 'Admin',
-                adminLevel = '3',
                 adminEmail = adminEmail_text,
                 adminContact = adminContact_text,
-                adminPassword = hashed_pw,
-                adminStatus = True
+                adminPassword = hashed_pw
             )
             
             db.session.add(new_admin)
@@ -99,7 +97,7 @@ def admin_register():
             flash(f"Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('admin_login'))
         
-    return render_template('adminPart/adminRegister.html', adminId_text=adminId_text, adminName_text=adminnNme_text, 
+    return render_template('adminPart/adminRegister.html', adminId_text=adminId_text, adminName_text=adminName_text, 
                            adminEmail_text=adminEmail_text, adminContact_text=adminContact_text, adminPassword1_text=adminPassword1_text, 
                            adminPassword2_text=adminPassword2_text, error_message=error_message)
 
@@ -172,19 +170,15 @@ def inject_admin_data():
                 'admin_id': adminId,
                 'admin_name': admin.adminName,
                 'admin_department': admin.adminDepartment,
-                'admin_level': admin.adminLevel,
                 'admin_email': admin.adminEmail,
-                'admin_contact' : admin.adminContact,
-                'admin_status': admin.adminStatus
+                'admin_contact' : admin.adminContact
             }
     return {
         'admin_id': None,
         'admin_name': '',
         'admin_department': '',
-        'admin_level': '',
         'admin_email': '',
-        'admin_contact': '',
-        'admin_status': ''
+        'admin_contact': ''
     }
 
 
