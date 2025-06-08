@@ -36,7 +36,7 @@ def admin_login():
         # Then check the login credentials
         valid, result = check_login('admin', admin_login_text, admin_password_text)
         if not valid:
-            flash(result, 'login_error')  # Show it using flash
+            flash(result, 'input_error')  # Show it using flash
         else:
             session['admin_id'] = result
             return redirect(url_for('admin_homepage'))
@@ -83,15 +83,15 @@ def admin_register():
             flash(error_message, 'error')
         else:
             hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
-            new_admin = User(
-                userId = adminId_text,
-                userName = adminnNme_text.upper(),
-                userDepartment = 'Admin',
-                userLevel = '3',
-                userEmail = adminEmail_text,
-                userContact = adminContact_text,
-                userPassword = hashed_pw,
-                userStatus = True
+            new_admin = Admin(
+                adminId = adminId_text,
+                adminName = adminnNme_text.upper(),
+                adminDepartment = 'Admin',
+                adminLevel = '3',
+                adminEmail = adminEmail_text,
+                adminContact = adminContact_text,
+                adminPassword = hashed_pw,
+                adminStatus = True
             )
             
             db.session.add(new_admin)
@@ -166,16 +166,16 @@ def admin_logout():
 def inject_admin_data():
     adminId = session.get('admin_id')
     if adminId:
-        admin = User.query.get(adminId)
+        admin = Admin.query.get(adminId)
         if admin:
             return {
                 'admin_id': adminId,
-                'admin_name': admin.userName,
-                'admin_department': admin.userDepartment,
-                'admin_level': admin.userLevel,
-                'admin_email': admin.userEmail,
-                'admin_contact' : admin.userContact,
-                'admin_status': admin.userStatus
+                'admin_name': admin.adminName,
+                'admin_department': admin.adminDepartment,
+                'admin_level': admin.adminLevel,
+                'admin_email': admin.adminEmail,
+                'admin_contact' : admin.adminContact,
+                'admin_status': admin.adminStatus
             }
     return {
         'admin_id': None,
@@ -533,7 +533,7 @@ def admin_uploadLecturerList():
 @app.route('/adminHome/profile', methods=['GET', 'POST'])
 def admin_profile():
     adminId = session.get('admin_id')
-    admin = User.query.filter_by(userId=adminId).first()
+    admin = Admin.query.filter_by(adminId=adminId).first()
     
     # Pre-fill existing data
     adminContact_text = ''
@@ -563,10 +563,10 @@ def admin_profile():
         else:
             if admin:
                 if adminContact_text:
-                    admin.userContact = adminContact_text
+                    admin.adminContact = adminContact_text
                 if adminPassword1_text:
                     hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
-                    admin.userPassword = hashed_pw
+                    admin.adminPassword = hashed_pw
 
                 db.session.commit()
                 flash("Successfully updated", 'success')
@@ -576,9 +576,9 @@ def admin_profile():
     return render_template(
         'adminPart/adminProfile.html',
         active_tab='admin_profiletab',
-        admin_name=admin.userName if admin else '',
-        admin_id=admin.userId if admin else '',
-        admin_email=admin.userEmail if admin else '',
+        admin_name=admin.adminName if admin else '',
+        admin_id=admin.adminId if admin else '',
+        admin_email=admin.adminEmail if admin else '',
         adminContact_text=adminContact_text,
         adminPassword1_text=adminPassword1_text,
         adminPassword2_text=adminPassword2_text,
