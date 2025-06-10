@@ -41,7 +41,7 @@ class User(db.Model):
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
-        userPassword VARCHAR(255),
+        userPassword VARCHAR(20),
         userStatus VARCHAR(15)
     );
     '''
@@ -200,3 +200,68 @@ class Lecturer(db.Model):
     );
     '''
 
+
+
+
+
+
+
+
+
+
+
+'''
+CREATE TABLE Users (
+    id INTEGER PRIMARY KEY,
+    number VARCHAR(20) UNIQUE,
+    name VARCHAR(30),
+    email VARCHAR(30) UNIQUE,
+    department VARCHAR(15),
+    status VARCHAR(10),
+    role VARCHAR(10) NOT NULL CHECK (role IN ('admin', 'lecturer', 'invigilator')),
+    password_hash VARCHAR(255)
+);
+
+CREATE TABLE Timetable (
+    userId INTEGER,
+    day VARCHAR(10),
+    classStart VARCHAR(10),
+    classEnd VARCHAR(10),
+    FOREIGN KEY (userId) REFERENCES Users(id)
+);
+
+CREATE TABLE InvigilatorStatus (
+    id INTEGER PRIMARY KEY,
+    status VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE Invigilation (
+    id INTEGER PRIMARY KEY,
+    invigilatorId INTEGER,
+    statusId INTEGER,
+    maxSlot INTEGER,
+    availableSlot INTEGER,
+    unavailableSlot INTEGER,
+    FOREIGN KEY (invigilatorId) REFERENCES Users(id),
+    FOREIGN KEY (statusId) REFERENCES InvigilatorStatus(id)
+);
+
+CREATE TABLE Exam (
+    id INTEGER PRIMARY KEY,
+    courseSectionCode VARCHAR(20),
+    invigilatorId1 INTEGER,
+    invigilatorId2 INTEGER,
+    examDate DATE,
+    examTime VARCHAR(10),
+    uploadedBy INTEGER,
+    FOREIGN KEY (invigilatorId1) REFERENCES Users(id),
+    FOREIGN KEY (invigilatorId2) REFERENCES Users(id),
+    FOREIGN KEY (uploadedBy) REFERENCES Users(id)
+);
+
+
+
+
+
+
+'''
