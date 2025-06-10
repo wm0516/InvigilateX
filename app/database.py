@@ -209,7 +209,6 @@ class Lecturer(db.Model):
 
 
 
-
 '''
 CREATE TABLE Users (
     id INTEGER PRIMARY KEY,
