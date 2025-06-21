@@ -19,59 +19,51 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+// Initialize sidebar state from localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (isCollapsed) {
+        sidebar.classList.add('collapsed');
+    }
+});
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+    // Save state to localStorage
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+}
+
+
+
+
+
 /* admin hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
-    // Main navigation tabs
-    const mainRouteToTab = {
-        '/adminHome': 'admin_hometab',
-        '/adminHome/upload': 'admin_uploadtab',
-        '/adminHome/autoGenerate': 'admin_autoGeneratetab',
-        '/adminHome/manageLecturer': 'admin_managetab',
-    };
+  const mainRouteToTab = {
+    '/adminHome': 'admin_hometab',
+    '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab',
+    '/adminHome/uploadLecturerList': 'admin_uploadLecturerListtab',
+    '/adminHome/uploadExamDetails': 'admin_uploadExamDetailstab',
+    '/adminHome/uploadCourseDetails': 'admin_uploadCourseDetailstab',
+    '/adminHome/autoGenerate': 'admin_autoGeneratetab',
+    '/adminHome/manageLecturer': 'admin_managetab'
+  };
 
-    // File upload sub-tabs
-    const uploadRouteToTab = {
-        '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab', 
-        '/adminHome/uploadExamDetails': 'admin_uploadExamDetailstab',
-    };
+  const currentPath = window.location.pathname;
+  let activeMainTabId = 'admin_hometab';
 
-    const currentPath = window.location.pathname;
-    
-    // Handle main navigation tabs
-    let activeMainTabId = 'admin_hometab';
-    for (const [route, tabId] of Object.entries(mainRouteToTab)) {
-        if (currentPath.includes(route)) {
-            activeMainTabId = tabId;
-            break;
-        }
+  for (const [route, tabId] of Object.entries(mainRouteToTab)) {
+    if (currentPath.includes(route)) {
+      activeMainTabId = tabId;
+      break;
     }
+  }
 
-    // Update main tab UI
-    document.querySelectorAll('.main-nav .tab-link').forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('data-tab') === activeMainTabId) {
-            link.classList.add('active');
-        }
-    });
-
-    // Handle upload sub-tabs if we're in the upload section
-    if (activeMainTabId === 'admin_uploadtab') {
-        let activeUploadTabId = 'admin_uploadtab';
-        for (const [route, tabId] of Object.entries(uploadRouteToTab)) {
-            if (currentPath.includes(route)) {
-                activeUploadTabId = tabId;
-                break;
-            }
-        }
-
-        // Update upload tab UI
-        document.querySelectorAll('.upload-sub-nav .sub-tab-link').forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('data-tab') === activeUploadTabId) {
-                link.classList.add('active');
-            }
-        });
-    }
+  document.querySelectorAll('.main-nav .tab-link').forEach(link => {
+    link.classList.toggle('active', link.getAttribute('data-tab') === activeMainTabId);
+  });
 });
 
 

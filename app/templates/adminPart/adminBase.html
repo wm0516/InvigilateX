@@ -24,14 +24,6 @@
                     <i class="fas fa-home"></i>
                     <span>Home</span>
                 </a>
-                <!--<a href="{{ url_for('admin_upload') }}" class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}">
-                    <i class="fas fa-upload"></i>
-                    <span>Upload File</span>
-                </a>
-
-                {% if active_tab in ['admin_uploadtab', 'admin_uploadLecturerTimetabletab', 'admin_uploadLecturerListtab', 'admin_uploadExamDetailstab'] %} -->
-                
-                <!--{% endif %}-->
                 <a href="{{ url_for('admin_uploadLecturerTimetable') }}" class="tab-link {% if active_tab == 'admin_uploadLecturerTimetabletab' %}active{% endif %}">
                     <i class="fas fa-table"></i>
                     <span>Upload Lecturer Timetable</span>
@@ -44,11 +36,10 @@
                     <i class="fas fa-file-alt"></i>
                     <span>Upload Exam Sessions</span>
                 </a>
-                <a href="{{ url_for('admin_uploadExamDetails') }}" class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}">
+                <a href="{{ url_for('admin_uploadCourseDetails') }}" class="tab-link {% if active_tab == 'admin_uploadCourseDetailstab' %}active{% endif %}">
                     <i class="fas fa-book"></i>
                     <span>Upload Course Details</span>
                 </a>
-
                 <a href="{{ url_for('admin_autoGenerate') }}" class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Generate Schedule</span>
@@ -75,21 +66,7 @@
     </div>
 
     <script>
-        // Initialize sidebar state from localStorage
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (isCollapsed) {
-                sidebar.classList.add('collapsed');
-            }
-        });
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            // Save state to localStorage
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
     </script>
 </body>
 </html>

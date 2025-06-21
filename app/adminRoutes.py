@@ -521,6 +521,10 @@ def admin_uploadLecturerList():
     user_data = User.query.all()
     return render_template('adminPart/adminUploadLecturerList.html', active_tab='admin_uploadLecturerListtab', user_data=user_data)
 
+@app.route('/adminHome/uploadCourseDetails', methods=['GET', 'POST'])
+def admin_uploadCourseDetails():
+    return render_template('adminPart/adminUploadCourseDetails.html', active_tab='admin_uploadCourseDetailstab')
+
 
 
 
