@@ -77,7 +77,6 @@ body {
     display: flex;
     align-items: center;
     white-space: nowrap;
-    border-bottom: 1px solid #3498db;
 }
 
 .tab-link i {
