@@ -3,26 +3,24 @@
 {% block title %}Admin UploadLecturerTimetable{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="main-frame">
-        <h2>Upload Lecturer Timetable</h2>
-        <div class="form-frame">
-            <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
-                <div style="text-align: center; margin-bottom: 2%;">
-                    <label>
-                        Upload file 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
-                    </label>
-                </div>
-                <div class="input-frame">
-                    <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required>
-                </div>
-                <div class="button-wrapper">
-                    <button type="submit">Upload</button>
-                </div>
-                <!-- Result feedback -->
-                <div id="lecturerUploadResult" style="text-align: center;"></div>
-                <div id="lecturerUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
-            </form>
-        </div>
+    <h2>Upload Lecturer Timetable</h2>
+    <div class="form-frame">
+        <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
+            <div style="text-align: center; margin-bottom: 2%;">
+                <label>
+                    Upload file 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
+                </label>
+            </div>
+            <div class="input-frame">
+                <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required>
+            </div>
+            <div class="button-wrapper">
+                <button type="submit">Upload</button>
+            </div>
+            <!-- Result feedback -->
+            <div id="lecturerUploadResult" style="text-align: center;"></div>
+            <div id="lecturerUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
+        </form>
     </div>
 
     <h2>Table Record</h2>
