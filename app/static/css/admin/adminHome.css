@@ -43,7 +43,7 @@ body {
     overflow: hidden;
     flex-shrink: 0;
     overflow-y: hidden; /* Disable scrolling */
-    height: 100%; /* Full viewport height */
+    height: 96%; /* Full viewport height */
     position: fixed; /* Fixed position */
 }
 
