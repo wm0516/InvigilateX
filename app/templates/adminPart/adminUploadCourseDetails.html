@@ -8,7 +8,7 @@
         <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
             <div style="text-align: center; margin-bottom: 2%;">
                 <label>
-                    Upload file 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room
+                    Upload file format
                 </label>
             </div>
             <div class="input-frame">
@@ -25,7 +25,7 @@
 
     <br><br>
     <h2>Table Record</h2>
-    <label>
+    <!--<label>
         Alert<br>
         1. ID as the PK<br>
         2. All able to edit<br>
@@ -35,7 +35,7 @@
         1. Does ExamDay is manually insert or need to use ExamDate to determine the day<br>
         2. Can ExamDay and ExamDate combine by "row.examDate" "row.examDay"<br>
         3. Can StartTime and EndTime combine by "row.examStartTime" - "row.examEndTime"
-    </label>
+    </label>-->
 
     <div class="user-table-container">
         <table class="user-data-table">

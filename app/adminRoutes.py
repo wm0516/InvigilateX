@@ -195,13 +195,6 @@ def admin_autoGenerate():
 def admin_manageLecturer():
     return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab')
 
-@app.route('/adminHome/upload')
-def admin_upload():
-    return render_template('adminPart/adminUpload.html', active_tab='admin_uploadtab')
-
-
-
-
 
 
 
