@@ -38,7 +38,7 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e0e0e0;
-    background-color: white;
+    background-color: #E8E8E8 ;
     transition: width 0.3s ease;
     overflow: hidden;
     flex-shrink: 0;
@@ -115,7 +115,7 @@ body {
 }
 
 .logout-btn:hover {
-    background-color: #f0f0f0;
+    background-color: #E67E7E;
 }
 
 .main-content {
