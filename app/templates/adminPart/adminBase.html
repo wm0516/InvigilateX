@@ -30,6 +30,8 @@
                 </a>
 
                 {% if active_tab in ['admin_uploadtab', 'admin_uploadLecturerTimetabletab', 'admin_uploadLecturerListtab', 'admin_uploadExamDetailstab'] %} -->
+                
+                <!--{% endif %}-->
                 <a href="{{ url_for('admin_uploadLecturerTimetable') }}" class="tab-link {% if active_tab == 'admin_uploadLecturerTimetabletab' %}active{% endif %}">
                     <i class="fas fa-table"></i>
                     <span>Upload Lecturer Timetable</span>
@@ -46,7 +48,6 @@
                     <i class="fas fa-book"></i>
                     <span>Upload Course Details</span>
                 </a>
-                <!--{% endif %}-->
 
                 <a href="{{ url_for('admin_autoGenerate') }}" class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}">
                     <i class="fas fa-calendar-alt"></i>
