@@ -11,17 +11,37 @@
             margin: 0;
             font-family: Arial, sans-serif;
             display: flex;
+            flex-direction: column;
             min-height: 100vh;
             color: black;
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: white;
+        }
+
+        .user-info {
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .content-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
         .sidebar {
             width: 250px;
-            background-color: #2c3e50;
-            color: white;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            border-right: 1px solid #e0e0e0;
+            background-color: white;
             transition: width 0.3s ease;
             overflow: hidden;
             flex-shrink: 0;
@@ -31,7 +51,6 @@
             width: 70px;
         }
 
-        .sidebar.collapsed .user-info,
         .sidebar.collapsed .tab-link span {
             display: none;
         }
@@ -40,14 +59,7 @@
             padding: 10px;
             cursor: pointer;
             text-align: right;
-            background-color: #34495e;
-        }
-
-        .user-info {
-            padding: 15px;
-            font-size: 14px;
-            background-color: #34495e;
-            margin-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .tab-nav {
@@ -58,7 +70,7 @@
         }
 
         .tab-link {
-            color: white;
+            color: black;
             padding: 10px;
             text-decoration: none;
             border-radius: 4px;
@@ -72,34 +84,34 @@
             margin-right: 10px;
             width: 20px;
             text-align: center;
+            color: #555;
         }
 
         .tab-link:hover,
         .tab-link.active {
-            background-color: #94d3f7;
-            color: #2c3e50;
+            background-color: #f0f0f0;
         }
 
         .logout-btn {
             padding: 15px;
-            background-color: #f56a61;
             text-align: center;
             text-decoration: none;
-            color: white;
+            color: black;
             font-weight: bold;
-            border-top: 1px solid #7f8c8d;
+            border-top: 1px solid #e0e0e0;
             display: block;
+            margin-top: auto;
         }
 
         .logout-btn:hover {
-            background-color: #e74c3c;
+            background-color: #f0f0f0;
         }
 
         .main-content {
             flex: 1;
             padding: 20px;
-            background-color: #ecf0f1;
             overflow-y: auto;
+            background-color: white;
         }
 
         @media (max-width: 768px) {
@@ -119,16 +131,17 @@
     </style>
 </head>
 <body>
-    <nav class="sidebar" id="sidebar">
-        <div>
-            <div class="toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-                <i class="fas fa-bars"></i>
-            </div>
-            <div class="user-info">
-                {{ admin_name }}<br>
-                {{ admin_id }}<br>
-                {{ admin_department }}
-            </div>
+    <header class="header">
+        <div class="toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="user-info">
+            {{ admin_name }} | {{ admin_id }} | {{ admin_department }}
+        </div>
+    </header>
+
+    <div class="content-container">
+        <nav class="sidebar" id="sidebar">
             <div class="tab-nav">
                 <a href="{{ url_for('admin_homepage') }}" class="tab-link {% if active_tab == 'admin_hometab' %}active{% endif %}">
                     <i class="fas fa-home"></i>
@@ -137,18 +150,6 @@
                 <a href="{{ url_for('admin_upload') }}" class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}">
                     <i class="fas fa-upload"></i>
                     <span>Upload File</span>
-                </a>
-                <a href="{{ url_for('admin_autoGenerate') }}" class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Generate Schedule</span>
-                </a>
-                <a href="{{ url_for('admin_manageLecturer') }}" class="tab-link {% if active_tab == 'admin_managetab' %}active{% endif %}">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                    <span>Assign Lecturer</span>
-                </a>
-                <a href="{{ url_for('admin_profile') }}" class="tab-link {% if active_tab == 'admin_profiletab' %}active{% endif %}">
-                    <i class="fas fa-user"></i>
-                    <span>Profile</span>
                 </a>
 
                 {% if active_tab in ['admin_uploadtab', 'admin_uploadLecturerTimetabletab', 'admin_uploadLecturerListtab', 'admin_uploadExamDetailstab'] %}
@@ -165,17 +166,32 @@
                         <span>Exam Details</span>
                     </a>
                 {% endif %}
-            </div>
-        </div>
-        <a href="{{ url_for('admin_logout') }}" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i>
-            <span class="logout-text">Logout</span>
-        </a>
-    </nav>
 
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
+                <a href="{{ url_for('admin_autoGenerate') }}" class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Generate Schedule</span>
+                </a>
+                <a href="{{ url_for('admin_manageLecturer') }}" class="tab-link {% if active_tab == 'admin_managetab' %}active{% endif %}">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Assign Lecturer</span>
+                </a>
+                <a href="{{ url_for('admin_profile') }}" class="tab-link {% if active_tab == 'admin_profiletab' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+
+                
+            </div>
+            <a href="{{ url_for('admin_logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="logout-text">Logout</span>
+            </a>
+        </nav>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
     <script>
         // Initialize sidebar state from localStorage
