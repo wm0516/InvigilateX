@@ -1,0 +1,75 @@
+{% extends "adminPart/adminBase.html" %}
+{% block title %}Admin UploadCourse{% endblock %}
+
+{% block content %}
+<div class="menu-section">
+    <div class="main-frame">
+        <h2>Upload Course Details</h2>
+        <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
+            <div style="text-align: center; margin-bottom: 2%;">
+                <label>
+                    Upload file 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room
+                </label>
+            </div>
+            <div class="input-frame">
+                <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
+            </div>
+            <div class="button-wrapper">
+                <button type="submit">Upload</button>
+            </div>
+            <!-- Result feedback -->
+            <div id="examUploadResult" style="text-align: center;"></div>
+            <div id="examUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
+        </form>
+    </div>
+
+    <h2>Table Record</h2>
+    <label>
+        Alert<br>
+        1. ID as the PK<br>
+        2. All able to edit<br>
+        3. With a dropdown by category frame<br>
+        4. Add 'add and edit button'<br>
+        Question<br>
+        1. Does ExamDay is manually insert or need to use ExamDate to determine the day<br>
+        2. Can ExamDay and ExamDate combine by "row.examDate" "row.examDay"<br>
+        3. Can StartTime and EndTime combine by "row.examStartTime" - "row.examEndTime"
+    </label>
+
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Exam Date</th>
+                    <th>Exam Day</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Program Code</th>
+                    <th>Course/Section</th>
+                    <th>Lecturer</th>
+                    <th>No. of Students</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in exam_data %}
+                <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <!-- <td>{{ row.examID  }}</td> -->
+                    <td>{{ row.examDate }}</td>
+                    <td>{{ row.examDay }}</td>
+                    <td>{{ row.examStartTime }}</td>
+                    <td>{{ row.examEndTime }}</td>
+                    <td>{{ row.examProgramCode }}</td>
+                    <td>{{ row.examCourseSectionCode }}</td>
+                    <td>{{ row.examLecturer }}</td>
+                    <td>{{ row.examTotalStudent }}</td>
+                    <td>{{ row.examVenue }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

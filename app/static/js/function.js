@@ -37,8 +37,6 @@ function toggleSidebar() {
 
 
 
-
-
 /* admin hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
@@ -65,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
     link.classList.toggle('active', link.getAttribute('data-tab') === activeMainTabId);
   });
 });
+
+
+
 
 
 /* Lecturer List Upload - Self-contained */
