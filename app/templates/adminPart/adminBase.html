@@ -6,74 +6,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/adminHome.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Shared header/navigation -->
-    <div class= "header-container">
-        <div class="heading"></div>
-        <div class="user-info">
-            <div class="user-details">
-                {{admin_name}} <br>
-                {{admin_id}} <br>
-                {{admin_department}}
-            </div>
-            <a href="{{ url_for('admin_logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
-        </div>
-    </div>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: width 0.3s;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar .toggle-btn {
+            text-align: right;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .user-info {
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .tab-nav {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        .tab-link {
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .tab-link:hover,
+        .tab-link.active {
+            background-color: #34495e;
+        }
+
+        .logout-btn {
+            padding: 15px;
+            background-color: #c0392b;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            border-top: 1px solid #7f8c8d;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #ecf0f1;
+            overflow-y: auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <br>
-    <br>
-    <div class="menu-grid">
-    <!-- Main tab navigation -->
-        <div class="tab-nav">
-            <a href="{{ url_for('admin_homepage')}}" 
-               class="tab-link {% if active_tab == 'admin_hometab' %}active{% endif %}" 
-               data-tab="admin_hometab">Home</a>
+    <div class="sidebar" id="sidebar">
+        <div>
+            <div class="toggle-btn" onclick="toggleSidebar()">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="user-info">
+                {{ admin_name }}<br>
+                {{ admin_id }}<br>
+                {{ admin_department }}
+            </div>
+            <div class="tab-nav">
+                <a href="{{ url_for('admin_homepage') }}" class="tab-link {% if active_tab == 'admin_hometab' %}active{% endif %}">Home</a>
+                <a href="{{ url_for('admin_upload') }}" class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}">Upload File</a>
+                <a href="{{ url_for('admin_autoGenerate') }}" class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}">Generate Schedule</a>
+                <a href="{{ url_for('admin_manageLecturer') }}" class="tab-link {% if active_tab == 'admin_managetab' %}active{% endif %}">Assign Lecturer</a>
+                <a href="{{ url_for('admin_profile') }}" class="tab-link {% if active_tab == 'admin_profiletab' %}active{% endif %}">Profile</a>
 
-            <a href="{{ url_for('admin_upload')}}" 
-               class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}" 
-               data-tab="admin_uploadtab">Upload File</a>
-
-            <a href="{{ url_for('admin_autoGenerate')}}" 
-               class="tab-link {% if active_tab == 'admin_autoGeneratetab' %}active{% endif %}" 
-               data-tab="admin_autoGeneratetab">Generate Exam Schedule</a>
-
-            <a href="{{ url_for('admin_manageLecturer')}}" 
-               class="tab-link {% if active_tab == 'admin_managetab' %}active{% endif %}" 
-               data-tab="admin_managetab">Assign Lecturer</a>
-            
-            <a href="{{ url_for('admin_profile')}}" 
-               class="tab-link {% if active_tab == 'admin_profiletab' %}active{% endif %}" 
-               data-tab="admin_profiletab">Profile</a>
+                {% if active_tab in ['admin_uploadtab', 'admin_uploadLecturerTimetabletab', 'admin_uploadLecturerListtab', 'admin_uploadExamDetailstab'] %}
+                    <a href="{{ url_for('admin_uploadLecturerTimetable') }}" class="tab-link {% if active_tab == 'admin_uploadLecturerTimetabletab' %}active{% endif %}">Lecturer Timetable</a>
+                    <a href="{{ url_for('admin_uploadLecturerList') }}" class="tab-link {% if active_tab == 'admin_uploadLecturerListtab' %}active{% endif %}">Lecturer List</a>
+                    <a href="{{ url_for('admin_uploadExamDetails') }}" class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}">Exam Details</a>
+                {% endif %}
+            </div>
         </div>
-        
-        <!-- Sub-tab navigation (only shown when on upload section) -->
-        {% if active_tab == 'admin_uploadtab' or active_tab == 'admin_uploadLecturerTimetabletab' or 
-            active_tab == 'admin_uploadLecturerListtab' or active_tab == 'admin_uploadExamDetailstab' %}
-        <br>
-        <div class="tab-nav">
-            <a href="{{ url_for('admin_upload')}}" 
-               class="tab-link {% if active_tab == 'admin_uploadtab' %}active{% endif %}" 
-               data-tab="admin_uploadtab">Dashboard</a>
-
-            <a href="{{ url_for('admin_uploadLecturerTimetable')}}" 
-               class="tab-link {% if active_tab == 'admin_uploadLecturerTimetabletab' %}active{% endif %}" 
-               data-tab="admin_uploadLecturerTimetabletab">Lecturers Timetable</a>
-
-            <a href="{{ url_for('admin_uploadLecturerList')}}" 
-               class="tab-link {% if active_tab == 'admin_uploadLecturerListtab' %}active{% endif %}" 
-               data-tab="admin_uploadLecturerListtab">Lecturers List</a>
-
-            <a href="{{ url_for('admin_uploadExamDetails')}}" 
-               class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}" 
-               data-tab="admin_uploadExamDetailstab">Exam Details</a>
-        </div>
-        {% endif %}
-        <br>
-        <!-- Content block for child templates -->
-        {% block content %}{% endblock %}
-
-        <!-- Shared JavaScript -->
-        <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+        <a href="{{ url_for('admin_logout') }}" class="logout-btn">Logout</a>
     </div>
+
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+    </script>
 </body>
 </html>
