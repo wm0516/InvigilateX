@@ -105,7 +105,7 @@ body {
     display: flex;
     align-items: center;
     white-space: nowrap;
-    background-color: #ffb8b8;
+    background-color: #f0a5a0;
 }
 
 .logout-btn i {
@@ -237,6 +237,7 @@ input, select {
     width: 95%;
     display: grid;
 }
+
 /* Main menu container layout (small frame that divide in the big frame) */
 .menu-section {
     background-color: white;
@@ -324,6 +325,7 @@ h2 {
 
 input[type="file"] {
     font-size: medium;
+    width: 100%;
 }
 
 
@@ -367,12 +369,6 @@ input[type="file"] {
 
 
 
-
-
-/* Content section styling */
-.menu-section {
-    padding: 10px;
-}
 
 /* Subtitle heading with the layout of each frame */
 .menu-section ul {
