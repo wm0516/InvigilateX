@@ -1,10 +1,11 @@
-body {
+html, body {
+    height: 100%;
     margin: 0;
     font-family: Arial, sans-serif;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
     color: black;
+    overflow: hidden; /* Prevent scrolling on body */
 }
 
 .header {
@@ -29,22 +30,26 @@ body {
 .content-container {
     display: flex;
     flex: 1;
-    overflow: hidden;
     width: 100%;
-    overflow-y: hidden; /* Disable scrolling */
+    height: calc(100vh - 60px); /* Adjust based on header height */
+    overflow: hidden; /* Prevent scroll on layout container */
 }
 
+/* Sidebar locked in place and non-scrollable */
 .sidebar {
     width: 15%;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e0e0e0;
-    background-color: #E1F5FE ;
+    background-color: #E1F5FE;
     transition: width 0.3s ease;
-    overflow: hidden;
     flex-shrink: 0;
+    overflow: hidden; /* Fully lock scroll */
+    height: 100%;
+    position: relative; /* Optional: make fixed if you want sticky effect */
 }
 
+/* Collapsed style */
 .sidebar.collapsed {
     width: 70px;
 }
@@ -53,6 +58,17 @@ body {
 .sidebar.collapsed .logout-btn span {
     display: none;
 }
+
+/* Main content scrolls only */
+.main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: white;
+    height: 100%;
+    box-sizing: border-box;
+}
+
 
 .sidebar .toggle-btn {
     padding: 10px;
