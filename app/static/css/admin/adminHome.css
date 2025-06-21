@@ -43,8 +43,6 @@ body {
     overflow: hidden;
     flex-shrink: 0;
     overflow-y: hidden; /* Disable scrolling */
-    height: 96%; /* Full viewport height */
-    position: fixed; /* Fixed position */
 }
 
 .sidebar.collapsed {
