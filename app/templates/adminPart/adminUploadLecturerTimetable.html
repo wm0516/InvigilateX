@@ -1,94 +1,90 @@
 <!-- upload.html -->
 {% extends "adminPart/adminBase.html" %}
 {% block title %}Admin UploadLecturerTimetable{% endblock %}
+
+
+
+
 {% block content %}
 <div class="menu-section">
     <h2>Upload Lecturer Timetable</h2>
     <div class="form-frame">
-        <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
-            <div style="text-align: center; margin-bottom: 1%;">
-                <label>
-                    Upload file 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
-                </label>
+        <form id="uploadLecturerForm" method="POST" enctype="multipart/form-data">
+            <div class="upload-instructions">
+                <p>Upload an Excel file with lecturer details. The file must:</p>
+                <ul>
+                    <li>Have columns in this order: Id, Name, Department, Role, Email, Contact</li>
+                    <li>First row should be header (will be skipped)</li>
+                    <li>Supported formats: .xlsx, .xls, .xlsm</li>
+                </ul>
             </div>
+            
             <div class="input-frame">
                 <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required>
             </div>
+            
             <div class="button-wrapper">
                 <button type="submit">Upload</button>
             </div>
-            <!-- Result feedback -->
-            <div id="lecturerUploadResult" style="text-align: center;"></div>
-            <div id="lecturerUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
+            
+            <!-- Result feedback areas -->
+            <div id="lecturerUploadResult"></div>
+            <div id="lecturerUploadErrors"></div>
         </form>
     </div>  
 
-    <br>
-    <h2>Table Record</h2>
-    <label>
-        To Do: <br>
-        1. Allow edit based on the Id <br>
-        2. Deactivated will send an email to the upload email address for activation link <br>
-        Question: <br>
-        1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
-        2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
-    </label>
-
-    <div class="user-table-container">
-        <table class="user-data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Role Based</th>
-                    <th>Email</th>
-                    <th>Contact</th>
-                    <th>Status</th> <!-- 
-                    If upload only -> no register, 
-                    if lecturer register self ->register, 
-                    if register data no similar with register -> wrong data-->
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in user_data %}
-                <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <td>{{ row.userId }}</td>
-                    <td>{{ row.userName }}</td>
-                    <td>{{ row.userDepartment }}</td>
-
-                    <!-- Role Name based on userLevel -->
-                    <td>
-                        {% if row.userLevel == 1 %}
-                            Lecturer
-                        {% elif row.userLevel == 2 %}
-                            Dean
-                        {% elif row.userLevel == 3 %}
-                            Admin
-                        {% else %}
-                            Unknown
-                        {% endif %}
-                    </td>
-
-                    <td>{{ row.userEmail }}</td>
-                    <td>{{ row.userContact }}</td>
-
-                    <!-- User status: Activated / Deactivated -->
-                    <td>
-                        {% if row.userStatus|int == 1 %}
-                            Activated
-                        {% else %}
-                            Deactivated
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="table-section">
+        <h2>Current Lecturer Records</h2>
+        <div class="user-table-container">
+            <table class="user-data-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Id</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Contact</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in user_data %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row.userId }}</td>
+                        <td>{{ row.userName }}</td>
+                        <td>{{ row.userDepartment }}</td>
+                        <td>
+                            {% if row.userLevel == 1 %}
+                                Lecturer
+                            {% elif row.userLevel == 2 %}
+                                Dean
+                            {% elif row.userLevel == 3 %}
+                                Admin
+                            {% else %}
+                                Unknown
+                            {% endif %}
+                        </td>
+                        <td>{{ row.userEmail }}</td>
+                        <td>{{ row.userContact }}</td>
+                        <td>
+                            {% if row.userStatus|int == 1 %}
+                                <span class="status-active">Activated</span>
+                            {% else %}
+                                <span class="status-inactive">Deactivated</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
+{% endblock %}
+
 
 
 {% endblock %}
