@@ -210,170 +210,110 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 @app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
     if request.method == 'POST':
-        # Validate file exists
         if 'lecturer_file' not in request.files:
-            return jsonify({
-                'success': False,
-                'message': 'No file uploaded',
-                'errors': ['No file was selected for upload']
-            })
+            return jsonify({'success': False, 'message': 'No file uploaded'})
 
         file = request.files['lecturer_file']
-        if file.filename == '':
-            return jsonify({
-                'success': False,
-                'message': 'No file selected',
-                'errors': ['Please select a valid file to upload']
-            })
-
-        # Validate file extension
-        if not file.filename.lower().endswith(('.xlsx', '.xls', '.xlsm')):
-            return jsonify({
-                'success': False,
-                'message': 'Invalid file type',
-                'errors': ['Only Excel files (.xlsx, .xls, .xlsm) are accepted']
-            })
-
         file_stream = BytesIO(file.read())
+
         lecturer_records_added = 0
         processed_records = []
         errors = []
-        has_valid_records = False
 
         try:
             excel_file = pd.ExcelFile(file_stream)
-            
             for sheet_name in excel_file.sheet_names:
                 try:
-                    # Read Excel with proper data types
                     df = pd.read_excel(
                         excel_file,
                         sheet_name=sheet_name,
                         usecols="A:F",
-                        skiprows=1,
-                        dtype={
-                            'Id': str,
-                            'Name': str,
-                            'Department': str,
-                            'Role': str,
-                            'Email': str,
-                            'Contact': str
-                        }
+                        skiprows=1
                     )
-                    
-                    # Clean column names and drop empty rows
                     df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
-                    df = df.dropna(how='all')
-                    df = df.fillna('')
                     df.reset_index(drop=True, inplace=True)
 
-                    # Role mapping with case insensitivity
                     role_mapping = {
                         'lecturer': 1,
                         'dean': 2,
-                        'admin': 3,
-                        '1': 1,
-                        '2': 2,
-                        '3': 3
+                        'admin': 3
                     }
 
                     for index, row in df.iterrows():
                         try:
-                            # Skip empty rows
-                            if not row['Id'] and not row['Name']:
-                                continue
-
-                            # Process and validate each field
-                            lecturer_id = str(row['Id']).strip()
-                            lecturer_name = str(row['Name']).strip().upper()
-                            lecturer_department = str(row['Department']).strip().upper()
-                            lecturer_email = str(row['Email']).strip().lower()
-                            lecturer_contact = str(row['Contact']).strip()
+                            lecturer_id = str(row['Id'])
+                            lecturer_name = str(row['Name']).upper()
+                            lecturer_department = str(row['Department']).upper()    
+                            lecturer_email = str(row['Email'])
+                            lecturer_contact = int(row['Contact'])
+                            # Normalize and map role string
                             lecturer_role_str = str(row['Role']).strip().lower()
-                            lecturer_role = role_mapping.get(lecturer_role_str, 1)  # Default to lecturer
-
-                            # Validate contact (preserve leading zeros)
-                            if not lecturer_contact.isdigit():
-                                raise ValueError("Contact must contain only digits")
-                            if len(lecturer_contact) < 9:
-                                raise ValueError("Contact number too short")
-
-                            # Check for duplicates
+                            lecturer_role = role_mapping.get(lecturer_role_str)
+                            
                             is_valid, error_message = unique_LecturerDetails(
                                 lecturer_id, lecturer_email, lecturer_contact
                             )
 
                             if not is_valid:
-                                raise ValueError(error_message)
+                                row_number = index + 2 if isinstance(index, int) else str(index)
+                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
+                                continue
                             
-                            # Create new user record
                             lecturer = User(
-                                userId=lecturer_id,
-                                userName=lecturer_name,
-                                userDepartment=lecturer_department,
-                                userLevel=lecturer_role,
-                                userEmail=lecturer_email,
-                                userContact=lecturer_contact,
-                                userStatus=False
+                                userId = lecturer_id,
+                                userName = lecturer_name,
+                                userDepartment = lecturer_department,
+                                userLevel = lecturer_role,
+                                userEmail = lecturer_email,
+                                userContact = lecturer_contact,
+                                userStatus = False
                             )
 
                             db.session.add(lecturer)
                             lecturer_records_added += 1
-                            has_valid_records = True
 
                             processed_records.append({
-                                'ID': lecturer_id,
-                                'Name': lecturer_name,
-                                'Department': lecturer_department,
-                                'Role': lecturer_role,
-                                'Email': lecturer_email,
-                                'Contact': lecturer_contact,
-                                'Status': 'Deactivated'
+                                'ID': lecturer.userId,
+                                'Name': lecturer.userName,
+                                'Department': lecturer.userDepartment,
+                                'Role': lecturer.userLevel,
+                                'Email': lecturer.userEmail,
+                                'Contact': lecturer.userContact,
+                                'Status': lecturer.userStatus
                             })
 
                         except Exception as row_err:
-                            row_number = index + 2  # +2 for header and 0-based index
-                            errors.append(f"Row {row_number} in sheet '{sheet_name}': {str(row_err)}")
-                            continue
+                            pass
 
                     db.session.commit()
 
                 except Exception as sheet_err:
-                    errors.append(f"Error processing sheet '{sheet_name}': {str(sheet_err)}")
-                    continue
+                    pass
+            # Final response
+            if is_valid and lecturer_records_added > 0:
+                message = f"Successful upload {lecturer_records_added} record(s)"
+                success = True
+            else:
+                message = "No data uploaded"
+                success = False
 
-            # Prepare final response
-            response_data = {
-                'success': has_valid_records,
+            return jsonify({
+                'success': success,
+                'message': message,
                 'records': processed_records,
                 'errors': errors
-            }
-
-            if has_valid_records:
-                response_data['message'] = f"Successfully uploaded {lecturer_records_added} record(s)"
-                if errors:
-                    response_data['message'] += f" (with {len(errors)} warnings)"
-            else:
-                response_data['message'] = "No valid records uploaded" if not errors else "Upload failed"
-
-            return jsonify(response_data)
+            })
 
         except Exception as e:
-            current_app.logger.error(f"File processing error: {str(e)}", exc_info=True)
-            return jsonify({
-                'success': False,
-                'message': "Error processing file",
-                'errors': [f"System error: {str(e)}"]
-            })
+            current_app.logger.error("File processing error: File upload in wrong format")
+            return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
         
-    # GET request - initial page load
-    user_data = User.query.order_by(User.userName).all()
-    return render_template('adminPart/adminUploadLecturerTimetable.html', 
-                         active_tab='admin_uploadLecturerTimetabletab', 
-                         user_data=user_data)
+    user_data = User.query.all()
+    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
 
 
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])

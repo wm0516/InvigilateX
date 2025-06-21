@@ -28,14 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.classList.toggle('collapsed');
-    // Save state to localStorage
-    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-}
-
-
 
 /* admin hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
@@ -149,135 +141,79 @@ function setupLecturerListUpload() {
 
 /* Lecturer Timetable Upload - Self-contained */
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize form elements
+document.addEventListener('DOMContentLoaded', setupLecturerUpload);
+function setupLecturerUpload() {
     const form = document.getElementById('uploadLecturerForm');
     const fileInput = document.getElementById('lecturer_list');
     const resultDiv = document.getElementById('lecturerUploadResult');
-    const errorDiv = document.getElementById('lecturerUploadErrors');
     const tableBody = document.querySelector('.user-data-table tbody');
-    const submitBtn = form.querySelector('button[type="submit"]');
 
-    // Check all elements exist
-    if (!form || !fileInput || !resultDiv || !errorDiv || !tableBody) {
-        console.error('Required elements not found');
+    if (!form || !fileInput || !resultDiv || !tableBody) {
+        console.error('One or more elements not found');
         return;
     }
 
-    // Form submit handler
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
-        
-        // Reset UI states
-        submitBtn.disabled = true;
-        resultDiv.innerHTML = '<div class="loading-spinner">Processing file...</div>';
-        errorDiv.innerHTML = '';
-        errorDiv.style.display = 'none';
-        
-        // Validate file
+
         const file = fileInput.files[0];
         if (!file) {
-            showError('Please select a file to upload');
-            submitBtn.disabled = false;
+            alert('Please select an lecturer file to upload.');
             return;
         }
 
-        // Prepare form data
         const formData = new FormData();
         formData.append('lecturer_file', file);
 
+        resultDiv.innerHTML = '<p>Uploading lecturer details... please wait</p>';
+
         try {
-            // Send request
             const response = await fetch('/adminHome/uploadLecturerTimetable', {
                 method: 'POST',
                 body: formData
             });
 
-            // Handle response
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
-            }
+            const contentType = response.headers.get('content-type') || '';
+             if (contentType.includes('application/json')) {
+                const data = await response.json();
+                const errorDiv = document.getElementById('lecturerUploadErrors');
+                resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
+                errorDiv.innerHTML = ''; // Clear previous
 
-            const data = await response.json();
-            
-            // Display results
-            if (data.success) {
-                showSuccess(data.message);
-                
-                // Update table if we have new records
-                if (data.records && data.records.length > 0) {
-                    updateTable(data.records);
+                if (data.success && Array.isArray(data.records) && data.records.length > 0) {
+                    tableBody.innerHTML = ''; // Clear existing table content before rendering new data
+                    data.records.forEach((record, i) => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${i + 1}</td> <!-- Row number starting from 1 -->
+                            <td>${record.ID}</td>
+                            <td>${record.Name}</td>
+                            <td>${record.Department}</td>
+                            <td>${record.Role}</td>
+                            <td>${record.Email}</td>
+                            <td>${record.Contact}</td>
+                            <td>Deactivated</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const errorList = data.errors && data.errors.length
+                        ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
+                        : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
+
+                    errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
                 }
+                fileInput.value = ""; // Clear file input
             } else {
-                showError(data.message);
+                const text = await response.text();
+                resultDiv.innerHTML = `<p>${text}</p>`;
             }
-            
-            // Display errors if any
-            if (data.errors && data.errors.length > 0) {
-                displayErrors(data.errors);
-            }
-            
         } catch (error) {
-            console.error('Upload error:', error);
-            showError(`Upload failed: ${error.message}`);
-        } finally {
-            submitBtn.disabled = false;
+            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${error.message}</p>`;
+            console.error(error);
         }
     });
-
-    // Helper functions
-    function showSuccess(message) {
-        resultDiv.innerHTML = `<div class="success-message">${message}</div>`;
-    }
-
-    function showError(message) {
-        resultDiv.innerHTML = `<div class="error-message">${message}</div>`;
-    }
-
-    function displayErrors(errors) {
-        errorDiv.style.display = 'block';
-        const errorList = document.createElement('ul');
-        errorList.className = 'error-list';
-        
-        errors.forEach(error => {
-            const item = document.createElement('li');
-            item.textContent = error;
-            errorList.appendChild(item);
-        });
-        
-        errorDiv.appendChild(errorList);
-    }
-
-    function updateTable(records) {
-        // Clear existing rows (except header)
-        tableBody.innerHTML = '';
-        
-        // Add new rows
-        records.forEach((record, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${index + 1}</td>
-                <td>${record.ID}</td>
-                <td>${record.Name}</td>
-                <td>${record.Department}</td>
-                <td>${getRoleName(record.Role)}</td>
-                <td>${record.Email}</td>
-                <td>${record.Contact}</td>
-                <td>${record.Status}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
-
-    function getRoleName(roleNumber) {
-        const roles = {
-            1: 'Lecturer',
-            2: 'Dean',
-            3: 'Admin'
-        };
-        return roles[roleNumber] || 'Unknown';
-    }
-});
+}
 
 
 
