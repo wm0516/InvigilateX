@@ -38,7 +38,7 @@ body {
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e0e0e0;
-    background-color: #E8E8E8 ;
+    background-color: #E1F5FE ;
     transition: width 0.3s ease;
     overflow: hidden;
     flex-shrink: 0;
