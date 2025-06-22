@@ -9,16 +9,16 @@
             <br>
             <div style="display: flex; flex-direction: row; justify-content: space-between;">
                 <div class="form-left">
-                    <label class="text-position">Full Name as per IC</label>
+                    <label>Full Name as per IC</label>
                     <input type="text" name="username" value="{{ lecturer_name }}" readonly><br>
                     
-                    <label class="text-position">Staff ID</label>
+                    <label>Staff ID</label>
                     <input type="text" name="userid" value="{{ lecturer_id }}" readonly><br>
 
-                    <label class="text-position">Email Address</label>
+                    <label>Email Address</label>
                     <input type="text" name="email" value="{{ lecturer_email }}" readonly><br>
 
-                    <label class="text-position">Department</label>
+                    <label>Department</label>
                     <select name="department" value="{{ lecturerDepartment_text }}">
                         <option value="" disabled selected>Select Department</option>
                         <option value="CADP - CENTRE OF AUSTRALIAN DEGREE PROGRAM">(CADP) CENTRE OF AUSTRALIAN DEGREE PROGRAM</option>
@@ -34,11 +34,11 @@
                 <br>
 
                 <div class="form-right">
-                    <label class="text-position">Contact Number</label>
+                    <label>Contact Number</label>
                     <input type="tel" name="contact" value="{{ lecturerContact_text }}"><br>  
 
                     <div class="password-container">
-                        <label class="text-position">Password</label>
+                        <label>Password</label>
                         <input type="password" name="password1" value="{{ lecturerPassword1_text }}">
                         <button type="button" class="toggle-password-btn">
                             <i class="fas fa-eye"></i>
@@ -46,7 +46,7 @@
                     </div><br>
         
                     <div class="password-container">
-                        <label class="text-position"> Confirm Password</label>
+                        <label> Confirm Password</label>
                         <input type="password" name="password2" value="{{ lecturerPassword2_text }}">
                         <button type="button" class="toggle-password-btn">
                             <i class="fas fa-eye"></i>
