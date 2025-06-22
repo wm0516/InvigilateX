@@ -3,18 +3,65 @@
 {% block title %}Admin Manage{% endblock %}
 {% block content %}
 
-    <!-- Row 1 First Fesatures to upload merge schedule files--> 
-    <div class="menu-section">
-        <h2>Assign Lecturer</h2>
-        <li class="submenu">
-            <strong>  Account Controls: </strong>
-            <ul>
-                <li>Manage all lecturer accounts</li>
-                <li>Deactivate lecturer access (preserves data)</li>
-                <li>Review dean accounts</li>
-            </ul>
-        </li>
+<!-- Row 1 First Fesatures to upload merge schedule files--> 
+<div class="menu-section">
+    <h2>Assign Lecturer</h2>
+    <br><br>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Role Based</th>
+                    <th>Email</th>
+                    <th>Contact</th>
+                    <th>Status</th> <!-- 
+                    If upload only -> no register, 
+                    if lecturer register self ->register, 
+                    if register data no similar with register -> wrong data-->
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in user_data %}
+                <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ row.userId }}</td>
+                    <td>{{ row.userName }}</td>
+                    <td>{{ row.userDepartment }}</td>
+
+                    <!-- Role Name based on userLevel -->
+                    <td>
+                        {% if row.userLevel == 1 %}
+                            Lecturer
+                        {% elif row.userLevel == 2 %}
+                            Dean
+                        {% elif row.userLevel == 3 %}
+                            Admin
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+
+                    <td>{{ row.userEmail }}</td>
+                    <td>{{ row.userContact }}</td>
+
+                    <!-- User status: Activated / Deactivated -->
+                    <td>
+                        {% if row.userStatus|int == 1 %}
+                            Activated
+                        {% else %}
+                            Deactivated
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
 
 {% endblock %}
 

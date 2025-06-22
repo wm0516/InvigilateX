@@ -193,9 +193,8 @@ def admin_autoGenerate():
 
 @app.route('/adminHome/manageLecturer')
 def admin_manageLecturer():
-    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab')
-
-
+    user_data = User.query.all()
+    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab', user_data=user_data)
 
 
 UPLOAD_FOLDER = 'uploads'
