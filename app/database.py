@@ -37,7 +37,7 @@ class User(db.Model):
     CREATE TABLE User (
         userId VARCHAR(20) NOT NULL PRIMARY KEY,
         userName VARCHAR(255),
-        userDepartment VARCHAR(20),
+        userDepartment VARCHAR(40),
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
