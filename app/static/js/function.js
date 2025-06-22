@@ -102,79 +102,138 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /* Lecturer List Upload - Self-contained */
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', setupLecturerListUpload);
-function setupLecturerListUpload() {
+document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('uploadLecturerListForm');
     const fileInput = document.getElementById('lecturerList_list');
+    const uploadContainer = document.querySelector('.upload-container');
+    const fileNameDisplay = document.getElementById('selectedFileName');
     const resultDiv = document.getElementById('lecturerListUploadResult');
+    const errorDiv = document.getElementById('lecturerListUploadErrors');
     const tableBody = document.querySelector('.user-data-table tbody');
 
-    if (!form || !fileInput || !resultDiv || !tableBody) {
-        console.error('One or more elements not found');
+    if (!form || !fileInput || !uploadContainer) {
+        console.error('Essential elements not found');
         return;
     }
 
-    form.addEventListener('submit', async function (e) {
+    // Handle click on container
+    uploadContainer.addEventListener('click', function(e) {
+        e.preventDefault();
+        fileInput.click();
+    });
+
+    // Handle file selection
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileNameDisplay.textContent = "Selected file: " + this.files[0].name;
+            uploadContainer.classList.add('has-file');
+        }
+    });
+
+    // Drag and drop functionality
+    uploadContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadContainer.style.borderColor = '#5bc0de';
+        uploadContainer.style.backgroundColor = '#e1f5fe';
+    });
+
+    uploadContainer.addEventListener('dragleave', function() {
+        if (fileInput.files.length) {
+            uploadContainer.classList.add('has-file');
+        } else {
+            uploadContainer.style.borderColor = '#ccc';
+            uploadContainer.style.backgroundColor = '#f5f5f5';
+        }
+    });
+
+    uploadContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            fileNameDisplay.textContent = "Selected file: " + e.dataTransfer.files[0].name;
+            uploadContainer.classList.add('has-file');
+        }
+    });
+
+    // Form submission handling
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
         const file = fileInput.files[0];
         if (!file) {
-            alert('Please select an lecturer file to upload.');
+            resultDiv.innerHTML = '<p style="color:red;">Please select a file to upload.</p>';
             return;
         }
 
         const formData = new FormData();
         formData.append('lecturerList_file', file);
 
-        resultDiv.innerHTML = '<p>Uploading lecturer details... please wait</p>';
+        resultDiv.innerHTML = '<p>Uploading lecturer details... <span class="spinner">⌛</span></p>';
+        errorDiv.innerHTML = '';
 
         try {
-            const response = await fetch('/adminHome/uploadLecturerList', {
+            const response = await fetch(form.action, {
                 method: 'POST',
                 body: formData
             });
 
             const contentType = response.headers.get('content-type') || '';
-             if (contentType.includes('application/json')) {
+            if (contentType.includes('application/json')) {
                 const data = await response.json();
-                const errorDiv = document.getElementById('lecturerListUploadErrors');
-                resultDiv.innerHTML = `<p style="color:${data.success ? 'green' : 'orange'};">${data.message}</p>`;
-                errorDiv.innerHTML = ''; // Clear previous
-
-                if (data.success && Array.isArray(data.records) && data.records.length > 0) {
-                    tableBody.innerHTML = ''; // Clear existing table content before rendering new data
-                    data.records.forEach((record, i) => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${i + 1}</td> <!-- Row number starting from 1 -->
-                            <td>${record.ID}</td>
-                            <td>${record.Name}</td>
-                            <td>${record.Department}</td>
-                            <td>${record.Role}</td>
-                            <td>${record.Email}</td>
-                            <td>${record.Contact}</td>
-                            <td>Deactivated</td>
-                        `;
-                        tableBody.appendChild(row);
-                    });
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `<p style="color:green;">${data.message}</p>`;
+                    
+                    // Update table if data exists
+                    if (Array.isArray(data.records) && data.records.length > 0 && tableBody) {
+                        tableBody.innerHTML = '';
+                        data.records.forEach((record, i) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${i + 1}</td>
+                                <td>${record.ID}</td>
+                                <td>${record.Name}</td>
+                                <td>${record.Department}</td>
+                                <td>${record.Role}</td>
+                                <td>${record.Email}</td>
+                                <td>${record.Contact}</td>
+                                <td>Deactivated</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    }
                 } else {
-                    const errorList = data.errors && data.errors.length
-                        ? '<ul>' + data.errors.map(err => `<li>${err}</li>`).join('') + '</ul>'
-                        : '<p>No data uploaded. All entries may be duplicates or invalid.</p>';
-
-                    errorDiv.innerHTML = `<div style="color: red;">${errorList}</div>`;
+                    resultDiv.innerHTML = `<p style="color:orange;">${data.message}</p>`;
+                    
+                    // Display errors if they exist
+                    if (data.errors && data.errors.length) {
+                        errorDiv.innerHTML = '<ul>' + 
+                            data.errors.map(err => `<li>${err}</li>`).join('') + 
+                            '</ul>';
+                    }
                 }
-                fileInput.value = ""; // Clear file input
+                
+                // Reset form
+                fileInput.value = "";
+                fileNameDisplay.textContent = "";
+                uploadContainer.classList.remove('has-file');
+                uploadContainer.style.borderColor = '#ccc';
+                uploadContainer.style.backgroundColor = '#f5f5f5';
             } else {
                 const text = await response.text();
-                resultDiv.innerHTML = `<p>${text}</p>`;
+                resultDiv.innerHTML = `<p style="color:red;">Unexpected response: ${text}</p>`;
             }
         } catch (error) {
             resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${error.message}</p>`;
-            console.error(error);
+            console.error('Upload error:', error);
         }
     });
-}
+});
+
+
+
+
+
 
 
 

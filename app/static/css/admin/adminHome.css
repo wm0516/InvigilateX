@@ -189,7 +189,28 @@ html, body {
     display: none;
 }
 
+.file-name-display {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 0.9em;
+    color: #555;
+    font-weight: bold;
+}
 
+.result-message {
+    text-align: center;
+    margin: 15px 0;
+    min-height: 20px;
+}
+
+.error-message {
+    text-align: center;
+    max-height: 15vh;
+    overflow-y: auto;
+    margin: 10px 0;
+    color: #d9534f;
+    padding: 0 20px;
+}
 
 
 

@@ -4,24 +4,30 @@
 {% block content %}
 <div class="menu-section">
     <h2>Upload Lecturer List</h2>
-    <div class="form-frame">
-        <form id="uploadLecturerListForm" action="{{ url_for('admin_uploadLecturerList') }}" method="POST" enctype="multipart/form-data">
-            <div style="text-align: center; margin-bottom: 2%;">
-                <label>
-                    Upload file 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
-                </label>
+    <form id="uploadLecturerListForm" action="{{ url_for('admin_uploadLecturerList') }}" method="POST" enctype="multipart/form-data">
+        <label for="lecturerList_list">
+            <div class="upload-container">
+                <div class="upload-text">Upload file format with 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
+                    <br><br>Click to upload or drag and drop with below file format</div>
+                <div class="file-types">XLSX, XLS, or XLSM</div><br><br>
+                <!-- Selected file display -->
+                <div id="selectedFileName" class="file-name-display"></div>
             </div>
-            <div class="input-frame">
-                <input type="file" id="lecturerList_list" name="lecturerList_file" accept=".xlsx,.xls,.xlsm" required>
-            </div>
-            <div class="button-wrapper">
-                <button type="submit">Upload</button>
-            </div>
-            <!-- Result feedback -->
-            <div id="lecturerListUploadResult" style="text-align: center;"></div>
-            <div id="lecturerListUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
-        </form>
-    </div>
+        </label>
+        
+        <input type="file" id="lecturerList_list" name="lecturerList_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
+        
+        <!-- Result feedback -->
+        <div id="lecturerListUploadResult" class="result-message"></div>
+        <div id="lecturerListUploadErrors" class="error-message"></div>
+        
+        <!-- Submit button -->
+        <div class="button-wrapper">
+            <button type="submit">Upload</button>
+        </div>
+    </form>
+
+
 
     <br><br>
     <h2>Table Record</h2>
