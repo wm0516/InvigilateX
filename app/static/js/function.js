@@ -29,6 +29,46 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+// Optional JavaScript for drag and drop functionality
+const uploadContainer = document.querySelector('.upload-container');
+
+uploadContainer.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadContainer.style.borderColor = '#0066ff';
+    uploadContainer.style.backgroundColor = '#f0f7ff';
+});
+
+uploadContainer.addEventListener('dragleave', () => {
+    uploadContainer.style.borderColor = '#ccc';
+    uploadContainer.style.backgroundColor = '#f9f9f9';
+});
+
+uploadContainer.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadContainer.style.borderColor = '#ccc';
+    uploadContainer.style.backgroundColor = '#f9f9f9';
+    
+    // Handle dropped files
+    const fileInput = document.getElementById('file-input');
+    fileInput.files = e.dataTransfer.files;
+    
+    // Optional: display file name or trigger upload
+    if (fileInput.files.length > 0) {
+        console.log('File selected:', fileInput.files[0].name);
+        // Here you could add code to upload the file
+    }
+});
+
+// funtion of toggle side bar
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('collapsed');
+    // Save state to localStorage
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+}
+
+
+
 /* admin hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {

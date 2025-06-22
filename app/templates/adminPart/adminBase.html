@@ -65,14 +65,7 @@
         </main>
     </div>
 
-    <script>
-        // funtion of toggle side bar
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
-            // Save state to localStorage
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        }
-    </script>
+    <!-- Javascript control the navigation -->
+    <script src="{{ url_for('static', filename='js/function.js') }}"></script>
 </body>
 </html>
