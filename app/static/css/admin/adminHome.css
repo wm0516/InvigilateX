@@ -298,11 +298,14 @@ label {
 }
 
 input, select {
-    width: 25vh;
     padding: 10px;
     margin: 1% 0;
     box-sizing: border-box;
+    font-size: medium;
+
 }
+
+
 
 .toggle-password-btn {
     position: absolute;
@@ -430,11 +433,6 @@ h2 {
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: #f1f1f1;
-}
-
-input[type="file"] {
-    font-size: medium;
-    width: 100%;
 }
 
 
