@@ -11,25 +11,22 @@
             <div class="upload-container">
                 <div class="upload-text">Upload file format<br><br>Click to upload or drag and drop</div>
                 <div class="file-types">XLSX, XLS, or XLSM</div>
+                <!-- Selected file display -->
+                <div id="selectedFileName" style="text-align: center; margin: 10px 0; font-size: 0.9em; color: #555;"></div>
             </div>
         </label>
         
         <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
-        
-        <!-- Selected file display -->
-        <div id="selectedFileName" style="text-align: center; margin: 10px 0; font-size: 0.9em; color: #555;"></div>
         
         <!-- Result feedback -->
         <div id="lecturerUploadResult" style="text-align: center; margin: 15px 0;"></div>
         <div id="lecturerUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto; margin: 10px 0; color: #d9534f;"></div>
         
         <!-- Submit button -->
-        <div style="text-align: center; margin-top: 20px;">
-            <button type="submit" class="btn btn-primary" style="padding: 8px 25px;">Upload</button>
+        <div class="button-wrapper">
+            <button type="submit">Upload</button>
         </div>
     </form>
-
-
 
 
     
