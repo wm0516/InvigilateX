@@ -460,20 +460,21 @@ h2 {
 
 
 .alert {
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
 }
 
 .alert-success {
-  background-color: #d4edda;
-  color: #155724;
+    background-color: #d4edda;
+    color: #155724;
 }
 
 
 .alert-error, .alert-input_error {
-  background-color: #f8d7da;
-  color: #721c24;
+    background-color: #f8d7da;
+    color: #721c24;
 }
 
 
