@@ -550,7 +550,7 @@ def admin_profile():
         if error_message:
             flash(str(error_message), 'error')
         elif not adminContact_text and not adminPassword1_text:
-            flash("Nothing to update", 'info')
+            flash("Nothing to update", 'error')
         else:
             if admin:
                 if adminContact_text:
