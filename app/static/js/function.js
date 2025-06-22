@@ -111,11 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorDiv = document.getElementById('lecturerListUploadErrors');
     const tableBody = document.querySelector('.user-data-table tbody');
 
-    if (!form || !fileInput || !uploadContainer) {
-        console.error('Essential elements not found');
-        return;
-    }
-
     // Handle click on container
     uploadContainer.addEventListener('click', function(e) {
         e.preventDefault();
@@ -126,7 +121,8 @@ document.addEventListener('DOMContentLoaded', function() {
     fileInput.addEventListener('change', function() {
         if (this.files.length > 0) {
             fileNameDisplay.textContent = "Selected file: " + this.files[0].name;
-            uploadContainer.classList.add('has-file');
+            uploadContainer.style.borderColor = '#5cb85c';
+            uploadContainer.style.backgroundColor = '#e8f5e9';
         }
     });
 
@@ -138,12 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     uploadContainer.addEventListener('dragleave', function() {
-        if (fileInput.files.length) {
-            uploadContainer.classList.add('has-file');
-        } else {
-            uploadContainer.style.borderColor = '#ccc';
-            uploadContainer.style.backgroundColor = '#f5f5f5';
-        }
+        uploadContainer.style.borderColor = fileInput.files.length ? '#5cb85c' : '#ccc';
+        uploadContainer.style.backgroundColor = fileInput.files.length ? '#e8f5e9' : '#f9f9f9';
     });
 
     uploadContainer.addEventListener('drop', function(e) {
@@ -151,9 +143,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.dataTransfer.files.length) {
             fileInput.files = e.dataTransfer.files;
             fileNameDisplay.textContent = "Selected file: " + e.dataTransfer.files[0].name;
-            uploadContainer.classList.add('has-file');
+            uploadContainer.style.borderColor = '#5cb85c';
+            uploadContainer.style.backgroundColor = '#e8f5e9';
         }
     });
+
 
     // Form submission handling
     form.addEventListener('submit', async function(e) {
