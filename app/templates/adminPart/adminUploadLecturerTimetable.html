@@ -9,10 +9,10 @@
     <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
         <label for="lecturer_list">
             <div class="upload-container">
-                <div><h5>Upload file format with according format<br><br>Click to upload or drag and drop with below file format</h5></div>
-                <div><h5>XLSX, XLS, or XLSM</h5></div><br><br>
+                <div class="upload-text">Upload file format with according format<br><br>Click to upload or drag and drop with below file format</div>
+                <div class="file-types">XLSX, XLS, or XLSM</div><br><br>
                 <!-- Selected file display -->
-                <div id="selectedFileName"></div>
+                <div id="selectedFileName" style="text-align: center; margin: 10px 0; font-size: 0.9em; color: #555;"></div>
             </div>
         </label>
         
