@@ -1,25 +1,7 @@
 {% extends "adminPart/adminBase.html" %}
 {% block title %}Admin UploadExam{% endblock %}
-
 {% block content %}
 <div class="menu-section">
-    <h2>Upload Exam File</h2>
-    <div class="form-frame">
-        <label>Upload file 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room</label>
-        <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
-            <div class="input-frame">
-                <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
-            </div>
-            <div class="button-wrapper">
-                <button type="submit">Upload</button>
-            </div>
-            <!-- Result feedback -->
-            <div id="examUploadResult" style="text-align: center;"></div>
-            <div id="examUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
-        </form>
-    </div>
-
-
     <h2>Upload Exam File</h2>
     <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
         <label for="exam_list">
@@ -31,7 +13,6 @@
                 <div id="selectedFileName" class="file-name-display"></div>
             </div>
         </label>
-        
         <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
         
         <!-- Result feedback -->
