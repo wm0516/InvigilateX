@@ -5,12 +5,8 @@
 <div class="menu-section">
     <h2>Upload Exam File</h2>
     <div class="form-frame">
+        <label>Upload file 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room</label>
         <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
-            <div style="text-align: center; margin-bottom: 2%;">
-                <label>
-                    Upload file 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room
-                </label>
-            </div>
             <div class="input-frame">
                 <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required>
             </div>
@@ -22,6 +18,31 @@
             <div id="examUploadErrors" style="text-align: center; max-height: 15vh; overflow-y: auto;"></div>
         </form>
     </div>
+
+
+    <h2>Upload Exam File</h2>
+    <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
+        <label for="exam_list">
+            <div class="upload-container">
+                <div class="upload-text">Upload file format with 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room
+                    <br><br>Click to upload or drag and drop with below file format</div>
+                <div class="file-types">XLSX, XLS, or XLSM</div><br><br>
+                <!-- Selected file display -->
+                <div id="selectedFileName" class="file-name-display"></div>
+            </div>
+        </label>
+        
+        <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
+        
+        <!-- Result feedback -->
+        <div id="examUploadResult" class="result-message"></div>
+        <div id="examUploadErrors" class="error-message"></div>
+        
+        <!-- Submit button -->
+        <div class="button-wrapper">
+            <button type="submit">Upload</button>
+        </div>
+    </form>
 
     <br><br>
     <h2>Table Record</h2>

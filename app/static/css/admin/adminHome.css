@@ -200,7 +200,6 @@ html, body {
 .result-message {
     text-align: center;
     margin: 15px 0;
-    min-height: 20px;
 }
 
 .error-message {
