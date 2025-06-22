@@ -22,7 +22,7 @@ class User(db.Model):
     # Refer to Staff Name
     userName = db.Column(db.String(255))
     # Lecturer and Dean have this selection
-    userDepartment = db.Column(db.String(40))
+    userDepartment = db.Column(db.String(60))
     # Lecturer = 1, Dean = 2 (Dean with higher level to access of)
     userLevel = db.Column(db.Integer)
     # Refer to Staff INTI email
@@ -37,7 +37,7 @@ class User(db.Model):
     CREATE TABLE User (
         userId VARCHAR(20) NOT NULL PRIMARY KEY,
         userName VARCHAR(255),
-        userDepartment VARCHAR(40),
+        userDepartment VARCHAR(60),
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
