@@ -160,9 +160,9 @@ html, body {
 .upload-container {
     border: 2px dashed #ccc;
     border-radius: 8px;
-    padding: 40px;
+    padding: 30px;
     text-align: center;
-    max-width: 500px;
+    max-width: 40%;
     margin: 20px auto;
     cursor: pointer;
     transition: all 0.3s;
