@@ -27,6 +27,8 @@ def login():
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
         
         valid, result, role = check_login(login_text, password_text)
+        session['user_id'] = result
+        session['user_role'] = role
         if not valid:
             flash(result, 'error')
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)

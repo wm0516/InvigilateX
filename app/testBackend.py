@@ -155,7 +155,7 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 
 
 
-
+'''
 def role_required(required_role):
     def decorator(f):
         @wraps(f)
@@ -186,7 +186,7 @@ def page_return(result, role):
     else:
         flash("Unknown role", "error")
         return redirect(url_for('login'))
-
+'''
 
 
 
