@@ -10,8 +10,8 @@ bcrypt = Bcrypt()
 from functools import wraps
 
 # constants.py or at the top of your app.py
-ROLE_ADMIN = 3
-ROLE_DEAN = 2
+ROLE_ADMIN = 4
+ROLE_DEAN = 3
 ROLE_HOP = 2
 ROLE_LECTURER = 1
 

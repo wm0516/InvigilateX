@@ -35,7 +35,7 @@ def login():
 
         if role == ROLE_ADMIN:
             return redirect(url_for('admin_homepage'))
-        elif role == ROLE_DEAN:
+        elif role == ROLE_DEAN or ROLE_HOP:
             return redirect(url_for('dean_homepage'))
         elif role == ROLE_LECTURER:
             return redirect(url_for('lecturer_homepage'))

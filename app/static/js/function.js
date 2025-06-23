@@ -60,7 +60,7 @@ function toggleSidebar() {
 }
 
 
-/* admin hompage tab function*/
+/* hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
     '/adminHome': 'admin_hometab',
@@ -69,11 +69,21 @@ document.addEventListener('DOMContentLoaded', function() {
     '/adminHome/uploadExamDetails': 'admin_uploadExamDetailstab',
     '/adminHome/uploadCourseDetails': 'admin_uploadCourseDetailstab',
     '/adminHome/autoGenerate': 'admin_autoGeneratetab',
-    '/adminHome/manageLecturer': 'admin_managetab'
+    '/adminHome/manageLecturer': 'admin_managetab',
+
+    '/lecturerHome': 'lecturer_hometab',
+    '/lecturerHome/timetables': 'lecturer_timetabletab',
+    '/lecturerHome/invigilationTimetable': 'lecturer_invigilationTimetabletab',
+    '/lecturerHome/profile': 'lecturer_profiletab',
+
+    'dean_homepage': 'dean_hometab',
+    'dean_timetable': 'dean_timetabletab',
+    'dean_invigilationReport': 'dean_invigilationReporttab',
+    'dean_profile': 'dean_profiletab'
   };
 
   const currentPath = window.location.pathname;
-  let activeMainTabId = 'admin_hometab';
+  let activeMainTabId = null;
 
   for (const [route, tabId] of Object.entries(mainRouteToTab)) {
     if (currentPath.includes(route)) {
@@ -82,10 +92,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  document.querySelectorAll('.main-nav .tab-link').forEach(link => {
-    link.classList.toggle('active', link.getAttribute('data-tab') === activeMainTabId);
-  });
+  // Only apply if a matching tabId was found
+  if (activeMainTabId) {
+    document.querySelectorAll('.main-nav .tab-link').forEach(link => {
+      link.classList.toggle('active', link.getAttribute('data-tab') === activeMainTabId);
+    });
+  }
 });
+
+
 
 
 /* Common Upload Functionality - Reusable */

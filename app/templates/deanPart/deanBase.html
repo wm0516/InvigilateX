@@ -1,70 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dean/deanHome.css') }}">
-    <!-- Shared header/navigation -->
-    <div class= "header-container">
-        <div class="heading"></div>
-        <div class="user-info">
-            <div class="user-details">
-                <!--
-                {{dean_name}} <br>
-                {{dean_id}} <br>
-                Dean of {{ dean_department }}<br>
-                {{dean_level}}
-                -->
-            </div>
-            <a href="{{ url_for('logout')}}" style="text-decoration: none;" class="logout-btn" type="button">Logout</a>
-        </div>
-    </div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin/adminHome.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <br>
-    <br>
-    <div class="menu-grid">
-    <!-- Main tab navigation -->
-        <div class="tab-nav">
-            <a href="{{ url_for('admin_homepage')}}" 
-               class="tab-link {% if active_tab == 'home' %}active{% endif %}" 
-               data-tab="home">Home</a>
-
-            <a href="{{ url_for('admin_upload')}}" 
-               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-               data-tab="upload">Upload File</a>
-
-            <a href="{{ url_for('admin_autoGenerate')}}" 
-               class="tab-link {% if active_tab == 'autoGenerate' %}active{% endif %}" 
-               data-tab="autoGenerate">Generate Exam Schedule</a>
-
-            <a href="{{ url_for('admin_manageLecturer')}}" 
-               class="tab-link {% if active_tab == 'manage' %}active{% endif %}" 
-               data-tab="manage">Assign Lecturer</a>
+    <header class="header">
+        <div class="toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
         </div>
-        
-        <!-- Sub-tab navigation (only shown when on upload section) -->
-        {% if active_tab == 'upload' or active_tab == 'uploadLecturerTimetable' or active_tab == 'uploadExamDetails' %}
-        <br>
-        <div class="tab-nav">
-            <a href="{{ url_for('admin_upload')}}" 
-               class="tab-link {% if active_tab == 'upload' %}active{% endif %}" 
-               data-tab="upload">Lecturers Timetable</a>
-
-            <a href="{{ url_for('admin_uploadLecturerTimetable')}}" 
-               class="tab-link {% if active_tab == 'uploadLecturerTimetable' %}active{% endif %}" 
-               data-tab="uploadLecturerTimetable">Lecturers Timetable</a>
-
-            <a href="{{ url_for('admin_uploadExamDetails')}}" 
-               class="tab-link {% if active_tab == 'uploadExamDetails' %}active{% endif %}" 
-               data-tab="uploadExamDetails">Exam Details</a>
+        <div class="user-info">
+            {{ user_name }} | {{ user_id }} | Lecturer of {{ user_department }}
         </div>
-        {% endif %}
-        <br>
-        <!-- Content block for child templates -->
-        {% block content %}{% endblock %}
+    </header>
 
-        <!-- Shared JavaScript -->
-        <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+    <div class="content-container">
+        <nav class="sidebar" id="sidebar">
+            <div class="tab-nav">
+                <a href="{{ url_for('dean_homepage') }}" class="tab-link {% if active_tab == 'dean_hometab' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('dean_timetable') }}" class="tab-link {% if active_tab == 'dean_timetabletab' %}active{% endif %}">
+                    <i class="fas fa-table"></i>
+                    <span>Timetable</span>
+                </a>
+                <a href="{{ url_for('dean_invigilationReport') }}" class="tab-link {% if active_tab == 'dean_invigilationReporttab' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Invigilation Timetable</span>
+                </a>
+                <a href="{{ url_for('dean_profile') }}" class="tab-link {% if active_tab == 'dean_profiletab' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
     </div>
+
+    <!-- Javascript control the navigation -->
+    <script src="{{ url_for('static', filename='js/function.js') }}"></script>
 </body>
 </html>
+
+
+
+
+
+
