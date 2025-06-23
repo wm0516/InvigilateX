@@ -113,83 +113,106 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
 }
 
 /* Common Form Submission - Reusable */
-async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, tableBodySelector, fileFieldName) {
-    const form = document.getElementById(formId);
-    const fileInput = document.getElementById(fileInputId);
-    const resultDiv = document.getElementById(resultDivId);
-    const errorDiv = document.getElementById(errorDivId);
-    const tableBody = document.querySelector(tableBodySelector);
+async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, tableBodySelector, fileFieldName, generateRowFn) {
+  const form = document.getElementById(formId);
+  const fileInput = document.getElementById(fileInputId);
+  const resultDiv = document.getElementById(resultDivId);
+  const errorDiv = document.getElementById(errorDivId);
+  const tableBody = document.querySelector(tableBodySelector);
 
-    if (!form || !fileInput || !resultDiv) return;
+  if (!form || !fileInput || !resultDiv) return;
 
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const file = fileInput.files[0];
+    if (!file) {
+      resultDiv.innerHTML = '';
+      errorDiv.innerHTML = '<p style="color:red;">Please select a file.</p>';
+      return;
+    }
 
-        const file = fileInput.files[0];
-        if (!file) {
-            resultDiv.innerHTML = '<p style="color:red;">Please select a file to upload.</p>';
-            return;
-        }
+    const formData = new FormData();
+    formData.append(fileFieldName, file);
 
-        const formData = new FormData();
-        formData.append(fileFieldName, file);
+    // Clear previous messages, show spinner
+    resultDiv.textContent = '';
+    errorDiv.textContent = '';
+    const spinner = document.createElement('span');
+    spinner.className = 'spinner';
+    spinner.textContent = '⌛ Uploading...';
+    resultDiv.appendChild(spinner);
 
-        resultDiv.innerHTML = '<p>Uploading details... <span class="spinner">⌛</span></p>';
-        errorDiv.innerHTML = '';
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData
+      });
 
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData
+      resultDiv.textContent = '';
+      const contentType = response.headers.get('content-type') || '';
+
+      if (contentType.includes('application/json')) {
+        const data = await response.json();
+
+        if (data.success) {
+          const msg = document.createElement('p');
+          msg.style.color = 'green';
+          msg.textContent = data.message;
+          resultDiv.appendChild(msg);
+
+          if (Array.isArray(data.records) && data.records.length && tableBody) {
+            tableBody.innerHTML = '';
+            data.records.forEach((rec, i) => {
+              const row = document.createElement('tr');
+              row.innerHTML = generateRowFn(i, rec);
+              tableBody.appendChild(row);
             });
+          }
 
-            const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-                const data = await response.json();
-                
-                if (data.success) {
-                    resultDiv.innerHTML = `<p style="color:green;">${data.message}</p>`;
-                    
-                    // Update table if data exists
-                    if (Array.isArray(data.records) && data.records.length > 0 && tableBody) {
-                        tableBody.innerHTML = '';
-                        data.records.forEach((record, i) => {
-                            const row = document.createElement('tr');
-                            // This part will need to be customized per form
-                            // You can pass a custom row generator function if needed
-                            row.innerHTML = generateTableRow(i, record);
-                            tableBody.appendChild(row);
-                        });
-                    }
-                } else {
-                    resultDiv.innerHTML = `<p style="color:orange;">${data.message}</p>`;
-                    
-                    if (data.errors && data.errors.length) {
-                        errorDiv.innerHTML = '<ul>' + 
-                            data.errors.map(err => `<li>${err}</li>`).join('') + 
-                            '</ul>';
-                    }
-                }
-                
-                // Reset form
-                fileInput.value = "";
-                const fileNameDisplay = document.querySelector(`#${fileInputId}`).previousElementSibling;
-                if (fileNameDisplay) fileNameDisplay.textContent = "";
-                const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
-                if (uploadContainer) {
-                    uploadContainer.style.borderColor = '#ccc';
-                    uploadContainer.style.backgroundColor = '#f5f5f5';
-                }
-            } else {
-                const text = await response.text();
-                resultDiv.innerHTML = `<p style="color:red;">Unexpected response: ${text}</p>`;
-            }
-        } catch (error) {
-            resultDiv.innerHTML = `<p style="color:red;">Upload failed: ${error.message}</p>`;
-            console.error('Upload error:', error);
+        } else {
+          const msg = document.createElement('p');
+          msg.style.color = 'orange';
+          msg.textContent = data.message;
+          resultDiv.appendChild(msg);
+
+          if (Array.isArray(data.errors)) {
+            const ul = document.createElement('ul');
+            data.errors.forEach(err => {
+              const li = document.createElement('li');
+              li.textContent = err;
+              ul.appendChild(li);
+            });
+            errorDiv.appendChild(ul);
+          }
         }
-    });
+
+        // Reset input & styles (upload-container stays visible)
+        fileInput.value = '';
+        document.getElementById(fileInputId).previousElementSibling.innerText = '';
+        const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
+        if (uploadContainer) {
+          uploadContainer.style.borderColor = '#ccc';
+          uploadContainer.style.backgroundColor = '#f9f9f9';
+        }
+
+      } else {
+        const text = await response.text();
+        const p = document.createElement('p');
+        p.style.color = 'red';
+        p.textContent = `Unexpected response: ${text}`;
+        resultDiv.appendChild(p);
+      }
+
+    } catch (err) {
+      resultDiv.textContent = '';
+      const p = document.createElement('p');
+      p.style.color = 'red';
+      p.textContent = `Upload failed: ${err.message}`;
+      resultDiv.appendChild(p);
+    }
+  });
 }
+
 
 // Custom row generators for different forms
 function generateLecturerRow(index, record) {
@@ -219,6 +242,22 @@ function generateExamRow(index, record) {
         <td>${record.Room}</td>
     `;
 }
+
+/*function generateTimetableRow(index, record) {
+    return `
+        <td>${index + 1}</td>
+        <td>${record.Date}</td>
+        <td>${record.Day}</td>
+        <td>${record.Start}</td>
+        <td>${record.End}</td>
+        <td>${record.Program}</td>
+        <td>${record["Course/Sec"]}</td>
+        <td>${record.Lecturer}</td>
+        <td>${record["No Of"]}</td>
+        <td>${record.Room}</td>
+    `;
+}*/
+
 
 // Initialize all upload forms when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
