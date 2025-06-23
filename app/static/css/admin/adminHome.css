@@ -250,6 +250,8 @@ html, body {
 .profile-frame{
     margin: 0 auto;
     width: 40%;
+    display: flex;
+    flex-direction: column;
 }   
 
 
