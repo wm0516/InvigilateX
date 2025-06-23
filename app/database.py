@@ -41,7 +41,7 @@ class User(db.Model):
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
-        userPassword VARCHAR(20),
+        userPassword VARCHAR(255),
         userStatus VARCHAR(15)
     );
     '''
