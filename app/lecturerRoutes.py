@@ -14,7 +14,6 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-
 @app.route('/lecturerHome/timetables', methods=['GET', 'POST'])
 def lecturer_timetable():
     timetable = Invigilation.query.all()

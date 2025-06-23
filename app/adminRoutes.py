@@ -392,9 +392,9 @@ def admin_profile():
     return render_template(
         'adminPart/adminProfile.html',
         active_tab='admin_profiletab',
-        admin_name=admin.adminName if admin else '',
-        admin_id=admin.adminId if admin else '',
-        admin_email=admin.adminEmail if admin else '',
+        admin_name=admin.userName if admin else '',
+        admin_id=admin.userId if admin else '',
+        admin_email=admin.userEmail if admin else '',
         adminContact_text=adminContact_text,
         adminPassword1_text=adminPassword1_text,
         adminPassword2_text=adminPassword2_text,
