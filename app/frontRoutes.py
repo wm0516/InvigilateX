@@ -5,7 +5,6 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-from functools import wraps
 
 # Set the default link into admin_login, because this program have 3 login phase
 @app.route('/')
@@ -35,7 +34,6 @@ def login():
         #return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
     return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
-
 
 
 # register page (done with all input validation and userID as Primary Key)
@@ -117,11 +115,6 @@ def register():
                            error_message=error_message)
 
 
-
-
-
-
-
 # forgot password page (done when the email exist in database will send reset email link)
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgotPassword():
@@ -141,15 +134,6 @@ def forgotPassword():
             return redirect(url_for('login'))
 
     return render_template('frontPart/forgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
-
-
-
-
-
-
-
-
-
 
 
 # reset password page (done after reset password based on that user password)
@@ -174,20 +158,6 @@ def resetPassword(token):
                            password_text_1=password_text_1, 
                            password_text_2=password_text_2, 
                            error_message=error_message)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Logout button from homepage to login page
