@@ -200,7 +200,7 @@ async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, ta
         uploadContainer.style.backgroundColor = '#f9f9f9';
         }
 
-
+ 
     } else {
         const text = await response.text();
         const p = document.createElement('p');
