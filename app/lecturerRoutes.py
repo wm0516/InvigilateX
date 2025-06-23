@@ -30,7 +30,7 @@ def lecturer_invigilationReport():
 
 @app.route('/lecturerHome/profile', methods=['GET', 'POST'])
 def lecturer_profile():
-    lecturerId = session.get('lecturer_id')
+    lecturerId = session.get('user_id')
     lecturer = User.query.filter_by(userId=lecturerId).first()
     
     # Pre-fill existing data

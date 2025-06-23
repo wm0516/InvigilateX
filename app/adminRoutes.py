@@ -348,7 +348,7 @@ def admin_uploadCourseDetails():
 
 @app.route('/adminHome/profile', methods=['GET', 'POST'])
 def admin_profile():
-    adminId = session.get('admin_id')
+    adminId = session.get('user_id')
     admin = User.query.filter_by(userId=adminId).first()
     
     # Pre-fill existing data

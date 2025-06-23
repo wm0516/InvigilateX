@@ -22,11 +22,11 @@ def dean_timetable():
 
 @app.route('/deanHome/invigilationReport', methods=['GET', 'POST'])
 def dean_invigilationReport():
-    return render_template('deanHome/deanInvigilationReport.html', active_tab='dean_invigilationReporttab')
+    return render_template('deanPart/deanInvigilationReport.html', active_tab='dean_invigilationReporttab')
 
 @app.route('/deanHome/profile', methods=['GET', 'POST'])
 def dean_profile():
-    deanId = session.get('dean_id')
+    deanId = session.get('user_id')
     dean = User.query.filter_by(userId=deanId).first()
     
     # Pre-fill existing data
