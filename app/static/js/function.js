@@ -76,8 +76,11 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
 
     // Handle click on container
     uploadContainer.addEventListener('click', function(e) {
-        e.preventDefault();
-        fileInput.click();
+        // Only prevent default if clicking on the container itself, not its children
+        if (e.target === uploadContainer) {
+            e.preventDefault();
+            fileInput.click();
+        }
     });
 
     // Handle file selection
@@ -86,6 +89,7 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
             fileNameDisplay.textContent = "Selected file: " + this.files[0].name;
             uploadContainer.style.borderColor = '#5cb85c';
             uploadContainer.style.backgroundColor = '#e8f5e9';
+            uploadContainer.classList.add('has-file'); // Add a class to mark as having file
         }
     });
 
@@ -97,8 +101,8 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
     });
 
     uploadContainer.addEventListener('dragleave', function() {
-        uploadContainer.style.borderColor = fileInput.files.length ? '#5cb85c' : '#ccc';
-        uploadContainer.style.backgroundColor = fileInput.files.length ? '#e8f5e9' : '#f9f9f9';
+        uploadContainer.style.borderColor = uploadContainer.classList.contains('has-file') ? '#5cb85c' : '#ccc';
+        uploadContainer.style.backgroundColor = uploadContainer.classList.contains('has-file') ? '#e8f5e9' : '#f9f9f9';
     });
 
     uploadContainer.addEventListener('drop', function(e) {
@@ -108,12 +112,13 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
             fileNameDisplay.textContent = "Selected file: " + e.dataTransfer.files[0].name;
             uploadContainer.style.borderColor = '#5cb85c';
             uploadContainer.style.backgroundColor = '#e8f5e9';
+            uploadContainer.classList.add('has-file'); // Add a class to mark as having file
         }
     });
 }
 
 /* Common Form Submission - Reusable */
-async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, tableBodySelector, fileFieldName) {
+async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, tableBodySelector, fileFieldName, rowGenerator) {
     const form = document.getElementById(formId);
     const fileInput = document.getElementById(fileInputId);
     const resultDiv = document.getElementById(resultDivId);
@@ -155,9 +160,7 @@ async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, ta
                         tableBody.innerHTML = '';
                         data.records.forEach((record, i) => {
                             const row = document.createElement('tr');
-                            // This part will need to be customized per form
-                            // You can pass a custom row generator function if needed
-                            row.innerHTML = generateTableRow(i, record);
+                            row.innerHTML = rowGenerator(i, record);
                             tableBody.appendChild(row);
                         });
                     }
@@ -171,14 +174,17 @@ async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, ta
                     }
                 }
                 
-                // Reset form
+                // Reset only the file input, keep the container styled
                 fileInput.value = "";
                 const fileNameDisplay = document.querySelector(`#${fileInputId}`).previousElementSibling;
                 if (fileNameDisplay) fileNameDisplay.textContent = "";
+                
+                // Instead of resetting the container completely, just update the border
                 const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
                 if (uploadContainer) {
                     uploadContainer.style.borderColor = '#ccc';
-                    uploadContainer.style.backgroundColor = '#f5f5f5';
+                    uploadContainer.style.backgroundColor = '#f9f9f9';
+                    uploadContainer.classList.remove('has-file');
                 }
             } else {
                 const text = await response.text();
@@ -189,35 +195,6 @@ async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, ta
             console.error('Upload error:', error);
         }
     });
-}
-
-// Custom row generators for different forms
-function generateLecturerRow(index, record) {
-    return `
-        <td>${index + 1}</td>
-        <td>${record.ID}</td>
-        <td>${record.Name}</td>
-        <td>${record.Department}</td>
-        <td>${record.Role}</td>
-        <td>${record.Email}</td>
-        <td>${record.Contact}</td>
-        <td>Deactivated</td>
-    `;
-}
-
-function generateExamRow(index, record) {
-    return `
-        <td>${index + 1}</td>
-        <td>${record.Date}</td>
-        <td>${record.Day}</td>
-        <td>${record.Start}</td>
-        <td>${record.End}</td>
-        <td>${record.Program}</td>
-        <td>${record["Course/Sec"]}</td>
-        <td>${record.Lecturer}</td>
-        <td>${record["No Of"]}</td>
-        <td>${record.Room}</td>
-    `;
 }
 
 // Initialize all upload forms when DOM is loaded
@@ -242,4 +219,3 @@ document.addEventListener('DOMContentLoaded', function() {
     handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
                    'courseUploadErrors', '.user-data-table tbody', 'course_file', generateExamRow);
 });
-
