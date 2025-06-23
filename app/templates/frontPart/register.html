@@ -39,12 +39,7 @@
                 <label>Contact Number</label>
                 <input type="tel" name="contact" value="{{ contact_text }}"><br> 
 
-                <label id="departmentLabel">
-                    {% if role == 'LECTURER' %}Department{% endif %}
-                    {% if role == 'DEAN' %}Dean of Department{% endif %}
-                    {% if role == 'HOP' %}Head of Department{% endif %}
-                    {% if role == 'ADMIN' %}Admin of Department{% endif %}
-                </label>
+                <label id="departmentLabel">Department</label>
                 <select name="department" value="{{ department_text }}">
                     <option value="" disabled selected>Select Department</option>
                     <option value="CADP - CENTRE OF AUSTRALIAN DEGREE PROGRAM">(CADP) CENTRE OF AUSTRALIAN DEGREE PROGRAM</option>
