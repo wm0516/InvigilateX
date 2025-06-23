@@ -1,8 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, session
 from app import app
 from .testBackend import *
-from .backend import *
-from .database import *
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -35,7 +33,7 @@ def login():
 
         return page_return(result, role)
 
-    return render_template('adminPart/adminLogin.html', login_text=login_text, password_text=password_text)
+    return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
 
 
@@ -104,9 +102,9 @@ def register():
             db.session.add(new_user)
             db.session.commit()
             flash("Register successful! Log in with your registered email address.", "success")
-            return redirect(url_for('admin_login'))
+            return redirect(url_for('login'))
 
-    return render_template('adminPart/adminRegister.html',
+    return render_template('frontPart/register.html',
                            id_text=id_text,
                            name_text=name_text,
                            email_text=email_text,
@@ -123,64 +121,81 @@ def register():
 
 
 
-
-
-
 # forgot password page (done when the email exist in database will send reset email link)
-@app.route('/adminForgotPassword', methods=['GET', 'POST'])
-def admin_forgotPassword():
-    admin_forgot_email_text = ''
+@app.route('/forgotPassword', methods=['GET', 'POST'])
+def forgotPassword():
+    forgot_email_text = ''
     error_message = None
 
     if request.method == 'POST':
-        admin_forgot_email_text = request.form.get('email', '').strip()
+        forgot_email_text = request.form.get('email', '').strip()
 
-        if not admin_forgot_email_text:
-            error_message = "Email address is required."
-        
-        if error_message:
-            flash(error_message, 'error')
+        # Validate and send reset email
+        success, message = check_forgotPasswordEmail(forgot_email_text)
+        if not success:
+            error_message = message
+            flash(str(error_message), 'error')
         else:
-            success, message = check_forgotPasswordEmail('admin', admin_forgot_email_text)
-            if not success:
-                error_message = message
-                flash(str(error_message), 'error')
-            else:
-                flash("Reset link sent to your email address.", 'success')
-                return redirect(url_for('admin_login'))
+            flash("Reset link sent to your email address.", 'success')
+            return redirect(url_for('login'))
 
-    return render_template('adminPart/adminForgotPassword.html', admin_forgot_email_text=admin_forgot_email_text, error_message=error_message)
+    return render_template('frontPart/forgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
+
+
+
+
+
+
+
+
+
 
 
 # reset password page (done after reset password based on that user password)
-@app.route('/adminResetPassword/<token>', methods=['GET', 'POST'])
-def admin_resetPassword(token):
-    admin_password_text_1 = ''
-    admin_password_text_2 = ''
+@app.route('/resetPassword/<token>', methods=['GET', 'POST'])
+def resetPassword(token):
+    password_text_1 = ''
+    password_text_2 = ''
     error_message = None
-    
-    if request.method == 'POST':
-        admin_password_text_1 = request.form.get('password1', '').strip()
-        admin_password_text_2 = request.form.get('password2', '').strip()
 
-        admin, error_message = check_resetPassword('admin', token, admin_password_text_1, admin_password_text_2)
+    if request.method == 'POST':
+        password_text_1 = request.form.get('password1', '').strip()
+        password_text_2 = request.form.get('password2', '').strip()
+
+        user, error_message = check_resetPassword(token, password_text_1, password_text_2)
         if error_message:
             flash(error_message, 'error')
-        elif admin:
+        elif user:
             flash("Password reset successful! Log in with your new password.", "success")
-            return redirect(url_for('admin_login'))
-        
-    return render_template('adminPart/adminResetPassword.html', admin_password_text_1=admin_password_text_1, 
-                           admin_password_text_2=admin_password_text_2, error_message=error_message)
+            return redirect(url_for('login'))
+
+    return render_template('frontPart/resetPassword.html', 
+                           password_text_1=password_text_1, 
+                           password_text_2=password_text_2, 
+                           error_message=error_message)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Logout button from homepage to login page
-@app.route('/adminLogout')
-def admin_logout():
+@app.route('/logout')
+def logout():
     # Clear the session
     session.clear()
     # Redirect to login page
-    return redirect(url_for('admin_login')) 
+    return redirect(url_for('login')) 
 
 
 
