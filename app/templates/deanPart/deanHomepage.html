@@ -6,7 +6,7 @@
         <!-- Row 1 First Fesatures to upload merge schedule files--> 
         <div class="menu-section">
             <!--   <h2>Upload File</h2><br>  -->
-            <a href="{{ url_for('admin_upload')}}" style="text-decoration: none;"><h2>Upload File</h2></a>
+            <a href="{{ url_for('dean_timetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
             <li class="submenu">
                 <strong>  Purpose:</strong>
                 <ul>    
@@ -19,32 +19,16 @@
         <!-- Row 2 First auto generated scdehule-->
         <div class="menu-section">
             <!-- <h2>Generate Exam Schedule</h2> -->
-            <a href="{{ url_for('admin_autoGenerate')}}" style="text-decoration: none;"><h2>Generate Exam Schedule</h2></a>
+            <a href="{{ url_for('dean_invigilationReport')}}" style="text-decoration: none;"><h2>Invigilation Report</h2></a>
             <li class="submenu">
                 <strong>  Functionality:</strong>
                 <ul>
-                    <li>Automatically assign examiners based on availability</li>
-                    <li>Review and manage generated exam timetables</li>
-                    <li>Distribute schedules via email</li>
-                    <li>Download schedule in PDF format</li>
+                    <li>Upload merged lecturer schedule files</li>
+                    <li>Access and review combined lecturer timetables</li>
                 </ul>
             </li>
         </div>
 
-        <!-- Row 2 Second on managing lecturers-->
-        <div class="menu-section">
-        <!-- <h2>Settings</h2> -->
-            <a href="{{ url_for('admin_manageLecturer')}}" style="text-decoration: none;"><h2>Assign Lecturer</h2></a>
-            <li class="submenu">
-                <strong>  Account Controls: </strong>
-                <ul>
-                    <li>Manage all lecturer accounts</li>
-                    <li>Deactivate lecturer access (preserves data)</li>
-                    <li>Review dean accounts</li>
-                </ul>
-            </li>
-        </div>
-    </div>
 {% endblock %}
 
 <!-- 

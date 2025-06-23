@@ -32,6 +32,10 @@
                     <i class="fas fa-users"></i>
                     <span>Invigilation Timetable</span>
                 </a>
+                <a href="{{ url_for('lecturer_invigilationReport') }}" class="tab-link {% if active_tab == 'lecturer_invigilationReporttab' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Invigilation Report</span>
+                </a>
                 <a href="{{ url_for('lecturer_profile') }}" class="tab-link {% if active_tab == 'lecturer_profiletab' %}active{% endif %}">
                     <i class="fas fa-user"></i>
                     <span>Profile</span>

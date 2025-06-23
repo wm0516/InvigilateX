@@ -24,6 +24,10 @@ def lecturer_timetable():
 def lecturer_invigilationTimetable():
     return render_template('lecturerPart/lecturerInvigilationTimetable.html', active_tab='lecturer_invigilationTimetabletab')
 
+@app.route('/lecturerHome/invigilationReport', methods=['GET', 'POST'])
+def lecturer_invigilationReport():
+    return render_template('lecturerPart/lecturerInvigilationReport.html', active_tab='lecturer_invigilationReporttab')
+
 @app.route('/lecturerHome/profile', methods=['GET', 'POST'])
 def lecturer_profile():
     lecturerId = session.get('lecturer_id')
@@ -72,7 +76,7 @@ def lecturer_profile():
         lecturer_name=lecturer.userName if lecturer else '',
         lecturer_id=lecturer.userId if lecturer else '',
         lecturer_email=lecturer.userEmail if lecturer else '',
-        lecturerDepartment_text=lecturer.userDepartment if lecturer else '',
+        lecturer_department_text=lecturer.userDepartment if lecturer else '',
         lecturerContact_text=lecturerContact_text,
         lecturerPassword1_text=lecturerPassword1_text,
         lecturerPassword2_text=lecturerPassword2_text,

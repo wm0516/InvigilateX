@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/lecturerHome': 'lecturer_hometab',
     '/lecturerHome/timetables': 'lecturer_timetabletab',
     '/lecturerHome/invigilationTimetable': 'lecturer_invigilationTimetabletab',
+    '/lecturerHome/invigilationReport': 'lecturer_invigilationReporttab',
     '/lecturerHome/profile': 'lecturer_profiletab',
 
     'dean_homepage': 'dean_hometab',

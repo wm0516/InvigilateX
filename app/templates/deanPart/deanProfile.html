@@ -1,5 +1,5 @@
-{% extends "lecturerPart/lecturerBase.html" %}
-{% block title %}Lecturer Profile{% endblock %}
+{% extends "deanPart/deanBase.html" %}
+{% block title %}Dean Profile{% endblock %}
 {% block content %}
 <div class="menu-section">
     <h2>Profile</h2>
@@ -7,23 +7,23 @@
         <div class="profile-frame">
             <br>
             <label>Full Name as per IC</label>
-            <input type="text" name="username" value="{{ lecturer_name }}" readonly><br>
+            <input type="text" name="username" value="{{ dean_name }}" readonly><br>
             
             <label>Staff ID</label>
-            <input type="text" name="userid" value="{{ lecturer_id }}" readonly><br>
+            <input type="text" name="userid" value="{{ dean_id }}" readonly><br>
 
             <label>Email Address</label>
-            <input type="text" name="email" value="{{ lecturer_email }}" readonly><br>
+            <input type="text" name="email" value="{{ dean_email }}" readonly><br>
             
             <label>Department</label>
-            <input type="text" name="department", value="{{ lecturer_department_text}}" readonly><br>
+            <input type="text" name="department", value="{{ dean_department_text}}" readonly><br>
         
             <label>Contact Number</label>
-            <input type="tel" name="contact" value="{{ lecturer_contact_text }}"><br> 
+            <input type="tel" name="contact" value="{{ dean_contact_text }}"><br> 
             
             <div class="password-container">
                 <label>Password</label>
-                <input type="password" name="password1" value="{{ lecturer_password1_text }}">
+                <input type="password" name="password1" value="{{ dean_password1_text }}">
                 <button type="button" class="toggle-password-btn">
                     <i class="fas fa-eye"></i>
                 </button>
@@ -31,7 +31,7 @@
 
             <div class="password-container">
                 <label> Confirm Password</label>
-                <input type="password" name="password2" value="{{ lecturer_password2_text }}">
+                <input type="password" name="password2" value="{{ dean_password2_text }}">
                 <button type="button" class="toggle-password-btn">
                     <i class="fas fa-eye"></i>
                 </button>
@@ -56,13 +56,6 @@
     </form>
 </div>
 {% endblock %}
-
-
-
-
-
-
-
 
 
 
