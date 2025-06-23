@@ -35,7 +35,7 @@ def check_contact(contact):
 # Pending
 
 # Check login validate
-def check_login(role, loginEmail, loginPassword):
+'''def check_login(role, loginEmail, loginPassword):
     if not loginEmail or not loginPassword:
         return False, "Both fields are required."
     
@@ -65,7 +65,7 @@ def check_login(role, loginEmail, loginPassword):
         return False, f"No access to the {role} page."
 
     return True, user.userId
-
+'''
 
 # Check registerID, registerEmail, registerContact can't be same as inside database based on role
 def check_register(registerID, registerEmail, registerContact):
