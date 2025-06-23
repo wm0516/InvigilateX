@@ -21,7 +21,7 @@ def dean_timetable():
     return render_template('deanPart/deanTimetable.html', active_tab='dean_timetabletab', timetable=timetable)
 
 @app.route('/deanHome/invigilationReport', methods=['GET', 'POST'])
-def lecturer_invigilationReport():
+def dean_invigilationReport():
     return render_template('deanHome/deanInvigilationReport.html', active_tab='dean_invigilationReporttab')
 
 @app.route('/deanHome/profile', methods=['GET', 'POST'])
