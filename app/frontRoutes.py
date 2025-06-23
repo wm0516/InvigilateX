@@ -1,0 +1,185 @@
+from flask import render_template, request, redirect, url_for, flash, session
+from app import app
+from .testBackend import *
+from .database import *
+from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+bcrypt = Bcrypt()
+from functools import wraps
+
+# Set the default link into admin_login, because this program have 3 login phase
+#@app.route('/')
+#def index():
+#    return redirect(url_for('login'))
+
+# login page (done with checking email address and hash password)
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    login_text = ''
+    password_text = ''
+
+    if request.method == 'POST':
+        login_text = request.form.get('textbox', '').strip()
+        password_text = request.form.get('password', '').strip()
+        
+        if not login_text or not password_text:
+            flash("Please fill in all fields", 'input_error')
+            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
+        
+        valid, result, role = check_login(login_text, password_text)
+        if not valid:
+            flash(result, 'error')
+            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
+
+        return page_return(result, role)
+
+    return render_template('adminPart/adminLogin.html', login_text=login_text, password_text=password_text)
+
+
+
+# register page (done with all input validation and userID as Primary Key)
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    id_text = ''
+    name_text = ''
+    email_text = ''
+    contact_text = ''
+    password1_text = ''
+    password2_text = ''
+    department_text = ''
+    role_text = ''
+    error_message = None
+
+    role_map = {
+        'LECTURER': ROLE_LECTURER,
+        'DEAN': ROLE_DEAN,
+        'HOP': ROLE_HOP,
+        'ADMIN': ROLE_ADMIN
+    }
+
+    if request.method == 'POST':
+        id_text = request.form.get('userid', '').strip()
+        name_text = request.form.get('username', '').strip()
+        email_text = request.form.get('email', '').strip()
+        contact_text = request.form.get('contact', '').strip()
+        password1_text = request.form.get('password1', '').strip()
+        password2_text = request.form.get('password2', '').strip()
+        department_text = request.form.get('department', '').strip()
+        role_text = request.form.get('role', '').strip()
+
+        is_valid, error_message = check_register(id_text, email_text, contact_text)
+        
+        if not is_valid:
+            pass
+        elif not all([id_text, name_text, email_text, contact_text, password1_text, password2_text, department_text, role_text]):
+            error_message = "All fields are required."
+        elif not email_format(email_text):
+            error_message = "Wrong Email Address format"
+        elif not contact_format(contact_text):
+            error_message = "Wrong Contact Number format"
+        elif password1_text != password2_text:
+            error_message = "Passwords do not match."
+        elif not password_format(password1_text):
+            error_message = "Wrong password format."
+        elif role_text not in role_map:
+            error_message = "Invalid role selected."
+
+        if error_message:
+            flash(error_message, 'error')
+        else:
+            hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
+            new_user = User(
+                userId=id_text,
+                userName=name_text.upper(),
+                userDepartment=department_text.upper(),
+                userLevel=role_map[role_text],  # use mapped constant
+                userEmail=email_text,
+                userContact=contact_text,
+                userPassword=hashed_pw,
+                userStatus=False
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+            flash("Register successful! Log in with your registered email address.", "success")
+            return redirect(url_for('admin_login'))
+
+    return render_template('adminPart/adminRegister.html',
+                           id_text=id_text,
+                           name_text=name_text,
+                           email_text=email_text,
+                           contact_text=contact_text,
+                           password1_text=password1_text,
+                           password2_text=password2_text,
+                           department_text=department_text,
+                           role_text=role_text,
+                           error_message=error_message)
+
+
+
+
+
+
+
+
+
+
+# forgot password page (done when the email exist in database will send reset email link)
+@app.route('/adminForgotPassword', methods=['GET', 'POST'])
+def admin_forgotPassword():
+    admin_forgot_email_text = ''
+    error_message = None
+
+    if request.method == 'POST':
+        admin_forgot_email_text = request.form.get('email', '').strip()
+
+        if not admin_forgot_email_text:
+            error_message = "Email address is required."
+        
+        if error_message:
+            flash(error_message, 'error')
+        else:
+            success, message = check_forgotPasswordEmail('admin', admin_forgot_email_text)
+            if not success:
+                error_message = message
+                flash(str(error_message), 'error')
+            else:
+                flash("Reset link sent to your email address.", 'success')
+                return redirect(url_for('admin_login'))
+
+    return render_template('adminPart/adminForgotPassword.html', admin_forgot_email_text=admin_forgot_email_text, error_message=error_message)
+
+
+# reset password page (done after reset password based on that user password)
+@app.route('/adminResetPassword/<token>', methods=['GET', 'POST'])
+def admin_resetPassword(token):
+    admin_password_text_1 = ''
+    admin_password_text_2 = ''
+    error_message = None
+    
+    if request.method == 'POST':
+        admin_password_text_1 = request.form.get('password1', '').strip()
+        admin_password_text_2 = request.form.get('password2', '').strip()
+
+        admin, error_message = check_resetPassword('admin', token, admin_password_text_1, admin_password_text_2)
+        if error_message:
+            flash(error_message, 'error')
+        elif admin:
+            flash("Password reset successful! Log in with your new password.", "success")
+            return redirect(url_for('admin_login'))
+        
+    return render_template('adminPart/adminResetPassword.html', admin_password_text_1=admin_password_text_1, 
+                           admin_password_text_2=admin_password_text_2, error_message=error_message)
+
+
+# Logout button from homepage to login page
+@app.route('/adminLogout')
+def admin_logout():
+    # Clear the session
+    session.clear()
+    # Redirect to login page
+    return redirect(url_for('admin_login')) 
+
+
+

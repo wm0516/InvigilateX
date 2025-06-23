@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+
 // Initialize sidebar state from localStorage
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');

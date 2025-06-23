@@ -16,7 +16,7 @@ body {
 
 form {
     text-align: center;
-    width: 55vh;
+    width: 30%;
     padding: 50px;
     border: 2px solid #ccc;
     border-radius: 10px;
@@ -32,7 +32,7 @@ form {
     align-items: center;
 }
 
-.form-left, .form-right {
+.form-left, .form-right, .form-middle {
     display: flex;
     flex-direction: column;
 }
