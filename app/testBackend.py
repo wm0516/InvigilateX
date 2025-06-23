@@ -49,8 +49,11 @@ def check_login(loginEmail, loginPassword):
         return False, "Both fields are required.", None
 
     user = User.query.filter_by(userEmail=loginEmail).first()
-    if not user or not bcrypt.check_password_hash(user.userPassword, loginPassword):
+    if not user: # or not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid email or password.", None
+    
+    if not bcrypt.check_password_hash(user.userPassword, loginPassword):
+        return False, "Invalid password.", None 
 
     if user.userLevel not in [ROLE_ADMIN, ROLE_DEAN, ROLE_HOP, ROLE_LECTURER]:
         return False, "User role is not recognized.", None
