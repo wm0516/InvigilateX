@@ -192,7 +192,7 @@ def inject_user_data():
                 'user_level': user.userLevel,
                 'user_email': user.userEmail,
                 'user_contact': user.userContact,
-                'user_password': user.userPassowrd,
+                'user_password': user.userPassword,
                 'user_status': user.userStatus
             }
     return {
