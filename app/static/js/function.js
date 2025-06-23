@@ -188,20 +188,26 @@ async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, ta
 
         // Reset input & styles (upload-container stays visible)
         fileInput.value = '';
-        document.getElementById(fileInputId).previousElementSibling.innerText = '';
-        const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
-        if (uploadContainer) {
-          uploadContainer.style.borderColor = '#ccc';
-          uploadContainer.style.backgroundColor = '#f9f9f9';
+
+        const fileNameDisplay = document.getElementById('selectedFileName');
+        if (fileNameDisplay) {
+        fileNameDisplay.textContent = '';
         }
 
-      } else {
+        const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
+        if (uploadContainer) {
+        uploadContainer.style.borderColor = '#ccc';
+        uploadContainer.style.backgroundColor = '#f9f9f9';
+        }
+
+
+    } else {
         const text = await response.text();
         const p = document.createElement('p');
         p.style.color = 'red';
         p.textContent = `Unexpected response: ${text}`;
         resultDiv.appendChild(p);
-      }
+    }
 
     } catch (err) {
       resultDiv.textContent = '';
