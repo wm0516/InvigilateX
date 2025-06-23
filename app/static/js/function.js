@@ -18,7 +18,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-
+function updateDepartmentLabel() {
+    const roleSelect = document.getElementById('roleSelect');
+    const departmentLabel = document.getElementById('departmentLabel');
+    const selectedRole = roleSelect.value;
+    
+    switch(selectedRole) {
+        case 'LECTURER':
+            departmentLabel.textContent = 'Department';
+            break;
+        case 'DEAN':
+            departmentLabel.textContent = 'Dean of Department';
+            break;
+        case 'HOP':
+            departmentLabel.textContent = 'Head of Department';
+            break;
+        case 'ADMIN':
+            departmentLabel.textContent = 'Admin of Department';
+            break;
+        default:
+            departmentLabel.textContent = 'Department';
+    }
+}
 
 // Initialize sidebar state from localStorage
 document.addEventListener('DOMContentLoaded', function() {

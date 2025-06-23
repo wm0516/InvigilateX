@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <form method="POST" style="width: 50%">
+    <form method="POST" style="width: 45%">
         <div class="heading"></div>
         <br>
         <h1>Register</h1>
@@ -23,7 +23,7 @@
                 <input type="text" name="userid" value="{{ id_text }}"><br>
 
                 <label>Role Registered as</label>
-                <select name="role" value="{{ role_text }}">
+                <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
                     <option value="" disabled selected>Select Role</option>
                     <option value="LECTURER">LECTURER</option>
                     <option value="DEAN">DEAN</option>
@@ -39,7 +39,7 @@
                 <label>Contact Number</label>
                 <input type="tel" name="contact" value="{{ contact_text }}"><br> 
 
-                <label>
+                <label id="departmentLabel">
                     {% if role == 'LECTURER' %}Department{% endif %}
                     {% if role == 'DEAN' %}Dean of Department{% endif %}
                     {% if role == 'HOP' %}Head of Department{% endif %}
@@ -82,9 +82,9 @@
 
         <!-- Show any message of doesn't match the require of input --> 
         {% if error_message and request.method == 'POST' %}
-        <div class="alert">
-            <strong>Error:</strong> {{ error_message }}
-        </div>
+            <div class="alert">
+                <strong>Error:</strong> {{ error_message }}
+            </div>
         {% endif %}
 
         <!-- Button frame with standard-->
