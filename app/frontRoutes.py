@@ -30,8 +30,18 @@ def login():
             flash(result, 'error')
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
-        return page_return(result, role)
-        #return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
+        session['user_id'] = result
+        session['user_role'] = role
+
+        if role == ROLE_ADMIN:
+            return redirect(url_for('admin_homepage'))
+        elif role == ROLE_DEAN:
+            return redirect(url_for('dean_homepage'))
+        elif role == ROLE_LECTURER:
+            return redirect(url_for('lecturer_homepage'))
+        else:
+            flash("Unknown role", "error")
+            return redirect(url_for('login'))
 
     return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
@@ -167,6 +177,61 @@ def logout():
     session.clear()
     # Redirect to login page
     return redirect(url_for('login')) 
+
+# Once login sucessful, it will kept all that user data and just use when need
+@app.context_processor
+def inject_user_data():
+    userId = session.get('user_id')
+    if userId:
+        user = User.query.get(userId)
+        if user:
+            return {
+                'user_id': userId,
+                'user_name': user.userName,
+                'user_department': user.userDepartment,
+                'user_level': user.userLevel,
+                'user_email': user.userEmail,
+                'user_contact': user.userContact,
+                'user_password': user.userPassowrd,
+                'user_status': user.userStatus
+            }
+    return {
+        'user_id': None,
+        'user_name': '',
+        'user_department': '',
+        'user_level': '',
+        'user_email': '',
+        'user_contact': '',
+        'user_password': '',
+        'user_status': ''
+    }
+
+
+# admin homepage
+@app.route('/adminHome', methods=['GET', 'POST'])
+def admin_homepage():
+    return render_template('adminPart/adminHomepage.html', active_tab='admin_hometab')
+
+
+# dean&hop homepage
+@app.route('/deanHome', methods=['GET', 'POST'])
+def dean_homepage():
+    return render_template('deanPart/deanHomepage.html', active_tab='home')
+
+
+# lecturer homepage
+@app.route('/lecturerHome', methods=['GET', 'POST'])
+def lecturer_homepage():
+    return render_template('lecturerPart/lecturerHomepage.html', active_tab='lecturer_hometab')
+
+
+
+
+
+
+
+
+
 
 
 

@@ -12,33 +12,6 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-# Once login sucessful, it will kept all that user data and just use when need
-@app.context_processor
-def inject_admin_data():
-    adminId = session.get('admin_id')
-    if adminId:
-        admin = Admin.query.get(adminId)
-        if admin:
-            return {
-                'admin_id': adminId,
-                'admin_name': admin.adminName,
-                'admin_department': admin.adminDepartment,
-                'admin_email': admin.adminEmail,
-                'admin_contact' : admin.adminContact
-            }
-    return {
-        'admin_id': None,
-        'admin_name': '',
-        'admin_department': '',
-        'admin_email': '',
-        'admin_contact': ''
-    }
-
-
-# home page (start with this!!!!!!!!!!!!!!)
-@app.route('/adminHome', methods=['GET', 'POST'])
-def admin_homepage():
-    return render_template('adminPart/adminHomepage.html', active_tab='admin_hometab')
 
 @app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def admin_autoGenerate():

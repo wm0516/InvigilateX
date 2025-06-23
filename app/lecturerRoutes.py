@@ -14,38 +14,6 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-# Once login sucessful, it will kept all that user data and just use when need
-@app.context_processor
-def inject_lecturer_data():
-    lecturerId = session.get('lecturer_id')
-    if lecturerId:
-        lecturer = User.query.get(lecturerId)
-        if lecturer:
-            return {
-                'lecturer_id': lecturerId,
-                'lecturer_name': lecturer.userName,
-                'lecturer_department': lecturer.userDepartment,
-                'lecturer_level': lecturer.userLevel,
-                'lecturer_email': lecturer.userEmail,
-                'lecturer_contact' : lecturer.userContact,
-                'lecturer_status': lecturer.userStatus
-            }
-    return {
-        'lecturer_id': None,
-        'lecturer_name': '',
-        'lecturer_department': '',
-        'lecturer_level': '',
-        'lecturer_email': '',
-        'lecturer_contact': '',
-        'lecturer_status': ''
-    }
-
-
-
-# home page (start with this!!!!!!!!!!!!!!)
-@app.route('/lecturerHome', methods=['GET', 'POST'])
-def lecturer_homepage():
-    return render_template('lecturerPart/lecturerHomepage.html', active_tab='lecturer_hometab')
 
 @app.route('/lecturerHome/timetables', methods=['GET', 'POST'])
 def lecturer_timetable():

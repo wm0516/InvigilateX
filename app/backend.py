@@ -164,20 +164,7 @@ def role_required(required_role):
     return decorator
 
 
-# Direct to corresponding page
-def page_return(result, role):
-    session['user_id'] = result
-    session['user_role'] = role
 
-    if role == ROLE_ADMIN:
-        return redirect(url_for('admin_homepage'))
-    elif role == ROLE_DEAN:
-        return redirect(url_for('dean_homepage'))
-    elif role == ROLE_LECTURER:
-        return redirect(url_for('lecturer_homepage'))
-    else:
-        flash("Unknown role", "error")
-        return redirect(url_for('login'))
 
 
 
