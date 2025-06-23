@@ -31,7 +31,8 @@ def login():
             flash(result, 'error')
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
-        return page_return(result, role)
+        # return page_return(result, role)
+        return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
     return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
