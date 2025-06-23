@@ -8,9 +8,9 @@ bcrypt = Bcrypt()
 from functools import wraps
 
 # Set the default link into admin_login, because this program have 3 login phase
-#@app.route('/')
-#def index():
-#    return redirect(url_for('login'))
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
 
 # login page (done with checking email address and hash password)
 @app.route('/login', methods=['GET', 'POST'])
