@@ -28,22 +28,18 @@ def lecturer_invigilationTimetable():
 def lecturer_profile():
     lecturerId = session.get('lecturer_id')
     lecturer = User.query.filter_by(userId=lecturerId).first()
-    print(f"lecturer id is: {lecturerId}")
     
     # Pre-fill existing data
-    lecturerDepartment_text = ''
     lecturerContact_text = ''
     lecturerPassword1_text = ''
     lecturerPassword2_text = ''
     error_message = None
 
     if request.method == 'POST':
-        lecturerDepartment_text = request.form.get('department', '').strip()
         lecturerContact_text = request.form.get('contact', '').strip()
         lecturerPassword1_text = request.form.get('password1', '').strip()
         lecturerPassword2_text = request.form.get('password2', '').strip()
         is_valid, message = check_contact(lecturerContact_text)
-
 
         # Error checks
         if lecturerContact_text and not contact_format(lecturerContact_text):
@@ -56,12 +52,10 @@ def lecturer_profile():
 
         if error_message:
             flash(str(error_message), 'error')
-        elif not lecturerDepartment_text and not lecturerContact_text and not lecturerPassword1_text:
+        elif not lecturerContact_text and not lecturerPassword1_text:
             flash("Nothing to update", 'info')
         else:
             if lecturer:
-                if lecturerDepartment_text:
-                    lecturer.userDepartment = lecturerDepartment_text
                 if lecturerContact_text:
                     lecturer.userContact = lecturerContact_text
                 if lecturerPassword1_text:
@@ -78,7 +72,7 @@ def lecturer_profile():
         lecturer_name=lecturer.userName if lecturer else '',
         lecturer_id=lecturer.userId if lecturer else '',
         lecturer_email=lecturer.userEmail if lecturer else '',
-        lecturerDepartment_text=lecturerDepartment_text,
+        lecturerDepartment_text=lecturer.userDepartment if lecturer else '',
         lecturerContact_text=lecturerContact_text,
         lecturerPassword1_text=lecturerPassword1_text,
         lecturerPassword2_text=lecturerPassword2_text,

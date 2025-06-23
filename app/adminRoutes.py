@@ -349,7 +349,7 @@ def admin_uploadCourseDetails():
 @app.route('/adminHome/profile', methods=['GET', 'POST'])
 def admin_profile():
     adminId = session.get('admin_id')
-    admin = Admin.query.filter_by(adminId=adminId).first()
+    admin = User.query.filter_by(userId=adminId).first()
     
     # Pre-fill existing data
     adminContact_text = ''
@@ -379,10 +379,10 @@ def admin_profile():
         else:
             if admin:
                 if adminContact_text:
-                    admin.adminContact = adminContact_text
+                    admin.userContact = adminContact_text
                 if adminPassword1_text:
                     hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
-                    admin.adminPassword = hashed_pw
+                    admin.userPassword = hashed_pw
 
                 db.session.commit()
                 flash("Successfully updated", 'success')

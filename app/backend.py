@@ -36,9 +36,8 @@ def password_format(password):
 # Check unique contact 
 def check_contact(contact):
     existing_user = User.query.filter(User.userContact == contact).first()
-    existing_admin = Admin.query.filter(Admin.adminContact == contact).first()
 
-    if existing_user or existing_admin:
+    if existing_user:
         return False, "Contact number already registered."
     return True, ""
 
@@ -186,10 +185,10 @@ def unique_examDetails(exam_CourseSectionCode, exam_Date, exam_StartTime, exam_E
 
 # (Need double check the purpose) Check upload lecturer
 def unique_LecturerDetails(id, email, contact):
-    exists = Lecturer.query.filter(
-        (Lecturer.lecturerId == id) |
-        (Lecturer.lecturerEmail == email) |
-        (Lecturer.lecturerContact == contact)
+    exists = User.query.filter(
+        (User.userId == id) |
+        (User.userEmail == email) |
+        (User.userContact == contact)
     ).first()
 
     if exists:
