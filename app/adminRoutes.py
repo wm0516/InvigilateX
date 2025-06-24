@@ -62,8 +62,9 @@ def admin_uploadLecturerTimetable():
 
                     role_mapping = {
                         'lecturer': 1,
-                        'dean': 2,
-                        'admin': 3
+                        'hop': 2,
+                        'dean': 3,
+                        'admin': 4
                     }
 
                     for index, row in df.iterrows():
@@ -268,8 +269,9 @@ def admin_uploadLecturerList():
 
                     role_mapping = {
                         'lecturer': 1,
-                        'dean': 2,
-                        'admin': 3
+                        'hop': 2,
+                        'dean': 3,
+                        'admin': 4
                     }
 
                     for index, row in df.iterrows():
