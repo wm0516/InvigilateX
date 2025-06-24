@@ -67,8 +67,8 @@ def dean_profile():
                 return redirect(url_for('dean_profile'))
 
     return render_template(
-        'lecturerPart/lecturerProfile.html',
-        active_tab='lecturer_profiletab',
+        'deanPart/deanProfile.html',
+        active_tab='dean_profiletab',
         dean_name=dean.userName if dean else '',
         dean_id=dean.userId if dean else '',
         dean_email=dean.userEmail if dean else '',
