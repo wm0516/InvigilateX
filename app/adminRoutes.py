@@ -23,6 +23,11 @@ def admin_manageLecturer():
     return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab', user_data=user_data)
 
 
+@app.route('/adminHome/viewReport', methods=['GET', 'POST'])
+def admin_viewReport():
+    return render_template('adminPart/adminViewReport.html', active_tab='admin_viewReporttab')
+
+
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -342,6 +347,7 @@ def admin_uploadLecturerList():
 @app.route('/adminHome/uploadCourseDetails', methods=['GET', 'POST'])
 def admin_uploadCourseDetails():
     return render_template('adminPart/adminUploadCourseDetails.html', active_tab='admin_uploadCourseDetailstab')
+
 
 
 
