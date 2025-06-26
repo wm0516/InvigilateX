@@ -404,12 +404,18 @@ def admin_profile():
         admin_id=admin.userId if admin else '',
         admin_email=admin.userEmail if admin else '',
         admin_department_text=admin.userDepartment if admin else '',
-        admin_role_text=admin.userLevel if admin else '',
+        admin_role_text={
+            LECTURER: "Lecturer",
+            HOP: "Hop",
+            DEAN: "Dean",
+            ADMIN: "Admin"
+        }.get(admin.userLevel, "Unknown") if admin else '',
         adminContact_text=adminContact_text,
         adminPassword1_text=adminPassword1_text,
         adminPassword2_text=adminPassword2_text,
         error_message=error_message
     )
+
 
 
 

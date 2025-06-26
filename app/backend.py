@@ -10,10 +10,10 @@ bcrypt = Bcrypt()
 from functools import wraps
 
 # constants.py or at the top of your app.py
-ROLE_ADMIN = 4
-ROLE_DEAN = 3
-ROLE_HOP = 2
-ROLE_LECTURER = 1
+ADMIN = 4
+DEAN = 3
+HOP = 2
+LECTURER = 1
 
 # Email format
 def email_format(email):
@@ -55,7 +55,7 @@ def check_login(loginEmail, loginPassword):
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid password.", None 
 
-    if user.userLevel not in [ROLE_ADMIN, ROLE_DEAN, ROLE_HOP, ROLE_LECTURER]:
+    if user.userLevel not in [ADMIN, DEAN, HOP, LECTURER]:
         return False, "User role is not recognized.", None
 
     return True, user.userId, user.userLevel
