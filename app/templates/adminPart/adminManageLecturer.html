@@ -29,7 +29,6 @@
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userEmail }}</td>
-                    <td>{{ row.userDepartment }}</td>
                     <!-- Role Name based on userLevel -->
                     <td>
                         {% if row.userLevel == 1 %}
@@ -44,6 +43,7 @@
                             Unknown
                         {% endif %}
                     </td>
+                    <td>{{ row.userDepartment }}</td>
                     <td>{{ row.userContact }}</td>
                     <!-- User status: Activated / Deactivated -->
                     <td>
