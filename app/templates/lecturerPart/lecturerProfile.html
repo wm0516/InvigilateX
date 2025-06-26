@@ -4,8 +4,7 @@
 <div class="menu-section">
     <h2>Profile</h2>
     <form method="post">
-        <div class="profile-frame">
-            <br>
+        <div class="form-left">
             <label>Full Name as per IC</label>
             <input type="text" name="username" value="{{ lecturer_name }}" readonly><br>
             
@@ -14,15 +13,19 @@
 
             <label>Email Address</label>
             <input type="text" name="email" value="{{ lecturer_email }}" readonly><br>
-            
+
+            <label>Role Based</label>
+            <input type="text" name="role", value="{{ lecturer_role_text}}" readonly><br>
+        </div>
+        <div class="form-right">
             <label>Department</label>
             <input type="text" name="department", value="{{ lecturer_department_text}}" readonly><br>
-        
+
             <label>Contact Number</label>
-            <input type="tel" name="contact" value="{{ lecturer_contact_text }}"><br> 
-            
+            <input type="tel" name="contact" value="{{ lecturer_contact_text }}"><br>  
+
             <div class="password-container">
-                <label>Password</label>
+                <label>Password</label> 
                 <input type="password" name="password1" value="{{ lecturer_password1_text }}">
                 <button type="button" class="toggle-password-btn">
                     <i class="fas fa-eye"></i>
@@ -36,24 +39,23 @@
                     <i class="fas fa-eye"></i>
                 </button>
             </div>
-            
-            <br><br>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            <br>
-        </div>
-        
-        <div class="button-wrapper">
-                <button type="submit">Submit</button>
         </div>
     </form>
+        
+    <br>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ category.capitalize() }}:</strong> {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <br>
+    <div class="button-wrapper">
+            <button type="submit">Submit</button>
+    </div>
 </div>
 {% endblock %}
 

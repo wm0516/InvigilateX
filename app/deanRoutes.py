@@ -73,6 +73,12 @@ def dean_profile():
         dean_id=dean.userId if dean else '',
         dean_email=dean.userEmail if dean else '',
         dean_department_text=dean.userDepartment if dean else '',
+        dean_role_text={
+            LECTURER: "Lecturer",
+            HOP: "Hop",
+            DEAN: "Dean",
+            ADMIN: "Admin"
+        }.get(dean.userLevel, "Unknown") if dean else '',
         deanContact_text=deanContact_text,
         deanPassword1_text=deanPassword1_text,
         deanPassword2_text=deanPassword2_text,

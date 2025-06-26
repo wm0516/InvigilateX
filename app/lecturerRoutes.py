@@ -76,6 +76,12 @@ def lecturer_profile():
         lecturer_id=lecturer.userId if lecturer else '',
         lecturer_email=lecturer.userEmail if lecturer else '',
         lecturer_department_text=lecturer.userDepartment if lecturer else '',
+        lecturer_role_text={
+            LECTURER: "Lecturer",
+            HOP: "Hop",
+            DEAN: "Dean",
+            ADMIN: "Admin"
+        }.get(lecturer.userLevel, "Unknown") if lecturer else '',
         lecturerContact_text=lecturerContact_text,
         lecturerPassword1_text=lecturerPassword1_text,
         lecturerPassword2_text=lecturerPassword2_text,
