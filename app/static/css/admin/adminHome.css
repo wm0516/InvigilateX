@@ -289,7 +289,7 @@ form {
 }
 
 .form-left, .form-right {
-    width: 50%;
+    width: 40%;
     display: flex;
     flex-direction: column;
 }
@@ -551,8 +551,6 @@ h2 {
 
 .big-frame button {
     width: 25vh;
-    padding: 8px 16px;
-    margin-top: 25px;
     align-self: center;
 }
 
