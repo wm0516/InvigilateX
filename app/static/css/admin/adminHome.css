@@ -247,13 +247,6 @@ html, body {
     background-color: #f5f7fa;
 }
 
-.profile-frame{
-    margin: 0 auto;
-    width: 40%;
-    display: flex;
-    flex-direction: column;
-}   
-
 
 
 
@@ -281,6 +274,9 @@ html, body {
 form {
     padding: 20px;
     border-radius: 10px;    
+}
+
+.profile-frame{
     display: flex;
     flex-direction: row;
     justify-content: space-around;
