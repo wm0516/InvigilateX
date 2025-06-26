@@ -306,7 +306,7 @@ label {
 }
 
 input, select {
-    width: 25vh;
+    width: 200%;
     padding: 10px;
     margin: 1% 0;
     box-sizing: border-box;
