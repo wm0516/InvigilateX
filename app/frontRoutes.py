@@ -33,11 +33,11 @@ def login():
         session['user_id'] = result
         session['user_role'] = role
 
-        if role == ROLE_ADMIN:
+        if role == ADMIN:
             return redirect(url_for('admin_homepage'))
-        elif role == ROLE_DEAN or ROLE_HOP:
+        elif role == DEAN or HOP:
             return redirect(url_for('dean_homepage'))
-        elif role == ROLE_LECTURER:
+        elif role == LECTURER:
             return redirect(url_for('lecturer_homepage'))
         else:
             flash("Unknown role", "error")
@@ -60,10 +60,10 @@ def register():
     error_message = None
 
     role_map = {
-        'LECTURER': ROLE_LECTURER,
-        'DEAN': ROLE_DEAN,
-        'HOP': ROLE_HOP,
-        'ADMIN': ROLE_ADMIN
+        'LECTURER': LECTURER,
+        'DEAN': DEAN,
+        'HOP': HOP,
+        'ADMIN': ADMIN
     }
 
     if request.method == 'POST':
