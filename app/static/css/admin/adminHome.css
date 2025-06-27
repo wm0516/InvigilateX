@@ -465,7 +465,7 @@ h2 {
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    margin: auto 0;
+    margin: 0 auto;
     background-color: #d4edda;
 }
 
@@ -475,7 +475,6 @@ h2 {
 
 
 .alert-error, .alert-input_error {
-    background-color: #f8d7da;
     color: #721c24;
 }
 
