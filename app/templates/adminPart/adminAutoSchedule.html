@@ -21,25 +21,25 @@
     <form method="POST">  
         <h3>Insert With The Ratio For Each Department</h3>
         <div class="profile-frame">
-            <div class="form-left">
-                <label>Departments:</label><br>
-                {% for dept in department_data %}
+            {% for dept in department_data %}
+                <div class="form-left">
                     <label>
                         ({{ dept.departmentCode }}) {{ dept.departmentName }}
                     </label>
-                {% endfor %}
-            </div>
-            <div class="form-right">
-                <input type="number" name="ratio" value="{{ ratio_text }}">
-            </div>     
+                </div>
+                <div class="form-right">
+                    <input type="number" name="ratio" value="{{ ratio_text }}">
+                </div>     
+            {% endfor %}
+        </div>
+        <!-- Submit button -->
+        <div class="button-wrapper">
+            <button type="submit">Upload</button>
         </div>
     </form>
 
 
-
-
-
-
+    <br><br>
     <h3>List of All Exam Sessions Details</h3>
     <div class="user-table-container">
         <table class="user-data-table">
