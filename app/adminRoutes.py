@@ -326,6 +326,7 @@ def admin_uploadLecturerList():
                             # Normalize and map role string
                             lecturer_role_str = str(row['Role']).strip().lower()
                             lecturer_role = role_mapping.get(lecturer_role_str)
+                            hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
                             
                             is_valid, error_message = unique_LecturerDetails(
                                 lecturer_id, lecturer_email, lecturer_contact
@@ -343,7 +344,8 @@ def admin_uploadLecturerList():
                                 userLevel = lecturer_role,
                                 userEmail = lecturer_email,
                                 userContact = lecturer_contact,
-                                userStatus = False
+                                userStatus = False,
+                                userPassword = hashed_pw
                             )
 
                             db.session.add(lecturer)
