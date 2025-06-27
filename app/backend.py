@@ -46,6 +46,8 @@ def check_department(code, name):
     existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
     existing_departmentName = Department.query.filter(Department.departmentName == name).first()
 
+    if not existing_departmentCode or not existing_departmentName:
+        return False, "Please fill in all fields"
     if existing_departmentCode:
         return False, "Department Code already registered."
     if existing_departmentName:

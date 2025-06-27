@@ -42,10 +42,6 @@ def admin_manageDepartment():
         departmentCode_text = request.form.get('departmentCode', '').strip()
         departmentName_text = request.form.get('departmentName', '').strip()
 
-        if not departmentCode_text or not departmentName_text:
-            flash("Please fill in all fields", 'error')
-            return render_template('adminPart/adminManageDepartment.html', department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
-        
         valid, result = check_department(departmentCode_text, departmentName_text)
         if not valid:
             flash(result, 'error')
