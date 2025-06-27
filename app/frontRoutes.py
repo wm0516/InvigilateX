@@ -22,7 +22,7 @@ def login():
         password_text = request.form.get('password', '').strip()
         
         if not login_text or not password_text:
-            flash("Please fill in all fields", 'input_error')
+            flash("Please fill in all fields", 'error')
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
         
         valid, result, role = check_login(login_text, password_text)
@@ -113,16 +113,9 @@ def register():
             flash("Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login'))
 
-    return render_template('frontPart/register.html',
-                           id_text=id_text,
-                           name_text=name_text,
-                           email_text=email_text,
-                           contact_text=contact_text,
-                           password1_text=password1_text,
-                           password2_text=password2_text,
-                           department_text=department_text,
-                           role_text=role_text,
-                           error_message=error_message)
+    return render_template('frontPart/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
+                           contact_text=contact_text, password1_text=password1_text, password2_text=password2_text,
+                           department_text=department_text, role_text=role_text, error_message=error_message)
 
 
 # forgot password page (done when the email exist in database will send reset email link)
@@ -164,10 +157,7 @@ def resetPassword(token):
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('login'))
 
-    return render_template('frontPart/resetPassword.html', 
-                           password_text_1=password_text_1, 
-                           password_text_2=password_text_2, 
-                           error_message=error_message)
+    return render_template('frontPart/resetPassword.html', password_text_1=password_text_1, password_text_2=password_text_2, error_message=error_message)
 
 
 # Logout button from homepage to login page

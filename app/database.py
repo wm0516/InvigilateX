@@ -124,6 +124,17 @@ class Invigilation(db.Model):
     );
     '''
 
+class Department(db.Model):
+    __tablename__ = 'Department'
+    departmentCode = db.Column(db.String(10), primary_key=True)
+    departmentName = db.Column(db.String(60), nullable=False)
+    '''
+    CREATE TABLE Department (
+        departmentCode VARCHAR(10) PRIMARY KEY,
+        departmentName VARCHAR(60) NOT NULL
+    );
+    '''
+
 
 
 

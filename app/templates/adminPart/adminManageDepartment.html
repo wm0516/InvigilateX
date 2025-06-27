@@ -1,0 +1,51 @@
+<!-- upload.html -->
+{% extends "adminPart/adminBase.html" %}
+{% block title %}Admin ManageDepartment{% endblock %}
+{% block content %}
+
+<!-- Row 1 First Fesatures to upload merge schedule files--> 
+<div class="menu-section">
+    <h2>Manage Department</h2>
+    <form method="POST">
+        <h2>Add New Department</h2>
+        <label>Department Code</label>
+        <input type="text" name="departmentCode" value="{{ departmentCode_text }}"><br> 
+
+        <label>Department Name</label>
+        <input type="text" name="departmentName" value="{{ departmentName_text }}"><br> 
+
+        <!-- Submit button -->
+        <div class="button-wrapper">
+            <button type="submit">Add New</button>
+        </div>
+    </form>
+
+
+
+    <h2>List of Department</h2>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Department Code</th>
+                    <th>Department Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in department_data %}
+                <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ row.departmentCode }}</td>
+                    <td>{{ row.departmentName }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+<!--
+
+-->
