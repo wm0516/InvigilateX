@@ -22,18 +22,16 @@
         <h3>Insert With The Ratio For Each Department</h3>
         <div class="profile-frame">
             <div class="form-left">
-                <div class="form-left">
-                    <label>Departments:</label><br>
-                    {% for dept in department_data %}
-                        <label>
-                            ({{ dept.departmentCode }}) {{ dept.departmentName }}
-                        </label>
-                    {% endfor %}
-                </div>
-                <div class="form-right">
-                    <input type="number" name="ratio" value="{{ ratio_text }}">
-                </div>     
+                <label>Departments:</label><br>
+                {% for dept in department_data %}
+                    <label>
+                        ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                    </label>
+                {% endfor %}
             </div>
+            <div class="form-right">
+                <input type="number" name="ratio" value="{{ ratio_text }}">
+            </div>     
         </div>
     </form>
 
