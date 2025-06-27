@@ -43,6 +43,7 @@ form {
     flex-direction: column;
     align-items: flex-start; /* Align label and input */
     position: relative;
+    width: 50%;
 }
 
 label {
