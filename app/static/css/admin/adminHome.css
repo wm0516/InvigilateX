@@ -276,8 +276,6 @@ form {
     border-radius: 10px;    
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
 }
 
 .profile-frame{
@@ -290,6 +288,8 @@ form {
 
 .form-left, .form-right {
     width: 40%;
+    display: flex;
+    flex-direction: column;
 }
 
 .input-container, .password-container {
@@ -474,7 +474,7 @@ h2 {
     color: #155724;
 }
 
-.alert-error {
+.alert-error, .alert-input_error {
     background-color: #f8d7da;
     color: #721c24;
 }  

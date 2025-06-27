@@ -8,11 +8,14 @@
     <h2>Manage Department</h2>
     <form method="POST">
         <h2>Add New Department</h2>
-        <label>Department Code</label>
-        <input type="text" name="departmentCode" value="{{ departmentCode_text }}"><br> 
-
-        <label>Department Name</label>
-        <input type="text" name="departmentName" value="{{ departmentName_text }}"><br> 
+        <div class="form-left">
+            <label>Department Code</label>
+            <input type="text" name="departmentCode" value="{{ departmentCode_text }}">
+        </div>
+        <div class="form-right">
+            <label>Department Name</label>
+            <input type="text" name="departmentName" value="{{ departmentName_text }}">
+        </div>
 
         <!-- Submit button -->
         <div class="button-wrapper">
