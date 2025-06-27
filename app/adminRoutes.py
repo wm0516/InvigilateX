@@ -23,9 +23,9 @@ def admin_manageLecturer():
     return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab', user_data=user_data)
 
 
-@app.route('/adminHome/viewInvigilationReport', methods=['GET', 'POST'])
+@app.route('/adminHome/invigilationReport', methods=['GET', 'POST'])
 def admin_viewReport():
-    return render_template('adminPart/adminViewInvigilationReport.html', active_tab='admin_viewReporttab')
+    return render_template('adminPart/adminInvigilationReport.html', active_tab='admin_viewReporttab')
 
 
 UPLOAD_FOLDER = 'uploads'
