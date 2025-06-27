@@ -20,28 +20,28 @@
     <h2>Generate Exam Schedule</h2>     
     <form method="POST">  
         <h3>Insert With The Ratio For Each Department</h3><br>
-        <div style="display: flex; justify-content: space-between;">
-            {% for departments in [left_departments, right_departments] %}
-                <div style="width: 48%;">
-                    <table>
-                        <thead> 
-                            <tr>
-                                <th>Department</th>
-                                <th>Ratio</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for dept in departments %}
-                            <tr>
-                                <td>{{ dept.departmentCode }} - {{ dept.departmentName }}</td>
-                                <td>
-                                    <input type="number" name="ratio" value="{{ ratio_text }}">
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+            {% for department_group in [left_departments, right_departments] %}
+            <div style="flex: 0 0 48%; min-width: 300px;">
+                <table class="department-table">
+                    <thead> 
+                        <tr>
+                            <th>Department</th>
+                            <th>Ratio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dept in department_group %}
+                        <tr>
+                            <td>{{ dept.departmentCode }} - {{ dept.departmentName }}</td>
+                            <td>
+                                <input type="number" name="ratio_{{ dept.departmentCode }}" value="{{ ratio_text }}">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
             {% endfor %}
         </div>
         <br>
