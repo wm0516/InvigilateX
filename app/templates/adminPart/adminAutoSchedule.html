@@ -21,49 +21,28 @@
     <form method="POST">  
         <h3>Insert With The Ratio For Each Department</h3><br>
         <div style="display: flex; justify-content: space-between;">
-            <!-- Left Table -->
-            <div style="width: 48%;">
-                <table>
-                    <thead> 
-                        <tr>
-                            <th>Department</th>
-                            <th>Ratio</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dept in department_data[:department_data|length//2] %}
-                        <tr>
-                            <td>{{ dept.departmentCode }} - {{ dept.departmentName }}</td>
-                            <td>
-                                <input type="number" name="ratio" value="{{ ratio_text }}">
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Right Table -->
-            <div style="width: 48%;">
-                <table>
-                    <thead> 
-                        <tr>
-                            <th>Department</th>
-                            <th>Ratio</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for dept in department_data[department_data|length//2:] %}
-                        <tr>
-                            <td>{{ dept.departmentCode }} - {{ dept.departmentName }}</td>
-                            <td>
-                                <input type="number" name="ratio" value="{{ ratio_text }}">
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {% for departments in [left_departments, right_departments] %}
+                <div style="width: 48%;">
+                    <table>
+                        <thead> 
+                            <tr>
+                                <th>Department</th>
+                                <th>Ratio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dept in departments %}
+                            <tr>
+                                <td>{{ dept.departmentCode }} - {{ dept.departmentName }}</td>
+                                <td>
+                                    <input type="number" name="ratio" value="{{ ratio_text }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
         </div>
         <br>
         {% with messages = get_flashed_messages(with_categories=true) %}
