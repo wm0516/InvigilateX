@@ -16,7 +16,8 @@ bcrypt = Bcrypt()
 @app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def admin_autoGenerate():
     exam_data = ExamDetails.query.all()
-    return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab', exam_data=exam_data)
+    department_data = Department.query.all()
+    return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab', exam_data=exam_data, department_data=department_data)
 
 @app.route('/adminHome/manageLecturer')
 def admin_manageLecturer():
@@ -37,19 +38,23 @@ def admin_manageDepartment():
     department_data = Department.query.all()
     departmentCode_text = ''
     departmentName_text = ''
+    departmentRatio_text = ''
 
     if request.method == 'POST':
         departmentCode_text = request.form.get('departmentCode', '').strip()
         departmentName_text = request.form.get('departmentName', '').strip()
+        departmentRatio_text = request.form.get('departmentRation', '').strip()
 
         valid, result = check_department(departmentCode_text, departmentName_text)
         if not valid:
             flash(result, 'error')
-            return render_template('adminPart/adminManageDepartment.html', department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+            return render_template('adminPart/adminManageDepartment.html', department_data=department_data, departmentCode_text=departmentCode_text, 
+                                   departmentRatio_text=departmentRatio_text, departmentName_text=departmentName_text)
 
         new_department = Department(
             departmentCode=departmentCode_text.upper(),
-            departmentName=departmentName_text.upper()
+            departmentName=departmentName_text.upper(),
+            departmentRatio=departmentRatio_text,
         )
         db.session.add(new_department)
         db.session.commit()
