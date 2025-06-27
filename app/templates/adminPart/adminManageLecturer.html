@@ -46,7 +46,7 @@
                     <td>{{ row.userContact }}</td>
                     <!-- User status: Activated / Deactivated -->
                     <td>
-                        {% if row.userStatus %}
+                        {% if row.userStatus|int == 1 %}
                             Activated
                         {% else %}
                             Deactivated
