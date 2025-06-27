@@ -34,6 +34,31 @@ def admin_uploadCourseDetails():
 
 @app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
+    departmentCode_text = ''
+    departmentName_text = ''
+
+    if request.method == 'POST':
+        departmentCode_text = request.form.get('departmentCode', '').strip()
+        departmentName_text = request.form.get('departmentName', '').strip()
+
+        if not departmentCode_text or not departmentName_text:
+            flash("Please fill in all fields", 'error')
+            return render_template('adminPart/adminManageDepartment.html', departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+        
+        valid, result = check_department(departmentCode_text, departmentName_text)
+        if not valid:
+            flash(result, 'error')
+            return render_template('adminPart/adminManageDepartment.html', departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+
+        new_department = Department(
+            departmentCode=departmentCode_text.upper(),
+            departmentName=departmentName_text.upper()
+        )
+        db.session.add(new_department)
+        db.session.commit()
+        flash("New Department Added Successfully", "success")
+        return redirect(url_for('admin_manageDepartment'))
+
     department_data = Department.query.all()
     return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
 

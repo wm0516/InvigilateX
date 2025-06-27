@@ -32,15 +32,15 @@ def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
 
+def check_department(code, name):
+    existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
+    existing_departmentName = Department.query.filter(Department.departmentName == name).first()
 
-# Check unique contact 
-def check_contact(contact):
-    existing_user = User.query.filter(User.userContact == contact).first()
-
-    if existing_user:
-        return False, "Contact number already registered."
+    if existing_departmentCode:
+        return False, "Department Code already registered."
+    if existing_departmentName:
+        return False, "Department Name already registered."
     return True, ""
-
 
 
 # Check login validate
