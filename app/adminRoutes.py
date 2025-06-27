@@ -74,6 +74,8 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
+    user_data = User.query.all()
+
     if request.method == 'POST':
         if 'lecturer_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
@@ -174,12 +176,13 @@ def admin_uploadLecturerTimetable():
             current_app.logger.error("File processing error: File upload in wrong format")
             return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
         
-    user_data = User.query.all()
     return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
 
 
 @app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
 def admin_uploadExamDetails():
+    exam_data = ExamDetails.query.all()
+
     if request.method == 'POST':
         if 'exam_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
@@ -274,13 +277,13 @@ def admin_uploadExamDetails():
             current_app.logger.error("File processing error: File upload in wrong format")
             return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
 
-    # GET request
-    exam_data = ExamDetails.query.all()
     return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab', exam_data=exam_data)
 
 
 @app.route('/adminHome/uploadLecturerList', methods=['GET', 'POST'])
-def admin_uploadLecturerList():
+def admin_uploadLecturerList():        
+    user_data = User.query.all()
+    
     if request.method == 'POST':
         if 'lecturerList_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
@@ -380,8 +383,7 @@ def admin_uploadLecturerList():
         except Exception as e:
             current_app.logger.error("File processing error: File upload in wrong format")
             return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
-        
-    user_data = User.query.all()
+
     return render_template('adminPart/adminUploadLecturerList.html', active_tab='admin_uploadLecturerListtab', user_data=user_data)
 
 

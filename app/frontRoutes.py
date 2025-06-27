@@ -49,6 +49,7 @@ def login():
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    department_data = Department.query.all()
     id_text = ''
     name_text = ''
     email_text = ''
@@ -115,7 +116,7 @@ def register():
 
     return render_template('frontPart/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
                            contact_text=contact_text, password1_text=password1_text, password2_text=password2_text,
-                           department_text=department_text, role_text=role_text, error_message=error_message)
+                           department_text=department_text, role_text=role_text, department_data=department_data, error_message=error_message)
 
 
 # forgot password page (done when the email exist in database will send reset email link)
