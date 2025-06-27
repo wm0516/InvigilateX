@@ -286,7 +286,7 @@ form {
 }
 
 
-.form-left, .form-right {
+.form-left, .form-right, .form-middle {
     width: 40%;
     display: flex;
     flex-direction: column;
