@@ -56,7 +56,7 @@ def lecturer_profile():
         if error_message:
             flash(str(error_message), 'error')
         elif not lecturerContact_text and not lecturerPassword1_text:
-            flash("Nothing to update", 'info')
+            flash("Nothing to update", 'error')
         else:
             if lecturer:
                 if lecturerContact_text:

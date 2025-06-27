@@ -53,7 +53,7 @@ def dean_profile():
         if error_message:
             flash(str(error_message), 'error')
         elif not deanContact_text and not deanPassword1_text:
-            flash("Nothing to update", 'info')
+            flash("Nothing to update", 'error')
         else:
             if dean:
                 if deanContact_text:
