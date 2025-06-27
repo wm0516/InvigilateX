@@ -20,17 +20,22 @@
     <h2>Generate Exam Schedule</h2> 
     <form method="POST">  
         <h3>Insert With The Ratio For Each Department</h3>
-        <div class="profile-frame">
+
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
             {% for dept in department_data %}
-                <label>{{ dept.departmentCode }} - {{ dept.departmentName }}</label>
-                <input type="number" name="ratio" value="{{ ratio_text }}"><br>
+                <div style="flex: 1 1 45%; min-width: 300px;">
+                    <label>{{ dept.departmentCode }} - {{ dept.departmentName }}</label><br>
+                    <input type="number" name="ratio" value="{{ ratio_text }}" style="width: 100%;">
+                </div>
             {% endfor %}
         </div>
+
         <!-- Submit button -->
-        <div class="button-wrapper">
+        <div class="button-wrapper" style="margin-top: 20px;">
             <button type="submit">Upload</button>
         </div>
     </form>
+
 
 
     <br><br>
