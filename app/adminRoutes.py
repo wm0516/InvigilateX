@@ -43,7 +43,7 @@ def admin_manageDepartment():
     if request.method == 'POST':
         departmentCode_text = request.form.get('departmentCode', '').strip()
         departmentName_text = request.form.get('departmentName', '').strip()
-        departmentRatio_text = request.form.get('departmentRation', '').strip()
+        departmentRatio_text = request.form.get('departmentRatio', '').strip()
 
         valid, result = check_department(departmentCode_text, departmentName_text)
         if not valid:
