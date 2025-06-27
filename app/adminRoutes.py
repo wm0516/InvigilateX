@@ -22,7 +22,7 @@ def admin_autoGenerate():
 @app.route('/adminHome/manageLecturer')
 def admin_manageLecturer():
     user_data = User.query.all()
-    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_managetab', user_data=user_data)
+    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_manageLecturertab', user_data=user_data)
 
 
 @app.route('/adminHome/invigilationReport', methods=['GET', 'POST'])
