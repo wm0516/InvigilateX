@@ -18,7 +18,6 @@
 <!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Generate Exam Schedule</h2>
-
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -33,6 +32,9 @@
                     <th>Lecturer</th>
                     <th>No. of Students</th>
                     <th>Room</th>
+                    <th>Invigilator 1</th>
+                    <th>Invigilator 2</th>
+                    <th>Backup Invigilator</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +51,9 @@
                     <td>{{ row.examLecturer }}</td>
                     <td>{{ row.examTotalStudent }}</td>
                     <td>{{ row.examVenue }}</td>
+                    <td>{{ row.examLecturer }}</td>
+                    <td>{{ row.examLecturer }}</td>
+                    <td>{{ row.examLecturer }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
