@@ -15,19 +15,46 @@
 {% endwith %}
 
 
-    <!-- Row 1 First Fesatures to upload merge schedule files--> 
-    <div class="menu-section">
-        <h2>Generate Exam Schedule</h2>
-        <li class="submenu">
-            <strong>  Functionality:</strong>
-            <ul>
-                <li>Automatically assign examiners based on availability</li>
-                <li>Review and manage generated exam timetables</li>
-                <li>Distribute schedules via email</li>
-                <li>Download schedule in PDF format</li>
-            </ul>
-        </li>
+<!-- Row 1 First Fesatures to upload merge schedule files--> 
+<div class="menu-section">
+    <h2>Generate Exam Schedule</h2>
+
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Exam Date</th>
+                    <th>Exam Day</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Program Code</th>
+                    <th>Course/Section</th>
+                    <th>Lecturer</th>
+                    <th>No. of Students</th>
+                    <th>Room</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in exam_data %}
+                <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <!-- <td>{{ row.examID  }}</td> -->
+                    <td>{{ row.examDate }}</td>
+                    <td>{{ row.examDay }}</td>
+                    <td>{{ row.examStartTime }}</td>
+                    <td>{{ row.examEndTime }}</td>
+                    <td>{{ row.examProgramCode }}</td>
+                    <td>{{ row.examCourseSectionCode }}</td>
+                    <td>{{ row.examLecturer }}</td>
+                    <td>{{ row.examTotalStudent }}</td>
+                    <td>{{ row.examVenue }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
 
 {% endblock %}
 

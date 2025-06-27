@@ -15,7 +15,8 @@ bcrypt = Bcrypt()
 
 @app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def admin_autoGenerate():
-    return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab')
+    exam_data = ExamDetails.query.all()
+    return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab', exam_data=exam_data)
 
 @app.route('/adminHome/manageLecturer')
 def admin_manageLecturer():
