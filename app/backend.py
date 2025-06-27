@@ -35,24 +35,30 @@ def password_format(password):
 # Check unique Contact
 def check_contact(contact):
     existing_contact = User.query.filter(User.userContact == contact).first()
-
     if existing_contact:
         return False, "Contact Number already registered."
+    
     return True, ""
 
 
 # Check unique department code and name
 def check_department(code, name):
-    existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
-    existing_departmentName = Department.query.filter(Department.departmentName == name).first()
+    # Check if any required field is empty
+    if not code or not name:
+        return False, "Please fill in all required fields."
 
-    if not existing_departmentCode or not existing_departmentName:
-        return False, "Please fill in all fields"
+    # Check for duplicates
+    existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
     if existing_departmentCode:
         return False, "Department Code already registered."
+
+    existing_departmentName = Department.query.filter(Department.departmentName == name).first()
     if existing_departmentName:
         return False, "Department Name already registered."
+
     return True, ""
+
+
 
 
 # Check login validate
@@ -86,10 +92,8 @@ def check_register(registerID, registerEmail, registerContact):
     if existing_user:
         if (existing_user and existing_user.userId == registerID):
             return False, "ID already exists."
-        
         if (existing_user and existing_user.userEmail == registerEmail):
             return False, "Email address already registered."
-        
         if (existing_user and existing_user.userContact == registerContact):
             return False, "Contact number already registered."
 
