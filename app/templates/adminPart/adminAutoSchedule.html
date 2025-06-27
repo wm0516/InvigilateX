@@ -32,16 +32,16 @@
             </div>
 
             <div class="form-left">
-                <div class="form-right">
+                <div class="form-left">
                     <label>Departments:</label><br>
                     {% for dept in department_data %}
                         <label>
                             ({{ dept.departmentCode }}) {{ dept.departmentName }}
-                        </label><br>
+                        </label>
                     {% endfor %}
                 </div>
-                <div class="form-left">
-                    <input type="number" name="ratio" value="{{ ratio_text }}"><br>
+                <div class="form-right">
+                    <input type="number" name="ratio" value="{{ ratio_text }}">
                 </div>     
             </div>
 
