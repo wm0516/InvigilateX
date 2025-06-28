@@ -75,13 +75,13 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in exam_data %}
+                {% for row in course_data %}
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <!-- <td>{{ row.examID  }}</td> -->
                     <td>{{ row.courseCode }}</td>
                     <td>{{ row.courseName }}</td>
-                    <td>{{ row.courseCreditHour }}</td>
+                    <td>{{ row.courseHour }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

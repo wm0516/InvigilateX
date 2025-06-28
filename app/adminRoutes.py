@@ -57,7 +57,7 @@ def admin_uploadCourseDetails():
         flash("New Course Added Successfully", "success")
         return redirect(url_for('admin_uploadCourseDetails'))
         
-    return render_template('adminPart/adminUploadCourseDetails.html', active_tab='admin_uploadCourseDetailstab')
+    return render_template('adminPart/adminUploadCourseDetails.html', active_tab='admin_uploadCourseDetailstab', course_data=course_data)
 
 @app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
