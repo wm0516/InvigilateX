@@ -111,7 +111,7 @@ button {
     color: #155724;
 }
 
-.alert-error {
+.alert-error, .login_error {
     background-color: #f8d7da;
     color: #721c24;
 }  

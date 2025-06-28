@@ -22,12 +22,12 @@ def login():
         password_text = request.form.get('password', '').strip()
         
         if not login_text or not password_text:
-            flash("Please fill in all fields", 'error')
+            flash("Please fill in all fields", 'login_error')
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
         
         valid, result, role = check_login(login_text, password_text)
         if not valid:
-            flash(result, 'error')
+            flash(result, 'login_error')
             return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
 
         session['user_id'] = result
@@ -40,7 +40,7 @@ def login():
         elif role == LECTURER:
             return redirect(url_for('lecturer_homepage'))
         else:
-            flash("Unknown role", "error")
+            flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
     return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
