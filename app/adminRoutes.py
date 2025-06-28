@@ -117,19 +117,19 @@ def admin_uploadCourseDetails():
             courseName_text = request.form.get('courseName', '').strip()
             courseHour_text = request.form.get('courseHour', '').strip()
 
-            try:
-                hour_int = int(courseHour_text)
-            except ValueError:
-                flash("Course Hour must be a valid integer.", 'error')
+            valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+            if not valid:
+                flash(result, 'error')
                 return render_template('adminPart/adminUploadCourseDetails.html', 
                                         course_data=course_data,
                                         courseCode_text=courseCode_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text)
-
-            valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
-            if not valid:
-                flash(result, 'error')
+            
+            try:
+                hour_int = int(courseHour_text)
+            except ValueError:
+                flash("Course Hour must be a valid integer.", 'error')
                 return render_template('adminPart/adminUploadCourseDetails.html', 
                                         course_data=course_data,
                                         courseCode_text=courseCode_text,
