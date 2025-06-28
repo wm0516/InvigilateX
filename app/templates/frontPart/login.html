@@ -12,7 +12,7 @@
         <!-- Top: Flash messages EXCEPT login errors -->
         {% for category, message in all_messages %}
             {% if category != 'login_error' %}
-                <div class="alert alert-{{ category }}">
+                <div class="alert alert-{{ category }}" style="width: 100%;">
                     <strong>{{ category.capitalize() }}:</strong> {{ message }}
                 </div>
             {% endif %}
