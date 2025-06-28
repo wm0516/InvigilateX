@@ -45,51 +45,42 @@ def admin_uploadCourseDetails():
             try:
                 # Read Excel content
                 df = pd.read_excel(file)
-                records = []
 
                 for index, row in df.iterrows():
-                    courseCode = str(row.get('courseCode', '')).strip().upper()
-                    courseName = str(row.get('courseName', '')).strip().upper()
-                    courseHour = row.get('courseHour')
+                    courseCode_text = str(row.get('courseCode', '')).strip().upper()
+                    courseName_text = str(row.get('courseName', '')).strip().upper()
+                    courseHour_text = row.get('courseHour')
 
-                    if not courseCode or not courseName or not isinstance(courseHour, (int, float)):
+                    if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
                         continue  # Skip invalid rows
-
-                    course = Course(courseCode=courseCode, courseName=courseName, courseHour=int(courseHour))
-                    db.session.add(course)
-                    records.append({
-                        "courseCode": courseCode,
-                        "courseName": courseName,
-                        "courseHour": int(courseHour)
-                    })
-
-                db.session.commit()
-                return jsonify(success=True, message="Courses uploaded successfully.", records=records)
 
             except Exception as e:
                 return jsonify(success=False, message="Failed to process file.", errors=[str(e)])
 
-        # Handle manual input
-        courseCode_text = request.form.get('courseCode', '').strip()
-        courseName_text = request.form.get('courseName', '').strip()
-        courseHour_text = request.form.get('courseHour', '').strip()
+        else:
+            # Handle manual input
+            courseCode_text = request.form.get('courseCode', '').strip()
+            courseName_text = request.form.get('courseName', '').strip()
+            courseHour_text = request.form.get('courseHour', '').strip()
 
-        try:
-            hour_int = int(courseHour_text)
-        except ValueError:
-            flash("Course Hour must be a valid integer.", 'error')
-            return render_template('adminPart/adminUploadCourseDetails.html', course_data=course_data,
-                                   courseCode_text=courseCode_text,
-                                   courseName_text=courseName_text,
-                                   courseHour_text=courseHour_text)
+            try:
+                hour_int = int(courseHour_text)
+            except ValueError:
+                flash("Course Hour must be a valid integer.", 'error')
+                return render_template('adminPart/adminUploadCourseDetails.html', 
+                                        course_data=course_data,
+                                        courseCode_text=courseCode_text,
+                                        courseName_text=courseName_text,
+                                        courseHour_text=courseHour_text)
 
-        valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
-        if not valid:
-            flash(result, 'error')
-            return render_template('adminPart/adminUploadCourseDetails.html', course_data=course_data,
-                                   courseCode_text=courseCode_text,
-                                   courseName_text=courseName_text,
-                                   courseHour_text=courseHour_text)
+            valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+            if not valid:
+                flash(result, 'error')
+                return render_template('adminPart/adminUploadCourseDetails.html', 
+                                        course_data=course_data,
+                                        courseCode_text=courseCode_text,
+                                        courseName_text=courseName_text,
+                                        courseHour_text=courseHour_text)
 
         new_course = Course(
             courseCode=courseCode_text.upper(),
