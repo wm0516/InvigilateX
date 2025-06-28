@@ -291,6 +291,15 @@ function generateExamRow(index, record) {
     `;
 }
 
+function generateCourseRow(index, record) {
+    return `
+        <td>${index + 1}</td>
+        <td>${record.code}</td>
+        <td>${record.name}</td>
+        <td>${record.creditHour}</td>
+    `;
+}
+
 /*function generateTimetableRow(index, record) {
     return `
         <td>${index + 1}</td>
@@ -327,6 +336,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Course Details Upload
     setupFileUpload('.upload-container', 'course_list', 'selectedFileName');
     handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
-                   'courseUploadErrors', '.user-data-table tbody', 'course_file', generateExamRow);
+                   'courseUploadErrors', '.user-data-table tbody', 'course_file', generateCourseRow);
 });
 

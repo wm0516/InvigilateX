@@ -34,6 +34,7 @@ def admin_viewReport():
 def admin_uploadCourseDetails():
     course_data = Course.query.all()
     courseCode_text = ''
+    courseSection_text = ''
     courseName_text = ''
     courseHour_text = ''
 
@@ -58,24 +59,26 @@ def admin_uploadCourseDetails():
                         df = pd.read_excel(
                             file,
                             sheet_name=sheet_name,
-                            usecols="A:C",
+                            usecols="A:D",
                             skiprows=1
                         )
-                        df.columns = ['code','name','creditHour']
+                        df.columns = ['code','section', 'name','creditHour']
                         df.reset_index(drop=True, inplace=True)
 
                         for index, row in df.iterrows():
                             try:
                                 courseCode_text = str(row['code']).upper()
+                                courseSection_text = str(row['section']).upper()
                                 courseName_text = str(row['name']).upper()
                                 courseHour_text = int(row['creditHour'])
 
                                 if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
                                     continue  # Skip invalid rows
 
-                                valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+                                valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
                                 new_course = Course(
                                     courseCode=courseCode_text.upper(),
+                                    courseSection=courseSection_text.upper(),
                                     courseName=courseName_text.upper(),
                                     courseHour=courseHour_text
                                 )
@@ -112,15 +115,17 @@ def admin_uploadCourseDetails():
         else:
             # Handle manual input
             courseCode_text = request.form.get('courseCode', '').strip()
+            courseSection_text = request.form.get('courseSection', '').strip()
             courseName_text = request.form.get('courseName', '').strip()
             courseHour_text = request.form.get('courseHour', '').strip()
 
-            valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+            valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
             if not valid:
                 flash(result, 'error')
                 return render_template('adminPart/adminUploadCourseDetails.html', 
                                         course_data=course_data,
                                         courseCode_text=courseCode_text,
+                                        courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text)
             
@@ -131,11 +136,13 @@ def admin_uploadCourseDetails():
                 return render_template('adminPart/adminUploadCourseDetails.html', 
                                         course_data=course_data,
                                         courseCode_text=courseCode_text,
+                                        courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text)
 
             new_course = Course(
                 courseCode=courseCode_text.upper(),
+                courseSection=courseSection_text.upper(),
                 courseName=courseName_text.upper(),
                 courseHour=hour_int
             )

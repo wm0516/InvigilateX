@@ -56,14 +56,18 @@ def check_department(code, name):
     return True, ""
 
 
-def check_course(code, name, hour):
-    if not code or not name or not hour:
+def check_course(code, section, name, hour):
+    if not code or not section or not name or not hour:
         return False, "Please fill in all required fields."
 
     # Check for duplicates (case-insensitive)
     existing_courseCode = Course.query.filter(Course.courseCode.ilike(code)).first()
     if existing_courseCode:
         return False, "Course Code already registered."
+    
+    existing_courseSection = Course.query.filter(Course.courseCode.ilike(section)).first()
+    if existing_courseSection:
+        return False, "Course Section already registered."
 
     existing_courseName = Course.query.filter(Course.courseName.ilike(name)).first()
     if existing_courseName:
