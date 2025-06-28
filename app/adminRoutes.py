@@ -39,24 +39,75 @@ def admin_uploadCourseDetails():
 
     if request.method == 'POST':
         file = request.files.get('course_file')
+        file_stream = BytesIO(file.read())
+
+        course_records_added = 0
+        processed_records = []
+        errors = []
 
         # Handle file upload
         if file and file.filename:
             try:
-                # Read Excel content
-                df = pd.read_excel(file)
+                excel_file = pd.ExcelFile(file_stream)
+                for sheet_name in excel_file.sheet_names:
+                    try:
+                        # Read Excel content
+                        df = pd.read_excel(
+                            file,
+                            sheet_name=sheet_name,
+                            usecols="A:C",
+                            skiprows=1
+                        )
+                        df.columns = ['code','name','creditHour']
+                        df.reset_index(drop=True, inplace=True)
 
-                for index, row in df.iterrows():
-                    courseCode_text = str(row.get('courseCode', '')).strip().upper()
-                    courseName_text = str(row.get('courseName', '')).strip().upper()
-                    courseHour_text = row.get('courseHour')
+                        for index, row in df.iterrows():
+                            try:
+                                courseCode_text = str(row['code']).upper()
+                                courseName_text = str(row['name']).upper()
+                                courseHour_text = int(row['creditHour'])
 
-                    if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
-                        continue  # Skip invalid rows
+                                if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
+                                    continue  # Skip invalid rows
+
+                                valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+                                new_course = Course(
+                                    courseCode=courseCode_text.upper(),
+                                    courseName=courseName_text.upper(),
+                                    courseHour=courseHour_text
+                                )
+                                db.session.add(new_course)
+                                course_records_added += 1
+
+                            except Exception as row_err:
+                                pass
+
+                        db.session.commit()
+
+                    except Exception as sheet_err:
+                        pass
+
+                # Final response
+                if valid and course_records_added > 0:
+                    message = f"Successful upload {course_records_added} record(s)"
+                    success = True
+                else:
+                    message = "No data uploaded"
+                    success = False
+
+                return jsonify({
+                    'success': success,
+                    'message': message,
+                    'records': processed_records,
+                    'errors': errors
+                })
 
             except Exception as e:
-                return jsonify(success=False, message="Failed to process file.", errors=[str(e)])
-
+                current_app.logger.error("File processing error: File upload in wrong format")
+                return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
+    
+        
+        
         else:
             # Handle manual input
             courseCode_text = request.form.get('courseCode', '').strip()
@@ -82,15 +133,15 @@ def admin_uploadCourseDetails():
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text)
 
-        new_course = Course(
-            courseCode=courseCode_text.upper(),
-            courseName=courseName_text.upper(),
-            courseHour=hour_int,
-        )
-        db.session.add(new_course)
-        db.session.commit()
-        flash("New Course Added Successfully", "success")
-        return redirect(url_for('admin_uploadCourseDetails'))
+            new_course = Course(
+                courseCode=courseCode_text.upper(),
+                courseName=courseName_text.upper(),
+                courseHour=hour_int
+            )
+            db.session.add(new_course)
+            db.session.commit()
+            flash("New Course Added Successfully", "success")
+            return redirect(url_for('admin_uploadCourseDetails'))
 
     return render_template('adminPart/adminUploadCourseDetails.html',
                            active_tab='admin_uploadCourseDetailstab',
@@ -119,7 +170,7 @@ def admin_manageDepartment():
         new_department = Department(
             departmentCode=departmentCode_text.upper(),
             departmentName=departmentName_text.upper(),
-            departmentRatio=departmentRatio_text,
+            departmentRatio=departmentRatio_text
         )
         db.session.add(new_department)
         db.session.commit()
