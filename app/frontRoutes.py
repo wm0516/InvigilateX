@@ -134,7 +134,7 @@ def forgotPassword():
             error_message = message
             flash(str(error_message), 'error')
         else:
-            flash("Reset link sent to your email address.")
+            flash("Reset link sent to your email address.", 'success')
             return redirect(url_for('login'))
 
     return render_template('frontPart/forgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
