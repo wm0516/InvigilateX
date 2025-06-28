@@ -38,6 +38,38 @@ def admin_uploadCourseDetails():
     courseHour_text = ''
 
     if request.method == 'POST':
+        file = request.files.get('course_file')
+
+        # Handle file upload
+        if file and file.filename:
+            try:
+                # Read Excel content
+                df = pd.read_excel(file)
+                records = []
+
+                for index, row in df.iterrows():
+                    courseCode = str(row.get('courseCode', '')).strip().upper()
+                    courseName = str(row.get('courseName', '')).strip().upper()
+                    courseHour = row.get('courseHour')
+
+                    if not courseCode or not courseName or not isinstance(courseHour, (int, float)):
+                        continue  # Skip invalid rows
+
+                    course = Course(courseCode=courseCode, courseName=courseName, courseHour=int(courseHour))
+                    db.session.add(course)
+                    records.append({
+                        "courseCode": courseCode,
+                        "courseName": courseName,
+                        "courseHour": int(courseHour)
+                    })
+
+                db.session.commit()
+                return jsonify(success=True, message="Courses uploaded successfully.", records=records)
+
+            except Exception as e:
+                return jsonify(success=False, message="Failed to process file.", errors=[str(e)])
+
+        # Handle manual input
         courseCode_text = request.form.get('courseCode', '').strip()
         courseName_text = request.form.get('courseName', '').strip()
         courseHour_text = request.form.get('courseHour', '').strip()
@@ -46,12 +78,18 @@ def admin_uploadCourseDetails():
             hour_int = int(courseHour_text)
         except ValueError:
             flash("Course Hour must be a valid integer.", 'error')
+            return render_template('adminPart/adminUploadCourseDetails.html', course_data=course_data,
+                                   courseCode_text=courseCode_text,
+                                   courseName_text=courseName_text,
+                                   courseHour_text=courseHour_text)
 
         valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
         if not valid:
             flash(result, 'error')
-            return render_template('adminPart/adminUploadCourseDetails.html', course_data=course_data, courseCode_text=courseCode_text, 
-                                   courseName_text=courseName_text, courseHour_text=courseHour_text)
+            return render_template('adminPart/adminUploadCourseDetails.html', course_data=course_data,
+                                   courseCode_text=courseCode_text,
+                                   courseName_text=courseName_text,
+                                   courseHour_text=courseHour_text)
 
         new_course = Course(
             courseCode=courseCode_text.upper(),
@@ -62,8 +100,12 @@ def admin_uploadCourseDetails():
         db.session.commit()
         flash("New Course Added Successfully", "success")
         return redirect(url_for('admin_uploadCourseDetails'))
-        
-    return render_template('adminPart/adminUploadCourseDetails.html', active_tab='admin_uploadCourseDetailstab', course_data=course_data)
+
+    return render_template('adminPart/adminUploadCourseDetails.html',
+                           active_tab='admin_uploadCourseDetailstab',
+                           course_data=course_data)
+
+
 
 @app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
