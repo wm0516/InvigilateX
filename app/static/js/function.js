@@ -1,4 +1,4 @@
-/* toggle function*/
+/* toggle function */
 document.addEventListener('DOMContentLoaded', function() {
     const toggleButtons = document.querySelectorAll('.toggle-password-btn');
 
@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+/* register department text */
 function updateDepartmentLabel() {
     const roleSelect = document.getElementById('roleSelect');
     const departmentLabel = document.getElementById('departmentLabel');
@@ -108,20 +109,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+
+
 // Initialize all upload forms when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Lecturer List Upload
-    setupFileUpload('#lecturerUploadContainer', 'lecturer_list', 'selectedFileName');
+    setupFileUpload('#lecturerUploadContainer', 'lecturer_list', 'lecturerSelectedFileName');
     handleFormSubmit('uploadLecturerForm', 'lecturer_list', 'lecturerUploadResult', 
                    'lecturerUploadErrors', '.user-data-table tbody', 'lecturer_file', generateLecturerRow);
 
     // Lecturer Timetable Upload
-    setupFileUpload('#timetableUploadContainer', 'timetable_list', 'selectedFileName');
+    setupFileUpload('#timetableUploadContainer', 'timetable_list', 'timetableSelectedFileName');
     handleFormSubmit('uploadTimetableForm', 'timetable_list', 'timetableUploadResult', 
                    'timetableUploadErrors', '.user-data-table tbody', 'timetable_file', generateLecturerRow);
 
     // Exam Details Upload
-    setupFileUpload('ExamUploadContainer', 'exam_list', 'selectedFileName');
+    setupFileUpload('ExamUploadContainer', 'exam_list', 'examSelectedFileName');
     handleFormSubmit('uploadExamForm', 'exam_list', 'examUploadResult', 
                    'examUploadErrors', '.user-data-table tbody', 'exam_file', generateExamRow);
 
