@@ -4,20 +4,20 @@
 {% block content %}
 <div class="menu-section">
     <h2>Upload Lecturer Timetable</h2>
-    <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
-        <label for="lecturer_list">
-            <div class="upload-container">
+    <form id="uploadTimetableForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
+        <label for="timetable_list">
+            <div class="upload-container" id="timetableUploadContainer">
                 <div class="upload-text">Upload file format with according format<br><br>Click to upload or drag and drop with below file format</div>
                 <div class="file-types">XLSX, XLS, or XLSM</div><br>
                 <!-- Selected file display -->
-                <div id="selectedFileName" class="file-name-display"></div>
+                <div id="timetableSelectedFileName" class="file-name-display"></div>
             </div>
         </label>
         <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
         
         <!-- Result feedback -->
-        <div id="lecturerUploadResult" class="result-message"></div>
-        <div id="lecturerUploadErrors" class="error-message"></div>
+        <div id="timetableUploadResult" class="result-message"></div>
+        <div id="timetableUploadErrors" class="error-message"></div>
         
         <!-- Submit button -->
         <div class="button-wrapper">

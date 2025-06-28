@@ -111,17 +111,17 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize all upload forms when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     // Lecturer List Upload
-    setupFileUpload('.upload-container', 'lecturerList_list', 'selectedFileName');
-    handleFormSubmit('uploadLecturerListForm', 'lecturerList_list', 'lecturerListUploadResult', 
-                   'lecturerListUploadErrors', '.user-data-table tbody', 'lecturerList_file', generateLecturerRow);
-
-    // Lecturer Timetable Upload
-    setupFileUpload('.upload-container', 'lecturer_list', 'selectedFileName');
+    setupFileUpload('#lecturerUploadContainer', 'lecturer_list', 'selectedFileName');
     handleFormSubmit('uploadLecturerForm', 'lecturer_list', 'lecturerUploadResult', 
                    'lecturerUploadErrors', '.user-data-table tbody', 'lecturer_file', generateLecturerRow);
 
+    // Lecturer Timetable Upload
+    setupFileUpload('#timetableUploadContainer', 'timetable_list', 'selectedFileName');
+    handleFormSubmit('uploadTimetableForm', 'timetable_list', 'timetableUploadResult', 
+                   'timetableUploadErrors', '.user-data-table tbody', 'timetable_file', generateLecturerRow);
+
     // Exam Details Upload
-    setupFileUpload('.upload-container', 'exam_list', 'selectedFileName');
+    setupFileUpload('ExamUploadContainer', 'exam_list', 'selectedFileName');
     handleFormSubmit('uploadExamForm', 'exam_list', 'examUploadResult', 
                    'examUploadErrors', '.user-data-table tbody', 'exam_file', generateExamRow);
 

@@ -9,7 +9,7 @@
             <input type="hidden" id="submissionType" name="submission_type" value="manual">
             <div class="form-left">
                 <label for="exam_list">
-                    <div class="upload-container">
+                    <div class="upload-container" id="examUploadContainer">
                         <div class="upload-text">
                             Upload a file with an empty first row. Data should start from columns A to D,<br> 
                             labeled as: 'code', 'section', 'name', and 'creditHour'<br><br><br>
@@ -17,7 +17,7 @@
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
                         <!-- Selected file display -->
-                        <div id="selectedFileName" class="file-name-display"></div>
+                        <div id="examSelectedFileName" class="file-name-display"></div>
                     </div>
                 </label>
                 <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">

@@ -4,21 +4,21 @@
 {% block content %}
 <div class="menu-section">
     <h2>Upload Lecturer List</h2>
-    <form id="uploadLecturerListForm" action="{{ url_for('admin_uploadLecturerList') }}" method="POST" enctype="multipart/form-data">
-        <label for="lecturerList_list">
-            <div class="upload-container">
+    <form id="uploadLecturerForm" action="{{ url_for('admin_uploadLecturerList') }}" method="POST" enctype="multipart/form-data">
+        <label for="lecturerlist">
+            <div class="upload-container" id="lecturerUploadContainer">
                 <div class="upload-text">Upload file format with 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
                     <br><br>Click to upload or drag and drop with below file format</div>
                 <div class="file-types">XLSX, XLS, or XLSM</div><br>
                 <!-- Selected file display -->
-                <div id="selectedFileName" class="file-name-display"></div>
+                <div id="lecturerSelectedFileName" class="file-name-display"></div>
             </div>
         </label>
-        <input type="file" id="lecturerList_list" name="lecturerList_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
+        <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
         
         <!-- Result feedback -->
-        <div id="lecturerListUploadResult" class="result-message"></div>
-        <div id="lecturerListUploadErrors" class="error-message"></div>
+        <div id="lecturerUploadResult" class="result-message"></div>
+        <div id="lecturerUploadErrors" class="error-message"></div>
         
         <!-- Submit button -->
         <div class="button-wrapper">
