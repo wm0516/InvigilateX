@@ -162,7 +162,7 @@ html, body {
     border-radius: 8px;
     padding: 30px;
     text-align: center;
-    margin: 20px auto;
+    margin: auto;
     cursor: pointer;
     transition: all 0.3s;
 }
