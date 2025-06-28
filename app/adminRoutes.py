@@ -31,6 +31,32 @@ def admin_viewReport():
 
 @app.route('/adminHome/uploadCourseDetails', methods=['GET', 'POST'])
 def admin_uploadCourseDetails():
+    course_data = Course.query.all()
+    courseCode_text = ''
+    courseName_text = ''
+    courseHour_text = ''
+
+    if request.method == 'POST':
+        courseCode_text = request.form.get('courseCode', '').strip()
+        courseName_text = request.form.get('courseName', '').strip()
+        courseHour_text = request.form.get('courseHour', '').strip()
+
+        valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+        if not valid:
+            flash(result, 'error')
+            return render_template('adminPart/adminUploadCourseDetails.html', course_data=course_data, courseCode_text=courseCode_text, 
+                                   courseName_text=courseName_text, courseHour_text=courseHour_text)
+
+        new_course = Course(
+            courseCode_text=courseCode_text.upper(),
+            courseName_text=courseName_text.upper(),
+            courseHour_text=courseHour_text,
+        )
+        db.session.add(new_course)
+        db.session.commit()
+        flash("New Course Added Successfully", "success")
+        return redirect(url_for('admin_uploadCourseDetails'))
+        
     return render_template('adminPart/adminUploadCourseDetails.html', active_tab='admin_uploadCourseDetailstab')
 
 @app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
