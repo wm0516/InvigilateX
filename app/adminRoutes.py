@@ -110,8 +110,6 @@ def admin_uploadCourseDetails():
                 print(f"[File Processing Error] {e}")  # <-- See the actual cause
                 flash('File processing error: File upload in wrong format', 'error')
                 return redirect(url_for('admin_uploadCourseDetails'))
-
-
         
         else:
             # Handle manual input
@@ -129,7 +127,8 @@ def admin_uploadCourseDetails():
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
-                                        courseHour_text=courseHour_text)
+                                        courseHour_text=courseHour_text,
+                                        active_tab='admin_uploadCourseDetailstab')
             
             try:
                 hour_int = int(courseHour_text)
@@ -140,7 +139,8 @@ def admin_uploadCourseDetails():
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
-                                        courseHour_text=courseHour_text)
+                                        courseHour_text=courseHour_text,
+                                        active_tab='admin_uploadCourseDetailstab')
 
             new_course = Course(
                 courseCodeSection = courseCodeSection_text,
@@ -160,6 +160,17 @@ def admin_uploadCourseDetails():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
@@ -175,7 +186,7 @@ def admin_manageDepartment():
         valid, result = check_department(departmentCode_text, departmentName_text)
         if not valid:
             flash(result, 'error')
-            return render_template('adminPart/adminManageDepartment.html', department_data=department_data, departmentCode_text=departmentCode_text, 
+            return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, departmentCode_text=departmentCode_text, 
                                    departmentRatio_text=departmentRatio_text, departmentName_text=departmentName_text)
 
         new_department = Department(
