@@ -84,18 +84,16 @@ def admin_uploadCourseDetails():
 
                                 valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
                                 new_course = Course(
-                                    courseCode=courseCode_text,
-                                    courseSection=courseSection_text,
-                                    courseName=courseName_text,
+                                    courseCode=courseCode_text.upper(),
+                                    courseSection=courseSection_text.upper(),
+                                    courseName=courseName_text.upper(),
                                     courseHour=courseHour_text
                                 )
                                 db.session.add(new_course)
+                                db.session.commit()
                                 course_records_added += 1
                             except Exception as row_err:
                                 print(f"[Row Error] {row_err}")
-
-                        db.session.commit()
-
                     except Exception as sheet_err:
                         print(f"[Sheet Error] {sheet_err}")  # <-- Print or log this
 
