@@ -84,16 +84,17 @@ def admin_manageCourse():
                                     continue
 
                                 valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
-                                new_course = Course(
-                                    courseCodeSection = courseCodeSection_text,
-                                    courseCode=courseCode_text.upper(),
-                                    courseSection=courseSection_text.upper(),
-                                    courseName=courseName_text.upper(),
-                                    courseHour=courseHour_text
-                                )
-                                db.session.add(new_course)
-                                course_records_added += 1
-                                db.session.commit()
+                                if valid:
+                                    new_course = Course(
+                                        courseCodeSection = courseCodeSection_text,
+                                        courseCode=courseCode_text.upper(),
+                                        courseSection=courseSection_text.upper(),
+                                        courseName=courseName_text.upper(),
+                                        courseHour=courseHour_text
+                                    )
+                                    db.session.add(new_course)
+                                    course_records_added += 1
+                                    db.session.commit()
                             except Exception as row_err:
                                 print(f"[Row Error] {row_err}")
                     except Exception as sheet_err:
