@@ -17,22 +17,14 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 class User(db.Model):
     __tablename__ = 'User'
-    # Refer to Staff ID
-    userId = db.Column(db.String(20), primary_key=True)
-    # Refer to Staff Name
-    userName = db.Column(db.String(255))
-    # Lecturer and Dean have this selection
-    userDepartment = db.Column(db.String(60))
-    # Lecturer = 1, Dean = 2 (Dean with higher level to access of)
-    userLevel = db.Column(db.Integer)
-    # Refer to Staff INTI email
-    userEmail = db.Column(db.String(50))
-    # Refer to Staff Contact Number
-    userContact = db.Column(db.String(15))
-    # Refer to Staff Password
-    userPassword = db.Column(db.String(255))
-    # Refer to Staff Account Status, if by self register as 'Active', if by upload as 'Deactived"
-    userStatus = db.Column(db.String(15))
+    userId = db.Column(db.String(20), primary_key=True) # Refer to Staff ID
+    userName = db.Column(db.String(255))                # Refer to Staff Name
+    userDepartment = db.Column(db.String(60))           # Lecturer and Dean have this selection
+    userLevel = db.Column(db.Integer)                   # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
+    userEmail = db.Column(db.String(50))                # Refer to Staff INTI email
+    userContact = db.Column(db.String(15))              # Refer to Staff Contact Number
+    userPassword = db.Column(db.String(255))            # Refer to Staff Password
+    userStatus = db.Column(db.String(15))               # Refer to Staff Account Status, if by self register as 'Active', if by upload as 'Deactived"
     '''
     CREATE TABLE User (
         userId VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -50,7 +42,6 @@ class User(db.Model):
 # Update: using examCourseSectionCode as PK
 class ExamDetails(db.Model):
     __tablename__ = 'ExamDetails'
-    # examID = db.Column(db.Integer, primary_key=True, autoincrement=True)
     examDate = db.Column(db.Date, nullable=False)
     examDay = db.Column(db.String(10), nullable=False)
     examStartTime = db.Column(db.String(20), nullable=False)
