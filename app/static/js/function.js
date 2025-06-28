@@ -295,6 +295,7 @@ function generateCourseRow(index, record) {
     return `
         <td>${index + 1}</td>
         <td>${record.code}</td>
+        <td>${record.section}</td>
         <td>${record.name}</td>
         <td>${record.creditHour}</td>
     `;
