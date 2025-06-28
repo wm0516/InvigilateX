@@ -48,9 +48,9 @@ def admin_uploadCourseDetails():
                                    courseName_text=courseName_text, courseHour_text=courseHour_text)
 
         new_course = Course(
-            courseCode_text=courseCode_text.upper(),
-            courseName_text=courseName_text.upper(),
-            courseHour_text=courseHour_text,
+            courseCode=courseCode_text.upper(),
+            courseName=courseName_text.upper(),
+            courseHour=courseHour_text,
         )
         db.session.add(new_course)
         db.session.commit()
