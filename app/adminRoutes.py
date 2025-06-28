@@ -90,8 +90,8 @@ def admin_uploadCourseDetails():
                                     courseHour=courseHour_text
                                 )
                                 db.session.add(new_course)
-                                db.session.commit()
                                 course_records_added += 1
+                                db.session.commit()
                             except Exception as row_err:
                                 print(f"[Row Error] {row_err}")
                     except Exception as sheet_err:
