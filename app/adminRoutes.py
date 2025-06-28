@@ -216,10 +216,10 @@ def admin_uploadLecturerTimetable():
     user_data = User.query.all()
 
     if request.method == 'POST':
-        if 'lecturer_file' not in request.files:
+        if 'timetable_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
-        file = request.files['lecturer_file']
+        file = request.files['timetable_file']
         file_stream = BytesIO(file.read())
 
         lecturer_records_added = 0
@@ -413,10 +413,10 @@ def admin_uploadLecturerList():
     user_data = User.query.all()
     
     if request.method == 'POST':
-        if 'lecturerList_file' not in request.files:
+        if 'lecturer_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
 
-        file = request.files['lecturerList_file']
+        file = request.files['lecturer_file']
         file_stream = BytesIO(file.read())
 
         lecturer_list_added = 0
