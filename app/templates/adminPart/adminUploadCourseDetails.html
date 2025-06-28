@@ -44,6 +44,15 @@
         <!-- Result feedback -->
         <div id="courseUploadResult" class="result-message"></div>
         <div id="courseUploadErrors" class="error-message"></div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <!-- Submit button -->
         <div class="button-wrapper">

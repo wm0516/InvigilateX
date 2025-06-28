@@ -38,7 +38,10 @@ def admin_uploadCourseDetails():
     courseHour_text = ''
 
     if request.method == 'POST':
-        file = request.files.get('course_file')
+        if 'course_file' not in request.files:
+            return jsonify({'success': False, 'message': 'No file uploaded'})
+        
+        file = request.files['course_file']
         file_stream = BytesIO(file.read())
 
         course_records_added = 0

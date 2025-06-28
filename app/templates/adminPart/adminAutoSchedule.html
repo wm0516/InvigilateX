@@ -3,18 +3,6 @@
 {% block title %}Admin Automation{% endblock %}
 {% block content %}
 
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">
-        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-    </div>
-    {% endfor %}
-{% endif %}
-{% endwith %}
-
-
 <!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Generate Exam Schedule</h2> 
