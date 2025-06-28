@@ -9,7 +9,7 @@
             <input type="hidden" id="submissionType" name="submission_type" value="manual">
             <div class="form-left">
                 <label for="course_list">
-                    <div class="upload-container" id="courseUploadContainer">   
+                    <div class="upload-container" id="courseUploadContainer">
                         <div class="upload-text">
                             Upload a file with an empty first row. Data should start from columns A to D,<br> 
                             labeled as: 'code', 'section', 'name', and 'creditHour'<br><br><br>
@@ -53,6 +53,7 @@
         <!-- Result feedback -->
         <div id="courseUploadResult" class="result-message"></div>
         <div id="courseUploadErrors" class="error-message"></div>
+
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
