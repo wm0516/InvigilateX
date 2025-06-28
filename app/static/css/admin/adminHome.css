@@ -232,7 +232,7 @@ html, body {
 }
 
 .user-data-table td {
-    padding: 15px;
+    padding: 1%;
     border-bottom: 1px solid #e0e0e0;
     color: #333;
     font-size: 0.95em;
