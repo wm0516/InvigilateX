@@ -93,20 +93,14 @@ def admin_uploadCourseDetails():
                     except Exception as sheet_err:
                         pass
 
-                # Final response
-                if valid and course_records_added > 0:
-                    message = f"Successful upload {course_records_added} record(s)"
-                    success = True
-                else:
-                    message = "No data uploaded"
-                    success = False
-
-                return jsonify({
-                    'success': success,
-                    'message': message,
-                    'records': processed_records,
-                    'errors': errors
-                })
+                    # Final response
+                    if valid and course_records_added > 0:
+                        message = f"Successful upload {course_records_added} record(s)"
+                        flash(message, 'success')
+                    else:
+                        message = "No data uploaded"
+                        flash(message, 'error')
+                    return redirect(url_for('admin_uploadCourseDetails'))
 
             except Exception as e:
                 flash('File processing error: File upload in wrong format','error')
@@ -285,17 +279,13 @@ def admin_uploadLecturerTimetable():
             # Final response
             if is_valid and lecturer_records_added > 0:
                 message = f"Successful upload {lecturer_records_added} record(s)"
-                success = True
+                flash(message, 'success')
             else:
                 message = "No data uploaded"
-                success = False
+                flash(message, 'error')
+            return redirect(url_for('admin_uploadLecturerTimetable'))
+        
 
-            return jsonify({
-                'success': success,
-                'message': message,
-                'records': processed_records,
-                'errors': errors
-            })
 
         except Exception as e:
             flash('File processing error: File upload in wrong format','error')
@@ -386,17 +376,10 @@ def admin_uploadExamDetails():
             # Final response
             if is_valid and exam_records_added > 0:
                 message = f"Successful upload {exam_records_added} record(s)"
-                success = True
+                flash(message, 'success')
             else:
                 message = "No data uploaded"
-                success = False
-
-            return jsonify({
-                'success': success,
-                'message': message,
-                'records': processed_records,
-                'errors': errors
-            })
+                flash(message, 'error')
 
         except Exception as e:
             flash('File processing error: File upload in wrong format','error')
@@ -495,17 +478,11 @@ def admin_uploadLecturerList():
             # Final response
             if is_valid and lecturer_records_added > 0:
                 message = f"Successful upload {lecturer_records_added} record(s)"
-                success = True
+                flash(message, 'success')
             else:
                 message = "No data uploaded"
-                success = False
-
-            return jsonify({
-                'success': success,
-                'message': message,
-                'records': processed_records,
-                'errors': errors
-            })
+                flash(message, 'error')
+            return redirect(url_for('admin_uploadLecturerList'))
 
         except Exception as e:
             flash('File processing error: File upload in wrong format','error')
