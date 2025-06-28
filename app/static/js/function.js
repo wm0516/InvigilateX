@@ -163,100 +163,102 @@ async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, ta
   if (!form || !fileInput || !resultDiv) return;
 
   form.addEventListener('submit', async function(e) {
-    e.preventDefault();
     const file = fileInput.files[0];
-    if (!file) {
-      resultDiv.innerHTML = '';
-      errorDiv.innerHTML = '<p style="color:red;">Please select a file.</p>';
+    const manualInputs = form.querySelectorAll('input[type="text"], input[type="number"]');
+    const hasManualInput = Array.from(manualInputs).some(input => input.value.trim() !== "");
+
+    // Mixed mode prevention
+    if (file && hasManualInput) {
+      e.preventDefault();
+      errorDiv.innerHTML = '<p style="color:red;">Please use either file upload OR manual input, not both.</p>';
       return;
     }
 
-    const formData = new FormData();
-    formData.append(fileFieldName, file);
-
-    // Clear previous messages, show spinner
-    resultDiv.textContent = '';
-    errorDiv.textContent = '';
-    const spinner = document.createElement('span');
-    spinner.className = 'spinner';
-    spinner.textContent = '⌛ Uploading...';
-    resultDiv.appendChild(spinner);
-
-    try {
-      const response = await fetch(form.action, {
-        method: 'POST',
-        body: formData
-      });
+    // FILE UPLOAD mode
+    if (file) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append(fileFieldName, file);
 
       resultDiv.textContent = '';
-      const contentType = response.headers.get('content-type') || '';
+      errorDiv.textContent = '';
+      const spinner = document.createElement('span');
+      spinner.className = 'spinner';
+      spinner.textContent = '⌛ Uploading...';
+      resultDiv.appendChild(spinner);
 
-      if (contentType.includes('application/json')) {
-        const data = await response.json();
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData
+        });
 
-        if (data.success) {
-          const msg = document.createElement('p');
-          msg.style.color = 'green';
-          msg.textContent = data.message;
-          resultDiv.appendChild(msg);
+        resultDiv.textContent = '';
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const data = await response.json();
+          if (data.success) {
+            const msg = document.createElement('p');
+            msg.style.color = 'green';
+            msg.textContent = data.message;
+            resultDiv.appendChild(msg);
 
-          if (Array.isArray(data.records) && data.records.length && tableBody) {
-            tableBody.innerHTML = '';
-            data.records.forEach((rec, i) => {
-              const row = document.createElement('tr');
-              row.innerHTML = generateRowFn(i, rec);
-              tableBody.appendChild(row);
-            });
+            if (Array.isArray(data.records) && data.records.length && tableBody) {
+              tableBody.innerHTML = '';
+              data.records.forEach((rec, i) => {
+                const row = document.createElement('tr');
+                row.innerHTML = generateRowFn(i, rec);
+                tableBody.appendChild(row);
+              });
+            }
+          } else {
+            const msg = document.createElement('p');
+            msg.style.color = 'orange';
+            msg.textContent = data.message;
+            resultDiv.appendChild(msg);
+
+            if (Array.isArray(data.errors)) {
+              const ul = document.createElement('ul');
+              data.errors.forEach(err => {
+                const li = document.createElement('li');
+                li.textContent = err;
+                ul.appendChild(li);
+              });
+              errorDiv.appendChild(ul);
+            }
+          }
+
+          fileInput.value = '';
+          const fileNameDisplay = document.getElementById('selectedFileName');
+          if (fileNameDisplay) fileNameDisplay.textContent = '';
+          const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
+          if (uploadContainer) {
+            uploadContainer.style.borderColor = '#ccc';
+            uploadContainer.style.backgroundColor = '#f9f9f9';
           }
 
         } else {
-          const msg = document.createElement('p');
-          msg.style.color = 'orange';
-          msg.textContent = data.message;
-          resultDiv.appendChild(msg);
-
-          if (Array.isArray(data.errors)) {
-            const ul = document.createElement('ul');
-            data.errors.forEach(err => {
-              const li = document.createElement('li');
-              li.textContent = err;
-              ul.appendChild(li);
-            });
-            errorDiv.appendChild(ul);
-          }
+          const text = await response.text();
+          const p = document.createElement('p');
+          p.style.color = 'red';
+          p.textContent = `Unexpected response: ${text}`;
+          resultDiv.appendChild(p);
         }
 
-        // Reset input & styles (upload-container stays visible)
-        fileInput.value = '';
-
-        const fileNameDisplay = document.getElementById('selectedFileName');
-        if (fileNameDisplay) {
-        fileNameDisplay.textContent = '';
-        }
-
-        const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
-        if (uploadContainer) {
-        uploadContainer.style.borderColor = '#ccc';
-        uploadContainer.style.backgroundColor = '#f9f9f9';
-        }
-
- 
-    } else {
-        const text = await response.text();
+      } catch (err) {
+        resultDiv.textContent = '';
         const p = document.createElement('p');
         p.style.color = 'red';
-        p.textContent = `Unexpected response: ${text}`;
+        p.textContent = `Upload failed: ${err.message}`;
         resultDiv.appendChild(p);
-    }
+      }
 
-    } catch (err) {
-      resultDiv.textContent = '';
-      const p = document.createElement('p');
-      p.style.color = 'red';
-      p.textContent = `Upload failed: ${err.message}`;
-      resultDiv.appendChild(p);
+    } else {
+      // MANUAL mode: allow normal POST to Flask
+      return; // Do not call preventDefault()
     }
   });
+
 }
 
 
