@@ -145,7 +145,7 @@ class Course(db.Model):
     '''
     CREATE TABLE Course (
         courseCode VARCHAR(10) PRIMARY KEY,
-        coursetName VARCHAR(50) NOT NULL,
+        courseName VARCHAR(50) NOT NULL,
         courseHour INT
     );
     '''
