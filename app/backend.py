@@ -61,8 +61,8 @@ def check_course(code, section, name, hour):
         return False, "Please fill in all required fields."
     
     existing_course = Course.query.filter(
-        (Course.courseCode == code) |
-        (Course.courseSection == section) |
+        (Course.courseCode == code) &
+        (Course.courseSection == section) &
         (Course.courseName == name)
     ).first()
 
