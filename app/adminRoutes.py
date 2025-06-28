@@ -42,9 +42,13 @@ def admin_uploadCourseDetails():
         file = request.files['course_file']
         file_stream = BytesIO(file.read())
 
+        course_records_added = 0  # <-- Make sure this is initialized
+
         if file and file.filename:
             try:
                 excel_file = pd.ExcelFile(file_stream)
+                print(f"Found sheets: {excel_file.sheet_names}")
+
                 for sheet_name in excel_file.sheet_names:
                     try:
                         df = pd.read_excel(
@@ -54,16 +58,19 @@ def admin_uploadCourseDetails():
                             skiprows=1
                         )
 
-                        # Clean column headers first
+                        # Debugging: show raw column headers
+                        print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+
+                        # Clean and standardize columns
                         df.columns = [str(col).strip().lower() for col in df.columns]
                         expected_cols = ['code', 'section', 'name', 'credithour']
 
                         if df.columns.tolist() != expected_cols:
                             raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
-                        
-                        # Rename to standardized names
+
+                        # Rename to match your model
                         df.columns = ['code', 'section', 'name', 'creditHour']
-                        print(f"Data read from excel are {df.head()}")
+                        print(f"Data read from excel:\n{df.head()}")
 
                         for index, row in df.iterrows():
                             try:
@@ -85,11 +92,12 @@ def admin_uploadCourseDetails():
                                 db.session.add(new_course)
                                 course_records_added += 1
                             except Exception as row_err:
-                                pass
+                                print(f"[Row Error] {row_err}")
 
                         db.session.commit()
+
                     except Exception as sheet_err:
-                        pass
+                        print(f"[Sheet Error] {sheet_err}")  # <-- Print or log this
 
                 if course_records_added > 0:
                     flash(f"Successful upload {course_records_added} record(s)", 'success')
@@ -98,9 +106,11 @@ def admin_uploadCourseDetails():
 
                 return redirect(url_for('admin_uploadCourseDetails'))
 
-            except Exception as e:  
-                flash('File processing error: File upload in wrong format','error')
+            except Exception as e:
+                print(f"[File Processing Error] {e}")  # <-- See the actual cause
+                flash('File processing error: File upload in wrong format', 'error')
                 return redirect(url_for('admin_uploadCourseDetails'))
+
 
         
         else:
