@@ -3,27 +3,44 @@
 {% block content %}
 <div class="menu-section">
     <h2>Upload Course Details</h2>
-    <form id="uploadCourseForm" action="{{ url_for('admin_uploadCourseDetails') }}" method="POST" enctype="multipart/form-data">
-        <label for="course_list">
-            <div class="upload-container">
-                <div class="upload-text">Upload file format with according format
-                    <br><br>Click to upload or drag and drop with below file format</div>
-                <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                <!-- Selected file display -->
-                <div id="selectedFileName" class="file-name-display"></div>
+    <form method="POST">
+        <div class="profile-frame">
+            <div class="form-left">
+                <form id="uploadCourseForm" action="{{ url_for('admin_uploadCourseDetails') }}" method="POST" enctype="multipart/form-data">
+                    <label for="course_list">
+                        <div class="upload-container">
+                            <div class="upload-text">Upload file format with according format
+                                <br><br>Click to upload or drag and drop with below file format</div>
+                            <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                            <!-- Selected file display -->
+                            <div id="selectedFileName" class="file-name-display"></div>
+                        </div>
+                    </label>
+                    <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
+                    
+                    <!-- Result feedback -->
+                    <div id="courseUploadResult" class="result-message"></div>
+                    <div id="courseUploadErrors" class="error-message"></div>
+                </form>
+        </div>
+            <div class="form-right">
+                <label>Department Code</label>
+                <input type="text" name="departmentCode" value="{{ departmentCode_text }}"><br>
+                <label>Department Name</label>
+                <input type="text" name="departmentName" value="{{ departmentName_text }}"><br>
+                <label>Department Ratio (Optional)</label>
+                <input type="number" name="departmentRatio" value="{{ departmentRatio_text }}">
             </div>
-        </label>
-        <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
-        
-        <!-- Result feedback -->
-        <div id="courseUploadResult" class="result-message"></div>
-        <div id="courseUploadErrors" class="error-message"></div>
-        
+        </div>
+
         <!-- Submit button -->
         <div class="button-wrapper">
             <button type="submit">Upload</button>
         </div>
     </form>
+    
+        
+
 
 
 
