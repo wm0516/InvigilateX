@@ -113,46 +113,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // Initialize all upload forms when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Lecturer List Upload
-    setupFileUpload('#lecturerUploadContainer', 'lecturer_list', 'lecturerSelectedFileName');
-    handleFormSubmit('uploadLecturerForm', 'lecturer_list', 'lecturerUploadResult', 
-                   'lecturerUploadErrors', '.user-data-table tbody', 'lecturer_file', generateLecturerRow);
+// Minimal JS for file name display and drag-drop styling
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById('course_list');
+    const uploadContainer = document.getElementById('courseUploadContainer');
+    const fileNameDisplay = document.getElementById('courseSelectedFileName');
 
-    // Lecturer Timetable Upload
-    setupFileUpload('#timetableUploadContainer', 'timetable_list', 'timetableSelectedFileName');
-    handleFormSubmit('uploadTimetableForm', 'timetable_list', 'timetableUploadResult', 
-                   'timetableUploadErrors', '.user-data-table tbody', 'timetable_file', generateLecturerRow);
+    if (!fileInput || !uploadContainer || !fileNameDisplay) return;
 
-    // Exam Details Upload
-    setupFileUpload('ExamUploadContainer', 'exam_list', 'examSelectedFileName');
-    handleFormSubmit('uploadExamForm', 'exam_list', 'examUploadResult', 
-                   'examUploadErrors', '.user-data-table tbody', 'exam_file', generateExamRow);
-
-    // Course Details Upload
-    setupFileUpload('#courseUploadContainer', 'course_list', 'courseSelectedFileName');
-    handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
-                 'courseUploadErrors', '.user-data-table tbody', 'course_file', generateCourseRow);
-
-});
-
-
-/* Common Upload Functionality - Reusable */
-function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId) {
-    const uploadContainer = document.querySelector(uploadContainerSelector);
-    const fileInput = document.getElementById(fileInputId);
-    const fileNameDisplay = document.getElementById(fileNameDisplayId);
-
-    if (!uploadContainer || !fileInput || !fileNameDisplay) return;
-
-    // Handle click on container
-    uploadContainer.addEventListener('click', function(e) {
-        e.preventDefault();
-        fileInput.click();
-    });
-
-    // Handle file selection
-    fileInput.addEventListener('change', function() {
+    // File selected via input
+    fileInput.addEventListener('change', function () {
         if (this.files.length > 0) {
             fileNameDisplay.textContent = "Selected file: " + this.files[0].name;
             uploadContainer.style.borderColor = '#5cb85c';
@@ -160,19 +130,19 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
         }
     });
 
-    // Drag and drop functionality
-    uploadContainer.addEventListener('dragover', function(e) {
+    // Drag and drop
+    uploadContainer.addEventListener('dragover', function (e) {
         e.preventDefault();
         uploadContainer.style.borderColor = '#5bc0de';
         uploadContainer.style.backgroundColor = '#e1f5fe';
     });
 
-    uploadContainer.addEventListener('dragleave', function() {
+    uploadContainer.addEventListener('dragleave', function () {
         uploadContainer.style.borderColor = fileInput.files.length ? '#5cb85c' : '#ccc';
         uploadContainer.style.backgroundColor = fileInput.files.length ? '#e8f5e9' : '#f9f9f9';
     });
 
-    uploadContainer.addEventListener('drop', function(e) {
+    uploadContainer.addEventListener('drop', function (e) {
         e.preventDefault();
         if (e.dataTransfer.files.length) {
             fileInput.files = e.dataTransfer.files;
@@ -181,104 +151,4 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
             uploadContainer.style.backgroundColor = '#e8f5e9';
         }
     });
-}
-
-/* Common Form Submission - Reusable */
-async function handleFormSubmit(formId, /* ... */) {
-  const form = document.getElementById(formId);
-  form.addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const file = fileInput.files[0];
-    const formData = new FormData(form);
-    if (file) {
-      formData.set(fileFieldName, file);
-      formData.set('submission_type', 'file');
-    } else {
-      formData.set('submission_type', 'manual');
-    }
-
-    // show spinner
-    resultDiv.innerHTML = `<span class="spinner">⌛ Uploading...</span>`;
-    errorDiv.innerHTML = '';
-
-    try {
-      const resp = await fetch(form.action, { method: 'POST', body: formData });
-      const ct = resp.headers.get('content-type') || '';
-
-      if (ct.includes('application/json')) {
-        const data = await resp.json();
-        resultDiv.textContent = data.message;
-        resultDiv.style.color = data.success ? 'green' : 'orange';
-        if (data.errors) {
-          errorDiv.innerHTML = '<ul>' + data.errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-        }
-        // update table if records returned
-      } else {
-        const text = await resp.text();
-        errorDiv.innerHTML = `<p style="color:red;">${text}</p>`;
-      }
-    } catch (err) {
-      errorDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
-    }
-  });
-}
-
-
-
-// Custom row generators for different forms
-function generateLecturerRow(index, record) {
-    return `
-        <td>${index + 1}</td>
-        <td>${record.ID}</td>
-        <td>${record.Name}</td>
-        <td>${record.Department}</td>
-        <td>${record.Role}</td>
-        <td>${record.Email}</td>
-        <td>${record.Contact}</td>
-        <td>Deactivated</td>
-    `;
-}
-
-function generateExamRow(index, record) {
-    return `
-        <td>${index + 1}</td>
-        <td>${record.Date}</td>
-        <td>${record.Day}</td>
-        <td>${record.Start}</td>
-        <td>${record.End}</td>
-        <td>${record.Program}</td>
-        <td>${record["Course/Sec"]}</td>
-        <td>${record.Lecturer}</td>
-        <td>${record["No Of"]}</td>
-        <td>${record.Room}</td>
-    `;
-}
-
-function generateCourseRow(index, record) {
-    return `
-        <td>${index + 1}</td>
-        <td>${record.code}</td>
-        <td>${record.section}</td>
-        <td>${record.name}</td>
-        <td>${record.creditHour}</td>
-    `;
-}
-
-/*function generateTimetableRow(index, record) {
-    return `
-        <td>${index + 1}</td>
-        <td>${record.Date}</td>
-        <td>${record.Day}</td>
-        <td>${record.Start}</td>
-        <td>${record.End}</td>
-        <td>${record.Program}</td>
-        <td>${record["Course/Sec"]}</td>
-        <td>${record.Lecturer}</td>
-        <td>${record["No Of"]}</td>
-        <td>${record.Room}</td>
-    `;
-}*/
-
-
-
+});
