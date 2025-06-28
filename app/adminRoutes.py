@@ -32,89 +32,88 @@ def admin_viewReport():
 
 @app.route('/adminHome/uploadCourseDetails', methods=['GET', 'POST'])
 def admin_uploadCourseDetails():
-    submission_type = 'manual'  # Default
+    submission_type = request.form.get('submission_type', 'manual')
     course_data = Course.query.all()
     courseCode_text = ''
     courseName_text = ''
     courseHour_text = ''
 
     if request.method == 'POST':
-        if 'course_file' not in request.files:
-            return jsonify({'success': False, 'message': 'No file uploaded'})
+        if submission_type == 'file':
+            if 'course_file' not in request.files:
+                return jsonify({'success': False, 'message': 'No file uploaded'})
+            
+            file = request.files['course_file']
+            file_stream = BytesIO(file.read())
+
+            course_records_added = 0
+            processed_records = []
+            errors = []
+
+            # Handle file upload
+            if file and file.filename:
+                try:
+                    excel_file = pd.ExcelFile(file_stream)
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            # Read Excel content
+                            df = pd.read_excel(
+                                file,
+                                sheet_name=sheet_name,
+                                usecols="A:C",
+                                skiprows=1
+                            )
+                            df.columns = ['code','name','creditHour']
+                            df.reset_index(drop=True, inplace=True)
+
+                            for index, row in df.iterrows():
+                                try:
+                                    courseCode_text = str(row['code']).upper()
+                                    courseName_text = str(row['name']).upper()
+                                    courseHour_text = int(row['creditHour'])
+
+                                    if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
+                                        continue  # Skip invalid rows
+
+                                    valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
+                                    new_course = Course(
+                                        courseCode=courseCode_text.upper(),
+                                        courseName=courseName_text.upper(),
+                                        courseHour=courseHour_text
+                                    )
+                                    db.session.add(new_course)
+                                    course_records_added += 1
+
+                                except Exception as row_err:
+                                    pass
+
+                            db.session.commit()
+
+                        except Exception as sheet_err:
+                            pass
+
+                    # Final response
+                    if valid and course_records_added > 0:
+                        message = f"Successful upload {course_records_added} record(s)"
+                        success = True
+                    else:
+                        message = "No data uploaded"
+                        success = False
+
+                    return jsonify({
+                        'success': success,
+                        'message': message,
+                        'records': processed_records,
+                        'errors': errors
+                    })
+
+                except Exception as e:
+                    current_app.logger.error("File processing error: File upload in wrong format")
+                    return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
         
-        submission_type = 'file'
-        file = request.files['course_file']
-        file_stream = BytesIO(file.read())
-
-        course_records_added = 0
-        processed_records = []
-        errors = []
-
-        # Handle file upload
-        if file and file.filename:
-            try:
-                excel_file = pd.ExcelFile(file_stream)
-                for sheet_name in excel_file.sheet_names:
-                    try:
-                        # Read Excel content
-                        df = pd.read_excel(
-                            file,
-                            sheet_name=sheet_name,
-                            usecols="A:C",
-                            skiprows=1
-                        )
-                        df.columns = ['code','name','creditHour']
-                        df.reset_index(drop=True, inplace=True)
-
-                        for index, row in df.iterrows():
-                            try:
-                                courseCode_text = str(row['code']).upper()
-                                courseName_text = str(row['name']).upper()
-                                courseHour_text = int(row['creditHour'])
-
-                                if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
-                                    continue  # Skip invalid rows
-
-                                valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
-                                new_course = Course(
-                                    courseCode=courseCode_text.upper(),
-                                    courseName=courseName_text.upper(),
-                                    courseHour=courseHour_text
-                                )
-                                db.session.add(new_course)
-                                course_records_added += 1
-
-                            except Exception as row_err:
-                                pass
-
-                        db.session.commit()
-
-                    except Exception as sheet_err:
-                        pass
-
-                # Final response
-                if valid and course_records_added > 0:
-                    message = f"Successful upload {course_records_added} record(s)"
-                    success = True
-                else:
-                    message = "No data uploaded"
-                    success = False
-
-                return jsonify({
-                    'success': success,
-                    'message': message,
-                    'records': processed_records,
-                    'errors': errors
-                })
-
-            except Exception as e:
-                current_app.logger.error("File processing error: File upload in wrong format")
-                return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
-    
+            
         
-        
-        else:
-            submission_type = 'manual'
+        elif submission_type == 'manual':
             # Handle manual input
             courseCode_text = request.form.get('courseCode', '').strip()
             courseName_text = request.form.get('courseName', '').strip()

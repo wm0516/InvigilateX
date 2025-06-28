@@ -6,6 +6,7 @@
     <form id="uploadCourseForm" action="{{ url_for('admin_uploadCourseDetails') }}" method="POST" enctype="multipart/form-data">
         <h3>Choose either 'Upload' or 'Manual' to insert new course details</h3>
         <div class="profile-frame">
+            <input type="hidden" id="submissionType" name="submission_type" value="manual">
             <div class="form-left">
                 <label for="course_list">
                     <div class="upload-container">
@@ -44,9 +45,11 @@
 
 
         <!-- Result feedback -->
-        <div id="examUploadResult" class="result-message"></div>
-        <div id="examUploadErrors" class="error-message"></div>
-        
+        {% if submission_type == 'file' %}
+            <div id="examUploadResult" class="result-message"></div>
+            <div id="examUploadErrors" class="error-message"></div>
+        {% endif % }
+
         {% if submission_type == 'manual' %}
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -60,7 +63,7 @@
         {% endif %}
         <br>
 
-        
+
         <div class="button-wrapper">
                 <button type="submit">Submit</button>
         </div>

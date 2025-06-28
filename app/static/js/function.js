@@ -328,5 +328,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFileUpload('.upload-container', 'course_list', 'selectedFileName');
     handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
                    'courseUploadErrors', '.user-data-table tbody', 'course_file', generateExamRow);
+
+    document.getElementById('course_list').addEventListener('change', function () {
+      document.getElementById('submissionType').value = 'file';
+    });
 });
 
