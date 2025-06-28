@@ -106,6 +106,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+
+// Initialize all upload forms when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Lecturer List Upload
+    setupFileUpload('.upload-container', 'lecturerList_list', 'selectedFileName');
+    handleFormSubmit('uploadLecturerListForm', 'lecturerList_list', 'lecturerListUploadResult', 
+                   'lecturerListUploadErrors', '.user-data-table tbody', 'lecturerList_file', generateLecturerRow);
+
+    // Lecturer Timetable Upload
+    setupFileUpload('.upload-container', 'lecturer_list', 'selectedFileName');
+    handleFormSubmit('uploadLecturerForm', 'lecturer_list', 'lecturerUploadResult', 
+                   'lecturerUploadErrors', '.user-data-table tbody', 'lecturer_file', generateLecturerRow);
+
+    // Exam Details Upload
+    setupFileUpload('.upload-container', 'exam_list', 'selectedFileName');
+    handleFormSubmit('uploadExamForm', 'exam_list', 'examUploadResult', 
+                   'examUploadErrors', '.user-data-table tbody', 'exam_file', generateExamRow);
+
+    // Course Details Upload
+    setupFileUpload('.CourseUploadContainer', 'course_list', 'courseSelectedFileName');
+    handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
+                 'courseUploadErrors', '.user-data-table tbody', 'course_file', generateCourseRow);
+
+});
+
+
 /* Common Upload Functionality - Reusable */
 function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId) {
     const uploadContainer = document.querySelector(uploadContainerSelector);
@@ -317,27 +344,4 @@ function generateCourseRow(index, record) {
 }*/
 
 
-// Initialize all upload forms when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Lecturer List Upload
-    setupFileUpload('.upload-container', 'lecturerList_list', 'selectedFileName');
-    handleFormSubmit('uploadLecturerListForm', 'lecturerList_list', 'lecturerListUploadResult', 
-                   'lecturerListUploadErrors', '.user-data-table tbody', 'lecturerList_file', generateLecturerRow);
-
-    // Lecturer Timetable Upload
-    setupFileUpload('.upload-container', 'lecturer_list', 'selectedFileName');
-    handleFormSubmit('uploadLecturerForm', 'lecturer_list', 'lecturerUploadResult', 
-                   'lecturerUploadErrors', '.user-data-table tbody', 'lecturer_file', generateLecturerRow);
-
-    // Exam Details Upload
-    setupFileUpload('.upload-container', 'exam_list', 'selectedFileName');
-    handleFormSubmit('uploadExamForm', 'exam_list', 'examUploadResult', 
-                   'examUploadErrors', '.user-data-table tbody', 'exam_file', generateExamRow);
-
-    // Course Details Upload
-    setupFileUpload('#courseUploadContainer', 'course_list', 'courseSelectedFileName');
-    handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
-                 'courseUploadErrors', '.user-data-table tbody', 'course_file', generateCourseRow);
-
-});
 
