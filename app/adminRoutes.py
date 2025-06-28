@@ -30,8 +30,8 @@ def admin_viewReport():
     return render_template('adminPart/adminInvigilationReport.html', active_tab='admin_viewReporttab')
 
 
-@app.route('/adminHome/manageCourseDetails', methods=['GET', 'POST'])
-def admin_manageCourseDetails():
+@app.route('/adminHome/manageCourse', methods=['GET', 'POST'])
+def admin_manageCourse():
     course_data = Course.query.all()
     courseCode_text = ''
     courseSection_text = ''
@@ -104,12 +104,12 @@ def admin_manageCourseDetails():
                 else:
                     flash("No data uploaded", 'error')
 
-                return redirect(url_for('admin_manageCourseDetails'))
+                return redirect(url_for('admin_manageCourse'))
 
             except Exception as e:
                 print(f"[File Processing Error] {e}")  # <-- See the actual cause
                 flash('File processing error: File upload in wrong format', 'error')
-                return redirect(url_for('admin_manageCourseDetails'))
+                return redirect(url_for('admin_manageCourse'))
         
         else:
             # Handle manual input
@@ -122,25 +122,25 @@ def admin_manageCourseDetails():
             valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageCourseDetails.html', 
+                return render_template('adminPart/adminManageCourse.html', 
                                         course_data=course_data,
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text,
-                                        active_tab='admin_manageCourseDetailstab')
+                                        active_tab='admin_manageCoursetab')
             
             try:
                 hour_int = int(courseHour_text)
             except ValueError:
                 flash("Course Hour must be a valid integer.", 'error')
-                return render_template('adminPart/adminManageCourseDetails.html', 
+                return render_template('adminPart/adminManageCourse.html', 
                                         course_data=course_data,
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text,
-                                        active_tab='admin_manageCourseDetailstab')
+                                        active_tab='admin_manageCoursetab')
 
             new_course = Course(
                 courseCodeSection = courseCodeSection_text,
@@ -152,10 +152,10 @@ def admin_manageCourseDetails():
             db.session.add(new_course)
             db.session.commit()
             flash("New Course Added Successfully", "success")
-            return redirect(url_for('admin_manageCourseDetails'))
+            return redirect(url_for('admin_manageCourse'))
 
-    return render_template('adminPart/adminManageCourseDetails.html',
-                           active_tab='admin_manageCourseDetailstab',
+    return render_template('adminPart/adminManageCourse.html',
+                           active_tab='admin_manageCoursetab',
                            course_data=course_data)
 
 
