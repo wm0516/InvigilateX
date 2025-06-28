@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                    'examUploadErrors', '.user-data-table tbody', 'exam_file', generateExamRow);
 
     // Course Details Upload
-    setupFileUpload('courseUploadContainer', 'course_list', 'courseSelectedFileName');
+    setupFileUpload('#courseUploadContainer', 'course_list', 'courseSelectedFileName');
     handleFormSubmit('uploadCourseForm', 'course_list', 'courseUploadResult', 
                  'courseUploadErrors', '.user-data-table tbody', 'course_file', generateCourseRow);
 
