@@ -53,9 +53,17 @@ def admin_uploadCourseDetails():
                             usecols="A:D",
                             skiprows=1
                         )
-                        df.columns = ['code','section', 'name','creditHour']
+
+                        # Clean column headers first
+                        df.columns = [str(col).strip().lower() for col in df.columns]
+                        expected_cols = ['code', 'section', 'name', 'credithour']
+
+                        if df.columns.tolist() != expected_cols:
+                            raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
+                        
+                        # Rename to standardized names
+                        df.columns = ['code', 'section', 'name', 'creditHour']
                         print(f"Data read from excel are {df.head()}")
-                        df.reset_index(drop=True, inplace=True)
 
                         for index, row in df.iterrows():
                             try:
