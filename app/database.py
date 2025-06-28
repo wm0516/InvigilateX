@@ -139,13 +139,15 @@ class Department(db.Model):
 
 class Course(db.Model):
     __tablename__ = 'Course'
-    courseCode = db.Column(db.String(10), primary_key=True)
+    courseCodeSection = db.Column(db.String(20), primary_key=True)
+    courseCode = db.Column(db.String(10))
     courseSection = db.Column(db.String(10), nullable=False)
     courseName = db.Column(db.String(50), nullable=False)
     courseHour = db.Column(db.Integer)
     '''
     CREATE TABLE Course (
-        courseCode VARCHAR(10) PRIMARY KEY,
+        courseCodeSection VARCHAR(20) PRIMARY KEY,
+        courseCode VARCHAR(10) NOT NULL,
         courseSection VARCHAR(10) NOT NULL,
         courseName VARCHAR(50) NOT NULL,
         courseHour INT

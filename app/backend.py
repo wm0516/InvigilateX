@@ -60,13 +60,9 @@ def check_course(code, section, name, hour):
     if not code or not section or not name or not hour:
         return False, "Please fill in all required fields."
 
-    existing_course = Course.query.filter_by(
-        courseCode=code.upper(),
-        courseSection=section.upper(),
-        courseName=name.upper()
-    ).first()
-
-    if existing_course:
+    courseCodeSection_text = (code + '/' + section)
+    existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
+    if existing_courseCodeSection:
         return False, "Course already registered."
 
     return True, ""

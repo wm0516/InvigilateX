@@ -78,12 +78,14 @@ def admin_uploadCourseDetails():
                                 courseSection_text = str(row['section']).upper()
                                 courseName_text = str(row['name']).upper()
                                 courseHour_text = int(row['creditHour'])
+                                courseCodeSection_text = (courseCode_text + '/' + courseSection_text).upper()
 
                                 if not courseCode_text or not courseName_text or not isinstance(courseHour_text, (int, float)):
                                     continue
 
                                 valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
                                 new_course = Course(
+                                    courseCodeSection = courseCodeSection_text,
                                     courseCode=courseCode_text.upper(),
                                     courseSection=courseSection_text.upper(),
                                     courseName=courseName_text.upper(),
@@ -117,6 +119,7 @@ def admin_uploadCourseDetails():
             courseSection_text = request.form.get('courseSection', '').strip()
             courseName_text = request.form.get('courseName', '').strip()
             courseHour_text = request.form.get('courseHour', '').strip()
+            courseCodeSection_text = (courseCode_text + '/' + courseSection_text).upper()
 
             valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
             if not valid:
@@ -140,6 +143,7 @@ def admin_uploadCourseDetails():
                                         courseHour_text=courseHour_text)
 
             new_course = Course(
+                courseCodeSection = courseCodeSection_text,
                 courseCode=courseCode_text.upper(),
                 courseSection=courseSection_text.upper(),
                 courseName=courseName_text.upper(),
