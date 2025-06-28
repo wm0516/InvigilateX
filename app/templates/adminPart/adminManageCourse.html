@@ -4,14 +4,18 @@
 <div class="menu-section">
     <h2>Manage Course</h2>
     <form id="uploadCourseForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
-        <h3>Choose either 'Upload' or 'Manual' to insert new course details</h3>
+        <h3>Choose either 'Upload' or 'Manual' to insert new course</h3>
         <div class="profile-frame">
             <input type="hidden" id="submissionType" name="submission_type" value="manual">
             <div class="form-left">
                 <label for="course_list">
                     <div class="upload-container">
-                        <div class="upload-text">Upload file format with according format
-                            <br><br>Click to upload or drag and drop with below file format</div>
+                        <div class="upload-text">
+                            Upload a file with an empty first row. 
+                            <br>Data should start from columns A to D, 
+                            <br>labeled as: 'code', 'section', 'name', and 'creditHour'
+                            <br><br>Click to upload or drag and drop with below file format
+                        </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
                         <!-- Selected file display -->
                         <div id="selectedFileName" class="file-name-display"></div>
@@ -21,7 +25,7 @@
             </div>
 
             <div class="form-right" style="width: 30%;">
-                <table class="user-data-table" style="padding:0%; border-bottom: 0%;">
+                <table class="user-data-table">
                     <tr style="text-align: center;">
                         <th>Field</th>
                         <th>Input</th>
