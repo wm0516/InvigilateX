@@ -184,113 +184,46 @@ function setupFileUpload(uploadContainerSelector, fileInputId, fileNameDisplayId
 }
 
 /* Common Form Submission - Reusable */
-async function handleFormSubmit(formId, fileInputId, resultDivId, errorDivId, tableBodySelector, fileFieldName, generateRowFn) {
+async function handleFormSubmit(formId, /* ... */) {
   const form = document.getElementById(formId);
-  const fileInput = document.getElementById(fileInputId);
-  const resultDiv = document.getElementById(resultDivId);
-  const errorDiv = document.getElementById(errorDivId);
-  const tableBody = document.querySelector(tableBodySelector);
-
-  if (!form || !fileInput || !resultDiv) return;
-
   form.addEventListener('submit', async function(e) {
-    const file = fileInput.files[0];
-    const manualInputs = form.querySelectorAll('input[type="text"], input[type="number"]');
-    const hasManualInput = Array.from(manualInputs).some(input => input.value.trim() !== "");
+    e.preventDefault();
 
-    // Mixed mode prevention
-    if (file && hasManualInput) {
-      e.preventDefault();
-      errorDiv.innerHTML = '<p style="color:red;">Please use either file upload OR manual input, not both.</p>';
-      return;
+    const file = fileInput.files[0];
+    const formData = new FormData(form);
+    if (file) {
+      formData.set(fileFieldName, file);
+      formData.set('submission_type', 'file');
+    } else {
+      formData.set('submission_type', 'manual');
     }
 
-    // FILE UPLOAD mode
-    if (file) {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append(fileFieldName, file);
+    // show spinner
+    resultDiv.innerHTML = `<span class="spinner">⌛ Uploading...</span>`;
+    errorDiv.innerHTML = '';
 
-      resultDiv.textContent = '';
-      errorDiv.textContent = '';
-      const spinner = document.createElement('span');
-      spinner.className = 'spinner';
-      spinner.textContent = '⌛ Uploading...';
-      resultDiv.appendChild(spinner);
+    try {
+      const resp = await fetch(form.action, { method: 'POST', body: formData });
+      const ct = resp.headers.get('content-type') || '';
 
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          body: formData
-        });
-
-        resultDiv.textContent = '';
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const data = await response.json();
-          if (data.success) {
-            const msg = document.createElement('p');
-            msg.style.color = 'green';
-            msg.textContent = data.message;
-            resultDiv.appendChild(msg);
-
-            if (Array.isArray(data.records) && data.records.length && tableBody) {
-              tableBody.innerHTML = '';
-              data.records.forEach((rec, i) => {
-                const row = document.createElement('tr');
-                row.innerHTML = generateRowFn(i, rec);
-                tableBody.appendChild(row);
-              });
-            }
-          } else {
-            const msg = document.createElement('p');
-            msg.style.color = 'orange';
-            msg.textContent = data.message;
-            resultDiv.appendChild(msg);
-
-            if (Array.isArray(data.errors)) {
-              const ul = document.createElement('ul');
-              data.errors.forEach(err => {
-                const li = document.createElement('li');
-                li.textContent = err;
-                ul.appendChild(li);
-              });
-              errorDiv.appendChild(ul);
-            }
-          }
-
-          fileInput.value = '';
-          const fileNameDisplay = document.getElementById('selectedFileName');
-          if (fileNameDisplay) fileNameDisplay.textContent = '';
-          const uploadContainer = document.querySelector(`#${fileInputId}`).closest('.upload-container');
-          if (uploadContainer) {
-            uploadContainer.style.borderColor = '#ccc';
-            uploadContainer.style.backgroundColor = '#f9f9f9';
-          }
-
-        } else {
-          const text = await response.text();
-          const p = document.createElement('p');
-          p.style.color = 'red';
-          p.textContent = `Unexpected response: ${text}`;
-          resultDiv.appendChild(p);
+      if (ct.includes('application/json')) {
+        const data = await resp.json();
+        resultDiv.textContent = data.message;
+        resultDiv.style.color = data.success ? 'green' : 'orange';
+        if (data.errors) {
+          errorDiv.innerHTML = '<ul>' + data.errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
         }
-
-      } catch (err) {
-        resultDiv.textContent = '';
-        const p = document.createElement('p');
-        p.style.color = 'red';
-        p.textContent = `Upload failed: ${err.message}`;
-        resultDiv.appendChild(p);
+        // update table if records returned
+      } else {
+        const text = await resp.text();
+        errorDiv.innerHTML = `<p style="color:red;">${text}</p>`;
       }
-
-    } else {
-      // MANUAL mode: allow normal POST to Flask
-      return; // Do not call preventDefault()
+    } catch (err) {
+      errorDiv.innerHTML = `<p style="color:red;">Upload failed: ${err.message}</p>`;
     }
   });
-
 }
+
 
 
 // Custom row generators for different forms
