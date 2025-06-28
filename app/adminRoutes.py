@@ -54,6 +54,7 @@ def admin_uploadCourseDetails():
                             skiprows=1
                         )
                         df.columns = ['code','section', 'name','creditHour']
+                        print(f"Data read from excel are {df.head()}")
                         df.reset_index(drop=True, inplace=True)
 
                         for index, row in df.iterrows():
@@ -89,7 +90,7 @@ def admin_uploadCourseDetails():
 
                 return redirect(url_for('admin_uploadCourseDetails'))
 
-            except Exception as e:
+            except Exception as e:  
                 flash('File processing error: File upload in wrong format','error')
                 return redirect(url_for('admin_uploadCourseDetails'))
 
