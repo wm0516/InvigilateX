@@ -29,6 +29,7 @@ def admin_manageLecturer():
 def admin_viewReport():
     return render_template('adminPart/adminInvigilationReport.html', active_tab='admin_viewReporttab')
 
+
 @app.route('/adminHome/uploadCourseDetails', methods=['GET', 'POST'])
 def admin_uploadCourseDetails():
     course_data = Course.query.all()
@@ -41,6 +42,11 @@ def admin_uploadCourseDetails():
         courseName_text = request.form.get('courseName', '').strip()
         courseHour_text = request.form.get('courseHour', '').strip()
 
+        try:
+            hour_int = int(courseHour_text)
+        except ValueError:
+            flash("Course Hour must be a valid integer.", 'error')
+
         valid, result = check_course(courseCode_text, courseName_text, courseHour_text)
         if not valid:
             flash(result, 'error')
@@ -50,7 +56,7 @@ def admin_uploadCourseDetails():
         new_course = Course(
             courseCode=courseCode_text.upper(),
             courseName=courseName_text.upper(),
-            courseHour=courseHour_text,
+            courseHour=hour_int,
         )
         db.session.add(new_course)
         db.session.commit()
