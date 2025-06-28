@@ -108,8 +108,9 @@ def admin_uploadCourseDetails():
                     })
 
                 except Exception as e:
-                    current_app.logger.error("File processing error: File upload in wrong format")
-                    return jsonify({'success': False, 'message': "Error processing file: File upload in wrong format"})
+                    flash('File processing error: File upload in wrong format','error')
+                    return render_template('adminPart/adminUploadCourseDetails.html')
+                
         
             
         
