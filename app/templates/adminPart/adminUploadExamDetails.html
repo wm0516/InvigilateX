@@ -1,29 +1,101 @@
 {% extends "adminPart/adminBase.html" %}
-{% block title %}Admin UploadExam{% endblock %}
+{% block title %}Admin ManageExamSessions{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <h2>Upload Exam File</h2>
+    <h2>Manage Exam Sessions</h2>
     <form id="uploadExamForm" action="{{ url_for('admin_uploadExamDetails') }}" method="POST" enctype="multipart/form-data">
-        <label for="exam_list">
-            <div class="upload-container">
-                <div class="upload-text">Upload file format with 1st row must be empty and format with Date, Day, Start Time, End Time, Program, Course/Section, Lecturer, No of, Room
-                    <br><br>Click to upload or drag and drop with below file format</div>
-                <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                <!-- Selected file display -->
-                <div id="selectedFileName" class="file-name-display"></div>
+        <h3>Choose either 'Upload' or 'Manual' to insert new course</h3>
+        <div class="profile-frame">
+            <input type="hidden" id="submissionType" name="submission_type" value="manual">
+            <div class="form-left">
+                <label for="exam_list">
+                    <div class="upload-container">
+                        <div class="upload-text">
+                            Upload a file with an empty first row. Data should start from columns A to D,<br> 
+                            labeled as: 'code', 'section', 'name', and 'creditHour'<br><br><br>
+                            Click to upload or drag and drop with below file format
+                        </div>
+                        <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                        <!-- Selected file display -->
+                        <div id="selectedFileName" class="file-name-display"></div>
+                    </div>
+                </label>
+                <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             </div>
-        </label>
-        <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
-        
+
+            <div class="form-right" style="width: 30%;">
+                <table class="user-data-table">
+                    <tr style="text-align: center;">
+                        <th>Field</th>
+                        <th>Input</th>
+                    </tr>
+                    <tr>
+                        <td><label for="courseCode">Exam Date</label></td>
+                        <td><input type="text" name="courseCode" value="{{ courseCode_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="courseSection">Exam Day</label></td>
+                        <td><input type="text" name="courseSection" value="{{ courseSection_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="courseName">Start Time</label></td>
+                        <td><input type="text" name="courseName" value="{{ courseName_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="courseHour">End Time</label></td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="courseHour">Program Code</label></td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>                    
+                    <tr>
+                        <td><label for="courseHour">Course/Section</label></td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>                    
+                    <tr>
+                        <td><label for="courseHour">Lecturer</label></td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>                    
+                    <tr>
+                        <td><label for="courseHour">No. of Students</label></td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="courseHour">Venue</label></td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br>
+
         <!-- Result feedback -->
         <div id="examUploadResult" class="result-message"></div>
         <div id="examUploadErrors" class="error-message"></div>
-        
-        <!-- Submit button -->
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <br>
+
         <div class="button-wrapper">
-            <button type="submit">Upload</button>
+                <button type="submit">Update</button>
         </div>
     </form>
+
+
+
+
+
+
+
 
     <br><br>
     <h3>Table Record</h3>
@@ -52,7 +124,7 @@
                     <th>Course/Section</th>
                     <th>Lecturer</th>
                     <th>No. of Students</th>
-                    <th>Room</th>
+                    <th>Venue</th>
                 </tr>
             </thead>
             <tbody>
