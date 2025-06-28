@@ -32,6 +32,7 @@ def admin_viewReport():
 
 @app.route('/adminHome/uploadCourseDetails', methods=['GET', 'POST'])
 def admin_uploadCourseDetails():
+    submission_type = 'manual'  # Default
     course_data = Course.query.all()
     courseCode_text = ''
     courseName_text = ''
@@ -41,6 +42,7 @@ def admin_uploadCourseDetails():
         if 'course_file' not in request.files:
             return jsonify({'success': False, 'message': 'No file uploaded'})
         
+        submission_type = 'file'
         file = request.files['course_file']
         file_stream = BytesIO(file.read())
 
@@ -112,6 +114,7 @@ def admin_uploadCourseDetails():
         
         
         else:
+            submission_type = 'manual'
             # Handle manual input
             courseCode_text = request.form.get('courseCode', '').strip()
             courseName_text = request.form.get('courseName', '').strip()
@@ -148,7 +151,7 @@ def admin_uploadCourseDetails():
 
     return render_template('adminPart/adminUploadCourseDetails.html',
                            active_tab='admin_uploadCourseDetailstab',
-                           course_data=course_data)
+                           course_data=course_data, submission_type=submission_type)
 
 
 
