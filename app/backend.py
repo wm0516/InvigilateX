@@ -62,7 +62,7 @@ def check_course(code, section, name, hour):
 
     # Check for duplicates (case-insensitive)
     existing_courseCode = Course.query.filter(Course.courseCode.ilike(code)).first()
-    existing_courseSection = Course.query.filter(Course.courseCode.ilike(section)).first()
+    existing_courseSection = Course.query.filter(Course.courseSection.ilike(section)).first()
     existing_courseName = Course.query.filter(Course.courseName.ilike(name)).first()
     
     if existing_courseCode and existing_courseSection and existing_courseName:
