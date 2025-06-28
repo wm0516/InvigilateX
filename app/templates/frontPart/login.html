@@ -8,17 +8,16 @@
 </head>
 
 <body>
+    {% set all_messages = get_flashed_messages(with_categories=true) %}
     <form method="POST">
-        <!-- Showing any of alert message -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
+        <!-- Top: Flash messages WITHOUT category -->
+        {% for category, message in all_messages %}
+            {% if not category %}
+                <div class="alert">
                     {{ message }}
-                    </div>
-                {% endfor %}
+                </div>
             {% endif %}
-        {% endwith %}
+        {% endfor %}
 
         <div class="heading"></div>
         <br>
@@ -43,15 +42,14 @@
             </div>
             <br>
             
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
+            <!-- Bottom: Flash messages WITH category -->
+            {% for category, message in all_messages %}
+                {% if category %}
                     <div class="alert alert-{{ category }}">
                         <strong>{{ category.capitalize() }}:</strong> {{ message }}
                     </div>
-                    {% endfor %}
                 {% endif %}
-            {% endwith %}
+            {% endfor %}
             
             <!-- Javascript control the password toggle -->
             <script src="{{ url_for('static', filename='js/function.js') }}"></script>
