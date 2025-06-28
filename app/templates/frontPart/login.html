@@ -43,13 +43,15 @@
             <br>
             
             <!-- Bottom: Flash messages ONLY for login input errors -->
-            {% for category, message in all_messages %}
-                {% if category == 'login_error' %}
-                    <div class="alert alert-danger">
-                        <strong>Error:</strong> {{ message }}
-                    </div>
-                {% endif %}
-            {% endfor %}
+            <div class="alert login_error">
+                {% for category, message in all_messages %}
+                    {% if category == 'login_error' %}
+                        <div class="alert alert-danger">    
+                            <strong>Error:</strong> {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
 
             
             <!-- Javascript control the password toggle -->

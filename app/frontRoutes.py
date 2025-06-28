@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
 from app import app
 from .backend import *
 from flask_bcrypt import Bcrypt
@@ -23,12 +23,14 @@ def login():
         
         if not login_text or not password_text:
             flash("Please fill in all fields", 'login_error')
-            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
+            all_messages = get_flashed_messages(with_categories=True)
+            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
         
         valid, result, role = check_login(login_text, password_text)
         if not valid:
             flash(result, 'login_error')
-            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
+            all_messages = get_flashed_messages(with_categories=True)
+            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
         session['user_id'] = result
         session['user_role'] = role
@@ -43,7 +45,9 @@ def login():
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
-    return render_template('frontPart/login.html', login_text=login_text, password_text=password_text)
+    # Ensure GET request also includes flashed messages
+    all_messages = get_flashed_messages(with_categories=True)
+    return render_template('frontPart/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
 
 # register page (done with all input validation and userID as Primary Key)
