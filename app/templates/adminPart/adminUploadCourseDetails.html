@@ -48,7 +48,7 @@
         {% if submission_type == 'file' %}
             <div id="examUploadResult" class="result-message"></div>
             <div id="examUploadErrors" class="error-message"></div>
-        {% endif % }
+        {% endif %}
 
         {% if submission_type == 'manual' %}
             {% with messages = get_flashed_messages(with_categories=true) %}
