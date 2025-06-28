@@ -45,22 +45,18 @@
 
 
         <!-- Result feedback -->
-        {% if submission_type == 'file' %}
-            <div id="examUploadResult" class="result-message"></div>
-            <div id="examUploadErrors" class="error-message"></div>
-        {% endif %}
+        <div id="examUploadResult" class="result-message"></div>
+        <div id="examUploadErrors" class="error-message"></div>
 
-        {% if submission_type == 'manual' %}
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <br>
 
 
