@@ -162,3 +162,42 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload('timetable_list', 'timetableUploadContainer', 'timetableSelectedFileName');
 });
 
+
+
+/* View Calendar for exam input */
+const input = document.getElementById('examDate');
+const today = new Date();
+
+// Format date to YYYY-MM-DD
+const formatDate = (date) => {
+const yyyy = date.getFullYear();
+const mm = String(date.getMonth() + 1).padStart(2, '0');
+const dd = String(date.getDate()).padStart(2, '0');
+return `${yyyy}-${mm}-${dd}`;
+};
+
+// Set min = today
+const minDate = formatDate(today);
+
+// Set max = same date next year
+const nextYear = new Date(today);
+nextYear.setFullYear(today.getFullYear() + 1);
+const maxDate = formatDate(nextYear);
+
+input.min = minDate;
+input.max = maxDate;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
