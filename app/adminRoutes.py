@@ -315,98 +315,135 @@ def admin_uploadLecturerTimetable():
     return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
 
 
-@app.route('/adminHome/uploadExamDetails', methods=['GET', 'POST'])
-def admin_uploadExamDetails():
-    exam_data = ExamDetails.query.all()
+@app.route('/adminHome/manageExam', methods=['GET', 'POST'])
+def admin_manageExam():
+    exam_data = Exam.query.all()
+    examDate_text = ''
+    examDay_text = ''
+    startTime_text = ''
+    endTime_text = ''
+    programCode_text = ''
+    courseSection_text = ''
+    lecturer_text = ''
+    student_text = ''
+    venue_text = ''
 
     if request.method == 'POST':
-        if 'exam_file' not in request.files:
-            return jsonify({'success': False, 'message': 'No file uploaded'})
-
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
+        exam_records_added = 0  # <-- Make sure this is initialized
+    
+        if file and file.filename:
+            try:
+                excel_file = pd.ExcelFile(file_stream)
+                for sheet_name in excel_file.sheet_names:
+                    try:
+                        df = pd.read_excel(
+                            excel_file,
+                            sheet_name=sheet_name,
+                            usecols="A:I",
+                            skiprows=1
+                        )
 
-        exam_records_added = 0
-        processed_records = []
-        errors = []
+                         # Clean and standardize columns
+                        df.columns = [str(col).strip().lower() for col in df.columns]
+                        expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
 
-        try:
-            excel_file = pd.ExcelFile(file_stream)
+                        if df.columns.tolist() != expected_cols:
+                            raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-            for sheet_name in excel_file.sheet_names:
-                try:
-                    df = pd.read_excel(
-                        excel_file,
-                        sheet_name=sheet_name,
-                        usecols="A:I",
-                        skiprows=1
-                    )
-                    df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
-                    df.reset_index(drop=True, inplace=True)
+                        # Rename to match your model
+                        df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
 
-                    for index, row in df.iterrows():
-                        try:
-                            exam_date = pd.to_datetime(row['Date']).date()
-                            exam_start = str(row['Start'])
-                            exam_end = str(row['End'])
-                            exam_course = row['Course/Sec']
+                        for index, row in df.iterrows():
+                            try:
+                                examDate_text = str(row['Date'])
+                                examDay_text = str(row['Day']).upper()
+                                startTime_text = str(row['Start']).upper()
+                                endTime_text = str(row['End']).upper()
+                                programCode_text = str(row['Program']).upper()
+                                courseSection_text = str(row['Course/Sec']).upper()
+                                lecturer_text = str(row['Lecturer']).upper()
+                                student_text = str(row['No Of']).upper()
+                                venue_text = str(row['Room']).upper()
 
-                            is_valid, error_message = unique_examDetails(
-                                exam_course, exam_date, exam_start, exam_end
-                            )
+                                if not all([examDate_text, examDay_text, startTime_text, endTime_text, programCode_text, courseSection_text, lecturer_text, student_text, venue_text]):
+                                    continue
 
-                            if not is_valid:
-                                row_number = index + 2 if isinstance(index, int) else str(index)
-                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
-                                continue
+                                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
+                                if valid:
+                                    new_exam= Exam(
+                                        examDate = examDate_text,
+                                        examDay = examDay_text,
+                                        examStartTime = startTime_text,
+                                        examEndTime = endTime_text,
+                                        examProgramCode = programCode_text,
+                                        examCourseSectionCode = courseSection_text,
+                                        examLecturer = lecturer_text,
+                                        examTotalStudent = student_text,
+                                        examVenue = venue_text
+                                    )
+                                    db.session.add(new_exam)
+                                    exam_records_added += 1
+                                    db.session.commit()
+                            except Exception as row_err:
+                                print(f"[Row Error] {row_err}")
+                    except Exception as sheet_err:
+                        print(f"[Sheet Error] {sheet_err}")  # <-- Print or log this
 
-                            exam = ExamDetails(
-                                examDate=exam_date,
-                                examDay=row['Day'],
-                                examStartTime=exam_start,
-                                examEndTime=exam_end,
-                                examProgramCode=row['Program'],
-                                examCourseSectionCode=exam_course,
-                                examLecturer=row['Lecturer'],
-                                examTotalStudent=int(row['No Of']),
-                                examVenue=row['Room'] if pd.notna(row['Room']) else ''
-                            )
+                if exam_records_added > 0:
+                    flash(f"Successful upload {exam_records_added} record(s)", 'success')
+                else:
+                    flash("No data uploaded", 'error')
 
-                            db.session.add(exam)
-                            exam_records_added += 1
+                return redirect(url_for('admin_manageExam'))
 
-                            processed_records.append({
-                                'Date': exam.examDate.strftime('%Y-%m-%d'),
-                                'Day': exam.examDay,
-                                'Start': exam.examStartTime,
-                                'End': exam.examEndTime,
-                                'Program': exam.examProgramCode,
-                                'Course/Sec': exam.examCourseSectionCode,
-                                'Lecturer': exam.examLecturer,
-                                'No Of': exam.examTotalStudent,
-                                'Room': exam.examVenue
-                            })
+            except Exception as e:
+                print(f"[File Processing Error] {e}")  # <-- See the actual cause
+                flash('File processing error: File upload in wrong format', 'error')
+                return redirect(url_for('admin_manageExam'))
+        
+        else:
+            # Handle manual input
+            examDate_text = request.form.get('examDate', '').strip()
+            examDay_text = request.form.get('examDay', '').strip()
+            startTime_text = request.form.get('startTime', '').strip()
+            endTime_text = request.form.get('endTime', '').strip()
+            programCode_text = request.form.get('programCode', '').strip()
+            courseSection_text = request.form.get('courseSection', '').strip()
+            lecturer_text = request.form.get('lecturer', '').strip()
+            student_text = request.form.get('student', '').strip()
+            venue_text = request.form.get('venue', '').strip()
 
-                        except Exception as row_err:
-                            pass
+            valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
+            if not valid:
+                flash(result, 'error')
+                return render_template('adminPart/adminManageExam.html', exam_data=exam_data, examDate_text=examDate_text, examDay_text=examDay_text,
+                                        startTime_text=startTime_text, endTime_text=endTime_text, programCode_text=programCode_text, courseSection_text=courseSection_text,
+                                        lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text, active_tab='admin_manageExamtab')
+        
+            new_exam= Exam(
+                examDate = examDate_text,
+                examDay = examDay_text,
+                examStartTime = startTime_text,
+                examEndTime = endTime_text,
+                examProgramCode = programCode_text,
+                examCourseSectionCode = courseSection_text,
+                examLecturer = lecturer_text,
+                examTotalStudent = student_text,
+                examVenue = venue_text
+            )
+            db.session.add(new_exam)
+            db.session.commit()
+            flash("New Course Added Successfully", "success")
+            return redirect(url_for('admin_manageExam'))
 
-                    db.session.commit()
+    return render_template('adminPart/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data)
 
-                except Exception as sheet_err:
-                    pass
-            # Final response
-            if is_valid and exam_records_added > 0:
-                message = f"Successful upload {exam_records_added} record(s)"
-                flash(message, 'success')
-            else:
-                message = "No data uploaded"
-                flash(message, 'error')
 
-        except Exception as e:
-            flash('File processing error: File upload in wrong format','error')
-            return redirect(url_for('admin_uploadExamDetails'))
 
-    return render_template('adminPart/adminUploadExamDetails.html', active_tab='admin_uploadExamDetailstab', exam_data=exam_data)
+
+
 
 
 @app.route('/adminHome/uploadLecturerList', methods=['GET', 'POST'])

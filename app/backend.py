@@ -192,12 +192,12 @@ def role_required(required_role):
 
 
 # Check no duplicate exam sessions occur
-def unique_examDetails(exam_CourseSectionCode, exam_Date, exam_StartTime, exam_EndTime):
-    exam_exists = ExamDetails.query.filter_by(
-        examDate=exam_Date,
-        examStartTime=exam_StartTime,
-        examEndTime=exam_EndTime,
-        examCourseSectionCode=exam_CourseSectionCode
+def check_exam(courseSection, date, starttime, endtime):
+    exam_exists = Exam.query.filter_by(
+        examDate=date,
+        examStartTime=starttime,
+        examEndTime=endtime,
+        examCourseSectionCode=courseSection
     ).first()
 
     if exam_exists:

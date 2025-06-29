@@ -32,7 +32,7 @@
     <!-- Row 2 Second on managing lecturers-->
     <div class="menu-section">
     <!-- <h2>Settings</h2> -->
-        <a href="{{ url_for('admin_uploadExamDetails')}}" style="text-decoration: none;"><h2>Upload Exam Details</h2></a>
+        <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;"><h2>Manage Exam</h2></a>
         <li class="submenu">
             <strong>  Account Controls: </strong>
             <ul>
@@ -73,6 +73,18 @@
         </li>
     </div>
 
+    <div class="menu-section">
+        <!--   <h2>Upload File</h2><br>  -->
+        <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
+        <li class="submenu">
+            <strong>  Purpose:</strong>
+            <ul>    
+                <li>Upload merged lecturer schedule files</li>
+                <li>Access and review combined lecturer timetables</li>
+            </ul>
+        </li>
+    </div>
+
     <!-- Row 2 Second on managing lecturers
     <div class="menu-section">
         <a href="{{ url_for('admin_manageLecturer')}}" style="text-decoration: none;"><h2>Assign Lecturer</h2></a>
@@ -102,17 +114,7 @@
         </li>
     </div>
 
-    <div class="menu-section">
-        <!--   <h2>Upload File</h2><br>  -->
-        <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
-        <li class="submenu">
-            <strong>  Purpose:</strong>
-            <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
-            </ul>
-        </li>
-    </div>
+
 </div>
 {% endblock %}
 

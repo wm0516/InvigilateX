@@ -32,9 +32,9 @@
                     <i class="fas fa-users"></i>
                     <span>Upload Lecturer Lists</span>
                 </a>
-                <a href="{{ url_for('admin_uploadExamDetails') }}" class="tab-link {% if active_tab == 'admin_uploadExamDetailstab' %}active{% endif %}">
+                <a href="{{ url_for('admin_manageExam') }}" class="tab-link {% if active_tab == 'admin_manageExamtab' %}active{% endif %}">
                     <i class="fas fa-file-alt"></i>
-                    <span>Upload Exam Sessions</span>
+                    <span>Manage Exam</span>
                 </a>
                 <a href="{{ url_for('admin_manageCourse') }}" class="tab-link {% if active_tab == 'admin_manageCoursetab' %}active{% endif %}">
                     <i class="fas fa-book"></i>
