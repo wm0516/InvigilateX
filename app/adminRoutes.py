@@ -432,7 +432,9 @@ def admin_manageExam():
         
         else:
             # Handle manual input
-            examDate_text = request.form.get('examDate', '').strip()
+            examDate_text_raw = request.form.get('examDate', '').strip()
+            examDate_text = parse_date(examDate_text_raw)
+
             examDay_text = request.form.get('examDay', '').strip()
             startTime_text = request.form.get('startTime', '').strip()
             endTime_text = request.form.get('endTime', '').strip()
