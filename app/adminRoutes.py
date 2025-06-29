@@ -65,7 +65,7 @@ def admin_manageCourse():
                         # Clean and standardize columns
                         # df.columns = [str(col).strip().lower() for col in df.columns]
                         df.columns = [str(col).strip() for col in df.columns]
-                        expected_cols = ['code', 'section', 'name', 'credithour']
+                        expected_cols = ['code', 'section', 'name', 'creditHour']
 
                         if df.columns.tolist() != expected_cols:
                             raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
