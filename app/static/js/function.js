@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
     '/adminHome': 'admin_hometab',
     '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab',
-    '/adminHome/uploadLecturerList': 'admin_uploadLecturerListtab',
     '/adminHome/manageExam': 'admin_manageExamtab',
     '/adminHome/manageCourse': 'admin_manageCoursetab',
     '/adminHome/autoGenerate': 'admin_autoGeneratetab',
