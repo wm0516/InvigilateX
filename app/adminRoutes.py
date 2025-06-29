@@ -341,6 +341,7 @@ def admin_manageExam():
     venue_text = ''
 
     if request.method == 'POST':
+        print('yes get post')
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
         exam_records_added = 0  # <-- Make sure this is initialized
