@@ -64,13 +64,6 @@ def register():
     role_text = ''
     error_message = None
 
-    role_map = {
-        'LECTURER': LECTURER,
-        'DEAN': DEAN,
-        'HOP': HOP,
-        'ADMIN': ADMIN
-    }
-
     if request.method == 'POST':
         id_text = request.form.get('userid', '').strip()
         name_text = request.form.get('username', '').strip()
@@ -81,26 +74,11 @@ def register():
         department_text = request.form.get('department', '').strip()
         role_text = request.form.get('role', '').strip()
 
-        is_valid, error_message = check_register(id_text, email_text, contact_text)
-        
-        if not is_valid:
-            pass
-        elif not all([id_text, name_text, email_text, contact_text, password1_text, password2_text, department_text, role_text]):
-            error_message = "All fields are required."
-        elif not email_format(email_text):
-            error_message = "Wrong Email Address format"
-        elif not contact_format(contact_text):
-            error_message = "Wrong Contact Number format"
-        elif password1_text != password2_text:
-            error_message = "Passwords do not match."
-        elif not password_format(password1_text):
-            error_message = "Wrong password format."
-        elif role_text not in role_map:
-            error_message = "Invalid role selected."
+        is_valid, error_message = check_register(id_text, email_text, contact_text, name_text, password1_text, password2_text, department_text, role_text)
 
         if error_message:
             flash(error_message, 'error')
-        else:
+        elif is_valid:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
                 userId=id_text,
@@ -112,7 +90,6 @@ def register():
                 userPassword=hashed_pw,
                 userStatus=False
             )
-
             db.session.add(new_user)
             db.session.commit()
             flash("Register successful! Log in with your registered email address.", "success")

@@ -71,8 +71,6 @@ def check_course(code, section, name, hour):
 
 # Check login validate
 def check_login(loginEmail, loginPassword):
-    if not loginEmail or not loginPassword:
-        return False, "Both fields are required.", None
 
     user = User.query.filter_by(userEmail=loginEmail).first()
     if not user: # or not bcrypt.check_password_hash(user.userPassword, loginPassword):
@@ -87,23 +85,41 @@ def check_login(loginEmail, loginPassword):
     return True, user.userId, user.userLevel
 
 
-
 # Check registerID, registerEmail, registerContact can't be same as inside database based on role
-def check_register(registerID, registerEmail, registerContact):
-    # Check in User table
-    existing_user = User.query.filter(
-        (User.userId == registerID) |
-        (User.userEmail == registerEmail) |
-        (User.userContact == registerContact)
-    ).first()
+def check_register(id, email, contact, name, password1, password2, department, role):
 
-    if existing_user:
-        if (existing_user and existing_user.userId == registerID):
-            return False, "ID already exists."
-        if (existing_user and existing_user.userEmail == registerEmail):
-            return False, "Email address already registered."
-        if (existing_user and existing_user.userContact == registerContact):
-            return False, "Contact number already registered."
+    role_map = {
+        'LECTURER': LECTURER,
+        'DEAN': DEAN,
+        'HOP': HOP,
+        'ADMIN': ADMIN
+    }
+
+    if not all([id, email, contact, name, password1, password2, department, role]):
+        return False, "All fields are required."
+    elif not email_format(email):
+        return False, "Wrong Email Address format"
+    elif not contact_format(contact):
+        return False, "Wrong Contact Number format"
+    elif password1 != password2:
+        return False, "Passwords do not match."
+    elif not password_format(password1):
+        return False, "Wrong password format."
+    elif role not in role_map:
+        return False, "Invalid role selected."
+
+
+    existing_id = User.query.filter(User.userId == id).first()
+    if existing_id:
+        return False, "Id already exists."
+    
+    existing_email = User.query.filter(User.userEmail == email).first()
+    if existing_email:
+        return False, "Email already exists."
+    
+    existing_contact = User.query.filter(User.userContact == contact).first()
+    if existing_contact:
+        return False, "Contact Number already exists."
 
     return True, ""
 
@@ -210,20 +226,27 @@ def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, 
 # (Need double check the purpose) Check upload lecturer
 def check_lecturer(id, email, contact, name, department, role):
     if not all([id, email, contact, name, department, role]):
-        return False, "Please fill in all required fields.."
+        return False, "Please fill in all required fields."
     
-    exists = User.query.filter(
-        (User.userId == id) |
-        (User.userEmail == email) |
-        (User.userContact == contact)
-    ).first()
+    if not email_format(email):
+        return False, "Wrong Email Address format"
 
-    if exists:
-        return False, "Duplicate entry"
+    if not contact_format(contact):
+        return False, "Wrong Contact Number format"
+    
+    existing_id = User.query.filter(User.userId == id).first()
+    if existing_id:
+        return False, "Id already exists."
+    
+    existing_email = User.query.filter(User.userEmail == email).first()
+    if existing_email:
+        return False, "Email already exists."
+    
+    existing_contact = User.query.filter(User.userContact == contact).first()
+    if existing_contact:
+        return False, "Contact Number already exists."
+    
     return True, ""
-
-
-
 
 
 
