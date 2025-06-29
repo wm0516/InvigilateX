@@ -30,6 +30,15 @@
                     </tr>
                     <tr>
                         <td><label>Exam Date</label></td>
+                        <td>
+                            <input type="date" id="examDatePicker" style="display:none;">
+                            <input type="text" id="examDateDisplay" readonly placeholder="Select a date">
+                            <input type="hidden" name="examDate" id="examDate">
+                            <input type="hidden" name="examDay" id="examDay">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label>Exam Date</label></td>
                         <td><input type="date" name="examDate" id="examDate" value="{{ examDate_text }}"></td>
                     </tr>
                     <tr>

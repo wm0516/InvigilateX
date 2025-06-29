@@ -165,43 +165,55 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    const examDateInput = document.getElementById('examDate');
-    const examDayInput = document.getElementById('examDay');
+    const examDatePicker = document.getElementById('examDatePicker');
+    const examDateDisplay = document.getElementById('examDateDisplay');
+    const hiddenExamDate = document.getElementById('examDate');
+    const hiddenExamDay = document.getElementById('examDay');
 
-    // Format date to YYYY-MM-DD
     const formatDate = (date) => {
-        const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, '0');
         const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
+        const yyyy = date.getFullYear();
+        return `${mm}/${dd}/${yyyy}`;
     };
 
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
     const today = new Date();
-    const minDate = formatDate(today);
+    const minDate = today.toISOString().split('T')[0];
     const nextYear = new Date(today);
     nextYear.setFullYear(today.getFullYear() + 1);
-    const maxDate = formatDate(nextYear);
+    const maxDate = nextYear.toISOString().split('T')[0];
+    examDatePicker.min = minDate;
+    examDatePicker.max = maxDate;
 
-    // Set min/max range
-    examDateInput.min = minDate;
-    examDateInput.max = maxDate;
+    // Trigger hidden date picker when text input is clicked
+    examDateDisplay.addEventListener('click', () => {
+        examDatePicker.click();
+    });
 
-    // Handle date selection
-    examDateInput.addEventListener('change', function () {
+    examDatePicker.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
-        const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+        const day = selectedDate.getDay();
 
         if (day === 0 || day === 6) {
-        alert("Weekends are not allowed.");
-        this.value = '';
-        examDayInput.value = '';
-        return;
+            alert("Weekends are not allowed.");
+            examDatePicker.value = '';
+            examDateDisplay.value = '';
+            hiddenExamDate.value = '';
+            hiddenExamDay.value = '';
+            return;
         }
 
-        const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "Saturday"];
-        examDayInput.value = days[day];
+        const formattedDate = formatDate(selectedDate);
+        const dayName = days[day];
+
+        examDateDisplay.value = `${formattedDate} ${dayName}`;
+        hiddenExamDate.value = this.value; // YYYY-MM-DD
+        hiddenExamDay.value = dayName.toUpperCase(); // e.g., WEDNESDAY
     });
 });
+
 
 
 
