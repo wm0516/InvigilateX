@@ -341,12 +341,13 @@ def admin_manageExam():
     venue_text = ''
 
     if request.method == 'POST':
-        print('yes get post')
+        print('1 yes get post')
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
         exam_records_added = 0  # <-- Make sure this is initialized
     
         if file and file.filename:
+            print('2 yes get post')
             try:
                 excel_file = pd.ExcelFile(file_stream)
                 for sheet_name in excel_file.sheet_names:
