@@ -370,6 +370,7 @@ def admin_manageExam():
 
                         # Rename to match your model
                         df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
+                        print(f'Data read are {df.head()}')
 
                         for index, row in df.iterrows():
                             try:
