@@ -164,9 +164,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-/* View Calendar for exam input */
-const input = document.getElementById('examDate');
-const today = new Date();
+const examDateInput = document.getElementById('examDate');
+const examDayInput = document.getElementById('examDay');
 
 // Format date to YYYY-MM-DD
 const formatDate = (date) => {
@@ -176,19 +175,36 @@ const dd = String(date.getDate()).padStart(2, '0');
 return `${yyyy}-${mm}-${dd}`;
 };
 
-// Set min = today
+// Get today's date
+const today = new Date();
 const minDate = formatDate(today);
 
-// Set max = same date next year
+// Calculate same date next year
 const nextYear = new Date(today);
 nextYear.setFullYear(today.getFullYear() + 1);
 const maxDate = formatDate(nextYear);
 
-input.min = minDate;
-input.max = maxDate;
+// Set min and max attributes
+examDateInput.min = minDate;
+examDateInput.max = maxDate;
 
+// Disable weekends when a date is selected
+examDateInput.addEventListener('change', function () {
+const selectedDate = new Date(this.value);
+const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
 
+if (day === 0 || day === 6) {
+    alert("Weekends (Saturday and Sunday) are not allowed. Please choose a weekday.");
+    this.value = '';        // Clear the selected date
+    examDayInput.value = ''; // Clear day
+    return;
+}
 
+// Set the day if valid
+const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const dayName = days[day];
+examDayInput.value = dayName;
+});
 
 
 
