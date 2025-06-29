@@ -540,6 +540,7 @@ def admin_uploadLecturerTimetable():
 @app.route('/adminHome/manageLecturer', methods=['GET', 'POST'])
 def admin_manageLecturer():        
     user_data = User.query.all()
+    department_data = Department.query.all()
     
     if request.method == 'POST':
         if 'lecturer_file' not in request.files:
@@ -637,7 +638,7 @@ def admin_manageLecturer():
             flash('File processing error: File upload in wrong format','error')
             return redirect(url_for('admin_manageLecturer'))
 
-    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_manageLecturertab', user_data=user_data)
+    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_manageLecturertab', user_data=user_data, department_data=department_data)
 
 
 
