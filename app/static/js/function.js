@@ -201,7 +201,7 @@ if (day === 0 || day === 6) {
 }
 
 // Set the day if valid
-const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const dayName = days[day];
 examDayInput.value = dayName;
 });
