@@ -161,18 +161,6 @@ def admin_manageCourse():
                            course_data=course_data)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
@@ -205,118 +193,6 @@ def admin_manageDepartment():
 
 
 
-
-
-UPLOAD_FOLDER = 'uploads'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Create upload folder if not exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-@app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
-def admin_uploadLecturerTimetable():
-    user_data = User.query.all()
-
-    if request.method == 'POST':
-        if 'timetable_file' not in request.files:
-            return jsonify({'success': False, 'message': 'No file uploaded'})
-
-        file = request.files['timetable_file']
-        file_stream = BytesIO(file.read())
-
-        lecturer_records_added = 0
-        processed_records = []
-        errors = []
-
-        try:
-            excel_file = pd.ExcelFile(file_stream)
-            for sheet_name in excel_file.sheet_names:
-                try:
-                    df = pd.read_excel(
-                        excel_file,
-                        sheet_name=sheet_name,
-                        usecols="A:F",
-                        skiprows=1
-                    )
-                    df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
-                    df.reset_index(drop=True, inplace=True)
-
-                    role_mapping = {
-                        'lecturer': 1,
-                        'hop': 2,
-                        'dean': 3,
-                        'admin': 4
-                    }
-
-                    for index, row in df.iterrows():
-                        try:
-                            lecturer_id = str(row['Id'])
-                            lecturer_name = str(row['Name']).upper()
-                            lecturer_department = str(row['Department']).upper()    
-                            lecturer_email = str(row['Email'])
-                            lecturer_contact = int(row['Contact'])
-                            # Normalize and map role string
-                            lecturer_role_str = str(row['Role']).strip().lower()
-                            lecturer_role = role_mapping.get(lecturer_role_str)
-                            
-                            is_valid, error_message = unique_LecturerDetails(
-                                lecturer_id, lecturer_email, lecturer_contact
-                            )
-
-                            if not is_valid:
-                                row_number = index + 2 if isinstance(index, int) else str(index)
-                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
-                                continue
-                            
-                            lecturer = User(
-                                userId = lecturer_id,
-                                userName = lecturer_name,
-                                userDepartment = lecturer_department,
-                                userLevel = lecturer_role,
-                                userEmail = lecturer_email,
-                                userContact = lecturer_contact,
-                                userStatus = False
-                            )
-
-                            db.session.add(lecturer)
-                            lecturer_records_added += 1
-
-                            processed_records.append({
-                                'ID': lecturer.userId,
-                                'Name': lecturer.userName,
-                                'Department': lecturer.userDepartment,
-                                'Role': lecturer.userLevel,
-                                'Email': lecturer.userEmail,
-                                'Contact': lecturer.userContact,
-                                'Status': lecturer.userStatus
-                            })
-
-                        except Exception as row_err:
-                            pass
-
-                    db.session.commit()
-
-                except Exception as sheet_err:
-                    pass
-            # Final response
-            if is_valid and lecturer_records_added > 0:
-                message = f"Successful upload {lecturer_records_added} record(s)"
-                flash(message, 'success')
-            else:
-                message = "No data uploaded"
-                flash(message, 'error')
-            return redirect(url_for('admin_uploadLecturerTimetable'))
-        
-
-
-        except Exception as e:
-            flash('File processing error: File upload in wrong format','error')
-            return redirect(url_for('admin_uploadLecturerTimetable'))
-        
-    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
-
-
-
 def parse_date(val):
     if isinstance(val, datetime):
         return val.date()
@@ -329,7 +205,6 @@ def parse_date(val):
         except Exception:
             print(f"[Date Parse Error] Could not parse: {val}")
             return None
-
 
 
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
@@ -476,12 +351,199 @@ def admin_manageExam():
 
 
 
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Create upload folder if not exist
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
 
-@app.route('/adminHome/uploadLecturerList', methods=['GET', 'POST'])
-def admin_uploadLecturerList():        
+
+
+@app.route('/adminHome/profile', methods=['GET', 'POST'])
+def admin_profile():
+    adminId = session.get('user_id')
+    admin = User.query.filter_by(userId=adminId).first()
+    
+    # Pre-fill existing data
+    adminContact_text = ''
+    adminPassword1_text = ''
+    adminPassword2_text = ''
+    error_message = None
+
+    if request.method == 'POST':
+        adminContact_text = request.form.get('contact', '').strip()
+        adminPassword1_text = request.form.get('password1', '').strip()
+        adminPassword2_text = request.form.get('password2', '').strip()
+        is_valid, message = check_contact(adminContact_text)
+
+        # Error checks
+        if adminContact_text and not contact_format(adminContact_text):
+            error_message = "Wrong Contact Number format"
+        elif adminContact_text and not is_valid:
+            error_message = message
+        elif adminPassword1_text or adminPassword2_text:
+            if adminPassword1_text != adminPassword2_text:
+                error_message = "Passwords do not match."
+
+        if error_message:
+            flash(str(error_message), 'error')
+        elif not adminContact_text and not adminPassword1_text:
+            flash("Nothing to update", 'error')
+        else:
+            if admin:
+                if adminContact_text:
+                    admin.userContact = adminContact_text
+                if adminPassword1_text:
+                    hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
+                    admin.userPassword = hashed_pw
+
+                db.session.commit()
+                flash("Successfully updated", 'success')
+                return redirect(url_for('admin_profile'))
+
+
+    return render_template(
+        'adminPart/adminProfile.html',
+        active_tab='admin_profiletab',
+        admin_name=admin.userName if admin else '',
+        admin_id=admin.userId if admin else '',
+        admin_email=admin.userEmail if admin else '',
+        admin_department_text=admin.userDepartment if admin else '',
+        admin_role_text={
+            LECTURER: "Lecturer",
+            HOP: "Hop",
+            DEAN: "Dean",
+            ADMIN: "Admin"
+        }.get(admin.userLevel, "Unknown") if admin else '',
+        adminContact_text=adminContact_text,
+        adminPassword1_text=adminPassword1_text,
+        adminPassword2_text=adminPassword2_text,
+        error_message=error_message
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
+def admin_uploadLecturerTimetable():
+    user_data = User.query.all()
+
+    if request.method == 'POST':
+        if 'timetable_file' not in request.files:
+            return jsonify({'success': False, 'message': 'No file uploaded'})
+
+        file = request.files['timetable_file']
+        file_stream = BytesIO(file.read())
+
+        lecturer_records_added = 0
+        processed_records = []
+        errors = []
+
+        try:
+            excel_file = pd.ExcelFile(file_stream)
+            for sheet_name in excel_file.sheet_names:
+                try:
+                    df = pd.read_excel(
+                        excel_file,
+                        sheet_name=sheet_name,
+                        usecols="A:F",
+                        skiprows=1
+                    )
+                    df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact']
+                    df.reset_index(drop=True, inplace=True)
+
+                    role_mapping = {
+                        'lecturer': 1,
+                        'hop': 2,
+                        'dean': 3,
+                        'admin': 4
+                    }
+
+                    for index, row in df.iterrows():
+                        try:
+                            lecturer_id = str(row['Id'])
+                            lecturer_name = str(row['Name']).upper()
+                            lecturer_department = str(row['Department']).upper()    
+                            lecturer_email = str(row['Email'])
+                            lecturer_contact = int(row['Contact'])
+                            # Normalize and map role string
+                            lecturer_role_str = str(row['Role']).strip().lower()
+                            lecturer_role = role_mapping.get(lecturer_role_str)
+                            
+                            is_valid, error_message = unique_LecturerDetails(
+                                lecturer_id, lecturer_email, lecturer_contact
+                            )
+
+                            if not is_valid:
+                                row_number = index + 2 if isinstance(index, int) else str(index)
+                                errors.append(f"Row {row_number} in sheet '{sheet_name}' error: {error_message}")
+                                continue
+                            
+                            lecturer = User(
+                                userId = lecturer_id,
+                                userName = lecturer_name,
+                                userDepartment = lecturer_department,
+                                userLevel = lecturer_role,
+                                userEmail = lecturer_email,
+                                userContact = lecturer_contact,
+                                userStatus = False
+                            )
+
+                            db.session.add(lecturer)
+                            lecturer_records_added += 1
+
+                            processed_records.append({
+                                'ID': lecturer.userId,
+                                'Name': lecturer.userName,
+                                'Department': lecturer.userDepartment,
+                                'Role': lecturer.userLevel,
+                                'Email': lecturer.userEmail,
+                                'Contact': lecturer.userContact,
+                                'Status': lecturer.userStatus
+                            })
+
+                        except Exception as row_err:
+                            pass
+
+                    db.session.commit()
+
+                except Exception as sheet_err:
+                    pass
+            # Final response
+            if is_valid and lecturer_records_added > 0:
+                message = f"Successful upload {lecturer_records_added} record(s)"
+                flash(message, 'success')
+            else:
+                message = "No data uploaded"
+                flash(message, 'error')
+            return redirect(url_for('admin_uploadLecturerTimetable'))
+        
+
+
+        except Exception as e:
+            flash('File processing error: File upload in wrong format','error')
+            return redirect(url_for('admin_uploadLecturerTimetable'))
+        
+    return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
+
+
+
+
+
+@app.route('/adminHome/manageLecturer', methods=['GET', 'POST'])
+def admin_manageLecturer():        
     user_data = User.query.all()
     
     if request.method == 'POST':
@@ -574,79 +636,16 @@ def admin_uploadLecturerList():
             else:
                 message = "No data uploaded"
                 flash(message, 'error')
-            return redirect(url_for('admin_uploadLecturerList'))
+            return redirect(url_for('admin_manageLecturer'))
 
         except Exception as e:
             flash('File processing error: File upload in wrong format','error')
-            return redirect(url_for('admin_uploadLecturerList'))
+            return redirect(url_for('admin_manageLecturer'))
 
-    return render_template('adminPart/adminUploadLecturerList.html', active_tab='admin_uploadLecturerListtab', user_data=user_data)
-
-
+    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_manageLecturertab', user_data=user_data)
 
 
 
-@app.route('/adminHome/profile', methods=['GET', 'POST'])
-def admin_profile():
-    adminId = session.get('user_id')
-    admin = User.query.filter_by(userId=adminId).first()
-    
-    # Pre-fill existing data
-    adminContact_text = ''
-    adminPassword1_text = ''
-    adminPassword2_text = ''
-    error_message = None
-
-    if request.method == 'POST':
-        adminContact_text = request.form.get('contact', '').strip()
-        adminPassword1_text = request.form.get('password1', '').strip()
-        adminPassword2_text = request.form.get('password2', '').strip()
-        is_valid, message = check_contact(adminContact_text)
-
-        # Error checks
-        if adminContact_text and not contact_format(adminContact_text):
-            error_message = "Wrong Contact Number format"
-        elif adminContact_text and not is_valid:
-            error_message = message
-        elif adminPassword1_text or adminPassword2_text:
-            if adminPassword1_text != adminPassword2_text:
-                error_message = "Passwords do not match."
-
-        if error_message:
-            flash(str(error_message), 'error')
-        elif not adminContact_text and not adminPassword1_text:
-            flash("Nothing to update", 'error')
-        else:
-            if admin:
-                if adminContact_text:
-                    admin.userContact = adminContact_text
-                if adminPassword1_text:
-                    hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
-                    admin.userPassword = hashed_pw
-
-                db.session.commit()
-                flash("Successfully updated", 'success')
-                return redirect(url_for('admin_profile'))
-
-
-    return render_template(
-        'adminPart/adminProfile.html',
-        active_tab='admin_profiletab',
-        admin_name=admin.userName if admin else '',
-        admin_id=admin.userId if admin else '',
-        admin_email=admin.userEmail if admin else '',
-        admin_department_text=admin.userDepartment if admin else '',
-        admin_role_text={
-            LECTURER: "Lecturer",
-            HOP: "Hop",
-            DEAN: "Dean",
-            ADMIN: "Admin"
-        }.get(admin.userLevel, "Unknown") if admin else '',
-        adminContact_text=adminContact_text,
-        adminPassword1_text=adminPassword1_text,
-        adminPassword2_text=adminPassword2_text,
-        error_message=error_message
-    )
 
 
 

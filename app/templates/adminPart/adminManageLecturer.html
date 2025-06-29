@@ -1,12 +1,42 @@
 <!-- upload.html -->
 {% extends "adminPart/adminBase.html" %}
-{% block title %}Admin Manage{% endblock %}
+{% block title %}Admin ManageLecturer{% endblock %}
 {% block content %}
-
-<!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Manage Lecturer</h2>
-    <h3>List of Lecturer, Dean, and HOP</h3>
+    <form id="uploadLecturerForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" enctype="multipart/form-data">
+        <label for="lecturerlist">
+            <div class="upload-container" id="lecturerUploadContainer">
+                <div class="upload-text">Upload file format with 1st row must be empty and format with Id, Name, Department, Role, Email, Contact
+                    <br><br>Click to upload or drag and drop with below file format</div>
+                <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                <!-- Selected file display -->
+                <div id="lecturerSelectedFileName" class="file-name-display"></div>
+            </div>
+        </label>
+        <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
+        
+        <!-- Result feedback -->
+        <div id="lecturerUploadResult" class="result-message"></div>
+        <div id="lecturerUploadErrors" class="error-message"></div>
+        
+        <!-- Submit button -->
+        <div class="button-wrapper">
+            <button type="submit">Upload</button>
+        </div>
+    </form>
+
+    <br><br>
+    <h3>Table Record</h3>
+    <!--<label>
+        To Do: <br>
+        1. Allow edit based on the Id <br>
+        2. Deactivated will send an email to the upload email address for activation link <br>
+        Question: <br>
+        1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
+        2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
+    </label>-->
+
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -18,7 +48,10 @@
                     <th>Role Based</th>
                     <th>Department</th>
                     <th>Contact</th>
-                    <th>Status</th>
+                    <th>Status</th> <!-- 
+                    If upload only -> no register, 
+                    if lecturer register self ->register, 
+                    if register data no similar with register -> wrong data-->
                 </tr>
             </thead>
             <tbody>
@@ -59,8 +92,5 @@
     </div>
 </div>
 
+
 {% endblock %}
-
-<!--
-
--->
