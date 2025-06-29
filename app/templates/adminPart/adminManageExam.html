@@ -3,16 +3,16 @@
 {% block content %}
 <div class="menu-section">
     <h2>Manage Exam</h2>
-    <form id="uploadExamForm" action="{{ url_for('admin_uploadExam') }}" method="POST" enctype="multipart/form-data">
-        <h3>Choose either 'Upload' or 'Manual' to insert new course</h3>
+    <form id="uploadExamForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
+        <h3>Choose either 'Upload' or 'Manual' to insert new exam</h3>
         <div class="profile-frame">
             <input type="hidden" id="submissionType" name="submission_type" value="manual">
             <div class="form-left">
                 <label for="exam_list">
                     <div class="upload-container" id="examUploadContainer">
                         <div class="upload-text">
-                            Upload a file with an empty first row. Data should start from columns A to D,<br> 
-                            labeled as: 'code', 'section', 'name', and 'creditHour'<br><br><br>
+                            Upload a file with an empty first row. Data should start from columns A to I,<br> 
+                            labeled as: 'Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', and 'Room'<br><br><br>
                             Click to upload or drag and drop with below file format
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
