@@ -317,19 +317,15 @@ def admin_uploadLecturerTimetable():
 
 
 
-
 def parse_date(val):
-    """Convert Excel or string to Python date or return None."""
-    if pd.isna(val) or str(val).strip() == '':
+    if isinstance(val, datetime):
+        return val.date()
+    try:
+        return datetime.strptime(str(val), "%m/%d/%Y").date()
+    except:
+        print(f"[Date Parse Error] Could not parse: {val}")
         return None
-    if isinstance(val, (datetime, date)):
-        return val.date() if isinstance(val, datetime) else val
-    for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y'):
-        try:
-            return datetime.strptime(str(val).strip(), fmt).date()
-        except ValueError:
-            continue
-    return None
+
 
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
@@ -363,6 +359,7 @@ def admin_manageExam():
 
                          # Clean and standardize columns
                         df.columns = [str(col).strip().lower() for col in df.columns]
+                        print("Detected columns:", df.columns.tolist())
                         expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
 
                         if df.columns.tolist() != expected_cols:
@@ -386,6 +383,14 @@ def admin_manageExam():
 
                                 if not all([examDate_text, examDay_text, startTime_text, endTime_text, programCode_text, courseSection_text, lecturer_text, student_text, venue_text]):
                                     continue
+                                print(f"Row {index}: {examDate_text}, {examDay_text}, {startTime_text}, {endTime_text}, {programCode_text}, {courseSection_text}, {lecturer_text}, {student_text}, {venue_text}")
+
+
+                                        # Convert string to date safely
+                                if examDate_text:
+                                    examDate_text = datetime.strptime(examDate_text, "%Y-%m-%d").date()  # or "%m/%d/%Y" if that's your form format
+
+                                student_text = int(student_text) if student_text else 0
 
                                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
                                 if valid:
@@ -416,6 +421,8 @@ def admin_manageExam():
                 return redirect(url_for('admin_manageExam'))
 
             except Exception as e:
+                print(f"[Manual Input Error] {e}")
+                flash('Manual input error. Please check your input format.', 'error')
                 print(f"[File Processing Error] {e}")  # <-- See the actual cause
                 flash('File processing error: File upload in wrong format', 'error')
                 return redirect(url_for('admin_manageExam'))
