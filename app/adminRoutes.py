@@ -322,10 +322,15 @@ def parse_date(val):
     if isinstance(val, datetime):
         return val.date()
     try:
-        return datetime.strptime(str(val), "%m/%d/%Y").date()
-    except:
-        print(f"[Date Parse Error] Could not parse: {val}")
-        return None
+        # Format from HTML5 input: "YYYY-MM-DD"
+        return datetime.strptime(str(val), "%Y-%m-%d").date()
+    except ValueError:
+        try:
+            return datetime.strptime(str(val), "%m/%d/%Y").date()
+        except Exception:
+            print(f"[Date Parse Error] Could not parse: {val}")
+            return None
+
 
 
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
@@ -433,7 +438,9 @@ def admin_manageExam():
         else:
             # Handle manual input
             examDate_text_raw = request.form.get('examDate', '').strip()
+            print("Submitted examDate_text_raw:", examDate_text_raw)
             examDate_text = parse_date(examDate_text_raw)
+            print("Parsed examDate_text:", examDate_text)
 
             examDay_text = request.form.get('examDay', '').strip()
             startTime_text = request.form.get('startTime', '').strip()
