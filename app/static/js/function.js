@@ -167,46 +167,42 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    const examDateInput = document.getElementById('examDate');
-    const examDayInput = document.getElementById('examDay');
-    const examDisplay = document.getElementById('examDisplay');
+    const displayInput = document.getElementById('examDisplay');
+    const dateInputHidden = document.getElementById('examDate');
+    const dayInputHidden = document.getElementById('examDay');
 
-    const formatDate = (date) => {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-    };
+    displayInput.addEventListener('click', function () {
+        const picker = document.createElement('input');
+        picker.type = 'date';
+        picker.style.position = 'absolute';
+        picker.style.opacity = 0;
+        document.body.appendChild(picker);
+        picker.focus();
 
-    const today = new Date();
-    const minDate = formatDate(today);
-    const nextYear = new Date(today);
-    nextYear.setFullYear(today.getFullYear() + 1);
-    const maxDate = formatDate(nextYear);
-
-    examDateInput.min = minDate;
-    examDateInput.max = maxDate;
-
-    examDateInput.addEventListener('change', function () {
-        const selectedDate = new Date(this.value);
-        const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
-
-        if (day === 0 || day === 6) {
-            alert("Weekends are not allowed.");
-            this.value = '';
-            examDayInput.value = '';
-            examDisplay.value = '';
-            return;
-        }
-
-        const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        const formattedDate = formatDate(selectedDate);
-        const dayName = days[day];
-
-        examDayInput.value = dayName;
-        examDisplay.value = `${formattedDate} ${dayName}`;
+        picker.addEventListener('change', function () {
+            const selectedDate = new Date(picker.value);
+            const day = selectedDate.getDay();
+            if (day === 0 || day === 6) {
+                alert("Weekends are not allowed.");
+                displayInput.value = '';
+                dateInputHidden.value = '';
+                dayInputHidden.value = '';
+            } else {
+                const yyyy = selectedDate.getFullYear();
+                const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(selectedDate.getDate()).padStart(2, '0');
+                const formattedDate = `${yyyy}-${mm}-${dd}`;
+                const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
+                const dayName = days[day - 1];
+                displayInput.value = `${formattedDate} ${dayName}`;
+                dateInputHidden.value = formattedDate;
+                dayInputHidden.value = dayName;
+            }
+            document.body.removeChild(picker);
+        });
     });
 });
+
 
 
 
