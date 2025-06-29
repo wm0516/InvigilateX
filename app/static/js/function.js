@@ -164,47 +164,45 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+document.addEventListener("DOMContentLoaded", function () {
 const examDateInput = document.getElementById('examDate');
 const examDayInput = document.getElementById('examDay');
 
 // Format date to YYYY-MM-DD
 const formatDate = (date) => {
-const yyyy = date.getFullYear();
-const mm = String(date.getMonth() + 1).padStart(2, '0');
-const dd = String(date.getDate()).padStart(2, '0');
-return `${yyyy}-${mm}-${dd}`;
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
 };
 
-// Get today's date
 const today = new Date();
 const minDate = formatDate(today);
-
-// Calculate same date next year
 const nextYear = new Date(today);
 nextYear.setFullYear(today.getFullYear() + 1);
 const maxDate = formatDate(nextYear);
 
-// Set min and max attributes
+// Set min/max range
 examDateInput.min = minDate;
 examDateInput.max = maxDate;
 
-// Disable weekends when a date is selected
+// Handle date selection
 examDateInput.addEventListener('change', function () {
-const selectedDate = new Date(this.value);
-const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const selectedDate = new Date(this.value);
+    const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
 
-if (day === 0 || day === 6) {
-    alert("Weekends (Saturday and Sunday) are not allowed. Please choose a weekday.");
-    this.value = '';        // Clear the selected date
-    examDayInput.value = ''; // Clear day
+    if (day === 0 || day === 6) {
+    alert("Weekends are not allowed.");
+    this.value = '';
+    examDayInput.value = '';
     return;
-}
+    }
 
-// Set the day if valid
-const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const dayName = days[day];
-examDayInput.value = dayName;
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    examDayInput.value = days[day];
 });
+});
+
 
 
 
