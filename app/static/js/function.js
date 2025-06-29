@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", function () {
     examDateInput.max = maxDate;
 
     // Handle date selection
-    examDateInput.addEventListener('change', function () {
+    examDateDayInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
         const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
 
@@ -215,6 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         examDayInput.value = days[day];
+        examDateInput.value = formatDisplayDate(selectedDate)
         examDateDayInput.value = formatDisplayDate(selectedDate) + ' ' + days[day];
     });
 });
