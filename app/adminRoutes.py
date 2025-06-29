@@ -345,6 +345,9 @@ def admin_manageExam():
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
         exam_records_added = 0  # <-- Make sure this is initialized
+        print('request.files:', request.files)
+        print('exam_file' in request.files)
+        print('file.filename:', file.filename)
         
         if file and file.filename:
             print('2 yes get post')
