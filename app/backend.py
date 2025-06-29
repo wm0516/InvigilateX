@@ -57,7 +57,7 @@ def check_department(code, name):
 
 
 def check_course(code, section, name, hour):
-    if not code or not section or not name or not hour:
+    if not all([code, section, name, hour]):
         return False, "Please fill in all required fields."
 
     courseCodeSection_text = (code + '/' + section)
@@ -188,11 +188,11 @@ def role_required(required_role):
 
 
 
+def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, student, venue):
+    # Prevent querying if any required value is empty or None
+    if not all([courseSection, date, starttime, endtime, day, program, lecturer, student, venue]):
+        return False, "Please fill in all required fields.."
 
-
-
-# Check no duplicate exam sessions occur
-def check_exam(courseSection, date, starttime, endtime):
     exam_exists = Exam.query.filter_by(
         examDate=date,
         examStartTime=starttime,
@@ -201,7 +201,7 @@ def check_exam(courseSection, date, starttime, endtime):
     ).first()
 
     if exam_exists:
-        return False, "Duplicate entry exists with same course/section, date, and time."
+        return False, "Exam with same course/section, date, and time already registered."
 
     return True, ""
 

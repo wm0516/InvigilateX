@@ -386,7 +386,7 @@ def admin_manageExam():
                                 if not all([examDate_text, examDay_text, startTime_text, endTime_text, programCode_text, courseSection_text, lecturer_text, student_text, venue_text]):
                                     continue
 
-                                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
+                                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
                                 if valid:
                                     new_exam= Exam(
                                         examDate = examDate_text,
