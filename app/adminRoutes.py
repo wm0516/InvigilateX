@@ -63,9 +63,8 @@ def admin_manageCourse():
                         print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
 
                         # Clean and standardize columns
-                        # df.columns = [str(col).strip().lower() for col in df.columns]
-                        df.columns = [str(col).strip() for col in df.columns]
-                        expected_cols = ['code', 'section', 'name', 'creditHour']
+                        df.columns = [str(col).strip().lower() for col in df.columns] 
+                        expected_cols = ['code', 'section', 'name', 'credithour']
 
                         if df.columns.tolist() != expected_cols:
                             raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
@@ -372,16 +371,15 @@ def admin_manageExam():
                         print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
 
                          # Clean and standardize columns
-                        # df.columns = [str(col).strip().lower() for col in df.columns]
+                        df.columns = [str(col).strip().lower() for col in df.columns]
                         # print("Detected columns:", df.columns.tolist())
-                        df.columns = [str(col).strip() for col in df.columns]
-                        expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
+                        expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
 
                         if df.columns.tolist() != expected_cols:
                             raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
                         # Rename to match your model
-                        df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
+                        df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
                         print(f"Data read from excel:\n{df.head()}")
 
                         for index, row in df.iterrows():
