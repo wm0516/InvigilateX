@@ -164,8 +164,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const examDateDayInput = document.getElementById('examDateDay');
+    const examDateDayDisplay = document.getElementById('examDateDayDisplay');
+    const datePickerButton = document.getElementById('datePickerButton');
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
 
@@ -189,6 +196,11 @@ document.addEventListener("DOMContentLoaded", function () {
     examDateDayInput.min = minDate;
     examDateDayInput.max = maxDate;
 
+    // Click button to show date picker
+    datePickerButton.addEventListener('click', function() {
+        examDateDayInput.click();
+    });
+
     // Handle date selection
     examDateDayInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
@@ -199,8 +211,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (selected < minDate || selected > maxDate) {
             alert("Date must be within one year from today.");
             this.value = '';
+            examDateDayDisplay.value = '';
             examDayInput.value = '';
-            examDateDayInput.value = '';
+            examDateInput.value = '';
             return;
         }
 
@@ -208,23 +221,24 @@ document.addEventListener("DOMContentLoaded", function () {
         if (day === 0 || day === 6) {
             alert("Weekends are not allowed.");
             this.value = '';
+            examDateDayDisplay.value = '';
             examDayInput.value = '';
-            examDateDayInput.value = '';
+            examDateInput.value = '';
             return;
         }
 
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        examDayInput.value = days[day];
-        examDateInput.value = formatDisplayDate(selectedDate)
-        examDateDayInput.value = formatDisplayDate(selectedDate) + ' ' + days[day];
+        const formattedDate = formatDisplayDate(selectedDate);
+        const dayName = days[day];
+        
+        // Update the visible display field
+        examDateDayDisplay.value = `${formattedDate} ${dayName}`;
+        
+        // Update hidden inputs
+        examDateInput.value = formattedDate;
+        examDayInput.value = dayName;
     });
 });
-
-
-
-
-
-
 
 
 

@@ -31,11 +31,25 @@
                     <tr>
                         <td><label>Exam Date & Day</label></td>
                         <td>
-                            <input type="date" name="examDateDay" id="examDateDay" readonly>
+                            <input type="date" name="examDateDay" id="examDateDay">
                             <input type="hidden" name="examDate" id="examDate">
                             <input type="hidden" name="examDay" id="examDay">
                         </td>
                     </tr>
+                        <td><label>Exam Date & Day</label></td>
+                        <td>
+                            <!-- Visible display field (shows formatted date + day) -->
+                            <input type="text" id="examDateDayDisplay" readonly>
+                            
+                            <!-- Hidden date input for calendar picker -->
+                            <input type="date" name="examDateDay" id="examDateDay" style="width: 0; opacity: 0; position: absolute;">
+                            
+                            <!-- Button to trigger date picker -->
+                            <button type="button" id="datePickerButton">📅</button>
+                            
+                            <input type="hidden" name="examDate" id="examDate">
+                            <input type="hidden" name="examDay" id="examDay">
+                        </td>
 
 
                     <!--
