@@ -64,6 +64,7 @@ def admin_manageCourse():
 
                         # Clean and standardize columns
                         # df.columns = [str(col).strip().lower() for col in df.columns]
+                        df.columns = [str(col).strip() for col in df.columns]
                         expected_cols = ['code', 'section', 'name', 'credithour']
 
                         if df.columns.tolist() != expected_cols:
@@ -368,6 +369,7 @@ def admin_manageExam():
                          # Clean and standardize columns
                         # df.columns = [str(col).strip().lower() for col in df.columns]
                         # print("Detected columns:", df.columns.tolist())
+                        df.columns = [str(col).strip() for col in df.columns]
                         expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
 
                         if df.columns.tolist() != expected_cols:
@@ -392,13 +394,6 @@ def admin_manageExam():
                                 if not all([examDate_text, examDay_text, startTime_text, endTime_text, programCode_text, courseSection_text, lecturer_text, student_text, venue_text]):
                                     continue
                                 print(f"Row {index}: {examDate_text}, {examDay_text}, {startTime_text}, {endTime_text}, {programCode_text}, {courseSection_text}, {lecturer_text}, {student_text}, {venue_text}")
-
-
-                                        # Convert string to date safely
-                                if examDate_text:
-                                    examDate_text = datetime.strptime(examDate_text, "%Y-%m-%d").date()  # or "%m/%d/%Y" if that's your form format
-
-                                student_text = int(student_text) if student_text else 0
 
                                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
                                 if valid:
