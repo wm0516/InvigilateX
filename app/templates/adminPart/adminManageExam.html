@@ -29,41 +29,13 @@
                         <th>Input</th>
                     </tr>
                     <tr>
-                        <td><label>Exam Date & Day</label></td>
-                        <td>
-                            <input type="date" name="examDateDay" id="examDateDay">
-                            <input type="hidden" name="examDate" id="examDate">
-                            <input type="hidden" name="examDay" id="examDay">
-                        </td>
-                    </tr>
-                        <td><label>Exam Date & Day</label></td>
-                        <td>
-                            <!-- Visible display field (shows formatted date + day) -->
-                            <input type="text" id="examDateDayDisplay" readonly>
-                            
-                            <!-- Hidden date input for calendar picker -->
-                            <input type="date" name="examDateDay" id="examDateDay" style="width: 0; opacity: 0; position: absolute;">
-                            
-                            <!-- Button to trigger date picker -->
-                            <button type="button" id="datePickerButton">📅</button>
-                            
-                            <input type="hidden" name="examDate" id="examDate">
-                            <input type="hidden" name="examDay" id="examDay">
-                        </td>
-
-
-                    <!--
-                    <tr>
                         <td><label>Exam Date</label></td>
-                        <td>
-                            <input type="date" name="examDate" id="examDate" value="{{ examDate_text }} {{ examDay_text }}">
-                            <input type="hidden" name="examDay" id="examDay" value="{{ examDay_text }}" readonly>
-                        </td>
+                        <td><input type="date" name="examDate" id="examDate" value="{{ examDate_text }}"></td>
                     </tr>
                     <tr>
                         <td><label>Exam Day</label></td>
-                        <td><input type="hidden" name="examDay" id="examDay" value="{{ examDate_text }}" readonly></td>
-                    </tr>-->
+                        <td><input type="hidden" name="examDay" id="examDay" value="{{ examDay_text }}" readonly></td>
+                    </tr>
                     <tr>
                         <td><label>Start Time</label></td>
                         <td><input type="text" name="startTime" value="{{ startTime_text }}"></td>

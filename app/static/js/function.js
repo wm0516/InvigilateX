@@ -164,56 +164,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-
-
-
-
-
 document.addEventListener("DOMContentLoaded", function () {
-    const examDateDayInput = document.getElementById('examDateDay');
-    const examDateDayDisplay = document.getElementById('examDateDayDisplay');
-    const datePickerButton = document.getElementById('datePickerButton');
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
 
-    // Format date to DD/MM/YYYY
-    const formatDisplayDate = (date) => {
-        const dd = String(date.getDate()).padStart(2, '0');
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
+    // Format date to YYYY-MM-DD
+    const formatDate = (date) => {
         const yyyy = date.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
     };
 
     const today = new Date();
-    const minDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    const minDate = formatDate(today);
 
     // Set max date to exactly 1 year later (same date next year)
     const nextYearSameDay = new Date(today);
     nextYearSameDay.setFullYear(today.getFullYear() + 1);
-    const maxDate = nextYearSameDay.toISOString().split('T')[0];
+    const maxDate = formatDate(nextYearSameDay);
 
     // Apply min/max restrictions
-    examDateDayInput.min = minDate;
-    examDateDayInput.max = maxDate;
-
-    // Click button to show date picker
-    datePickerButton.addEventListener('click', function() {
-        examDateDayInput.click();
-    });
+    examDateInput.min = minDate;
+    examDateInput.max = maxDate;
 
     // Handle date selection
-    examDateDayInput.addEventListener('change', function () {
+    examDateInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
         const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
 
         // Check if selected date is within range
-        const selected = selectedDate.toISOString().split('T')[0];
+        const selected = formatDate(selectedDate);
         if (selected < minDate || selected > maxDate) {
             alert("Date must be within one year from today.");
             this.value = '';
-            examDateDayDisplay.value = '';
             examDayInput.value = '';
-            examDateInput.value = '';
             return;
         }
 
@@ -221,24 +206,20 @@ document.addEventListener("DOMContentLoaded", function () {
         if (day === 0 || day === 6) {
             alert("Weekends are not allowed.");
             this.value = '';
-            examDateDayDisplay.value = '';
             examDayInput.value = '';
-            examDateInput.value = '';
             return;
         }
 
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        const formattedDate = formatDisplayDate(selectedDate);
-        const dayName = days[day];
-        
-        // Update the visible display field
-        examDateDayDisplay.value = `${formattedDate} ${dayName}`;
-        
-        // Update hidden inputs
-        examDateInput.value = formattedDate;
-        examDayInput.value = dayName;
+        examDayInput.value = days[day];
     });
 });
+
+
+
+
+
+
 
 
 
