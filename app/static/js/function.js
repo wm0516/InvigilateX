@@ -164,43 +164,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-document.addEventListener("DOMContentLoaded", function () {
-const examDateInput = document.getElementById('examDate');
-const examDayInput = document.getElementById('examDay');
+document.addEventListener("DOMContentLoaded", () => {
+    const display = document.getElementById("examDisplay");
+    const hidden = document.getElementById("examDateHidden");
+    const days = ["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
 
-// Format date to YYYY-MM-DD
-const formatDate = (date) => {
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-};
+    const format = (d, fmt) => fmt === 'display'
+        ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`
+        : `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 
-const today = new Date();
-const minDate = formatDate(today);
-const nextYear = new Date(today);
-nextYear.setFullYear(today.getFullYear() + 1);
-const maxDate = formatDate(nextYear);
+    display.addEventListener("click", () => {
+        const picker = document.createElement("input");
+        picker.type = "date";
+        picker.style.position = "absolute";
+        picker.style.opacity = 0;
 
-// Set min/max range
-examDateInput.min = minDate;
-examDateInput.max = maxDate;
+        const today = new Date();
+        const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
+        picker.min = format(today, 'hidden');
+        picker.max = format(nextYear, 'hidden');
 
-// Handle date selection
-examDateInput.addEventListener('change', function () {
-    const selectedDate = new Date(this.value);
-    const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+        picker.addEventListener("change", () => {
+            const date = new Date(picker.value);
+            if (date.getDay() === 0 || date.getDay() === 6) {
+                alert("Weekends are not allowed.");
+                return;
+            }
+            display.value = `${format(date, 'display')} ${days[date.getDay()]}`;
+            hidden.value = format(date, 'hidden');
+        });
 
-    if (day === 0 || day === 6) {
-    alert("Weekends are not allowed.");
-    this.value = '';
-    examDayInput.value = '';
-    return;
-    }
-
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    examDayInput.value = days[day];
-});
+        document.body.appendChild(picker);
+        picker.click();
+        picker.remove();
+    });
 });
 
 
