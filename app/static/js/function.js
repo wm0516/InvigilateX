@@ -186,8 +186,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const maxDate = nextYearSameDay.toISOString().split('T')[0];
 
     // Apply min/max restrictions
-    examDateInput.min = minDate;
-    examDateInput.max = maxDate;
+    examDateDayInput.min = minDate;
+    examDateDayInput.max = maxDate;
 
     // Handle date selection
     examDateDayInput.addEventListener('change', function () {
