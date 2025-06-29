@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, session, j
 from app import app
 from .backend import *
 from .database import *
+from datetime import date, datetime
 import os
 from io import BytesIO
 import pandas as pd
@@ -15,7 +16,7 @@ bcrypt = Bcrypt()
 
 @app.route('/home/autoGenerate', methods=['GET', 'POST'])
 def admin_autoGenerate():
-    exam_data = ExamDetails.query.all()
+    exam_data = Exam.query.all()
     department_data = Department.query.all()
     return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab', exam_data=exam_data, department_data=department_data)
 
@@ -315,6 +316,21 @@ def admin_uploadLecturerTimetable():
     return render_template('adminPart/adminUploadLecturerTimetable.html', active_tab='admin_uploadLecturerTimetabletab', user_data=user_data)
 
 
+
+
+def parse_date(val):
+    """Convert Excel or string to Python date or return None."""
+    if pd.isna(val) or str(val).strip() == '':
+        return None
+    if isinstance(val, (datetime, date)):
+        return val.date() if isinstance(val, datetime) else val
+    for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%m/%d/%Y'):
+        try:
+            return datetime.strptime(str(val).strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
+
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     exam_data = Exam.query.all()
@@ -357,14 +373,14 @@ def admin_manageExam():
 
                         for index, row in df.iterrows():
                             try:
-                                examDate_text = str(row['Date'])
+                                examDate_text = parse_date(row['Date'])
                                 examDay_text = str(row['Day']).upper()
                                 startTime_text = str(row['Start']).upper()
                                 endTime_text = str(row['End']).upper()
                                 programCode_text = str(row['Program']).upper()
                                 courseSection_text = str(row['Course/Sec']).upper()
                                 lecturer_text = str(row['Lecturer']).upper()
-                                student_text = str(row['No Of']).upper()
+                                student_text = row['No Of']
                                 venue_text = str(row['Room']).upper()
 
                                 if not all([examDate_text, examDay_text, startTime_text, endTime_text, programCode_text, courseSection_text, lecturer_text, student_text, venue_text]):

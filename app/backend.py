@@ -232,5 +232,3 @@ def unique_LecturerDetails(id, email, contact):
 
 
 
-
-

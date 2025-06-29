@@ -42,12 +42,12 @@ class User(db.Model):
 # Update: using examCourseSectionCode as PK
 class Exam(db.Model):
     __tablename__ = 'Exam'
-    examDate = db.Column(db.Date, nullable=False)
+    examDate = db.Column(db.Date, nullable=True)
     examDay = db.Column(db.String(10), nullable=False)
     examStartTime = db.Column(db.String(20), nullable=False)
     examEndTime = db.Column(db.String(20), nullable=False)
     examProgramCode = db.Column(db.String(10), nullable=False)
-    examCourseSectionCode = db.Column(db.String(20), primary_key=True,)
+    examCourseSectionCode = db.Column(db.String(20), primary_key=True)
     examLecturer = db.Column(db.String(255), nullable=False)
     examTotalStudent = db.Column(db.Integer, nullable=False)
     examVenue = db.Column(db.String(50), nullable=True)
