@@ -164,37 +164,60 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-
-
 document.addEventListener("DOMContentLoaded", function () {
+    const examDateDayInput = document.getElementById('examDateDay');
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
 
-    const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+    // Format date to DD/MM/YYYY
+    const formatDisplayDate = (date) => {
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    };
 
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    // Set max date to exactly 1 year later (same date next year)
+    const nextYearSameDay = new Date(today);
+    nextYearSameDay.setFullYear(today.getFullYear() + 1);
+    const maxDate = nextYearSameDay.toISOString().split('T')[0];
+
+    // Apply min/max restrictions
+    examDateInput.min = minDate;
+    examDateInput.max = maxDate;
+
+    // Handle date selection
     examDateInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
-        const day = selectedDate.getDay();
+        const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
 
-        if (day === 0 || day === 6) {
-            alert("Weekends are not allowed.");
+        // Check if selected date is within range
+        const selected = selectedDate.toISOString().split('T')[0];
+        if (selected < minDate || selected > maxDate) {
+            alert("Date must be within one year from today.");
             this.value = '';
-            this.title = '';
             examDayInput.value = '';
+            examDateDayInput.value = '';
             return;
         }
 
-        const yyyy = selectedDate.getFullYear();
-        const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
-        const dd = String(selectedDate.getDate()).padStart(2, '0');
-        const formattedDate = `${yyyy}-${mm}-${dd}`;
-        const dayName = days[day];
+        // Disallow weekends
+        if (day === 0 || day === 6) {
+            alert("Weekends are not allowed.");
+            this.value = '';
+            examDayInput.value = '';
+            examDateDayInput.value = '';
+            return;
+        }
 
-        this.title = `${formattedDate} ${dayName}`;
-        examDayInput.value = dayName;
+        const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+        examDayInput.value = days[day];
+        examDateDayInput.value = formatDisplayDate(selectedDate) + ' ' + days[day];
     });
 });
-
 
 
 
