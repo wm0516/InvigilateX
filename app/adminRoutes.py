@@ -345,11 +345,12 @@ def admin_manageExam():
         file = request.files['exam_file']
         file_stream = BytesIO(file.read())
         exam_records_added = 0  # <-- Make sure this is initialized
-    
+        
         if file and file.filename:
             print('2 yes get post')
             try:
                 excel_file = pd.ExcelFile(file_stream)
+                print(f"Found sheets: {excel_file.sheet_names}")
                 for sheet_name in excel_file.sheet_names:
                     try:
                         df = pd.read_excel(
@@ -358,6 +359,8 @@ def admin_manageExam():
                             usecols="A:I",
                             skiprows=1
                         )
+                        # Debugging: show raw column headers
+                        print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
 
                          # Clean and standardize columns
                         df.columns = [str(col).strip().lower() for col in df.columns]
@@ -369,7 +372,7 @@ def admin_manageExam():
 
                         # Rename to match your model
                         df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
-                        print(f'Data read are {df.head()}')
+                        print(f"Data read from excel:\n{df.head()}")
 
                         for index, row in df.iterrows():
                             try:
