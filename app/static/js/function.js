@@ -164,11 +164,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
+    const examDisplay = document.getElementById('examDisplay');
 
-    // Format date to YYYY-MM-DD
     const formatDate = (date) => {
         const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -182,26 +184,30 @@ document.addEventListener("DOMContentLoaded", function () {
     nextYear.setFullYear(today.getFullYear() + 1);
     const maxDate = formatDate(nextYear);
 
-    // Set min/max range
     examDateInput.min = minDate;
     examDateInput.max = maxDate;
 
-    // Handle date selection
     examDateInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
         const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
 
         if (day === 0 || day === 6) {
-        alert("Weekends are not allowed.");
-        this.value = '';
-        examDayInput.value = '';
-        return;
+            alert("Weekends are not allowed.");
+            this.value = '';
+            examDayInput.value = '';
+            examDisplay.value = '';
+            return;
         }
 
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        examDayInput.value = days[day];
+        const formattedDate = formatDate(selectedDate);
+        const dayName = days[day];
+
+        examDayInput.value = dayName;
+        examDisplay.value = `${formattedDate} ${dayName}`;
     });
 });
+
 
 
 

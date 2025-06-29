@@ -31,11 +31,20 @@
                     <tr>
                         <td><label>Exam Date</label></td>
                         <td>
+                            <input type="date" name="examDate" id="examDate">
+                            <input type="hidden" name="examDay" id="examDay" readonly>
+                            <input type="text" id="examDisplay" name="examDisplay" readonly placeholder="YYYY-MM-DD DAY">
+                        </td>
+                    </tr>
+                    <!--
+                    <tr>
+                        <td><label>Exam Date</label></td>
+                        <td>
                             <input type="date" name="examDate" id="examDate" value="{{ examDate_text }} {{ examDay_text }}">
                             <input type="hidden" name="examDay" id="examDay" value="{{ examDay_text }}" readonly>
                         </td>
                     </tr>
-                    <!--<tr>
+                    <tr>
                         <td><label>Exam Day</label></td>
                         <td><input type="hidden" name="examDay" id="examDay" value="{{ examDate_text }}" readonly></td>
                     </tr>-->
