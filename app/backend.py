@@ -208,7 +208,10 @@ def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, 
 
 
 # (Need double check the purpose) Check upload lecturer
-def unique_LecturerDetails(id, email, contact):
+def check_lecturer(id, email, contact, name, department, role):
+    if not all([id, email, contact, name, department, role]):
+        return False, "Please fill in all required fields.."
+    
     exists = User.query.filter(
         (User.userId == id) |
         (User.userEmail == email) |
@@ -218,7 +221,6 @@ def unique_LecturerDetails(id, email, contact):
     if exists:
         return False, "Duplicate entry"
     return True, ""
-
 
 
 
