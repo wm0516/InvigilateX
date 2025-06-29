@@ -20,11 +20,6 @@ def admin_autoGenerate():
     department_data = Department.query.all()
     return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab', exam_data=exam_data, department_data=department_data)
 
-@app.route('/adminHome/manageLecturer')
-def admin_manageLecturer():
-    user_data = User.query.all()
-    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_manageLecturertab', user_data=user_data)
-
 
 @app.route('/adminHome/invigilationReport', methods=['GET', 'POST'])
 def admin_viewReport():
