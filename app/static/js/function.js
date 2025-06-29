@@ -114,10 +114,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize all upload forms when DOM is loaded
 // Minimal JS for file name display and drag-drop styling
-document.addEventListener('DOMContentLoaded', function () {
-    const fileInput = document.getElementById('course_list');
-    const uploadContainer = document.getElementById('courseUploadContainer');
-    const fileNameDisplay = document.getElementById('courseSelectedFileName');
+// Reusable function for setting up file upload UI
+function setupFileUpload(fileInputId, uploadContainerId, fileNameDisplayId) {
+    const fileInput = document.getElementById(fileInputId);
+    const uploadContainer = document.getElementById(uploadContainerId);
+    const fileNameDisplay = document.getElementById(fileNameDisplayId);
 
     if (!fileInput || !uploadContainer || !fileNameDisplay) return;
 
@@ -130,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Drag and drop
+    // Drag and drop events
     uploadContainer.addEventListener('dragover', function (e) {
         e.preventDefault();
         uploadContainer.style.borderColor = '#5bc0de';
@@ -151,4 +152,13 @@ document.addEventListener('DOMContentLoaded', function () {
             uploadContainer.style.backgroundColor = '#e8f5e9';
         }
     });
+}
+
+// Initialize all upload components on DOM ready
+document.addEventListener('DOMContentLoaded', function () {
+    setupFileUpload('course_list', 'courseUploadContainer', 'courseSelectedFileName');
+    setupFileUpload('exam_list', 'examUploadContainer', 'examSelectedFileName');
+    setupFileUpload('lecturer_list', 'lecturerUploadContainer', 'lecturerSelectedFileName');
+    setupFileUpload('timetable_list', 'timetableUploadContainer', 'timetableSelectedFileName');
 });
+
