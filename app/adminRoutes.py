@@ -63,6 +63,7 @@ def admin_manageCourse():
                         print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
 
                         # Clean and standardize columns
+                        # df.columns = [str(col).strip().lower() for col in df.columns]
                         expected_cols = ['code', 'section', 'name', 'credithour']
 
                         if df.columns.tolist() != expected_cols:
@@ -365,6 +366,8 @@ def admin_manageExam():
                         print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
 
                          # Clean and standardize columns
+                        # df.columns = [str(col).strip().lower() for col in df.columns]
+                        # print("Detected columns:", df.columns.tolist())
                         expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No Of', 'Room']
 
                         if df.columns.tolist() != expected_cols:
