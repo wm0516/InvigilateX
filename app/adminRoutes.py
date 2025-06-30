@@ -15,7 +15,7 @@ bcrypt = Bcrypt()
 
 
 @app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
-def admin_autoGenerate():
+def admin_manageInvigilationTimetable():
     exam_data = Exam.query.all()
     user_data = User.query.all()
     department_data = Department.query.all()
