@@ -20,7 +20,8 @@
                     {% for dept in department_data[:department_data|length//2] %}
                     <tr>
                         <td><label> {{ dept.departmentCode }} - {{ dept.departmentName }} </label></td>
-                        <td><input type="number" name="ratio" value="{{ ratio_text }}"></td>
+                        <td><input type="number" name="ratio[]" value="{{ ratio_text }}"></td>
+                        <input type="hidden" name="deptcode[]" value="{{ dept.departmentCode }}">
                     </tr>
                     {% endfor %}
                 </table>    
@@ -36,7 +37,8 @@
                     {% for dept in department_data[department_data|length//2:] %}
                     <tr>
                         <td><label> {{ dept.departmentCode }} - {{ dept.departmentName }} </label></td>
-                        <td><input type="number" name="ratio" value="{{ ratio_text }}"></td>
+                        <td><input type="number" name="ratio[]" value="{{ ratio_text }}"></td>
+                        <input type="hidden" name="deptcode[]" value="{{ dept.departmentCode }}">
                     </tr>
                     {% endfor %}
                 </table>    

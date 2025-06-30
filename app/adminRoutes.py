@@ -20,14 +20,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
-
+# function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
 @app.route('/adminHome/invigilationReport', methods=['GET', 'POST'])
 def admin_viewReport():
     return render_template('adminPart/adminInvigilationReport.html', active_tab='admin_viewReporttab')
 
 
 
-# function for admin manage lecturer timetable
+# function for admin manage lecturer timetable (adding, editing, and removing)
 @app.route('/adminHome/uploadLecturerTimetable', methods=['GET', 'POST'])
 def admin_uploadLecturerTimetable():
     user_data = User.query.all()
@@ -134,12 +134,31 @@ def admin_uploadLecturerTimetable():
 
 
 
-
+# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     exam_data = Exam.query.all()
     user_data = User.query.all()
     department_data = Department.query.all()
+    ratios = request.form.getlist("ratio[]")
+    deptcodes = request.form.getlist("deptcode[]")
+
+    # Pair them
+    data = [
+        {"departmentCode": code, "ratio": float(ratio) if ratio else None}
+        for code, ratio in zip(deptcodes, ratios)
+    ]
+
+    print(f'The data readed are {data}')
+
+
+
+
+
+
+
+
+
     return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
                            user_data=user_data, exam_data=exam_data, department_data=department_data)
 
