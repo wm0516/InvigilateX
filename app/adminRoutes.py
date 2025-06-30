@@ -132,6 +132,9 @@ def admin_uploadLecturerTimetable():
 
 
 
+
+
+
 @app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     exam_data = Exam.query.all()
