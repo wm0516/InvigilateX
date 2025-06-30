@@ -4,7 +4,7 @@
 {% block content %}
 <div class="menu-section">
     <h2>Upload Lecturer Timetable</h2>
-    <form id="uploadTimetableForm" action="{{ url_for('admin_uploadLecturerTimetable') }}" method="POST" enctype="multipart/form-data">
+    <form id="uploadTimetableForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
         <label for="timetable_list">
             <div class="upload-container" id="timetableUploadContainer">
                 <div class="upload-text">Upload file format with according format<br><br>Click to upload or drag and drop with below file format</div>
