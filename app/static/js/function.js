@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/adminHome/manageCourse': 'admin_manageCoursetab',
     '/adminHome/manageInvigilationTimetable': 'admin_manageInvigilationTimetabletab',
     '/adminHome/manageLecturer': 'admin_manageLecturertab',    
-    '/adminHome/viewReport': 'admin_viewReporttab',
+    '/adminHome/manageInvigilationReport': 'admin_manageInvigilationReporttab',
     '/adminHome/manageDepartment': 'admin_manageDepartmenttab',
 
     '/lecturerHome': 'lecturer_hometab',

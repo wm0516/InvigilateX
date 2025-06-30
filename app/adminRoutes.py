@@ -21,9 +21,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
-@app.route('/adminHome/invigilationReport', methods=['GET', 'POST'])
-def admin_viewReport():
-    return render_template('adminPart/adminInvigilationReport.html', active_tab='admin_viewReporttab')
+@app.route('/adminHome/manageInvigilationReport', methods=['GET', 'POST'])
+def admin_manageInvigilationReport():
+    return render_template('adminPart/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab')
 
 
 
