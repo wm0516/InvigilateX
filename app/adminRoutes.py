@@ -143,13 +143,14 @@ def admin_manageInvigilationTimetable():
     ratios = request.form.getlist("ratio[]")
     deptcodes = request.form.getlist("deptcode[]")
 
-    # Pair them
-    data = [
-        {"departmentCode": code, "ratio": float(ratio) if ratio else None}
-        for code, ratio in zip(deptcodes, ratios)
-    ]
+    if request.method == 'POST':
+        # Pair them
+        data = [
+            {"departmentCode": code, "ratio": float(ratio) if ratio else None}
+            for code, ratio in zip(deptcodes, ratios)
+        ]
 
-    print(f'The data readed are {data}')
+        print(f'The data readed are {data}')
 
 
 
