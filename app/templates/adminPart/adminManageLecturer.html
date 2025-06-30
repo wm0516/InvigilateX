@@ -4,8 +4,6 @@
 {% block content %}
 <div class="menu-section">
     <h2>Manage Lecturer</h2>
-
-
     <form id="uploadLecturerForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" enctype="multipart/form-data">
         <h3>Choose either 'Upload' or 'Manual' to insert new lecturer</h3>
         <div class="profile-frame">
@@ -13,8 +11,8 @@
                 <label for="lecturer_list">
                     <div class="upload-container" id="lecturerUploadContainer">
                         <div class="upload-text">
-                            Upload a file with an empty first row. Data should start from columns A to D,<br> 
-                            labeled as: 'Code', 'Section', 'Name', and 'CreditHour'<br><br><br>
+                            Upload a file with an empty first row. Data should start from columns A to F,<br> 
+                            labeled as: 'Id', 'Name', 'Department', 'Role', 'Email', and 'Contact'<br><br><br>
                             Click to upload or drag and drop with below file format
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
@@ -26,7 +24,7 @@
             </div>
 
             <div class="form-right" style="width: 30%;">
-                <table class="user-data-table">
+                <table class="enter-data-table">
                     <tr style="text-align: center;">
                         <th>Field</th>
                         <th>Input</th>
@@ -59,7 +57,7 @@
                     <tr>
                         <td><label id="departmentLabel">Department</label></td>
                         <td>
-                            <select name="department" required>
+                            <select name="department">
                                 <option value="" disabled selected>Select Department</option>
                                 {% for dept in department_data %}
                                     <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
