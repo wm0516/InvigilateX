@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab',
     '/adminHome/manageExam': 'admin_manageExamtab',
     '/adminHome/manageCourse': 'admin_manageCoursetab',
-    '/adminHome/autoGenerate': 'admin_autoGeneratetab',
+    '/adminHome/manageInvigilationTimetable': 'admin_manageInvigilationTimetabletab',
     '/adminHome/manageLecturer': 'admin_manageLecturertab',    
     '/adminHome/viewReport': 'admin_viewReporttab',
     '/adminHome/manageDepartment': 'admin_manageDepartmenttab',

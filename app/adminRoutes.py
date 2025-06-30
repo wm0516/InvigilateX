@@ -14,11 +14,13 @@ bcrypt = Bcrypt()
 
 
 
-@app.route('/home/autoGenerate', methods=['GET', 'POST'])
+@app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_autoGenerate():
     exam_data = Exam.query.all()
+    user_data = User.query.all()
     department_data = Department.query.all()
-    return render_template('adminPart/adminAutoSchedule.html', active_tab='admin_autoGeneratetab', exam_data=exam_data, department_data=department_data)
+    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetable', 
+                           user_data=user_data, exam_data=exam_data, department_data=department_data)
 
 
 @app.route('/adminHome/invigilationReport', methods=['GET', 'POST'])
