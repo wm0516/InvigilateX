@@ -144,20 +144,21 @@ def admin_manageInvigilationTimetable():
     deptcodes = request.form.getlist("deptcode[]")
 
     if request.method == 'POST':
-        # Pair them
+        # Pair department codes and ratios into a list of dicts
         data = [
-            {"departmentCode": code, "ratio": float(ratio) if ratio else None}
+            {"departmentCode": code, "ratio": int(ratio) if ratio else None}
             for code, ratio in zip(deptcodes, ratios)
         ]
 
-        print(f'The data readed are {data}')
+        # Loop through each pair and update the corresponding department
+        for item in data:
+            dept = Department.query.filter_by(departmentCode=item["departmentCode"]).first()
+            if dept:
+                dept.departmentRatio = item["ratio"]
 
-
-
-
-
-
-
+        db.session.commit()
+        flash("Department ratios updated successfully.", "success")
+        return redirect(url_for('admin_manageInvigilationTimetable'))
 
 
     return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
