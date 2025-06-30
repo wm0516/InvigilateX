@@ -10,16 +10,30 @@
         <h3>Insert Below Data to Add New Department. Ratio Optional.</h3>
         <label>Now able to add a new department, does it need a uplaod function?</label><br><br>
         <div class="profile-frame">
-            <div class="form-middle" style="width: 30%">
-                <label>Department Code</label>
-                <input type="text" name="departmentCode" value="{{ departmentCode_text }}"><br>
-                <label>Department Name</label>
-                <input type="text" name="departmentName" value="{{ departmentName_text }}"><br>
-                <label>Department Ratio (Optional)</label>
-                <input type="number" name="departmentRatio" value="{{ departmentRatio_text }}">
+            <div class="form-middle" style="width: 30%;">
+                <table class="enter-data-table">
+                    <tr style="text-align: center;">
+                        <th>Field</th>
+                        <th>Input</th>
+                    </tr>
+                    <tr>
+                        <td><label>Department Code</label></td>
+                        <td><input type="text" name="departmentCode" value="{{ departmentCode_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label>Department Name</label></td>
+                        <td><input type="text" name="departmentName" value="{{ departmentName_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label>Department Ratio (Optional)/label></td>
+                        <td><input type="number" name="departmentRatio" value="{{ departmentRatio_text }}"></td>
+                    </tr>
+                </table>
             </div>
         </div>
         <br>
+
+        
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
