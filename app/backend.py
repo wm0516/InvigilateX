@@ -36,7 +36,7 @@ def password_format(password):
 def check_contact(contact):
     existing_contact = User.query.filter(User.userContact == contact).first()
     if existing_contact:
-        return False, "Contact Number already registered."
+        return False, "Contact Number already registered"
     
     return True, ""
 
@@ -45,25 +45,25 @@ def check_contact(contact):
 def check_department(code, name):
     # Check if any required field is empty
     if not code or not name:
-        return False, "Please fill in all required fields."
+        return False, "Please fill in all required fields"
     # Check for duplicates
     existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
     if existing_departmentCode:
-        return False, "Department Code already registered."
+        return False, "Department Code already registered"
     existing_departmentName = Department.query.filter(Department.departmentName == name).first()
     if existing_departmentName:
-        return False, "Department Name already registered."
+        return False, "Department Name already registered"
     return True, ""
 
 
 def check_course(code, section, name, hour):
     if not all([code, section, name, hour]):
-        return False, "Please fill in all required fields."
+        return False, "Please fill in all required fields"
 
     courseCodeSection_text = (code + '/' + section)
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
-        return False, "Course already registered."
+        return False, "Course already registered"
 
     return True, ""
 
@@ -74,13 +74,13 @@ def check_login(loginEmail, loginPassword):
 
     user = User.query.filter_by(userEmail=loginEmail).first()
     if not user: # or not bcrypt.check_password_hash(user.userPassword, loginPassword):
-        return False, "Invalid email or password.", None
+        return False, "Invalid email or password", None
     
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
-        return False, "Invalid password.", None 
+        return False, "Invalid password", None 
 
     if user.userLevel not in [ADMIN, DEAN, HOP, LECTURER]:
-        return False, "User role is not recognized.", None
+        return False, "User role is not recognized", None
 
     return True, user.userId, user.userLevel
 
@@ -102,24 +102,24 @@ def check_register(id, email, contact, name, password1, password2, department, r
     elif not contact_format(contact):
         return False, "Wrong Contact Number format"
     elif password1 != password2:
-        return False, "Passwords do not match."
+        return False, "Passwords do not match"
     elif not password_format(password1):
-        return False, "Wrong password format."
+        return False, "Wrong password format"
     elif role not in role_map:
-        return False, "Invalid role selected."
+        return False, "Invalid role selected"
 
 
     existing_id = User.query.filter(User.userId == id).first()
     if existing_id:
-        return False, "Id already exists."
+        return False, "Id already exists"
     
     existing_email = User.query.filter(User.userEmail == email).first()
     if existing_email:
-        return False, "Email already exists."
+        return False, "Email already exists"
     
     existing_contact = User.query.filter(User.userContact == contact).first()
     if existing_contact:
-        return False, "Contact Number already exists."
+        return False, "Contact Number already exists"
 
     return True, ""
 
@@ -165,15 +165,15 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
         # Decode token to get the email
         email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # Valid for 1 hour
     except Exception:
-        return None, "The reset link is invalid or has expired."
+        return None, "The reset link is invalid or has expired"
 
     # Validation checks
     if not resetPassword1 or not resetPassword2:
-        return None, "All fields are required."
+        return None, "All fields are required"
     if resetPassword1 != resetPassword2:
-        return None, "Passwords do not match."
+        return None, "Passwords do not match"
     if not password_format(resetPassword1):
-        return None, "Wrong password format."
+        return None, "Wrong password format"
 
     # Find the user by email
     user = User.query.filter_by(userEmail=email).first()
@@ -207,7 +207,7 @@ def role_required(required_role):
 def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, student, venue):
     # Prevent querying if any required value is empty or None
     if not all([courseSection, date, starttime, endtime, day, program, lecturer, student, venue]):
-        return False, "Please fill in all required fields.."
+        return False, "Please fill in all required fields"
 
     exam_exists = Exam.query.filter_by(
         examDate=date,
@@ -217,7 +217,7 @@ def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, 
     ).first()
 
     if exam_exists:
-        return False, "Exam with same course/section, date, and time already registered."
+        return False, "Exam with same course/section, date, and time already registered"
 
     return True, ""
 
@@ -236,20 +236,35 @@ def check_lecturer(id, email, contact, name, department, role):
     
     existing_id = User.query.filter(User.userId == id).first()
     if existing_id:
-        return False, "Id already exists."
+        return False, "Id already exists"
     
     existing_email = User.query.filter(User.userEmail == email).first()
     if existing_email:
-        return False, "Email already exists."
+        return False, "Email already exists"
     
     existing_contact = User.query.filter(User.userContact == contact).first()
     if existing_contact:
-        return False, "Contact Number already exists."
+        return False, "Contact Number already exists"
     
     return True, ""
 
 
-
+# continue on this function
+def check_profile(contact, password1, password2):
+    if not all([contact, password1, password2]):
+        return True, "No Update"
+    
+    if password1:
+        if password2:
+            return True, ""
+    
+    if not contact_format(contact):
+        return False, "Wrong Contact Number format"
+    
+    if password1 != password2:
+        return False, "Passwords do not match"
+    
+    return True, ""
 
 
 
