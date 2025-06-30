@@ -46,7 +46,7 @@
                     </tr>
                     <tr>
                         <td><label>Role</label></td>
-                        <td>
+                        <td style="width: auto;">
                             <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
                                 <option value="" disabled selected>Select Role</option>
                                 <option value="LECTURER">LECTURER</option>
@@ -59,7 +59,7 @@
                     
                     <tr>
                         <td><label id="departmentLabel">Department</label></td>
-                        <td>
+                        <td style="width: auto;">
                             <select name="department">
                                 <option value="" disabled selected>Select Department</option>
                                 {% for dept in department_data %}
