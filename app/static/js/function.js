@@ -65,7 +65,7 @@ function toggleSidebar() {
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
     '/adminHome': 'admin_hometab',
-    '/adminHome/uploadLecturerTimetable': 'admin_uploadLecturerTimetabletab',
+    '/adminHome/manageTimetable': 'admin_manageTimetabletab',
     '/adminHome/manageExam': 'admin_manageExamtab',
     '/adminHome/manageCourse': 'admin_manageCoursetab',
     '/adminHome/manageInvigilationTimetable': 'admin_manageInvigilationTimetabletab',
