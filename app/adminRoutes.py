@@ -135,7 +135,7 @@ def admin_uploadLecturerTimetable():
 
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
-@app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
+@app.route('/adminhome/manageInvigilationTimetable', meth   =['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     exam_data = Exam.query.all()
     user_data = User.query.all()
