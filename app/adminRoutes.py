@@ -19,7 +19,7 @@ def admin_manageInvigilationTimetable():
     exam_data = Exam.query.all()
     user_data = User.query.all()
     department_data = Department.query.all()
-    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetable', 
+    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
                            user_data=user_data, exam_data=exam_data, department_data=department_data)
 
 
