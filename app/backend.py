@@ -215,6 +215,8 @@ def check_profile(contact, password1, password2):
     if contact:
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
+        if check_contact(contact):
+            return False, "Contact Number Already exists"
     # If any password is entered, both must be present and match
     if password1 or password2:
         if not password1 or not password2:
