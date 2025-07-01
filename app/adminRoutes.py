@@ -109,25 +109,25 @@ def admin_profile():
     admin = User.query.filter_by(userId=adminId).first()
     
     # Pre-fill existing data
-    adminPassword1_text = ''
-    adminPassword2_text = ''
+    admin_password1_text = ''
+    admin_password2_text = ''
     error_message = None
 
     if request.method == 'POST':
-        adminContact_text = request.form.get('contact', '').strip()
-        adminPassword1_text = request.form.get('password1', '').strip()
-        adminPassword2_text = request.form.get('password2', '').strip()
+        admin_contact_text = request.form.get('contact', '').strip()
+        admin_password1_text = request.form.get('password1', '').strip()
+        admin_password2_text = request.form.get('password2', '').strip()
 
-        valid, message = check_profile(adminContact_text, adminPassword1_text, adminPassword2_text)
+        valid, message = check_profile(admin_contact_text, admin_password1_text, admin_password2_text)
         if not valid:
             flash(message, 'error')
             return redirect(url_for('admin_profile'))
 
         if valid and admin:
-            if adminContact_text:
-                admin.userContact = adminContact_text
-            if adminPassword1_text:
-                hashed_pw = bcrypt.generate_password_hash(adminPassword1_text).decode('utf-8')
+            if admin_contact_text:
+                admin.userContact = admin_contact_text
+            if admin_password1_text:
+                hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
                 admin.userPassword = hashed_pw
 
             db.session.commit()
@@ -147,9 +147,9 @@ def admin_profile():
             DEAN: "Dean",
             ADMIN: "Admin"
         }.get(admin.userLevel, "Unknown") if admin else '',
-        adminContact_text=admin.userContact if admin else '',
-        adminPassword1_text=adminPassword1_text,
-        adminPassword2_text=adminPassword2_text,
+        admin_contact_text=admin.userContact if admin else '',
+        admin_password1_text=admin_password1_text,
+        admin_password2_text=admin_password2_text,
         error_message=error_message
     )
 
