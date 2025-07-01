@@ -109,7 +109,7 @@ def admin_profile():
     admin = User.query.filter_by(userId=adminId).first()
     
     # Pre-fill existing data
-    adminContact_text = ''
+    adminContact_text = admin.userContact
     adminPassword1_text = ''
     adminPassword2_text = ''
     error_message = None
@@ -135,7 +135,6 @@ def admin_profile():
             flash("Successfully updated", 'success')
             return redirect(url_for('admin_profile'))
 
-
     return render_template(
         'adminPart/adminProfile.html',
         active_tab='admin_profiletab',
@@ -149,7 +148,7 @@ def admin_profile():
             DEAN: "Dean",
             ADMIN: "Admin"
         }.get(admin.userLevel, "Unknown") if admin else '',
-        adminContact_text=adminContact_text,
+        adminContact_text=admin.userContact,
         adminPassword1_text=adminPassword1_text,
         adminPassword2_text=adminPassword2_text,
         error_message=error_message
