@@ -207,12 +207,16 @@ def check_lecturer(id, email, contact, name, department, role):
 
 
 # continue on this function
-def check_profile(contact, password1, password2):
+def check_profile(id, contact, password1, password2):
     # If all fields are empty
+
     if not contact and not password1 and not password2:
         return True, "No Update"
     # If contact is entered, validate format
     if contact:
+        user_contact = User.query.filter(User.userId == id ,User.userContact == contact).first()
+        if user_contact:
+            return False, "Similar Data Update"
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
         if check_contact(contact):
