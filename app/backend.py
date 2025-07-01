@@ -216,7 +216,7 @@ def check_profile(id, contact, password1, password2):
     if contact:
         user_contact = User.query.filter(User.userId == id ,User.userContact == contact).first()
         if user_contact:
-            return False, "Similar Data Update"
+            return False, "Similar Contact Number Update"
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
         if check_contact(contact):
