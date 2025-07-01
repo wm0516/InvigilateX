@@ -109,7 +109,7 @@ def admin_profile():
     admin = User.query.filter_by(userId=adminId).first()
     
     # Pre-fill existing data
-    adminContact_text = admin.userContact
+    adminContact_text = ''
     adminPassword1_text = ''
     adminPassword2_text = ''
     error_message = None
@@ -148,7 +148,7 @@ def admin_profile():
             DEAN: "Dean",
             ADMIN: "Admin"
         }.get(admin.userLevel, "Unknown") if admin else '',
-        adminContact_text=admin.userContact,
+        adminContact_text=admin.userContact if admin else '',
         adminPassword1_text=adminPassword1_text,
         adminPassword2_text=adminPassword2_text,
         error_message=error_message
