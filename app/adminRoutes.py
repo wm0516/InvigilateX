@@ -109,7 +109,6 @@ def admin_profile():
     admin = User.query.filter_by(userId=adminId).first()
     
     # Pre-fill existing data
-    adminContact_text = ''
     adminPassword1_text = ''
     adminPassword2_text = ''
     error_message = None
