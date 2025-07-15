@@ -163,6 +163,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+
+
+
+
+
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
@@ -217,7 +225,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
+document.getElementById('endTime').addEventListener('change', function() {
+  const start = document.getElementById('startTime').value;
+  const end = this.value;
+  if (end <= start) {
+    alert('End time must be later than start time');
+    this.value = '';
+  }
+});
 
 
 
