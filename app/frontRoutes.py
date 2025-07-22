@@ -53,6 +53,13 @@ def login():
 # register page (done with all input validation and userID as Primary Key)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    role_map = {
+        'LECTURER': LECTURER,
+        'DEAN': DEAN,
+        'HOP': HOP,
+        'ADMIN': ADMIN
+    }
+    
     department_data = Department.query.all()
     id_text = ''
     name_text = ''
