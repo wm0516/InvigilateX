@@ -539,44 +539,7 @@ def admin_manageExam():
                 flash('File processing error: File upload in wrong format', 'error')
                 return redirect(url_for('admin_manageExam'))
         
-        else:
-            # Handle manual input
-            examDate_text_raw = request.form.get('examDate', '').strip()
-            print("Submitted examDate_text_raw:", examDate_text_raw)
-            examDate_text = parse_date(examDate_text_raw)
-            print("Parsed examDate_text:", examDate_text)
-
-            examDay_text = request.form.get('examDay', '').strip()
-            startTime_text = request.form.get('startTime', '').strip()
-            endTime_text = request.form.get('endTime', '').strip()
-            programCode_text = request.form.get('programCode', '').strip()
-            courseSection_text = request.form.get('courseSection', '').strip()
-            lecturer_text = request.form.get('lecturer', '').strip()
-            student_text = request.form.get('student', '').strip()
-            venue_text = request.form.get('venue', '').strip()
-
-            valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
-            if not valid:
-                flash(result, 'error')
-                return render_template('adminPart/adminManageExam.html', exam_data=exam_data, examDate_text=examDate_text, examDay_text=examDay_text,
-                                        startTime_text=startTime_text, endTime_text=endTime_text, programCode_text=programCode_text, courseSection_text=courseSection_text,
-                                        lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text, active_tab='admin_manageExamtab')
-        
-            new_exam= Exam(
-                examDate = examDate_text,
-                examDay = examDay_text,
-                examStartTime = startTime_text,
-                examEndTime = endTime_text,
-                examProgramCode = programCode_text,
-                examCourseSectionCode = courseSection_text,
-                examLecturer = lecturer_text,
-                examTotalStudent = student_text,
-                examVenue = venue_text
-            )
-            db.session.add(new_exam)
-            db.session.commit()
-            flash("New Course Added Successfully", "success")
-            return redirect(url_for('admin_manageExam'))
+       
 
     return render_template('adminPart/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data)
 
