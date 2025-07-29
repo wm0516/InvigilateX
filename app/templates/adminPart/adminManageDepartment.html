@@ -25,10 +25,10 @@
                         <td>Department Name</td>
                         <td><input type="text" name="departmentName" value="{{ departmentName_text }}"></td>
                     </tr>
-                    <tr>
+                    <!--<tr>
                         <td>Department Ratio (Optional)</td>
                         <td><input type="number" name="departmentRatio" value="{{ departmentRatio_text }}"></td>
-                    </tr>
+                    </tr>-->
                 </table>
             </div>
         </div>
@@ -61,7 +61,7 @@
                     <th>No</th>
                     <th>Department Code</th>
                     <th>Department Name</th>
-                    <th>Department Ratio</th>
+                    <!--<th>Department Ratio</th>-->
                 </tr>
             </thead>
             <tbody>
@@ -70,7 +70,7 @@
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
-                    <td>{{ row.departmentRatio }}</td>
+                    <!--<td>{{ row.departmentRatio }}</td>-->
                 {% endfor %}
             </tbody>
         </table>
