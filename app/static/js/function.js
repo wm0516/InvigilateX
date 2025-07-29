@@ -210,12 +210,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Disallow weekends
-        if (day === 0 || day === 6) {
+        /*if (day === 0 || day === 6) {
             alert("Weekends are not allowed.");
             this.value = '';
             examDayInput.value = '';
             return;
-        }
+        }*/
 
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         examDayInput.value = days[day];
