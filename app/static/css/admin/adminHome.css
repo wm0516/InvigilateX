@@ -313,7 +313,7 @@ label {
     margin-bottom: 5px;
 }   
 
-input, select, option {
+input, select{
     width: 100%;
     padding: 10px;
     margin: 1% 0;
