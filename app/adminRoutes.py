@@ -40,6 +40,7 @@ def admin_manageTimetable():
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
+    '''
     exam_data = Exam.query.all()
     user_data = User.query.all()
     department_data = Department.query.all()
@@ -62,12 +63,44 @@ def admin_manageInvigilationTimetable():
         db.session.commit()
         flash("Department ratios updated successfully.", "success")
         return redirect(url_for('admin_manageInvigilationTimetable'))
+    '''
 
 
-    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
-                           user_data=user_data, exam_data=exam_data, department_data=department_data)
+    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab')
+    #user_data=user_data, exam_data=exam_data, department_data=department_data)
 
 
+# function for admin to manage department information (adding, editing, and removing)
+@app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
+def admin_manageDepartment():
+    department_data = Department.query.all()
+    departmentCode_text = ''
+    departmentName_text = ''
+    # departmentRatio_text = ''
+
+    if request.method == 'POST':
+        departmentCode_text = request.form.get('departmentCode', '').strip()
+        departmentName_text = request.form.get('departmentName', '').strip()
+        # departmentRatio_text = request.form.get('departmentRatio', '').strip()
+
+        valid, result = check_department(departmentCode_text, departmentName_text)
+        if not valid:
+            flash(result, 'error')
+            return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
+                                   department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+                                   #departmentRatio_text=departmentRatio_text, 
+
+        new_department = Department(
+            departmentCode=departmentCode_text.upper(),
+            departmentName=departmentName_text.upper(),
+            #departmentRatio=departmentRatio_text
+        )
+        db.session.add(new_department)
+        db.session.commit()
+        flash("New Department Added Successfully", "success")
+        return redirect(url_for('admin_manageDepartment'))
+
+    return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
 
 
 
@@ -581,36 +614,6 @@ def admin_manageExam():
     return render_template('adminPart/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data)
 
 
-# function for admin to manage department information (adding, editing, and removing)
-@app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
-def admin_manageDepartment():
-    department_data = Department.query.all()
-    departmentCode_text = ''
-    departmentName_text = ''
-    departmentRatio_text = ''
-
-    if request.method == 'POST':
-        departmentCode_text = request.form.get('departmentCode', '').strip()
-        departmentName_text = request.form.get('departmentName', '').strip()
-        departmentRatio_text = request.form.get('departmentRatio', '').strip()
-
-        valid, result = check_department(departmentCode_text, departmentName_text)
-        if not valid:
-            flash(result, 'error')
-            return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, departmentCode_text=departmentCode_text, 
-                                   departmentRatio_text=departmentRatio_text, departmentName_text=departmentName_text)
-
-        new_department = Department(
-            departmentCode=departmentCode_text.upper(),
-            departmentName=departmentName_text.upper(),
-            departmentRatio=departmentRatio_text
-        )
-        db.session.add(new_department)
-        db.session.commit()
-        flash("New Department Added Successfully", "success")
-        return redirect(url_for('admin_manageDepartment'))
-
-    return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
 
 
 

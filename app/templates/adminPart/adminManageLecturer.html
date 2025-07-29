@@ -34,19 +34,33 @@
                         <th>Input</th>
                     </tr>
                     <tr>
-                        <td>ID</td>
+                        <td>Staff ID</td>
                         <td><input type="text" name="userid" value="{{ id_text }}"><br></td>
                     </tr>
                     <tr>
-                        <td>Name</td>
+                        <td>Staff Name</td>
                         <td><input type="text" name="username" value="{{ name_text }}"></td>
                     </tr>
                     <tr>
-                        <td>Email Address</td>
+                        <td>Staff Email Address</td>
                         <td><input type="text" name="email" value="{{ email_text }}"></td>
                     </tr>
                     <tr>
-                        <td>Role</td>
+                        <td>Staff Contact Number</td>
+                        <td><input type="tel" name="contact" value="{{ contact_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Staff Gender</td>
+                        <td>
+                            <select value="{{ gender_text }}">
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="MALE">MALE</option>
+                                <option value="FEMALE">FEMALE</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Staff Role</td>
                         <td>
                             <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
                                 <option value="" disabled selected>Select Role</option>
@@ -70,10 +84,6 @@
                                 {% endfor %}
                             </select>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>Contact Number</td>
-                        <td><input type="tel" name="contact" value="{{ contact_text }}"></td>
                     </tr>
                 </table>
             </div>
