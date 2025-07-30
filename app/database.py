@@ -130,11 +130,11 @@ class Department(db.Model):
 class Course(db.Model):
     __tablename__ = 'Course'
     courseCodeSection = db.Column(db.String(20), primary_key=True)
-    courseDepartment = db.Column(db.String(60))
-    courseCode = db.Column(db.String(10))
+    courseDepartment = db.Column(db.String(60), nullable=False)
+    courseCode = db.Column(db.String(10), nullable=False)
     courseSection = db.Column(db.String(10), nullable=False)
     courseName = db.Column(db.String(50), nullable=False)
-    courseHour = db.Column(db.Integer)
+    courseHour = db.Column(db.Integer, nullable=False)
     coursePractical = db.column(db.String(255), nullable=False)
     courseTutorial = db.column(db.String(255), nullable=False)
     '''
