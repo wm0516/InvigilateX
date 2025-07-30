@@ -249,8 +249,8 @@ def check_department(code, name):
     return True, ""
 
 
-def check_course(code, section, name, hour):
-    if not all([code, section, name, hour]):
+def check_course(department, code, section, name, hour, pratical, tutorial):
+    if not all([department, code, section, name, hour, pratical, tutorial]):
         return False, "Please Fill in All Required Fields"
 
     courseCodeSection_text = (code + '/' + section)

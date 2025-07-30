@@ -33,6 +33,19 @@
                         <th>Input</th>
                     </tr>
                     <tr>
+                        <td><label id="departmentLabel">Department</label></td>
+                        <td>
+                            <select name="courseDepartment">
+                                <option value="" disabled selected>Select Department</option>
+                                {% for dept in department_data %}
+                                    <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
+                                        ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Course Code</td>
                         <td><input type="text" name="courseCode" value="{{ courseCode_text }}"></td>
                     </tr>
@@ -48,6 +61,14 @@
                         <td>Course Credit Hours</td>
                         <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
                     </tr>
+                    <td>
+                        <td>Practical Lecturer</td>
+                        <td><input type="text" name="coursePratical" value="{{ coursePratical_text }}"></td>
+                    </td>
+                    <td>
+                        <td>Tutorial Lecturer</td>
+                        <td><input type="number" name="courseTutorial" value="{{ courseTutorial_text }}"></td>
+                    </td>
                 </table>
             </div>
         </div>
@@ -103,6 +124,9 @@
                     <th>Course Section</th>
                     <th>Course Name</th>
                     <th>Credit Hour(s)</th>
+                    <th>Department</th>
+                    <th>Practical Lecturer</th>
+                    <th>Tutorial Lecturer</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,6 +138,9 @@
                     <td>{{ row.courseSection }}</td>
                     <td>{{ row.courseName }}</td>
                     <td>{{ row.courseHour }}</td>
+                    <td>{{ row.department }}</td>
+                    <td>{{ row.coursePratical }}</td>
+                    <td>{{ row.courseTutorial }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

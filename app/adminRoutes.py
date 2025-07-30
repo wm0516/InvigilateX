@@ -76,24 +76,20 @@ def admin_manageDepartment():
     department_data = Department.query.all()
     departmentCode_text = ''
     departmentName_text = ''
-    # departmentRatio_text = ''
 
     if request.method == 'POST':
         departmentCode_text = request.form.get('departmentCode', '').strip()
         departmentName_text = request.form.get('departmentName', '').strip()
-        # departmentRatio_text = request.form.get('departmentRatio', '').strip()
 
         valid, result = check_department(departmentCode_text, departmentName_text)
         if not valid:
             flash(result, 'error')
             return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
                                    department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
-                                   #departmentRatio_text=departmentRatio_text, 
 
         new_department = Department(
             departmentCode=departmentCode_text.upper(),
-            departmentName=departmentName_text.upper(),
-            #departmentRatio=departmentRatio_text
+            departmentName=departmentName_text.upper()
         )
         db.session.add(new_department)
         db.session.commit()
@@ -348,10 +344,13 @@ def admin_manageLecturer():
 @app.route('/adminHome/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     course_data = Course.query.all()
+    courseDepartment_text = ''
     courseCode_text = ''
     courseSection_text = ''
     courseName_text = ''
     courseHour_text = ''
+    coursePratical_text = ''
+    courseTutorial_text = ''
 
     if request.method == 'POST':
         file = request.files['course_file']
@@ -369,7 +368,7 @@ def admin_manageCourse():
                         df = pd.read_excel(
                             excel_file,
                             sheet_name=sheet_name,
-                            usecols="A:D",
+                            usecols="A:G",
                             skiprows=1
                         )
 
@@ -378,31 +377,37 @@ def admin_manageCourse():
 
                         # Clean and standardize columns
                         df.columns = [str(col).strip().lower() for col in df.columns] 
-                        expected_cols = ['code', 'section', 'name', 'credithour']
+                        expected_cols = ['department', 'code', 'section', 'name', 'credithour', 'pratical', 'tutorial']
 
                         if df.columns.tolist() != expected_cols:
                             raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
                         # Rename to match your model
-                        df.columns = ['code', 'section', 'name', 'creditHour']
+                        df.columns = ['department', 'code', 'section', 'name', 'creditHour', 'pratical', 'tutorial']
                         print(f"Data read from excel:\n{df.head()}")
 
                         for index, row in df.iterrows():
                             try:
-                                courseCode_text = str(row['code']).upper()
-                                courseSection_text = str(row['section']).upper()
-                                courseName_text = str(row['name']).upper()
+                                courseDepartment_text = str(row['department'])
+                                courseCode_text = str(row['code'])
+                                courseSection_text = str(row['section'])
+                                courseName_text = str(row['name'])
                                 courseHour_text = int(row['creditHour'])
-                                courseCodeSection_text = (courseCode_text + '/' + courseSection_text).upper()
+                                courseCodeSection_text = (courseCode_text + '/' + courseSection_text)
+                                coursePratical_text = str(row['pratical'])
+                                courseTutorial_text = str(row['tutorial'])
 
-                                valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
+                                valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePratical_text, courseTutorial_text)
                                 if valid:
                                     new_course = Course(
-                                        courseCodeSection = courseCodeSection_text,
+                                        courseDepartment=courseDepartment_text.upper(),
+                                        courseCodeSection = courseCodeSection_text.upper(),
                                         courseCode=courseCode_text.upper(),
                                         courseSection=courseSection_text.upper(),
                                         courseName=courseName_text.upper(),
-                                        courseHour=courseHour_text
+                                        courseHour=courseHour_text,
+                                        coursePratical = coursePratical_text.upper(),
+                                        courseTutorial = courseTutorial_text.upper()
                                     )
                                     db.session.add(new_course)
                                     course_records_added += 1
@@ -426,21 +431,27 @@ def admin_manageCourse():
         
         else:
             # Handle manual input
+            courseDepartment_text = request.form.get('courseDepartment', '').strip()
             courseCode_text = request.form.get('courseCode', '').strip()
             courseSection_text = request.form.get('courseSection', '').strip()
             courseName_text = request.form.get('courseName', '').strip()
             courseHour_text = request.form.get('courseHour', '').strip()
-            courseCodeSection_text = (courseCode_text + '/' + courseSection_text).upper()
+            courseCodeSection_text = (courseCode_text + '/' + courseSection_text)
+            coursePratical_text = request.form.get('coursePratical', '').strip()
+            courseTutorial_text =  request.form.get('courseTutorial', '').strip()
 
-            valid, result = check_course(courseCode_text, courseSection_text, courseName_text, courseHour_text)
+            valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePratical_text, courseTutorial_text)
             if not valid:
                 flash(result, 'error')
                 return render_template('adminPart/adminManageCourse.html', 
                                         course_data=course_data,
+                                        courseDepartment_text=courseDepartment_text,
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text,
+                                        coursePratical = coursePratical_text,
+                                        courseTutorial = courseTutorial_text,
                                         active_tab='admin_manageCoursetab')
             
             try:
@@ -449,18 +460,24 @@ def admin_manageCourse():
                 flash("Course Hour must be a valid integer.", 'error')
                 return render_template('adminPart/adminManageCourse.html', 
                                         course_data=course_data,
+                                        courseDepartment_text=courseDepartment_text,
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
                                         courseName_text=courseName_text,
                                         courseHour_text=courseHour_text,
+                                        coursePratical = coursePratical_text,
+                                        courseTutorial = courseTutorial_text,
                                         active_tab='admin_manageCoursetab')
 
             new_course = Course(
-                courseCodeSection = courseCodeSection_text,
+                courseDepartment=courseDepartment_text.upper(),
+                courseCodeSection = courseCodeSection_text.upper(),
                 courseCode=courseCode_text.upper(),
                 courseSection=courseSection_text.upper(),
                 courseName=courseName_text.upper(),
-                courseHour=hour_int
+                courseHour=courseHour_text,
+                coursePratical = coursePratical_text.upper(),
+                courseTutorial = courseTutorial_text.upper()
             )
             db.session.add(new_course)
             db.session.commit()
