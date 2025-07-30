@@ -40,34 +40,12 @@ def admin_manageTimetable():
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
-    '''
     exam_data = Exam.query.all()
     user_data = User.query.all()
     department_data = Department.query.all()
-    ratios = request.form.getlist("ratio[]")
-    deptcodes = request.form.getlist("deptcode[]")
 
-    if request.method == 'POST':
-        # Pair department codes and ratios into a list of dicts
-        data = [
-            {"departmentCode": code, "ratio": int(ratio) if ratio else None}
-            for code, ratio in zip(deptcodes, ratios)
-        ]
-
-        # Loop through each pair and update the corresponding department
-        for item in data:
-            dept = Department.query.filter_by(departmentCode=item["departmentCode"]).first()
-            if dept:
-                dept.departmentRatio = item["ratio"]
-
-        db.session.commit()
-        flash("Department ratios updated successfully.", "success")
-        return redirect(url_for('admin_manageInvigilationTimetable'))
-    '''
-
-
-    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab')
-    #user_data=user_data, exam_data=exam_data, department_data=department_data)
+    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
+                           user_data=user_data, exam_data=exam_data, department_data=department_data)
 
 
 # function for admin to manage department information (adding, editing, and removing)

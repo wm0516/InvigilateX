@@ -1,9 +1,7 @@
-<!-- upload.html -->
 {% extends "adminPart/adminBase.html" %}
 {% block title %}Admin ManageInvigilationTimetable{% endblock %}
 {% block content %}
 
-<!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Manage Invigilation Timetable</h2>    
     <form method="POST">  
@@ -11,64 +9,9 @@
         <label>Check this part, whether each admin able to select for all or just under self</label><br>
         <lable>Try to display out all the ratio based on the department on that page instead of empty frame</lable><br>
         <label>Now able to update the ratio, but without the main function to read the lecturers flexibility</label>
-        <!--
-        <div style="display: flex; justify-content: space-evenly;">
-            Left Table
-            <div>
-                <table class="enter-data-table"> 
-                    <tr style="text-align: center;">
-                        <th>Department</th>
-                        <th>Ratio</th>
-                    </tr>
-                    {% for dept in department_data[:department_data|length//2] %}
-                    <tr>
-                        <td><label> {{ dept.departmentCode }} - {{ dept.departmentName }} </label></td>
-                        <td><input type="number" name="ratio[]" value="{{ ratio_text }}"></td>
-                        <input type="hidden" name="deptcode[]" value="{{ dept.departmentCode }}">
-                    </tr>
-                    {% endfor %}
-                </table>    
-            </div>
-
-            Right Table 
-            <div>
-                <table class="enter-data-table"> 
-                    <tr style="text-align: center;">
-                        <th>Department</th>
-                        <th>Ratio</th>
-                    </tr>
-                    {% for dept in department_data[department_data|length//2:] %}
-                    <tr>
-                        <td><label> {{ dept.departmentCode }} - {{ dept.departmentName }} </label></td>
-                        <td><input type="number" name="ratio[]" value="{{ ratio_text }}"></td>
-                        <input type="hidden" name="deptcode[]" value="{{ dept.departmentCode }}">
-                    </tr>
-                    {% endfor %}
-                </table>    
-            </div>
-        </div>
-        <br>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <br>
-
-        <div class="button-wrapper">
-                <button type="submit">Generate Invigilation Timetable</button>
-        </div>
-        -->
     </form>
-
-
-
     <br><br>
+
     <h3>List of All Exam Sessions Details</h3>
     <div class="user-table-container">
         <table class="user-data-table">
@@ -116,7 +59,3 @@
 </div>
 
 {% endblock %}
-
-<!--
-
--->
