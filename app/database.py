@@ -1,5 +1,6 @@
 from app import db
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String  # correct import
 # db.String
 # db.Date -> date format
 # db.Time -> time format
