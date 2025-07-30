@@ -135,8 +135,8 @@ class Course(db.Model):
     courseSection = db.Column(db.String(10), nullable=False)
     courseName = db.Column(db.String(50), nullable=False)
     courseHour = db.Column(db.Integer, nullable=False)
-    coursePractical = db.column(db.String(255), nullable=False)
-    courseTutorial = db.column(db.String(255), nullable=False)
+    coursePractical = db.Column(db.String(255), nullable=False)
+    courseTutorial = db.Column(db.String(255), nullable=False)
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) PRIMARY KEY,
