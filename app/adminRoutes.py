@@ -322,6 +322,7 @@ def admin_manageLecturer():
 @app.route('/adminHome/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     course_data = Course.query.all()
+    department_data = Department.query.all()
     courseDepartment_text = ''
     courseCode_text = ''
     courseSection_text = ''
@@ -423,21 +424,7 @@ def admin_manageCourse():
                 flash(result, 'error')
                 return render_template('adminPart/adminManageCourse.html', 
                                         course_data=course_data,
-                                        courseDepartment_text=courseDepartment_text,
-                                        courseCode_text=courseCode_text,
-                                        courseSection_text=courseSection_text,
-                                        courseName_text=courseName_text,
-                                        courseHour_text=courseHour_text,
-                                        coursePratical = coursePratical_text,
-                                        courseTutorial = courseTutorial_text,
-                                        active_tab='admin_manageCoursetab')
-            
-            try:
-                hour_int = int(courseHour_text)
-            except ValueError:
-                flash("Course Hour must be a valid integer.", 'error')
-                return render_template('adminPart/adminManageCourse.html', 
-                                        course_data=course_data,
+                                        department_data=department_data,
                                         courseDepartment_text=courseDepartment_text,
                                         courseCode_text=courseCode_text,
                                         courseSection_text=courseSection_text,
@@ -464,7 +451,7 @@ def admin_manageCourse():
 
     return render_template('adminPart/adminManageCourse.html',
                            active_tab='admin_manageCoursetab',
-                           course_data=course_data)
+                           course_data=course_data, department_data=department_data)
 
 
 # function for admin to manage exam information (adding, editing, adn removing)

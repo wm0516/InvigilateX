@@ -257,8 +257,14 @@ def check_course(department, code, section, name, hour, pratical, tutorial):
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
         return False, "Course Already Registered"
+    
+    try:
+        int(hour)
+    except ValueError:
+        return False, "Hour(s) must be in Integer"
 
     return True, ""
+
 
 
 
