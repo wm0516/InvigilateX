@@ -1,0 +1,76 @@
+{% extends "adminPart/adminBase.html" %}
+{% block title %}Admin ManageCourse{% endblock %}
+{% block content %}
+<div class="menu-section">
+    <h2>Manage Course</h2>
+    <form id="uploadCourseForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
+        <h3>Choose Either 'Upload' or 'Manual' to Insert New Course</h3>
+        <lable>No errors encountered so far</lable><br>
+        <label>Done with the validation of the input with not allow similar of course code and section</label>
+        <div class="profile-frame">
+            <div class="form-left">
+                <h4 style="text-align: center;">File Upload Section</h4>
+                <label for="course_list">
+                    <div class="upload-container" id="courseUploadContainer">
+                        <div class="upload-text">
+                            Upload a file with an empty first row. Data should start from columns A to D,<br> 
+                            labeled as: 'Code', 'Section', 'Name', and 'CreditHour'<br><br><br>
+                            Click to upload or drag and drop with below file format
+                        </div>
+                        <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                        <!-- Selected file display -->
+                        <div id="courseSelectedFileName" class="file-name-display"></div>
+                    </div>
+                </label>
+                <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+            </div>
+
+            <div class="form-right" style="width: 30%;">
+                <h4 style="text-align: center;">Manual Data Entry Section</h4>
+                <table class="enter-data-table">
+                    <tr style="text-align: center;">
+                        <th>Field</th>
+                        <th>Input</th>
+                    </tr>
+                    <tr>
+                        <td>Course Code</td>
+                        <td><input type="text" name="courseCode" value="{{ courseCode_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Course Section</td>
+                        <td><input type="text" name="courseSection" value="{{ courseSection_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Course Name</td>
+                        <td><input type="text" name="courseName" value="{{ courseName_text }}"></td>
+                    </tr>
+                    <tr>
+                        <td>Course Credit Hours</td>
+                        <td><input type="number" name="courseHour" value="{{ courseHour_text }}"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <br>
+
+        <!-- Result feedback -->
+        <div id="courseUploadResult" class="result-message"></div>
+        <div id="courseUploadErrors" class="error-message"></div>
+
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <br>
+
+        <div class="button-wrapper">
+                <button type="submit">Upload/Add New Course</button>
+        </div>
+    </form>
+{% endblock %}

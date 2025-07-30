@@ -1,15 +1,12 @@
-<!-- upload.html -->
 {% extends "adminPart/adminBase.html" %}
 {% block title %}Admin ManageDepartment{% endblock %}
 {% block content %}
 
-<!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Manage Department</h2>
     <form method="POST">
-        <h3>Insert Below Data to Add New Department. Ratio Optional.</h3>
-        <label>Now able to add a new department, does it need a upload function?</label><br>
-        <label>Validate that department code and name are not duplicate; ratio can be left empty</label>
+        <h3>Insert Below Data to Add New Department</h3>
+        <label>Now able to add a new department, does it need a upload function?/tValidate that department code and name are not duplicate</label><br>
         <div class="profile-frame">
             <div class="form-middle">
                 <table class="enter-data-table">
@@ -25,10 +22,6 @@
                         <td>Department Name</td>
                         <td><input type="text" name="departmentName" value="{{ departmentName_text }}"></td>
                     </tr>
-                    <!--<tr>
-                        <td>Department Ratio (Optional)</td>
-                        <td><input type="number" name="departmentRatio" value="{{ departmentRatio_text }}"></td>
-                    </tr>-->
                 </table>
             </div>
         </div>
@@ -49,9 +42,7 @@
                 <button type="submit">Upload/Add New Department</button>
         </div>
     </form>
-    <br><br>
-
-
+    <br>
 
     <h3>List of Department</h3>
     <div class="user-table-container">
@@ -61,7 +52,6 @@
                     <th>No</th>
                     <th>Department Code</th>
                     <th>Department Name</th>
-                    <!--<th>Department Ratio</th>-->
                 </tr>
             </thead>
             <tbody>
@@ -70,15 +60,9 @@
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
-                    <!--<td>{{ row.departmentRatio }}</td>-->
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
-
 {% endblock %}
-
-<!--
-
--->
