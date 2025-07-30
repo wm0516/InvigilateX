@@ -33,17 +33,7 @@
                         <th>Input</th>
                     </tr>
                     <tr>
-                        <td><label id="departmentLabel">Department</label></td>
-                        <td>
-                            <select name="courseDepartment">
-                                <option value="" disabled selected>Select Department</option>
-                                {% for dept in department_data %}
-                                    <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
-                                        ({{ dept.departmentCode }}) {{ dept.departmentName }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </td>
+
                     </tr>
                     <tr>
                         <td>Course Code</td>
