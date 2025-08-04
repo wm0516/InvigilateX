@@ -218,6 +218,7 @@ html, body {
     width: 100%;
     border-collapse: collapse;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    table-layout: fixed;  /* Prevent layout shift */
 }
 
 .user-data-table th, .enter-data-table th {

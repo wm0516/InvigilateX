@@ -147,6 +147,7 @@ def admin_profile():
         admin_id=admin.userId if admin else '',
         admin_email=admin.userEmail if admin else '',
         admin_department_text=admin.userDepartment if admin else '',
+        admin_gender=admin.userGender if admin else '',
         admin_role_text={
             LECTURER: "Lecturer",
             HOP: "Hop",
