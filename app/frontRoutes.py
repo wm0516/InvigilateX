@@ -65,10 +65,11 @@ def register():
     name_text = ''
     email_text = ''
     contact_text = ''
-    password1_text = ''
-    password2_text = ''
     department_text = ''
     role_text = ''
+    gender_text = ''
+    password1_text = ''
+    password2_text = ''
     error_message = None
 
     if request.method == 'POST':
@@ -76,25 +77,27 @@ def register():
         name_text = request.form.get('username', '').strip()
         email_text = request.form.get('email', '').strip()
         contact_text = request.form.get('contact', '').strip()
-        password1_text = request.form.get('password1', '').strip()
-        password2_text = request.form.get('password2', '').strip()
         department_text = request.form.get('department', '').strip()
         role_text = request.form.get('role', '').strip()
+        gender_text = request.form.get('gender', '').strip()
+        password1_text = request.form.get('password1', '').strip()
+        password2_text = request.form.get('password2', '').strip()
 
-        is_valid, error_message = check_register(id_text, email_text, contact_text, name_text, password1_text, password2_text, department_text, role_text)
+        is_valid, error_message = check_register(id_text, email_text, contact_text, name_text, password1_text, password2_text, department_text, role_text, gender_text)
 
         if error_message:
             flash(error_message, 'error')
         elif is_valid:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
-                userId=id_text,
+                userId=id_text.upper(),
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
                 userLevel=role_map[role_text],  # use mapped constant
                 userEmail=email_text,
                 userContact=contact_text,
                 userPassword=hashed_pw,
+                userGender=gender_text,
                 userStatus=False
             )
             db.session.add(new_user)
@@ -103,7 +106,7 @@ def register():
             return redirect(url_for('login'))
 
     return render_template('frontPart/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
-                           contact_text=contact_text, password1_text=password1_text, password2_text=password2_text,
+                           contact_text=contact_text, password1_text=password1_text, password2_text=password2_text, gender_text=gender_text,
                            department_text=department_text, role_text=role_text, department_data=department_data, error_message=error_message)
 
 

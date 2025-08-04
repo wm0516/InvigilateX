@@ -51,7 +51,7 @@ def check_login(loginEmail, loginPassword):
 
 
 # Check registerID, registerEmail, registerContact can't be same as inside database based on role
-def check_register(id, email, contact, name, password1, password2, department, role):
+def check_register(id, email, contact, name, password1, password2, department, role, gender):
     role_map = {
         'LECTURER': LECTURER,
         'DEAN': DEAN,
@@ -59,7 +59,7 @@ def check_register(id, email, contact, name, password1, password2, department, r
         'ADMIN': ADMIN
     }
 
-    if not all([id, email, contact, name, password1, password2, department, role]):
+    if not all([id, email, contact, name, password1, password2, department, role, gender]):
         return False, "Please Fill in All Required Fields"
     elif not email_format(email):
         return False, "Wrong Email Address Format"

@@ -24,6 +24,7 @@ class User(db.Model):
     userLevel = db.Column(db.Integer)                   # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
     userEmail = db.Column(db.String(50))                # Refer to Staff INTI email
     userContact = db.Column(db.String(15))              # Refer to Staff Contact Number
+    userGender = db.Column(db.String(10))               # Refer to Staff Gender
     userPassword = db.Column(db.String(255))            # Refer to Staff Password
     userStatus = db.Column(db.String(15))               # Refer to Staff Account Status, if by self register as 'Active', if by upload as 'Deactived"
     '''
@@ -34,6 +35,7 @@ class User(db.Model):
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
+        userGender VARCHAR(10),
         userPassword VARCHAR(255),
         userStatus VARCHAR(15)
     );

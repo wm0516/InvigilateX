@@ -137,6 +137,7 @@
                     <th>Id</th>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Gender</th>
                     <th>Role Based</th>
                     <th>Department</th>
                     <th>Contact</th>
@@ -153,6 +154,7 @@
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userEmail }}</td>
+                    <td>{{ row.userGender }}</td>
                     <!-- Role Name based on userLevel -->
                     <td>
                         {% if row.userLevel == 1 %}
