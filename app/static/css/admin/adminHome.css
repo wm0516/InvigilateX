@@ -290,12 +290,11 @@ form {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-/*
 .profile-frame{
     display: flex;
     flex-direction: row;
     justify-content: space-around;
-}*/
+}
 
 
 .form-left, .form-right, .form-middle {
