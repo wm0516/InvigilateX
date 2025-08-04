@@ -291,8 +291,9 @@ form {
 }
 
 .profile-frame{
-    width: 80%;
-    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
 }
 
 
