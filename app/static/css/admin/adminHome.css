@@ -291,11 +291,15 @@ form {
 }
 
 .profile-frame{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+
+.function-frame{
     width: 80%;
     margin: auto;
-    /*display: flex;
-    flex-direction: row;
-    justify-content: space-around;*/
 }
 
 
