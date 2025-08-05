@@ -89,6 +89,14 @@ html, body {
     flex-grow: 1;
 }
 
+.tab-nav2 {
+    display: inline-block;
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    padding: 8px 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
 .tab-link {
     color: black;
     padding: 15px;
