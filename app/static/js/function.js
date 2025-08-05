@@ -237,20 +237,21 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 // Function for second navigation tab
 function showSection(sectionId, event) {
-    // Hide all
-    document.getElementById('uploadSection').style.display = 'none';
-    document.getElementById('manualSection').style.display = 'none';
+    event.preventDefault();
 
-    // Show selected
-    document.getElementById(sectionId).style.display = 'block';
+    // Hide both forms
+    document.getElementById("uploadForm").style.display = "none";
+    document.getElementById("manualForm").style.display = "none";
 
-    // Update active tab
-    const tabs = document.querySelectorAll('.tab-link');
-    tabs.forEach(tab => tab.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    // Show selected form
+    if (sectionId === "uploadSection") {
+        document.getElementById("uploadForm").style.display = "block";
+    } else {
+        document.getElementById("manualForm").style.display = "block";
+    }
+
+    // Tab highlight
+    document.querySelectorAll(".tab-link").forEach(tab => tab.classList.remove("active"));
+    event.currentTarget.classList.add("active");
 }
-
-
-
-
 
