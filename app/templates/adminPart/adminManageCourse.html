@@ -3,29 +3,29 @@
 {% block content %}
 <div class="menu-section">
     <h2>Manage Course</h2>
-    <form id="uploadCourseForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
-        <h3>Choose Either 'Upload' or 'Manual' to Insert New Course</h3>
-        <lable>No errors encountered so far</lable><br>
-        <label>Done with the validation of the input with not allow similar of course code and section</label>
+    <h3>Choose Either 'Upload' or 'Manual' to Insert New Course</h3>
+    <lable>No errors encountered so far</lable><br>
+    <label>Done with the validation of the input with not allow similar of course code and section</label>
 
-        <!-- Top Centered Tabs -->
-        <div class="tab-container">
-            <div class="tab-nav2">
-                <a href="#" class="tab-link active" onclick="showSection('uploadSection', event)">
-                    <i class="fas fa-upload"></i>
-                    <span>Upload File</span>
-                </a>
-                <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
-                    <i class="fas fa-edit"></i>
-                    <span>Manually Enter</span>
-                </a>
-            </div>
+    <!-- Top Centered Tabs -->
+    <div class="tab-container">
+        <div class="tab-nav2">
+            <a href="#" class="tab-link active" onclick="showSection('uploadSection', event)">
+                <i class="fas fa-upload"></i>
+                <span>Upload File</span>
+            </a>
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-edit"></i>
+                <span>Manually Enter</span>
+            </a>
         </div>
+    </div>
 
 
+    <form id="uploadCourseForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
         <!-- Upload File Section -->
         <div id="uploadSection" class="function-frame">
-            <div class="form-left">
+            <div class="form-left" style="width: 100%">
                 <h4 style="text-align: center;">File Upload Section</h4>
                 <label for="course_list">
                     <div class="upload-container" id="courseUploadContainer">
@@ -41,7 +41,9 @@
                 <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             </div>
         </div>
+    </form>
 
+    <form>
         <!-- Manually Enter Section -->
         <div id="manualSection" class="function-frame" style="display: none;">
             <div class="profile-frame">
@@ -105,27 +107,27 @@
                 </div>
             </div>
         </div>
-
-        <!-- Result feedback -->
-        <div id="courseUploadResult" class="result-message"></div>
-        <div id="courseUploadErrors" class="error-message"></div>
-
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <br>
-
-        <div class="button-wrapper">
-                <button type="submit">Upload/Add New Course</button>
-        </div>
     </form>
+
+    <!-- Result feedback -->
+    <div id="courseUploadResult" class="result-message"></div>
+    <div id="courseUploadErrors" class="error-message"></div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <strong>{{ category.capitalize() }}:</strong> {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <br>
+
+    <div class="button-wrapper">
+            <button type="submit">Upload/Add New Course</button>
+    </div>
 
     
         
