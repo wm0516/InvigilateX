@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
+
 /* register department text */
 function updateDepartmentLabel() {
     const roleSelect = document.getElementById('roleSelect');
@@ -42,6 +44,8 @@ function updateDepartmentLabel() {
     }
 }
 
+
+
 // Initialize sidebar state from localStorage
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');
@@ -51,7 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-
 // funtion of toggle side bar
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
@@ -59,7 +62,6 @@ function toggleSidebar() {
     // Save state to localStorage
     localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
 }
-
 
 /* hompage tab function*/
 document.addEventListener('DOMContentLoaded', function() {
@@ -170,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-
+// Function to track the selected date to display out the date in manageExam
 document.addEventListener("DOMContentLoaded", function () {
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
@@ -222,9 +224,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
-
-
 document.getElementById('endTime').addEventListener('change', function() {
   const start = document.getElementById('startTime').value;
   const end = this.value;
@@ -236,6 +235,20 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
+// Function for second navigation tab
+function showSection(sectionId, event) {
+    // Hide all
+    document.getElementById('uploadSection').style.display = 'none';
+    document.getElementById('manualSection').style.display = 'none';
+
+    // Show selected
+    document.getElementById(sectionId).style.display = 'block';
+
+    // Update active tab
+    const tabs = document.querySelectorAll('.tab-link');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
 
 
 

@@ -7,24 +7,43 @@
         <h3>Choose Either 'Upload' or 'Manual' to Insert New Course</h3>
         <lable>No errors encountered so far</lable><br>
         <label>Done with the validation of the input with not allow similar of course code and section</label>
-        <div class="function-frame">
+
+        <!-- Top Centered Tabs -->
+        <div class="tab-container">
+            <div class="tab-nav">
+                <a href="#" class="tab-link active" onclick="showSection('uploadSection', event)">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload File</span>
+                </a>
+                <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                    <i class="fas fa-edit"></i>
+                    <span>Manually Enter</span>
+                </a>
+            </div>
+        </div>
+
+
+        <!-- Upload File Section -->
+        <div id="uploadSection" class="function-frame">
             <div class="form-left">
                 <h4 style="text-align: center;">File Upload Section</h4>
                 <label for="course_list">
                     <div class="upload-container" id="courseUploadContainer">
                         <div class="upload-text">
-                            Upload a file with an empty first row. Data should start from columns A to D,<br> 
+                            Upload a file with an empty first row. Data should start from columns A to D,<br>
                             labeled as: 'Code', 'Section', 'Name', and 'CreditHour'<br><br><br>
                             Click to upload or drag and drop with below file format
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                        <!-- Selected file display -->
                         <div id="courseSelectedFileName" class="file-name-display"></div>
                     </div>
                 </label>
                 <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             </div>
+        </div>
 
+        <!-- Manually Enter Section -->
+        <div id="manualSection" class="function-frame" style="display: none;">
             <div class="profile-frame">
                 <h4 style="text-align: center;">Manual Data Entry Section</h4>
 
@@ -61,6 +80,7 @@
                         </tr>
                     </table>
                 </div>
+
                 <br>
 
                 <div class="form-right">
@@ -85,7 +105,6 @@
                 </div>
             </div>
         </div>
-        <br>
 
         <!-- Result feedback -->
         <div id="courseUploadResult" class="result-message"></div>

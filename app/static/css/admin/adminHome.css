@@ -307,7 +307,6 @@ form {
     width: 40%;
     display: flex;
     flex-direction: column;
-    margin: auto;
 }
 
 .input-container, .password-container {
