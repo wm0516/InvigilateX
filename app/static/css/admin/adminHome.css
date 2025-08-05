@@ -75,6 +75,12 @@ html, body {
     border-bottom: 1px solid #e0e0e0;
 }
 
+.tab-container {
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+}
+
 .tab-nav {
     border-bottom: 1px solid #3498db;
     display: flex;
