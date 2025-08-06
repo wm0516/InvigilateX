@@ -7,7 +7,7 @@
         <label>Now display out the contact number value, everytime click on the button will show 'Similar Contact Number Update'</label><br>
         <label>Does allow admin to change their department? Only admin able to change</label>
         <div class="profile-frame">
-            <div class="form-left" style="width: 30%;">
+            <div class="form-left">
                 <label>Full Name as per IC</label>
                 <input type="text" name="username" value="{{ admin_name }}" readonly><br>
                 
@@ -18,7 +18,7 @@
                 <input type="text" name="email" value="{{ admin_email }}" readonly>
             </div>
 
-            <div class="form-middle" style="width: 30%;">
+            <div class="form-middle">
                 <label>Gender</label>
                 <input type="text" name="gender" value="{{ admin_gender }}" readonly><br>
 
@@ -29,7 +29,7 @@
                 <input type="text" name="department", value="{{ admin_department_text}}" readonly>
             </div>
 
-            <div class="form-right" style="width: 30%;">
+            <div class="form-right">
                 <label>Contact Number (Editable)</label>
                 <input type="tel" name="contact" value="{{ admin_contact_text }}"><br> 
 

@@ -72,20 +72,22 @@
                     <input type="text" name="username" value="{{ name_text }}"><br>
 
                     <label>Staff Email Address</label>
-                    <input type="text" name="email" value="{{ email_text }}"><br>
-
-                    <label>Staff Contact Number</label>
-                    <input type="tel" name="contact" value="{{ contact_text }}"><br>
+                    <input type="text" name="email" value="{{ email_text }}">
                 </div>
 
-                <div class="form-right">
+                <div class="form-middle">
+                    <label>Staff Contact Number</label>
+                    <input type="tel" name="contact" value="{{ contact_text }}"><br>
+                    
                     <label>Staff Gender</label>
                     <select value="{{ gender_text }}">
                         <option value="" disabled selected>Select Gender</option>
                         <option value="MALE">MALE</option>
                         <option value="FEMALE">FEMALE</option>
-                    </select><br>
+                    </select>
+                </div>
 
+                <div class="form-right">
                     <label>Staff Role</label>
                     <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
                         <option value="" disabled selected>Select Role</option>

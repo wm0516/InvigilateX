@@ -72,19 +72,21 @@
                     <input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly><br>
 
                     <label>Start Time</label>
-                    <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00"><br>
+                    <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00">
+                </div>
 
+                <div class="form-middle">
                     <label>End Time</label>
                     <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00"><br>
 
                     <label>Program Code</label>
-                    <input type="text" name="programCode" value="{{ programCode_text }}">
+                    <input type="text" name="programCode" value="{{ programCode_text }}"><br>
+                    
+                    <label>Course/Section</label>
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}">
                 </div>
 
                 <div class="form-right">
-                    <label>Course/Section</label>
-                    <input type="text" name="courseSection" value="{{ courseSection_text }}"><br>
-
                     <label>Lecturer</label>
                     <input type="text" name="lecturer" value="{{ lecturer_text }}"><br>
 
