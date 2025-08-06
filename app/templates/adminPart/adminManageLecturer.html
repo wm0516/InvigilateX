@@ -4,13 +4,25 @@
 {% block content %}
 <div class="menu-section">
     <h2>Manage Lecturer</h2>
-    <form id="uploadLecturerForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" enctype="multipart/form-data">
-        <h3>Choose Either 'Upload' or 'Manual' to Insert New Lecturer</h3>
-        <label>Fix the Department and Role dropdowns to standardize field layout</label><br>
-        <label>With the validation of id, email, and contact must be the unique</label>
-        <div class="profile-frame">
-            <div class="form-left">
-                <h4 style="text-align: center;">File Upload Section (Check need remove or not)</h4>
+    <!-- Top Centered Tabs -->
+    <div class="tab-container">
+        <div class="tab-nav2">
+            <a href="#" class="tab-link active" onclick="showSection('uploadSection', event)">
+                <i class="fas fa-upload"></i>
+                <span>Upload File</span>
+            </a>
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-edit"></i>
+                <span>Manually Insert</span>
+            </a>
+        </div>
+    </div>
+
+        <!-- Upload Form -->
+    <form id="uploadForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
+        <div id="uploadSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
+                <h4 style="text-align: center;">File Upload Section</h4>
                 <label for="lecturer_list">
                     <div class="upload-container" id="lecturerUploadContainer">
                         <div class="upload-text">
@@ -24,99 +36,97 @@
                     </div>
                 </label>
                 <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
-            </div>
 
-            <div class="form-right" style="width: 30%;">
-                <h4 style="text-align: center;">Manual Data Entry Section (Check need remove or not)</h4>
-                <table class="enter-data-table">
-                    <tr style="text-align: center;">
-                        <th>Field</th>
-                        <th>Input</th>
-                    </tr>
-                    <tr>
-                        <td>Staff ID</td>
-                        <td><input type="text" name="userid" value="{{ id_text }}"><br></td>
-                    </tr>
-                    <tr>
-                        <td>Staff Name</td>
-                        <td><input type="text" name="username" value="{{ name_text }}"></td>
-                    </tr>
-                    <tr>
-                        <td>Staff Email Address</td>
-                        <td><input type="text" name="email" value="{{ email_text }}"></td>
-                    </tr>
-                    <tr>
-                        <td>Staff Contact Number</td>
-                        <td><input type="tel" name="contact" value="{{ contact_text }}"></td>
-                    </tr>
-                    <!--
-                    <tr>
-                        <td>Staff Gender</td>
-                        <td>
-                            <select value="{{ gender_text }}">
-                                <option value="" disabled selected>Select Gender</option>
-                                <option value="MALE">MALE</option>
-                                <option value="FEMALE">FEMALE</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Staff Role</td>
-                        <td>
-                            <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
-                                <option value="" disabled selected>Select Role</option>
-                                <option value="LECTURER">LECTURER</option>
-                                <option value="DEAN">DEAN</option>
-                                <option value="HOP">(HOP) HEAD OF PROGRAM</option>
-                                <option value="ADMIN">ADMIN</option>
-                            </select>
-                        </td>
-                    </tr>
-                    
-                    <tr>
-                        <td><label id="departmentLabel">Department</label></td>
-                        <td>
-                            <select name="department">
-                                <option value="" disabled selected>Select Department</option>
-                                {% for dept in department_data %}
-                                    <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
-                                        ({{ dept.departmentCode }}) {{ dept.departmentName }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </td>
-                    </tr>
-                    -->
-                </table>
-            </div>
-        </div>
-        <br>
+                <br>
+                {% if courseUploadResult %}
+                    <div class="result-message">{{ courseUploadResult }}</div>
+                {% elif courseUploadErrors %}
+                    <div class="error-message">{{ courseUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
 
-        <!-- Result feedback -->
-        <div id="courseUploadResult" class="result-message"></div>
-        <div id="courseUploadErrors" class="error-message"></div>
-
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                <!-- Upload Form Submit -->
+                <div class="button-wrapper">
+                    <button type="submit">Upload New Lecturer</button>
                 </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <br>
-
-        <div class="button-wrapper">
-                <button type="submit">Upload/Add New Lecturer</button>
+            </div>
         </div>
     </form>
 
+    <!-- Manual Form -->
+    <form id="manualForm" action="{{ url_for('admin_manageCourse') }}" method="POST" style="display: none;">
+        <div id="manualSection" class="function-frame">
+            <h4 style="text-align: center;">Manual Data Entry Section</h4>
+            <div class="profile-frame">
+                <div class="form-left">
+                    <label>Staff ID</label>
+                    <input type="text" name="userid" value="{{ id_text }}"><br>
 
+                    <label>Staff Name</label>
+                    <input type="text" name="username" value="{{ name_text }}"><br>
 
+                    <label>Staff Email Address</label>
+                    <input type="text" name="email" value="{{ email_text }}"><br>
 
+                    <label>Staff Contact Number</label>
+                    <input type="tel" name="contact" value="{{ contact_text }}"><br>
+                </div>
 
+                <div class="form-right">
+                    <label>Staff Gender</label>
+                    <select value="{{ gender_text }}">
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="MALE">MALE</option>
+                        <option value="FEMALE">FEMALE</option>
+                    </select><br>
+
+                    <label>Staff Role</label>
+                    <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
+                        <option value="" disabled selected>Select Role</option>
+                        <option value="LECTURER">LECTURER</option>
+                        <option value="DEAN">DEAN</option>
+                        <option value="HOP">(HOP) HEAD OF PROGRAM</option>
+                        <option value="ADMIN">ADMIN</option>
+                    </select><br>
+
+                    <label id="departmentLabel">Department</label>
+                    <select name="department">
+                        <option value="" disabled selected>Select Department</option>
+                        {% for dept in department_data %}
+                            <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
+                                ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div> 
+
+            <br>
+            {% if courseUploadResult %}
+                <div class="result-message">{{ courseUploadResult }}</div>
+            {% elif courseUploadErrors %}
+                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% elif get_flashed_messages(with_categories=true) %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <br>
+
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Add New Lecturer</button>
+            </div>
+        </div>
+    </form>
 
     <br><br>
     <h3>Table Record</h3>
