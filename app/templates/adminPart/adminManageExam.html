@@ -3,12 +3,24 @@
 {% block content %}
 <div class="menu-section">
     <h2>Manage Exam</h2>
-    <form id="uploadExamForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
-        <h3>Choose Either 'Upload' or 'Manual' to Insert New Exam</h3>
-        <label>Combine up Date&Day and StartTime&EndTime</label><br>
-        <label>With the validation of no duplicate exam course code, section with date and time</label>
-        <div class="profile-frame">
-            <div class="form-left">
+    <!-- Top Centered Tabs -->
+    <div class="tab-container">
+        <div class="tab-nav2">
+            <a href="#" class="tab-link active" onclick="showSection('uploadSection', event)">
+                <i class="fas fa-upload"></i>
+                <span>Upload File</span>
+            </a>
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-edit"></i>
+                <span>Manually Insert</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <form id="uploadForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
+        <div id="uploadSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
                 <label for="exam_list">
                     <div class="upload-container" id="examUploadContainer">
                         <div class="upload-text">
@@ -22,79 +34,119 @@
                     </div>
                 </label>
                 <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
-            </div>
 
-            <div class="form-right" style="width: 30%;">
-                <table class="enter-data-table">
-                    <tr style="text-align: center;">
-                        <th>Field</th>
-                        <th>Input</th>
-                    </tr>
-                    <tr>
-                        <td>Exam Date</td>
-                        <td><input type="date" name="examDate" id="examDate" value="{{ examDate_text }}"></td>
-                    </tr>
-                    <tr>
-                        <td>Exam Day</td>
-                        <td><input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly></td>
-                    </tr>
-                        <td>Start Time</td>
-                        <td><input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00"></td>
-                    </tr>
-                    <tr>
-                        <td>End Time</td>
-                        <td><input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00"></td>
-                    </tr>
-                    <tr>
-                        <td>Program Code</td>
-                        <td><input type="text" name="programCode" value="{{ programCode_text }}"></td>
-                    </tr>                    
-                    <tr>
-                        <td>Course/Section</td>
-                        <td><input type="text" name="courseSection" value="{{ courseSection_text }}"></td>
-                    </tr>                    
-                    <tr>
-                        <td>Lecturer</td>
-                        <td><input type="text" name="lecturer" value="{{ lecturer_text }}"></td>
-                    </tr>                    
-                    <tr>
-                        <td>No. of Students</td>
-                        <td><input type="number" name="student" value="{{ student_text }}"></td>
-                    </tr>
-                    <tr>
-                        <td>Venue</td>
-                        <td><input type="text" name="venue" value="{{ venue_text }}"></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        <br>
+                <br>
+                {% if examUploadResult %}
+                    <div class="result-message">{{ examUploadResult }}</div>
+                {% elif examUploadErrors %}
+                    <div class="error-message">{{ examUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
 
-        <!-- Result feedback -->
-        <div id="examUploadResult" class="result-message"></div>
-        <div id="examUploadErrors" class="error-message"></div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                <!-- Upload Form Submit -->
+                <div class="button-wrapper">
+                    <button type="submit">Upload Course</button>
                 </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <br>
-
-        <div class="button-wrapper">
-                <button type="submit">Upload/Add New Exam</button>
+            </div>
         </div>
     </form>
 
 
+    <!-- Manual Form -->
+    <form id="manualForm" action="{{ url_for('admin_manageExam') }}" method="POST" style="display: none;">
+        <div id="manualSection" class="function-frame">
+            <h4 style="text-align: center;">Manual Data Entry Section</h4>
+            <div class="profile-frame">
+                <div class="form-left">
+                    <label>Exam Date</label>
+                    <input type="date" name="examDate" id="examDate" value="{{ examDate_text }}"><br>
+
+                    <label>Exam Day</label>
+                    <input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly><br>
+
+                    <label>Start Time</label>
+                    <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00"><br>
+
+                    <label>End Time</label>
+                    <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00"><br>
+
+                    <label>Program Code</label>
+                    <input type="text" name="programCode" value="{{ programCode_text }}">
+                </div>
+
+                <div class="form-right">
+                    <label>Course/Section</label>
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}"><br>
+
+                    <label>Lecturer</label>
+                    <input type="text" name="lecturer" value="{{ lecturer_text }}"><br>
+
+                    <label>No. of Students</label>
+                    <input type="number" name="student" value="{{ student_text }}"><br>
+
+                    <label>Venue</label>
+                    <input type="text" name="venue" value="{{ venue_text }}">
+                </div>
 
 
+                    <label id="departmentLabel">Department</label>
+                    <select name="courseDepartment" required>
+                        <option value="" disabled selected>Select Department</option>
+                        {% for dept in department_data %}
+                            <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
+                                ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                            </option>
+                        {% endfor %}
+                    </select><br>
 
+                    <label>Course Code</label>
+                    <input type="text" name="courseCode" value="{{ courseCode_text }}" required><br>
 
+                    <label>Course Section</label>
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}" required><br>
+
+                    <label>Course Name</label>
+                    <input type="text" name="courseName" value="{{ courseName_text }}" required>
+                </div>
+
+                <div class="form-right">
+                    <label>Course Credit Hour(s)</label>
+                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required><br>
+
+                    <label>Practical Lecturer</label>
+                    <input type="text" name="coursePractical" value="{{ coursePractical_text }}"><br>
+
+                    <lable>Tutorial Lecturer</lable>
+                    <input type="text" name="courseTutorial" value="{{ courseTutorial_text }}">
+                </div>
+            </div>
+            
+            <br>
+            {% if courseUploadResult %}
+                <div class="result-message">{{ courseUploadResult }}</div>
+            {% elif courseUploadErrors %}
+                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% elif get_flashed_messages(with_categories=true) %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <br>
+
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Upload Course</button>
+            </div>
+        </div>
+    </form>
 
 
     <br><br>

@@ -472,6 +472,7 @@ h2 {
 
 
 .button-wrapper {
+    margin-bottom: 1%;
     display: flex;
     justify-content: center; /* Horizontally centers the button */
 }
