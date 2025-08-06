@@ -16,7 +16,7 @@
             </a>
             <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
                 <i class="fas fa-edit"></i>
-                <span>Manually Enter</span>
+                <span>Manually Insert</span>
             </a>
         </div>
     </div>
@@ -39,6 +39,7 @@
                 </label>
                 <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
 
+                <br>
                 {% if courseUploadResult %}
                     <div class="result-message">{{ courseUploadResult }}</div>
                 {% elif courseUploadErrors %}
@@ -50,6 +51,7 @@
                         </div>
                     {% endfor %}
                 {% endif %}
+                <br>
 
                 <!-- Upload Form Submit -->
                 <div class="button-wrapper">
@@ -113,6 +115,7 @@
                 </div>
             </div>
             
+            <br>
             {% if courseUploadResult %}
                 <div class="result-message">{{ courseUploadResult }}</div>
             {% elif courseUploadErrors %}
@@ -124,6 +127,7 @@
                     </div>
                 {% endfor %}
             {% endif %}
+            <br>
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
