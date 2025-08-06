@@ -1,8 +1,10 @@
 {% extends "adminPart/adminBase.html" %}
 {% block title %}Admin ManageCourse{% endblock %}
+
 {% block content %}
 <div class="menu-section">
     <h2>Manage Course</h2>
+
     <!-- Top Centered Tabs -->
     <div class="tab-container">
         <div class="tab-nav2">
@@ -92,7 +94,7 @@
                     <label>Practical Lecturer</label>
                     <input type="text" name="coursePractical" value="{{ coursePractical_text }}"><br>
 
-                    <lable>Tutorial Lecturer</lable>
+                    <label>Tutorial Lecturer</label>
                     <input type="text" name="courseTutorial" value="{{ courseTutorial_text }}">
                 </div>
             </div>
@@ -111,7 +113,7 @@
             {% endif %}
             <br>
 
-            <!-- Upload Form Submit -->
+            <!-- Manual Form Submit -->
             <div class="button-wrapper">
                 <button type="submit">Add New Course</button>
             </div>
