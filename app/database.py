@@ -12,7 +12,7 @@ from sqlalchemy import String  # correct import
 # SHOW TABLES;                  -> display out all the table created
 # DROP TABLE (tableName);       -> to delete that table
 # SELECT * FROM (tableName);    -> display out that table data
-# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='123'; -> changing the data
+# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN'; -> changing the data
 # UPDATE Lecturer SET lecturerEmail='p21013604@student.newinti.edu.my' WHERE lecturerId='123'; 
 
 

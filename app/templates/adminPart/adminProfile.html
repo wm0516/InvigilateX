@@ -15,20 +15,23 @@
                 <input type="text" name="userid" value="{{ admin_id }}" readonly><br>
 
                 <label>Email Address</label>
-                <input type="text" name="email" value="{{ admin_email }}" readonly><br>
+                <input type="text" name="email" value="{{ admin_email }}" readonly>
+            </div>
 
+            <div>
                 <label>Gender</label>
                 <input type="text" name="gender" value="{{ admin_gender }}" readonly><br>
 
                 <label>Role Based</label>
-                <input type="text" name="role", value="{{ admin_role_text}}" readonly>
-            </div>
-            <div class="form-right">
-                <label>Department</label>
-                <input type="text" name="department", value="{{ admin_department_text}}" readonly><br>
+                <input type="text" name="role", value="{{ admin_role_text}}" readonly><br>
 
+                <label>Department</label>
+                <input type="text" name="department", value="{{ admin_department_text}}" readonly>
+            </div>
+
+            <div class="form-right">
                 <label>Contact Number (Editable)</label>
-                <input type="tel" name="contact" value="{{ admin_contact_text }}"><br>  
+                <input type="tel" name="contact" value="{{ admin_contact_text }}"><br> 
 
                 <div class="password-container">
                     <label>Password (Editable)</label> 
