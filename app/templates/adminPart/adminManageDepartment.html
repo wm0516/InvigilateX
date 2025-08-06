@@ -4,44 +4,52 @@
 
 <div class="menu-section">
     <h2>Manage Department</h2>
-    <form method="POST">
-        <h3>Insert Below Data to Add New Department (Does need a Upload function? and Validate Code and Name are Unique)</h3>
-        <div class="profile-frame">
-            <div class="form-middle">
-                <table class="enter-data-table">
-                    <tr style="text-align: center;">
-                        <th>Field</th>
-                        <th>Input</th>
-                    </tr>
-                    <tr>
-                        <td>Department Code</td>
-                        <td><input type="text" name="departmentCode" value="{{ departmentCode_text }}"></td>
-                    </tr>
-                    <tr>
-                        <td>Department Name</td>
-                        <td><input type="text" name="departmentName" value="{{ departmentName_text }}"></td>
-                    </tr>
-                </table>
-            </div>
+    <!-- Top Centered Tabs -->
+    <div class="tab-container">
+        <div class="tab-nav2">
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-edit"></i>
+                <span>Manually Insert</span>
+            </a>
         </div>
-        <br>
+    </div>
 
-        
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+    <!-- Manual Form -->
+    <form id="manualForm" action="{{ url_for('admin_manageCourse') }}" method="POST" style="display: none;">
+        <div id="manualSection" class="function-frame">
+            <h4 style="text-align: center;">Manual Data Entry Section</h4>
+            <div class="profile-frame">
+                <div class="form-left">
+                    <label>Department Code</label>
+                    <input type="text" name="departmentCode" value="{{ departmentCode_text }}">
                 </div>
+
+                <div class="form-right">
+                    <label>Department Name</label>
+                    <input type="text" name="departmentName" value="{{ departmentName_text }}">
+                </div>
+            </div>
+                 
+            <br>
+            {% if courseUploadResult %}
+                <div class="result-message">{{ courseUploadResult }}</div>
+            {% elif courseUploadErrors %}
+                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% elif get_flashed_messages(with_categories=true) %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
-        {% endwith %}
-        <br>
-        <div class="button-wrapper">
-                <button type="submit">Upload/Add New Department</button>
+            <br>
+
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Upload Course</button>
+            </div>
         </div>
     </form>
-    <br>
 
     <h3>List of Department</h3>
     <div class="user-table-container">
