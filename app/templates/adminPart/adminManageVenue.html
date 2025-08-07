@@ -24,7 +24,14 @@
                     <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
 
                     <label>Venue Floor</label>
-                    <input type="text" name="venueFloor" value="{{ venueFloor_text }}" required>
+                    <select value="{{ venueFloor_text }}" required>
+                        <option value="" disabled selected>Venue Floor</option>
+                        <option value="FLOOR 2">FLOOR 2</option>
+                        <option value="FLOOR 3">FLOOR 3</option>
+                        <option value="FLOOR 4">FLOOR 4</option>
+                        <option value="FLOOR 5">FLOOR 5</option>
+                        <option value="FLOOR 6">FLOOR 6</option>
+                    </select>
                 </div>
 
                 <div class="form-right">
