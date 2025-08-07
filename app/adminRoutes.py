@@ -493,6 +493,7 @@ def admin_manageExam():
     department_data = Department.query.all()
     lecturer_data = User.query.filter(User.userLevel == 1).all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
+    course_data = Course.query.all()
 
     # Default form values
     examDate_text = ''
