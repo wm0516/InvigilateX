@@ -493,7 +493,6 @@ def admin_manageExam():
     department_data = Department.query.all()
     lecturer_data = User.query.filter(User.userLevel == 1).all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    course_data = Course.query.all()
 
     # Default form values
     examDate_text = ''
@@ -607,7 +606,6 @@ def admin_manageExam():
                     return render_template('adminPart/adminManageExam.html',
                                            exam_data=exam_data, course_data=course_data, venue_data=venue_data,
                                            lecturer_data=lecturer_data, department_data=department_data,
-                                           selected_department_code=selected_department_code,
                                            examDate_text=examDate_text, examDay_text=examDay_text,
                                            startTime_text=startTime_text, endTime_text=endTime_text,
                                            programCode_text=programCode_text, courseSection_text=courseSection_text,
@@ -641,8 +639,7 @@ def admin_manageExam():
                            course_data=course_data,
                            venue_data=venue_data,
                            lecturer_data=lecturer_data,
-                           department_data=department_data,
-                           selected_department_code=selected_department_code)
+                           department_data=department_data)
 
 
 
