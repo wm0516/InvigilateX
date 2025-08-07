@@ -504,18 +504,17 @@ def admin_manageExam():
     lecturer_text = ''
     student_text = ''
     venue_text = ''
+    selected_department_code = request.form.get('programCode', '').strip()
+    departmentCode = selected_department_code.split('-')[0].strip()
+
+    # Filter course_data based on selected department (from form or default to all)
+    if departmentCode:
+        course_data = Course.query.filter_by(courseDepartment=departmentCode).all()
+    else:
+        course_data = Course.query.all()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-        
-        selected_department_code = request.form.get('programCode', '')
-        print(f"Selected Department: {selected_department_code}")
-
-        # Filter course_data based on selected department (from form or default to all)
-        if selected_department_code:
-            course_data = Course.query.filter_by(courseDepartment=selected_department_code).all()
-        else:
-            course_data = Course.query.all()
 
         if form_type == 'upload':
             file = request.files.get('exam_file')

@@ -28,7 +28,7 @@ function updateDepartmentLabel() {
     
     switch(selectedRole) {
         case 'LECTURER':
-            departmentLabel.textContent = 'Department';
+            departmentLabel.textContent = 'Lecturer of Department';
             break;
         case 'DEAN':
             departmentLabel.textContent = 'Dean of Department';
