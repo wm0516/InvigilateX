@@ -491,9 +491,10 @@ def admin_manageCourse():
 def admin_manageExam():
     exam_data = Exam.query.all()
     department_data = Department.query.all()
-    course_data = Course.query.filter(Course.courseDepartment == Department.departmentCode).all()
-    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
     lecturer_data = User.query.filter(User.userLevel == 1).all()
+    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
+
+    # Default form values
     examDate_text = ''
     examDay_text = ''
     startTime_text = ''
@@ -503,134 +504,141 @@ def admin_manageExam():
     lecturer_text = ''
     student_text = ''
     venue_text = ''
+    selected_department_code = request.form.get('selected_department', '')
+
+    # Filter course_data based on selected department (from form or default to all)
+    if selected_department_code:
+        course_data = Course.query.filter_by(courseDepartment=selected_department_code).all()
+    else:
+        course_data = Course.query.all()
 
     if request.method == 'POST':
-        print('1 yes get post')
-        file = request.files['exam_file']
-        file_stream = BytesIO(file.read())
-        exam_records_added = 0  # <-- Make sure this is initialized
-        print('request.files:', request.files)
-        print('exam_file' in request.files)
-        print('file.filename:', file.filename)
-        
-        if file and file.filename:
-            print('2 yes get post')
+        form_type = request.form.get('form_type')
+
+        if form_type == 'upload':
+            file = request.files.get('exam_file')
+            if file and file.filename:
+                try:
+                    file_stream = BytesIO(file.read())
+                    excel_file = pd.ExcelFile(file_stream)
+
+                    exam_records_added = 0
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            df = pd.read_excel(
+                                excel_file,
+                                sheet_name=sheet_name,
+                                usecols="A:I",
+                                skiprows=1
+                            )
+                            df.columns = [str(col).strip().lower() for col in df.columns]
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                            if df.columns.tolist() != expected_cols:
+                                raise ValueError("Excel columns do not match expected format")
+                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+
+                            for index, row in df.iterrows():
+                                try:
+                                    examDate_text = parse_date(row['date'])
+                                    examDay_text = str(row['day']).upper()
+                                    startTime_text = str(row['start']).upper()
+                                    endTime_text = str(row['end']).upper()
+                                    programCode_text = str(row['program']).upper()
+                                    courseSection_text = str(row['course/sec']).upper()
+                                    lecturer_text = str(row['lecturer']).upper()
+                                    student_text = row['no of']
+                                    venue_text = str(row['room']).upper()
+
+                                    valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
+                                                               examDay_text, programCode_text, lecturer_text, student_text, venue_text)
+                                    if valid:
+                                        new_exam = Exam(
+                                            examDate=examDate_text,
+                                            examDay=examDay_text,
+                                            examStartTime=startTime_text,
+                                            examEndTime=endTime_text,
+                                            examProgramCode=programCode_text,
+                                            examCourseSectionCode=courseSection_text,
+                                            examLecturer=lecturer_text,
+                                            examTotalStudent=student_text,
+                                            examVenue=venue_text
+                                        )
+                                        db.session.add(new_exam)
+                                        db.session.commit()
+                                        exam_records_added += 1
+                                except Exception as row_err:
+                                    print(f"[Row Error] {row_err}")
+                        except Exception as sheet_err:
+                            print(f"[Sheet Error] {sheet_err}")
+
+                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 'success' if exam_records_added > 0 else 'error')
+                    return redirect(url_for('admin_manageExam'))
+
+                except Exception as e:
+                    print(f"[File Processing Error] {e}")
+                    flash('File processing error: File upload in wrong format', 'error')
+                    return redirect(url_for('admin_manageExam'))
+
+            else:
+                flash("No file uploaded", 'error')
+                return redirect(url_for('admin_manageExam'))
+
+        elif form_type == 'manual':
             try:
-                excel_file = pd.ExcelFile(file_stream)
-                print(f"Found sheets: {excel_file.sheet_names}")
-                for sheet_name in excel_file.sheet_names:
-                    try:
-                        df = pd.read_excel(
-                            excel_file,
-                            sheet_name=sheet_name,
-                            usecols="A:I",
-                            skiprows=1
-                        )
-                        # Debugging: show raw column headers
-                        print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+                examDate_text_raw = request.form.get('examDate', '').strip()
+                examDate_text = parse_date(examDate_text_raw)
+                examDay_text = request.form.get('examDay', '').strip()
+                startTime_text = request.form.get('startTime', '').strip()
+                endTime_text = request.form.get('endTime', '').strip()
+                programCode_text = request.form.get('programCode', '').strip()
+                courseSection_text = request.form.get('courseSection', '').strip()
+                lecturer_text = request.form.get('lecturer', '').strip()
+                student_text = request.form.get('student', '').strip()
+                venue_text = request.form.get('venue', '').strip()
 
-                         # Clean and standardize columns
-                        df.columns = [str(col).strip().lower() for col in df.columns]
-                        # print("Detected columns:", df.columns.tolist())
-                        expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
+                                           examDay_text, programCode_text, lecturer_text, student_text, venue_text)
+                if not valid:
+                    flash(result, 'error')
+                    return render_template('adminPart/adminManageExam.html',
+                                           exam_data=exam_data, course_data=course_data, venue_data=venue_data,
+                                           lecturer_data=lecturer_data, department_data=department_data,
+                                           selected_department_code=selected_department_code,
+                                           examDate_text=examDate_text, examDay_text=examDay_text,
+                                           startTime_text=startTime_text, endTime_text=endTime_text,
+                                           programCode_text=programCode_text, courseSection_text=courseSection_text,
+                                           lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text,
+                                           active_tab='admin_manageExamtab')
 
-                        if df.columns.tolist() != expected_cols:
-                            raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
-
-                        # Rename to match your model
-                        df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
-                        print(f"Data read from excel:\n{df.head()}")
-
-                        for index, row in df.iterrows():
-                            try:
-                                examDate_text = parse_date(row['Date'])
-                                examDay_text = str(row['Day']).upper()
-                                startTime_text = str(row['Start']).upper()
-                                endTime_text = str(row['End']).upper()
-                                programCode_text = str(row['Program']).upper()
-                                courseSection_text = str(row['Course/Sec']).upper()
-                                lecturer_text = str(row['Lecturer']).upper()
-                                student_text = row['No Of']
-                                venue_text = str(row['Room']).upper()
-
-                                print(f"Row {index}: {examDate_text}, {examDay_text}, {startTime_text}, {endTime_text}, {programCode_text}, {courseSection_text}, {lecturer_text}, {student_text}, {venue_text}")
-
-                                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
-                                if valid:
-                                    new_exam= Exam(
-                                        examDate = examDate_text,
-                                        examDay = examDay_text,
-                                        examStartTime = startTime_text,
-                                        examEndTime = endTime_text,
-                                        examProgramCode = programCode_text,
-                                        examCourseSectionCode = courseSection_text,
-                                        examLecturer = lecturer_text,
-                                        examTotalStudent = student_text,
-                                        examVenue = venue_text
-                                    )
-                                    db.session.add(new_exam)
-                                    exam_records_added += 1
-                                    db.session.commit()
-                            except Exception as row_err:
-                                print(f"[Row Error] {row_err}")
-                    except Exception as sheet_err:
-                        print(f"[Sheet Error] {sheet_err}")  # <-- Print or log this
-
-                if exam_records_added > 0:
-                    flash(f"Successful upload {exam_records_added} record(s)", 'success')
-                else:
-                    flash("No data uploaded", 'error')
-
+                new_exam = Exam(
+                    examDate=examDate_text,
+                    examDay=examDay_text,
+                    examStartTime=startTime_text,
+                    examEndTime=endTime_text,
+                    examProgramCode=programCode_text,
+                    examCourseSectionCode=courseSection_text,
+                    examLecturer=lecturer_text,
+                    examTotalStudent=student_text,
+                    examVenue=venue_text
+                )
+                db.session.add(new_exam)
+                db.session.commit()
+                flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))
 
-            except Exception as e:
-                print(f"[Manual Input Error] {e}")
-                flash('Manual input error. Please check your input format.', 'error')
-                print(f"[File Processing Error] {e}")  # <-- See the actual cause
-                flash('File processing error: File upload in wrong format', 'error')
+            except Exception as manual_err:
+                print(f"[Manual Form Error] {manual_err}")
+                flash("Error processing manual form", 'error')
                 return redirect(url_for('admin_manageExam'))
-        
-        else:
-            # Handle manual input
-            examDate_text_raw = request.form.get('examDate', '').strip()
-            print("Submitted examDate_text_raw:", examDate_text_raw)
-            examDate_text = parse_date(examDate_text_raw)
-            print("Parsed examDate_text:", examDate_text)
 
-            examDay_text = request.form.get('examDay', '').strip()
-            startTime_text = request.form.get('startTime', '').strip()
-            endTime_text = request.form.get('endTime', '').strip()
-            programCode_text = request.form.get('programCode', '').strip()
-            courseSection_text = request.form.get('courseSection', '').strip()
-            lecturer_text = request.form.get('lecturer', '').strip()
-            student_text = request.form.get('student', '').strip()
-            venue_text = request.form.get('venue', '').strip()
-
-            valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
-            if not valid:
-                flash(result, 'error')
-                return render_template('adminPart/adminManageExam.html', exam_data=exam_data, course_data=course_data, venue_data=venue_data, lecturer_data=lecturer_data, department_data=department_data,
-                                       examDate_text=examDate_text, examDay_text=examDay_text, startTime_text=startTime_text, endTime_text=endTime_text, programCode_text=programCode_text, 
-                                       courseSection_text=courseSection_text, lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text, active_tab='admin_manageExamtab')
-        
-            new_exam= Exam(
-                examDate = examDate_text,
-                examDay = examDay_text,
-                examStartTime = startTime_text,
-                examEndTime = endTime_text,
-                examProgramCode = programCode_text,
-                examCourseSectionCode = courseSection_text,
-                examLecturer = lecturer_text,
-                examTotalStudent = student_text,
-                examVenue = venue_text
-            )
-            db.session.add(new_exam)
-            db.session.commit()
-            flash("New Course Added Successfully", "success")
-            return redirect(url_for('admin_manageExam'))
-
-    return render_template('adminPart/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, lecturer_data=lecturer_data, department_data=department_data)
-
+    return render_template('adminPart/adminManageExam.html',
+                           active_tab='admin_manageExamtab',
+                           exam_data=exam_data,
+                           course_data=course_data,
+                           venue_data=venue_data,
+                           lecturer_data=lecturer_data,
+                           department_data=department_data,
+                           selected_department_code=selected_department_code)
 
 
 
