@@ -249,6 +249,24 @@ def check_department(code, name):
     return True, ""
 
 
+# Check unique venue roomNumber and floor
+def check_venue(roomNumber, floor, capacity, status):
+    # Check if any required field is empty
+    if not all([roomNumber, floor, capacity, status]):
+        return False, "Please Fill in All Required Fields"
+    # Check for duplicates
+    existing_roomNumber = Venue.query.filter(Venue.venueNumber == roomNumber).first()
+    if existing_roomNumber:
+        return False, "Venue Room Number Already Registered"
+    
+    try:
+        int(capacity)
+    except ValueError:
+        return False, "Capacity must be in Integer"
+    
+    return True, ""
+
+
 def check_course(department, code, section, name, hour, practical, tutorial):
     if not all([department, code, section, name, hour, practical, tutorial]):
         return False, "Please Fill in All Required Fields"

@@ -32,6 +32,10 @@
                     <i class="fas fa-chalkboard-teacher"></i>
                     <span>Manage Department (DONE)</span>
                 </a>
+                <a href="{{ url_for('admin_manageVenue') }}" class="tab-link {% if active_tab == 'admin_manageVenuetab' %}active{% endif %}">
+                    <i class="fas fa-university"></i>
+                    <span>Manage Venue (DONE)</span>
+                </a>
                 <a href="{{ url_for('admin_manageExam') }}" class="tab-link {% if active_tab == 'admin_manageExamtab' %}active{% endif %}">
                     <i class="fas fa-file-alt"></i>
                     <span>Manage Exam (DONE)</span>

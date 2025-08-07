@@ -77,6 +77,43 @@ def admin_manageDepartment():
 
 
 
+# function for admin to manage venue information (adding, editing, and removing)
+@app.route('/adminHome/manageVenue', methods=['GET', 'POST'])
+def admin_manageVenue():
+    venue_data = Venue.query.all()
+    venueNumber_text = ''
+    venueFloor_text = ''
+    venueCapacity_text = ''
+    venueStatus_text = ''
+
+    if request.method == 'POST':
+        venueNumber_text = request.form.get('venueNumber', '').strip()
+        venueFloor_text = request.form.get('venueFloor', '').strip()
+        venueCapacity_text = request.form.get('venueCapacity', '').strip()
+        venueStatus_text = request.form.get('venueStatus', '').strip()
+
+        valid, result = check_venue(venueNumber_text, venueFloor_text, venueCapacity_text, venueStatus_text)
+        if not valid:
+            flash(result, 'error')
+            return render_template('adminPart/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, 
+                                   venueFloor_text=venueFloor_text, venueCapacity_text=venueCapacity_text, venueStatus_text=venueStatus_text)
+
+        new_venue = Venue(
+            venueNumber=venueNumber_text.upper(),
+            venueFloor=venueFloor_text.upper(),
+            venueCapacity=venueCapacity_text,
+            venueStatuc=venueStatus_text
+        )
+        db.session.add(new_venue)
+        db.session.commit()
+        flash("New Venue Added Successfully", "success")
+        return redirect(url_for('admin_manageVenue'))
+
+    return render_template('adminPart/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
+
+
+
+
 
 
 

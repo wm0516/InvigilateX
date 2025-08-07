@@ -1,0 +1,91 @@
+{% extends "adminPart/adminBase.html" %}
+{% block title %}Admin ManageVenue{% endblock %}
+{% block content %}
+
+<div class="menu-section">
+    <h2>Manage Venue</h2>
+    <!-- Top Centered Tabs -->
+    <div class="tab-container">
+        <div class="tab-nav2">
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-edit"></i>
+                <span>Manually Insert</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Manual Form -->
+    <form id="manualForm" action="{{ url_for('admin_manageDepartment') }}" method="POST">
+        <div id="manualSection" class="function-frame">
+            <h4 style="text-align: center;">Manual Data Entry Section</h4>
+            <div class="profile-frame">
+                <div class="form-left">
+                    <label>Venue Number</label>
+                    <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
+
+                    <label>Venue Floor</label>
+                    <input type="text" name="venueFloor" value="{{ venueFloor_text }}" required>
+                </div>
+
+                <div class="form-right">
+                    <label>Venue Capacity</label>
+                    <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" required><br>
+
+                    <label>Venue Status</label>
+                    <select value="{{ venueStatus_text }}" required>
+                        <option value="" disabled selected>Venue Current Status</option>
+                        <option value="AVAILABLE">AVAILABLE</option>
+                        <option value="UNAVAILABLE">UNAVAILABLE</option>
+                        <option value="IN SERVICE">IN SERVICE</option>
+                    </select>
+
+                </div>
+            </div>
+                 
+            <br>
+            {% if courseUploadResult %}
+                <div class="result-message">{{ courseUploadResult }}</div>
+            {% elif courseUploadErrors %}
+                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% elif get_flashed_messages(with_categories=true) %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <br>
+
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Add New Venue</button>
+            </div>
+        </div>
+    </form>
+
+    <h3>List of Venue</h3>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Venue Number</th>
+                    <th>Venue Floor</th>
+                    <th>Venue Capacity</th>
+                    <th>Venue Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in venue_data %}
+                <tr>
+                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ row.venueNumber }}</td>
+                    <td>{{ row.venueFloor }}</td>
+                    <td>{{ row.venueCapacity }}</td>
+                    <td>{{ row.venueStatus }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -74,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/adminHome/manageLecturer': 'admin_manageLecturertab',    
     '/adminHome/manageInvigilationReport': 'admin_manageInvigilationReporttab',
     '/adminHome/manageDepartment': 'admin_manageDepartmenttab',
+    '/adminHome/manageVenue': 'admin_manageVenuetab',
 
     '/lecturerHome': 'lecturer_hometab',
     '/lecturerHome/timetables': 'lecturer_timetabletab',
