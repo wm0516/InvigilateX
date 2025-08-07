@@ -504,14 +504,6 @@ def admin_manageExam():
     lecturer_text = ''
     student_text = ''
     venue_text = ''
-    selected_department_code = request.form.get('programCode', '').strip()
-    departmentCode = selected_department_code.split('-')[0].strip()
-
-    # Filter course_data based on selected department (from form or default to all)
-    if departmentCode:
-        course_data = Course.query.filter_by(courseDepartment=departmentCode).all()
-    else:
-        course_data = Course.query.all()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -596,6 +588,16 @@ def admin_manageExam():
                 lecturer_text = request.form.get('lecturer', '').strip()
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
+
+                # Get selected department from programCode
+                selected_department_code = programCode_text
+                departmentCode = selected_department_code.split('-')[0].strip()
+
+                # Filter course_data based on selected department
+                if departmentCode:
+                    course_data = Course.query.filter_by(courseDepartment=departmentCode).all()
+                else:
+                    course_data = Course.query.all()
 
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
                                            examDay_text, programCode_text, lecturer_text, student_text, venue_text)
