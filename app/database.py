@@ -132,14 +132,14 @@ class Department(db.Model):
 class Venue(db.Model):
     __tablename__ = 'Venue'
     venueNumber = db.Column(db.String(10), primary_key=True)
-    venueCapacity = db.Column(db.Integer, nullable=False)
     venueFloor = db.Column(db.String(10), nullable=False)
+    venueCapacity = db.Column(db.Integer, nullable=False)
     venueStatus = db.Column(db.String(15), nullable=False) # Show Venue 'Available, Unavailable, In Service'
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(10) PRIMARY KEY,
-        venueCapacity INT NOT NULL,
         venueFloor VARCHAR(10) NOT NULL,
+        venueCapacity INT NOT NULL,
         venueStatus VARCHAR(15) NOT NULL
     );
     '''

@@ -490,6 +490,10 @@ def admin_manageCourse():
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     exam_data = Exam.query.all()
+    department_data = Department.query.all()
+    course_data = Course.query.filter(Course.courseDepartment == Department.departmentCode).all()
+    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
+    lecturer_data = User.query.filter(User.userLevel == 1).all()
     examDate_text = ''
     examDay_text = ''
     startTime_text = ''
@@ -605,9 +609,9 @@ def admin_manageExam():
             valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, examDay_text, programCode_text, lecturer_text, student_text, venue_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageExam.html', exam_data=exam_data, examDate_text=examDate_text, examDay_text=examDay_text,
-                                        startTime_text=startTime_text, endTime_text=endTime_text, programCode_text=programCode_text, courseSection_text=courseSection_text,
-                                        lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text, active_tab='admin_manageExamtab')
+                return render_template('adminPart/adminManageExam.html', exam_data=exam_data, course_data=course_data, venue_data=venue_data, lecturer_data=lecturer_data, department_data=department_data,
+                                       examDate_text=examDate_text, examDay_text=examDay_text, startTime_text=startTime_text, endTime_text=endTime_text, programCode_text=programCode_text, 
+                                       courseSection_text=courseSection_text, lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text, active_tab='admin_manageExamtab')
         
             new_exam= Exam(
                 examDate = examDate_text,
@@ -625,9 +629,7 @@ def admin_manageExam():
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageExam'))
 
-    return render_template('adminPart/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data)
-
-
+    return render_template('adminPart/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, lecturer_data=lecturer_data, department_data=department_data)
 
 
 
