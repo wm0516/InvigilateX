@@ -66,21 +66,21 @@
             <div class="profile-frame">
                 <div class="form-left">
                     <label>Staff ID</label>
-                    <input type="text" name="userid" value="{{ id_text }}"><br>
+                    <input type="text" name="userid" value="{{ id_text }}" required><br>
 
                     <label>Staff Name</label>
-                    <input type="text" name="username" value="{{ name_text }}"><br>
+                    <input type="text" name="username" value="{{ name_text }}" required><br>
 
                     <label>Staff Email Address</label>
-                    <input type="text" name="email" value="{{ email_text }}">
+                    <input type="text" name="email" value="{{ email_text }}" required>
                 </div>
 
                 <div class="form-middle">
                     <label>Staff Contact Number</label>
-                    <input type="tel" name="contact" value="{{ contact_text }}"><br>
+                    <input type="tel" name="contact" value="{{ contact_text }}" required><br>
                     
                     <label>Staff Gender</label>
-                    <select value="{{ gender_text }}">
+                    <select value="{{ gender_text }}" required>
                         <option value="" disabled selected>Select Gender</option>
                         <option value="MALE">MALE</option>
                         <option value="FEMALE">FEMALE</option>
@@ -89,7 +89,7 @@
 
                 <div class="form-right">
                     <label>Staff Role</label>
-                    <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}">
+                    <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}" required>
                         <option value="" disabled selected>Select Role</option>
                         <option value="LECTURER">LECTURER</option>
                         <option value="DEAN">DEAN</option>
@@ -98,7 +98,7 @@
                     </select><br>
 
                     <label id="departmentLabel">Department</label>
-                    <select name="department">
+                    <select name="department" required>
                         <option value="" disabled selected>Select Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">

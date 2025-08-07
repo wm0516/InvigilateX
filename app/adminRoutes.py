@@ -338,6 +338,7 @@ def admin_manageCourse():
 
         if form_type == 'upload':
             file = request.files.get('course_file')
+            print(f"Found: {file}")
             if file and file.filename:
                 try:
                     file_stream = BytesIO(file.read())

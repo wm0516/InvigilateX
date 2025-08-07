@@ -66,35 +66,35 @@
             <div class="profile-frame">
                 <div class="form-left">
                     <label>Exam Date</label>
-                    <input type="date" name="examDate" id="examDate" value="{{ examDate_text }}"><br>
+                    <input type="date" name="examDate" id="examDate" value="{{ examDate_text }}" required><br>
 
                     <label>Exam Day</label>
                     <input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly><br>
 
                     <label>Start Time</label>
-                    <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00">
+                    <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00" required>
                 </div>
 
                 <div class="form-middle">
                     <label>End Time</label>
-                    <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00"><br>
+                    <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00" required><br>
 
                     <label>Program Code</label>
-                    <input type="text" name="programCode" value="{{ programCode_text }}"><br>
+                    <input type="text" name="programCode" value="{{ programCode_text }}" required><br>
                     
                     <label>Course/Section</label>
-                    <input type="text" name="courseSection" value="{{ courseSection_text }}">
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
                 </div>
 
                 <div class="form-right">
                     <label>Lecturer</label>
-                    <input type="text" name="lecturer" value="{{ lecturer_text }}"><br>
+                    <input type="text" name="lecturer" value="{{ lecturer_text }}" required><br>
 
                     <label>No. of Students</label>
-                    <input type="number" name="student" value="{{ student_text }}"><br>
+                    <input type="number" name="student" value="{{ student_text }}" required><br>
 
                     <label>Venue</label>
-                    <input type="text" name="venue" value="{{ venue_text }}">
+                    <input type="text" name="venue" value="{{ venue_text }}" required>
                 </div>
             </div>
 
