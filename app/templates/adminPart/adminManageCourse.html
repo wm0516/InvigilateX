@@ -36,6 +36,8 @@
                     </div>
                 </label>
                 <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+                <!-- 🔽 Add this hidden input here -->
+                <input type="hidden" name="form_type" value="upload">
 
                 <br>
                 {% if courseUploadResult %}
@@ -98,6 +100,9 @@
                     <input type="text" name="courseTutorial" value="{{ courseTutorial_text }}">
                 </div>
             </div>
+
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="manual">
             
             <br>
             {% if courseUploadResult %}

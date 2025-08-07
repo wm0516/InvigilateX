@@ -323,6 +323,8 @@ def admin_manageLecturer():
 def admin_manageCourse():
     course_data = Course.query.all()
     department_data = Department.query.all()
+
+    # Default form field values
     courseDepartment_text = ''
     courseCode_text = ''
     courseSection_text = ''
@@ -332,117 +334,116 @@ def admin_manageCourse():
     courseTutorial_text = ''
 
     if request.method == 'POST':
-        file = request.files['course_file']
-        file_stream = BytesIO(file.read())
+        form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
 
-        course_records_added = 0  # <-- Make sure this is initialized
+        if form_type == 'upload':
+            file = request.files.get('course_file')
+            if file and file.filename:
+                try:
+                    file_stream = BytesIO(file.read())
+                    excel_file = pd.ExcelFile(file_stream)
+                    print(f"Found sheets: {excel_file.sheet_names}")
 
-        if file and file.filename:
-            try:
-                excel_file = pd.ExcelFile(file_stream)
-                print(f"Found sheets: {excel_file.sheet_names}")
+                    course_records_added = 0
 
-                for sheet_name in excel_file.sheet_names:
-                    try:
-                        df = pd.read_excel(
-                            excel_file,
-                            sheet_name=sheet_name,
-                            usecols="A:G",
-                            skiprows=1
-                        )
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            df = pd.read_excel(
+                                excel_file,
+                                sheet_name=sheet_name,
+                                usecols="A:G",
+                                skiprows=1
+                            )
 
-                        # Debugging: show raw column headers
-                        print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+                            print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+                            df.columns = [str(col).strip().lower() for col in df.columns]
+                            expected_cols = ['department', 'code', 'section', 'name', 'credithour', 'practical', 'tutorial']
 
-                        # Clean and standardize columns
-                        df.columns = [str(col).strip().lower() for col in df.columns] 
-                        expected_cols = ['department', 'code', 'section', 'name', 'credithour', 'practical', 'tutorial']
+                            if df.columns.tolist() != expected_cols:
+                                raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                        if df.columns.tolist() != expected_cols:
-                            raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
+                            df.columns = ['department', 'code', 'section', 'name', 'creditHour', 'practical', 'tutorial']
 
-                        # Rename to match your model
-                        df.columns = ['department', 'code', 'section', 'name', 'creditHour', 'practical', 'tutorial']
-                        print(f"Data read from excel:\n{df.head()}")
+                            for index, row in df.iterrows():
+                                try:
+                                    courseDepartment_text = str(row['department'])
+                                    courseCode_text = str(row['code'])
+                                    courseSection_text = str(row['section'])
+                                    courseName_text = str(row['name'])
+                                    courseHour_text = int(row['creditHour'])
+                                    coursePractical_text = str(row['practical'])
+                                    courseTutorial_text = str(row['tutorial'])
+                                    courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
-                        for index, row in df.iterrows():
-                            try:
-                                courseDepartment_text = str(row['department'])
-                                courseCode_text = str(row['code'])
-                                courseSection_text = str(row['section'])
-                                courseName_text = str(row['name'])
-                                courseHour_text = int(row['creditHour'])
-                                courseCodeSection_text = (courseCode_text + '/' + courseSection_text)
-                                coursePractical_text = str(row['practical'])
-                                courseTutorial_text = str(row['tutorial'])
+                                    valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
+                                    if valid:
+                                        new_course = Course(
+                                            courseDepartment=courseDepartment_text.upper(),
+                                            courseCodeSection=courseCodeSection_text.upper(),
+                                            courseCode=courseCode_text.upper(),
+                                            courseSection=courseSection_text.upper(),
+                                            courseName=courseName_text.upper(),
+                                            courseHour=courseHour_text,
+                                            coursePractical=coursePractical_text.upper(),
+                                            courseTutorial=courseTutorial_text.upper()
+                                        )
+                                        db.session.add(new_course)
+                                        db.session.commit()
+                                        course_records_added += 1
+                                except Exception as row_err:
+                                    print(f"[Row Error] {row_err}")
+                        except Exception as sheet_err:
+                            print(f"[Sheet Error] {sheet_err}")
 
-                                valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
-                                if valid:
-                                    new_course = Course(
-                                        courseDepartment=courseDepartment_text.upper(),
-                                        courseCodeSection = courseCodeSection_text.upper(),
-                                        courseCode=courseCode_text.upper(),
-                                        courseSection=courseSection_text.upper(),
-                                        courseName=courseName_text.upper(),
-                                        courseHour=courseHour_text,
-                                        coursePractical = coursePractical_text.upper(),
-                                        courseTutorial = courseTutorial_text.upper()
-                                    )
-                                    db.session.add(new_course)
-                                    course_records_added += 1
-                                    db.session.commit()
-                            except Exception as row_err:
-                                print(f"[Row Error] {row_err}")
-                    except Exception as sheet_err:
-                        print(f"[Sheet Error] {sheet_err}")  # <-- Print or log this
+                    if course_records_added > 0:
+                        flash(f"Successful upload {course_records_added} record(s)", 'success')
+                    else:
+                        flash("No data uploaded", 'error')
 
-                if course_records_added > 0:
-                    flash(f"Successful upload {course_records_added} record(s)", 'success')
-                else:
-                    flash("No data uploaded", 'error')
+                    return redirect(url_for('admin_manageCourse'))
 
+                except Exception as e:
+                    print(f"[File Processing Error] {e}")
+                    flash('File processing error: File upload in wrong format', 'error')
+                    return redirect(url_for('admin_manageCourse'))
+            else:
+                flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
 
-            except Exception as e:
-                print(f"[File Processing Error] {e}")  # <-- See the actual cause
-                flash('File processing error: File upload in wrong format', 'error')
-                return redirect(url_for('admin_manageCourse'))
-        
-        else:
-            # Handle manual input
+        elif form_type == 'manual':
             courseDepartment_text = request.form.get('courseDepartment', '').strip()
             courseCode_text = request.form.get('courseCode', '').strip()
             courseSection_text = request.form.get('courseSection', '').strip()
             courseName_text = request.form.get('courseName', '').strip()
             courseHour_text = request.form.get('courseHour', '').strip()
-            courseCodeSection_text = (courseCode_text + '/' + courseSection_text)
             coursePractical_text = request.form.get('coursePractical', '').strip()
-            courseTutorial_text =  request.form.get('courseTutorial', '').strip()
+            courseTutorial_text = request.form.get('courseTutorial', '').strip()
+            courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
             valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageCourse.html', 
-                                        course_data=course_data,
-                                        department_data=department_data,
-                                        courseDepartment_text=courseDepartment_text,
-                                        courseCode_text=courseCode_text,
-                                        courseSection_text=courseSection_text,
-                                        courseName_text=courseName_text,
-                                        courseHour_text=courseHour_text,
-                                        coursePractical = coursePractical_text,
-                                        courseTutorial = courseTutorial_text,
-                                        active_tab='admin_manageCoursetab')
+                return render_template('adminPart/adminManageCourse.html',
+                                       active_tab='admin_manageCoursetab',
+                                       course_data=course_data,
+                                       department_data=department_data,
+                                       courseDepartment_text=courseDepartment_text,
+                                       courseCode_text=courseCode_text,
+                                       courseSection_text=courseSection_text,
+                                       courseName_text=courseName_text,
+                                       courseHour_text=courseHour_text,
+                                       coursePractical=coursePractical_text,
+                                       courseTutorial=courseTutorial_text)
 
             new_course = Course(
                 courseDepartment=courseDepartment_text.upper(),
-                courseCodeSection = courseCodeSection_text.upper(),
+                courseCodeSection=courseCodeSection_text.upper(),
                 courseCode=courseCode_text.upper(),
                 courseSection=courseSection_text.upper(),
                 courseName=courseName_text.upper(),
                 courseHour=courseHour_text,
-                coursePractical = coursePractical_text.upper(),
-                courseTutorial = courseTutorial_text.upper()
+                coursePractical=coursePractical_text.upper(),
+                courseTutorial=courseTutorial_text.upper()
             )
             db.session.add(new_course)
             db.session.commit()
@@ -451,7 +452,9 @@ def admin_manageCourse():
 
     return render_template('adminPart/adminManageCourse.html',
                            active_tab='admin_manageCoursetab',
-                           course_data=course_data, department_data=department_data)
+                           course_data=course_data,
+                           department_data=department_data)
+
 
 
 # function for admin to manage exam information (adding, editing, adn removing)
