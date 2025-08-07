@@ -102,7 +102,7 @@ def admin_manageVenue():
             venueNumber=venueNumber_text.upper(),
             venueFloor=venueFloor_text.upper(),
             venueCapacity=venueCapacity_text,
-            venueStatuc=venueStatus_text
+            venueStatus=venueStatus_text
         )
         db.session.add(new_venue)
         db.session.commit()
