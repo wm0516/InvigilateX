@@ -505,6 +505,7 @@ def admin_manageExam():
     student_text = ''
     venue_text = ''
     selected_department_code = request.form.get('programCode', '')
+    print(f"Selected Department: {selected_department_code}")
 
     # Filter course_data based on selected department (from form or default to all)
     if selected_department_code:
