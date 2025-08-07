@@ -250,10 +250,8 @@ def check_department(code, name):
 
 
 # Check unique venue roomNumber and floor
-def check_venue(roomNumber, floor, capacity, status):
-    # Check if any required field is empty
-    if not all([roomNumber, floor, capacity, status]):
-        return False, "Please Fill in All Required Fields"
+def check_venue(roomNumber, capacity):
+    
     # Check for duplicates
     existing_roomNumber = Venue.query.filter(Venue.venueNumber == roomNumber).first()
     if existing_roomNumber:

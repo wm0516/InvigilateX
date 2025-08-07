@@ -92,7 +92,7 @@ def admin_manageVenue():
         venueCapacity_text = request.form.get('venueCapacity', '').strip()
         venueStatus_text = request.form.get('venueStatus', '').strip()
 
-        valid, result = check_venue(venueNumber_text, venueFloor_text, venueCapacity_text, venueStatus_text)
+        valid, result = check_venue(venueNumber_text, venueCapacity_text)
         if not valid:
             flash(result, 'error')
             return render_template('adminPart/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, 
@@ -102,7 +102,7 @@ def admin_manageVenue():
             venueNumber=venueNumber_text.upper(),
             venueFloor=venueFloor_text.upper(),
             venueCapacity=venueCapacity_text,
-            venueStatus=venueStatus_text
+            venueStatus=venueStatus_text.upper()
         )
         db.session.add(new_venue)
         db.session.commit()
