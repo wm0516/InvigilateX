@@ -132,9 +132,9 @@ class Department(db.Model):
 class Course(db.Model):
     __tablename__ = 'Course'
     courseCodeSection = db.Column(db.String(20), primary_key=True)
-    courseDepartment = db.Column(db.String(60), nullable=False)
     courseCode = db.Column(db.String(10), nullable=False)
     courseSection = db.Column(db.String(10), nullable=False)
+    courseDepartment = db.Column(db.String(60), nullable=False)
     courseName = db.Column(db.String(50), nullable=False)
     courseHour = db.Column(db.Integer, nullable=False)
     coursePractical = db.Column(db.String(255), nullable=False)
@@ -142,9 +142,9 @@ class Course(db.Model):
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) PRIMARY KEY,
-        courseDepartment VARCHAR(60) NOT NULL,
         courseCode VARCHAR(10) NOT NULL,
         courseSection VARCHAR(10) NOT NULL,
+        courseDepartment VARCHAR(60) NOT NULL,
         courseName VARCHAR(50) NOT NULL,
         courseHour INT,
         coursePractical VARCHAR(255) NOT NULL,

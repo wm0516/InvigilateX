@@ -358,28 +358,29 @@ def admin_manageCourse():
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['department', 'code', 'section', 'name', 'credithour', 'practical', 'tutorial']
+                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['department', 'code', 'section', 'name', 'creditHour', 'practical', 'tutorial']
+                            df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer']
 
                             for index, row in df.iterrows():
                                 try:
-                                    courseDepartment_text = str(row['department'])
-                                    courseCode_text = str(row['code'])
-                                    courseSection_text = str(row['section'])
-                                    courseName_text = str(row['name'])
-                                    courseHour_text = int(row['creditHour'])
-                                    coursePractical_text = str(row['practical'])
-                                    courseTutorial_text = str(row['tutorial'])
+                                    courseDepartment_text = str(row['department code'])
+                                    department_text = courseDepartment_text.split('-')[0].strip()
+                                    courseCode_text = str(row['course code'])
+                                    courseSection_text = str(row['course section'])
+                                    courseName_text = str(row['course name'])
+                                    courseHour_text = int(row['credit hour'])
+                                    coursePractical_text = str(row['practical lecturer'])
+                                    courseTutorial_text = str(row['tutorial lecturer'])
                                     courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
                                     valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
                                     if valid:
                                         new_course = Course(
-                                            courseDepartment=courseDepartment_text.upper(),
+                                            courseDepartment=department_text.upper(),
                                             courseCodeSection=courseCodeSection_text.upper(),
                                             courseCode=courseCode_text.upper(),
                                             courseSection=courseSection_text.upper(),
@@ -413,6 +414,7 @@ def admin_manageCourse():
 
         elif form_type == 'manual':
             courseDepartment_text = request.form.get('courseDepartment', '').strip()
+            department_text = courseDepartment_text.split('-')[0].strip()
             courseCode_text = request.form.get('courseCode', '').strip()
             courseSection_text = request.form.get('courseSection', '').strip()
             courseName_text = request.form.get('courseName', '').strip()
@@ -424,20 +426,12 @@ def admin_manageCourse():
             valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageCourse.html',
-                                       active_tab='admin_manageCoursetab',
-                                       course_data=course_data,
-                                       department_data=department_data,
-                                       courseDepartment_text=courseDepartment_text,
-                                       courseCode_text=courseCode_text,
-                                       courseSection_text=courseSection_text,
-                                       courseName_text=courseName_text,
-                                       courseHour_text=courseHour_text,
-                                       coursePractical=coursePractical_text,
-                                       courseTutorial=courseTutorial_text)
+                return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, courseDepartment_text=courseDepartment_text,
+                                        courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, courseHour_text=courseHour_text, coursePractical=coursePractical_text,
+                                        courseTutorial=courseTutorial_text)
 
             new_course = Course(
-                courseDepartment=courseDepartment_text.upper(),
+                courseDepartment=department_text.upper(),
                 courseCodeSection=courseCodeSection_text.upper(),
                 courseCode=courseCode_text.upper(),
                 courseSection=courseSection_text.upper(),
@@ -451,10 +445,7 @@ def admin_manageCourse():
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
 
-    return render_template('adminPart/adminManageCourse.html',
-                           active_tab='admin_manageCoursetab',
-                           course_data=course_data,
-                           department_data=department_data)
+    return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
 
 
