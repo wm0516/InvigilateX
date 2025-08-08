@@ -142,7 +142,7 @@
             <div class="profile-frame">
                 <div class="form-left">
                     <label id="departmentLabel">Department</label>
-                    <select name="courseDepartment" required>
+                    <select id="courseDepartmentSelection" name="courseDepartment" required>
                         <option value="" disabled selected>Select Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
@@ -171,10 +171,24 @@
 
                 <div class="form-right">
                     <label>Practical Lecturer</label>
-                    <input type="text" name="coursePractical" value="{{ coursePractical_text }}" required><br>
+                    <select name="coursePractical" required>
+                        <option value="" disabled selected>Select Practical Lecturer</option>
+                        {% for lecturer in lecturer_data %}
+                            <option value="{{ lecturer.userName }}">
+                                ({{ lecturer.userName }})
+                            </option>
+                        {% endfor %}
+                    </select><br>
 
                     <label>Tutorial Lecturer</label>
-                    <input type="text" name="courseTutorial" value="{{ courseTutorial_text }}" required>
+                    <select name="courseTutorial" required>
+                        <option value="" disabled selected>Select Tutorial Lecturer</option>
+                        {% for lecturer in lecturer_data %}
+                            <option value="{{ lecturer.userName }}">
+                                ({{ lecturer.userName }})
+                            </option>
+                        {% endfor %}
+                    </select><br>
                 </div>
             </div>
 

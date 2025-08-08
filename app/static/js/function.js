@@ -289,6 +289,33 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 
+document.getElementById('courseDepartmentSelection').addEventListener('change', function() {
+    let deptCode = this.value;
+    let courseDepartmentSelection = document.getElementById('departmentSection');
+    
+    // Reset the lecturer dropdown
+    courseDepartmentSelection.innerHTML = '<option value="" disabled selected>Select Department</option>';
+
+    if (deptCode) {
+        fetch(`/get_lecturers_by_department/${deptCode}`)
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(lecturer => {
+                    let option = document.createElement('option');
+                    option.value = lecturer.userName;    // Assuming userName is lecturer's name or ID
+                    option.textContent = lecturer.userName;
+                    lecturerSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching lecturers:', error));
+    }
+});
+
+
+
+
+
+
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
     let sectionCode = document.getElementById('courseSection').value;

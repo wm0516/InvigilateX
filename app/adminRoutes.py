@@ -412,6 +412,7 @@ def admin_manageLecturer():
 def admin_manageCourse():
     course_data = Course.query.all()
     department_data = Department.query.all()
+    lecturer_data = User.query.filter(User.userLevel == 1)
 
     # Default form field values
     courseDepartment_text = ''
@@ -548,9 +549,9 @@ def admin_manageCourse():
             valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, courseDepartment_text=courseDepartment_text,
-                                        courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, courseHour_text=courseHour_text, coursePractical=coursePractical_text,
-                                        courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
+                return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,
+                                       courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, 
+                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
             new_course = Course(
                 courseDepartment=department_text.upper(),
@@ -569,7 +570,7 @@ def admin_manageCourse():
             return redirect(url_for('admin_manageCourse'))
             
         
-    return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
+    return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
 
 
 
@@ -754,6 +755,15 @@ def get_courses_by_department(department_code):
     courses = Course.query.filter_by(courseDepartment=department_code).all()
     course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
     return jsonify(course_list)
+
+
+
+@app.route('/get_lecturers_by_department/<department_code>')
+def get_lecturers_by_department(department_code):
+    lecturers = User.query.filter_by(userDepartment=department_code).all()
+    lecturer_list = [{"userName": l.userName} for l in lecturers] 
+    return jsonify(lecturer_list)
+
 
 
 @app.route('/get_course_details/<program_code>/<path:course_code_section>')  # ✅ FIXED HERE
