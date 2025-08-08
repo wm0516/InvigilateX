@@ -313,3 +313,4 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 
 
+
