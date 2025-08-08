@@ -330,7 +330,7 @@ def admin_manageLecturer():
             role_text = request.form.get('role', '').strip()
             hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-            valid, result = check_lecturer(id_text, email_text, contact_text, name_text, department_text, role_text)
+            valid, result = check_lecturer(id_text, email_text, contact_text)
             if not valid:
                 flash(result, 'error')
                 return render_template(

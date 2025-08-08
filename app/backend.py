@@ -195,14 +195,9 @@ def check_lecturer(id, email, contact):
 
 # continue on this function
 def check_profile(id, contact, password1, password2):
-    if not contact and not password1 and not password2:
-        return True, "No Update"
-    
     # If contact is entered, validate format
     if contact:
         user_contact = User.query.filter(User.userId == id ,User.userContact == contact).first()
-        if user_contact:
-            return False, "Similar Contact Number Update"
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
         if check_contact(contact):
@@ -216,6 +211,9 @@ def check_profile(id, contact, password1, password2):
             return False, "Wrong Password Format"
         if password1 != password2:
             return False, "Passwords Do Not Match"
+        
+    if user_contact and not password1 and not password2:
+        return True, "No Update"
     
     return True, ""
 
