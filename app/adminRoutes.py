@@ -390,6 +390,7 @@ def admin_manageCourse():
     courseHour_text = ''
     coursePractical_text = ''
     courseTutorial_text = ''
+    courseStudent_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
@@ -410,18 +411,18 @@ def admin_manageCourse():
                             df = pd.read_excel(
                                 excel_file,
                                 sheet_name=sheet_name,
-                                usecols="A:G",
+                                usecols="A:H",
                                 skiprows=1
                             )
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer']
+                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer']
+                            df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             for index, row in df.iterrows():
                                 try:
@@ -433,6 +434,7 @@ def admin_manageCourse():
                                     courseHour_text = int(row['credit hour'])
                                     coursePractical_text = str(row['practical lecturer'])
                                     courseTutorial_text = str(row['tutorial lecturer'])
+                                    courseStudent_text = str(row['no of students'])
                                     courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
                                     valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
@@ -445,7 +447,8 @@ def admin_manageCourse():
                                             courseName=courseName_text.upper(),
                                             courseHour=courseHour_text,
                                             coursePractical=coursePractical_text.upper(),
-                                            courseTutorial=courseTutorial_text.upper()
+                                            courseTutorial=courseTutorial_text.upper(),
+                                            courseStudent=courseStudent_text
                                         )
                                         db.session.add(new_course)
                                         db.session.commit()
@@ -479,6 +482,7 @@ def admin_manageCourse():
             courseHour_text = request.form.get('courseHour', '').strip()
             coursePractical_text = request.form.get('coursePractical', '').strip()
             courseTutorial_text = request.form.get('courseTutorial', '').strip()
+            courseStudent_text = request.form.get('courseStudent', '').strip()
             courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
             valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
@@ -486,7 +490,7 @@ def admin_manageCourse():
                 flash(result, 'error')
                 return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, courseDepartment_text=courseDepartment_text,
                                         courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, courseHour_text=courseHour_text, coursePractical=coursePractical_text,
-                                        courseTutorial=courseTutorial_text)
+                                        courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
             new_course = Course(
                 courseDepartment=department_text.upper(),
@@ -496,7 +500,8 @@ def admin_manageCourse():
                 courseName=courseName_text.upper(),
                 courseHour=courseHour_text,
                 coursePractical=coursePractical_text.upper(),
-                courseTutorial=courseTutorial_text.upper()
+                courseTutorial=courseTutorial_text.upper(),
+                courseStudent=courseStudent_text
             )
             db.session.add(new_course)
             db.session.commit()
@@ -523,7 +528,8 @@ def admin_manageExam():
     endTime_text = ''
     programCode_text = ''
     courseSection_text = ''
-    lecturer_text = ''
+    practicalLecturer_text = ''
+    tutorialLecturer_text = ''
     student_text = ''
     venue_text = ''
 
@@ -545,15 +551,15 @@ def admin_manageExam():
                             df = pd.read_excel(
                                 excel_file,
                                 sheet_name=sheet_name,
-                                usecols="A:I",
+                                usecols="A:J",
                                 skiprows=1
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'pratical lecturer', 'tutorial lecturer', 'no of', 'room']
                             print(f"Read file table: {expected_cols}")
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
-                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'pratical lecturer', 'tutorial lecturer', 'no of', 'room']
 
                             for index, row in df.iterrows():
                                 try:
@@ -563,7 +569,8 @@ def admin_manageExam():
                                     endTime_text = str(row['end']).upper()
                                     programCode_text = str(row['program']).upper()
                                     courseSection_text = str(row['course/sec']).upper()
-                                    lecturer_text = str(row['lecturer']).upper()
+                                    practicalLecturer_text = str(row['practical lecturer']).upper()
+                                    tutorialLecturer_text = str(row['tutorial lecturer']).upper()
                                     student_text = row['no of']
                                     venue_text = str(row['room']).upper()
 
@@ -576,7 +583,8 @@ def admin_manageExam():
                                             examEndTime=endTime_text,
                                             examProgramCode=programCode_text,
                                             examCourseSectionCode=courseSection_text,
-                                            examLecturer=lecturer_text,
+                                            examPracticalLecturer=practicalLecturer_text,
+                                            examTutorialLecturer=tutorialLecturer_text,
                                             examTotalStudent=student_text,
                                             examVenue=venue_text
                                         )
@@ -610,13 +618,26 @@ def admin_manageExam():
                 endTime_text = request.form.get('endTime', '').strip()
                 programCode_text = request.form.get('programCode', '').strip()
                 courseSection_text = request.form.get('courseSection', '').strip()
-                lecturer_text = request.form.get('lecturer', '').strip()
+                practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
+                tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
 
                 # Filter course list for re-rendering form in case of error
                 if programCode_text:
                     course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
+
+                    if courseSection_text:
+                        selected_course = Course.query.filter_by(
+                            courseDepartment=programCode_text,
+                            courseSection=courseSection_text
+                        ).first()
+
+                        if selected_course:
+                            practicalLecturer_text = selected_course.coursePractical
+                            tutorialLecturer_text = selected_course.courseTutorial
+                            student_text = selected_course.courseStudent
+
                 else:
                     course_data = Course.query.all()
 
@@ -629,7 +650,8 @@ def admin_manageExam():
                                            examDate_text=examDate_text, examDay_text=examDay_text,
                                            startTime_text=startTime_text, endTime_text=endTime_text,
                                            programCode_text=programCode_text, courseSection_text=courseSection_text,
-                                           lecturer_text=lecturer_text, student_text=student_text, venue_text=venue_text,
+                                           practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text, 
+                                           student_text=student_text, venue_text=venue_text,
                                            active_tab='admin_manageExamtab')
 
                 new_exam = Exam(
@@ -639,7 +661,8 @@ def admin_manageExam():
                     examEndTime=endTime_text,
                     examProgramCode=programCode_text,
                     examCourseSectionCode=courseSection_text,
-                    examLecturer=lecturer_text,
+                    examPracticalLecturer=practicalLecturer_text,
+                    examTutorialLecturer=tutorialLecturer_text,
                     examTotalStudent=student_text,
                     examVenue=venue_text
                 )

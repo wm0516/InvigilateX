@@ -27,8 +27,8 @@
                 <label for="course_list">
                     <div class="upload-container" id="courseUploadContainer">
                         <div class="upload-text">
-                            Upload a file with an empty first row. Data should start from columns A to G,<br>
-                            labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer']<br><br><br>
+                            Upload a file with an empty first row. Data should start from columns A to H,<br>
+                            labeled as: ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']<br><br><br>
                             Click to upload or drag and drop with below file format
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
@@ -89,7 +89,10 @@
                     <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
 
                     <label>Course Credit Hour(s)</label>
-                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required>
+                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required><br>
+
+                    <label>Course Number of Student(s)</label>
+                    <input type="number" name="courseStudent" value="{{ courseStudent_text }}" required>
                 </div>
 
                 <div class="form-right">
