@@ -592,13 +592,13 @@ def admin_manageExam():
                             df = pd.read_excel(
                                 excel_file,
                                 sheet_name=sheet_name,
-                                usecols="A:J",
+                                usecols="A:I",
                                 skiprows=1
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
                             print(f"Read file table: {expected_cols}")
-                            
+
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
                             
@@ -614,8 +614,7 @@ def admin_manageExam():
                                     endTime_text = str(row['end']).upper()
                                     programCode_text = str(row['program']).upper()
                                     courseSection_text = str(row['course/sec']).upper()
-                                    practicalLecturer_text = str(row['practical lecturer']).upper()
-                                    tutorialLecturer_text = str(row['tutorial lecturer']).upper()
+                                    practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
                                     student_text = row['no of']
                                     venue_text = str(row['room']).upper()
 
