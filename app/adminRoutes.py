@@ -631,7 +631,7 @@ def admin_manageExam():
                     if courseSection_text:
                         selected_course = Course.query.filter_by(
                             courseDepartment=programCode_text,
-                            courseSection=courseSection_text
+                            courseCodeSection=courseSection_text
                         ).first()
 
                         if selected_course:
@@ -698,9 +698,6 @@ def get_courses_by_department(department_code):
     return jsonify(course_list)
 
 
-
-
-
 @app.route('/get_course_details/<program_code>/<course_code_section>')
 def get_course_details(program_code, course_code_section):
     selected_course = Course.query.filter_by(
@@ -714,9 +711,5 @@ def get_course_details(program_code, course_code_section):
             "student": selected_course.courseStudent
         }
     return {"error": "Course not found"}
-
-
-
-
 
 
