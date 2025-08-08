@@ -73,14 +73,15 @@
                     <label>Exam Day</label>
                     <input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly><br>
 
-                    <label>Start Time</label>
-                    <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00" required>
+                    <label>Start Time and End Time</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="time" id="startTime" name="startTime" value="{{ startTime_text }}" min="08:00" max="20:00" required>
+                        <span>to</span>
+                        <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00" required>
+                    </div>
                 </div>
 
                 <div class="form-middle">
-                    <label>End Time</label>
-                    <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00" required><br>
-
                     <label>Program Code</label>
                     <select name="programCode" id="programCode" required>
                         <option value="" disabled selected>Select Program Code</option>
@@ -95,8 +96,8 @@
                     <select name="courseSection" id="courseSection" required>
                         <option value="" disabled selected>Select Course Section</option>
                         {% for course in course_data %}
-                            <option value="({{ course.courseCodeSection }}) - {{ course.courseName }}">
-                                {{ course.courseCodeSection }}
+                            <option value="{{ course.courseCodeSection }}">
+                                ({{ course.courseCodeSection }}) - {{ course.courseName }}
                             </option>
                         {% endfor %}
                     </select>
