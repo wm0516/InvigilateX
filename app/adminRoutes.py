@@ -426,6 +426,9 @@ def admin_manageCourse():
 
                             for index, row in df.iterrows():
                                 try:
+                                    # Normalize all row values to lowercase strings
+                                    row = row.apply(lambda x: str(x).strip().lower())
+                                    
                                     courseDepartment_text = str(row['department code'])
                                     department_text = courseDepartment_text.split('-')[0].strip()
                                     courseCode_text = str(row['course code'])
@@ -507,6 +510,9 @@ def admin_manageCourse():
             db.session.commit()
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
+        
+        elif form_type == 'mmodify':
+
 
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 

@@ -12,8 +12,12 @@
                 <i class="fas fa-upload"></i>
                 <span>Upload File</span>
             </a>
-            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+            <a href="#" class="tab-link" onclick="showSection('modifySection', event)">
                 <i class="fas fa-edit"></i>
+                <span>Modify Data</span>
+            </a>
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fa-solid fa-file-pen"></i>
                 <span>Manually Insert</span>
             </a>
         </div>
@@ -57,6 +61,75 @@
                 <div class="button-wrapper">
                     <button type="submit">Upload Course</button>
                 </div>
+            </div>
+        </div>
+    </form>
+
+
+
+    <!-- Modify Form -->
+    <form id="modifyForm" action="{{ url_for('admin_manageCourse') }}" method="POST" style="display: none;">
+        <div id="manualSection" class="function-frame" style="width:100%">
+            <h4 style="text-align: center;">Manual Data Entry Section</h4>
+            <div class="profile-frame">
+                <div class="form-left">
+                    <label id="departmentLabel">Department</label>
+                    <select name="courseDepartment" required>
+                        <option value="" disabled selected>Select Department</option>
+                        {% for dept in department_data %}
+                            <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
+                                ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                            </option>
+                        {% endfor %}
+                    </select><br>
+
+                    <label>Course Code</label>
+                    <input type="text" name="courseCode" value="{{ courseCode_text }}" required><br>
+
+                    <label>Course Section</label>
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
+                </div>
+
+                <div class="form-middle">
+                    <label>Course Name</label>
+                    <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
+
+                    <label>Course Credit Hour(s)</label>
+                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required><br>
+
+                    <label>Course Number of Student(s)</label>
+                    <input type="number" name="courseStudent" value="{{ courseStudent_text }}" required>
+                </div>
+
+                <div class="form-right">
+                    <label>Practical Lecturer</label>
+                    <input type="text" name="coursePractical" value="{{ coursePractical_text }}" required><br>
+
+                    <label>Tutorial Lecturer</label>
+                    <input type="text" name="courseTutorial" value="{{ courseTutorial_text }}" required>
+                </div>
+            </div>
+
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="modify">
+            
+            <br>
+            {% if courseUploadResult %}
+                <div class="result-message">{{ courseUploadResult }}</div>
+            {% elif courseUploadErrors %}
+                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% elif get_flashed_messages(with_categories=true) %}
+                {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }}">
+                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <br>
+
+            <!-- Manual Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Add New Course</button>
             </div>
         </div>
     </form>
