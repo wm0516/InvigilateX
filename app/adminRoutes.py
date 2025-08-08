@@ -480,27 +480,28 @@ def admin_manageCourse():
 
         elif form_type == 'modify':
             courseCodeSection_text = request.form.get('courseCodeSection', '').strip().upper()
-
             course = Course.query.filter_by(courseCodeSection=courseCodeSection_text).first()
             if not course:
                 flash("Course not found for update.", "error")
                 return redirect(url_for('admin_manageCourse'))
 
-            # Update course fields from form
-            courseDepartment_text = request.form.get('courseDepartment', '').strip().split('-')[0].strip().upper()
-            course.courseDepartment = courseDepartment_text
-            course.courseSection = request.form.get('courseSection', '').strip().upper()
-            course.courseCode = request.form.get('courseCode', '').strip().upper()
-            course.courseName = request.form.get('courseName', '').strip().upper()
-            course.courseHour = int(request.form.get('courseHour', 0))
-            course.courseStudent = request.form.get('courseStudent', '').strip()
-            course.coursePractical = request.form.get('coursePractical', '').strip().upper()
-            course.courseTutorial = request.form.get('courseTutorial', '').strip().upper()
+            try:
+                department_text = request.form.get('courseDepartment', '').strip().split('-')[0].strip().upper()
+                course.courseDepartment = department_text
+                course.courseSection = request.form.get('courseSection', '').strip().upper()
+                course.courseCode = request.form.get('courseCode', '').strip().upper()
+                course.courseName = request.form.get('courseName', '').strip().upper()
+                course.courseHour = int(request.form.get('courseHour', 0))
+                course.courseStudent = request.form.get('courseStudent', '').strip()
+                course.coursePractical = request.form.get('coursePractical', '').strip().upper()
+                course.courseTutorial = request.form.get('courseTutorial', '').strip().upper()
 
-            db.session.commit()
-            flash("Course updated successfully.", "success")
+                db.session.commit()
+                flash("Course updated successfully.", "success")
+            except Exception as e:
+                flash(f"Failed to update course: {e}", "error")
+
             return redirect(url_for('admin_manageCourse'))
-
         
 
         elif form_type == 'manual':

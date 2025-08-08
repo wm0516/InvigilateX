@@ -313,60 +313,42 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 // Function to trigger search when any field changes
 function triggerSearch() {
-    const departmentSelect = document.getElementById('courseDepartment');
-    const codeSectionSelect = document.getElementById('courseCodeSection');
-    const courseNameSelect = document.getElementById('courseName');
+    const selects = [
+        document.getElementById('courseDepartment'),
+        document.getElementById('courseCodeSection'),
+        document.getElementById('courseName')
+    ];
 
-    const department = departmentSelect.value;
-    const codeSection = codeSectionSelect.value;
-    const courseName = courseNameSelect.value;
+    // Get selected values
+    const values = selects.map(s => s.value.trim());
+    const selectedCount = values.filter(v => v !== '').length;
 
-    // Count how many fields are selected
-    const selectedCount = [department, codeSection, courseName].filter(val => val !== '').length;
-
-    // If no selection, enable all selects and clear inputs
     if (selectedCount === 0) {
-        departmentSelect.disabled = false;
-        codeSectionSelect.disabled = false;
-        courseNameSelect.disabled = false;
-
+        selects.forEach(s => s.disabled = false);
         clearCourseInputs();
         return;
     }
 
-    // If more than one selected, alert and reset
     if (selectedCount > 1) {
         alert('Please select only one search criteria at a time.');
-        // Reset all selects and enable them
-        departmentSelect.value = '';
-        codeSectionSelect.value = '';
-        courseNameSelect.value = '';
-
-        departmentSelect.disabled = false;
-        codeSectionSelect.disabled = false;
-        courseNameSelect.disabled = false;
-
+        selects.forEach(s => {
+            s.value = '';
+            s.disabled = false;
+        });
         clearCourseInputs();
         return;
     }
 
-    // Disable other selects except the selected one
-    if (department) {
-        codeSectionSelect.disabled = true;
-        courseNameSelect.disabled = true;
-    } else if (codeSection) {
-        departmentSelect.disabled = true;
-        courseNameSelect.disabled = true;
-    } else if (courseName) {
-        departmentSelect.disabled = true;
-        codeSectionSelect.disabled = true;
-    }
+    // Disable unselected selects
+    selects.forEach((s, i) => {
+        s.disabled = (values[i] === '') ? false : true;
+    });
 
-    // Prepare the search payload (only one field will be non-empty)
+    // Prepare data object for fetch
     const data = {
-        department: department,
-        codeSection: codeSection,
-        courseName: courseName
+        department: values[0],
+        codeSection: values[1],
+        courseName: values[2]
     };
 
     fetch('/search_course', {
@@ -374,7 +356,7 @@ function triggerSearch() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(course => {
         if (course.error) {
             alert(course.error);
@@ -382,7 +364,7 @@ function triggerSearch() {
             return;
         }
 
-        // Fill the form inputs with returned course data
+        // Fill inputs and selects with course data
         document.querySelector('input[name="courseSection"]').value = course.courseSection || '';
         document.querySelector('input[name="courseCode"]').value = course.courseCode || '';
         document.querySelector('input[name="courseHour"]').value = course.courseHour || '';
@@ -390,29 +372,22 @@ function triggerSearch() {
         document.querySelector('input[name="coursePractical"]').value = course.coursePractical || '';
         document.querySelector('input[name="courseTutorial"]').value = course.courseTutorial || '';
 
-        // Also update the selects so all show correct current values
-        departmentSelect.value = course.courseDepartment || '';
-        codeSectionSelect.value = course.courseCodeSection || '';
-        courseNameSelect.value = course.courseName || '';
+        selects[0].value = course.courseDepartment || '';
+        selects[1].value = course.courseCodeSection || '';
+        selects[2].value = course.courseName || '';
     })
-    .catch(err => {
-        console.error('Fetch error:', err);
-    });
+    .catch(err => console.error('Fetch error:', err));
 }
 
 function clearCourseInputs() {
-    document.querySelector('input[name="courseSection"]').value = '';
-    document.querySelector('input[name="courseCode"]').value = '';
-    document.querySelector('input[name="courseHour"]').value = '';
-    document.querySelector('input[name="courseStudent"]').value = '';
-    document.querySelector('input[name="coursePractical"]').value = '';
-    document.querySelector('input[name="courseTutorial"]').value = '';
+    ['courseSection', 'courseCode', 'courseHour', 'courseStudent', 'coursePractical', 'courseTutorial']
+    .forEach(name => {
+        const input = document.querySelector(`input[name="${name}"]`);
+        if (input) input.value = '';
+    });
 }
 
-// Attach event listeners to the 3 selects
-document.getElementById('courseDepartment').addEventListener('change', triggerSearch);
-document.getElementById('courseCodeSection').addEventListener('change', triggerSearch);
-document.getElementById('courseName').addEventListener('change', triggerSearch);
-
-
-
+// Attach event listeners
+['courseDepartment', 'courseCodeSection', 'courseName'].forEach(id => {
+    document.getElementById(id).addEventListener('change', triggerSearch);
+});

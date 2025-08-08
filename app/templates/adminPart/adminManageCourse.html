@@ -73,13 +73,13 @@
             <h4 style="text-align: center;">Search and Modify by Department Code, Course Code, or Course Name</h4>
             <div class="profile-frame">
                 <div class="form-left">
-                    <label id="departmentLabel">Department</label>
+                    <label>Department</label>
                     <select name="courseDepartment" id="courseDepartment">
                         <option value="" selected>Choose Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
                         {% endfor %}
-                    </select>
+                    </select><br>
 
                     <label>Course Code/Section</label>
                     <select name="courseCodeSection" id="courseCodeSection">
@@ -87,7 +87,7 @@
                         {% for course in course_data %}
                             <option value="{{ course.courseCodeSection }}">{{ course.courseCodeSection }}</option>
                         {% endfor %}
-                    </select>
+                    </select><br>
 
                     <label>Course Name</label>
                     <select name="courseName" id="courseName">
