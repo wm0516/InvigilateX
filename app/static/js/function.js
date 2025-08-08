@@ -281,22 +281,22 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 document.getElementById('courseSection').addEventListener('change', function() {
-    const courseSection = this.value;
-    const programCode = document.getElementById('programCode').value;
+    let deptCode = document.getElementById('programCode').value;
+    let sectionCode = this.value;
 
-    if(courseSection && programCode) {
-        fetch(`/get_course_details/${programCode}/${courseSection}`)
-            .then(res => res.json())
+    if (deptCode && sectionCode) {
+        fetch(`/get_course_details/${deptCode}/${sectionCode}`)
+            .then(response => response.json())
             .then(data => {
-                document.getElementById('practicalLecturer').value = data.practicalLecturer || '';
-                document.getElementById('tutorialLecturer').value = data.tutorialLecturer || '';
-                document.getElementById('student').value = data.student || '';
-            });
+                if (!data.error) {
+                    document.getElementById('practicalLecturer').value = data.practicalLecturer;
+                    document.getElementById('tutorialLecturer').value = data.tutorialLecturer;
+                    document.getElementById('student').value = data.totalStudent;
+                }
+            })
+            .catch(err => console.error(err));
     }
 });
-
-
-
 
 
 

@@ -539,7 +539,6 @@ def admin_manageExam():
         # ===== File Upload =====
         if form_type == 'upload':
             file = request.files.get('exam_file')
-            print(f"Read file: {file}")
             if file and file.filename:
                 try:
                     file_stream = BytesIO(file.read())
@@ -555,13 +554,18 @@ def admin_manageExam():
                                 skiprows=1
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'pratical lecturer', 'tutorial lecturer', 'no of', 'room']
-                            print(f"Read file table: {expected_cols}")
+                            expected_cols = [
+                                'date', 'day', 'start', 'end', 'program', 'course/sec',
+                                'pratical lecturer', 'tutorial lecturer', 'no of', 'room'
+                            ]
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
-                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'pratical lecturer', 'tutorial lecturer', 'no of', 'room']
+                            df.columns = [
+                                'date', 'day', 'start', 'end', 'program', 'course/sec',
+                                'pratical lecturer', 'tutorial lecturer', 'no of', 'room'
+                            ]
 
-                            for index, row in df.iterrows():
+                            for _, row in df.iterrows():
                                 try:
                                     examDate_text = parse_date(row['date'])
                                     examDay_text = str(row['day']).upper()
@@ -569,7 +573,7 @@ def admin_manageExam():
                                     endTime_text = str(row['end']).upper()
                                     programCode_text = str(row['program']).upper()
                                     courseSection_text = str(row['course/sec']).upper()
-                                    practicalLecturer_text = str(row['practical lecturer']).upper()
+                                    practicalLecturer_text = str(row['pratical lecturer']).upper()
                                     tutorialLecturer_text = str(row['tutorial lecturer']).upper()
                                     student_text = row['no of']
                                     venue_text = str(row['room']).upper()
@@ -596,8 +600,10 @@ def admin_manageExam():
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
-                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
-                          'success' if exam_records_added > 0 else 'error')
+                    flash(
+                        f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded",
+                        'success' if exam_records_added > 0 else 'error'
+                    )
                     return redirect(url_for('admin_manageExam'))
 
                 except Exception as e:
@@ -623,37 +629,28 @@ def admin_manageExam():
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
 
-                # Filter course list for re-rendering form in case of error
-                if programCode_text:
-                    course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
-                    print(f"Show me the courseSection_text: {courseSection_text}")
-
-                    if courseSection_text:
-                        selected_course = Course.query.filter_by(
-                            courseDepartment=programCode_text,
-                            courseSection=courseSection_text
-                        ).first()
-
-                        if selected_course:
-                            practicalLecturer_text = selected_course.coursePractical
-                            tutorialLecturer_text = selected_course.courseTutorial
-                            student_text = selected_course.courseStudent
-
-                else:
-                    course_data = Course.query.all()
-
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
                     flash(result, 'error')
-                    return render_template('adminPart/adminManageExam.html',
-                                           exam_data=exam_data, course_data=course_data, venue_data=venue_data,
-                                           lecturer_data=lecturer_data, department_data=department_data,
-                                           examDate_text=examDate_text, examDay_text=examDay_text,
-                                           startTime_text=startTime_text, endTime_text=endTime_text,
-                                           programCode_text=programCode_text, courseSection_text=courseSection_text,
-                                           practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text, 
-                                           student_text=student_text, venue_text=venue_text,
-                                           active_tab='admin_manageExamtab')
+                    return render_template(
+                        'adminPart/adminManageExam.html',
+                        exam_data=exam_data,
+                        course_data=course_data,
+                        venue_data=venue_data,
+                        lecturer_data=lecturer_data,
+                        department_data=department_data,
+                        examDate_text=examDate_text,
+                        examDay_text=examDay_text,
+                        startTime_text=startTime_text,
+                        endTime_text=endTime_text,
+                        programCode_text=programCode_text,
+                        courseSection_text=courseSection_text,
+                        practicalLecturer_text=practicalLecturer_text,
+                        tutorialLecturer_text=tutorialLecturer_text,
+                        student_text=student_text,
+                        venue_text=venue_text,
+                        active_tab='admin_manageExamtab'
+                    )
 
                 new_exam = Exam(
                     examDate=examDate_text,
@@ -678,18 +675,29 @@ def admin_manageExam():
                 flash("Error processing manual form", 'error')
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('adminPart/adminManageExam.html',
-                           active_tab='admin_manageExamtab',
-                           examPracticalLecturer=course_data.coursePractical if course_data else '',
-                           examTutorialLecturer=course_data.courseTutorial if course_data else '',
-                           examTotalStudent = course_data.courseStudent if course_data else '',
-                           exam_data=exam_data,
-                           course_data=course_data,
-                           venue_data=venue_data,
-                           lecturer_data=lecturer_data,
-                           department_data=department_data)
+    return render_template(
+        'adminPart/adminManageExam.html',
+        active_tab='admin_manageExamtab',
+        exam_data=exam_data,
+        course_data=course_data,
+        venue_data=venue_data,
+        lecturer_data=lecturer_data,
+        department_data=department_data
+    )
 
 
+
+# NEW: AJAX endpoint for auto-fill
+@app.route('/get_course_details/<string:department>/<string:section>')
+def get_course_details(department, section):
+    course = Course.query.filter_by(courseDepartment=department, courseSection=section).first()
+    if course:
+        return jsonify({
+            'practicalLecturer': course.coursePractical,
+            'tutorialLecturer': course.courseTutorial,
+            'totalStudent': course.courseStudent
+        })
+    return jsonify({'error': 'Course not found'}), 404
 
 # ===== New helper route for dependent dropdown =====
 @app.route('/get_courses_by_department/<department_code>')
@@ -698,19 +706,6 @@ def get_courses_by_department(department_code):
     course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
     return jsonify(course_list)
 
-@app.route('/get_course_details/<program_code>/<course_section>')
-def get_course_details(program_code, course_section):
-    selected_course = Course.query.filter_by(
-        courseDepartment=program_code,
-        courseSection=course_section
-    ).first()
-    if selected_course:
-        return {
-            "practicalLecturer": selected_course.coursePractical,
-            "tutorialLecturer": selected_course.courseTutorial,
-            "student": selected_course.courseStudent
-        }
-    return {}
 
 
 
