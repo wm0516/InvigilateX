@@ -668,7 +668,7 @@ def admin_manageExam():
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
-                            print(f"     {sheet_err}")
+                            print(f"[Sheet Error] {sheet_err}")
 
                     flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
                           'success' if exam_records_added > 0 else 'error')
