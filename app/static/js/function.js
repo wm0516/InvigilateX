@@ -261,7 +261,6 @@ function showSection(sectionId, event) {
 document.getElementById('programCode').addEventListener('change', function() {
     let deptCode = this.value;
     let courseSectionSelect = document.getElementById('courseSection');
-
     // Reset the course section dropdown
     courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
 
@@ -280,6 +279,8 @@ document.getElementById('programCode').addEventListener('change', function() {
     }
 });
 
+
+
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
     let sectionCode = this.value;
@@ -291,7 +292,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
                 if (!data.error) {
                     document.getElementById('practicalLecturer').value = data.practicalLecturer;
                     document.getElementById('tutorialLecturer').value = data.tutorialLecturer;
-                    document.getElementById('student').value = data.totalStudent;
+                    document.getElementById('student').value = data.student;
                 }
             })
             .catch(err => console.error(err));
