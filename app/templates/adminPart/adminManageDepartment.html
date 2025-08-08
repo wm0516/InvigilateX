@@ -7,15 +7,23 @@
     <!-- Top Centered Tabs -->
     <div class="tab-container">
         <div class="tab-nav2">
-            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+            <a href="#" class="tab-link" onclick="showSection('modifySection', event)">
                 <i class="fas fa-edit"></i>
+                <span>Modify Data</span>
+            </a>
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-plus"></i>
                 <span>Manually Insert</span>
             </a>
         </div>
     </div>
 
+    <form id="modifyForm" action="{{ url_for('admin_manageDepartment') }}" method="POST"> 
+
+    </form>
+
     <!-- Manual Form -->
-    <form id="manualForm" action="{{ url_for('admin_manageDepartment') }}" method="POST">
+    <form id="manualForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" style="display: none;">
         <div id="manualSection" class="function-frame" style="width:100%">
             <h4 style="text-align: center;">Manual Data Entry Section</h4>
             <div class="profile-frame">
