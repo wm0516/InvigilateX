@@ -478,28 +478,28 @@ def admin_manageCourse():
                 return redirect(url_for('admin_manageCourse'))
             
 
-            '''elif form_type == 'mmodify':
-                data = request.get_json()
-                department_text = courseDepartment_text.split('-')[0].strip()
-                courseSection_text = request.form.get('courseSection', '').strip()
-                courseName_text = request.form.get('courseName', '').strip()
+        elif form_type == 'modify':
+            courseCodeSection_text = request.form.get('courseCodeSection', '').strip().upper()
 
-                if department_text:
-                    course = Course.query.filter(Course.courseDepartment == department_text)
-                if courseSection_text:
-                    course = Course.query.filter(Course.courseSection == courseSection_text)
-                if courseName_text:
-                   course = Course.query.filter(Course.courseName == courseName_text)
+            course = Course.query.filter_by(courseCodeSection=courseCodeSection_text).first()
+            if not course:
+                flash("Course not found for update.", "error")
+                return redirect(url_for('admin_manageCourse'))
 
-                # Return course data as JSON
-                return jsonify({
-                    'courseSection': course.courseSection,
-                    'courseCode': course.courseCode,
-                    'courseHour': course.courseHour,
-                    'courseStudent': course.courseStudent,
-                    'coursePractical': course.coursePractical,
-                    'courseTutorial': course.courseTutorial
-                })'''
+            # Update course fields from form
+            courseDepartment_text = request.form.get('courseDepartment', '').strip().split('-')[0].strip().upper()
+            course.courseDepartment = courseDepartment_text
+            course.courseSection = request.form.get('courseSection', '').strip().upper()
+            course.courseCode = request.form.get('courseCode', '').strip().upper()
+            course.courseName = request.form.get('courseName', '').strip().upper()
+            course.courseHour = int(request.form.get('courseHour', 0))
+            course.courseStudent = request.form.get('courseStudent', '').strip()
+            course.coursePractical = request.form.get('coursePractical', '').strip().upper()
+            course.courseTutorial = request.form.get('courseTutorial', '').strip().upper()
+
+            db.session.commit()
+            flash("Course updated successfully.", "success")
+            return redirect(url_for('admin_manageCourse'))
 
         
 
@@ -728,3 +728,53 @@ def get_course_details(program_code, course_code_section):
             "student": selected_course.courseStudent
         })
     return jsonify({"error": "Course not found"})
+
+
+@app.route('/search_course', methods=['POST'])
+def search_course():
+    data = request.get_json()
+
+    department = data.get('department', '').strip()
+    code_section = data.get('codeSection', '').strip()
+    course_name = data.get('courseName', '').strip()
+
+    # Only one of these should be filled
+    search_fields = [bool(department), bool(code_section), bool(course_name)]
+    if sum(search_fields) != 1:
+        return jsonify({'error': 'Please search by exactly one field'}), 400
+
+    if department:
+        department_code = department.split('-')[0].strip().upper()
+        course = Course.query.filter_by(courseDepartment=department_code).first()
+    elif code_section:
+        course = Course.query.filter_by(courseCodeSection=code_section.upper()).first()
+    elif course_name:
+        course = Course.query.filter_by(courseName=course_name.upper()).first()
+    else:
+        return jsonify({'error': 'No search parameter provided'}), 400
+
+    if not course:
+        return jsonify({'error': 'Course not found'}), 404
+
+    return jsonify({
+        'courseSection': course.courseSection,
+        'courseCode': course.courseCode,
+        'courseHour': course.courseHour,
+        'courseStudent': course.courseStudent,
+        'coursePractical': course.coursePractical,
+        'courseTutorial': course.courseTutorial,
+        'courseDepartment': course.courseDepartment,
+        'courseCodeSection': course.courseCodeSection,
+        'courseName': course.courseName
+    })
+
+
+
+
+
+
+
+
+
+
+
