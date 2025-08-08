@@ -626,6 +626,7 @@ def admin_manageExam():
                 # Filter course list for re-rendering form in case of error
                 if programCode_text:
                     course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
+                    print(f"Show me the courseSection_text: {courseSection_text}")
 
                     if courseSection_text:
                         selected_course = Course.query.filter_by(
