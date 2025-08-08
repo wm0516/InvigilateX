@@ -257,7 +257,7 @@ function showSection(sectionId, event) {
 }
 
 
-
+    
 document.getElementById('programCode').addEventListener('change', function() {
     let deptCode = this.value;
     let courseSectionSelect = document.getElementById('courseSection');

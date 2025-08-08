@@ -698,6 +698,7 @@ def get_courses_by_department(department_code):
     return jsonify(course_list)
 
 
+
 @app.route('/get_course_details/<program_code>/<course_code_section>')
 def get_course_details(program_code, course_code_section):
     selected_course = Course.query.filter_by(
@@ -705,11 +706,9 @@ def get_course_details(program_code, course_code_section):
         courseCodeSection=course_code_section
     ).first()
     if selected_course:
-        return {
+        return jsonify({
             "practicalLecturer": selected_course.coursePractical,
             "tutorialLecturer": selected_course.courseTutorial,
             "student": selected_course.courseStudent
-        }
-    return {"error": "Course not found"}
-
-
+        })
+    return jsonify({"error": "Course not found"})
