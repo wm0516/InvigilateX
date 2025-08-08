@@ -215,9 +215,11 @@ def parse_date(val):
 
 # function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
 @app.route('/adminHome/manageLecturer', methods=['GET', 'POST'])
-def admin_manageLecturer():        
+def admin_manageLecturer():
     user_data = User.query.all()
     department_data = Department.query.all()
+
+    # Default form field values
     id_text = ''
     name_text = ''
     email_text = ''
@@ -234,94 +236,90 @@ def admin_manageLecturer():
     }
 
     if request.method == 'POST':
-        file = request.files['lecturer_file']
-        file_stream = BytesIO(file.read())
+        form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
 
-        lecturer_records_added = 0
+        if form_type == 'upload':
+            file = request.files.get('lecturer_file')
+            if file and file.filename:
+                try:
+                    file_stream = BytesIO(file.read())
+                    excel_file = pd.ExcelFile(file_stream)
+                    print(f"Found sheets: {excel_file.sheet_names}")
 
-        if file and file.filename:
-            try:
-                excel_file = pd.ExcelFile(file_stream)
-                print(f"Found sheets: {excel_file.sheet_names}")
+                    lecturer_records_added = 0
 
-                for sheet_name in excel_file.sheet_names:
-                    try:
-                        df = pd.read_excel(
-                            excel_file,
-                            sheet_name=sheet_name,
-                            usecols="A:F",
-                            skiprows=1
-                        )
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            df = pd.read_excel(
+                                excel_file,
+                                sheet_name=sheet_name,
+                                usecols="A:F",
+                                skiprows=1
+                            )
 
-                        # Debugging: show raw column headers
-                        print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+                            print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+                            df.columns = [str(col).strip().lower() for col in df.columns]
+                            expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact']
 
-                        # Clean and standardize columns
-                        df.columns = [str(col).strip().lower() for col in df.columns] 
-                        expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact']
+                            if df.columns.tolist() != expected_cols:
+                                raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                        if df.columns.tolist() != expected_cols:
-                            raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
+                            df.columns = ['id', 'name', 'department', 'role', 'email', 'contact']
 
-                        # Rename to match your model
-                        df.columns = ['id', 'name', 'department', 'role', 'email', 'contact']
-                        print(f"Data read from excel:\n{df.head()}")
+                            role_mapping = {
+                                'lecturer': 1,
+                                'hop': 2,
+                                'dean': 3,
+                                'admin': 4
+                            }
 
-                        role_mapping = {
-                            'lecturer': 1,
-                            'hop': 2,
-                            'dean': 3,
-                            'admin': 4
-                        }
+                            for index, row in df.iterrows():
+                                try:
+                                    id_text = str(row['id'])
+                                    name_text = str(row['name']).upper()
+                                    department_text = str(row['department']).upper()
+                                    email_text = str(row['email'])
+                                    contact_text = str(row['contact'])
+                                    role_text_str = str(row['role']).strip().lower()
+                                    role_text = role_mapping.get(role_text_str)
+                                    hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-                        for index, row in df.iterrows():
-                            try:
-                                id_text = str(row['Id'])
-                                name_text = str(row['Name']).upper()
-                                department_text = str(row['Department']).upper()    
-                                email_text = str(row['Email'])
-                                contact_text = int(row['Contact'])
-                                # Normalize and map role string
-                                role_text_str = str(row['Role']).strip().lower()
-                                role_text = role_mapping.get(role_text_str)
-                                hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
-                                
-                                valid, result = check_lecturer(id_text, email_text, contact_text, name_text, department_text, role_text)
+                                    valid, result = check_lecturer(id_text, email_text, contact_text, name_text, department_text, role_text)
+                                    if valid:
+                                        new_lecturer = User(
+                                            userId=id_text,
+                                            userName=name_text,
+                                            userDepartment=department_text,
+                                            userLevel=role_text,
+                                            userEmail=email_text,
+                                            userContact=contact_text,
+                                            userStatus=False,
+                                            userPassword=hashed_pw
+                                        )
+                                        db.session.add(new_lecturer)
+                                        db.session.commit()
+                                        lecturer_records_added += 1
+                                except Exception as row_err:
+                                    print(f"[Row Error] {row_err}")
+                        except Exception as sheet_err:
+                            print(f"[Sheet Error] {sheet_err}")
 
-                                if valid:
-                                    new_lecturer = User(
-                                        userId = id_text,
-                                        userName = name_text,
-                                        userDepartment = department_text,
-                                        userLevel = role_text,
-                                        userEmail = email_text,
-                                        userContact = contact_text,
-                                        userStatus = False,
-                                        userPassword = hashed_pw
-                                    )
+                    if lecturer_records_added > 0:
+                        flash(f"Successful upload {lecturer_records_added} record(s)", 'success')
+                    else:
+                        flash("No data uploaded", 'error')
 
-                                    db.session.add(new_lecturer)
-                                    lecturer_records_added += 1
-                                    db.session.commit()
-                            except Exception as row_err:
-                                print(f"[Row Error] {row_err}")
-                    except Exception as sheet_err:
-                        print(f"[Sheet Error] {sheet_err}")  # <-- Print or log this
+                    return redirect(url_for('admin_manageLecturer'))
 
-                if lecturer_records_added > 0:
-                    flash(f"Successful upload {lecturer_records_added} record(s)", 'success')
-                else:
-                    flash("No data uploaded", 'error')
-
+                except Exception as e:
+                    print(f"[File Processing Error] {e}")
+                    flash('File processing error: File upload in wrong format', 'error')
+                    return redirect(url_for('admin_manageLecturer'))
+            else:
+                flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageLecturer'))
 
-            except Exception as e:
-                print(f"[File Processing Error] {e}")  # <-- See the actual cause
-                flash('File processing error: File upload in wrong format', 'error')
-                return redirect(url_for('admin_manageLecturer'))
-            
-        else:
-            # Handle manual input
+        elif form_type == 'manual':
             id_text = request.form.get('userid', '').strip()
             name_text = request.form.get('username', '').strip()
             email_text = request.form.get('email', '').strip()
@@ -333,15 +331,24 @@ def admin_manageLecturer():
             valid, result = check_lecturer(id_text, email_text, contact_text, name_text, department_text, role_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageLecturer.html', user_data=user_data, department_data=department_data,
-                                        id_text=id_text, name_text=name_text, email_text=email_text, contact_text=contact_text, 
-                                        department_text=department_text, role_text=role_text, active_tab='admin_manageLecturertab')
+                return render_template(
+                    'adminPart/adminManageLecturer.html',
+                    user_data=user_data,
+                    department_data=department_data,
+                    id_text=id_text,
+                    name_text=name_text,
+                    email_text=email_text,
+                    contact_text=contact_text,
+                    department_text=department_text,
+                    role_text=role_text,
+                    active_tab='admin_manageLecturertab'
+                )
 
             new_lecturer = User(
                 userId=id_text,
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
-                userLevel=role_map[role_text],  # use mapped constant
+                userLevel=role_map[role_text],
                 userEmail=email_text,
                 userContact=contact_text,
                 userPassword=hashed_pw,
@@ -352,7 +359,16 @@ def admin_manageLecturer():
             flash("New Lecturer Added Successfully", "success")
             return redirect(url_for('admin_manageLecturer'))
 
-    return render_template('adminPart/adminManageLecturer.html', active_tab='admin_manageLecturertab', user_data=user_data, department_data=department_data)
+    return render_template(
+        'adminPart/adminManageLecturer.html',
+        active_tab='admin_manageLecturertab',
+        user_data=user_data,
+        department_data=department_data
+    )
+
+
+
+
 
 
 # function for admin to manage course information (adding, editing, and removing)
@@ -484,8 +500,6 @@ def admin_manageCourse():
 
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
-
-from flask import jsonify  # make sure this is imported
 
 
 # Function for admin to manage exam information (adding, editing, and removing)
