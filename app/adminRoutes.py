@@ -412,7 +412,7 @@ def admin_manageCourse():
                                 excel_file,
                                 sheet_name=sheet_name,
                                 usecols="A:H",
-                                skiprows=1
+                                skiprows=1  
                             )
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
@@ -425,7 +425,8 @@ def admin_manageCourse():
                             # df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             # 4️⃣ Normalize all string values to lowercase
-                            df = df.apply(lambda col: col.str.strip().lower() if col.dtype == "object" else col)
+                            for col in df.columns:
+                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
                             for index, row in df.iterrows():
                                 try:
