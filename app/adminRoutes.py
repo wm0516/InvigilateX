@@ -417,18 +417,18 @@ def admin_manageCourse():
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
                             df.columns = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
 
+                            # 4️⃣ Normalize all string values to lowercase
+                            df = df.apply(lambda col: col.str.strip().lower() if col.dtype == "object" else col)
+
                             for index, row in df.iterrows():
                                 try:
-                                    # Normalize all row values to lowercase strings
-                                    row = row.apply(lambda x: str(x).strip().lower())
-                                    
                                     courseDepartment_text = str(row['department code'])
                                     department_text = courseDepartment_text.split('-')[0].strip()
                                     courseCode_text = str(row['course code'])
