@@ -311,6 +311,53 @@ document.getElementById('courseSection').addEventListener('change', function() {
 });
 
 
+// Function to trigger search when any field changes
+function triggerSearch() {
+    const department = document.getElementById('courseDepartment').value;
+    const codeSection = document.getElementById('courseCodeSection').value;
+    const courseName = document.getElementById('courseName').value;
+
+    // If all empty, do nothing
+    if (!department && !codeSection && !courseName) {
+        return;
+    }
+
+    // Prepare data
+    const data = {
+        department: department,
+        codeSection: codeSection,
+        courseName: courseName
+    };
+
+    fetch('/search_course', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(course => {
+        if (course.error) {
+            // Optionally clear fields or show message
+            console.warn(course.error);
+            return;
+        }
+        // Fill the fields automatically
+        document.querySelector('input[name="courseSection"]').value = course.courseSection || '';
+        document.querySelector('input[name="courseCode"]').value = course.courseCode || '';
+        document.querySelector('input[name="courseHour"]').value = course.courseHour || '';
+        document.querySelector('input[name="courseStudent"]').value = course.courseStudent || '';
+        document.querySelector('input[name="coursePractical"]').value = course.coursePractical || '';
+        document.querySelector('input[name="courseTutorial"]').value = course.courseTutorial || '';
+    })
+    .catch(err => {
+        console.error('Fetch error:', err);
+    });
+}
+
+// Add event listeners to each select to trigger search on change
+document.getElementById('courseDepartment').addEventListener('change', triggerSearch);
+document.getElementById('courseCodeSection').addEventListener('change', triggerSearch);
+document.getElementById('courseName').addEventListener('change', triggerSearch);
 
 
 

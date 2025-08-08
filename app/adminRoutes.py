@@ -476,6 +476,32 @@ def admin_manageCourse():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
+            
+
+            '''elif form_type == 'mmodify':
+                data = request.get_json()
+                department_text = courseDepartment_text.split('-')[0].strip()
+                courseSection_text = request.form.get('courseSection', '').strip()
+                courseName_text = request.form.get('courseName', '').strip()
+
+                if department_text:
+                    course = Course.query.filter(Course.courseDepartment == department_text)
+                if courseSection_text:
+                    course = Course.query.filter(Course.courseSection == courseSection_text)
+                if courseName_text:
+                   course = Course.query.filter(Course.courseName == courseName_text)
+
+                # Return course data as JSON
+                return jsonify({
+                    'courseSection': course.courseSection,
+                    'courseCode': course.courseCode,
+                    'courseHour': course.courseHour,
+                    'courseStudent': course.courseStudent,
+                    'coursePractical': course.coursePractical,
+                    'courseTutorial': course.courseTutorial
+                })'''
+
+        
 
         elif form_type == 'manual':
             courseDepartment_text = request.form.get('courseDepartment', '').strip()
@@ -511,8 +537,8 @@ def admin_manageCourse():
             db.session.commit()
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
+            
         
-        #elif form_type == 'mmodify':
 
 
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)

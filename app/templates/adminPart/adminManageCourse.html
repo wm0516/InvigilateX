@@ -74,32 +74,26 @@
             <div class="profile-frame">
                 <div class="form-left">
                     <label id="departmentLabel">Department</label>
-                    <select name="courseDepartment" required>
-                        <option value="" disabled selected>Choose Department</option>
+                    <select name="courseDepartment" id="courseDepartment">
+                        <option value="" selected>Choose Department</option>
                         {% for dept in department_data %}
-                            <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
-                                ({{ dept.departmentCode }}) {{ dept.departmentName }}
-                            </option>
+                            <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
                         {% endfor %}
-                    </select><br>
+                    </select>
 
                     <label>Course Code/Section</label>
-                    <select name="courseCodeSection" required>
-                        <option value="" disabled selected>Choose Course Code</option>
+                    <select name="courseCodeSection" id="courseCodeSection">
+                        <option value="" selected>Choose Course Code</option>
                         {% for course in course_data %}
-                            <option value="{{ course.courseCodeSection }}">
-                                ({{ course.courseCodeSection }})
-                            </option>
+                            <option value="{{ course.courseCodeSection }}">{{ course.courseCodeSection }}</option>
                         {% endfor %}
-                    </select><br>
+                    </select>
 
                     <label>Course Name</label>
-                    <select name="courseName" required>
-                        <option value="" disabled selected>Choose Course Name</option>
+                    <select name="courseName" id="courseName">
+                        <option value="" selected>Choose Course Name</option>
                         {% for course in course_data %}
-                            <option value="{{ course.courseName }}">
-                                ({{ course.courseName }})
-                            </option>
+                            <option value="{{ course.courseName }}">{{ course.courseName }}</option>
                         {% endfor %}
                     </select>
                 </div>
