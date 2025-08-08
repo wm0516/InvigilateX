@@ -101,18 +101,18 @@
                                 ({{ course.courseCodeSection }}) - {{ course.courseName }}
                             </option>
                         {% endfor %}
-                    </select>
+                    </select><br>
 
                     <label>Course Practical Lecturer</label>
-                    <input type="text" name="practicalLecturer" value="{ practicalLecturer_text }" readonly><br>
+                    <input type="text" name="practicalLecturer" value="{{ practicalLecturer_text }}" readonly><br>
 
                     <label>Course Tutorial Lecturer</label>
-                    <input type="text" name="tutorialLecturer" value="{ tutorialLecturer_text }" readonly><br>
+                    <input type="text" name="tutorialLecturer" value="{{ tutorialLecturer_text }}" readonly><br>
                 </div> 
 
                 <div class="form-right">
                     <label>No. of Students</label>
-                    <input type="number" name="student" value="{{ student_text }}" required><br>
+                    <input type="number" name="student" value="{{ student_text }}" readonly><br>
 
                     <label>Venue</label>
                     <select name="venue" id="venueSection" required>
