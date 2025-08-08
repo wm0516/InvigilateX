@@ -213,6 +213,11 @@ def parse_date(val):
             return None
 
 
+
+
+
+
+
 # function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
 @app.route('/adminHome/manageLecturer', methods=['GET', 'POST'])
 def admin_manageLecturer():
@@ -260,12 +265,14 @@ def admin_manageLecturer():
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
+                            expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
+                            #  Normalize all string values to lowercase
+                            for col in df.columns:
+                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
                             role_mapping = {
                                 'lecturer': 1,
@@ -422,9 +429,7 @@ def admin_manageCourse():
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            # df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
-
-                            # 4️⃣ Normalize all string values to lowercase
+                            #  Normalize all string values to lowercase
                             for col in df.columns:
                                 df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
@@ -591,11 +596,14 @@ def admin_manageExam():
                                 skiprows=1
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
                             print(f"Read file table: {expected_cols}")
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
-                            df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
+                            
+                            #  Normalize all string values to lowercase
+                            for col in df.columns:
+                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
                             for index, row in df.iterrows():
                                 try:
@@ -714,7 +722,6 @@ def get_courses_by_department(department_code):
     return jsonify(course_list)
 
 
-
 @app.route('/get_course_details/<program_code>/<path:course_code_section>')  # ✅ FIXED HERE
 def get_course_details(program_code, course_code_section):
     print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
@@ -729,47 +736,6 @@ def get_course_details(program_code, course_code_section):
             "student": selected_course.courseStudent
         })
     return jsonify({"error": "Course not found"})
-
-
-@app.route('/search_course', methods=['POST'])
-def search_course():
-    data = request.get_json()
-
-    department = data.get('department', '').strip()
-    code_section = data.get('codeSection', '').strip()
-    course_name = data.get('courseName', '').strip()
-
-    # Only one of these should be filled
-    search_fields = [bool(department), bool(code_section), bool(course_name)]
-    if sum(search_fields) != 1:
-        return jsonify({'error': 'Please search by exactly one field'}), 400
-
-    if department:
-        department_code = department.split('-')[0].strip().upper()
-        course = Course.query.filter_by(courseDepartment=department_code).first()
-    elif code_section:
-        course = Course.query.filter_by(courseCodeSection=code_section.upper()).first()
-    elif course_name:
-        course = Course.query.filter_by(courseName=course_name.upper()).first()
-    else:
-        return jsonify({'error': 'No search parameter provided'}), 400
-
-    if not course:
-        return jsonify({'error': 'Course not found'}), 404
-
-    return jsonify({
-        'courseSection': course.courseSection,
-        'courseCode': course.courseCode,
-        'courseHour': course.courseHour,
-        'courseStudent': course.courseStudent,
-        'coursePractical': course.coursePractical,
-        'courseTutorial': course.courseTutorial,
-        'courseDepartment': course.courseDepartment,
-        'courseCodeSection': course.courseCodeSection,
-        'courseName': course.courseName
-    })
-
-
 
 
 

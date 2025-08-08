@@ -74,7 +74,7 @@
             <div class="profile-frame">
                 <div class="form-left">
                     <label>Department</label>
-                    <select name="courseDepartment" id="courseDepartment">
+                    <select name="courseDepartment" id="courseDepartment" required>
                         <option value="" selected>Choose Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
@@ -82,7 +82,7 @@
                     </select><br>
 
                     <label>Course Code/Section</label>
-                    <select name="courseCodeSection" id="courseCodeSection">
+                    <select name="courseCodeSection" id="courseCodeSection" required>
                         <option value="" selected>Choose Course Code</option>
                         {% for course in course_data %}
                             <option value="{{ course.courseCodeSection }}">{{ course.courseCodeSection }}</option>
@@ -90,7 +90,7 @@
                     </select><br>
 
                     <label>Course Name</label>
-                    <select name="courseName" id="courseName">
+                    <select name="courseName" id="courseName" required>
                         <option value="" selected>Choose Course Name</option>
                         {% for course in course_data %}
                             <option value="{{ course.courseName }}">{{ course.courseName }}</option>
