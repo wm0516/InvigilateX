@@ -598,6 +598,7 @@ def admin_manageExam():
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
                             print(f"Read file table: {expected_cols}")
+                            
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
                             
@@ -638,7 +639,7 @@ def admin_manageExam():
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
-                            print(f"[Sheet Error] {sheet_err}")
+                            print(f"     {sheet_err}")
 
                     flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
                           'success' if exam_records_added > 0 else 'error')
