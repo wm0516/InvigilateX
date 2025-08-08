@@ -757,11 +757,11 @@ def get_courses_by_department(department_code):
     return jsonify(course_list)
 
 
-
 @app.route('/get_lecturers_by_department/<department_code>')
 def get_lecturers_by_department(department_code):
-    lecturers = User.query.filter_by(userDepartment=department_code).all()
-    lecturer_list = [{"userName": l.userName} for l in lecturers] 
+    # Filter by department AND userLevel=1 (lecturer)
+    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
+    lecturer_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers] 
     return jsonify(lecturer_list)
 
 

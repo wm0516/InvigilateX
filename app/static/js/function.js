@@ -289,27 +289,51 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 
-document.getElementById('courseDepartmentSelection').addEventListener('change', function() {
-    let deptCode = this.value;
-    let courseDepartmentSelection = document.getElementById('departmentSection');
-    
-    // Reset the lecturer dropdown
-    courseDepartmentSelection.innerHTML = '<option value="" disabled selected>Select Department</option>';
 
-    if (deptCode) {
-        fetch(`/get_lecturers_by_department/${deptCode}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(lecturer => {
-                    let option = document.createElement('option');
-                    option.value = lecturer.userName;    // Assuming userName is lecturer's name or ID
-                    option.textContent = lecturer.userName;
-                    lecturerSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error fetching lecturers:', error));
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get department selection element
+    const deptSelect = document.getElementById('courseDepartmentSelection');
+    
+    // Get lecturer select elements
+    const practicalSelect = document.querySelector('select[name="coursePractical"]');
+    const tutorialSelect = document.querySelector('select[name="courseTutorial"]');
+    
+    if (deptSelect) {
+        deptSelect.addEventListener('change', function() {
+            const deptCode = this.value.split('-')[0].trim(); // Extract department code
+            
+            // Clear existing options (keep first option)
+            practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
+            tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
+            
+            if (deptCode) {
+                fetch(`/get_lecturers_by_department/${deptCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Populate both dropdowns with the same lecturer list
+                        data.forEach(lecturer => {
+                            const option = document.createElement('option');
+                            option.value = lecturer.userName;
+                            option.textContent = `${lecturer.userName} (${lecturer.userId})`;
+                            
+                            // Add to both dropdowns
+                            practicalSelect.appendChild(option.cloneNode(true));
+                            tutorialSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching lecturers:', error));
+            }
+        });
     }
 });
+
+
+
+
 
 
 

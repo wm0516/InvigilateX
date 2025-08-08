@@ -171,24 +171,16 @@
 
                 <div class="form-right">
                     <label>Practical Lecturer</label>
-                    <select name="coursePractical" required>
+                    <select id="practicalLecturerSelect" name="coursePractical" required>
                         <option value="" disabled selected>Select Practical Lecturer</option>
-                        {% for lecturer in lecturer_data %}
-                            <option value="{{ lecturer.userName }}">
-                                ({{ lecturer.userName }})
-                            </option>
-                        {% endfor %}
+                        <!-- Will be populated by JavaScript -->
                     </select><br>
 
                     <label>Tutorial Lecturer</label>
-                    <select name="courseTutorial" required>
+                    <select id="tutorialLecturerSelect" name="courseTutorial" required>
                         <option value="" disabled selected>Select Tutorial Lecturer</option>
-                        {% for lecturer in lecturer_data %}
-                            <option value="{{ lecturer.userName }}">
-                                ({{ lecturer.userName }})
-                            </option>
-                        {% endfor %}
-                    </select><br>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
                 </div>
             </div>
 
