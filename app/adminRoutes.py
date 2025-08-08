@@ -761,6 +761,7 @@ def get_courses_by_department(department_code):
 def get_lecturers_by_department(department_code):
     # Filter by department AND userLevel=1 (lecturer)
     department_text = department_code.split('-')[0].strip()
+    print(f"Departmetn_text_code is: {department_text}")
     lecturers = User.query.filter_by(userDepartment=department_text, userLevel=1).all()
     lecturer_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers] 
     return jsonify(lecturer_list)
