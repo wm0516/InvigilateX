@@ -625,7 +625,7 @@ def admin_manageExam():
                 venue_text = request.form.get('venue', '').strip()
 
                 # Filter course list for re-rendering form in case of error
-                if programCode_text:
+                '''if programCode_text:
                     course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
                     print(f"Show me the courseSection_text: {courseSection_text}")
 
@@ -640,7 +640,7 @@ def admin_manageExam():
                             tutorialLecturer_text = selected_course.courseTutorial
                             student_text = selected_course.courseStudent
                 else:
-                    course_data = Course.query.all()
+                    course_data = Course.query.all()'''
 
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
