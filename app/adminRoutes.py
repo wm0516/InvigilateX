@@ -2,7 +2,8 @@ from flask import render_template, request, redirect, url_for, flash, session, j
 from app import app
 from .backend import *
 from .database import *
-from datetime import  datetime
+from datetime import  datetime, time
+import calendar
 import os
 from io import BytesIO
 import pandas as pd
@@ -211,6 +212,28 @@ def parse_date(val):
         except Exception:
             print(f"[Date Parse Error] Could not parse: {val}")
             return None
+
+
+def standardize_time_with_seconds(time_value):
+    """
+    Convert input time (string or datetime.time) to HH:MM:SS string format.
+    """
+    if isinstance(time_value, time):
+        # If it's already a time object, format it
+        return time_value.strftime("%H:%M:%S")
+    elif isinstance(time_value, str):
+        # Try parsing from string formats like HH:MM or HH:MM:SS
+        for fmt in ("%H:%M:%S", "%H:%M"):
+            try:
+                dt = datetime.strptime(time_value, fmt)
+                return dt.strftime("%H:%M:%S")
+            except ValueError:
+                continue
+        # If parsing fails, just return the original string (or handle error)
+        return time_value
+    else:
+        # If it's something else (e.g., None), return empty string or handle accordingly
+        return ""
 
 
 
@@ -586,6 +609,7 @@ def admin_manageExam():
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
 
+                    abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
                     exam_records_added = 0
                     for sheet_name in excel_file.sheet_names:
                         try:
@@ -602,16 +626,22 @@ def admin_manageExam():
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
                             
-                            #  Normalize all string values to lowercase
+                            # Normalize all string columns except 'day' to lowercase
                             for col in df.columns:
-                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+                                if col != 'day':
+                                    df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+
+                            # Convert 'day' abbreviations to full day names
+                            df['day'] = df['day'].apply(
+                                lambda x: abbr_to_full.get(str(x).strip()[:3].lower(), x) if isinstance(x, str) else x
+                            )
 
                             for index, row in df.iterrows():
                                 try:
                                     examDate_text = parse_date(row['date'])
-                                    examDay_text = str(row['day']).upper()
-                                    startTime_text = str(row['start']).upper()
-                                    endTime_text = str(row['end']).upper()
+                                    examDay_text = row['day'].upper()
+                                    startTime_text = standardize_time_with_seconds(row['start'])
+                                    endTime_text = standardize_time_with_seconds(row['end'])
                                     programCode_text = str(row['program']).upper()
                                     courseSection_text = str(row['course/sec']).upper()
                                     practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
@@ -658,8 +688,10 @@ def admin_manageExam():
                 examDate_text_raw = request.form.get('examDate', '').strip()
                 examDate_text = parse_date(examDate_text_raw)
                 examDay_text = request.form.get('examDay', '').strip()
-                startTime_text = request.form.get('startTime', '').strip()
-                endTime_text = request.form.get('endTime', '').strip()
+                startTime_raw = request.form.get('startTime', '').strip()
+                endTime_raw = request.form.get('endTime', '').strip()
+                startTime_text = standardize_time_with_seconds(startTime_raw)
+                endTime_text = standardize_time_with_seconds(endTime_raw)
                 programCode_text = request.form.get('programCode', '').strip()
                 courseSection_text = request.form.get('courseSection', '').strip()
                 practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
