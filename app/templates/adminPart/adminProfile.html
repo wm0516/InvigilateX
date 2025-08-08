@@ -6,7 +6,7 @@
     <form method="post">
         <label>Now display out the contact number value, everytime click on the button will show 'Similar Contact Number Update'</label><br>
         <label>Does allow admin to change their department? Only admin able to change</label><br>
-        
+
         <div class="profile-frame">
             <div class="form-left">
                 <label>Full Name as per IC</label>
@@ -51,6 +51,7 @@
                 </div>
             </div>
         </div>
+
         <br>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -62,6 +63,7 @@
             {% endif %}
         {% endwith %}
         <br>
+        
         <div class="button-wrapper">
                 <button type="submit">Update</button>
         </div>
