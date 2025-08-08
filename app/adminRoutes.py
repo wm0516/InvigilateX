@@ -493,7 +493,7 @@ def admin_manageExam():
     department_data = Department.query.all()
     lecturer_data = User.query.filter(User.userLevel == 1).all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    course_data = Course.query.all()
+    course_data = Course.query.all()    
 
     # Default form values
     examDate_text = ''
@@ -579,6 +579,7 @@ def admin_manageExam():
 
         elif form_type == 'manual':
             try:
+                # programCode_text is department 
                 examDate_text_raw = request.form.get('examDate', '').strip()
                 examDate_text = parse_date(examDate_text_raw)
                 examDay_text = request.form.get('examDay', '').strip()
@@ -589,16 +590,15 @@ def admin_manageExam():
                 lecturer_text = request.form.get('lecturer', '').strip()
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
-
-                # Get selected department from programCode
-                selected_department_code = programCode_text
-                departmentCode = selected_department_code.split('-')[0].strip()
+                print(f"Department Code is {programCode_text}")
 
                 # Filter course_data based on selected department
-                if departmentCode:
-                    course_data = Course.query.filter_by(courseDepartment=departmentCode).all()
+                if programCode_text:
+                    course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
+                    print(f"Yes. Course Code is {course_data}")
                 else:
                     course_data = Course.query.all()
+                    print(f"No. Course Code is {course_data}")
 
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
                                            examDay_text, programCode_text, lecturer_text, student_text, venue_text)
