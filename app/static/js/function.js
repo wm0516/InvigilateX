@@ -283,7 +283,7 @@ document.getElementById('programCode').addEventListener('change', function() {
 
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
-    let sectionCode = this.value;
+    let sectionCode = document.getElementById('courseSection').value;
     console.log("Selected:", deptCode, sectionCode); // Debug
 
     if (deptCode && sectionCode) {
