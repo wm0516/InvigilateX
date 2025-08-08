@@ -532,6 +532,7 @@ def admin_manageExam():
     tutorialLecturer_text = ''
     student_text = ''
     venue_text = ''
+    courseSection_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -638,7 +639,6 @@ def admin_manageExam():
                             practicalLecturer_text = selected_course.coursePractical
                             tutorialLecturer_text = selected_course.courseTutorial
                             student_text = selected_course.courseStudent
-
                 else:
                     course_data = Course.query.all()
 
