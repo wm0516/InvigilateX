@@ -699,8 +699,9 @@ def get_courses_by_department(department_code):
 
 
 
-@app.route('/get_course_details/<program_code>/<course_code_section>')
+@app.route('/get_course_details/<program_code>/<path:course_code_section>')  # ✅ FIXED HERE
 def get_course_details(program_code, course_code_section):
+    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
     selected_course = Course.query.filter_by(
         courseDepartment=program_code,
         courseCodeSection=course_code_section

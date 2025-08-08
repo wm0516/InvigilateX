@@ -280,14 +280,13 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 
-
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
     let sectionCode = document.getElementById('courseSection').value;
     console.log("Selected:", deptCode, sectionCode); // Debug
 
     if (deptCode && sectionCode) {
-        fetch(`/get_course_details/${deptCode}/${sectionCode}`)
+        fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)  // ✅ FIXED HERE
             .then(response => {
                 if (!response.ok) throw new Error("API failed");
                 return response.json();
