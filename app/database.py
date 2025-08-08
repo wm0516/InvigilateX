@@ -51,7 +51,7 @@ class Exam(db.Model):
     examEndTime = db.Column(db.String(20), nullable=False)
     examProgramCode = db.Column(db.String(10), nullable=False)
     examCourseSectionCode = db.Column(db.String(20), primary_key=True)
-    examPraticalLecturer = db.Column(db.String(255), nullable=False)
+    examPracticalLecturer = db.Column(db.String(255), nullable=False)
     examTutorialLecturer = db.Column(db.String(255), nullable=False)
     examTotalStudent = db.Column(db.Integer, nullable=False)
     examVenue = db.Column(db.String(50), nullable=True)
@@ -64,7 +64,7 @@ class Exam(db.Model):
         examEndTime VARCHAR(20),
         examProgramCode VARCHAR(10),
         examCourseSectionCode VARCHAR(20) PRIMARY KEY,
-        examPraticalLecturer VARCHAR(255),
+        examPracticalLecturer VARCHAR(255),
         examTutorialLecturer VARCHAR(255),
         examTotalStudent INT,
         examVenue VARCHAR(50)
