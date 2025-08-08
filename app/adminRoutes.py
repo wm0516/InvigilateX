@@ -254,18 +254,18 @@ def admin_manageLecturer():
                             df = pd.read_excel(
                                 excel_file,
                                 sheet_name=sheet_name,
-                                usecols="A:F",
+                                usecols="A:G",
                                 skiprows=1
                             )
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact']
+                            expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['id', 'name', 'department', 'role', 'email', 'contact']
+                            df.columns = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
 
                             role_mapping = {
                                 'lecturer': 1,
@@ -281,6 +281,7 @@ def admin_manageLecturer():
                                     department_text = str(row['department']).upper()
                                     email_text = str(row['email'])
                                     contact_text = str(row['contact'])
+                                    gender_text = str(row['gender']).upper()
                                     role_text_str = str(row['role']).strip().lower()
                                     role_text = role_mapping.get(role_text_str)
                                     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
@@ -291,6 +292,7 @@ def admin_manageLecturer():
                                             userId=id_text,
                                             userName=name_text,
                                             userDepartment=department_text,
+                                            userGender=gender_text,
                                             userLevel=role_text,
                                             userEmail=email_text,
                                             userContact=contact_text,
@@ -641,6 +643,7 @@ def admin_manageExam():
                     examTotalStudent=student_text,
                     examVenue=venue_text
                 )
+
                 db.session.add(new_exam)
                 db.session.commit()
                 flash("New Exam Record Added Successfully", "success")
