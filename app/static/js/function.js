@@ -240,13 +240,16 @@ document.getElementById('endTime').addEventListener('change', function() {
 function showSection(sectionId, event) {
     event.preventDefault();
 
-    // Hide both forms
+    // Hide all forms
     document.getElementById("uploadForm").style.display = "none";
+    document.getElementById("modifyForm").style.display = "none";
     document.getElementById("manualForm").style.display = "none";
 
     // Show selected form
     if (sectionId === "uploadSection") {
         document.getElementById("uploadForm").style.display = "block";
+    } else if (sectionId === "modifySection") {
+        document.getElementById("modifyForm").style.display = "block";
     } else {
         document.getElementById("manualForm").style.display = "block";
     }
@@ -255,7 +258,6 @@ function showSection(sectionId, event) {
     document.querySelectorAll(".tab-link").forEach(tab => tab.classList.remove("active"));
     event.currentTarget.classList.add("active");
 }
-
 
     
 document.getElementById('programCode').addEventListener('change', function() {
