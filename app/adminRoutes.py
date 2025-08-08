@@ -618,8 +618,7 @@ def admin_manageExam():
                 else:
                     course_data = Course.query.all()
 
-                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
-                                           examDay_text, programCode_text, lecturer_text, student_text, venue_text)
+                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
                     flash(result, 'error')
                     return render_template('adminPart/adminManageExam.html',
