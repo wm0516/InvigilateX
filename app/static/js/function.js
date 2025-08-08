@@ -284,29 +284,23 @@ document.getElementById('programCode').addEventListener('change', function() {
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
     let sectionCode = this.value;
+    console.log("Selected:", deptCode, sectionCode); // Debug
 
     if (deptCode && sectionCode) {
         fetch(`/get_course_details/${deptCode}/${sectionCode}`)
-            .then(response => response.json())
-            .then(data => {
-                if (!data.error) {
-                    document.getElementById('practicalLecturer').value = data.practicalLecturer;
-                    document.getElementById('tutorialLecturer').value = data.tutorialLecturer;
-                    document.getElementById('student').value = data.student;
-                }
+            .then(response => {
+                if (!response.ok) throw new Error("API failed");
+                return response.json();
             })
-            .catch(err => console.error(err));
+            .then(data => {
+                console.log("API Data:", data); // Debug response
+                document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
+                document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
+                document.getElementById('student').value = data.student || "";
+            })
+            .catch(err => console.error("Error:", err));
     }
 });
-
-
-
-
-
-
-
-
-
 
 
 
