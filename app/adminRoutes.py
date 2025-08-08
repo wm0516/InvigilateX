@@ -680,6 +680,9 @@ def admin_manageExam():
 
     return render_template('adminPart/adminManageExam.html',
                            active_tab='admin_manageExamtab',
+                           examPracticalLecturer=course_data.coursePractical if course_data else '',
+                           examTutorialLecturer=course_data.courseTutorial if course_data else '',
+                           examTotalStudent = course_data.courseStudent if course_data else '',
                            exam_data=exam_data,
                            course_data=course_data,
                            venue_data=venue_data,
