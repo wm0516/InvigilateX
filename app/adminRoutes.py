@@ -701,22 +701,19 @@ def get_courses_by_department(department_code):
 
 
 
-@app.route('/get_course_details/<program_code>/<course_section>')
-def get_course_details(program_code, course_section):
-    print(f"Looking up course: program={program_code}, section={course_section}")  # Debug
+@app.route('/get_course_details/<program_code>/<course_code_section>')
+def get_course_details(program_code, course_code_section):
     selected_course = Course.query.filter_by(
         courseDepartment=program_code,
-        courseSection=course_section
+        courseCodeSection=course_code_section
     ).first()
     if selected_course:
-        print(f"Found course: {selected_course.coursePractical}, {selected_course.courseTutorial}, {selected_course.courseStudent}")  # Debug
         return {
             "practicalLecturer": selected_course.coursePractical,
             "tutorialLecturer": selected_course.courseTutorial,
             "student": selected_course.courseStudent
         }
     return {"error": "Course not found"}
-
 
 
 
