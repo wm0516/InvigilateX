@@ -10,8 +10,12 @@
                 <i class="fas fa-upload"></i>
                 <span>Upload File</span>
             </a>
-            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+            <a href="#" class="tab-link" onclick="showSection('modifySection', event)">
                 <i class="fas fa-edit"></i>
+                <span>Modify Data</span>
+            </a>
+            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+                <i class="fas fa-plus"></i>
                 <span>Manually Insert</span>
             </a>
         </div>
@@ -58,6 +62,10 @@
                 </div>
             </div>
         </div>
+    </form>
+
+    <!-- Modify Form -->
+    <form id="modifyForm" action="{{ url_for('admin_manageExam') }}" method="POST" style="display: none;">
     </form>
 
 

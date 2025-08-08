@@ -352,6 +352,9 @@ def admin_manageLecturer():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageLecturer'))
 
+        elif form_type == 'modify':
+            return redirect(url_for('admin_manageLecturer'))
+        
         elif form_type == 'manual':
             id_text = request.form.get('userid', '').strip()
             name_text = request.form.get('username', '').strip()
@@ -568,8 +571,6 @@ def admin_manageCourse():
             return redirect(url_for('admin_manageCourse'))
             
         
-
-
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
 
@@ -681,6 +682,9 @@ def admin_manageExam():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageExam'))
+
+        elif form_type == 'modify':
+            return redirect(url_for('admin_manageExam'))
 
         # ===== Manual Add =====
         elif form_type == 'manual':
