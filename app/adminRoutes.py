@@ -694,6 +694,19 @@ def get_courses_by_department(department_code):
     course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
     return jsonify(course_list)
 
+@app.route('/get_course_details/<program_code>/<course_section>')
+def get_course_details(program_code, course_section):
+    selected_course = Course.query.filter_by(
+        courseDepartment=program_code,
+        courseSection=course_section
+    ).first()
+    if selected_course:
+        return {
+            "practicalLecturer": selected_course.coursePractical,
+            "tutorialLecturer": selected_course.courseTutorial,
+            "student": selected_course.courseStudent
+        }
+    return {}
 
 
 

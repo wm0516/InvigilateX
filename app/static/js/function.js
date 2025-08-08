@@ -262,8 +262,11 @@ document.getElementById('programCode').addEventListener('change', function() {
     let deptCode = this.value;
     let courseSectionSelect = document.getElementById('courseSection');
 
-    // Reset the course section dropdown
+    // Reset dropdown & fields
     courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+    document.getElementById('practicalLecturer').value = '';
+    document.getElementById('tutorialLecturer').value = '';
+    document.getElementById('student').value = '';
 
     if (deptCode) {
         fetch(`/get_courses_by_department/${deptCode}`)
@@ -275,11 +278,24 @@ document.getElementById('programCode').addEventListener('change', function() {
                     option.textContent = course.courseCodeSection;
                     courseSectionSelect.appendChild(option);
                 });
+
+                // Attach change event for course selection after options loaded
+                courseSectionSelect.addEventListener('change', function() {
+                    const courseSection = this.value;
+                    if(courseSection) {
+                        fetch(`/get_course_details/${deptCode}/${courseSection}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                document.getElementById('practicalLecturer').value = data.practicalLecturer || '';
+                                document.getElementById('tutorialLecturer').value = data.tutorialLecturer || '';
+                                document.getElementById('student').value = data.student || '';
+                            });
+                    }
+                });
             })
             .catch(error => console.error('Error fetching courses:', error));
     }
 });
-
 
 
 
