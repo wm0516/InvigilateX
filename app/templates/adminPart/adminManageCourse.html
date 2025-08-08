@@ -75,7 +75,7 @@
                 <div class="form-left">
                     <label id="departmentLabel">Department</label>
                     <select name="courseDepartment" required>
-                        <option value="" disabled selected>Select Department</option>
+                        <option value="" disabled selected>Choose Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
                                 ({{ dept.departmentCode }}) {{ dept.departmentName }}
@@ -83,25 +83,42 @@
                         {% endfor %}
                     </select><br>
 
-                    <label>Course Code</label>
-                    <input type="text" name="courseCode" value="{{ courseCode_text }}" required><br>
+                    <label>Course Code/Section</label>
+                    <select name="courseCodeSection" required>
+                        <option value="" disabled selected>Choose Course Code</option>
+                        {% for course in course_data %}
+                            <option value="{{ course.courseCodeSection }}">
+                                ({{ course.courseCodeSection }})
+                            </option>
+                        {% endfor %}
+                    </select><br>
 
-                    <label>Course Section</label>
-                    <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
+                    <label>Course Name</label>
+                    <select name="courseName" required>
+                        <option value="" disabled selected>Choose Course Name</option>
+                        {% for course in course_data %}
+                            <option value="{{ course.courseName }}">
+                                ({{ course.courseName }})
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <div class="form-middle">
-                    <label>Course Name</label>
-                    <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
+                    <label>Course Section</label>
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}" required><br>
+
+                    <label>Course Code</label>
+                    <input type="text" name="courseCode" value="{{ courseCode_text }}" required><br>
 
                     <label>Course Credit Hour(s)</label>
-                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required><br>
-
-                    <label>Course Number of Student(s)</label>
-                    <input type="number" name="courseStudent" value="{{ courseStudent_text }}" required>
+                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required>
                 </div>
 
                 <div class="form-right">
+                    <label>Course Number of Student(s)</label>
+                    <input type="number" name="courseStudent" value="{{ courseStudent_text }}" required><br>
+
                     <label>Practical Lecturer</label>
                     <input type="text" name="coursePractical" value="{{ coursePractical_text }}" required><br>
 
