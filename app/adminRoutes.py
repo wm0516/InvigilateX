@@ -260,12 +260,12 @@ def admin_manageLecturer():
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
+                            expected_cols = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
+                            df.columns = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
 
                             role_mapping = {
                                 'lecturer': 1,
@@ -417,12 +417,12 @@ def admin_manageCourse():
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
+                            expected_cols = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
+                            df.columns = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
 
                             for index, row in df.iterrows():
                                 try:
@@ -512,12 +512,13 @@ def admin_manageCourse():
 
 
 
+
+
 # Function for admin to manage exam information (adding, editing, and removing)
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     exam_data = Exam.query.all()
     department_data = Department.query.all() # For department code dropdown
-    lecturer_data = User.query.filter(User.userLevel == 1).all() # Maybe can be delete
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
     course_data = Course.query.all() # For course selection dropdown and show out related tutorial, practical, and number of students
 
@@ -556,11 +557,11 @@ def admin_manageExam():
                                 skiprows=1
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
+                            expected_cols = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
                             print(f"Read file table: {expected_cols}")
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
-                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
+                            df.columns = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
 
                             for index, row in df.iterrows():
                                 try:
@@ -624,30 +625,12 @@ def admin_manageExam():
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
 
-                # Filter course list for re-rendering form in case of error
-                '''if programCode_text:
-                    course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
-                    print(f"Show me the courseSection_text: {courseSection_text}")
-
-                    if courseSection_text:
-                        selected_course = Course.query.filter_by(
-                            courseDepartment=programCode_text,
-                            courseCodeSection=courseSection_text
-                        ).first()
-
-                        if selected_course:
-                            practicalLecturer_text = selected_course.coursePractical
-                            tutorialLecturer_text = selected_course.courseTutorial
-                            student_text = selected_course.courseStudent
-                else:
-                    course_data = Course.query.all()'''
-
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
                     flash(result, 'error')
                     return render_template('adminPart/adminManageExam.html',
                                            exam_data=exam_data, course_data=course_data, venue_data=venue_data,
-                                           lecturer_data=lecturer_data, department_data=department_data,
+                                           department_data=department_data,
                                            examDate_text=examDate_text, examDay_text=examDay_text,
                                            startTime_text=startTime_text, endTime_text=endTime_text,
                                            programCode_text=programCode_text, courseSection_text=courseSection_text,
@@ -683,7 +666,6 @@ def admin_manageExam():
                            exam_data=exam_data,
                            course_data=course_data,
                            venue_data=venue_data,
-                           lecturer_data=lecturer_data,
                            department_data=department_data)
 
 

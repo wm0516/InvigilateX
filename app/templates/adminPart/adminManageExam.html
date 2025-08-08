@@ -26,7 +26,7 @@
                     <div class="upload-container" id="examUploadContainer">
                         <div class="upload-text">
                             Upload a file with an empty first row. Data should start from columns A to J,<br> 
-                            labeled as: ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']<br><br><br>
+                            labeled as: ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']<br><br><br>
                             Click to upload or drag and drop with below file format
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
@@ -170,13 +170,12 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Exam Date</th>
-                    <th>Exam Day</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
+                    <th>Exam Date & Day</th>
+                    <th>Start - End Time</th>
                     <th>Program Code</th>
                     <th>Course/Section</th>
-                    <th>Lecturer</th>
+                    <th>Pratical Lecturer</th>
+                    <th>Tutorial Lecturer</th>
                     <th>No. of Students</th>
                     <th>Venue</th>
                 </tr>
@@ -186,13 +185,12 @@
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <!-- <td>{{ row.examID  }}</td> -->
-                    <td>{{ row.examDate }}</td>
-                    <td>{{ row.examDay }}</td>
-                    <td>{{ row.examStartTime }}</td>
-                    <td>{{ row.examEndTime }}</td>
+                    <td>{{ row.examDate }} - {{ row.examDay }}</td>
+                    <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>
                     <td>{{ row.examProgramCode }}</td>
                     <td>{{ row.examCourseSectionCode }}</td>
-                    <td>{{ row.examLecturer }}</td>
+                    <td>{{ row.examPracticalLecturer }}</td>
+                    <td>{{ row.examTutorialLecturer }}</td>
                     <td>{{ row.examTotalStudent }}</td>
                     <td>{{ row.examVenue }}</td>
                 </tr>
