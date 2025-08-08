@@ -70,8 +70,8 @@
                     <label>Exam Date and Day</label>
                     <div style="display: flex; gap: 2%">
                         <input type="date" name="examDate" id="examDate" value="{{ examDate_text }}" required>
-                        <input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly><br>
-                    </div>
+                        <input type="text" name="examDay" id="examDay" value="{{ examDay_text }}" readonly>
+                    </div><br>
 
                     <label>Start Time and End Time</label>
                     <div style="display: flex; gap: 2%;">
@@ -104,7 +104,7 @@
                 </div>
 
                 <div class="form-right">
-                    <label>Lecturer</label>
+                    <label>Course Lecturer</label>
                     <select name="lecturer" required>
                         <option value="" disabled selected>Select Lecturer</option>
                         {% for lecturer in lecturer_data %}
@@ -122,7 +122,7 @@
                         <option value="" disabled selected>Select Venue</option>
                         {% for venue in venue_data %}
                             <option value="{{ venue.venueNumber }}">
-                                {{ venue.venueNumber }}
+                                {{ venue.venueNumber }} - (Venue Capacity: {{ "%.2f"|format(venue.venueCapacity) }})
                             </option>
                         {% endfor %}
                     </select>
