@@ -556,11 +556,11 @@ def admin_manageExam():
                                 skiprows=1
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'pratical lecturer', 'tutorial lecturer', 'no of', 'room']
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
                             print(f"Read file table: {expected_cols}")
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
-                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'pratical lecturer', 'tutorial lecturer', 'no of', 'room']
+                            df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'practical lecturer', 'tutorial lecturer', 'no of', 'room']
 
                             for index, row in df.iterrows():
                                 try:
