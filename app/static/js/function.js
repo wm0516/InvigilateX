@@ -259,7 +259,8 @@ function showSection(sectionId, event) {
     event.currentTarget.classList.add("active");
 }
 
-    
+
+// Function for after getting department code, related course code will be displayed out in Manage Exam page
 document.getElementById('programCode').addEventListener('change', function() {
     let deptCode = this.value;
     let courseSectionSelect = document.getElementById('courseSection');
@@ -289,11 +290,31 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 
+// Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
+document.getElementById('courseSection').addEventListener('change', function() {
+    let deptCode = document.getElementById('programCode').value;
+    let sectionCode = document.getElementById('courseSection').value;
+    console.log("Selected:", deptCode, sectionCode); // Debug
+
+    if (deptCode && sectionCode) {
+        fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)  // ✅ FIXED HERE
+            .then(response => {
+                if (!response.ok) throw new Error("API failed");
+                return response.json();
+            })
+            .then(data => {
+                console.log("API Data:", data); // Debug response
+                document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
+                document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
+                document.getElementById('student').value = data.student || "";
+            })
+            .catch(err => console.error("Error:", err));
+    }
+});
 
 
 
-
-
+// Function of when department code selected, related lecturer will be displatey out in Manage Course page
 document.addEventListener('DOMContentLoaded', function() {
     // Get department selection element
     const deptSelect = document.getElementById('courseDepartmentSelection');
@@ -340,26 +361,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-document.getElementById('courseSection').addEventListener('change', function() {
-    let deptCode = document.getElementById('programCode').value;
-    let sectionCode = document.getElementById('courseSection').value;
-    console.log("Selected:", deptCode, sectionCode); // Debug
 
-    if (deptCode && sectionCode) {
-        fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)  // ✅ FIXED HERE
-            .then(response => {
-                if (!response.ok) throw new Error("API failed");
-                return response.json();
-            })
-            .then(data => {
-                console.log("API Data:", data); // Debug response
-                document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
-                document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
-                document.getElementById('student').value = data.student || "";
-            })
-            .catch(err => console.error("Error:", err));
-    }
-});
+
+
+
+
+
+
+
+
 
 
 // Function to trigger search when any field changes
