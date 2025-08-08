@@ -267,8 +267,9 @@ document.getElementById('programCode').addEventListener('change', function() {
     
     // Reset the course section dropdown
     courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
-    [practicalLecturerSelect, tutorialLecturerSelect, studentSelect].forEach(el => el.innerHTML = "");
-
+    practicalLecturerSelect.value = "";
+    tutorialLecturerSelect.value = "";
+    studentSelect.value = "";
 
     if (deptCode) {
         fetch(`/get_courses_by_department/${deptCode}`)
