@@ -485,17 +485,19 @@ def admin_manageCourse():
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
 
+from flask import jsonify  # make sure this is imported
 
-# function for admin to manage exam information (adding, editing, adn removing)
+
+# Function for admin to manage exam information (adding, editing, and removing)
 @app.route('/adminHome/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     exam_data = Exam.query.all()
     department_data = Department.query.all()
     lecturer_data = User.query.filter(User.userLevel == 1).all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    course_data = Course.query.all()    
+    course_data = Course.query.all()
 
-    # Default form values
+    # Default values for manual form
     examDate_text = ''
     examDay_text = ''
     startTime_text = ''
@@ -509,6 +511,7 @@ def admin_manageExam():
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
+        # ===== File Upload =====
         if form_type == 'upload':
             file = request.files.get('exam_file')
             if file and file.filename:
@@ -565,21 +568,21 @@ def admin_manageExam():
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
-                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 'success' if exam_records_added > 0 else 'error')
+                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
+                          'success' if exam_records_added > 0 else 'error')
                     return redirect(url_for('admin_manageExam'))
 
                 except Exception as e:
                     print(f"[File Processing Error] {e}")
                     flash('File processing error: File upload in wrong format', 'error')
                     return redirect(url_for('admin_manageExam'))
-
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageExam'))
 
+        # ===== Manual Add =====
         elif form_type == 'manual':
             try:
-                # programCode_text is department 
                 examDate_text_raw = request.form.get('examDate', '').strip()
                 examDate_text = parse_date(examDate_text_raw)
                 examDay_text = request.form.get('examDay', '').strip()
@@ -590,15 +593,12 @@ def admin_manageExam():
                 lecturer_text = request.form.get('lecturer', '').strip()
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
-                print(f"Department Code is {programCode_text}")
 
-                # Filter course_data based on selected department
+                # Filter course list for re-rendering form in case of error
                 if programCode_text:
                     course_data = Course.query.filter_by(courseDepartment=programCode_text).all()
-                    print(f"Yes. Course Code is {course_data}")
                 else:
                     course_data = Course.query.all()
-                    print(f"No. Course Code is {course_data}")
 
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
                                            examDay_text, programCode_text, lecturer_text, student_text, venue_text)
@@ -641,6 +641,13 @@ def admin_manageExam():
                            venue_data=venue_data,
                            lecturer_data=lecturer_data,
                            department_data=department_data)
+
+# ===== New helper route for dependent dropdown =====
+@app.route('/get_courses_by_department/<department_code>')
+def get_courses_by_department(department_code):
+    courses = Course.query.filter_by(courseDepartment=department_code).all()
+    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
+    return jsonify(course_list)
 
 
 

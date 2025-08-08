@@ -82,17 +82,17 @@
                     <input type="time" id="endTime" name="endTime" value="{{ endTime_text }}" min="08:00" max="20:00" required><br>
 
                     <label>Program Code</label>
-                    <select name="programCode" required>
+                    <select name="programCode" id="programCode" required>
                         <option value="" disabled selected>Select Program Code</option>
                         {% for dept in department_data %}
-                            <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
+                            <option value="{{ dept.departmentCode }}">
                                 ({{ dept.departmentCode }}) {{ dept.departmentName }}
                             </option>
                         {% endfor %}
                     </select><br>
                     
                     <label>Course/Section</label>
-                    <select name="courseSection" required>
+                    <select name="courseSection" id="courseSection" required>
                         <option value="" disabled selected>Select Course Section</option>
                         {% for course in course_data %}
                             <option value="{{ course.courseCodeSection }}">
