@@ -224,6 +224,7 @@ def admin_manageLecturer():
     name_text = ''
     email_text = ''
     contact_text = ''
+    gender_text = ''
     department_text = ''
     role_text = ''
     error_message = None
@@ -284,7 +285,7 @@ def admin_manageLecturer():
                                     role_text = role_mapping.get(role_text_str)
                                     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-                                    valid, result = check_lecturer(id_text, email_text, contact_text, name_text, department_text, role_text)
+                                    valid, result = check_lecturer(id_text, email_text, contact_text)
                                     if valid:
                                         new_lecturer = User(
                                             userId=id_text,
@@ -324,6 +325,7 @@ def admin_manageLecturer():
             name_text = request.form.get('username', '').strip()
             email_text = request.form.get('email', '').strip()
             contact_text = request.form.get('contact', '').strip()
+            gender_text = request.form.get('gender', '').strip()
             department_text = request.form.get('department', '').strip()
             role_text = request.form.get('role', '').strip()
             hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
@@ -340,7 +342,7 @@ def admin_manageLecturer():
                     email_text=email_text,
                     contact_text=contact_text,
                     department_text=department_text,
-                    role_text=role_text,
+                    role_text=role_text,gender_text=gender_text,
                     active_tab='admin_manageLecturertab'
                 )
 
@@ -351,6 +353,7 @@ def admin_manageLecturer():
                 userLevel=role_map[role_text],
                 userEmail=email_text,
                 userContact=contact_text,
+                userGender=gender_text,
                 userPassword=hashed_pw,
                 userStatus=False
             )
@@ -430,7 +433,7 @@ def admin_manageCourse():
                                     courseTutorial_text = str(row['tutorial lecturer'])
                                     courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
-                                    valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
+                                    valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
                                     if valid:
                                         new_course = Course(
                                             courseDepartment=department_text.upper(),
@@ -476,7 +479,7 @@ def admin_manageCourse():
             courseTutorial_text = request.form.get('courseTutorial', '').strip()
             courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
-            valid, result = check_course(courseDepartment_text, courseCode_text, courseSection_text, courseName_text, courseHour_text, coursePractical_text, courseTutorial_text)
+            valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
             if not valid:
                 flash(result, 'error')
                 return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, courseDepartment_text=courseDepartment_text,
@@ -562,8 +565,7 @@ def admin_manageExam():
                                     student_text = row['no of']
                                     venue_text = str(row['room']).upper()
 
-                                    valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text,
-                                                               examDay_text, programCode_text, lecturer_text, student_text, venue_text)
+                                    valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                                     if valid:
                                         new_exam = Exam(
                                             examDate=examDate_text,
@@ -657,6 +659,8 @@ def admin_manageExam():
                            venue_data=venue_data,
                            lecturer_data=lecturer_data,
                            department_data=department_data)
+
+
 
 # ===== New helper route for dependent dropdown =====
 @app.route('/get_courses_by_department/<department_code>')

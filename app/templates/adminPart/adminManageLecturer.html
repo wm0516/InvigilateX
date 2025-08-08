@@ -72,7 +72,7 @@
                     <input type="text" name="username" value="{{ name_text }}" required><br>
 
                     <label>Staff Email Address</label>
-                    <input type="text" name="email" value="{{ email_text }}" required>
+                    <input type="email" name="email" value="{{ email_text }}" required>
                 </div>
 
                 <div class="form-middle">
@@ -80,7 +80,7 @@
                     <input type="tel" name="contact" value="{{ contact_text }}" required><br>
                     
                     <label>Staff Gender</label>
-                    <select value="{{ gender_text }}" required>
+                    <select name="gender" required>
                         <option value="" disabled selected>Select Gender</option>
                         <option value="MALE">MALE</option>
                         <option value="FEMALE">FEMALE</option>

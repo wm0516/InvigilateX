@@ -15,6 +15,13 @@ DEAN = 3
 HOP = 2
 LECTURER = 1
 
+role_map = {
+    'LECTURER': LECTURER,
+    'DEAN': DEAN,
+    'HOP': HOP,
+    'ADMIN': ADMIN
+}
+
 # Email format
 def email_format(email):
     return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
@@ -51,17 +58,8 @@ def check_login(loginEmail, loginPassword):
 
 
 # Check registerID, registerEmail, registerContact can't be same as inside database based on role
-def check_register(id, email, contact, name, password1, password2, department, role, gender):
-    role_map = {
-        'LECTURER': LECTURER,
-        'DEAN': DEAN,
-        'HOP': HOP,
-        'ADMIN': ADMIN
-    }
-
-    if not all([id, email, contact, name, password1, password2, department, role, gender]):
-        return False, "Please Fill in All Required Fields"
-    elif not email_format(email):
+def check_register(id, email, contact, password1, password2, role):
+    if not email_format(email):
         return False, "Wrong Email Address Format"
     elif not contact_format(contact):
         return False, "Wrong Contact Number Format"
@@ -89,9 +87,6 @@ def check_register(id, email, contact, name, password1, password2, department, r
 
 # Check the Email validate or not and send reset password link based on that Email
 def check_forgotPasswordEmail(forgotEmail):
-    if not forgotEmail:
-        return False, "Email address is required."
-
     user = User.query.filter_by(userEmail=forgotEmail).first()
     if not user:
         return False, "No Account Associated With This Email."
@@ -129,8 +124,6 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
         return None, "The Reset Link is Invalid or Has Expired"
 
     # Validation checks
-    if not resetPassword1 or not resetPassword2:
-        return None, "Please Fill in All Required Fields"
     if resetPassword1 != resetPassword2:
         return None, "Passwords Do Not Match"
     if not password_format(resetPassword1):
@@ -165,11 +158,7 @@ def role_required(required_role):
 
 
 
-def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, student, venue):
-    # Prevent querying if any required value is empty or None
-    if not all([courseSection, date, starttime, endtime, day, program, lecturer, student, venue]):
-        return False, "Please Fill in All Required Fields"
-
+def check_exam(courseSection, date, starttime, endtime):
     exam_exists = Exam.query.filter_by(
         examDate=date,
         examStartTime=starttime,
@@ -185,9 +174,7 @@ def check_exam(courseSection, date, starttime, endtime, day, program, lecturer, 
 
 
 # (Need double check the purpose) Check upload lecturer
-def check_lecturer(id, email, contact, name, department, role):
-    if not all([id, email, contact, name, department, role]):
-        return False, "Please Fill in All Required Fields"
+def check_lecturer(id, email, contact):
     if not email_format(email):
         return False, "Wrong Email Address Format"
     if not contact_format(contact):
@@ -208,10 +195,9 @@ def check_lecturer(id, email, contact, name, department, role):
 
 # continue on this function
 def check_profile(id, contact, password1, password2):
-    # If all fields are empty
-
     if not contact and not password1 and not password2:
         return True, "No Update"
+    
     # If contact is entered, validate format
     if contact:
         user_contact = User.query.filter(User.userId == id ,User.userContact == contact).first()
@@ -221,6 +207,7 @@ def check_profile(id, contact, password1, password2):
             return False, "Wrong Contact Number Format"
         if check_contact(contact):
             return False, "Contact Number Already exists"
+        
     # If any password is entered, both must be present and match
     if password1 or password2:
         if not password1 or not password2:
@@ -236,22 +223,20 @@ def check_profile(id, contact, password1, password2):
 
 # Check unique department code and name
 def check_department(code, name):
-    # Check if any required field is empty
-    if not code or not name:
-        return False, "Please Fill in All Required Fields"
     # Check for duplicates
     existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
     if existing_departmentCode:
         return False, "Department Code Already Registered"
+    
     existing_departmentName = Department.query.filter(Department.departmentName == name).first()
     if existing_departmentName:
         return False, "Department Name Already Registered"
+    
     return True, ""
 
 
 # Check unique venue roomNumber and floor
 def check_venue(roomNumber, capacity):
-    
     # Check for duplicates
     existing_roomNumber = Venue.query.filter(Venue.venueNumber == roomNumber).first()
     if existing_roomNumber:
@@ -265,10 +250,7 @@ def check_venue(roomNumber, capacity):
     return True, ""
 
 
-def check_course(department, code, section, name, hour, practical, tutorial):
-    if not all([department, code, section, name, hour, practical, tutorial]):
-        return False, "Please Fill in All Required Fields"
-
+def check_course(code, section, hour):
     courseCodeSection_text = (code + '/' + section)
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:

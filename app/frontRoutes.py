@@ -83,7 +83,7 @@ def register():
         password1_text = request.form.get('password1', '').strip()
         password2_text = request.form.get('password2', '').strip()
 
-        is_valid, error_message = check_register(id_text, email_text, contact_text, name_text, password1_text, password2_text, department_text, role_text, gender_text)
+        is_valid, error_message = check_register(id_text, email_text, contact_text, password1_text, password2_text, role_text)
 
         if error_message:
             flash(error_message, 'error')
