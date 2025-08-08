@@ -422,7 +422,7 @@ def admin_manageCourse():
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            df.columns = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+                            # df.columns = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             # 4️⃣ Normalize all string values to lowercase
                             df = df.apply(lambda col: col.str.strip().lower() if col.dtype == "object" else col)
@@ -511,7 +511,7 @@ def admin_manageCourse():
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
         
-        elif form_type == 'mmodify':
+        #elif form_type == 'mmodify':
 
 
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
