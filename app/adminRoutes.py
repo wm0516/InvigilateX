@@ -35,8 +35,6 @@ def admin_manageTimetable():
 
 
 
-
-
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
