@@ -36,6 +36,8 @@
                     </div>
                 </label>
                 <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+                <!-- 🔽 Add this hidden input here -->
+                <input type="hidden" name="form_type" value="upload">
 
                 <br>
                 {% if courseUploadResult %}
@@ -108,6 +110,9 @@
                     </select>
                 </div>
             </div> 
+
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="manual">
 
             <br>
             {% if courseUploadResult %}
