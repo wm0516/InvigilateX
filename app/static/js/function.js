@@ -261,8 +261,14 @@ function showSection(sectionId, event) {
 document.getElementById('programCode').addEventListener('change', function() {
     let deptCode = this.value;
     let courseSectionSelect = document.getElementById('courseSection');
+    let practicalLecturerSelect = document.getElementById('practicalLecturer');
+    let tutorialLecturerSelect = document.getElementById('tutorialLecturer');
+    let studentSelect = document.getElementById('student');
+    
     // Reset the course section dropdown
     courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+    [practicalLecturerSelect, tutorialLecturerSelect, studentSelect].forEach(el => el.innerHTML = "");
+
 
     if (deptCode) {
         fetch(`/get_courses_by_department/${deptCode}`)
