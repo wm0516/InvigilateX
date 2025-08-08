@@ -122,7 +122,7 @@
                         <option value="" disabled selected>Select Venue</option>
                         {% for venue in venue_data %}
                             <option value="{{ venue.venueNumber }}">
-                                {{ venue.venueNumber }} - (Venue Capacity: {{ "%.2f"|format(venue.venueCapacity) }})
+                                {{ venue.venueNumber }} - (Venue Capacity: {{ venue.venueCapacity }})
                             </option>
                         {% endfor %}
                     </select>

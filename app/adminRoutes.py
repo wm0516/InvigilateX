@@ -514,6 +514,7 @@ def admin_manageExam():
         # ===== File Upload =====
         if form_type == 'upload':
             file = request.files.get('exam_file')
+            print(f"Read file: {file}")
             if file and file.filename:
                 try:
                     file_stream = BytesIO(file.read())
@@ -530,6 +531,7 @@ def admin_manageExam():
                             )
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                            print(f"Read file table: {expected_cols}")
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
                             df.columns = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
