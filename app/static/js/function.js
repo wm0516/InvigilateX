@@ -333,20 +333,6 @@ document.getElementById('programCode').addEventListener('change', function() {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
@@ -372,7 +358,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
-document.addEventListener('DOMContentLoaded', function() {
+document.getElementById('courseDepartmentSelection').addEventListener('change', function() {
     const deptSelect = document.getElementById('courseDepartmentSelection').value;
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');

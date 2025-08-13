@@ -101,15 +101,23 @@
                     <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
 
                     <label>Practical Lecturer</label>
-                    <select id="practicalLecturerSelect" name="coursePractical" required>
+                    <select name="coursePractical" id="practicalLecturerSelect" required>
                         <option value="" disabled selected>Select Practical Lecturer</option>
-                        <!-- Will be populated by JavaScript -->
+                        {% for lecturer in lecturer_data %}
+                            <option value="{{ lecturer.userName }}">
+                                {{ lecturer.userName }}
+                            </option>   
+                        {% endfor %}
                     </select><br>
 
                     <label>Tutorial Lecturer</label>
-                    <select id="tutorialLecturerSelect" name="courseTutorial" required>
+                    <select name="courseTutorial" id="tutorialLecturerSelect" required>
                         <option value="" disabled selected>Select Tutorial Lecturer</option>
-                        <!-- Will be populated by JavaScript -->
+                        {% for lecturer in lecturer_data %}
+                            <option value="{{ lecturer.userName }}">
+                                {{ lecturer.userName }}
+                            </option>   
+                        {% endfor %}
                     </select>
                 </div>
 
