@@ -15,7 +15,6 @@ from sqlalchemy import String  # correct import
 # UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN'; -> changing the data
 # UPDATE Lecturer SET lecturerEmail='p21013604@student.newinti.edu.my' WHERE lecturerId='123'; 
 
-
 class User(db.Model):
     __tablename__ = 'User'
     userId = db.Column(db.String(20), primary_key=True) # Refer to Staff ID

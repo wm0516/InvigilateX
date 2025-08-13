@@ -360,8 +360,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const deptSelect = document.getElementById('courseDepartmentSelection');
     
     // Get lecturer select elements
-    const practicalSelect = document.querySelector('select[name="coursePractical"]');
-    const tutorialSelect = document.querySelector('select[name="courseTutorial"]');
+    const practicalSelect = document.getElementById('practicalLecturerSelect');
+    const tutorialSelect = document.getElementById('tutorialLecturerSelect');
     
     if (deptSelect) {
         deptSelect.addEventListener('change', function() {
