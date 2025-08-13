@@ -238,93 +238,64 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
-
-
-
-
-
-
-
 // Function for second navigation tab
 function showSection(sectionId, event) {
-    if (event) event.preventDefault();
+    event.preventDefault();
 
-    // Get all tab links and forms
-    const tabLinks = document.querySelectorAll(".second-nav .tab-link");
-    const allForms = document.querySelectorAll("form[id$='Form']");
-
-    // Hide all forms
-    allForms.forEach(form => {
-        form.style.display = "none";
-    });
-
-    // Remove active class from all tabs
-    tabLinks.forEach(tab => {
-        tab.classList.remove("active");
+    // Hide forms only if they exist
+    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = "none";
     });
 
     // Show selected form if it exists
     const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
-    if (selectedForm) {
-        selectedForm.style.display = "block";
-        
-        // Highlight clicked tab
-        if (event?.currentTarget) {
-            event.currentTarget.classList.add("active");
-        }
+    if (selectedForm) selectedForm.style.display = "block";
 
-        // Save active tab
-        localStorage.setItem("activeSecondTab", sectionId);
-    } else {
-        console.warn(`Form for section "${sectionId}" not found on this page.`);
-    }
+    // Tab highlight (limit to second navigation container)
+    document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
+    event.currentTarget.classList.add("active");
+
+    // Save current tab to localStorage
+    localStorage.setItem("activeSecondTab", sectionId);
 }
 
 // Restore second tab state on page load
 document.addEventListener("DOMContentLoaded", function () {
-    const savedSecondTab = localStorage.getItem("activeSecondTab");
-    const tabLinks = document.querySelectorAll(".second-nav .tab-link");
-    const allForms = document.querySelectorAll("form[id$='Form']");
+    let savedSecondTab = localStorage.getItem("activeSecondTab");
 
-    // Hide all forms initially
-    allForms.forEach(form => {
-        form.style.display = "none";
+    // Hide all forms first
+    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = "none";
     });
 
-    // Find the first available tab that has a matching form
-    let activeTab = null;
-    let activeFormId = null;
+    // If saved tab doesn't exist, fallback to first available
+    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
+        const firstAvailableTab = document.querySelector(".second-nav .tab-link");
+        if (firstAvailableTab) {
+            savedSecondTab = firstAvailableTab.getAttribute("data-section");
+        }
+    }
 
-    // Check if saved tab exists and has a matching form
     if (savedSecondTab) {
-        const formId = savedSecondTab.replace("Section", "Form");
-        if (document.getElementById(formId)) {
-            activeTab = Array.from(tabLinks).find(tab => 
-                tab.getAttribute("data-section") === savedSecondTab
-            );
-            activeFormId = formId;
-        }
-    }
-
-    // If no saved tab or it's invalid, use the first available tab with form
-    if (!activeTab) {
-        const firstTabWithForm = Array.from(tabLinks).find(tab => {
-            const formId = tab.getAttribute("data-section").replace("Section", "Form");
-            return document.getElementById(formId);
+        // Highlight the saved tab
+        document.querySelectorAll(".second-nav .tab-link").forEach(tab => {
+            if (tab.getAttribute("data-section") === savedSecondTab) {
+                tab.classList.add("active");
+            }
         });
-        
-        if (firstTabWithForm) {
-            activeTab = firstTabWithForm;
-            activeFormId = firstTabWithForm.getAttribute("data-section").replace("Section", "Form");
-        }
-    }
 
-    // Activate the tab and show the form if found
-    if (activeTab && activeFormId) {
-        activeTab.classList.add("active");
-        document.getElementById(activeFormId).style.display = "block";
+        // Show the correct form
+        const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
+        if (savedForm) savedForm.style.display = "block";
     }
 });
+
+
+
+
+
 
 
 
