@@ -79,8 +79,8 @@
             <h4 style="text-align: center;">Manual Data Entry Section</h4>
             <div class="profile-frame">
                 <div class="form-left">
-                    <label id="departmentLabel">Department</label>
-                    <select id="courseDepartmentSelection" name="courseDepartment" required>
+                    <label>Department</label>
+                    <select id="departmentCode" name="courseDepartment" required>
                         <option value="" disabled selected>Select Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }}">
