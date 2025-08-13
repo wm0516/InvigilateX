@@ -56,7 +56,10 @@ def admin_manageDepartment():
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
-        if form_type == 'manual':
+        if form_type == 'announce':
+            return redirect(url_for('admin_manageDepartment'))
+
+        else:
             departmentCode_text = request.form.get('departmentCode', '').strip()
             departmentName_text = request.form.get('departmentName', '').strip()
 
@@ -526,7 +529,6 @@ def admin_manageCourse():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
         
-
         else:
             courseDepartment_text = request.form.get('courseDepartment', '').strip()
             department_text = courseDepartment_text.split('-')[0].strip()
