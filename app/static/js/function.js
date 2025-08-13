@@ -240,58 +240,65 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 // Function for second navigation tab
 function showSection(sectionId, event) {
-    event.preventDefault();
+    if (event) event.preventDefault();
 
-    // Hide all forms that are present
-    document.querySelectorAll("form[id$='Form']").forEach(form => {
-        form.style.display = "none";
+    // Hide all forms
+    document.querySelectorAll('form[id$="Form"]').forEach(form => {
+        form.style.display = 'none';
     });
 
-    // Show the form linked to this tab if it exists
-    const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
-    if (selectedForm) {
-        selectedForm.style.display = "block";
+    // Remove active class from all tabs
+    document.querySelectorAll('.second-nav .tab-link').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // Show the selected form and activate its tab
+    const formId = sectionId.replace('Section', 'Form');
+    const formToShow = document.getElementById(formId);
+    const clickedTab = event?.currentTarget;
+
+    if (formToShow) {
+        formToShow.style.display = 'block';
+        if (clickedTab) clickedTab.classList.add('active');
+        localStorage.setItem('activeSecondTab', sectionId);
     }
-
-    // Tab highlight (limit to second navigation container)
-    document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
-    event.currentTarget.classList.add("active");
-
-    // Save current tab to localStorage
-    localStorage.setItem("activeSecondTab", sectionId);
 }
 
-// Restore second tab state on page load
-document.addEventListener("DOMContentLoaded", function () {
-    let savedSecondTab = localStorage.getItem("activeSecondTab");
+// Restore tab state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedTab = localStorage.getItem('activeSecondTab');
+    const tabs = document.querySelectorAll('.second-nav .tab-link');
+    let defaultTab = null;
 
-    // Hide all forms first
-    document.querySelectorAll("form[id$='Form']").forEach(form => {
-        form.style.display = "none";
+    // Find which tabs actually have corresponding forms
+    const availableTabs = Array.from(tabs).filter(tab => {
+        const sectionId = tab.getAttribute('data-section');
+        const formId = sectionId.replace('Section', 'Form');
+        return document.getElementById(formId);
     });
 
-    // If saved tab is not available on this page, pick the first tab that exists
-    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
-        const firstAvailableTab = document.querySelector(".second-nav .tab-link");
-        if (firstAvailableTab) {
-            savedSecondTab = firstAvailableTab.getAttribute("data-section");
+    // Set the first available tab as default
+    if (availableTabs.length > 0) {
+        defaultTab = availableTabs[0].getAttribute('data-section');
+    }
+
+    // Determine which tab to show (saved or default)
+    const tabToShow = (savedTab && availableTabs.some(tab => 
+        tab.getAttribute('data-section') === savedTab
+    )) ? savedTab : defaultTab;
+
+    // Show the selected form and activate its tab
+    if (tabToShow) {
+        const formId = tabToShow.replace('Section', 'Form');
+        const form = document.getElementById(formId);
+        const tab = document.querySelector(`.second-nav .tab-link[data-section="${tabToShow}"]`);
+
+        if (form && tab) {
+            form.style.display = 'block';
+            tab.classList.add('active');
         }
     }
-
-    if (savedSecondTab) {
-        // Highlight the saved tab
-        document.querySelectorAll(".second-nav .tab-link").forEach(tab => {
-            if (tab.getAttribute("data-section") === savedSecondTab) {
-                tab.classList.add("active");
-            }
-        });
-
-        // Show the correct form
-        const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
-        if (savedForm) savedForm.style.display = "block";
-    }
 });
-
 
 
 
