@@ -238,56 +238,71 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
+// Function to show section
 function showSection(sectionId, event) {
     if (event) {
         event.preventDefault();
-        // Update URL without page reload
+        // Update URL to match the clicked tab
         const tabName = event.currentTarget.getAttribute('href');
         history.pushState(null, null, tabName);
     }
 
-    // Rest of your existing showSection logic...
+    // Hide all forms
     document.querySelectorAll('form[id$="Form"]').forEach(form => {
         form.style.display = 'none';
     });
-    
+
+    // Remove active class from all tabs
     document.querySelectorAll('.second-nav .tab-link').forEach(tab => {
         tab.classList.remove('active');
     });
 
+    // Show the selected form
     const formId = sectionId.replace('Section', 'Form');
     const formToShow = document.getElementById(formId);
-    const clickedTab = event?.currentTarget;
-
     if (formToShow) {
         formToShow.style.display = 'block';
-        if (clickedTab) clickedTab.classList.add('active');
-        // Don't need localStorage anymore since we're using URL
+        
+        // Activate the corresponding tab
+        const tabToActivate = document.querySelector(`.tab-link[data-section="${sectionId}"]`);
+        if (tabToActivate) {
+            tabToActivate.classList.add('active');
+        }
     }
 }
 
-// Handle initial load and back/forward navigation
-window.addEventListener('load', checkHash);
-window.addEventListener('hashchange', checkHash);
-
-function checkHash() {
-    const hash = window.location.hash.substring(1); // Remove #
+// Handle initial load and hash changes
+function handleHashNavigation() {
+    const hash = window.location.hash.substring(1); // Get current hash without #
+    
+    // Map URL fragments to section IDs
     const tabMap = {
         'announce': 'announceSection',
         'upload': 'uploadSection',
         'manual': 'manualSection'
     };
 
-    const sectionId = tabMap[hash] || 'announceSection'; // Default to first tab
-    const tab = document.querySelector(`.second-nav .tab-link[data-section="${sectionId}"]`);
+    // Determine which section to show (default to first tab)
+    const sectionId = tabMap[hash] || 'announceSection';
+    
+    // Find the corresponding tab
+    const tab = document.querySelector(`.tab-link[data-section="${sectionId}"]`);
     
     if (tab) {
+        // Show the section without adding to history (replaceState)
+        history.replaceState(null, null, `#${hash || 'announce'}`);
         showSection(sectionId);
-        // Manually trigger click to update UI
-        tab.click();
     }
 }
 
+// Set up event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial navigation handling
+    handleHashNavigation();
+    
+    // Handle back/forward button navigation
+    window.addEventListener('hashchange', handleHashNavigation);
+});
 
 
 
