@@ -534,7 +534,7 @@ def admin_manageCourse():
             return redirect(url_for('admin_manageCourse'))
 
         else:
-            courseDepartment_text = request.form.get('courseDepartment', '').strip()
+            courseDepartment_text = request.form.get('departmentCode', '').strip()
             department_text = courseDepartment_text.split('-')[0].strip()
             courseCode_text = request.form.get('courseCode', '').strip()
             courseSection_text = request.form.get('courseSection', '').strip()

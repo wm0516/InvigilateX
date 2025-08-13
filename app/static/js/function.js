@@ -330,9 +330,6 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 
-
-
-
 // Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
