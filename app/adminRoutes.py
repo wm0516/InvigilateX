@@ -520,12 +520,13 @@ def admin_manageCourse():
             courseCodeSection_text = f"{courseCode_text}/{courseSection_text}"
 
             if form_type == 'modify':
-                searching_text = request.form.get('searching_text', '').strip().upper()
-                # Check either by courseCodeSection OR courseName
-                course = Course.query.filter(
-                    (Course.courseCodeSection == searching_text) |
-                    (Course.courseName == searching_text)
-                ).first()
+                if request.form.get('search_button'):
+                    searching_text = request.form.get('searching_text', '').strip().upper()
+                    # Check either by courseCodeSection OR courseName
+                    course = Course.query.filter(
+                        (Course.courseCodeSection == searching_text) |
+                        (Course.courseName == searching_text)
+                    ).all()
 
                 if not course:
                     flash("Course not found for update.", "error")

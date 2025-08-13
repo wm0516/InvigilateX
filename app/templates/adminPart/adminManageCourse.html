@@ -73,8 +73,15 @@
             <h4 style="text-align: center;">Search and Modify by Department Code, Course Code, or Course Name</h4>
             <div class="profile-frame">
                 <div class="form-left">
-                    <label>Search</label>
-                    <input type="text" name="searching" value="{{ searching_text }}" required><br>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label for="searching">Search</label>
+                        <input type="text" id="searching" name="searching" value="{{ searching_text }}" required>
+
+                        <!-- Search button with icon only -->
+                        <button type="submit" name="search_button" value="1" style="background: none; border: none; cursor: pointer;">
+                            <i class="fa fa-search" style="font-size: 18px;"></i>
+                        </button>
+                    </div>
 
                     <label id="departmentLabel">Department</label>
                     <select id="courseDepartmentSelection" name="courseDepartment" required>
@@ -136,9 +143,9 @@
             {% endif %}
             <br>
 
-            <!-- Manual Form Submit -->
+            <!-- Modify Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Add New Course</button>
+                <button type="submit">Update Course</button>
             </div>
         </div>
     </form>
