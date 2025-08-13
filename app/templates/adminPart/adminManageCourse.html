@@ -103,21 +103,11 @@
                     <label>Practical Lecturer</label>
                     <select name="coursePractical" id="practicalLecturerSelect" required>
                         <option value="" disabled selected>Select Practical Lecturer</option>
-                        {% for lecturer in lecturer_data %}
-                            <option value="{{ lecturer.userName }}">
-                                ({{ lecturer.userName }})
-                            </option>   
-                        {% endfor %}
                     </select><br>
 
                     <label>Tutorial Lecturer</label>
                     <select name="courseTutorial" id="tutorialLecturerSelect" required>
                         <option value="" disabled selected>Select Tutorial Lecturer</option>
-                        {% for lecturer in lecturer_data %}
-                            <option value="{{ lecturer.userName }}">
-                                ({{ lecturer.userName }})
-                            </option>   
-                        {% endfor %}
                     </select>
                 </div>
 
