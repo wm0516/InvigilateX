@@ -355,36 +355,38 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 
 // When department code changes, fetch lecturers for that department
-document.getElementById('departmentCode').addEventListener('change', function () {
-    const deptValue = this.value;
-    const practicalSelect = document.getElementById('practicalLecturerSelect');
-    const tutorialSelect = document.getElementById('tutorialLecturerSelect');
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('departmentCode').addEventListener('change', function () {
+        const deptValue = this.value;
+        const practicalSelect = document.getElementById('practicalLecturerSelect');
+        const tutorialSelect = document.getElementById('tutorialLecturerSelect');
 
-    // Reset both selects to default
-    practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
-    tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
+        // Reset both selects to default
+        practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
+        tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
 
-    if (deptValue) {
-        fetch(`/get_lecturers_by_department/${deptValue}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(lecturer => {
-                    let practicalOption = document.createElement('option');
-                    practicalOption.value = lecturer.userName;
-                    practicalOption.textContent = lecturer.userName;
-                    practicalSelect.appendChild(practicalOption);
+        if (deptValue) {
+            fetch(`/get_lecturers_by_department/${deptValue}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(lecturer => {
+                        let practicalOption = document.createElement('option');
+                        practicalOption.value = lecturer.userName;
+                        practicalOption.textContent = lecturer.userName;
+                        practicalSelect.appendChild(practicalOption);
 
-                    let tutorialOption = document.createElement('option');
-                    tutorialOption.value = lecturer.userName;
-                    tutorialOption.textContent = lecturer.userName;
-                    tutorialSelect.appendChild(tutorialOption);
-                });
+                        let tutorialOption = document.createElement('option');
+                        tutorialOption.value = lecturer.userName;
+                        tutorialOption.textContent = lecturer.userName;
+                        tutorialSelect.appendChild(tutorialOption);
+                    });
 
 
-            })
-            .catch(error => console.error('Error fetching lecturers:', error));
-    }
-});
+                })
+                .catch(error => console.error('Error fetching lecturers:', error));
+        }
+    });
+}
 
 
 
