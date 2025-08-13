@@ -242,22 +242,28 @@ function showSection(sectionId, event) {
 
     // Hide all forms
     document.getElementById("uploadForm").style.display = "none";
-    document.getElementById("modifyForm").style.display = "none";
     document.getElementById("manualForm").style.display = "none";
 
     // Show selected form
     if (sectionId === "uploadSection") {
         document.getElementById("uploadForm").style.display = "block";
-    } else if (sectionId === "modifySection") {
-        document.getElementById("modifyForm").style.display = "block";
     } else {
         document.getElementById("manualForm").style.display = "block";
     }
 
-    // Tab highlight
-    document.querySelectorAll(".tab-link").forEach(tab => tab.classList.remove("active"));
-    event.currentTarget.classList.add("active");
+    // Tab highlight (limit to second navigation container)
+    document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
+    event.target.classList.add("active");
 }
+
+
+
+
+
+
+
+
+
 
 
 // Function for after getting department code, related course code will be displayed out in Manage Exam page
