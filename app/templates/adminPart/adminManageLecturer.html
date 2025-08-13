@@ -6,24 +6,30 @@
     <h2>Manage Lecturer</h2>
     <!-- Top Centered Tabs -->
     <div class="tab-container">
-        <div class="tab-nav2">
-            <a href="#" class="tab-link active" onclick="showSection('uploadSection', event)">
+        <div class="second-nav">
+            <a href="#" class="tab-link active" data-section="announceSection" onclick="showSection('announceSection', event)">
+                <i class="fas fa-envelope"></i>
+                <span>Notification</span>
+            </a>
+            <a href="#" class="tab-link" data-section="uploadSection" onclick="showSection('uploadSection', event)">
                 <i class="fas fa-upload"></i>
                 <span>Upload File</span>
             </a>
-            <a href="#" class="tab-link" onclick="showSection('modifySection', event)">
-                <i class="fas fa-edit"></i>
-                <span>Modify Data</span>
-            </a>
-            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+            <a href="#" class="tab-link" data-section="manualSection"onclick="showSection('manualSection', event)">
                 <i class="fas fa-plus"></i>
                 <span>Manually Insert</span>
             </a>
         </div>
     </div>
 
+    <!-- Announce Form -->
+    <form id="announceForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
+        <div id="announceSection" class="function-frame">
+        </div>
+    </form>
+
         <!-- Upload Form -->
-    <form id="uploadForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" style="display: none;">
         <div id="uploadSection" class="function-frame">
             <div class="form-left" style="width: 100%">
                 <h4 style="text-align: center;">File Upload Section</h4>
@@ -65,9 +71,6 @@
         </div>
     </form>
 
-    <!-- Modify Form -->
-    <form id="modifyForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" style="display: none;">
-    </form> 
 
     <!-- Manual Form -->
     <form id="manualForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" style="display: none;">
@@ -144,7 +147,7 @@
     </form>
 
     <br><br>
-    <h3>Table Record</h3>
+    <h2>Table Record</h2>
     <!--<label>
         To Do: <br>
         1. Allow edit based on the Id <br>

@@ -6,20 +6,22 @@
     <h2>Manage Department</h2>
     <!-- Top Centered Tabs -->
     <div class="tab-container">
-        <div class="tab-nav2">
-            <a href="#" class="tab-link" onclick="showSection('modifySection', event)">
-                <i class="fas fa-edit"></i>
-                <span>Modify Data</span>
+        <div class="second-nav">
+            <a href="#" class="tab-link active" data-section="announceSection" onclick="showSection('announceSection', event)">
+                <i class="fas fa-envelope"></i>
+                <span>Notification</span>
             </a>
-            <a href="#" class="tab-link" onclick="showSection('manualSection', event)">
+            <a href="#" class="tab-link" data-section="manualSection"onclick="showSection('manualSection', event)">
                 <i class="fas fa-plus"></i>
                 <span>Manually Insert</span>
             </a>
         </div>
     </div>
 
-    <form id="modifyForm" action="{{ url_for('admin_manageDepartment') }}" method="POST"> 
-
+    <!-- Announce Form -->
+    <form id="announceForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
+        <div id="announceSection" class="function-frame">
+        </div>
     </form>
 
     <!-- Manual Form -->
@@ -59,7 +61,7 @@
         </div>
     </form>
 
-    <h3>List of Department</h3>
+    <h2>List of Department</h2>
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
