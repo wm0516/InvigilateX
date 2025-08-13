@@ -517,22 +517,79 @@ def admin_manageCourse():
             coursePractical_text = request.form.get('coursePractical', '').strip()
             courseTutorial_text = request.form.get('courseTutorial', '').strip()
             courseStudent_text = request.form.get('courseStudent', '').strip()
-            courseCodeSection_text = f"{courseCode_text}/{courseSection_text}"
+            courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
+            # ---- MODIFY mode ----
             if form_type == 'modify':
-                if request.form.get('search_button'):
+                if request.form.get('search_button'):  # Search action
                     searching_text = request.form.get('searching_text', '').strip().upper()
-                    # Check either by courseCodeSection OR courseName
                     course = Course.query.filter(
                         (Course.courseCodeSection == searching_text) |
                         (Course.courseName == searching_text)
-                    ).all()
+                    ).first()  # Get single record
 
+                    if not course:
+                        flash("Course not found for update.", "error")
+                        return redirect(url_for('admin_manageCourse'))
+
+                    # Pre-fill the form with found course details
+                    return render_template(
+                        'adminPart/adminManageCourse.html',
+                        active_tab='admin_manageCoursetab',
+                        course_data=course_data,
+                        department_data=department_data,
+                        lecturer_data=lecturer_data,
+                        courseDepartment_text=course.courseDepartment,
+                        courseCode_text=course.courseCode,
+                        courseSection_text=course.courseSection,
+                        courseName_text=course.courseName,
+                        courseHour_text=course.courseHour,
+                        coursePractical=course.coursePractical,
+                        courseTutorial=course.courseTutorial,
+                        courseStudent_text=course.courseStudent
+                    )
+
+                # ---- Update action ----
+                course = Course.query.filter_by(courseCodeSection=courseCodeSection_text.upper()).first()
                 if not course:
                     flash("Course not found for update.", "error")
                     return redirect(url_for('admin_manageCourse'))
 
-            # Common validation for both manual and modify
+                valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
+                if not valid:
+                    flash(result, 'error')
+                    return render_template(
+                        'adminPart/adminManageCourse.html',
+                        active_tab='admin_manageCoursetab',
+                        course_data=course_data,
+                        department_data=department_data,
+                        lecturer_data=lecturer_data,
+                        courseDepartment_text=courseDepartment_text,
+                        courseCode_text=courseCode_text,
+                        courseSection_text=courseSection_text,
+                        courseName_text=courseName_text,
+                        courseHour_text=courseHour_text,
+                        coursePractical=coursePractical_text,
+                        courseTutorial=courseTutorial_text,
+                        courseStudent_text=courseStudent_text
+                    )
+
+                # Update the fields (even if values are the same)
+                course.courseDepartment = department_text.upper()
+                course.courseCodeSection = courseCodeSection_text.upper()
+                course.courseCode = courseCode_text.upper()
+                course.courseSection = courseSection_text.upper()
+                course.courseName = courseName_text.upper()
+                course.courseHour = courseHour_text
+                course.coursePractical = coursePractical_text.upper()
+                course.courseTutorial = courseTutorial_text.upper()
+                course.courseStudent = courseStudent_text
+                db.session.commit()
+
+                flash("Course updated successfully.", "success")
+                return redirect(url_for('admin_manageCourse'))
+
+            # ---- MANUAL mode ----
             valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
             if not valid:
                 flash(result, 'error')
@@ -552,36 +609,22 @@ def admin_manageCourse():
                     courseStudent_text=courseStudent_text
                 )
 
-            if form_type == 'modify':
-                # Update existing course
-                course.courseDepartment = department_text.upper()
-                course.courseCodeSection = courseCodeSection_text.upper()
-                course.courseCode = courseCode_text.upper()
-                course.courseSection = courseSection_text.upper()
-                course.courseName = courseName_text.upper()
-                course.courseHour = courseHour_text
-                course.coursePractical = coursePractical_text.upper()
-                course.courseTutorial = courseTutorial_text.upper()
-                course.courseStudent = courseStudent_text
-                db.session.commit()
-                flash("Course updated successfully.", "success")
-            else:
-                # Add new course
-                new_course = Course(
-                    courseDepartment=department_text.upper(),
-                    courseCodeSection=courseCodeSection_text.upper(),
-                    courseCode=courseCode_text.upper(),
-                    courseSection=courseSection_text.upper(),
-                    courseName=courseName_text.upper(),
-                    courseHour=courseHour_text,
-                    coursePractical=coursePractical_text.upper(),
-                    courseTutorial=courseTutorial_text.upper(),
-                    courseStudent=courseStudent_text
-                )
-                db.session.add(new_course)
-                db.session.commit()
-                flash("New Course Added Successfully", "success")
+            new_course = Course(
+                courseDepartment=department_text.upper(),
+                courseCodeSection=courseCodeSection_text.upper(),
+                courseCode=courseCode_text.upper(),
+                courseSection=courseSection_text.upper(),
+                courseName=courseName_text.upper(),
+                courseHour=courseHour_text,
+                coursePractical=coursePractical_text.upper(),
+                courseTutorial=courseTutorial_text.upper(),
+                courseStudent=courseStudent_text
+            )
+            db.session.add(new_course)
+            db.session.commit()
+            flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
+
 
     return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
 

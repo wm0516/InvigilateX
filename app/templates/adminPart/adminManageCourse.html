@@ -70,7 +70,7 @@
     <!-- Modify Form -->
     <form id="modifyForm" action="{{ url_for('admin_manageCourse') }}" method="POST" style="display: none;">
         <div id="modifySection" class="function-frame" style="width:100%">
-            <h4 style="text-align: center;">Search and Modify by Department Code, Course Code, or Course Name</h4>
+            <h4 style="text-align: center;">Search and Modify by Course Code/Section, or Course Name</h4>
             <div class="profile-frame">
                 <div class="form-left">
                     <label for="searching">Search</label>
@@ -81,7 +81,7 @@
                         <button type="submit" name="search_button" value="1" style="background: none; border: none; cursor: pointer;">
                             <i class="fa fa-search" style="font-size: 18px;"></i>
                         </button>
-                    </div>
+                    </div><br>
 
                     <label id="departmentLabel">Department</label>
                     <select id="courseDepartmentSelection" name="courseDepartment" required>
