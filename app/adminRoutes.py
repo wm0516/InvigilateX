@@ -63,8 +63,13 @@ def admin_manageDepartment():
             valid, result = check_department(departmentCode_text, departmentName_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
-                                    department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+                return render_template(
+                    'adminPart/adminManageDepartment.html',
+                    active_tab='admin_manageDepartmenttab',
+                    department_data=department_data,
+                    departmentCode_text=departmentCode_text,
+                    departmentName_text=departmentName_text
+                )
 
             new_department = Department(
                 departmentCode=departmentCode_text.upper(),
@@ -74,11 +79,19 @@ def admin_manageDepartment():
             db.session.commit()
             flash("New Department Added Successfully", "success")
             return redirect(url_for('admin_manageDepartment'))
-    
-    else: 
-        return redirect(url_for('admin_manageDepartment'))
 
-    return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
+    # GET request or after redirect
+    return render_template(
+        'adminPart/adminManageDepartment.html',
+        active_tab='admin_manageDepartmenttab',
+        department_data=department_data
+    )
+
+
+
+
+
+
 
 
 
