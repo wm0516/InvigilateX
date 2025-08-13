@@ -356,41 +356,34 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
 document.addEventListener('DOMContentLoaded', function() {
-    // Get department selection element
     const deptSelect = document.getElementById('courseDepartmentSelection');
-    
-    // Get lecturer select elements
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
-    
+
     if (deptSelect) {
         deptSelect.addEventListener('change', function() {
-            const deptCode = this.value.split('-')[0].trim(); // Extract department code
-            
-            // Clear existing options (keep first option)
+            // Clear existing options
             practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
             tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
-            
-            if (deptCode) {
-                fetch(`/get_lecturers_by_department/${deptCode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        // Populate both dropdowns with the same lecturer list
-                        data.forEach(lecturer => {
-                            const option = document.createElement('option');
-                            option.value = lecturer.userName;
-                            option.textContent = `${lecturer.userName} (${lecturer.userId})`;
-                            
-                            // Add to both dropdowns
-                            practicalSelect.appendChild(option.cloneNode(true));
-                            tutorialSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching lecturers:', error));
-            }
+
+            // Fetch lecturers for the selected department
+            fetch(`/get_lecturers_by_department/${deptSelect.value}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(lecturer => {
+                        const option = document.createElement('option');
+                        option.value = lecturer.userName;
+                        option.textContent = `${lecturer.userName} (${lecturer.userId})`;
+
+                        practicalSelect.appendChild(option.cloneNode(true));
+                        tutorialSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching lecturers:', error));
         });
     }
 });
+
 
 
 
