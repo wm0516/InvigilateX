@@ -84,7 +84,7 @@
                     </div><br>
 
                     <label id="departmentLabel">Department</label>
-                    <select id="courseDepartmentSelection" name="courseDepartment" required>
+                    <select id="courseDepartmentSelection" name="courseDepartment">
                         <option value="" disabled selected>Select Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }} - {{ dept.departmentName }}">
@@ -94,35 +94,35 @@
                     </select><br>
                     
                     <label>Course Section</label>
-                    <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
+                    <input type="text" name="courseSection" value="{{ courseSection_text }}">
                 </div>
 
                 <div class="form-middle">
                     <label>Course Name</label>
-                    <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
+                    <input type="text" name="courseName" value="{{ courseName_text }}"><br>
 
                     <label>Course Code</label>
-                    <input type="text" name="courseCode" value="{{ courseCode_text }}" required><br>
+                    <input type="text" name="courseCode" value="{{ courseCode_text }}"><br>
 
                     <label>Course Credit Hour(s)</label>
-                    <input type="number" name="courseHour" value="{{ courseHour_text }}" required>
+                    <input type="number" name="courseHour" value="{{ courseHour_text }}">
                 </div>
 
                 <div class="form-right">
                     <label>Practical Lecturer</label>
-                    <select id="practicalLecturerSelect" name="coursePractical" required>
+                    <select id="practicalLecturerSelect" name="coursePractical">
                         <option value="" disabled selected>Select Practical Lecturer</option>
                         <!-- Will be populated by JavaScript -->
                     </select><br>
 
                     <label>Tutorial Lecturer</label>
-                    <select id="tutorialLecturerSelect" name="courseTutorial" required>
+                    <select id="tutorialLecturerSelect" name="courseTutorial">
                         <option value="" disabled selected>Select Tutorial Lecturer</option>
                         <!-- Will be populated by JavaScript -->
                     </select><br>
 
                     <label>Course Number of Student(s)</label>
-                    <input type="number" name="courseStudent" value="{{ courseStudent_text }}" required>
+                    <input type="number" name="courseStudent" value="{{ courseStudent_text }}">
                 </div>
             </div>
 
