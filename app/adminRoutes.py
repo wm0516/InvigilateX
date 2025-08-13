@@ -54,22 +54,28 @@ def admin_manageDepartment():
     departmentName_text = ''
 
     if request.method == 'POST':
-        departmentCode_text = request.form.get('departmentCode', '').strip()
-        departmentName_text = request.form.get('departmentName', '').strip()
+        form_type = request.form.get('form_type')
 
-        valid, result = check_department(departmentCode_text, departmentName_text)
-        if not valid:
-            flash(result, 'error')
-            return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
-                                   department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+        if form_type == 'manual':
+            departmentCode_text = request.form.get('departmentCode', '').strip()
+            departmentName_text = request.form.get('departmentName', '').strip()
 
-        new_department = Department(
-            departmentCode=departmentCode_text.upper(),
-            departmentName=departmentName_text.upper()
-        )
-        db.session.add(new_department)
-        db.session.commit()
-        flash("New Department Added Successfully", "success")
+            valid, result = check_department(departmentCode_text, departmentName_text)
+            if not valid:
+                flash(result, 'error')
+                return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
+                                    department_data=department_data, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+
+            new_department = Department(
+                departmentCode=departmentCode_text.upper(),
+                departmentName=departmentName_text.upper()
+            )
+            db.session.add(new_department)
+            db.session.commit()
+            flash("New Department Added Successfully", "success")
+            return redirect(url_for('admin_manageDepartment'))
+    
+    else: 
         return redirect(url_for('admin_manageDepartment'))
 
     return render_template('adminPart/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
@@ -723,7 +729,15 @@ def admin_manageExam():
 
 
 
-# ===== New helper route for dependent dropdown =====
+
+
+
+
+
+
+
+
+# ===== to get the  =====
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
     courses = Course.query.filter_by(courseDepartment=department_code).all()
@@ -737,8 +751,6 @@ def get_lecturers_by_department(department_code):
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturer_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers]       
     return jsonify(lecturer_list)
-
-
 
 @app.route('/get_course_details/<program_code>/<path:course_code_section>')  # ✅ FIXED HERE
 def get_course_details(program_code, course_code_section):

@@ -21,6 +21,8 @@
     <!-- Announce Form -->
     <form id="announceForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
         <div id="announceSection" class="function-frame">
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="announce">
         </div>
     </form>
 
@@ -39,6 +41,9 @@
                     <input type="text" name="departmentName" value="{{ departmentName_text }}" required>
                 </div>
             </div>
+
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="manual">
                  
             <br>
             {% if courseUploadResult %}
