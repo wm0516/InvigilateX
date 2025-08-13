@@ -767,6 +767,7 @@ def get_lecturers_by_department(department_code):
     return jsonify(lecturer_list)
 
 
+
 # ===== to get all course that under the department for the manage exam page ====
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):

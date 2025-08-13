@@ -359,33 +359,32 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
 document.getElementById('courseDepartmentSelection').addEventListener('change', function() {
-    const deptSelect = document.getElementById('courseDepartmentSelection').value;
+    const deptValue = this.value; // Get the selected department code
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
-    
+
     // Clear existing options
     practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
     tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
 
-    if (deptSelect) {
-        deptSelect.addEventListener('change', function() {
-            // Fetch lecturers for the selected department
-            fetch(`/get_lecturers_by_department/${deptSelect.value}`)
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(lecturer => {
-                        const option = document.createElement('option');
-                        option.value = lecturer.userName;
-                        option.textContent = `${lecturer.userName} (${lecturer.userId})`;
+    if (deptValue) {
+        // Fetch lecturers for the selected department
+        fetch(`/get_lecturers_by_department/${deptValue}`)
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(lecturer => {
+                    const option = document.createElement('option');
+                    option.value = lecturer.userName;
+                    option.textContent = `${lecturer.userName} (${lecturer.userId})`;
 
-                        practicalSelect.appendChild(option.cloneNode(true));
-                        tutorialSelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Error fetching lecturers:', error));
-        });
+                    practicalSelect.appendChild(option.cloneNode(true));
+                    tutorialSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching lecturers:', error));
     }
 });
+
 
 
 
