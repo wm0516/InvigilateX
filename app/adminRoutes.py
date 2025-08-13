@@ -758,8 +758,8 @@ def admin_manageExam():
 @app.route('/get_lecturers_by_department/<department_code>')
 def get_lecturers_by_department(department_code):
     # Ensure case-insensitive match if needed
-    lecturers = User.query.filter(User.userDepartment == department_code).all()
-    lecturers_list = [{"userName": l.userName} for l in lecturers]
+    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
+    lecturers_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers]
     return jsonify(lecturers_list)
 
 
