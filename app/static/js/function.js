@@ -238,56 +238,51 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
-// ✅ Make sure this is in the global scope
-function showSection(sectionId, event) {
-    event.preventDefault();
-
-    // Hide all forms
-    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) form.style.display = "none";
-    });
-
-    // Show selected form
-    const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
-    if (selectedForm) selectedForm.style.display = "block";
-
-    // Update tab styling
-    document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
-    event.currentTarget.classList.add("active");
-
-    // Save active tab
-    localStorage.setItem("activeSecondTab", sectionId);
-}
-
-// ✅ Restore active tab on page load
 document.addEventListener("DOMContentLoaded", function () {
-    let savedSecondTab = localStorage.getItem("activeSecondTab");
+    const tabLinks = document.querySelectorAll(".second-nav .tab-link");
 
-    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) form.style.display = "none";
-    });
+    if (tabLinks.length === 0) return; // No tabs, do nothing
 
-    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
-        const firstAvailableTab = document.querySelector(".second-nav .tab-link");
-        if (firstAvailableTab) {
-            savedSecondTab = firstAvailableTab.getAttribute("data-section");
-        }
-    }
+    // Function stays private now
+    function showSection(sectionId, event) {
+        event.preventDefault();
 
-    if (savedSecondTab) {
-        document.querySelectorAll(".second-nav .tab-link").forEach(tab => {
-            if (tab.getAttribute("data-section") === savedSecondTab) {
-                tab.classList.add("active");
-            }
+        ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) form.style.display = "none";
         });
 
-        const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
-        if (savedForm) savedForm.style.display = "block";
-    }
-});
+        const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
+        if (selectedForm) selectedForm.style.display = "block";
 
+        tabLinks.forEach(tab => tab.classList.remove("active"));
+        event.currentTarget.classList.add("active");
+
+        localStorage.setItem("activeSecondTab", sectionId);
+    }
+
+    // Restore saved tab
+    let savedSecondTab = localStorage.getItem("activeSecondTab");
+    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
+        savedSecondTab = tabLinks[0]?.dataset.section;
+    }
+    if (savedSecondTab) {
+        tabLinks.forEach(tab => {
+            if (tab.dataset.section === savedSecondTab) {
+                tab.classList.add("active");
+                const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
+                if (savedForm) savedForm.style.display = "block";
+            }
+        });
+    }
+
+    // Attach click listeners
+    tabLinks.forEach(tab => {
+        tab.addEventListener("click", function (event) {
+            showSection(this.dataset.section, event);
+        });
+    });
+});
 
 
 
