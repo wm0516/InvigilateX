@@ -372,7 +372,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
-/*document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     const deptSelect = document.getElementById('courseDepartmentSelection');
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
@@ -399,10 +399,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
                 .catch(error => console.error('Error fetching lecturers:', error));
         });
     }
-});*/
-
-
-
+});
 
 deptSelect.addEventListener('change', function() {
     practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
