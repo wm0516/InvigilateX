@@ -359,7 +359,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
 document.getElementById('courseDepartmentSelection').addEventListener('change', function() {
-    const deptValue = this.value; // Get the selected department code
+    const deptValue = document.getElementById('courseDepartment').value;
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
 
@@ -373,11 +373,10 @@ document.getElementById('courseDepartmentSelection').addEventListener('change', 
             .then(response => response.json())
             .then(data => {
                 data.forEach(lecturer => {
-                    const option = document.createElement('option');
+                    let option = document.createElement('option');
                     option.value = lecturer.userName;
-                    option.textContent = `${lecturer.userName} (${lecturer.userId})`;
-
-                    practicalSelect.appendChild(option.cloneNode(true));
+                    option.textContent = `${lecturer.userName}`;
+                    practicalSelect.appendChild(option);
                     tutorialSelect.appendChild(option);
                 });
             })
