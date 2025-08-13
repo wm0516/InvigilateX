@@ -200,7 +200,7 @@ def check_profile(id, contact, password1, password2):
         user_contact = User.query.filter(User.userId == id ,User.userContact == contact).first()
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
-        if check_contact(contact):
+        if contact != User.userContact and check_contact(contact):
             return False, "Contact Number Already exists"
         
     # If any password is entered, both must be present and match
