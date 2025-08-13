@@ -237,27 +237,24 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
+
 // Function for second navigation tab
 function showSection(sectionId, event) {
     event.preventDefault();
 
-    // Hide all forms
-    document.getElementById("announceForm").style.display = "none";
-    document.getElementById("uploadForm").style.display = "none";
-    document.getElementById("manualForm").style.display = "none";
+    // Hide forms only if they exist
+    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = "none";
+    });
 
-    // Show selected form
-    if (sectionId == "announceSection") {
-        document.getElementById("announceForm").style.display = "block";
-    } else if (sectionId === "uploadSection") {
-        document.getElementById("uploadForm").style.display = "block";
-    } else {
-        document.getElementById("manualForm").style.display = "block";
-    }
+    // Show selected form if it exists
+    const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
+    if (selectedForm) selectedForm.style.display = "block";
 
     // Tab highlight (limit to second navigation container)
     document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
-    event.target.classList.add("active");
+    event.currentTarget.classList.add("active");
 
     // Save current tab to localStorage
     localStorage.setItem("activeSecondTab", sectionId);
@@ -265,7 +262,21 @@ function showSection(sectionId, event) {
 
 // Restore second tab state on page load
 document.addEventListener("DOMContentLoaded", function () {
-    const savedSecondTab = localStorage.getItem("activeSecondTab");
+    let savedSecondTab = localStorage.getItem("activeSecondTab");
+
+    // Hide all forms first
+    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = "none";
+    });
+
+    // If saved tab doesn't exist, fallback to first available
+    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
+        const firstAvailableTab = document.querySelector(".second-nav .tab-link");
+        if (firstAvailableTab) {
+            savedSecondTab = firstAvailableTab.getAttribute("data-section");
+        }
+    }
 
     if (savedSecondTab) {
         // Highlight the saved tab
@@ -276,10 +287,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Show the correct form
-        document.getElementById("announceForm").style.display = "none";
-        document.getElementById("uploadForm").style.display = "none";
-        document.getElementById("manualForm").style.display = "none";
-        document.getElementById(savedSecondTab.replace("Section", "Form")).style.display = "block";
+        const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
+        if (savedForm) savedForm.style.display = "block";
     }
 });
 
