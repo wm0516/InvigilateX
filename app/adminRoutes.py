@@ -529,6 +529,10 @@ def admin_manageCourse():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
         
+
+        elif form_type == 'announce':
+            return redirect(url_for('admin_manageCourse'))
+
         else:
             courseDepartment_text = request.form.get('courseDepartment', '').strip()
             department_text = courseDepartment_text.split('-')[0].strip()
