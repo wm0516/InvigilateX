@@ -238,21 +238,23 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
-// Function for second navigation tab
 function showSection(sectionId, event) {
-    if (event) event.preventDefault();
+    if (event) {
+        event.preventDefault();
+        // Update URL without page reload
+        const tabName = event.currentTarget.getAttribute('href');
+        history.pushState(null, null, tabName);
+    }
 
-    // Hide all forms
+    // Rest of your existing showSection logic...
     document.querySelectorAll('form[id$="Form"]').forEach(form => {
         form.style.display = 'none';
     });
-
-    // Remove active class from all tabs
+    
     document.querySelectorAll('.second-nav .tab-link').forEach(tab => {
         tab.classList.remove('active');
     });
 
-    // Show the selected form and activate its tab
     const formId = sectionId.replace('Section', 'Form');
     const formToShow = document.getElementById(formId);
     const clickedTab = event?.currentTarget;
@@ -260,45 +262,31 @@ function showSection(sectionId, event) {
     if (formToShow) {
         formToShow.style.display = 'block';
         if (clickedTab) clickedTab.classList.add('active');
-        localStorage.setItem('activeSecondTab', sectionId);
+        // Don't need localStorage anymore since we're using URL
     }
 }
 
-// Restore tab state on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const savedTab = localStorage.getItem('activeSecondTab');
-    const tabs = document.querySelectorAll('.second-nav .tab-link');
-    let defaultTab = null;
+// Handle initial load and back/forward navigation
+window.addEventListener('load', checkHash);
+window.addEventListener('hashchange', checkHash);
 
-    // Find which tabs actually have corresponding forms
-    const availableTabs = Array.from(tabs).filter(tab => {
-        const sectionId = tab.getAttribute('data-section');
-        const formId = sectionId.replace('Section', 'Form');
-        return document.getElementById(formId);
-    });
+function checkHash() {
+    const hash = window.location.hash.substring(1); // Remove #
+    const tabMap = {
+        'announce': 'announceSection',
+        'upload': 'uploadSection',
+        'manual': 'manualSection'
+    };
 
-    // Set the first available tab as default
-    if (availableTabs.length > 0) {
-        defaultTab = availableTabs[0].getAttribute('data-section');
+    const sectionId = tabMap[hash] || 'announceSection'; // Default to first tab
+    const tab = document.querySelector(`.second-nav .tab-link[data-section="${sectionId}"]`);
+    
+    if (tab) {
+        showSection(sectionId);
+        // Manually trigger click to update UI
+        tab.click();
     }
-
-    // Determine which tab to show (saved or default)
-    const tabToShow = (savedTab && availableTabs.some(tab => 
-        tab.getAttribute('data-section') === savedTab
-    )) ? savedTab : defaultTab;
-
-    // Show the selected form and activate its tab
-    if (tabToShow) {
-        const formId = tabToShow.replace('Section', 'Form');
-        const form = document.getElementById(formId);
-        const tab = document.querySelector(`.second-nav .tab-link[data-section="${tabToShow}"]`);
-
-        if (form && tab) {
-            form.style.display = 'block';
-            tab.classList.add('active');
-        }
-    }
-});
+}
 
 
 
