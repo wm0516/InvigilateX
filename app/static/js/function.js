@@ -357,33 +357,37 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 
 
-// Function of when department code selected, related lecturer will be displatey out in Manage Course page
-document.getElementById('departmentCode').addEventListener('change', function() {
+// When department code changes, fetch lecturers for that department
+document.getElementById('departmentCode').addEventListener('change', function () {
     const deptValue = this.value;
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
 
-    // Clear existing options
+    // Reset both selects to default
     practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
     tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
 
     if (deptValue) {
-        // Fetch lecturers for the selected department
         fetch(`/get_lecturers_by_department/${deptValue}`)
             .then(response => response.json())
             .then(data => {
                 data.forEach(lecturer => {
-                    let option = document.createElement('option');
-                    option.value = lecturer.userName;
-                    option.textContent = lecturer.userName;
-                    practicalSelect.appendChild(option);
-                    tutorialSelect.appendChild(option);
+                    // Create separate option for Practical
+                    let practicalOption = document.createElement('option');
+                    practicalOption.value = lecturer.userName;
+                    practicalOption.textContent = lecturer.userName;
+                    practicalSelect.appendChild(practicalOption);
+
+                    // Create separate option for Tutorial
+                    let tutorialOption = document.createElement('option');
+                    tutorialOption.value = lecturer.userName;
+                    tutorialOption.textContent = lecturer.userName;
+                    tutorialSelect.appendChild(tutorialOption);
                 });
             })
             .catch(error => console.error('Error fetching lecturers:', error));
     }
 });
-
 
 
 

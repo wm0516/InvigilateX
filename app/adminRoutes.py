@@ -757,14 +757,12 @@ def admin_manageExam():
 # ===== to get the all lecturers only that under the department search for the manage course page =====
 @app.route('/get_lecturers_by_department/<department_code>')
 def get_lecturers_by_department(department_code):
-    print(f"Department code received: {department_code}")
-    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
+    # Ensure case-insensitive match if needed
+    lecturers = User.query.filter(User.userDepartment == department_code, User.userLevel == 1).all()
+    lecturers_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers]
+    return jsonify(lecturers_list)
 
-    print(f"Found {len(lecturers)} lecturers for department {department_code}")
-    lecturer_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers]
-    
-    print("Lecturer list:", lecturer_list)
-    return jsonify(lecturer_list)
+
 
 
 
