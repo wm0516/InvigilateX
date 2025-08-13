@@ -197,12 +197,16 @@ def check_lecturer(id, email, contact):
 def check_profile(id, contact, password1, password2):
     # If contact is entered, validate format
     if contact:
-        user_contact = User.query.filter(User.userId == id ,User.userContact == contact).first()
+        user_record = User.query.filter(User.userId == id).first()
+        if not user_record:
+            return False, "User not found"  # avoid None access
+        
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
-        if contact != User.userContact and check_contact(contact):
-            return False, "Contact Number Already exists"
         
+        if contact != user_record.userContact and check_contact(contact):
+            return False, "Contact Number Already exists"
+
     # If any password is entered, both must be present and match
     if password1 or password2:
         if not password1 or not password2:
@@ -212,7 +216,7 @@ def check_profile(id, contact, password1, password2):
         if password1 != password2:
             return False, "Passwords Do Not Match"
         
-    if user_contact and not password1 and not password2:
+    if contact and not password1 and not password2:
         return True, "No Update"
     
     return True, ""
