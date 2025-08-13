@@ -244,38 +244,36 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
+
 // Function for second navigation tab
 function showSection(sectionId, event) {
     if (event) event.preventDefault();
 
     const formIds = ["announceForm", "uploadForm", "manualForm"];
 
-    // Hide only the forms that exist
+    // Hide only existing forms
     formIds.forEach(formId => {
         const form = document.getElementById(formId);
         if (form) form.style.display = "none";
     });
 
-    // Show the selected form if it exists
+    // Show selected form if it exists
     const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
     if (selectedForm) {
         selectedForm.style.display = "block";
+
+        // Highlight clicked tab
+        document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
+        if (event?.currentTarget) {
+            event.currentTarget.classList.add("active");
+        }
+
+        // Save active tab
+        localStorage.setItem("activeSecondTab", sectionId);
     } else {
         console.warn(`Form for section "${sectionId}" not found on this page.`);
     }
-
-    // Tab highlight
-    document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
-    if (event?.currentTarget) {
-        event.currentTarget.classList.add("active");
-    }
-
-    // Save state only if form exists
-    if (selectedForm) {
-        localStorage.setItem("activeSecondTab", sectionId);
-    }
 }
-
 
 
 // Restore second tab state on page load
@@ -289,13 +287,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (form) form.style.display = "none";
     });
 
-    // If saved tab doesn't exist here, pick the first available tab
+    // Find the first available tab with a matching form
+    const firstAvailableTab = Array.from(document.querySelectorAll(".second-nav .tab-link"))
+        .find(tab => {
+            const formId = tab.getAttribute("data-section")?.replace("Section", "Form");
+            return document.getElementById(formId);
+        });
+
+    // If saved tab's form is missing, use the first available
     if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
-        const firstAvailableTab = Array.from(document.querySelectorAll(".second-nav .tab-link"))
-            .find(tab => document.getElementById(tab.getAttribute("data-section")?.replace("Section", "Form")));
-        if (firstAvailableTab) {
-            savedSecondTab = firstAvailableTab.getAttribute("data-section");
-        }
+        savedSecondTab = firstAvailableTab?.getAttribute("data-section");
     }
 
     // Restore tab
@@ -309,11 +310,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (savedForm) savedForm.style.display = "block";
     }
 });
-
-
-
-
-
 
 
 
