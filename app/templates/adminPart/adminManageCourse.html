@@ -8,7 +8,11 @@
     <!-- Top Centered Tabs -->
     <div class="tab-container">
         <div class="second-nav">
-            <a href="#" class="tab-link active" data-section="uploadSection" onclick="showSection('uploadSection', event)">
+            <a href="#" class="tab-link active" data-section="announceSection"onclick="showSection('announceSection', event)">
+                <i class="fas fa-envelop"></i>
+                <span>Notification</span>
+            </a>
+            <a href="#" class="tab-link" data-section="uploadSection" onclick="showSection('uploadSection', event)">
                 <i class="fas fa-upload"></i>
                 <span>Upload File</span>
             </a>
@@ -19,8 +23,14 @@
         </div>
     </div>
 
+    <!-- Announce Form -->
+    <form id="announceForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
+        <div id="announceSection" class="function-frame">
+        </div>
+    </form>
+
     <!-- Upload Form -->
-    <form id="uploadForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
+    <form id="uploadForm" action="{{ url_for('admin_manageCourse') }}" method="POST" style="display: none;">
         <div id="uploadSection" class="function-frame">
             <div class="form-left" style="width: 100%">
                 <h4 style="text-align: center;">File Upload Section</h4>

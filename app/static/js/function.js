@@ -242,11 +242,14 @@ function showSection(sectionId, event) {
     event.preventDefault();
 
     // Hide all forms
+    document.getElementById("announceForm").style.display = "none";
     document.getElementById("uploadForm").style.display = "none";
     document.getElementById("manualForm").style.display = "none";
 
     // Show selected form
-    if (sectionId === "uploadSection") {
+    if (sectionId == "announceSection") {
+        document.getElementById("announceForm").style.display = "block";
+    } else if (sectionId === "uploadSection") {
         document.getElementById("uploadForm").style.display = "block";
     } else {
         document.getElementById("manualForm").style.display = "block";
@@ -273,6 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // Show the correct form
+        document.getElementById("announceForm").style.display = "none";
         document.getElementById("uploadForm").style.display = "none";
         document.getElementById("manualForm").style.display = "none";
         document.getElementById(savedSecondTab.replace("Section", "Form")).style.display = "block";
