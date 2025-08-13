@@ -368,17 +368,18 @@ document.getElementById('departmentCode').addEventListener('change', function ()
         fetch(`/get_lecturers_by_department/${deptValue}`)
             .then(response => response.json())
             .then(data => {
-                data.forEach(name => {
+                data.forEach(lecturer => {
                     let practicalOption = document.createElement('option');
-                    practicalOption.value = name;
-                    practicalOption.textContent = name;
+                    practicalOption.value = lecturer.userName;
+                    practicalOption.textContent = lecturer.userName;
                     practicalSelect.appendChild(practicalOption);
 
                     let tutorialOption = document.createElement('option');
-                    tutorialOption.value = name;
-                    tutorialOption.textContent = name;
+                    tutorialOption.value = lecturer.userName;
+                    tutorialOption.textContent = lecturer.userName;
                     tutorialSelect.appendChild(tutorialOption);
                 });
+
 
             })
             .catch(error => console.error('Error fetching lecturers:', error));
