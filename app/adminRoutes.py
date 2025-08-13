@@ -402,7 +402,7 @@ def admin_manageLecturer():
                 )
 
             new_lecturer = User(
-                userId=id_text,
+                userId=id_text.upper(),
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
                 userLevel=role_map[role_text],
@@ -754,16 +754,7 @@ def admin_manageExam():
 
 
 
-
-
-# ===== to get the  =====
-@app.route('/get_courses_by_department/<department_code>')
-def get_courses_by_department(department_code):
-    courses = Course.query.filter_by(courseDepartment=department_code).all()
-    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
-    return jsonify(course_list)
-
-
+# ===== to get the all lecturers only that under the department search for the manage course page =====
 @app.route('/get_lecturers_by_department/<department_code>')
 def get_lecturers_by_department(department_code):
     print(f"Departmetn_text_code is: {department_code}")
@@ -771,6 +762,16 @@ def get_lecturers_by_department(department_code):
     lecturer_list = [{"userName": l.userName, "userId": l.userId} for l in lecturers]       
     return jsonify(lecturer_list)
 
+
+# ===== to get all course that under the department for the manage exam page ====
+@app.route('/get_courses_by_department/<department_code>')
+def get_courses_by_department(department_code):
+    courses = Course.query.filter_by(courseDepartment=department_code).all()
+    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
+    return jsonify(course_list)
+
+
+# ===== to get all course details that under the department for the manage exam page ====
 @app.route('/get_course_details/<program_code>/<path:course_code_section>')  # ✅ FIXED HERE
 def get_course_details(program_code, course_code_section):
     print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
