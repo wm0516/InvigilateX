@@ -236,6 +236,7 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
+
 // Function for second navigation tab
 function showSection(sectionId, event) {
     event.preventDefault();
@@ -254,9 +255,29 @@ function showSection(sectionId, event) {
     // Tab highlight (limit to second navigation container)
     document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
     event.target.classList.add("active");
+
+    // Save current tab to localStorage
+    localStorage.setItem("activeSecondTab", sectionId);
 }
 
+// Restore second tab state on page load
+document.addEventListener("DOMContentLoaded", function () {
+    const savedSecondTab = localStorage.getItem("activeSecondTab");
 
+    if (savedSecondTab) {
+        // Highlight the saved tab
+        document.querySelectorAll(".second-nav .tab-link").forEach(tab => {
+            if (tab.getAttribute("data-section") === savedSecondTab) {
+                tab.classList.add("active");
+            }
+        });
+
+        // Show the correct form
+        document.getElementById("uploadForm").style.display = "none";
+        document.getElementById("manualForm").style.display = "none";
+        document.getElementById(savedSecondTab.replace("Section", "Form")).style.display = "block";
+    }
+});
 
 
 
