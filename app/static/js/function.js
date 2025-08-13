@@ -373,7 +373,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
 document.addEventListener('DOMContentLoaded', function() {
-    const deptSelect = document.getElementById('courseDepartmentSelection');
+    const deptSelect = document.getElementById('courseDepartmentSelection').value;
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
     
@@ -383,7 +383,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (deptSelect) {
         deptSelect.addEventListener('change', function() {
-
             // Fetch lecturers for the selected department
             fetch(`/get_lecturers_by_department/${deptSelect.value}`)
                 .then(response => response.json())
