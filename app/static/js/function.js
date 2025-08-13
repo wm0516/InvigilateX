@@ -238,71 +238,60 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
-// Function to show section
+// ✅ Make sure this is in the global scope
 function showSection(sectionId, event) {
-    if (event) {
-        event.preventDefault();
-        // Update URL to match the clicked tab
-        const tabName = event.currentTarget.getAttribute('href');
-        history.pushState(null, null, tabName);
-    }
+    event.preventDefault();
 
     // Hide all forms
-    document.querySelectorAll('form[id$="Form"]').forEach(form => {
-        form.style.display = 'none';
+    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = "none";
     });
 
-    // Remove active class from all tabs
-    document.querySelectorAll('.second-nav .tab-link').forEach(tab => {
-        tab.classList.remove('active');
+    // Show selected form
+    const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
+    if (selectedForm) selectedForm.style.display = "block";
+
+    // Update tab styling
+    document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
+    event.currentTarget.classList.add("active");
+
+    // Save active tab
+    localStorage.setItem("activeSecondTab", sectionId);
+}
+
+// ✅ Restore active tab on page load
+document.addEventListener("DOMContentLoaded", function () {
+    let savedSecondTab = localStorage.getItem("activeSecondTab");
+
+    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) form.style.display = "none";
     });
 
-    // Show the selected form
-    const formId = sectionId.replace('Section', 'Form');
-    const formToShow = document.getElementById(formId);
-    if (formToShow) {
-        formToShow.style.display = 'block';
-        
-        // Activate the corresponding tab
-        const tabToActivate = document.querySelector(`.tab-link[data-section="${sectionId}"]`);
-        if (tabToActivate) {
-            tabToActivate.classList.add('active');
+    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
+        const firstAvailableTab = document.querySelector(".second-nav .tab-link");
+        if (firstAvailableTab) {
+            savedSecondTab = firstAvailableTab.getAttribute("data-section");
         }
     }
-}
 
-// Handle initial load and hash changes
-function handleHashNavigation() {
-    const hash = window.location.hash.substring(1); // Get current hash without #
-    
-    // Map URL fragments to section IDs
-    const tabMap = {
-        'announce': 'announceSection',
-        'upload': 'uploadSection',
-        'manual': 'manualSection'
-    };
+    if (savedSecondTab) {
+        document.querySelectorAll(".second-nav .tab-link").forEach(tab => {
+            if (tab.getAttribute("data-section") === savedSecondTab) {
+                tab.classList.add("active");
+            }
+        });
 
-    // Determine which section to show (default to first tab)
-    const sectionId = tabMap[hash] || 'announceSection';
-    
-    // Find the corresponding tab
-    const tab = document.querySelector(`.tab-link[data-section="${sectionId}"]`);
-    
-    if (tab) {
-        // Show the section without adding to history (replaceState)
-        history.replaceState(null, null, `#${hash || 'announce'}`);
-        showSection(sectionId);
+        const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
+        if (savedForm) savedForm.style.display = "block";
     }
-}
-
-// Set up event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Initial navigation handling
-    handleHashNavigation();
-    
-    // Handle back/forward button navigation
-    window.addEventListener('hashchange', handleHashNavigation);
 });
+
+
+
+
+
 
 
 
