@@ -330,6 +330,23 @@ document.getElementById('programCode').addEventListener('change', function() {
 });
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
 document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
@@ -355,7 +372,7 @@ document.getElementById('courseSection').addEventListener('change', function() {
 
 
 // Function of when department code selected, related lecturer will be displatey out in Manage Course page
-document.addEventListener('DOMContentLoaded', function() {
+/*document.addEventListener('DOMContentLoaded', function() {
     const deptSelect = document.getElementById('courseDepartmentSelection');
     const practicalSelect = document.getElementById('practicalLecturerSelect');
     const tutorialSelect = document.getElementById('tutorialLecturerSelect');
@@ -382,13 +399,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 .catch(error => console.error('Error fetching lecturers:', error));
         });
     }
+});*/
+
+
+
+
+deptSelect.addEventListener('change', function() {
+    practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
+    tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
+
+    console.log("Selected department:", deptSelect.value); // Debug log
+    
+    fetch(`/get_lecturers_by_department/${deptSelect.value}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Received data:", data); // Debug log
+            if (data.length === 0) {
+                console.warn("No lecturers found for this department");
+            }
+            data.forEach(lecturer => {
+                const option = document.createElement('option');
+                option.value = lecturer.userName;
+                option.textContent = `${lecturer.userName} (${lecturer.userId})`;
+
+                practicalSelect.appendChild(option.cloneNode(true));
+                tutorialSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching lecturers:', error);
+            // Optionally show a user-friendly message
+        });
 });
-
-
-
-
-
-
 
 
 
