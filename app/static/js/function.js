@@ -242,15 +242,16 @@ document.getElementById('endTime').addEventListener('change', function() {
 function showSection(sectionId, event) {
     event.preventDefault();
 
-    // Hide forms only if they exist
-    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) form.style.display = "none";
+    // Hide all forms that are present
+    document.querySelectorAll("form[id$='Form']").forEach(form => {
+        form.style.display = "none";
     });
 
-    // Show selected form if it exists
+    // Show the form linked to this tab if it exists
     const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
-    if (selectedForm) selectedForm.style.display = "block";
+    if (selectedForm) {
+        selectedForm.style.display = "block";
+    }
 
     // Tab highlight (limit to second navigation container)
     document.querySelectorAll(".second-nav .tab-link").forEach(tab => tab.classList.remove("active"));
@@ -265,12 +266,11 @@ document.addEventListener("DOMContentLoaded", function () {
     let savedSecondTab = localStorage.getItem("activeSecondTab");
 
     // Hide all forms first
-    ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
-        const form = document.getElementById(formId);
-        if (form) form.style.display = "none";
+    document.querySelectorAll("form[id$='Form']").forEach(form => {
+        form.style.display = "none";
     });
 
-    // If saved tab doesn't exist, fallback to first available
+    // If saved tab is not available on this page, pick the first tab that exists
     if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
         const firstAvailableTab = document.querySelector(".second-nav .tab-link");
         if (firstAvailableTab) {
@@ -291,8 +291,6 @@ document.addEventListener("DOMContentLoaded", function () {
         if (savedForm) savedForm.style.display = "block";
     }
 });
-
-
 
 
 
