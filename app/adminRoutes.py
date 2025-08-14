@@ -391,7 +391,7 @@ def admin_manageStaff():
             if not valid:
                 flash(result, 'error')
                 return render_template(
-                    'admin/admin_manageStaff.html',
+                    'admin/adminManageStaff.html',
                     user_data=user_data,
                     department_data=department_data,
                     id_text=id_text,
@@ -420,7 +420,7 @@ def admin_manageStaff():
             return redirect(url_for('admin_manageStaff'))
 
     return render_template(
-        'admin/admin_ManageStaff.html',
+        'admin/adminManageStaff.html',
         active_tab='admin_manageStafftab',
         user_data=user_data,
         department_data=department_data
