@@ -126,7 +126,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
         if (clickedTab) clickedTab.classList.add("active");
 
-        localStorage.setItem("activeSecondTab", sectionId);
+        // ✅ Save active tab only for the current session/page
+        sessionStorage.setItem("activeSecondTab", sectionId);
     }
 
     // Attach click listeners
@@ -136,8 +137,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // ✅ Restore active tab after reload
-    const savedTab = localStorage.getItem("activeSecondTab");
+    // ✅ Restore active tab after reload (but not across pages)
+    const savedTab = sessionStorage.getItem("activeSecondTab");
     if (savedTab) {
         showSection(savedTab); // No event passed
     } else {
