@@ -111,9 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener("DOMContentLoaded", function () {
     const tabLinks = document.querySelectorAll(".second-nav .tab-link");
 
-    // Make storage key unique to this page URL
-    const pageKey = "activeSecondTab_" + window.location.pathname;
-
     function showSection(sectionId, event) {
         if (event) event.preventDefault();
 
@@ -128,9 +125,6 @@ document.addEventListener("DOMContentLoaded", function () {
         tabLinks.forEach(tab => tab.classList.remove("active"));
         const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
         if (clickedTab) clickedTab.classList.add("active");
-
-        // ✅ Save active tab specific to this page
-        localStorage.setItem(pageKey, sectionId);
     }
 
     // Attach click listeners
@@ -140,14 +134,8 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // ✅ Restore active tab for THIS page only
-    const savedTab = localStorage.getItem(pageKey);
-    if (savedTab) {
-        showSection(savedTab); // No event passed
-    } else {
-        // Default to first tab
-        showSection("announceSection");
-    }
+    // ✅ Always show default section on page load
+    showSection("announceSection");
 });
 
 
