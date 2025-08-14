@@ -237,12 +237,11 @@ document.getElementById('endTime').addEventListener('change', function() {
 
 
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const tabLinks = document.querySelectorAll(".second-nav .tab-link");
 
     function showSection(sectionId, event) {
-        event.preventDefault();
+        if (event) event.preventDefault();
 
         ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
             const form = document.getElementById(formId);
@@ -253,25 +252,28 @@ document.addEventListener("DOMContentLoaded", function () {
         if (selectedForm) selectedForm.style.display = "block";
 
         tabLinks.forEach(tab => tab.classList.remove("active"));
-        event.currentTarget.classList.add("active");
+        const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
+        if (clickedTab) clickedTab.classList.add("active");
 
         localStorage.setItem("activeSecondTab", sectionId);
     }
 
-    // Attach click listeners instead of using onclick in HTML
+    // Attach click listeners
     tabLinks.forEach(tab => {
         tab.addEventListener("click", function (event) {
             showSection(this.dataset.section, event);
         });
     });
+
+    // ✅ Restore active tab after reload
+    const savedTab = localStorage.getItem("activeSecondTab");
+    if (savedTab) {
+        showSection(savedTab); // No event passed
+    } else {
+        // Default to first tab
+        showSection("announceSection");
+    }
 });
-
-
-
-
-
-
-
 
 
 
