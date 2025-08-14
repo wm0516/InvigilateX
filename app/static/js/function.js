@@ -263,64 +263,35 @@ document.addEventListener("DOMContentLoaded", function () {
 // Function for after getting department code, related course code will be displayed out in Manage Exam page
 document.addEventListener("DOMContentLoaded", function() {
     const programCode = document.getElementById('programCode');
-    if (programCode) {
-        programCode.addEventListener('change', function() {
-            let deptCode = this.value;
-            let courseSectionSelect = document.getElementById('courseSection');
-            let practicalLecturerSelect = document.getElementById('practicalLecturer');
-            let tutorialLecturerSelect = document.getElementById('tutorialLecturer');
-            let studentSelect = document.getElementById('student');
+    if (!programCode) return; // Stop here if not on this page
 
-            courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
-            practicalLecturerSelect.value = "";
-            tutorialLecturerSelect.value = "";
-            studentSelect.value = "";
+    programCode.addEventListener('change', function() {
+        let deptCode = this.value;
+        let courseSectionSelect = document.getElementById('courseSection');
+        let practicalLecturerSelect = document.getElementById('practicalLecturer');
+        let tutorialLecturerSelect = document.getElementById('tutorialLecturer');
+        let studentSelect = document.getElementById('student');
 
-            if (deptCode) {
-                fetch(`/get_courses_by_department/${deptCode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(course => {
-                            let option = document.createElement('option');
-                            option.value = course.courseCodeSection;
-                            option.textContent = course.courseCodeSection;
-                            courseSectionSelect.appendChild(option);
-                        });
-                    })
-                    .catch(error => console.error('Error fetching courses:', error));
-            }
-        });
-    }
+        courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+        practicalLecturerSelect.value = "";
+        tutorialLecturerSelect.value = "";
+        studentSelect.value = "";
+
+        if (deptCode) {
+            fetch(`/get_courses_by_department/${deptCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(course => {
+                        let option = document.createElement('option');
+                        option.value = course.courseCodeSection;
+                        option.textContent = course.courseCodeSection;
+                        courseSectionSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching courses:', error));
+        }
+    });
 });
-
-/*document.getElementById('programCode').addEventListener('change', function() {
-    let deptCode = this.value;
-    let courseSectionSelect = document.getElementById('courseSection');
-    let practicalLecturerSelect = document.getElementById('practicalLecturer');
-    let tutorialLecturerSelect = document.getElementById('tutorialLecturer');
-    let studentSelect = document.getElementById('student');
-    
-    // Reset the course section dropdown
-    courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
-    practicalLecturerSelect.value = "";
-    tutorialLecturerSelect.value = "";
-    studentSelect.value = "";
-
-    if (deptCode) {
-        fetch(`/get_courses_by_department/${deptCode}`)
-            .then(response => response.json())
-            .then(data => {
-                data.forEach(course => {
-                    let option = document.createElement('option');
-                    option.value = course.courseCodeSection;
-                    option.textContent = course.courseCodeSection;
-                    courseSectionSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error fetching courses:', error));
-    }
-});*/
-
 
 // Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
 document.addEventListener("DOMContentLoaded", function () {
@@ -351,28 +322,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
-/*document.getElementById('courseSection').addEventListener('change', function() {
-    let deptCode = document.getElementById('programCode').value;
-    let sectionCode = document.getElementById('courseSection').value;
-    console.log("Selected:", deptCode, sectionCode); // Debug
-
-    if (deptCode && sectionCode) {
-        fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)  // ✅ FIXED HERE
-            .then(response => {
-                if (!response.ok) throw new Error("API failed");
-                return response.json();
-            })
-            .then(data => {
-                console.log("API Data:", data); // Debug response
-                document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
-                document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
-                document.getElementById('student').value = data.student || "";
-            })
-            .catch(err => console.error("Error:", err));
-    }
-});*/
-
-
 
 
 
