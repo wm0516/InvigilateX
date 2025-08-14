@@ -6,10 +6,12 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
+
 # Set the default link into admin_login, because this program have 3 login phase
 @app.route('/')
 def index():
     return redirect(url_for('login'))
+
 
 # login page (done with checking email address and hash password)
 @app.route('/login', methods=['GET', 'POST'])
@@ -153,6 +155,7 @@ def logout():
     session.clear()
     # Redirect to login page
     return redirect(url_for('login')) 
+
 
 # Once login sucessful, it will kept all that user data and just use when need
 @app.context_processor

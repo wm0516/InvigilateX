@@ -1,4 +1,4 @@
-/* toggle function */
+// Function for Toggle Button 
 document.addEventListener('DOMContentLoaded', function() {
     const toggleButtons = document.querySelectorAll('.toggle-password-btn');
 
@@ -19,8 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-
-/* register department text */
+// Register Page: Department Text [Will Changes According to Role]
 function updateDepartmentLabel() {
     const roleSelect = document.getElementById('roleSelect');
     const departmentLabel = document.getElementById('departmentLabel');
@@ -45,8 +44,7 @@ function updateDepartmentLabel() {
 }
 
 
-
-// Initialize sidebar state from localStorage
+// To All Page Exclude 'Auth Page': Initialize sidebar state from localStorage
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');
     const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -55,7 +53,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// funtion of toggle side bar
+
+// Funtion of toggle side bar
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     sidebar.classList.toggle('collapsed');
@@ -63,7 +62,8 @@ function toggleSidebar() {
     localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
 }
 
-/* hompage tab function*/
+
+// Homepage Tab Function
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
     '/adminHome': 'admin_hometab',
@@ -107,16 +107,47 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+// Second Navigation Tab For Certain Page
+document.addEventListener("DOMContentLoaded", function () {
+    const tabLinks = document.querySelectorAll(".second-nav .tab-link");
+
+    function showSection(sectionId, event) {
+        if (event) event.preventDefault();
+
+        ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
+            const form = document.getElementById(formId);
+            if (form) form.style.display = "none";
+        });
+
+        const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
+        if (selectedForm) selectedForm.style.display = "block";
+
+        tabLinks.forEach(tab => tab.classList.remove("active"));
+        const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
+        if (clickedTab) clickedTab.classList.add("active");
+
+        localStorage.setItem("activeSecondTab", sectionId);
+    }
+
+    // Attach click listeners
+    tabLinks.forEach(tab => {
+        tab.addEventListener("click", function (event) {
+            showSection(this.dataset.section, event);
+        });
+    });
+
+    // ✅ Restore active tab after reload
+    const savedTab = localStorage.getItem("activeSecondTab");
+    if (savedTab) {
+        showSection(savedTab); // No event passed
+    } else {
+        // Default to first tab
+        showSection("announceSection");
+    }
+});
 
 
-
-
-
-
-
-// Initialize all upload forms when DOM is loaded
-// Minimal JS for file name display and drag-drop styling
-// Reusable function for setting up file upload UI
+// Admin Page: Function of Upload File 
 function setupFileUpload(fileInputId, uploadContainerId, fileNameDisplayId) {
     const fileInput = document.getElementById(fileInputId);
     const uploadContainer = document.getElementById(uploadContainerId);
@@ -156,6 +187,7 @@ function setupFileUpload(fileInputId, uploadContainerId, fileNameDisplayId) {
     });
 }
 
+
 // Initialize all upload components on DOM ready
 document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload('course_list', 'courseUploadContainer', 'courseSelectedFileName');
@@ -165,15 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-
-
-
-
-
-
-
-
-// Function to track the selected date to display out the date in manageExam
+// Admin Manage Exam Page: Function to track the selected date and display out the day
 document.addEventListener("DOMContentLoaded", function () {
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
@@ -216,51 +240,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    const tabLinks = document.querySelectorAll(".second-nav .tab-link");
-
-    function showSection(sectionId, event) {
-        if (event) event.preventDefault();
-
-        ["announceForm", "uploadForm", "manualForm"].forEach(formId => {
-            const form = document.getElementById(formId);
-            if (form) form.style.display = "none";
-        });
-
-        const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
-        if (selectedForm) selectedForm.style.display = "block";
-
-        tabLinks.forEach(tab => tab.classList.remove("active"));
-        const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
-        if (clickedTab) clickedTab.classList.add("active");
-
-        localStorage.setItem("activeSecondTab", sectionId);
-    }
-
-    // Attach click listeners
-    tabLinks.forEach(tab => {
-        tab.addEventListener("click", function (event) {
-            showSection(this.dataset.section, event);
-        });
-    });
-
-    // ✅ Restore active tab after reload
-    const savedTab = localStorage.getItem("activeSecondTab");
-    if (savedTab) {
-        showSection(savedTab); // No event passed
-    } else {
-        // Default to first tab
-        showSection("announceSection");
-    }
-});
-
-
-
-
-// Function for after getting department code, related course code will be displayed out in Manage Exam page
+// Admin Manage Exam Page: Function to Read Selected "Department Code" and related "Course Code" will be displayed out
 document.addEventListener("DOMContentLoaded", function() {
     const programCode = document.getElementById('programCode');
     if (!programCode) return; // Stop here if not on this page
@@ -293,7 +273,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
+
+// Admin Manage Exam Page: Function to Read Selected "Course Code Section" and related "Total of Students, Practical and Tutorial Lecturer" will be displayed out
 document.addEventListener("DOMContentLoaded", function () {
     const courseSectionEl = document.getElementById('courseSection');
     if (!courseSectionEl) {
@@ -324,8 +305,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-
-// When department code changes, fetch lecturers for that department
+// Admin Manage Course Page: Function to Read Selected "Department Code" and related "Lecturer" will be displayed out
 document.addEventListener('DOMContentLoaded', function () {
     const departmentCode = document.getElementById('departmentCode');
     if (!departmentCode) return; // Stop if not on this page
