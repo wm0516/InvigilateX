@@ -1,31 +1,29 @@
 from app import db
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String  # correct import
-# db.String
-# db.Date -> date format
-# db.Time -> time format
+# db.String  -> string
+# db.Date    -> date format
+# db.Time    -> time format
 # db.Integer -> number
 
-# In MySQL
 # SHOW DATABASES;               -> display out all the database created
 # USE WM05$InvigilateX;         -> use this database
 # SHOW TABLES;                  -> display out all the table created
 # DROP TABLE (tableName);       -> to delete that table
 # SELECT * FROM (tableName);    -> display out that table data
 # UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN'; -> changing the data
-# UPDATE Lecturer SET lecturerEmail='p21013604@student.newinti.edu.my' WHERE lecturerId='123'; 
 
 class User(db.Model):
     __tablename__ = 'User'
-    userId = db.Column(db.String(20), primary_key=True) # Refer to Staff ID
+    userId = db.Column(db.String(20), primary_key=True) # [PK]Refer to Staff ID
     userName = db.Column(db.String(255))                # Refer to Staff Name
-    userDepartment = db.Column(db.String(60))           # Lecturer and Dean have this selection
+    userDepartment = db.Column(db.String(60))           # [FK] Refer to Staff Department
     userLevel = db.Column(db.Integer)                   # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
     userEmail = db.Column(db.String(50))                # Refer to Staff INTI email
     userContact = db.Column(db.String(15))              # Refer to Staff Contact Number
     userGender = db.Column(db.String(10))               # Refer to Staff Gender
     userPassword = db.Column(db.String(255))            # Refer to Staff Password
-    userStatus = db.Column(db.String(15))               # Refer to Staff Account Status, if by self register as 'Active', if by upload as 'Deactived"
+    userStatus = db.Column(db.String(15))               # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
     '''
     CREATE TABLE User (
         userId VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -40,29 +38,28 @@ class User(db.Model):
     );
     '''
 
-# Use examID as PK because the auto increment only able with PK
-# Update: using examCourseSectionCode as PK
 class Exam(db.Model):
     __tablename__ = 'Exam'
-    examDate = db.Column(db.Date, nullable=True)
-    examDay = db.Column(db.String(10), nullable=False)
-    examStartTime = db.Column(db.String(20), nullable=False)
-    examEndTime = db.Column(db.String(20), nullable=False)
-    examProgramCode = db.Column(db.String(10), nullable=False)
-    examCourseSectionCode = db.Column(db.String(20), primary_key=True)
-    examPracticalLecturer = db.Column(db.String(255), nullable=False)
-    examTutorialLecturer = db.Column(db.String(255), nullable=False)
-    examTotalStudent = db.Column(db.Integer, nullable=False)
-    examVenue = db.Column(db.String(50), nullable=True)
+    examId = db.Column(db.Integer, primary_key=True)                   # [PK] Refer to Exam ID
+    examCourseCodeSection = db.Column(db.String(20), primary_key=True) # [FK] Refer to examCourseCodeSection
+    examDate = db.Column(db.Date, nullable=True)                       # Refer to Exam Date
+    examDay = db.Column(db.String(10), nullable=False)                 # Refer to Exam Day
+    examStartTime = db.Column(db.String(20), nullable=False)           # Refer to Exam StartTime
+    examEndTime = db.Column(db.String(20), nullable=False)             # Refer to Exam EndTime
+    examProgramCode = db.Column(db.String(10), nullable=False)         # Refer to Course DepartmentCode
+    examPracticalLecturer = db.Column(db.String(255), nullable=False)  # Refer to Course Practical Lecturer
+    examTutorialLecturer = db.Column(db.String(255), nullable=False)   # Refer to Course Tutorial Lecturer
+    examTotalStudent = db.Column(db.Integer, nullable=False)           # Refer to Course Total Number of Students  
+    examVenue = db.Column(db.String(50), nullable=True)                # Refer to Exam Venue
     '''
-    examID INT AUTO_INCREMENT PRIMARY KEY,
     CREATE TABLE Exam (
+        examId INT AUTO_INCREMENT PRIMARY KEY,
+        examCourseCodeSection VARCHAR(20),
         examDate DATE,
         examDay VARCHAR(10),
         examStartTime VARCHAR(20),
         examEndTime VARCHAR(20),
         examProgramCode VARCHAR(10),
-        examCourseSectionCode VARCHAR(20) PRIMARY KEY,
         examPracticalLecturer VARCHAR(255),
         examTutorialLecturer VARCHAR(255),
         examTotalStudent INT,
@@ -70,6 +67,66 @@ class Exam(db.Model):
     );
     '''
 
+class Department(db.Model):
+    __tablename__ = 'Department'
+    departmentCode = db.Column(db.String(10), primary_key=True)  # [PK] Refer to Department Code
+    departmentName = db.Column(db.String(60), nullable=False)    # Refer to Department Name
+    '''
+    CREATE TABLE Department (
+        departmentCode VARCHAR(10) PRIMARY KEY,
+        departmentName VARCHAR(60) NOT NULL
+    );
+    '''
+
+class Venue(db.Model):
+    __tablename__ = 'Venue'
+    venueNumber = db.Column(db.String(10), primary_key=True)  # [PK] Refer to VenueNumber
+    venueFloor = db.Column(db.String(10), nullable=False)     # Refer to the Floor of Venue
+    venueCapacity = db.Column(db.Integer, nullable=False)     # Refer to the Capacity of Venue
+    venueStatus = db.Column(db.String(15), nullable=False)    # Refer to Status of Venue {'Available', 'Unavailable', 'In Service'}
+    '''
+    CREATE TABLE Venue (
+        venueNumber VARCHAR(10) PRIMARY KEY,
+        venueFloor VARCHAR(10) NOT NULL,
+        venueCapacity INT NOT NULL,
+        venueStatus VARCHAR(15) NOT NULL
+    );
+    '''
+
+class Course(db.Model):
+    __tablename__ = 'Course'
+    courseCodeSection = db.Column(db.String(20), primary_key=True)   # [PK] Refer to CourseCodeSection
+    courseCode = db.Column(db.String(10), nullable=False)            # Refer to CourseCode
+    courseSection = db.Column(db.String(10), nullable=False)         # Refer to CourseSection
+    courseDepartment = db.Column(db.String(60), nullable=False)      # Refer to CourseDepartment
+    courseName = db.Column(db.String(50), nullable=False)            # Refer to CourseName
+    courseHour = db.Column(db.Integer, nullable=False)               # Refer to CourseHour
+    coursePractical = db.Column(db.String(255), nullable=False)      # Refer to Course Practical Lecturer
+    courseTutorial = db.Column(db.String(255), nullable=False)       # Refer to Course Tutorial Lecturer
+    courseStudent = db.Column(db.Integer, nullable=False)            # Refer to Course Total Number of Students
+    '''
+    CREATE TABLE Course (
+        courseCodeSection VARCHAR(20) PRIMARY KEY,
+        courseCode VARCHAR(10) NOT NULL,
+        courseSection VARCHAR(10) NOT NULL,
+        courseDepartment VARCHAR(60) NOT NULL,
+        courseName VARCHAR(50) NOT NULL,
+        courseHour INT,
+        coursePractical VARCHAR(255) NOT NULL,
+        courseTutorial VARCHAR(255) NOT NULL,
+        courseStudent INT
+    );
+    '''
+
+
+
+
+
+
+
+
+
+# Need Double Check, Haven't Record In Database
 class LecturerTimetable(db.Model):
     __tablename__ = 'LecturerTimetable'
     lecturerId = db.Column(db.String(20), primary_key=True)
@@ -90,6 +147,7 @@ class LecturerTimetable(db.Model):
     );
     '''
 
+# Need Double Check, Haven't Record In Database
 class Invigilation(db.Model):
     __tablename__ = 'Invigilation'
     invigilationCourseSectionCode = db.Column(db.String(20), primary_key=True)
@@ -119,58 +177,13 @@ class Invigilation(db.Model):
     );
     '''
 
-class Department(db.Model):
-    __tablename__ = 'Department'
-    departmentCode = db.Column(db.String(10), primary_key=True)
-    departmentName = db.Column(db.String(60), nullable=False)
-    '''
-    CREATE TABLE Department (
-        departmentCode VARCHAR(10) PRIMARY KEY,
-        departmentName VARCHAR(60) NOT NULL
-    );
-    '''
-
-class Venue(db.Model):
-    __tablename__ = 'Venue'
-    venueNumber = db.Column(db.String(10), primary_key=True)
-    venueFloor = db.Column(db.String(10), nullable=False)
-    venueCapacity = db.Column(db.Integer, nullable=False)
-    venueStatus = db.Column(db.String(15), nullable=False) # Show Venue 'Available, Unavailable, In Service'
-    '''
-    CREATE TABLE Venue (
-        venueNumber VARCHAR(10) PRIMARY KEY,
-        venueFloor VARCHAR(10) NOT NULL,
-        venueCapacity INT NOT NULL,
-        venueStatus VARCHAR(15) NOT NULL
-    );
-    '''
 
 
 
-class Course(db.Model):
-    __tablename__ = 'Course'
-    courseCodeSection = db.Column(db.String(20), primary_key=True)
-    courseCode = db.Column(db.String(10), nullable=False)
-    courseSection = db.Column(db.String(10), nullable=False)
-    courseDepartment = db.Column(db.String(60), nullable=False)
-    courseName = db.Column(db.String(50), nullable=False)
-    courseHour = db.Column(db.Integer, nullable=False)
-    coursePractical = db.Column(db.String(255), nullable=False)
-    courseTutorial = db.Column(db.String(255), nullable=False)
-    courseStudent = db.Column(db.Integer, nullable=False)
-    '''
-    CREATE TABLE Course (
-        courseCodeSection VARCHAR(20) PRIMARY KEY,
-        courseCode VARCHAR(10) NOT NULL,
-        courseSection VARCHAR(10) NOT NULL,
-        courseDepartment VARCHAR(60) NOT NULL,
-        courseName VARCHAR(50) NOT NULL,
-        courseHour INT,
-        coursePractical VARCHAR(255) NOT NULL,
-        courseTutorial VARCHAR(255) NOT NULL,
-        courseStudent INT
-    );
-    '''
+
+
+
+
 
 
 
