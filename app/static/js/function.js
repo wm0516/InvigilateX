@@ -178,7 +178,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
 
-    // Format date to YYYY-MM-DD
+    if (!examDateInput || !examDayInput) {
+        return; // Exit if not on the exam page
+    }
+
     const formatDate = (date) => {
         const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -188,22 +191,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const today = new Date();
     const minDate = formatDate(today);
-
-    // Set max date to exactly 1 year later (same date next year)
     const nextYearSameDay = new Date(today);
     nextYearSameDay.setFullYear(today.getFullYear() + 1);
     const maxDate = formatDate(nextYearSameDay);
 
-    // Apply min/max restrictions
     examDateInput.min = minDate;
     examDateInput.max = maxDate;
 
-    // Handle date selection
     examDateInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
-        const day = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
+        const day = selectedDate.getDay();
 
-        // Check if selected date is within range
         const selected = formatDate(selectedDate);
         if (selected < minDate || selected > maxDate) {
             alert("Date must be within one year from today.");
@@ -212,27 +210,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Disallow weekends
-        /*if (day === 0 || day === 6) {
-            alert("Weekends are not allowed.");
-            this.value = '';
-            examDayInput.value = '';
-            return;
-        }*/
-
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         examDayInput.value = days[day];
     });
 });
 
-document.getElementById('endTime').addEventListener('change', function() {
-  const start = document.getElementById('startTime').value;
-  const end = this.value;
-  if (end <= start) {
-    alert('End time must be later than start time');
-    this.value = '';
-  }
-});
 
 
 
