@@ -101,7 +101,7 @@
                     <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
 
                     <label>Practical Lecturer</label>
-                    <select name="coursePractical" id="practicalLecturerSelect" required>
+                    <select name="practicalLecturerSelect" id="practicalLecturerSelect" required>
                         <option value="" disabled selected>Select Practical Lecturer</option>
                         {% for lecturer in lecturer_data %}
                             <option value="{{ lecturer.userName }}">
@@ -111,7 +111,7 @@
                     </select><br>
 
                     <label>Tutorial Lecturer</label>
-                    <select name="courseTutorial" id="tutorialLecturerSelect" required>
+                    <select name="tutorialLecturerSelect" id="tutorialLecturerSelect" required>
                         <option value="" disabled selected>Select Tutorial Lecturer</option>
                         {% for lecturer in lecturer_data %}
                             <option value="{{ lecturer.userName }}">
