@@ -66,31 +66,31 @@ function toggleSidebar() {
 // Homepage Tab Function
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
-    '/adminHome': 'admin_hometab',
-    '/adminHome/manageTimetable': 'admin_manageTimetabletab',
-    '/adminHome/manageExam': 'admin_manageExamtab',
-    '/adminHome/manageCourse': 'admin_manageCoursetab',
-    '/adminHome/manageInvigilationTimetable': 'admin_manageInvigilationTimetabletab',
-    '/adminHome/manageStaff': 'admin_manageStafftab',    
-    '/adminHome/manageInvigilationReport': 'admin_manageInvigilationReporttab',
-    '/adminHome/manageDepartment': 'admin_manageDepartmenttab',
-    '/adminHome/manageVenue': 'admin_manageVenuetab',
+    '/admin/Home': 'admin_hometab',
+    '/admin/manageTimetable': 'admin_manageTimetabletab',
+    '/admin/manageExam': 'admin_manageExamtab',
+    '/admin/manageCourse': 'admin_manageCoursetab',
+    '/admin/manageInvigilationTimetable': 'admin_manageInvigilationTimetabletab',
+    '/admin/manageStaff': 'admin_manageStafftab',    
+    '/admin/manageInvigilationReport': 'admin_manageInvigilationReporttab',
+    '/admin/manageDepartment': 'admin_manageDepartmenttab',
+    '/admin/manageVenue': 'admin_manageVenuetab',
 
-    '/lecturerHome': 'lecturer_hometab',
-    '/lecturerHome/timetables': 'lecturer_timetabletab',
-    '/lecturerHome/invigilationTimetable': 'lecturer_invigilationTimetabletab',
-    '/lecturerHome/invigilationReport': 'lecturer_invigilationReporttab',
-    '/lecturerHome/profile': 'lecturer_profiletab',
+    '/lecturer/Home': 'lecturer_hometab',
+    '/lecturer/timetable': 'lecturer_timetabletab',
+    '/lecturer/invigilationTimetable': 'lecturer_invigilationTimetabletab',
+    '/lecturer/invigilationReport': 'lecturer_invigilationReporttab',
+    '/lecturer/profile': 'lecturer_profiletab',
 
-    'dean_homepage': 'dean_hometab',
-    'dean_timetable': 'dean_timetabletab',
-    'dean_invigilationReport': 'dean_invigilationReporttab',
-    'dean_profile': 'dean_profiletab',
+    '/dean/Home': 'dean_hometab',
+    '/dean/timetable': 'dean_timetabletab',
+    '/dean/invigilationReport': 'dean_invigilationReporttab',
+    '/dean/profile': 'dean_profiletab',
 
-    'hop_homepage': 'hop_hometab',
-    'hop_timetable': 'hop_timetabletab',
-    'hop_invigilationReport': 'hop_invigilationReporttab',
-    'hop_profile': 'hop_profiletab'
+    '/hop/Home': 'hop_hometab',
+    '/hop/timetable': 'hop_timetabletab',
+    '/hop/invigilationReport': 'hop_invigilationReporttab',
+    '/hop/profile': 'hop_profiletab'
   };
 
   const currentPath = window.location.pathname;

@@ -14,20 +14,20 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-@app.route('/lecturerHome/timetables', methods=['GET', 'POST'])
+@app.route('/lecturer/timetable', methods=['GET', 'POST'])
 def lecturer_timetable():
     # timetable = Invigilation.query.all()
     return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab') #, timetable=timetable)
 
-@app.route('/lecturerHome/invigilationTimetable', methods=['GET', 'POST'])
+@app.route('/lecturer/invigilationTimetable', methods=['GET', 'POST'])
 def lecturer_invigilationTimetable():
     return render_template('lecturer/lecturerInvigilationTimetable.html', active_tab='lecturer_invigilationTimetabletab')
 
-@app.route('/lecturerHome/invigilationReport', methods=['GET', 'POST'])
+@app.route('/lecturer/invigilationReport', methods=['GET', 'POST'])
 def lecturer_invigilationReport():
     return render_template('lecturer/lecturerInvigilationReport.html', active_tab='lecturer_invigilationReporttab')
 
-@app.route('/lecturerHome/profile', methods=['GET', 'POST'])
+@app.route('/lecturer/profile', methods=['GET', 'POST'])
 def lecturer_profile():
     lecturerId = session.get('user_id')
     lecturer = User.query.filter_by(userId=lecturerId).first()

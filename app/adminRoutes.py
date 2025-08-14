@@ -23,14 +23,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
-@app.route('/adminHome/manageInvigilationReport', methods=['GET', 'POST'])
+@app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab')
 
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
-@app.route('/adminHome/manageTimetable', methods=['GET', 'POST'])
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     user_data = User.query.all()
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
@@ -38,7 +38,7 @@ def admin_manageTimetable():
 
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
-@app.route('/adminhome/manageInvigilationTimetable', methods=['GET', 'POST'])
+@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     exam_data = Exam.query.all()
     user_data = User.query.all()
@@ -49,7 +49,7 @@ def admin_manageInvigilationTimetable():
 
 
 # function for admin to manage department information (adding, editing, and removing)
-@app.route('/adminHome/manageDepartment', methods=['GET', 'POST'])
+@app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
     departmentCode_text = ''
@@ -101,7 +101,7 @@ def admin_manageDepartment():
 
 
 # function for admin to manage venue information (adding, editing, and removing)
-@app.route('/adminHome/manageVenue', methods=['GET', 'POST'])
+@app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     venue_data = Venue.query.all()
     venueNumber_text = ''
@@ -169,7 +169,7 @@ def admin_manageVenue():
 
 
 # Can move those validation into a function then call again
-@app.route('/adminHome/profile', methods=['GET', 'POST'])
+@app.route('/admin/profile', methods=['GET', 'POST'])
 def admin_profile():
     adminId = session.get('user_id')
     admin = User.query.filter_by(userId=adminId).first()
@@ -264,7 +264,7 @@ def standardize_time_with_seconds(time_value):
 
 
 # function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
-@app.route('/adminHome/manageStaff', methods=['GET', 'POST'])
+@app.route('/admin/manageStaff', methods=['GET', 'POST'])
 def admin_manageStaff():
     user_data = User.query.all()
     department_data = Department.query.all()
@@ -420,7 +420,7 @@ def admin_manageStaff():
             return redirect(url_for('admin_manageStaff'))
 
     return render_template(
-        'admin/admin_manageStaff.html',
+        'admin/admin_ManageStaff.html',
         active_tab='admin_manageStafftab',
         user_data=user_data,
         department_data=department_data
@@ -432,7 +432,7 @@ def admin_manageStaff():
 
 
 # function for admin to manage course information (adding, editing, and removing)
-@app.route('/adminHome/manageCourse', methods=['GET', 'POST'])
+@app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     course_data = Course.query.all()
     department_data = Department.query.all()
@@ -578,7 +578,7 @@ def admin_manageCourse():
 
 
 # Function for admin to manage exam information (adding, editing, and removing)
-@app.route('/adminHome/manageExam', methods=['GET', 'POST'])
+@app.route('/admin/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     exam_data = Exam.query.all()
     department_data = Department.query.all() # For department code dropdown

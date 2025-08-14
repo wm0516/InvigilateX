@@ -15,16 +15,16 @@ bcrypt = Bcrypt()
 
 
 
-@app.route('/hopHome/timetables', methods=['GET', 'POST'])
+@app.route('/hop/timetable', methods=['GET', 'POST'])
 def hop_timetable():
     # timetable = Invigilation.query.all()
     return render_template('hop/hopTimetable.html', active_tab='hop_timetabletab') #, timetable=timetable)
 
-@app.route('/hopHome/invigilationReport', methods=['GET', 'POST'])
+@app.route('/hop/invigilationReport', methods=['GET', 'POST'])
 def hop_invigilationReport():
     return render_template('hop/hopInvigilationReport.html', active_tab='hop_invigilationReporttab')
 
-@app.route('/hopHome/profile', methods=['GET', 'POST'])
+@app.route('/hop/profile', methods=['GET', 'POST'])
 def hop_profile():
     hopId = session.get('user_id')
     hop = User.query.filter_by(userId=hopId).first()
