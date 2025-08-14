@@ -261,7 +261,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 // Function for after getting department code, related course code will be displayed out in Manage Exam page
-document.getElementById('programCode').addEventListener('change', function() {
+document.addEventListener("DOMContentLoaded", function() {
+    const programCode = document.getElementById('programCode');
+    if (programCode) {
+        programCode.addEventListener('change', function() {
+            let deptCode = this.value;
+            let courseSectionSelect = document.getElementById('courseSection');
+            let practicalLecturerSelect = document.getElementById('practicalLecturer');
+            let tutorialLecturerSelect = document.getElementById('tutorialLecturer');
+            let studentSelect = document.getElementById('student');
+
+            courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+            practicalLecturerSelect.value = "";
+            tutorialLecturerSelect.value = "";
+            studentSelect.value = "";
+
+            if (deptCode) {
+                fetch(`/get_courses_by_department/${deptCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(course => {
+                            let option = document.createElement('option');
+                            option.value = course.courseCodeSection;
+                            option.textContent = course.courseCodeSection;
+                            courseSectionSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching courses:', error));
+            }
+        });
+    }
+});
+
+/*document.getElementById('programCode').addEventListener('change', function() {
     let deptCode = this.value;
     let courseSectionSelect = document.getElementById('courseSection');
     let practicalLecturerSelect = document.getElementById('practicalLecturer');
@@ -287,7 +319,7 @@ document.getElementById('programCode').addEventListener('change', function() {
             })
             .catch(error => console.error('Error fetching courses:', error));
     }
-});
+});*/
 
 
 // Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
