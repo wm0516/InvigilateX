@@ -41,11 +41,11 @@ class User(db.Model):
 class Exam(db.Model):
     __tablename__ = 'Exam'
     examId = db.Column(db.Integer, primary_key=True)                   # [PK] Refer to Exam ID
-    examCourseCodeSection = db.Column(db.String(20), primary_key=True) # [FK] Refer to examCourseCodeSection
     examDate = db.Column(db.Date, nullable=True)                       # Refer to Exam Date
     examDay = db.Column(db.String(10), nullable=False)                 # Refer to Exam Day
     examStartTime = db.Column(db.String(20), nullable=False)           # Refer to Exam StartTime
     examEndTime = db.Column(db.String(20), nullable=False)             # Refer to Exam EndTime
+    examCourseCodeSection = db.Column(db.String(20))                   # [FK] Refer to examCourseCodeSection
     examProgramCode = db.Column(db.String(10), nullable=False)         # Refer to Course DepartmentCode
     examPracticalLecturer = db.Column(db.String(255), nullable=False)  # Refer to Course Practical Lecturer
     examTutorialLecturer = db.Column(db.String(255), nullable=False)   # Refer to Course Tutorial Lecturer
@@ -54,11 +54,11 @@ class Exam(db.Model):
     '''
     CREATE TABLE Exam (
         examId INT AUTO_INCREMENT PRIMARY KEY,
-        examCourseCodeSection VARCHAR(20),
         examDate DATE,
         examDay VARCHAR(10),
         examStartTime VARCHAR(20),
         examEndTime VARCHAR(20),
+        examCourseCodeSection VARCHAR(20),
         examProgramCode VARCHAR(10),
         examPracticalLecturer VARCHAR(255),
         examTutorialLecturer VARCHAR(255),
