@@ -24,6 +24,21 @@
     <!-- Announce Form -->
     <form id="announceForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
         <div id="announceSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
+                <br>
+                {% if examUploadResult %}
+                    <div class="result-message">{{ examUploadResult }}</div>
+                {% elif examUploadErrors %}
+                    <div class="error-message">{{ examUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
+            </div>
         </div>
     </form>
 
