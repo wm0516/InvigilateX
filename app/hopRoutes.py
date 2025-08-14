@@ -66,10 +66,10 @@ def hop_profile():
         hop_department_text=hop.userDepartment if hop else '',
         hop_gender=hop.userGender if hop else '',
         hop_role_text={
-            LECTURER: "Lecturer",
-            HOP: "Hop",
-            DEAN: "Dean",
-            ADMIN: "Admin"
+            LECTURER: "LECTURER",
+            HOP: "HOP",
+            DEAN: "DEAN",
+            ADMIN: "ADMIN"
         }.get(hop.userLevel, "Unknown") if hop else '',
         hop_contact_text=hop.userContact if hop else '',
         hopPassword1_text=hopPassword1_text,

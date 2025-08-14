@@ -68,10 +68,10 @@ def lecturer_profile():
         lecturer_department_text=lecturer.userDepartment if lecturer else '',
         lecturer_gender=lecturer.userGender if lecturer else '',
         lecturer_role_text={
-            LECTURER: "Lecturer",
-            HOP: "Hop",
-            DEAN: "Dean",
-            ADMIN: "Admin"
+            LECTURER: "LECTURER",
+            HOP: "HOP",
+            DEAN: "DEAN",
+            ADMIN: "ADMIN"
         }.get(lecturer.userLevel, "Unknown") if lecturer else '',
         lecturer_contact_text=lecturer.userContact if lecturer else '',
         lecturerPassword1_text=lecturerPassword1_text,
