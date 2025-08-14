@@ -323,7 +323,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // Function for after getting course code, practical, tutorial, and number of students will be displayed out in Manage Exam page
-document.getElementById('courseSection').addEventListener('change', function() {
+document.addEventListener("DOMContentLoaded", function () {
+    const courseSectionEl = document.getElementById('courseSection');
+    if (!courseSectionEl) {
+        console.error("courseSection element not found in DOM.");
+        return;
+    }
+
+    courseSectionEl.addEventListener('change', function() {
+        let deptCode = document.getElementById('programCode')?.value || "";
+        let sectionCode = document.getElementById('courseSection')?.value || "";
+        console.log("Selected:", deptCode, sectionCode);
+
+        if (deptCode && sectionCode) {
+            fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("API failed");
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("API Data:", data);
+                    document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
+                    document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
+                    document.getElementById('student').value = data.student || "";
+                })
+                .catch(err => console.error("Error:", err));
+        }
+    });
+});
+/*document.getElementById('courseSection').addEventListener('change', function() {
     let deptCode = document.getElementById('programCode').value;
     let sectionCode = document.getElementById('courseSection').value;
     console.log("Selected:", deptCode, sectionCode); // Debug
@@ -342,7 +370,9 @@ document.getElementById('courseSection').addEventListener('change', function() {
             })
             .catch(err => console.error("Error:", err));
     }
-});
+});*/
+
+
 
 
 
