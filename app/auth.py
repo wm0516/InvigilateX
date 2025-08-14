@@ -34,8 +34,10 @@ def login():
 
         if role == ADMIN:
             return redirect(url_for('admin_homepage'))
-        elif role in (DEAN, HOP):
+        elif role == DEAN:
             return redirect(url_for('dean_homepage'))
+        elif role == HOP:
+            return redirect(url_for('hop_homepage'))
         elif role == LECTURER:
             return redirect(url_for('lecturer_homepage'))
         else:
@@ -192,10 +194,16 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-# dean&hop homepage
+# dean homepage
 @app.route('/deanHome', methods=['GET', 'POST'])
 def dean_homepage():
-    return render_template('dean&hop/deanHomepage.html', active_tab='home')
+    return render_template('dean/deanHomepage.html', active_tab='home')
+
+# hop homepage
+@app.route('/hopHome', methods=['GET', 'POST'])
+def hop_homepage():
+    return render_template('hop/hopHomepage.html', active_tab='home')
+
 
 
 # lecturer homepage

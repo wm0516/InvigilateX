@@ -85,7 +85,12 @@ document.addEventListener('DOMContentLoaded', function() {
     'dean_homepage': 'dean_hometab',
     'dean_timetable': 'dean_timetabletab',
     'dean_invigilationReport': 'dean_invigilationReporttab',
-    'dean_profile': 'dean_profiletab'
+    'dean_profile': 'dean_profiletab',
+
+    'hop_homepage': 'hop_hometab',
+    'hop_timetable': 'hop_timetabletab',
+    'hop_invigilationReport': 'hop_invigilationReporttab',
+    'hop_profile': 'hop_profiletab'
   };
 
   const currentPath = window.location.pathname;
