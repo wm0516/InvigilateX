@@ -18,11 +18,11 @@ bcrypt = Bcrypt()
 @app.route('/deanHome/timetables', methods=['GET', 'POST'])
 def dean_timetable():
     timetable = Invigilation.query.all()
-    return render_template('dean&hop/deanTimetable.html', active_tab='dean_timetabletab', timetable=timetable)
+    return render_template('dean/deanTimetable.html', active_tab='dean_timetabletab', timetable=timetable)
 
 @app.route('/deanHome/invigilationReport', methods=['GET', 'POST'])
 def dean_invigilationReport():
-    return render_template('dean&hop/deanInvigilationReport.html', active_tab='dean_invigilationReporttab')
+    return render_template('dean/deanInvigilationReport.html', active_tab='dean_invigilationReporttab')
 
 @app.route('/deanHome/profile', methods=['GET', 'POST'])
 def dean_profile():
@@ -67,7 +67,7 @@ def dean_profile():
                 return redirect(url_for('dean_profile'))
 
     return render_template(
-        'dean&hop/deanProfile.html',
+        'dean/deanProfile.html',
         active_tab='dean_profiletab',
         dean_name=dean.userName if dean else '',
         dean_id=dean.userId if dean else '',

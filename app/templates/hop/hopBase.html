@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header class="header">
+        <div class="toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="user-info">
+            {{ user_name }} | {{ user_id }} | Dean/HOP of {{ user_department }}
+        </div>
+    </header>
+
+    <div class="content-container">
+        <nav class="sidebar" id="sidebar">
+            <div class="tab-nav">
+                <a href="{{ url_for('hop_homepage') }}" class="tab-link {% if active_tab == 'hop_hometab' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('hop_timetable') }}" class="tab-link {% if active_tab == 'hop_timetabletab' %}active{% endif %}">
+                    <i class="fas fa-table"></i>
+                    <span>Timetable</span>
+                </a>
+                <a href="{{ url_for('hop_invigilationReport') }}" class="tab-link {% if active_tab == 'hop_invigilationReporttab' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Invigilation Report</span>
+                </a>
+                <a href="{{ url_for('hop_profile') }}" class="tab-link {% if active_tab == 'hop_profiletab' %}active{% endif %}">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Javascript control the navigation -->
+    <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+</body>
+</html>
+
+
+
+
+
+
