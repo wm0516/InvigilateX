@@ -241,9 +241,6 @@ document.getElementById('endTime').addEventListener('change', function() {
 document.addEventListener("DOMContentLoaded", function () {
     const tabLinks = document.querySelectorAll(".second-nav .tab-link");
 
-    if (tabLinks.length === 0) return; // No tabs, do nothing
-
-    // Function stays private now
     function showSection(sectionId, event) {
         event.preventDefault();
 
@@ -261,28 +258,14 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem("activeSecondTab", sectionId);
     }
 
-    // Restore saved tab
-    let savedSecondTab = localStorage.getItem("activeSecondTab");
-    if (!document.getElementById(savedSecondTab?.replace("Section", "Form"))) {
-        savedSecondTab = tabLinks[0]?.dataset.section;
-    }
-    if (savedSecondTab) {
-        tabLinks.forEach(tab => {
-            if (tab.dataset.section === savedSecondTab) {
-                tab.classList.add("active");
-                const savedForm = document.getElementById(savedSecondTab.replace("Section", "Form"));
-                if (savedForm) savedForm.style.display = "block";
-            }
-        });
-    }
-
-    // Attach click listeners
+    // Attach click listeners instead of using onclick in HTML
     tabLinks.forEach(tab => {
         tab.addEventListener("click", function (event) {
             showSection(this.dataset.section, event);
         });
     });
 });
+
 
 
 
