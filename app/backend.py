@@ -9,12 +9,17 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
 
+
+
+
+
 # constants.py or at the top of your app.py
 ADMIN = 4
 DEAN = 3
 HOP = 2
 LECTURER = 1
 
+# Declare the Role Map of User Level
 role_map = {
     'LECTURER': LECTURER,
     'DEAN': DEAN,
@@ -22,32 +27,42 @@ role_map = {
     'ADMIN': ADMIN
 }
 
-# Email format
+
+
+
+
+# Basic Validation Function 1: Email Format [End with @newinti.edu.my]
 def email_format(email):
     return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
 
-# Contact number format
+# Basic Validation Function 2: Contact Number Format [Start With 01 and Total Length in Between 10-11]
 def contact_format(contact):
     return bool(re.match(r"^01\d{8,9}$", contact))
 
-# Password format
+# Basic Validation Function 3: Password Format [With Min 8-20 Length and Include Special Character]
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
-# Check unique Contact
+# Basic Validation Function 4: Check Unique Contact [Contact Was Unique in Database]
 def check_contact(contact):
     existing_contact = User.query.filter(User.userContact == contact).first()
     if existing_contact:
         return False, "Contact Number Already Registered"
-    
     return True, ""
 
 
 
-# Check login validate
+
+
+
+
+
+
+
+# FrontPart Validation Function 1: Check Login [Email and Password]
 def check_login(loginEmail, loginPassword):
     user = User.query.filter_by(userEmail=loginEmail).first()
-    if not user: # or not bcrypt.check_password_hash(user.userPassword, loginPassword):
+    if not user:
         return False, "Invalid Email or Password", None
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid Password", None 
@@ -56,9 +71,24 @@ def check_login(loginEmail, loginPassword):
 
     return True, user.userId, user.userLevel
 
+# FrontPart Validation Function 2: Check Access [If Not User Will Show "Unauthorized Access"]
+def role_required(required_role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user_id = session.get('user_id')
+            user_role = session.get('user_role')
 
-# Check registerID, registerEmail, registerContact can't be same as inside database based on role
-def check_register(id, email, contact, password1, password2, role):
+            if not user_id or user_role != required_role:
+                flash("Unauthorized Access", "error")
+                return redirect(url_for('login'))
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+# FrontPart Validation Function 3: Check Register [ID, Email, and Contact must be unique]
+def check_register(id, email, contact, password1, password2):
     if not email_format(email):
         return False, "Wrong Email Address Format"
     elif not contact_format(contact):
@@ -67,8 +97,6 @@ def check_register(id, email, contact, password1, password2, role):
         return False, "Passwords Do Not Match"
     elif not password_format(password1):
         return False, "Wrong Password Format"
-    elif role not in role_map:
-        return False, "Invalid Role Selected"
 
     existing_id = User.query.filter(User.userId == id).first()
     if existing_id:
@@ -84,8 +112,7 @@ def check_register(id, email, contact, password1, password2, role):
 
     return True, ""
 
-
-# Check the Email validate or not and send reset password link based on that Email
+# FrontPart Validation Function 4: Check Forgot Password [Email User to Send Reset Password Link]
 def check_forgotPasswordEmail(forgotEmail):
     user = User.query.filter_by(userEmail=forgotEmail).first()
     if not user:
@@ -114,8 +141,7 @@ The InvigilateX Team'''
     except Exception as e:
         return False, f"Failed to Send Email. Error: {str(e)}"
 
-
-# Check the both password and update the latest password based on the token (that user)
+# FrontPart Validation Function 5: Check Reset Password [Must with Token(userId), and Both Password Must Be Same]
 def check_resetPassword(token, resetPassword1, resetPassword2):
     try:
         # Decode token to get the email
@@ -141,23 +167,55 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 
 
 
-def role_required(required_role):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            user_id = session.get('user_id')
-            user_role = session.get('user_role')
-
-            if not user_id or user_role != required_role:
-                flash("Unauthorized Access", "error")
-                return redirect(url_for('login'))
-
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
 
 
 
+
+
+
+
+# Admin Validation Function 1: Check Course [Course Code/Section Must be Unique in Database, and Hour Must be Integer]
+def check_course(code, section, hour):
+    courseCodeSection_text = (code + '/' + section)
+    existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
+    if existing_courseCodeSection:
+        return False, "Course Already Registered"
+    
+    try:
+        int(hour)
+    except ValueError:
+        return False, "Hour(s) must be in Integer"
+
+    return True, ""
+
+# Admin Validation Function 2: Check Department [Department Code and Name Must be Unique in Database]
+def check_department(code, name):
+    # Check for duplicates
+    existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
+    if existing_departmentCode:
+        return False, "Department Code Already Registered"
+    
+    existing_departmentName = Department.query.filter(Department.departmentName == name).first()
+    if existing_departmentName:
+        return False, "Department Name Already Registered"
+    
+    return True, ""
+
+# Admin Validation Function 3: Check Venue [Venue Room Must be Unique in Database, and Capacity Must be Integer]
+def check_venue(roomNumber, capacity):
+    # Check for duplicates
+    existing_roomNumber = Venue.query.filter(Venue.venueNumber == roomNumber).first()
+    if existing_roomNumber:
+        return False, "Venue Room Number Already Registered"
+    
+    try:
+        int(capacity)
+    except ValueError:
+        return False, "Capacity must be in Integer"
+    
+    return True, ""
+
+# Admin Validation Function 4: Check Exam [Exam Date, StartTime, EndTime, and CourseSectionCode Must be Unique in Database]
 def check_exam(courseSection, date, starttime, endtime):
     exam_exists = Exam.query.filter_by(
         examDate=date,
@@ -171,9 +229,7 @@ def check_exam(courseSection, date, starttime, endtime):
 
     return True, ""
 
-
-
-# (Need double check the purpose) Check upload lecturer
+# Admin Validation Function 5: Check Lecturer [Id, Email, Contact Must be Unique in Database]
 def check_lecturer(id, email, contact):
     if not email_format(email):
         return False, "Wrong Email Address Format"
@@ -192,8 +248,7 @@ def check_lecturer(id, email, contact):
     
     return True, ""
 
-
-# continue on this function
+# Admin Validation Function 6: Check Profile [Contact Must be Unique in Database, and Both Password Must be Same]
 def check_profile(id, contact, password1, password2):
     # If contact is entered, validate format
     if contact:
@@ -223,47 +278,23 @@ def check_profile(id, contact, password1, password2):
 
 
 
-# Check unique department code and name
-def check_department(code, name):
-    # Check for duplicates
-    existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
-    if existing_departmentCode:
-        return False, "Department Code Already Registered"
-    
-    existing_departmentName = Department.query.filter(Department.departmentName == name).first()
-    if existing_departmentName:
-        return False, "Department Name Already Registered"
-    
-    return True, ""
 
 
-# Check unique venue roomNumber and floor
-def check_venue(roomNumber, capacity):
-    # Check for duplicates
-    existing_roomNumber = Venue.query.filter(Venue.venueNumber == roomNumber).first()
-    if existing_roomNumber:
-        return False, "Venue Room Number Already Registered"
-    
-    try:
-        int(capacity)
-    except ValueError:
-        return False, "Capacity must be in Integer"
-    
-    return True, ""
 
 
-def check_course(code, section, hour):
-    courseCodeSection_text = (code + '/' + section)
-    existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
-    if existing_courseCodeSection:
-        return False, "Course Already Registered"
-    
-    try:
-        int(hour)
-    except ValueError:
-        return False, "Hour(s) must be in Integer"
 
-    return True, ""
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

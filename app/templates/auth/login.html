@@ -1,9 +1,8 @@
-
 <head>
     <title>Login</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/frontPart.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -18,7 +17,6 @@
             {% endif %}
         {% endfor %}
 
-
         <div class="heading"></div>
         <br>
         <h1>Login</h1>
@@ -28,22 +26,19 @@
             <!-- Frame for Email Address container -->
             <div class="input-container" style="width: 60%;">
                 <label>Email Address</label>
-                <input type="email" name="textbox" value="{{ login_text }}" required>
-            </div>
-            <br>
+                <input type="email" name="login_field" value="{{ login_text }}" required>
+            </div><br>
         
             <!-- Frame for Enter Password container -->
             <div class="password-container" style="width: 60%;">
                 <label>Password</label>
-                <input type="password" name="password" value="{{ password_text }}" required>
+                <input type="password" name="password_field" value="{{ password_text }}" required>
                 <button type="button" class="toggle-password-btn">
                     <i class="fas fa-eye"></i>
                 </button>
-            </div>
-            <br>
+            </div><br>
             
             <!-- Bottom: Flash messages ONLY for login input errors -->
-
             {% for category, message in all_messages %}
                 {% if category == 'login_error' %}
                     <div class="alert login_error">

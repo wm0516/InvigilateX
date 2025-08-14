@@ -4,7 +4,7 @@
     <title>Register</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/frontPart.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -14,8 +14,9 @@
         <br>
         <h1>Register</h1>
         <br>
-            <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 3%;">
-                <div class="form-left">
+
+        <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 3%;">
+            <div class="form-left">
                 <label>Full Name as per IC</label>
                 <input type="text" name="username" value="{{ name_text }}" required><br>
                 
@@ -49,7 +50,7 @@
                     {% endfor %}
                 </select>
             </div>
-    
+
             <div class="form-right"> 
                 <label>Gender</label>
                 <select name="gender" required>
@@ -65,7 +66,7 @@
                         <i class="fas fa-eye"></i>
                     </button>
                 </div><br>
-    
+
                 <div class="password-container">
                     <label> Confirm Password</label>
                     <input type="password" name="password2" value="{{ password2_text }}" required>
@@ -96,7 +97,6 @@
             <br><br>
             <a href="{{ url_for('login') }}">Back to Login</a>
         </div>
-
     </form>
 </body>
 </html>

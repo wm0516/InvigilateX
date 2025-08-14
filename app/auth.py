@@ -18,19 +18,14 @@ def login():
     password_text = ''
 
     if request.method == 'POST':
-        login_text = request.form.get('textbox', '').strip()
-        password_text = request.form.get('password', '').strip()
-        
-        if not login_text or not password_text:
-            flash("Please fill in all fields", 'login_error')
-            all_messages = get_flashed_messages(with_categories=True)
-            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+        login_text = request.form.get('login_field', '').strip()
+        password_text = request.form.get('password_field', '').strip()
         
         valid, result, role = check_login(login_text, password_text)
         if not valid:
             flash(result, 'login_error')
             all_messages = get_flashed_messages(with_categories=True)
-            return render_template('frontPart/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+            return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
         session['user_id'] = result
         session['user_role'] = role
@@ -47,7 +42,7 @@ def login():
 
     # Ensure GET request also includes flashed messages
     all_messages = get_flashed_messages(with_categories=True)
-    return render_template('frontPart/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+    return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
 
 # register page (done with all input validation and userID as Primary Key)
@@ -83,8 +78,7 @@ def register():
         password1_text = request.form.get('password1', '').strip()
         password2_text = request.form.get('password2', '').strip()
 
-        is_valid, error_message = check_register(id_text, email_text, contact_text, password1_text, password2_text, role_text)
-
+        is_valid, error_message = check_register(id_text, email_text, contact_text, password1_text, password2_text)
         if error_message:
             flash(error_message, 'error')
         elif is_valid:
@@ -105,7 +99,7 @@ def register():
             flash("Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login'))
 
-    return render_template('frontPart/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
+    return render_template('auth/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
                            contact_text=contact_text, password1_text=password1_text, password2_text=password2_text, gender_text=gender_text,
                            department_text=department_text, role_text=role_text, department_data=department_data, error_message=error_message)
 
@@ -128,7 +122,7 @@ def forgotPassword():
             flash("Reset link sent to your email address.", 'success')
             return redirect(url_for('login'))
 
-    return render_template('frontPart/forgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
+    return render_template('auth/forgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
 # reset password page (done after reset password based on that user password)
@@ -136,7 +130,7 @@ def forgotPassword():
 def resetPassword(token):
     password_text_1 = ''
     password_text_2 = ''
-    error_message = None
+    error_message = role_required
 
     if request.method == 'POST':
         password_text_1 = request.form.get('password1', '').strip()
@@ -149,7 +143,7 @@ def resetPassword(token):
             flash("Password reset successful! Log in with your new password.", "success")
             return redirect(url_for('login'))
 
-    return render_template('frontPart/resetPassword.html', password_text_1=password_text_1, password_text_2=password_text_2, error_message=error_message)
+    return render_template('auth/resetPassword.html', password_text_1=password_text_1, password_text_2=password_text_2, error_message=error_message)
 
 
 # Logout button from homepage to login page

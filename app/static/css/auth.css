@@ -56,21 +56,6 @@ input, select {
     margin: 1% 0;
     box-sizing: border-box;
 }
-/*
-button {
-    width: 25vh;
-    padding: 8px 16px;
-    margin-top: 25px;
-    background-color: #007bff;
-}
-
-.button-frame {
-    text-align: center;
-    margin-top: 20px;
-    padding: 10px;
-}
-*/
-
 
 .button-frame {
     text-align: center;
@@ -89,13 +74,9 @@ button {
     width: 25vh;
 }
 
-
-
-
 .span {
     font-weight: normal;
 }  
-
 
 .alert {
     width: 45%;
@@ -115,10 +96,6 @@ button {
     background-color: #f8d7da;
     color: #721c24;
 }  
-
-
-
-
 
 .toggle-password-btn {
     position: absolute;

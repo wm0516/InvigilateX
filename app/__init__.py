@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 
+from app import auth
+
 # Create the Flask application
 app = Flask(__name__)
 
@@ -41,7 +43,7 @@ with app.app_context():
 
 # Import routes (must be after app creation to avoid circular imports)
 try:
-    from app import adminRoutes, deanRoutes, lecturerRoutes, frontRoutes
+    from app import adminRoutes, deanRoutes, lecturerRoutes
     print("Routes imported successfully")  # Debug point 11
 except ImportError as e:
     print(f"Failed to import routes: {e}")  
