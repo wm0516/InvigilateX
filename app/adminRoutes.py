@@ -537,8 +537,8 @@ def admin_manageCourse():
         else:
             courseDepartment_text = request.form.get('departmentCode', '').strip()
             department_text = courseDepartment_text.split('-')[0].strip()
-            courseCode_text = request.form.get('courseCode', '').strip()
-            courseSection_text = request.form.get('courseSection', '').strip()
+            courseCode_text = request.form.get('courseCode', '').replace(' ', '')
+            courseSection_text = request.form.get('courseSection', '').replace(' ', '')
             courseName_text = request.form.get('courseName', '').strip()
             courseHour_text = request.form.get('courseHour', '').strip()
             coursePractical_text = request.form.get('practicalLecturerSelect', '').strip()
