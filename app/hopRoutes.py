@@ -17,8 +17,8 @@ bcrypt = Bcrypt()
 
 @app.route('/hopHome/timetables', methods=['GET', 'POST'])
 def hop_timetable():
-    timetable = Invigilation.query.all()
-    return render_template('hop/hopTimetable.html', active_tab='hop_timetabletab', timetable=timetable)
+    # timetable = Invigilation.query.all()
+    return render_template('hop/hopTimetable.html', active_tab='hop_timetabletab') #, timetable=timetable)
 
 @app.route('/hopHome/invigilationReport', methods=['GET', 'POST'])
 def hop_invigilationReport():
@@ -39,32 +39,23 @@ def hop_profile():
         hopContact_text = request.form.get('contact', '').strip()
         hopPassword1_text = request.form.get('password1', '').strip()
         hopPassword2_text = request.form.get('password2', '').strip()
-        is_valid, message = check_contact(hopContact_text)
 
-        # Error checks
-        if hopContact_text and not contact_format(hopContact_text):
-            error_message = "Wrong Contact Number format"
-        elif hopContact_text and not is_valid:
-            error_message = message
-        elif hopPassword1_text or hopPassword2_text:
-            if hopPassword1_text != hopPassword2_text:
-                error_message = "Passwords do not match."
+        valid, message = check_profile(hopId, hopContact_text, hopPassword1_text, hopPassword2_text)
+        if not valid:
+            flash(message, 'error')
+            return redirect(url_for('hop_profile'))
 
-        if error_message:
-            flash(str(error_message), 'error')
-        elif not hopContact_text and not hopPassword1_text:
-            flash("Nothing to update", 'error')
-        else:
-            if hop:
-                if hopContact_text:
-                    hop.userContact = hopContact_text
-                if hopPassword1_text:
-                    hashed_pw = bcrypt.generate_password_hash(hopPassword1_text).decode('utf-8')
-                    hop.userPassword = hashed_pw
+        if valid and hop:
+            if hopContact_text:
+                hop.userContact = hopContact_text
+            if hopPassword1_text:
+                hashed_pw = bcrypt.generate_password_hash(hopPassword1_text).decode('utf-8')
+                hop.userPassword = hashed_pw
 
-                db.session.commit()
-                flash("Successfully updated", 'success')
-                return redirect(url_for('hop_profile'))
+            db.session.commit()
+            flash("Successfully updated", 'success')
+            return redirect(url_for('hop_profile'))
+
 
     return render_template(
         'hop/hopProfile.html',
@@ -73,13 +64,14 @@ def hop_profile():
         hop_id=hop.userId if hop else '',
         hop_email=hop.userEmail if hop else '',
         hop_department_text=hop.userDepartment if hop else '',
+        hop_gender=hop.userGender if hop else '',
         hop_role_text={
             LECTURER: "Lecturer",
             HOP: "Hop",
             DEAN: "Dean",
             ADMIN: "Admin"
         }.get(hop.userLevel, "Unknown") if hop else '',
-        hopContact_text=hopContact_text,
+        hopContact_text=hopContact_text if hop else '',
         hopPassword1_text=hopPassword1_text,
         hopPassword2_text=hopPassword2_text,
         error_message=error_message
