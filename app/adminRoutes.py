@@ -10,6 +10,7 @@ import pandas as pd
 from flask_bcrypt import Bcrypt
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
+import traceback
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -735,7 +736,8 @@ def admin_manageExam():
 
             except Exception as manual_err:
                 print(f"[Manual Form Error] {manual_err}")
-                flash("Error processing manual form", 'error')
+                traceback.print_exc()
+                flash(f"Error processing manual form: {manual_err}", 'error')
                 return redirect(url_for('admin_manageExam'))
 
     return render_template('adminPart/adminManageExam.html',
