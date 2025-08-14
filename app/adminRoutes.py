@@ -25,7 +25,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
 @app.route('/adminHome/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
-    return render_template('adminPart/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab')
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab')
 
 
 
@@ -33,7 +33,7 @@ def admin_manageInvigilationReport():
 @app.route('/adminHome/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     user_data = User.query.all()
-    return render_template('adminPart/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
 
 
 
@@ -44,7 +44,7 @@ def admin_manageInvigilationTimetable():
     user_data = User.query.all()
     department_data = Department.query.all()
 
-    return render_template('adminPart/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
                            user_data=user_data, exam_data=exam_data, department_data=department_data)
 
 
@@ -69,7 +69,7 @@ def admin_manageDepartment():
             if not valid:
                 flash(result, 'error')
                 return render_template(
-                    'adminPart/adminManageDepartment.html',
+                    'admin/adminManageDepartment.html',
                     active_tab='admin_manageDepartmenttab',
                     department_data=department_data,
                     departmentCode_text=departmentCode_text,
@@ -87,7 +87,7 @@ def admin_manageDepartment():
 
     # GET request or after redirect
     return render_template(
-        'adminPart/adminManageDepartment.html',
+        'admin/adminManageDepartment.html',
         active_tab='admin_manageDepartmenttab',
         department_data=department_data
     )
@@ -118,7 +118,7 @@ def admin_manageVenue():
         valid, result = check_venue(venueNumber_text, venueCapacity_text)
         if not valid:
             flash(result, 'error')
-            return render_template('adminPart/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, 
+            return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, 
                                    venueFloor_text=venueFloor_text, venueCapacity_text=venueCapacity_text, venueStatus_text=venueStatus_text)
 
         new_venue = Venue(
@@ -132,7 +132,7 @@ def admin_manageVenue():
         flash("New Venue Added Successfully", "success")
         return redirect(url_for('admin_manageVenue'))
 
-    return render_template('adminPart/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
+    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
 
 
 
@@ -201,7 +201,7 @@ def admin_profile():
             return redirect(url_for('admin_profile'))
 
     return render_template(
-        'adminPart/adminProfile.html',
+        'admin/adminProfile.html',
         active_tab='admin_profiletab',
         admin_name=admin.userName if admin else '',
         admin_id=admin.userId if admin else '',
@@ -391,7 +391,7 @@ def admin_manageLecturer():
             if not valid:
                 flash(result, 'error')
                 return render_template(
-                    'adminPart/adminManageLecturer.html',
+                    'admin/adminManageLecturer.html',
                     user_data=user_data,
                     department_data=department_data,
                     id_text=id_text,
@@ -420,7 +420,7 @@ def admin_manageLecturer():
             return redirect(url_for('admin_manageLecturer'))
 
     return render_template(
-        'adminPart/adminManageLecturer.html',
+        'admin/adminManageLecturer.html',
         active_tab='admin_manageLecturertab',
         user_data=user_data,
         department_data=department_data
@@ -550,7 +550,7 @@ def admin_manageCourse():
             valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,
+                return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,
                                        courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, 
                                        courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
@@ -571,7 +571,7 @@ def admin_manageCourse():
             return redirect(url_for('admin_manageCourse'))
             
         
-    return render_template('adminPart/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
+    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
 
 
 
@@ -706,7 +706,7 @@ def admin_manageExam():
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
                     flash(result, 'error')
-                    return render_template('adminPart/adminManageExam.html',
+                    return render_template('admin/adminManageExam.html',
                                            exam_data=exam_data, course_data=course_data, venue_data=venue_data,
                                            department_data=department_data,
                                            examDate_text=examDate_text, examDay_text=examDay_text,
@@ -740,7 +740,7 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", 'error')
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('adminPart/adminManageExam.html',
+    return render_template('admin/adminManageExam.html',
                            active_tab='admin_manageExamtab',
                            exam_data=exam_data,
                            course_data=course_data,

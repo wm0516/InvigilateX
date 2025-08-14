@@ -189,19 +189,19 @@ def inject_user_data():
 # admin homepage
 @app.route('/adminHome', methods=['GET', 'POST'])
 def admin_homepage():
-    return render_template('adminPart/adminHomepage.html', active_tab='admin_hometab')
+    return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
 # dean&hop homepage
 @app.route('/deanHome', methods=['GET', 'POST'])
 def dean_homepage():
-    return render_template('deanPart/deanHomepage.html', active_tab='home')
+    return render_template('dean&hop/deanHomepage.html', active_tab='home')
 
 
 # lecturer homepage
 @app.route('/lecturerHome', methods=['GET', 'POST'])
 def lecturer_homepage():
-    return render_template('lecturerPart/lecturerHomepage.html', active_tab='lecturer_hometab')
+    return render_template('lecturer/lecturerHomepage.html', active_tab='lecturer_hometab')
 
 
 

@@ -1,26 +1,26 @@
 <!-- upload.html -->
-{% extends "adminPart/adminBase.html" %}
-{% block title %}Admin ManageInvigilationReport{% endblock %}
+{% extends "lecturer/lecturerBase.html" %}
+{% block title %}Lecturer Timetable{% endblock %}
 {% block content %}
-
-<!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
-    <h2>Manage Lecturer</h2>
+    <h2>Timetable</h2>
 
-    <br><br>
-    <h3>List of Lecturer, Dean, and HOP</h2>
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
-                <tr2
-                    <th>No</th>
-                    <th>Id</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th>Role Based</th>
-                    <th>Email</th>
-                    <th>Contact</th>
-                    <th>Status</th>
+                <tr>
+                    <th>Date / Time</th>
+                    <th>08:00 AM</th>
+                    <th>09:00 AM</th>
+                    <th>10:00 AM</th>
+                    <th>11:00 AM</th>
+                    <th>12:00 PM</th>
+                    <th>13:00 PM</th>
+                    <th>14:00 PM</th>
+                    <th>15:00 PM</th>
+                    <th>16:00 PM</th>
+                    <th>17:00 PM</th>
+                    <th>18:00 PM</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,9 +61,7 @@
         </table>
     </div>
 </div>
+<script src="{{ url_for('static', filename='js/function.js') }}"></script>
+
 
 {% endblock %}
-
-<!--
-
--->

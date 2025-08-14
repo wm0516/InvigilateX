@@ -17,15 +17,15 @@ bcrypt = Bcrypt()
 @app.route('/lecturerHome/timetables', methods=['GET', 'POST'])
 def lecturer_timetable():
     timetable = Invigilation.query.all()
-    return render_template('lecturerPart/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable=timetable)
+    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable=timetable)
 
 @app.route('/lecturerHome/invigilationTimetable', methods=['GET', 'POST'])
 def lecturer_invigilationTimetable():
-    return render_template('lecturerPart/lecturerInvigilationTimetable.html', active_tab='lecturer_invigilationTimetabletab')
+    return render_template('lecturer/lecturerInvigilationTimetable.html', active_tab='lecturer_invigilationTimetabletab')
 
 @app.route('/lecturerHome/invigilationReport', methods=['GET', 'POST'])
 def lecturer_invigilationReport():
-    return render_template('lecturerPart/lecturerInvigilationReport.html', active_tab='lecturer_invigilationReporttab')
+    return render_template('lecturer/lecturerInvigilationReport.html', active_tab='lecturer_invigilationReporttab')
 
 @app.route('/lecturerHome/profile', methods=['GET', 'POST'])
 def lecturer_profile():
@@ -70,7 +70,7 @@ def lecturer_profile():
                 return redirect(url_for('lecturer_profile'))
 
     return render_template(
-        'lecturerPart/lecturerProfile.html',
+        'lecturer/lecturerProfile.html',
         active_tab='lecturer_profiletab',
         lecturer_name=lecturer.userName if lecturer else '',
         lecturer_id=lecturer.userId if lecturer else '',
