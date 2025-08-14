@@ -230,7 +230,7 @@ def check_exam(courseSection, date, starttime, endtime):
     return True, ""
 
 # Admin Validation Function 5: Check Lecturer [Id, Email, Contact Must be Unique in Database]
-def check_lecturer(id, email, contact):
+def check_staff(id, email, contact):
     if not email_format(email):
         return False, "Wrong Email Address Format"
     if not contact_format(contact):

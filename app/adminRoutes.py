@@ -264,8 +264,8 @@ def standardize_time_with_seconds(time_value):
 
 
 # function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
-@app.route('/adminHome/manageLecturer', methods=['GET', 'POST'])
-def admin_manageLecturer():
+@app.route('/adminHome/manageStaff', methods=['GET', 'POST'])
+def admin_manageStaff():
     user_data = User.query.all()
     department_data = Department.query.all()
 
@@ -290,14 +290,14 @@ def admin_manageLecturer():
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
 
         if form_type == 'upload':
-            file = request.files.get('lecturer_file')
+            file = request.files.get('staff_file')
             if file and file.filename:
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     print(f"Found sheets: {excel_file.sheet_names}")
 
-                    lecturer_records_added = 0
+                    staff_records_added = 0
 
                     for sheet_name in excel_file.sheet_names:
                         try:
@@ -338,9 +338,9 @@ def admin_manageLecturer():
                                     role_text = role_mapping.get(role_text_str)
                                     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-                                    valid, result = check_lecturer(id_text, email_text, contact_text)
+                                    valid, result = check_staff(id_text, email_text, contact_text)
                                     if valid:
-                                        new_lecturer = User(
+                                        new_staff = User(
                                             userId=id_text,
                                             userName=name_text,
                                             userDepartment=department_text,
@@ -351,31 +351,31 @@ def admin_manageLecturer():
                                             userStatus=False,
                                             userPassword=hashed_pw
                                         )
-                                        db.session.add(new_lecturer)
+                                        db.session.add(new_staff)
                                         db.session.commit()
-                                        lecturer_records_added += 1
+                                        staff_records_added += 1
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
-                    if lecturer_records_added > 0:
-                        flash(f"Successful upload {lecturer_records_added} record(s)", 'success')
+                    if staff_records_added > 0:
+                        flash(f"Successful upload {staff_records_added} record(s)", 'success')
                     else:
                         flash("No data uploaded", 'error')
 
-                    return redirect(url_for('admin_manageLecturer'))
+                    return redirect(url_for('admin_manageStaff'))
 
                 except Exception as e:
                     print(f"[File Processing Error] {e}")
                     flash('File processing error: File upload in wrong format', 'error')
-                    return redirect(url_for('admin_manageLecturer'))
+                    return redirect(url_for('admin_manageStaff'))
             else:
                 flash("No file uploaded", 'error')
-                return redirect(url_for('admin_manageLecturer'))
+                return redirect(url_for('admin_manageStaff'))
 
         elif form_type == 'modify':
-            return redirect(url_for('admin_manageLecturer'))
+            return redirect(url_for('admin_manageStaff'))
         
         elif form_type == 'manual':
             id_text = request.form.get('userid', '').strip()
@@ -387,11 +387,11 @@ def admin_manageLecturer():
             role_text = request.form.get('role', '').strip()
             hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-            valid, result = check_lecturer(id_text, email_text, contact_text)
+            valid, result = check_staff(id_text, email_text, contact_text)
             if not valid:
                 flash(result, 'error')
                 return render_template(
-                    'admin/adminManageLecturer.html',
+                    'admin/admin_manageStaff.html',
                     user_data=user_data,
                     department_data=department_data,
                     id_text=id_text,
@@ -400,10 +400,10 @@ def admin_manageLecturer():
                     contact_text=contact_text,
                     department_text=department_text,
                     role_text=role_text,gender_text=gender_text,
-                    active_tab='admin_manageLecturertab'
+                    active_tab='admin_manageStafftab'
                 )
 
-            new_lecturer = User(
+            new_staff = User(
                 userId=id_text.upper(),
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
@@ -414,14 +414,14 @@ def admin_manageLecturer():
                 userPassword=hashed_pw,
                 userStatus=False
             )
-            db.session.add(new_lecturer)
+            db.session.add(new_staff)
             db.session.commit()
-            flash("New Lecturer Added Successfully", "success")
-            return redirect(url_for('admin_manageLecturer'))
+            flash("New Staff Added Successfully", "success")
+            return redirect(url_for('admin_manageStaff'))
 
     return render_template(
-        'admin/adminManageLecturer.html',
-        active_tab='admin_manageLecturertab',
+        'admin/admin_manageStaff.html',
+        active_tab='admin_manageStafftab',
         user_data=user_data,
         department_data=department_data
     )

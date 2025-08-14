@@ -1,9 +1,9 @@
 <!-- upload.html -->
 {% extends "admin/adminBase.html" %}
-{% block title %}Admin ManageLecturer{% endblock %}
+{% block title %}Admin ManageStaff{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <h2>Manage Lecturer</h2>
+    <h2>Manage Staff</h2>
     <!-- Top Centered Tabs -->
     <div class="tab-container">
         <div class="second-nav">
@@ -23,14 +23,14 @@
     </div>
 
     <!-- Announce Form -->
-    <form id="announceForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" enctype="multipart/form-data">
+    <form id="announceForm" action="{{ url_for('admin_manageStaff') }}" method="POST" enctype="multipart/form-data">
         <div id="announceSection" class="function-frame">
             <div class="form-left" style="width: 100%">
                 <br>
-                {% if lecturerUploadResult %}
-                    <div class="result-message">{{ lecturerUploadResult }}</div>
-                {% elif lecturerUploadErrors %}
-                    <div class="error-message">{{ lecturerUploadErrors }}</div>
+                {% if staffUploadResult %}
+                    <div class="result-message">{{ staffUploadResult }}</div>
+                {% elif staffUploadErrors %}
+                    <div class="error-message">{{ staffUploadErrors }}</div>
                 {% elif get_flashed_messages(with_categories=true) %}
                     {% for category, message in get_flashed_messages(with_categories=true) %}
                         <div class="alert alert-{{ category }}">
@@ -44,12 +44,12 @@
     </form>
 
         <!-- Upload Form -->
-    <form id="uploadForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" style="display: none;">
+    <form id="uploadForm" action="{{ url_for('admin_manageSatff') }}" method="POST" style="display: none;">
         <div id="uploadSection" class="function-frame">
             <div class="form-left" style="width: 100%">
                 <h4 style="text-align: center;">File Upload Section</h4>
-                <label for="lecturer_list">
-                    <div class="upload-container" id="lecturerUploadContainer">
+                <label for="staff_list">
+                    <div class="upload-container" id="staffUploadContainer">
                         <div class="upload-text">
                             Upload a file with an empty first row. Data should start from columns A to G,<br> 
                             labeled as: ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', and 'Gender']<br><br><br>
@@ -57,18 +57,18 @@
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
                         <!-- Selected file display -->
-                        <div id="lecturerSelectedFileName" class="file-name-display"></div>
+                        <div id="staffSelectedFileName" class="file-name-display"></div>
                     </div>
                 </label>
-                <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+                <input type="file" id="staff_list" name="staff_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
                 <!-- 🔽 Add this hidden input here -->
                 <input type="hidden" name="form_type" value="upload">
 
                 <br>
-                {% if lecturerUploadResult %}
-                    <div class="result-message">{{ lecturerUploadResult }}</div>
-                {% elif lecturerUploadErrors %}
-                    <div class="error-message">{{ lecturerUploadErrors }}</div>
+                {% if staffUploadResult %}
+                    <div class="result-message">{{ staffUploadResult }}</div>
+                {% elif staffUploadErrors %}
+                    <div class="error-message">{{ staffUploadErrors }}</div>
                 {% elif get_flashed_messages(with_categories=true) %}
                     {% for category, message in get_flashed_messages(with_categories=true) %}
                         <div class="alert alert-{{ category }}">
@@ -80,7 +80,7 @@
 
                 <!-- Upload Form Submit -->
                 <div class="button-wrapper">
-                    <button type="submit">Upload New Lecturer</button>
+                    <button type="submit">Upload New Staff</button>
                 </div>
             </div>
         </div>
@@ -88,7 +88,7 @@
 
 
     <!-- Manual Form -->
-    <form id="manualForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" style="display: none;">
+    <form id="manualForm" action="{{ url_for('admin_manageStaff') }}" method="POST" style="display: none;">
         <div id="manualSection" class="function-frame" style="width:100%">
             <h4 style="text-align: center;">Manual Data Entry Section</h4>
             <div class="profile-frame">
@@ -141,10 +141,10 @@
             <input type="hidden" name="form_type" value="manual">
 
             <br>
-            {% if lecturerUploadResult %}
-                <div class="result-message">{{ lecturerUploadResult }}</div>
-            {% elif lecturerUploadErrors %}
-                <div class="error-message">{{ lecturerUploadErrors }}</div>
+            {% if staffUploadResult %}
+                <div class="result-message">{{ staffUploadResult }}</div>
+            {% elif staffUploadErrors %}
+                <div class="error-message">{{ staffUploadErrors }}</div>
             {% elif get_flashed_messages(with_categories=true) %}
                 {% for category, message in get_flashed_messages(with_categories=true) %}
                     <div class="alert alert-{{ category }}">
@@ -156,7 +156,7 @@
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Add New Lecturer</button>
+                <button type="submit">Add New Staff</button>
             </div>
         </div>
     </form>
@@ -201,13 +201,13 @@
                     <!-- Role Name based on userLevel -->
                     <td>
                         {% if row.userLevel == 1 %}
-                            Lecturer
+                            LECTURER
                         {% elif row.userLevel == 2 %}
-                            Hop
+                            HOP
                         {% elif row.userLevel == 3 %}
-                            Dean
+                            DEAN
                         {% elif row.userLevel == 4 %}
-                            Admin
+                            ADMIN
                         {% else %}
                             Unknown
                         {% endif %}

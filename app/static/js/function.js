@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/adminHome/manageExam': 'admin_manageExamtab',
     '/adminHome/manageCourse': 'admin_manageCoursetab',
     '/adminHome/manageInvigilationTimetable': 'admin_manageInvigilationTimetabletab',
-    '/adminHome/manageLecturer': 'admin_manageLecturertab',    
+    '/adminHome/manageStaff': 'admin_manageStafftab',    
     '/adminHome/manageInvigilationReport': 'admin_manageInvigilationReporttab',
     '/adminHome/manageDepartment': 'admin_manageDepartmenttab',
     '/adminHome/manageVenue': 'admin_manageVenuetab',
@@ -189,7 +189,7 @@ function setupFileUpload(fileInputId, uploadContainerId, fileNameDisplayId) {
 document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload('course_list', 'courseUploadContainer', 'courseSelectedFileName');
     setupFileUpload('exam_list', 'examUploadContainer', 'examSelectedFileName');
-    setupFileUpload('lecturer_list', 'lecturerUploadContainer', 'lecturerSelectedFileName');
+    setupFileUpload('staff_list', 'staffUploadContainer', 'staffSelectedFileName');
     setupFileUpload('timetable_list', 'timetableUploadContainer', 'timetableSelectedFileName');
 });
 
