@@ -221,7 +221,7 @@ def check_exam(courseSection, date, starttime, endtime):
         examDate=date,
         examStartTime=starttime,
         examEndTime=endtime,
-        examCourseSectionCode=courseSection
+        examCourseCodeSection=courseSection
     ).first()
 
     if exam_exists:
