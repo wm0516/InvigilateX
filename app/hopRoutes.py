@@ -71,7 +71,7 @@ def hop_profile():
             DEAN: "Dean",
             ADMIN: "Admin"
         }.get(hop.userLevel, "Unknown") if hop else '',
-        hopContact_text=hopContact_text if hop else '',
+        hop_contact_text=hop.userContact if hop else '',
         hopPassword1_text=hopPassword1_text,
         hopPassword2_text=hopPassword2_text,
         error_message=error_message

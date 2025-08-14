@@ -70,7 +70,7 @@ def dean_profile():
             DEAN: "DEAN",
             ADMIN: "ADMIN"
         }.get(dean.userLevel, "Unknown") if dean else '',
-        deanContact_text=deanContact_text if dean else '',
+        dean_contact_text=dean.userContact if dean else '',
         deanPassword1_text=deanPassword1_text,
         deanPassword2_text=deanPassword2_text,
         error_message=error_message
