@@ -21,6 +21,21 @@
     <!-- Announce Form -->
     <form id="announceForm" action="{{ url_for('admin_manageVenue') }}" method="POST" enctype="multipart/form-data">
         <div id="announceSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
+                <br>
+                {% if venueUploadResult %}
+                    <div class="result-message">{{ venueUploadResult }}</div>
+                {% elif venueUploadErrors %}
+                    <div class="error-message">{{ venueUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
+            </div>
         </div>
     </form>
 
@@ -59,10 +74,10 @@
             </div>
                  
             <br>
-            {% if courseUploadResult %}
-                <div class="result-message">{{ courseUploadResult }}</div>
-            {% elif courseUploadErrors %}
-                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% if venueUploadResult %}
+                <div class="result-message">{{ venueUploadResult }}</div>
+            {% elif venueUploadErrors %}
+                <div class="error-message">{{ venueUploadErrors }}</div>
             {% elif get_flashed_messages(with_categories=true) %}
                 {% for category, message in get_flashed_messages(with_categories=true) %}
                     <div class="alert alert-{{ category }}">

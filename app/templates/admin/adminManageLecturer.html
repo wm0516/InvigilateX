@@ -25,6 +25,21 @@
     <!-- Announce Form -->
     <form id="announceForm" action="{{ url_for('admin_manageLecturer') }}" method="POST" enctype="multipart/form-data">
         <div id="announceSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
+                <br>
+                {% if lecturerUploadResult %}
+                    <div class="result-message">{{ lecturerUploadResult }}</div>
+                {% elif lecturerUploadErrors %}
+                    <div class="error-message">{{ lecturerUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
+            </div>
         </div>
     </form>
 
@@ -50,10 +65,10 @@
                 <input type="hidden" name="form_type" value="upload">
 
                 <br>
-                {% if courseUploadResult %}
-                    <div class="result-message">{{ courseUploadResult }}</div>
-                {% elif courseUploadErrors %}
-                    <div class="error-message">{{ courseUploadErrors }}</div>
+                {% if lecturerUploadResult %}
+                    <div class="result-message">{{ lecturerUploadResult }}</div>
+                {% elif lecturerUploadErrors %}
+                    <div class="error-message">{{ lecturerUploadErrors }}</div>
                 {% elif get_flashed_messages(with_categories=true) %}
                     {% for category, message in get_flashed_messages(with_categories=true) %}
                         <div class="alert alert-{{ category }}">
@@ -126,10 +141,10 @@
             <input type="hidden" name="form_type" value="manual">
 
             <br>
-            {% if courseUploadResult %}
-                <div class="result-message">{{ courseUploadResult }}</div>
-            {% elif courseUploadErrors %}
-                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% if lecturerUploadResult %}
+                <div class="result-message">{{ lecturerUploadResult }}</div>
+            {% elif lecturerUploadErrors %}
+                <div class="error-message">{{ lecturerUploadErrors }}</div>
             {% elif get_flashed_messages(with_categories=true) %}
                 {% for category, message in get_flashed_messages(with_categories=true) %}
                     <div class="alert alert-{{ category }}">

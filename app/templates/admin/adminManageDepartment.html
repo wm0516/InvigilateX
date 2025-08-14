@@ -23,6 +23,21 @@
         <div id="announceSection" class="function-frame">
             <!-- 🔽 Add this hidden input here -->
             <input type="hidden" name="form_type" value="announce">
+            <div class="form-left" style="width: 100%">
+                <br>
+                {% if departmentUploadResult %}
+                    <div class="result-message">{{ departmentUploadResult }}</div>
+                {% elif departmentUploadErrors %}
+                    <div class="error-message">{{ departmentUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
+            </div>
         </div>
     </form>
 
@@ -46,10 +61,10 @@
             <input type="hidden" name="form_type" value="manual">
                  
             <br>
-            {% if courseUploadResult %}
-                <div class="result-message">{{ courseUploadResult }}</div>
-            {% elif courseUploadErrors %}
-                <div class="error-message">{{ courseUploadErrors }}</div>
+            {% if departmentUploadResult %}
+                <div class="result-message">{{ departmentUploadResult }}</div>
+            {% elif departmentUploadErrors %}
+                <div class="error-message">{{ departmentUploadErrors }}</div>
             {% elif get_flashed_messages(with_categories=true) %}
                 {% for category, message in get_flashed_messages(with_categories=true) %}
                     <div class="alert alert-{{ category }}">
