@@ -46,7 +46,7 @@ class User(db.Model):
         userContact VARCHAR(15),
         userGender VARCHAR(10),
         userPassword VARCHAR(255),
-        userStatus BOOLEAN NOT NULL DEFAULT FALSE
+        userStatus BOOLEAN NOT NULL DEFAULT FALSE,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
