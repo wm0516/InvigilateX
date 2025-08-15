@@ -1,7 +1,7 @@
 from app import db
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String  # correct import
-from datetime import datetime
+from datetime import datetime, timezone
 # db.String  -> string
 # db.Date    -> date format
 # db.Time    -> time format
@@ -25,16 +25,16 @@ from datetime import datetime
 
 class User(db.Model):
     __tablename__ = 'User'
-    userId = db.Column(db.String(20), primary_key=True)                                         # [PK]Refer to Staff ID
-    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'))       # [FK] Refer to Staff Department
-    userName = db.Column(db.String(255))                                                        # Refer to Staff Name
-    userLevel = db.Column(db.Integer)                                                           # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
-    userEmail = db.Column(db.String(50))                                                        # Refer to Staff INTI email
-    userContact = db.Column(db.String(15))                                                      # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
-    userGender = db.Column(db.String(10))                                                       # Refer to Staff Gender
-    userPassword = db.Column(db.String(255))                                                    # Refer to Staff Password
-    userStatus = db.Column(db.Boolean, default=False)                                           # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
-    userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=datetime.now)          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+    userId = db.Column(db.String(20), primary_key=True)                                                               # [PK]Refer to Staff ID
+    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'))                             # [FK] Refer to Staff Department
+    userName = db.Column(db.String(255))                                                                              # Refer to Staff Name
+    userLevel = db.Column(db.Integer)                                                                                 # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
+    userEmail = db.Column(db.String(50))                                                                              # Refer to Staff INTI email
+    userContact = db.Column(db.String(15))                                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
+    userGender = db.Column(db.String(10))                                                                             # Refer to Staff Gender
+    userPassword = db.Column(db.String(255))                                                                          # Refer to Staff Password
+    userStatus = db.Column(db.Boolean, default=False)                                                                 # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
+    userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
 
     # Relationship
     department = db.relationship("Department", backref="users")
