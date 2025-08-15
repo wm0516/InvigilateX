@@ -14,7 +14,6 @@ from datetime import datetime, timezone
 # SELECT * FROM (tableName);    -> display out that table data
 # UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN1'; -> changing the data
 
-
 # Database Relationship
 # 'Department' under 'User'(userDepartment)
 # 'Course' under 'User'(Lecturer teach course), 'Department'(Course under which department)
