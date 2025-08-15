@@ -13,57 +13,68 @@ from sqlalchemy import String  # correct import
 # SELECT * FROM (tableName);    -> display out that table data
 # UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN'; -> changing the data
 
+
+# Database Relationship
+# 'Department' under 'User'(userDepartment)
+# 'Course' under 'User'(Lecturer teach course), 'Department'(Course under which department)
+# 'Exam' has 'Course'(know which course in exam), 'Venue'(where the exam venue allocated)
+# 'InvigilationReport' has 'Exam'(know which exam with the details)
+# 'InvigilationAttendance' has 'InvigilationReport'(Invigilator checkin and checkout, with the total of invigilation hour)
+
+
 class User(db.Model):
     __tablename__ = 'User'
-    userId = db.Column(db.String(20), primary_key=True) # [PK]Refer to Staff ID
-    userName = db.Column(db.String(255))                # Refer to Staff Name
-    userDepartment = db.Column(db.String(60))           # [FK] Refer to Staff Department
-    userLevel = db.Column(db.Integer)                   # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
-    userEmail = db.Column(db.String(50))                # Refer to Staff INTI email
-    userContact = db.Column(db.String(15))              # Refer to Staff Contact Number
-    userGender = db.Column(db.String(10))               # Refer to Staff Gender
-    userPassword = db.Column(db.String(255))            # Refer to Staff Password
-    userStatus = db.Column(db.String(15))               # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
+    userId = db.Column(db.String(20), primary_key=True)                                         # [PK]Refer to Staff ID
+    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'))       # [FK] Refer to Staff Department
+    userName = db.Column(db.String(255))                                                        # Refer to Staff Name
+    userLevel = db.Column(db.Integer)                                                           # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
+    userEmail = db.Column(db.String(50))                                                        # Refer to Staff INTI email
+    userContact = db.Column(db.String(15))                                                      # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
+    userGender = db.Column(db.String(10))                                                       # Refer to Staff Gender
+    userPassword = db.Column(db.String(255))                                                    # Refer to Staff Password
+    userStatus = db.Column(db.Boolean, default=False)                                           # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
+    
+    # Relationship
+    department = db.relationship("Department", backref="users")
     '''
     CREATE TABLE User (
         userId VARCHAR(20) NOT NULL PRIMARY KEY,
+        userDepartment VARCHAR(10),
         userName VARCHAR(255),
-        userDepartment VARCHAR(60),
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
         userGender VARCHAR(10),
         userPassword VARCHAR(255),
-        userStatus VARCHAR(15)
+        userStatus BOOLEAN NOT NULL DEFAULT FALSE
+        FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
 
 class Exam(db.Model):
     __tablename__ = 'Exam'
-    examId = db.Column(db.Integer, primary_key=True)                   # [PK] Refer to Exam ID
-    examDate = db.Column(db.Date, nullable=True)                       # Refer to Exam Date
-    examDay = db.Column(db.String(10), nullable=False)                 # Refer to Exam Day
-    examStartTime = db.Column(db.String(20), nullable=False)           # Refer to Exam StartTime
-    examEndTime = db.Column(db.String(20), nullable=False)             # Refer to Exam EndTime
-    examCourseCodeSection = db.Column(db.String(20))                   # [FK] Refer to examCourseCodeSection
-    examProgramCode = db.Column(db.String(10), nullable=False)         # Refer to Course DepartmentCode
-    examPracticalLecturer = db.Column(db.String(255), nullable=False)  # Refer to Course Practical Lecturer
-    examTutorialLecturer = db.Column(db.String(255), nullable=False)   # Refer to Course Tutorial Lecturer
-    examTotalStudent = db.Column(db.Integer, nullable=False)           # Refer to Course Total Number of Students  
-    examVenue = db.Column(db.String(50), nullable=True)                # Refer to Exam Venue
+    examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                           # [PK] Refer to Exam ID
+    examCourseCodeSection = db.Column(db.String(20), db.ForeignKey('Course.courseCodeSection'), nullable=False)    # [FK] Refer to examCourseCodeSection
+    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)                        # Refer to Exam Venue
+    examDate = db.Column(db.Date, nullable=True)                                                                   # Refer to Exam Date
+    examDay = db.Column(db.String(10), nullable=False)                                                             # Refer to Exam Day
+    examStartTime = db.Column(db.String(10), nullable=False)                                                       # Refer to Exam StartTime
+    examEndTime = db.Column(db.String(10), nullable=False)                                                         # Refer to Exam EndTime
+
+    # Relationship
+    course = db.relationship("Course", backref="exams")
+    venue = db.relationship("Venue", backref="exams")
     '''
     CREATE TABLE Exam (
-        examId INT AUTO_INCREMENT PRIMARY KEY,
+        examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         examDate DATE,
-        examDay VARCHAR(10),
-        examStartTime VARCHAR(20),
-        examEndTime VARCHAR(20),
-        examCourseCodeSection VARCHAR(20),
-        examProgramCode VARCHAR(10),
-        examPracticalLecturer VARCHAR(255),
-        examTutorialLecturer VARCHAR(255),
-        examTotalStudent INT,
-        examVenue VARCHAR(50)
+        examDay VARCHAR(10) NOT NULL,
+        examStartTime VARCHAR(10) NOT NULL,
+        examEndTime VARCHAR(10) NOT NULL,
+        examCourseCodeSection VARCHAR(20) NOT NULL,
+        examVenue VARCHAR(10),
+        FOREIGN KEY (examCourseCodeSection) REFERENCES Course(courseCodeSection),
+        FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
     );
     '''
 
@@ -73,7 +84,7 @@ class Department(db.Model):
     departmentName = db.Column(db.String(60), nullable=False)    # Refer to Department Name
     '''
     CREATE TABLE Department (
-        departmentCode VARCHAR(10) PRIMARY KEY,
+        departmentCode VARCHAR(10) NOT NULL PRIMARY KEY,
         departmentName VARCHAR(60) NOT NULL
     );
     '''
@@ -86,7 +97,7 @@ class Venue(db.Model):
     venueStatus = db.Column(db.String(15), nullable=False)    # Refer to Status of Venue {'Available', 'Unavailable', 'In Service'}
     '''
     CREATE TABLE Venue (
-        venueNumber VARCHAR(10) PRIMARY KEY,
+        venueNumber VARCHAR(10) NOT NULL PRIMARY KEY,
         venueFloor VARCHAR(10) NOT NULL,
         venueCapacity INT NOT NULL,
         venueStatus VARCHAR(15) NOT NULL
@@ -95,28 +106,80 @@ class Venue(db.Model):
 
 class Course(db.Model):
     __tablename__ = 'Course'
-    courseCodeSection = db.Column(db.String(20), primary_key=True)   # [PK] Refer to CourseCodeSection
-    courseCode = db.Column(db.String(10), nullable=False)            # Refer to CourseCode
-    courseSection = db.Column(db.String(10), nullable=False)         # Refer to CourseSection
-    courseDepartment = db.Column(db.String(60), nullable=False)      # Refer to CourseDepartment
-    courseName = db.Column(db.String(50), nullable=False)            # Refer to CourseName
-    courseHour = db.Column(db.Integer, nullable=False)               # Refer to CourseHour
-    coursePractical = db.Column(db.String(255), nullable=False)      # Refer to Course Practical Lecturer
-    courseTutorial = db.Column(db.String(255), nullable=False)       # Refer to Course Tutorial Lecturer
-    courseStudent = db.Column(db.Integer, nullable=False)            # Refer to Course Total Number of Students
+    courseCodeSection = db.Column(db.String(20), primary_key=True)                                               # [PK] Refer to CourseCodeSection
+    courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
+    coursePractical = db.Column(db.String(255), db.ForeignKey('User.userId'), nullable=False)                    # [FK ]Refer to Course Practical Lecturer
+    courseTutorial = db.Column(db.String(255), db.ForeignKey('User.userId'), nullable=False)                     # [FK] Refer to Course Tutorial Lecturer
+    courseCode = db.Column(db.String(10), nullable=False)                                                        # Refer to CourseCode
+    courseSection = db.Column(db.String(10), nullable=False)                                                     # Refer to CourseSection
+    courseName = db.Column(db.String(50), nullable=False)                                                        # Refer to CourseName
+    courseHour = db.Column(db.Integer, nullable=False)                                                           # Refer to CourseHour
+    courseStudent = db.Column(db.Integer, nullable=False)                                                        # Refer to Course Total Number of Students
+    
+    # Relationship
+    department = db.relationship("Department", backref="courses")
+    practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
+    tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
     '''
     CREATE TABLE Course (
-        courseCodeSection VARCHAR(20) PRIMARY KEY,
-        courseCode VARCHAR(10) NOT NULL,
-        courseSection VARCHAR(10) NOT NULL,
-        courseDepartment VARCHAR(60) NOT NULL,
-        courseName VARCHAR(50) NOT NULL,
-        courseHour INT,
+        courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
+        courseDepartment VARCHAR(10) NOT NULL,
         coursePractical VARCHAR(255) NOT NULL,
         courseTutorial VARCHAR(255) NOT NULL,
-        courseStudent INT
+        courseCode VARCHAR(10) NOT NULL,
+        courseSection VARCHAR(10) NOT NULL,
+        courseName VARCHAR(50) NOT NULL,
+        courseHour INT NOT NULL,
+        courseStudent INT NOT NULL,
+        FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
+        FOREIGN KEY (coursePractical) REFERENCES User(userId),
+        FOREIGN KEY (courseTutorial) REFERENCES User(userId)
     );
     '''
+
+class InvigilationReport(db.Model):
+    __tablename__ = 'InvigilationReport'
+    invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)      # [PK] Refer to Invigilation Report ID
+    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)            # [FK] Refer to Which Exam, and with the details of 
+    remarks = db.Column(db.Text, nullable=True)                                             # Refer to any remarks of exam sessions
+
+    # Relationships
+    exam = db.relationship("Exam", backref="invigilation_reports")
+    attendances = db.relationship("InvigilatorAttendance", backref="report", cascade="all, delete-orphan")
+    '''
+    CREATE TABLE InvigilationReport (
+        invigilationReportId INT AUTO_INCREMENT PRIMARY KEY,
+        examId INT NOT NULL,
+        remarks TEXT,
+        FOREIGN KEY (examId) REFERENCES Exam(examId)
+    );  
+    '''
+
+class InvigilatorAttendance(db.Model):
+    __tablename__ = 'InvigilatorAttendance'
+    attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
+    reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)     # [FK] Refer to Invigilation Report with the exam details
+    invigilatorId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
+    checkIn = db.Column(db.String(20), nullable=False)                                                             # Refer to invigilator check in time (must before 1 hour exam start)
+    checkOut = db.Column(db.String(20), nullable=False)                                                            # Refer to invigilator check out time (must before 1 hour exam end)
+    totalHours = db.Column(db.Float, nullable=False)  # store pre-calculated hours                                 # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
+
+    # Relationship
+    invigilator = db.relationship("User")
+    '''
+    CREATE TABLE InvigilatorAttendance (
+        attendanceId INT AUTO_INCREMENT PRIMARY KEY,
+        reportId INT NOT NULL,
+        invigilatorId VARCHAR(20) NOT NULL,
+        checkIn VARCHAR(20) NOT NULL,
+        checkOut VARCHAR(20) NOT NULL,
+        FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
+        FOREIGN KEY (invigilatorId) REFERENCES User(userId)
+    );
+    '''
+
+
+
 
 
 
@@ -146,44 +209,6 @@ class LecturerTimetable(db.Model):
         PRIMARY KEY (lecturerId)
     );
     '''
-
-# Need Double Check, Haven't Record In Database
-class Invigilation(db.Model):
-    __tablename__ = 'Invigilation'
-    invigilationCourseSectionCode = db.Column(db.String(20), primary_key=True)
-    invigilationLecturerId = db.Column(db.String(20), nullable=False)
-    invigilationInvigilatorId1 = db.Column(db.String(20), nullable=False)
-    invigilationInvigilatorId2 = db.Column(db.String(20), nullable=False)
-    invigilationStartTime = db.Column(db.String(20), nullable=False)
-    invigilationEndTime = db.Column(db.String(20), nullable=False)
-    invigilationCheckIn = db.Column(db.String(20), nullable=False)
-    invigilationCheckOut = db.Column(db.String(20), nullable=False)
-    invigilationProgramCode = db.Column(db.String(10), nullable=False)
-    invigilationTotalCandidates = db.Column(db.Integer, nullable=False)
-    invigilationVenue = db.Column(db.String(50), nullable=True)
-    '''
-    CREATE TABLE Invigilation (
-        invigilationCourseSectionCode VARCHAR(20) PRIMARY KEY,
-        invigilationLecturerId VARCHAR(20) NOT NULL,
-        invigilationInvigilatorId1 VARCHAR(20) NOT NULL,
-        invigilationInvigilatorId2 VARCHAR(20) NOT NULL,
-        invigilationStartTime VARCHAR(20) NOT NULL,
-        invigilationEndTime VARCHAR(20) NOT NULL,
-        invigilationCheckIn VARCHAR(20) NOT NULL,
-        invigilationCheckOut VARCHAR(20) NOT NULL,
-        invigilationProgramCode VARCHAR(10) NOT NULL,
-        invigilationTotalCandidates INT NOT NULL,
-        invigilationVenue VARCHAR(50)
-    );
-    '''
-
-
-
-
-
-
-
-
 
 
 

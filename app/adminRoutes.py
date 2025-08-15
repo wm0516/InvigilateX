@@ -328,7 +328,7 @@ def admin_manageStaff():
 
                             for index, row in df.iterrows():
                                 try:
-                                    id_text = str(row['id'])
+                                    id_text = str(row['id']).upper()
                                     name_text = str(row['name']).upper()
                                     department_text = str(row['department']).upper()
                                     email_text = str(row['email'])
@@ -656,12 +656,8 @@ def admin_manageExam():
                                             examDay=examDay_text,
                                             examStartTime=startTime_text,
                                             examEndTime=endTime_text,
-                                            examProgramCode=programCode_text,
-                                            examCourseCodeSection=courseSection_text,
-                                            examPracticalLecturer=practicalLecturer_text,
-                                            examTutorialLecturer=tutorialLecturer_text,
-                                            examTotalStudent=student_text,
-                                            examVenue=venue_text
+                                            examCourseCodeSection=courseSection_text,  # FK from Course table
+                                            examVenue=venue_text                       # FK from Venue table
                                         )
                                         db.session.add(new_exam)
                                         db.session.commit()
@@ -683,7 +679,7 @@ def admin_manageExam():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageExam'))
 
-        elif form_type == 'modify':
+        elif form_type == 'announce':
             return redirect(url_for('admin_manageExam'))
 
         # ===== Manual Add =====
@@ -721,12 +717,8 @@ def admin_manageExam():
                     examDay=examDay_text,
                     examStartTime=startTime_text,
                     examEndTime=endTime_text,
-                    examProgramCode=programCode_text,
-                    examCourseCodeSection=courseSection_text,
-                    examPracticalLecturer=practicalLecturer_text,
-                    examTutorialLecturer=tutorialLecturer_text,
-                    examTotalStudent=student_text,
-                    examVenue=venue_text
+                    examCourseCodeSection=courseSection_text,  # FK from Course table
+                    examVenue=venue_text                       # FK from Venue table
                 )
 
                 db.session.add(new_exam)
