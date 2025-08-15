@@ -15,8 +15,8 @@ from functools import wraps
 
 # constants.py or at the top of your app.py
 ADMIN = 4
-DEAN = 3
-HOP = 2
+HOP = 3
+DEAN = 2
 LECTURER = 1
 
 # Declare the Role Map of User Level
