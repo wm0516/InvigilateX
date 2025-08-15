@@ -211,11 +211,11 @@
                     <!-- <td>{{ row.examID  }}</td> -->
                     <td>{{ row.examDate }} [{{ row.examDay }}]</td>
                     <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>
-                    <td>{{ row.course.programCode }}</td>
+                    <td>{{ row.course.courseDepartment }}</td>
                     <td>{{ row.examCourseCodeSection }}</td>
-                    <td>{{ row.course.practicalLecturer }}</td>
-                    <td>{{ row.course.tutorialLecturer }}</td>
-                    <td>{{ row.course.totalStudent }}</td>
+                    <td>{{ row.course.coursePractical }}</td>
+                    <td>{{ row.course.courseTutorial }}</td>
+                    <td>{{ row.course.courseStudent }}</td>
                     <td>{{ row.examVenue }}</td>
                 </tr>
                 {% endfor %}

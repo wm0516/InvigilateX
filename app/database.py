@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 # DROP TABLE (tableName);                                                                   -> to delete that table
 # SELECT * FROM (tableName);                                                                -> display out that table data
 # UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN1';       -> changing the data
-# DELETE FROM User WHERE userId = 'WEIMING(LECTURER1)';                               -> remove certain row of data
+# DELETE FROM Course WHERE courseCodeSection = 'CADP1234/CS1';                                     -> remove certain row of data
 
 # Database Relationship
 # 'Department' under 'User'(userDepartment)
