@@ -7,12 +7,13 @@ from datetime import datetime, timezone
 # db.Time    -> time format
 # db.Integer -> number
 
-# SHOW DATABASES;               -> display out all the database created
-# USE WM05$InvigilateX;         -> use this database
-# SHOW TABLES;                  -> display out all the table created
-# DROP TABLE (tableName);       -> to delete that table
-# SELECT * FROM (tableName);    -> display out that table data
-# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN1'; -> changing the data
+# SHOW DATABASES;                                                                           -> display out all the database created
+# USE WM05$InvigilateX;                                                                     -> use this database
+# SHOW TABLES;                                                                              -> display out all the table created
+# DROP TABLE (tableName);                                                                   -> to delete that table
+# SELECT * FROM (tableName);                                                                -> display out that table data
+# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN1';       -> changing the data
+# DELETE FROM User WHERE userId = 'WEIMING(LECTURER1)';                               -> remove certain row of data
 
 # Database Relationship
 # 'Department' under 'User'(userDepartment)
