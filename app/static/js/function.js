@@ -323,12 +323,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     data.forEach(lecturer => {
                         const practicalOption = document.createElement('option');
-                        practicalOption.value = lecturer.userName;
+                        practicalOption.value = lecturer.userId;
                         practicalOption.textContent = lecturer.userName;
                         practicalSelect.appendChild(practicalOption);
 
                         const tutorialOption = document.createElement('option');
-                        tutorialOption.value = lecturer.userName;
+                        tutorialOption.value = lecturer.userId;
                         tutorialOption.textContent = lecturer.userName;
                         tutorialSelect.appendChild(tutorialOption);
                     });
@@ -337,9 +337,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
-
-
-
 
 
 

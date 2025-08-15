@@ -122,9 +122,9 @@
                         <option value="" disabled selected>Select Practical Lecturer</option>
                         {% for lecturer in lecturer_data %}
                             <option value="{{ lecturer.userId }}">
-                                {{ lecturer.userName }}
+                                [{{ lecturer.userId }}] {{ lecturer.userName }}
                             </option>  
-                        {% endfor %}
+                        {% endfor %}    
                     </select><br>
 
                     <label>Tutorial Lecturer</label>
