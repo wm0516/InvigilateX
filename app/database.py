@@ -1,6 +1,7 @@
 from app import db
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String  # correct import
+from datetime import datetime
 # db.String  -> string
 # db.Date    -> date format
 # db.Time    -> time format
@@ -11,7 +12,7 @@ from sqlalchemy import String  # correct import
 # SHOW TABLES;                  -> display out all the table created
 # DROP TABLE (tableName);       -> to delete that table
 # SELECT * FROM (tableName);    -> display out that table data
-# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN'; -> changing the data
+# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN1'; -> changing the data
 
 
 # Database Relationship
@@ -33,12 +34,13 @@ class User(db.Model):
     userGender = db.Column(db.String(10))                                                       # Refer to Staff Gender
     userPassword = db.Column(db.String(255))                                                    # Refer to Staff Password
     userStatus = db.Column(db.Boolean, default=False)                                           # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
-    
+    userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=datetime.now)          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+
     # Relationship
     department = db.relationship("Department", backref="users")
     '''
     CREATE TABLE User (
-        userId VARCHAR(20) NOT NULL PRIMARY KEY,
+        userId VARCHAR(20) PRIMARY KEY,
         userDepartment VARCHAR(10),
         userName VARCHAR(255),
         userLevel INT,
@@ -46,7 +48,8 @@ class User(db.Model):
         userContact VARCHAR(15),
         userGender VARCHAR(10),
         userPassword VARCHAR(255),
-        userStatus BOOLEAN NOT NULL DEFAULT FALSE,
+        userStatus BOOLEAN DEFAULT FALSE,
+        userRegisterDateTime DATETIME,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''

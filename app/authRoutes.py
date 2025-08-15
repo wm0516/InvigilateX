@@ -96,7 +96,8 @@ def register():
                 userContact=contact_text,
                 userPassword=hashed_pw,
                 userGender=gender_text,
-                userStatus=False
+                userStatus=False,
+                userRegisterDateTime=datetime.now()
             )
             db.session.add(new_user)
             db.session.commit()
