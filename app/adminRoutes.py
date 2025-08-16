@@ -588,6 +588,7 @@ def admin_manageExam():
     department_data = Department.query.all() # For department code dropdown
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
     course_data = Course.query.all() # For course selection dropdown and show out related tutorial, practical, and number of students
+    invigilationReport_data = InvigilationReport.query.all()
 
     # Default values for manual form
     examDate_text = ''
@@ -724,8 +725,13 @@ def admin_manageExam():
                     examCourseCodeSection=courseSection_text,  # FK from Course table
                     examVenue=venue_text                       # FK from Venue table
                 )
-
                 db.session.add(new_exam)
+                db.session.flush()  
+
+                new_invigilationReport = InvigilationReport(
+                    examId=new_exam.examId  
+                )
+                db.session.add(new_invigilationReport)
                 db.session.commit()
                 flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))
