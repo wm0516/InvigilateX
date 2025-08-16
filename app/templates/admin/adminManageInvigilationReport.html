@@ -29,7 +29,7 @@
                 {% for row in invigilationReport_data %}
                     {% for att in row.attendances %}
                         <tr>
-                            <td>{{ loop.parentloop.index }}.{{ loop.index }}</td>
+                            <td>{{ loop.index }}</td>
                             <td>{{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userDepartment }}</td>
                             <td>{{ row.exam.examCourseCodeSection }}</td>
