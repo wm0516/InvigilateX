@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 # SELECT * FROM (tableName);                                                                -> display out that table data
 # UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='ADMIN1';       -> changing the data
 # DELETE FROM Exam WHERE examId = '1';                                                      -> remove certain row of data
+# NOT NULL = MUST HAVE DATA 
+# NULL = OPTIONAL HAVE DATA
 
 # Database Relationship
 # 'Department' under 'User'(userDepartment)
@@ -61,8 +63,8 @@ class Exam(db.Model):
     __tablename__ = 'Exam'
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                           # [PK] Refer to Exam ID
     examCourseCodeSection = db.Column(db.String(20), db.ForeignKey('Course.courseCodeSection'), nullable=False)    # [FK] Refer to examCourseCodeSection
-    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)                        # Refer to Exam Venue
-    examDate = db.Column(db.Date, nullable=True)                                                                   # Refer to Exam Date
+    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)                        # Refer to Exam Venue
+    examDate = db.Column(db.Date, nullable=False)                                                                   # Refer to Exam Date
     examDay = db.Column(db.String(10), nullable=False)                                                             # Refer to Exam Day
     examStartTime = db.Column(db.String(10), nullable=False)                                                       # Refer to Exam StartTime
     examEndTime = db.Column(db.String(10), nullable=False)                                                         # Refer to Exam EndTime
@@ -152,9 +154,9 @@ class InvigilatorAttendance(db.Model):
     attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
     reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)     # [FK] Refer to Invigilation Report with the exam details
     invigilatorId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
-    checkIn = db.Column(db.String(20), nullable=False)                                                             # Refer to invigilator check in time (must before 1 hour exam start)
-    checkOut = db.Column(db.String(20), nullable=False)                                                            # Refer to invigilator check out time (must before 1 hour exam end)
-    remark = db.Column(db.Text, nullable=False)                                                                    # Refer to invigilator checkin and checkout early or late, and show exam process
+    checkIn = db.Column(db.String(20), nullable=True)                                                             # Refer to invigilator check in time (must before 1 hour exam start)
+    checkOut = db.Column(db.String(20), nullable=True)                                                            # Refer to invigilator check out time (must before 1 hour exam end)
+    remark = db.Column(db.Text, nullable=True)                                                                    # Refer to invigilator checkin and checkout early or late, and show exam process
 
     # Relationship
     invigilator = db.relationship("User")
@@ -163,8 +165,8 @@ class InvigilatorAttendance(db.Model):
         attendanceId INT AUTO_INCREMENT PRIMARY KEY,
         reportId INT NOT NULL,
         invigilatorId VARCHAR(20) NOT NULL,
-        checkIn VARCHAR(20) NOT NULL,
-        checkOut VARCHAR(20) NOT NULL,
+        checkIn VARCHAR(20) NULL,
+        checkOut VARCHAR(20) NULL,
         remark TEXT NULL,
         FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
@@ -184,7 +186,7 @@ class InvigilationReport(db.Model):
     CREATE TABLE InvigilationReport (
         invigilationReportId INT AUTO_INCREMENT PRIMARY KEY,
         examId INT NOT NULL,
-        remarks TEXT,
+        remarks TEXT NULL,
         FOREIGN KEY (examId) REFERENCES Exam(examId)
     );  
     '''
