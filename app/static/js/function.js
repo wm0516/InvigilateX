@@ -216,6 +216,12 @@ document.addEventListener("DOMContentLoaded", function () {
     nextYearSameDay.setFullYear(today.getFullYear() + 1);
     const maxDate = formatDate(nextYearSameDay);
 
+    if (minDate === maxDate) {
+        alert("Error: Minimum and maximum exam date cannot be the same.");
+        examDateInput.disabled = true; // prevent invalid input
+        return;
+    }
+
     examDateInput.min = minDate;
     examDateInput.max = maxDate;
 
