@@ -766,7 +766,7 @@ def admin_manageExam():
                     ))
 
                 # Create InvigilatorAttendance for tutorial lecturer (if provided)
-                if tutorialLecturer_text:
+                if tutorialLecturer_text and practicalLecturer_text!=tutorialLecturer_text:
                     db.session.add(InvigilatorAttendance(
                         reportId=new_invigilationReport.invigilationReportId,
                         invigilatorId=tutorialLecturer_text,    # FK to User.userId
