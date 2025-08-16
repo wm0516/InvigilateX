@@ -27,8 +27,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def admin_manageInvigilationReport():
     invigilationReport_data = InvigilationReport.query.all()
     attendances = InvigilatorAttendance.query.all()
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, invigilationReport_data=invigilationReport_data)
-
+    exam_data = Exam.query.all()
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', 
+                           attendances=attendances, invigilationReport_data=invigilationReport_data, exam_data=exam_data)
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
@@ -728,10 +729,34 @@ def admin_manageExam():
                 db.session.add(new_exam)
                 db.session.flush()  
 
+                # Create Invigilation Report for this exam
                 new_invigilationReport = InvigilationReport(
                     examId=new_exam.examId  
                 )
                 db.session.add(new_invigilationReport)
+                db.session.flush()
+
+                # Create InvigilatorAttendance for practical lecturer (if provided)
+                if practicalLecturer_text:
+                    db.session.add(InvigilatorAttendance(
+                        reportId=new_invigilationReport.invigilationReportId,
+                        invigilatorId=practicalLecturer_text,   # FK to User.userId
+                        checkIn=None,
+                        checkOut=None,
+                        remark=None
+                    ))
+
+                # Create InvigilatorAttendance for tutorial lecturer (if provided)
+                if tutorialLecturer_text:
+                    db.session.add(InvigilatorAttendance(
+                        reportId=new_invigilationReport.invigilationReportId,
+                        invigilatorId=tutorialLecturer_text,    # FK to User.userId
+                        checkIn=None,
+                        checkOut=None,
+                        remark=None
+                    ))
+
+                # Commit everything
                 db.session.commit()
 
                 flash("New Exam Record Added Successfully", "success")
