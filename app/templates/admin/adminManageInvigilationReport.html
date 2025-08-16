@@ -28,17 +28,17 @@
             <tbody>
                 {% for row in invigilationReport_data %}
                     {% for att in row.attendances %}
-                    <tr>
-                        <td>{{ loop.index }}</td> <!-- this will reset for each nested loop -->
-                        <td>{{ att.invigilator.userName }}</td>
-                        <td>{{ att.invigilator.userDepartment }}</td>
-                        <td>{{ row.exam.examCourseCodeSection }}</td>
-                        <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>
-                        <td>{{ att.checkIn }}</td>
-                        <td>{{ att.checkOut }}</td>
-                        <td>{{ att.remark }}</td>
-                        <td>{{ att.invigilator.userContact }}</td>
-                    </tr>
+                        <tr>
+                            <td>{{ loop.parentloop.index }}.{{ loop.index }}</td>
+                            <td>{{ att.invigilator.userName }}</td>
+                            <td>{{ att.invigilator.userDepartment }}</td>
+                            <td>{{ row.exam.examCourseCodeSection }}</td>
+                            <td>{{ row.exam.examStartTime }} - {{ row.exam.examEndTime }}</td>
+                            <td>{{ att.checkIn }}</td>
+                            <td>{{ att.checkOut }}</td>
+                            <td>{{ att.remark }}</td>
+                            <td>{{ att.invigilator.userContact }}</td>
+                        </tr>
                     {% endfor %}
                 {% endfor %}
             </tbody>
