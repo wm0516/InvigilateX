@@ -80,7 +80,7 @@ class Exam(db.Model):
         examStartTime VARCHAR(10) NOT NULL,
         examEndTime VARCHAR(10) NOT NULL,
         examCourseCodeSection VARCHAR(20) NOT NULL,
-        examVenue VARCHAR(10),
+        examVenue VARCHAR(10) NOT NULL,
         FOREIGN KEY (examCourseCodeSection) REFERENCES Course(courseCodeSection),
         FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
     );
