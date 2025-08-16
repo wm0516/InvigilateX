@@ -732,7 +732,14 @@ def admin_manageExam():
                     examId=new_exam.examId  
                 )
                 db.session.add(new_invigilationReport)
+                db.session.flush()
+
+                new_invigilatorAttendance = InvigilatorAttendance(
+                    reportId=new_invigilationReport.invigilationReportId
+                )
+                db.session.add(new_invigilatorAttendance)
                 db.session.commit()
+                
                 flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))
 
