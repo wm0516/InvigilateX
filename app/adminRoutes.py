@@ -28,6 +28,25 @@ def admin_manageInvigilationReport():
     invigilationReport_data = InvigilationReport.query.all()
     attendances = InvigilatorAttendance.query.all()
     exam_data = Exam.query.all()
+
+    # Debug print to check relationships
+    for r in invigilationReport_data:
+        print(f"\nReport ID: {r.invigilationReportId}")
+        if r.exam:
+            print(f"   Exam ID: {r.exam.examId}, Course: {r.exam.examCourseCodeSection}, "
+                  f"Time: {r.exam.examStartTime} - {r.exam.examEndTime}")
+        else:
+            print("   ⚠️ No linked exam found")
+
+        for a in r.attendances:
+            if a.invigilator:
+                print(f"   Invigilator: {a.invigilator.userName} ({a.invigilator.userId}), "
+                      f"Dept: {a.invigilator.userDepartment}, "
+                      f"CheckIn: {a.checkIn}, CheckOut: {a.checkOut}, Remark: {a.remark}")
+            else:
+                print(f"   ⚠️ No linked invigilator for Attendance ID {a.attendanceId}")
+
+
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', 
                            attendances=attendances, invigilationReport_data=invigilationReport_data, exam_data=exam_data)
 
