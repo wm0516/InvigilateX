@@ -6,6 +6,7 @@
 <!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Manage Invigilation Report</h2>
+    <div class="profile-frame"></div>
 
     <br><br>
     <h3>List of Lecturer Invigilation Report</h2>
@@ -14,50 +15,34 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Id</th>
-                    <th>Name</th>
+                    <th>Invigilator Name</th>
                     <th>Department</th>
-                    <th>Role Based</th>
-                    <th>Email</th>
-                    <th>Contact</th>
+                    <th>Exam CourseCodeSection</th>
+                    <th>Exam Start - EndTime</th>
+                    <th>Time CheckIn</th>
+                    <th>Time CheckOut</th>
                     <th>Status</th>
+                    <th>Contact</th>
                 </tr>
             </thead>
             <tbody>
-                {% for row in user_data %}
-                <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <td>{{ row.userId }}</td>
-                    <td>{{ row.userName }}</td>
-                    <td>{{ row.userDepartment }}</td>
-
-                    <!-- Role Name based on userLevel -->
-                    <td>
-                        {% if row.userLevel == 1 %}
-                            Lecturer
-                        {% elif row.userLevel == 2 %}
-                            Dean
-                        {% elif row.userLevel == 3 %}
-                            Admin
-                        {% else %}
-                            Unknown
-                        {% endif %}
-                    </td>
-
-                    <td>{{ row.userEmail }}</td>
-                    <td>{{ row.userContact }}</td>
-
-                    <!-- User status: Activated / Deactivated -->
-                    <td>
-                        {% if row.userStatus|int == 1 %}
-                            Activated
-                        {% else %}
-                            Deactivated
-                        {% endif %}
-                    </td>
-                </tr>
+                {% for row in invigilationReport_data %}
+                    {% for att in row.attendances %}
+                    <tr>
+                        <td>{{ loop.index }}</td> <!-- this will reset for each nested loop -->
+                        <td>{{ att.invigilator.userName }}</td>
+                        <td>{{ att.invigilator.userDepartment }}</td>
+                        <td>{{ row.exam.examCourseCodeSection }}</td>
+                        <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>
+                        <td>{{ att.checkIn }}</td>
+                        <td>{{ att.checkOut }}</td>
+                        <td>{{ att.remark }}</td>
+                        <td>{{ att.invigilator.userContact }}</td>
+                    </tr>
+                    {% endfor %}
                 {% endfor %}
             </tbody>
+
         </table>
     </div>
 </div>

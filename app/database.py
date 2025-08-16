@@ -35,6 +35,7 @@ class User(db.Model):
     userPassword = db.Column(db.String(255))                                                                          # Refer to Staff Password
     userStatus = db.Column(db.Boolean, default=False)                                                                 # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
     userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+    userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                                # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
 
     # Relationship
     department = db.relationship("Department", backref="users")
@@ -50,9 +51,11 @@ class User(db.Model):
         userPassword VARCHAR(255),
         userStatus BOOLEAN DEFAULT FALSE,
         userRegisterDateTime DATETIME,
+        userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
+
 
 class Exam(db.Model):
     __tablename__ = 'Exam'
@@ -81,6 +84,7 @@ class Exam(db.Model):
     );
     '''
 
+
 class Department(db.Model):
     __tablename__ = 'Department'
     departmentCode = db.Column(db.String(10), primary_key=True)  # [PK] Refer to Department Code
@@ -91,6 +95,7 @@ class Department(db.Model):
         departmentName VARCHAR(60) NOT NULL
     );
     '''
+
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -106,6 +111,7 @@ class Venue(db.Model):
         venueStatus VARCHAR(15) NOT NULL
     );
     '''
+
 
 class Course(db.Model):
     __tablename__ = 'Course'
@@ -140,6 +146,31 @@ class Course(db.Model):
     );
     '''
 
+
+class InvigilatorAttendance(db.Model):
+    __tablename__ = 'InvigilatorAttendance'
+    attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
+    reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)     # [FK] Refer to Invigilation Report with the exam details
+    invigilatorId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
+    checkIn = db.Column(db.String(20), nullable=False)                                                             # Refer to invigilator check in time (must before 1 hour exam start)
+    checkOut = db.Column(db.String(20), nullable=False)                                                            # Refer to invigilator check out time (must before 1 hour exam end)
+    remark = db.Column(db.Text, nullable=False)                                                                    # Refer to invigilator checkin and checkout early or late, and show exam process
+
+    # Relationship
+    invigilator = db.relationship("User")
+    '''
+    CREATE TABLE InvigilatorAttendance (
+        attendanceId INT AUTO_INCREMENT PRIMARY KEY,
+        reportId INT NOT NULL,
+        invigilatorId VARCHAR(20) NOT NULL,
+        checkIn VARCHAR(20) NOT NULL,
+        checkOut VARCHAR(20) NOT NULL,
+        remark TEXT NULL,
+        FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
+        FOREIGN KEY (invigilatorId) REFERENCES User(userId)
+    );
+    '''
+
 class InvigilationReport(db.Model):
     __tablename__ = 'InvigilationReport'
     invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)      # [PK] Refer to Invigilation Report ID
@@ -158,28 +189,7 @@ class InvigilationReport(db.Model):
     );  
     '''
 
-class InvigilatorAttendance(db.Model):
-    __tablename__ = 'InvigilatorAttendance'
-    attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
-    reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)     # [FK] Refer to Invigilation Report with the exam details
-    invigilatorId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
-    checkIn = db.Column(db.String(20), nullable=False)                                                             # Refer to invigilator check in time (must before 1 hour exam start)
-    checkOut = db.Column(db.String(20), nullable=False)                                                            # Refer to invigilator check out time (must before 1 hour exam end)
-    totalHours = db.Column(db.Float, nullable=False)  # store pre-calculated hours                                 # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
 
-    # Relationship
-    invigilator = db.relationship("User")
-    '''
-    CREATE TABLE InvigilatorAttendance (
-        attendanceId INT AUTO_INCREMENT PRIMARY KEY,
-        reportId INT NOT NULL,
-        invigilatorId VARCHAR(20) NOT NULL,
-        checkIn VARCHAR(20) NOT NULL,
-        checkOut VARCHAR(20) NOT NULL,
-        FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
-        FOREIGN KEY (invigilatorId) REFERENCES User(userId)
-    );
-    '''
 
 
 
