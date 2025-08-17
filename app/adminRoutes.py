@@ -554,8 +554,8 @@ def admin_manageExam():
     exam_data = Exam.query.all()
     department_data = Department.query.all() # For department code dropdown
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
-    course_data = Course.query.filter_by(courseExamStatus='FALSE').all()  # For course selection dropdown and show out related tutorial, practical, and number of students
-    invigilationReport_data = InvigilationReport.query.all()
+    course_data = Course.query.filter(Course.courseExamStatus.is_(False)).all()  # For course selection dropdown and show out related tutorial, practical, and number of students
+    # invigilationReport_data = InvigilationReport.query.all()
 
     # Default values for manual form
     examDate_text = ''
