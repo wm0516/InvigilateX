@@ -121,6 +121,8 @@ class Course(db.Model):
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
     coursePractical = db.Column(db.String(255), db.ForeignKey('User.userId'), nullable=False)                    # [FK ]Refer to Course Practical Lecturer
     courseTutorial = db.Column(db.String(255), db.ForeignKey('User.userId'), nullable=False)                     # [FK] Refer to Course Tutorial Lecturer
+    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=True)                              # Refer to courseExam details
+    courseExamStatus = db.Column(db.Boolean, nullable=False)                                                     # Refer to courseExamStatus whether have exam or not
     courseCode = db.Column(db.String(10), nullable=False)                                                        # Refer to CourseCode
     courseSection = db.Column(db.String(10), nullable=False)                                                     # Refer to CourseSection
     courseName = db.Column(db.String(50), nullable=False)                                                        # Refer to CourseName
@@ -131,12 +133,14 @@ class Course(db.Model):
     department = db.relationship("Department", backref="courses")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
+    exam = db.relationship("Exam", foreign_keys=[courseExamId])
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
         courseDepartment VARCHAR(10) NOT NULL,
         coursePractical VARCHAR(255) NOT NULL,
         courseTutorial VARCHAR(255) NOT NULL,
+        courseExamId INT NULL,
         courseCode VARCHAR(10) NOT NULL,
         courseSection VARCHAR(10) NOT NULL,
         courseName VARCHAR(50) NOT NULL,
@@ -144,7 +148,8 @@ class Course(db.Model):
         courseStudent INT NOT NULL,
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
-        FOREIGN KEY (courseTutorial) REFERENCES User(userId)
+        FOREIGN KEY (courseTutorial) REFERENCES User(userId),
+        FOREIGN KEY (courseExam) REFERENCES Exam(examId)
     );
     '''
 

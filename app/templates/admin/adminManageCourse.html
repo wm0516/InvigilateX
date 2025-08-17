@@ -187,6 +187,7 @@
                     <th>Practical Lecturer</th>
                     <th>Tutorial Lecturer</th>
                     <th>No. of Students</th>
+                    <th>Exam Status with Id</th>
                 </tr>
             </thead>
             <tbody>
@@ -201,6 +202,7 @@
                     <td>{{ row.practicalLecturer.userName }}</td>
                     <td>{{ row.tutorialLecturer.userName }}</td>
                     <td>{{ row.courseStudent }}</td>
+                    <td>{{ [row.courseExamId] }} {{ row.courseExamStatus }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

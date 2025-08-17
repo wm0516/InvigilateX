@@ -477,7 +477,9 @@ def admin_manageCourse():
                                             courseHour=courseHour_text,
                                             coursePractical=coursePractical_text.upper(),
                                             courseTutorial=courseTutorial_text.upper(),
-                                            courseStudent=courseStudent_text
+                                            courseStudent=courseStudent_text,
+                                            courseExamId=None,
+                                            courseExamStatus=False
                                         )
                                         db.session.add(new_course)
                                         db.session.commit()
@@ -534,7 +536,9 @@ def admin_manageCourse():
                 courseHour=courseHour_text,
                 coursePractical=coursePractical_text.upper(),
                 courseTutorial=courseTutorial_text.upper(),
-                courseStudent=courseStudent_text
+                courseStudent=courseStudent_text,
+                courseExamId=None,
+                courseExamStatus=False
             )
             db.session.add(new_course)
             db.session.commit()
@@ -628,6 +632,42 @@ def admin_manageExam():
                                             examVenue=venue_text                       # FK from Venue table
                                         )
                                         db.session.add(new_exam)
+                                        db.session.flush()  
+                                
+                                        course = Course.query.filter_by(courseCodeSection=courseSection_text).first()
+                                        if course:
+                                            course.courseExamId = new_exam.examId
+                                            course.courseExamStatus = True
+                                            db.session.flush()
+
+                                        # Create Invigilation Report for this exam
+                                        new_invigilationReport = InvigilationReport(
+                                            examId=new_exam.examId  
+                                        )
+                                        db.session.add(new_invigilationReport)
+                                        db.session.flush()
+
+                                        # Create InvigilatorAttendance for practical lecturer (if provided)
+                                        if practicalLecturer_text:
+                                            db.session.add(InvigilatorAttendance(
+                                                reportId=new_invigilationReport.invigilationReportId,
+                                                invigilatorId=practicalLecturer_text,   # FK to User.userId
+                                                checkIn=None,
+                                                checkOut=None,
+                                                remark=None
+                                            ))
+
+                                        # Create InvigilatorAttendance for tutorial lecturer (if provided)
+                                        if tutorialLecturer_text and practicalLecturer_text!=tutorialLecturer_text:
+                                            db.session.add(InvigilatorAttendance(
+                                                reportId=new_invigilationReport.invigilationReportId,
+                                                invigilatorId=tutorialLecturer_text,    # FK to User.userId
+                                                checkIn=None,
+                                                checkOut=None,
+                                                remark=None
+                                            ))
+
+                                        # Commit everything
                                         db.session.commit()
                                         exam_records_added += 1
                                 except Exception as row_err:
@@ -690,6 +730,12 @@ def admin_manageExam():
                 )
                 db.session.add(new_exam)
                 db.session.flush()  
+        
+                course = Course.query.filter_by(courseCodeSection=courseSection_text).first()
+                if course:
+                    course.courseExamId = new_exam.examId
+                    course.courseExamStatus = True
+                    db.session.flush()
 
                 # Create Invigilation Report for this exam
                 new_invigilationReport = InvigilationReport(
