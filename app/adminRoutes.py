@@ -196,6 +196,9 @@ def standardize_time_with_seconds(time_value):
 
 
 
+
+
+
 # function for admin manage lecturer timetable (adding, editing, and removing)
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
@@ -241,7 +244,7 @@ def admin_manageInvigilationTimetable():
 
 
 
-# function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
+# Function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 def admin_manageStaff():
     user_data = User.query.all()
@@ -402,7 +405,7 @@ def admin_manageStaff():
     return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
 
 
-# function for admin to manage course information (adding, editing, and removing)
+# Function for admin to manage course information (adding, editing, and removing)
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     course_data = Course.query.all()
@@ -787,13 +790,6 @@ def admin_manageExam():
                 return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
-
-
-
-
-
-
-
 
 
 # ===== to get the all lecturers only that under the department search for the manage course page =====

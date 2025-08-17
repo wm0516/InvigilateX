@@ -194,6 +194,7 @@
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Exam Id</th>
                     <th>Exam Date & Day</th>
                     <th>Start - End Time</th>
                     <th>Venue</th>
@@ -208,6 +209,7 @@
                 {% for row in exam_data %}
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ row.examId }}</td>
                     <td>{{ row.examDate }} [{{ row.examDay }}]</td>
                     <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
                     <td>{{ row.examVenue }}</td>
