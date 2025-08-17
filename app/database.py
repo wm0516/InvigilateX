@@ -173,6 +173,7 @@ class InvigilatorAttendance(db.Model):
     );
     '''
 
+
 class InvigilationReport(db.Model):
     __tablename__ = 'InvigilationReport'
     invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)      # [PK] Refer to Invigilation Report ID

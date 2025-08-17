@@ -27,47 +27,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def admin_manageInvigilationReport():
     invigilationReport_data = InvigilationReport.query.all()
     attendances = InvigilatorAttendance.query.all()
-    exam_data = Exam.query.all()
-
-    # Debug print to check relationships
-    for r in invigilationReport_data:
-        print(f"\nReport ID: {r.invigilationReportId}")
-        if r.exam:
-            print(f"   Exam ID: {r.exam.examId}, Course: {r.exam.examCourseCodeSection}, "
-                  f"Time: {r.exam.examStartTime} - {r.exam.examEndTime}")
-        else:
-            print("   ⚠️ No linked exam found")
-
-        for a in r.attendances:
-            if a.invigilator:
-                print(f"   Invigilator: {a.invigilator.userName} ({a.invigilator.userId}), "
-                      f"Dept: {a.invigilator.userDepartment}, "
-                      f"CheckIn: {a.checkIn}, CheckOut: {a.checkOut}, Remark: {a.remark}")
-            else:
-                print(f"   ⚠️ No linked invigilator for Attendance ID {a.attendanceId}")
-
 
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', 
-                           attendances=attendances, invigilationReport_data=invigilationReport_data, exam_data=exam_data)
-
-
-# function for admin manage lecturer timetable (adding, editing, and removing)
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    user_data = User.query.all()
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
-
-
-
-# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
-@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
-def admin_manageInvigilationTimetable():
-    exam_data = Exam.query.all()
-    user_data = User.query.all()
-    department_data = Department.query.all()
-
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
-                           user_data=user_data, exam_data=exam_data, department_data=department_data)
+                           attendances=attendances, invigilationReport_data=invigilationReport_data)
 
 
 # function for admin to manage department information (adding, editing, and removing)
@@ -90,13 +52,8 @@ def admin_manageDepartment():
             valid, result = check_department(departmentCode_text, departmentName_text)
             if not valid:
                 flash(result, 'error')
-                return render_template(
-                    'admin/adminManageDepartment.html',
-                    active_tab='admin_manageDepartmenttab',
-                    department_data=department_data,
-                    departmentCode_text=departmentCode_text,
-                    departmentName_text=departmentName_text
-                )
+                return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data,
+                                       departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
 
             new_department = Department(
                 departmentCode=departmentCode_text.upper(),
@@ -108,18 +65,7 @@ def admin_manageDepartment():
             return redirect(url_for('admin_manageDepartment'))
 
     # GET request or after redirect
-    return render_template(
-        'admin/adminManageDepartment.html',
-        active_tab='admin_manageDepartmenttab',
-        department_data=department_data
-    )
-
-
-
-
-
-
-
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
 
 
 # function for admin to manage venue information (adding, editing, and removing)
@@ -155,39 +101,6 @@ def admin_manageVenue():
         return redirect(url_for('admin_manageVenue'))
 
     return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # Can move those validation into a function then call again
@@ -278,6 +191,49 @@ def standardize_time_with_seconds(time_value):
     else:
         # If it's something else (e.g., None), return empty string or handle accordingly
         return ""
+
+
+
+
+
+# function for admin manage lecturer timetable (adding, editing, and removing)
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    user_data = User.query.all()
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
+
+
+
+# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
+@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+def admin_manageInvigilationTimetable():
+    exam_data = Exam.query.all()
+    user_data = User.query.all()
+    department_data = Department.query.all()
+
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
+                           user_data=user_data, exam_data=exam_data, department_data=department_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -443,16 +399,7 @@ def admin_manageStaff():
             flash("New Staff Added Successfully", "success")
             return redirect(url_for('admin_manageStaff'))
 
-    return render_template(
-        'admin/adminManageStaff.html',
-        active_tab='admin_manageStafftab',
-        user_data=user_data,
-        department_data=department_data
-    )
-
-
-
-
+    return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
 
 
 # function for admin to manage course information (adding, editing, and removing)
@@ -594,11 +541,7 @@ def admin_manageCourse():
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
             
-        
     return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
-
-
-
 
 
 # Function for admin to manage exam information (adding, editing, and removing)
@@ -787,14 +730,7 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", 'error')
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html',
-                           active_tab='admin_manageExamtab',
-                           exam_data=exam_data,
-                           course_data=course_data,
-                           venue_data=venue_data,
-                           department_data=department_data)
-
-
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
 
 
 
