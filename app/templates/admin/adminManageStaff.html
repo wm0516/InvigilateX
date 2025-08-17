@@ -179,15 +179,13 @@
                     <th>No</th>
                     <th>Id</th>
                     <th>Name</th>
-                    <th>Email</th>
                     <th>Gender</th>
+                    <th>Email</th>
+                    <th>Contact</th>
                     <th>Role Based</th>
                     <th>Department</th>
-                    <th>Contact</th>
                     <th>Status</th> 
-                    <th>Registed Date&Time</th><!-- If upload only -> no register, 
-                    if lecturer register self ->register, 
-                    if register data no similar with register -> wrong data-->
+                    <th>Registed Date&Time</th>
                 </tr>
             </thead>
             <tbody>
@@ -196,8 +194,9 @@
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
-                    <td>{{ row.userEmail }}</td>
                     <td>{{ row.userGender }}</td>
+                    <td>{{ row.userEmail }}</td>
+                    <td>{{ row.userContact }}</td>
                     <!-- Role Name based on userLevel -->
                     <td>
                         {% if row.userLevel == 1 %}
@@ -213,7 +212,6 @@
                         {% endif %}
                     </td>
                     <td>{{ row.userDepartment }}</td>
-                    <td>{{ row.userContact }}</td>
                     <!-- User status: Activated / Deactivated -->
                     <td>
                         {% if row.userStatus|int == 1 %}

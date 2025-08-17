@@ -16,13 +16,14 @@
                 <tr>
                     <th>No</th>
                     <th>Invigilator Name</th>
-                    <th>Department</th>
-                    <th>Exam CourseCodeSection</th>
-                    <th>Exam Start - EndTime</th>
-                    <th>Time CheckIn</th>
-                    <th>Time CheckOut</th>
-                    <th>Status</th>
+                    <th>Department Code</th>
                     <th>Contact</th>
+                    <th>Exam ID</th>
+                    <th>Exam Course Code/Section</th>
+                    <th>Exam Time (Start - End)</th>
+                    <th>Check-in Time</th>
+                    <th>Check-out Time</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,12 +33,13 @@
                             <td>{{ loop.index }}</td>
                             <td>{{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userDepartment }}</td>
+                            <td>{{ att.invigilator.userContact }}</td>  
+                            <td>{{ row.exam.examId }}</td>
                             <td>{{ row.exam.examCourseCodeSection }}</td>
                             <td>{{ row.exam.examStartTime }} - {{ row.exam.examEndTime }}</td>
                             <td>{{ att.checkIn }}</td>
                             <td>{{ att.checkOut }}</td>
                             <td>{{ att.remark }}</td>
-                            <td>{{ att.invigilator.userContact }}</td>
                         </tr>
                     {% endfor %}
                 {% endfor %}

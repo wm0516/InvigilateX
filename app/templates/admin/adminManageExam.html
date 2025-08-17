@@ -196,12 +196,12 @@
                     <th>No</th>
                     <th>Exam Date & Day</th>
                     <th>Start - End Time</th>
+                    <th>Venue</th>
                     <th>Program Code</th>
                     <th>Course/Section</th>
                     <th>Pratical Lecturer</th>
                     <th>Tutorial Lecturer</th>
                     <th>No. of Students</th>
-                    <th>Venue</th>
                 </tr>
             </thead>
             <tbody>
@@ -209,13 +209,13 @@
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.examDate }} [{{ row.examDay }}]</td>
-                    <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>
+                    <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
+                    <td>{{ row.examVenue }}</td>
                     <td>{{ row.course.courseCode }}</td>
                     <td>{{ row.examCourseCodeSection }}</td>
                     <td>{{ row.course.practicalLecturer.userName }}</td>
                     <td>{{ row.course.tutorialLecturer.userName }}</td>
                     <td>{{ row.course.courseStudent }}</td>
-                    <td>{{ row.examVenue }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
