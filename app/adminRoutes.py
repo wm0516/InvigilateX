@@ -633,7 +633,12 @@ def admin_manageExam():
                                         )
                                         db.session.add(new_exam)
                                         db.session.flush()  
-                                
+                                        
+                                        venue = Venue.query.filter_by(venueNumber=venue_text).first()
+                                        if venue:
+                                            venue.venueStatus = 'UNAVAILABLE'
+                                            db.session.flush()
+                                                        
                                         course = Course.query.filter_by(courseCodeSection=courseSection_text).first()
                                         if course:
                                             course.courseExamId = new_exam.examId
@@ -730,6 +735,11 @@ def admin_manageExam():
                 )
                 db.session.add(new_exam)
                 db.session.flush()  
+
+                venue = Venue.query.filter_by(venueNumber=venue_text).first()
+                if venue:
+                    venue.venueStatus = 'UNAVAILABLE'
+                    db.session.flush()
         
                 course = Course.query.filter_by(courseCodeSection=courseSection_text).first()
                 if course:
