@@ -70,7 +70,7 @@ class Exam(db.Model):
     examEndTime = db.Column(db.String(10), nullable=False)                                                         # Refer to Exam EndTime
 
     # Relationship
-    course = db.relationship("Course", backref="exams")
+    course = db.relationship("Course", foreign_keys=[examCourseCodeSection], backref="exams")
     venue = db.relationship("Venue", backref="exams")
     '''
     CREATE TABLE Exam (
@@ -133,7 +133,7 @@ class Course(db.Model):
     department = db.relationship("Department", backref="courses")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
-    exam = db.relationship("Exam", foreign_keys=[courseExamId])
+    exam = db.relationship("Exam", foreign_keys=[courseExamId], backref="courses_using_exam")
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
