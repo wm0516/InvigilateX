@@ -569,7 +569,6 @@ def admin_manageExam():
     tutorialLecturer_text = ''
     student_text = ''
     venue_text = ''
-    courseSection_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -621,7 +620,7 @@ def admin_manageExam():
                                     practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
                                     student_text = row['no of']
                                     venue_text = str(row['room']).upper()
-                                    invigilatorNo_text = str(row['no of invigilator'])
+                                    invigilatorNo_text = row['no of invigilator']
 
                                     valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                                     if valid:

@@ -323,7 +323,7 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
     # --- 8. Final Commit ---
     db.session.commit()
 
-    return new_exam, assigned_invigilators
+    return new_exam
 
 
 
