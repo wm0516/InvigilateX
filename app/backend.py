@@ -9,9 +9,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
 import random
-from datetime import datetime
-
-
+from datetime import datetime, timedelta
 
 
 
@@ -232,77 +230,94 @@ def check_exam(courseSection, date, starttime, endtime):
     return True, ""
 
 
-# Admin Insert Function 5: Insert Data into Database
 def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer):
-    # Create Exam
-    new_exam = Exam(
-        examDate=examDate,
-        examDay=examDay,
-        examStartTime=startTime,
-        examEndTime=endTime,
-        examCourseCodeSection=courseSection,
-        examVenue=venue_text
-    )
-    db.session.add(new_exam)
-    db.session.flush()
+    try:
+        # --- 1. Create Exam ---
+        new_exam = Exam(
+            examDate=examDate,
+            examDay=examDay,
+            examStartTime=startTime,
+            examEndTime=endTime,
+            examCourseCodeSection=courseSection,
+            examVenue=venue_text
+        )
+        db.session.add(new_exam)
+        db.session.flush()  # ensures examId is available
 
-    # Update venue
-    venue = Venue.query.filter_by(venueNumber=venue_text).first()
-    if venue:
-        venue.venueStatus = 'UNAVAILABLE'
-        db.session.flush()
+        # --- 2. Update Venue ---
+        venue = Venue.query.filter_by(venueNumber=venue_text).first()
+        if venue:
+            venue.venueStatus = "UNAVAILABLE"
+            db.session.flush()
 
-    # Update course
-    course = Course.query.filter_by(courseCodeSection=courseSection).first()
-    if course:
-        course.courseExamId = new_exam.examId
-        course.courseExamStatus = True
-        db.session.flush()
+        # --- 3. Update Course ---
+        course = Course.query.filter_by(courseCodeSection=courseSection).first()
+        if course:
+            course.courseExamId = new_exam.examId
+            course.courseExamStatus = True
+            db.session.flush()
 
-    # Create invigilation report
-    new_report = InvigilationReport(examId=new_exam.examId)
-    db.session.add(new_report)
-    db.session.flush()
+        # --- 4. Create Invigilation Report ---
+        new_report = InvigilationReport(examId=new_exam.examId)
+        db.session.add(new_report)
+        db.session.flush()  # ensures invigilationReportId is available
 
-    # Calculate exam duration in hours
-    pending_hours = (endTime - startTime).total_seconds() / 3600.0
+        # --- 5. Calculate Exam Duration (handle overnight) ---
+        start_dt = datetime.strptime(startTime, "%H:%M:%S")
+        end_dt = datetime.strptime(endTime, "%H:%M:%S")
 
-    # Query all possible invigilators except practical & tutorial lecturer
-    eligible_invigilators = User.query.filter(
-        User.userId.notin_([practicalLecturer, tutorialLecturer])
-    ).all()
+        if end_dt <= start_dt:  # overnight case (e.g., 22:00 -> 02:00 next day)
+            end_dt += timedelta(days=1)
 
-    # Sort by total workload (lowest first)
-    eligible_invigilators.sort(key=lambda inv: inv.userCumulativeHours + inv.userPendingCumulativeHours)
+        pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-    # Find the lowest workload value
-    if eligible_invigilators:
-        lowest_hours = eligible_invigilators[0].userCumulativeHours + eligible_invigilators[0].userPendingCumulativeHours
+        # --- 6. Get Eligible Invigilators (exclude assigned lecturers) ---
+        exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
+        eligible_invigilators = User.query.filter(
+            ~User.userId.in_(exclude_ids)
+        ).all()
 
-        # Filter only those with the same lowest workload
+        if not eligible_invigilators:
+            raise ValueError("No eligible invigilators available for assignment.")
+
+        # --- 7. Select Invigilator with Lowest Workload ---
+        eligible_invigilators.sort(
+            key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+        )
+
+        lowest_hours = (eligible_invigilators[0].userCumulativeHours or 0) + \
+                       (eligible_invigilators[0].userPendingCumulativeHours or 0)
+
         lowest_candidates = [
             inv for inv in eligible_invigilators
-            if (inv.userCumulativeHours + inv.userPendingCumulativeHours) == lowest_hours
+            if ((inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)) == lowest_hours
         ]
 
-        # Randomly choose one from the lowest group
         chosen = random.choice(lowest_candidates)
 
-        # Update chosen invigilator’s pending hours
-        chosen.userPendingCumulativeHours += pending_hours
+        # --- 8. Update Chosen Invigilator ---
+        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
 
-        # Save attendance
-        db.session.add(InvigilatorAttendance(
+        # Save attendance record
+        attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,
             checkIn=None,
             checkOut=None,
             remark=None
-        ))
+        )
+        db.session.add(attendance)
 
-    db.session.commit()
+        # --- 9. Final Commit ---
+        db.session.commit()
 
-    return new_exam
+        return new_exam
+
+    except (SQLAlchemyError, ValueError) as e:
+        db.session.rollback()
+        print(f"Error creating exam and related records: {e}")
+        return None
+
 
 
 # Admin Validation Function 5: Check Lecturer [Id, Email, Contact Must be Unique in Database]
