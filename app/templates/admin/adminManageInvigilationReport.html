@@ -28,14 +28,16 @@
                 </tr>
             </thead>
             <tbody>
+                {% set counter = 0 %}
                 {% for row in invigilationReport_data %}
-                    <td>{{ loop.index }}</td>
                     {% for att in row.attendances %}
+                        {% set counter = counter + 1 %}
                         <tr>
+                            <td>{{ counter }}</td>  <!-- Use counter instead of loop.index -->
                             <td>{{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userDepartment }}</td>
                             <td>{{ att.invigilator.userContact }}</td>  
-                            <td>{{ [row.exam.examId] }}</td>
+                            <td>{{ row.exam.examId }}</td>
                             <td>{{ row.exam.examCourseCodeSection }}</td>
                             <td>{{ row.exam.examStartTime }} - {{ row.exam.examEndTime }}</td>
                             <td>{{ row.exam.examNoInvigilator }}</td>
