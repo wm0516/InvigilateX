@@ -671,9 +671,9 @@ def admin_manageExam():
                 courseSection_text = request.form.get('courseSection', '').strip()
                 practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                student_text = request.form.get('student', '').strip()
+                student_text = int(request.form.get('student', ''))
                 venue_text = request.form.get('venue', '').strip()
-                invigilatorNo_text = request.form.get('invigilatorNo', '').strip()
+                invigilatorNo_text = int(request.form.get('invigilatorNo', ''))
 
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
