@@ -758,6 +758,7 @@ def admin_manageExam():
                 db.session.flush()
 
                 # Create InvigilatorAttendance for practical lecturer (if provided)
+                # NEED CHANGES
                 if practicalLecturer_text:
                     db.session.add(InvigilatorAttendance(
                         reportId=new_invigilationReport.invigilationReportId,
