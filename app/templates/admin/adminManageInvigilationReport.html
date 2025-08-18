@@ -28,23 +28,23 @@
                 </tr>
             </thead>
             <tbody>
-                {% set counter = 0 %}
                 {% for row in invigilationReport_data %}
                     {% for att in row.attendances %}
-                        {% set counter = counter + 1 %}
+                        {% for idx, att in enumerate(attendance_data, start=1) %}
                         <tr>
-                            <td>{{ counter }}</td>  <!-- Use counter instead of loop.index -->
+                            <td>{{ idx }}</td>
                             <td>{{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userDepartment }}</td>
-                            <td>{{ att.invigilator.userContact }}</td>  
-                            <td>{{ row.exam.examId }}</td>
-                            <td>{{ row.exam.examCourseCodeSection }}</td>
-                            <td>{{ row.exam.examStartTime }} - {{ row.exam.examEndTime }}</td>
-                            <td>{{ row.exam.examNoInvigilator }}</td>
+                            <td>{{ att.invigilator.userContact }}</td>
+                            <td>{{ att.exam.examId }}</td>
+                            <td>{{ att.exam.examCourseCodeSection }}</td>
+                            <td>{{ att.exam.examStartTime }} - {{ att.exam.examEndTime }}</td>
+                            <td>{{ att.exam.examNoInvigilator }}</td>
                             <td>{{ att.checkIn }}</td>
                             <td>{{ att.checkOut }}</td>
                             <td>{{ att.remark }}</td>
                         </tr>
+                        {% endfor %}
                     {% endfor %}
                 {% endfor %}
             </tbody>
