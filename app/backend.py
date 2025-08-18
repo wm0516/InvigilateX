@@ -274,7 +274,8 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
     # --- 6. Get Eligible Invigilators (exclude assigned lecturers) ---
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
     eligible_invigilators = User.query.filter(
-        ~User.userId.in_(exclude_ids)
+        ~User.userId.in_(exclude_ids),   # Exclude specific IDs
+        User.userLevel == 1              # Only select users with level 1
     ).all()
 
     if not eligible_invigilators:
