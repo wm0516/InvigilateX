@@ -329,7 +329,6 @@ def admin_manageStaff():
                                             userLevel=role_text,
                                             userEmail=email_text,
                                             userContact=contact_text,
-                                            userStatus=False,
                                             userPassword=hashed_pw,
                                             userRegisterDateTime=datetime.now()
                                         )
@@ -394,7 +393,6 @@ def admin_manageStaff():
                 userContact=contact_text,
                 userGender=gender_text,
                 userPassword=hashed_pw,
-                userStatus=False,
                 userRegisterDateTime=datetime.now()
             )
             db.session.add(new_staff)

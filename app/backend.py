@@ -9,6 +9,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
 import random
+from datetime import datetime
 
 
 
@@ -263,35 +264,43 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
     db.session.add(new_report)
     db.session.flush()
 
-    # Practical Lecturer
-    if practicalLecturer:
-        db.session.add(InvigilatorAttendance(
-            reportId=new_report.invigilationReportId,
-            invigilatorId=practicalLecturer,
-            checkIn=None, checkOut=None, remark=None
-        ))
+    # Calculate exam duration in hours
+    pending_hours = (endTime - startTime).total_seconds() / 3600.0
 
-    # Tutorial Lecturer (avoid duplicate with practical)
-    if tutorialLecturer and tutorialLecturer != practicalLecturer:
-        db.session.add(InvigilatorAttendance(
-            reportId=new_report.invigilationReportId,
-            invigilatorId=tutorialLecturer,
-            checkIn=None, checkOut=None, remark=None
-        ))
-
-    # Random extra invigilator
+    # Query all possible invigilators except practical & tutorial lecturer
     eligible_invigilators = User.query.filter(
-        User.userCumulativeHours < 36,
         User.userId.notin_([practicalLecturer, tutorialLecturer])
     ).all()
 
+    # Sort by total workload (lowest first)
+    eligible_invigilators.sort(key=lambda inv: inv.userCumulativeHours + inv.userPendingCumulativeHours)
+
+    # Find the lowest workload value
     if eligible_invigilators:
-        chosen = random.choice(eligible_invigilators)
+        lowest_hours = eligible_invigilators[0].userCumulativeHours + eligible_invigilators[0].userPendingCumulativeHours
+
+        # Filter only those with the same lowest workload
+        lowest_candidates = [
+            inv for inv in eligible_invigilators
+            if (inv.userCumulativeHours + inv.userPendingCumulativeHours) == lowest_hours
+        ]
+
+        # Randomly choose one from the lowest group
+        chosen = random.choice(lowest_candidates)
+
+        # Update chosen invigilator’s pending hours
+        chosen.userPendingCumulativeHours += pending_hours
+
+        # Save attendance
         db.session.add(InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,
-            checkIn=None, checkOut=None, remark=None
+            checkIn=None,
+            checkOut=None,
+            remark=None
         ))
+
+    db.session.commit()
 
     return new_exam
 

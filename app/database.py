@@ -37,7 +37,8 @@ class User(db.Model):
     userPassword = db.Column(db.String(255))                                                                          # Refer to Staff Password
     userStatus = db.Column(db.Boolean, default=False)                                                                 # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
     userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
-    userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                                # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
+    userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
+    userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
 
     # Relationship
     department = db.relationship("Department", backref="users")
@@ -54,6 +55,7 @@ class User(db.Model):
         userStatus BOOLEAN DEFAULT FALSE,
         userRegisterDateTime DATETIME,
         userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
+        userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
