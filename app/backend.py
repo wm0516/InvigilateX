@@ -8,6 +8,7 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
+import random
 
 
 

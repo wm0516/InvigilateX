@@ -11,7 +11,6 @@ from flask_bcrypt import Bcrypt
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
-import random
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
