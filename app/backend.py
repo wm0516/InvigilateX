@@ -238,7 +238,8 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
         examStartTime=startTime,
         examEndTime=endTime,
         examCourseCodeSection=courseSection,
-        examVenue=venue_text
+        examVenue=venue_text,
+        examNoInvigilator=invigilatorNo
     )
     db.session.add(new_exam)
     db.session.flush()  # ensures examId is available
