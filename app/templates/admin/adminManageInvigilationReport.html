@@ -28,11 +28,11 @@
                 </tr>
             </thead>
             <tbody>
+                {% set count = namespace(value=1) %}
                 {% for row in invigilationReport_data %}
                     {% for att in row.attendances %}
-                        {% for idx, att in enumerate(attendance_data, start=1) %}
                         <tr>
-                            <td>{{ idx }}</td>
+                            <td>{{ count.value }}</td>
                             <td>{{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userDepartment }}</td>
                             <td>{{ att.invigilator.userContact }}</td>
@@ -44,7 +44,7 @@
                             <td>{{ att.checkOut }}</td>
                             <td>{{ att.remark }}</td>
                         </tr>
-                        {% endfor %}
+                        {% set count.value = count.value + 1 %}
                     {% endfor %}
                 {% endfor %}
             </tbody>
