@@ -146,7 +146,7 @@
                                 {{ venue.venueNumber }} - (Venue Capacity: {{ venue.venueCapacity }})
                             </option>
                         {% endfor %}
-                    </select>
+                    </select><br>
 
                     <label>No. of Invigilator Need</label>
                     <input type="number" id="invigilatorNo" name="invigilatorNo" value="{{ invigilatorNo_text }}" required><br>
@@ -205,14 +205,15 @@
                     <th>Course/Section</th>
                     <th>Pratical Lecturer</th>
                     <th>Tutorial Lecturer</th>
-                    <th>No. of Students</th>
+                    <th>No. of Student(s)</th>
+                    <th>No. of Invigilator(s)</th>
                 </tr>
             </thead>
             <tbody>
                 {% for row in exam_data %}
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <td>{{ row.examId }}</td>
+                    <td>[{{ row.examId }}]</td>
                     <td>{{ row.examDate }} [{{ row.examDay }}]</td>
                     <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
                     <td>{{ row.examVenue }}</td>
@@ -221,6 +222,7 @@
                     <td>{{ row.course.practicalLecturer.userName }}</td>
                     <td>{{ row.course.tutorialLecturer.userName }}</td>
                     <td>{{ row.course.courseStudent }}</td>
+                    <td>{{ row.examNoInvigilator }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

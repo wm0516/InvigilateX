@@ -21,6 +21,7 @@
                     <th>Exam ID</th>
                     <th>Exam Course Code/Section</th>
                     <th>Exam Time (Start - End)</th>
+                    <th>Total of Invigilator</th>
                     <th>Check-in Time</th>
                     <th>Check-out Time</th>
                     <th>Status</th>
@@ -37,6 +38,7 @@
                             <td>{{ [row.exam.examId] }}</td>
                             <td>{{ row.exam.examCourseCodeSection }}</td>
                             <td>{{ row.exam.examStartTime }} - {{ row.exam.examEndTime }}</td>
+                            <td>{{ row.exam.examNoInvigilator }}</td>
                             <td>{{ att.checkIn }}</td>
                             <td>{{ att.checkOut }}</td>
                             <td>{{ att.remark }}</td>
