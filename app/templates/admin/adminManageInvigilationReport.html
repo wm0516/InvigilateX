@@ -29,9 +29,9 @@
             </thead>
             <tbody>
                 {% for row in invigilationReport_data %}
+                    <td>{{ loop.index }}</td>
                     {% for att in row.attendances %}
                         <tr>
-                            <td>{{ loop.index }}</td>
                             <td>{{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userDepartment }}</td>
                             <td>{{ att.invigilator.userContact }}</td>  
