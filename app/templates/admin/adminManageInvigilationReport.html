@@ -1,15 +1,13 @@
-<!-- upload.html -->
 {% extends "admin/adminBase.html" %}
 {% block title %}Admin ManageInvigilationReport{% endblock %}
 {% block content %}
 
-<!-- Row 1 First Fesatures to upload merge schedule files--> 
 <div class="menu-section">
     <h2>Manage Invigilation Report</h2>
     <div class="profile-frame"></div>
 
     <br><br>
-    <h3>List of Lecturer Invigilation Report</h2>
+    <h3>List of Lecturer Invigilation Report</h3>
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -34,23 +32,18 @@
                     <td>{{ att.invigilator.userName }}</td>
                     <td>{{ att.invigilator.userDepartment }}</td>
                     <td>{{ att.invigilator.userContact }}</td>
-                    <td>{{ att.exam.examId }}</td>
-                    <td>{{ att.exam.examCourseCodeSection }}</td>
-                    <td>{{ att.exam.examStartTime }} - {{ att.exam.examEndTime }}</td>
-                    <td>{{ att.exam.examNoInvigilator }}</td>
+                    <td>{{ att.report.exam.examId }}</td>
+                    <td>{{ att.report.exam.examCourseCodeSection }}</td>
+                    <td>{{ att.report.exam.examStartTime }} - {{ att.report.exam.examEndTime }}</td>
+                    <td>{{ att.report.exam.examNoInvigilator }}</td>
                     <td>{{ att.checkIn }}</td>
                     <td>{{ att.checkOut }}</td>
                     <td>{{ att.remark }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
-
         </table>
     </div>
 </div>
 
 {% endblock %}
-
-<!--
-
--->
