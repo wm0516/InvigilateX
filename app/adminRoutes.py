@@ -11,6 +11,7 @@ from flask_bcrypt import Bcrypt
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
+import random
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -626,56 +627,16 @@ def admin_manageExam():
 
                                     valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                                     if valid:
-                                        new_exam = Exam(
+                                        create_exam_and_related(
                                             examDate=examDate_text,
                                             examDay=examDay_text,
-                                            examStartTime=startTime_text,
-                                            examEndTime=endTime_text,
-                                            examCourseCodeSection=courseSection_text,  # FK from Course table
-                                            examVenue=venue_text                       # FK from Venue table
+                                            startTime=startTime_text,
+                                            endTime=endTime_text,
+                                            courseSection=courseSection_text,
+                                            venue_text=venue_text,
+                                            practicalLecturer=practicalLecturer_text,
+                                            tutorialLecturer=tutorialLecturer_text
                                         )
-                                        db.session.add(new_exam)
-                                        db.session.flush()  
-                                        
-                                        venue = Venue.query.filter_by(venueNumber=venue_text).first()
-                                        if venue:
-                                            venue.venueStatus = 'UNAVAILABLE'
-                                            db.session.flush()
-                                                        
-                                        course = Course.query.filter_by(courseCodeSection=courseSection_text).first()
-                                        if course:
-                                            course.courseExamId = new_exam.examId
-                                            course.courseExamStatus = True
-                                            db.session.flush()
-
-                                        # Create Invigilation Report for this exam
-                                        new_invigilationReport = InvigilationReport(
-                                            examId=new_exam.examId  
-                                        )
-                                        db.session.add(new_invigilationReport)
-                                        db.session.flush()
-
-                                        # Create InvigilatorAttendance for practical lecturer (if provided)
-                                        if practicalLecturer_text:
-                                            db.session.add(InvigilatorAttendance(
-                                                reportId=new_invigilationReport.invigilationReportId,
-                                                invigilatorId=practicalLecturer_text,   # FK to User.userId
-                                                checkIn=None,
-                                                checkOut=None,
-                                                remark=None
-                                            ))
-
-                                        # Create InvigilatorAttendance for tutorial lecturer (if provided)
-                                        if tutorialLecturer_text and practicalLecturer_text!=tutorialLecturer_text:
-                                            db.session.add(InvigilatorAttendance(
-                                                reportId=new_invigilationReport.invigilationReportId,
-                                                invigilatorId=tutorialLecturer_text,    # FK to User.userId
-                                                checkIn=None,
-                                                checkOut=None,
-                                                remark=None
-                                            ))
-
-                                        # Commit everything
                                         db.session.commit()
                                         exam_records_added += 1
                                 except Exception as row_err:
@@ -727,60 +688,20 @@ def admin_manageExam():
                                            practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text, 
                                            student_text=student_text, venue_text=venue_text,
                                            active_tab='admin_manageExamtab')
+                
 
-                new_exam = Exam(
+                new_exam = create_exam_and_related(
                     examDate=examDate_text,
                     examDay=examDay_text,
-                    examStartTime=startTime_text,
-                    examEndTime=endTime_text,
-                    examCourseCodeSection=courseSection_text,  # FK from Course table
-                    examVenue=venue_text                       # FK from Venue table
+                    startTime=startTime_text,
+                    endTime=endTime_text,
+                    courseSection=courseSection_text,
+                    venue_text=venue_text,
+                    practicalLecturer=practicalLecturer_text,
+                    tutorialLecturer=tutorialLecturer_text
                 )
                 db.session.add(new_exam)
-                db.session.flush()  
-
-                venue = Venue.query.filter_by(venueNumber=venue_text).first()
-                if venue:
-                    venue.venueStatus = 'UNAVAILABLE'
-                    db.session.flush()
-        
-                course = Course.query.filter_by(courseCodeSection=courseSection_text).first()
-                if course:
-                    course.courseExamId = new_exam.examId
-                    course.courseExamStatus = True
-                    db.session.flush()
-
-                # Create Invigilation Report for this exam
-                new_invigilationReport = InvigilationReport(
-                    examId=new_exam.examId  
-                )
-                db.session.add(new_invigilationReport)
-                db.session.flush()
-
-                # Create InvigilatorAttendance for practical lecturer (if provided)
-                # NEED CHANGES
-                if practicalLecturer_text:
-                    db.session.add(InvigilatorAttendance(
-                        reportId=new_invigilationReport.invigilationReportId,
-                        invigilatorId=practicalLecturer_text,   # FK to User.userId
-                        checkIn=None,
-                        checkOut=None,
-                        remark=None
-                    ))
-
-                # Create InvigilatorAttendance for tutorial lecturer (if provided)
-                if tutorialLecturer_text and practicalLecturer_text!=tutorialLecturer_text:
-                    db.session.add(InvigilatorAttendance(
-                        reportId=new_invigilationReport.invigilationReportId,
-                        invigilatorId=tutorialLecturer_text,    # FK to User.userId
-                        checkIn=None,
-                        checkOut=None,
-                        remark=None
-                    ))
-
-                # Commit everything
                 db.session.commit()
-
                 flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))
 
@@ -826,6 +747,8 @@ def get_course_details(program_code, course_code_section):
             "student": selected_course.courseStudent
         })
     return jsonify({"error": "Course not found"})
+
+
 
 
 

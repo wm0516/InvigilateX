@@ -229,6 +229,72 @@ def check_exam(courseSection, date, starttime, endtime):
 
     return True, ""
 
+
+# Admin Insert Function 5: Insert Data into Database
+def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer):
+    # Create Exam
+    new_exam = Exam(
+        examDate=examDate,
+        examDay=examDay,
+        examStartTime=startTime,
+        examEndTime=endTime,
+        examCourseCodeSection=courseSection,
+        examVenue=venue_text
+    )
+    db.session.add(new_exam)
+    db.session.flush()
+
+    # Update venue
+    venue = Venue.query.filter_by(venueNumber=venue_text).first()
+    if venue:
+        venue.venueStatus = 'UNAVAILABLE'
+        db.session.flush()
+
+    # Update course
+    course = Course.query.filter_by(courseCodeSection=courseSection).first()
+    if course:
+        course.courseExamId = new_exam.examId
+        course.courseExamStatus = True
+        db.session.flush()
+
+    # Create invigilation report
+    new_report = InvigilationReport(examId=new_exam.examId)
+    db.session.add(new_report)
+    db.session.flush()
+
+    # Practical Lecturer
+    if practicalLecturer:
+        db.session.add(InvigilatorAttendance(
+            reportId=new_report.invigilationReportId,
+            invigilatorId=practicalLecturer,
+            checkIn=None, checkOut=None, remark=None
+        ))
+
+    # Tutorial Lecturer (avoid duplicate with practical)
+    if tutorialLecturer and tutorialLecturer != practicalLecturer:
+        db.session.add(InvigilatorAttendance(
+            reportId=new_report.invigilationReportId,
+            invigilatorId=tutorialLecturer,
+            checkIn=None, checkOut=None, remark=None
+        ))
+
+    # Random extra invigilator
+    eligible_invigilators = User.query.filter(
+        User.userCumulativeHours < 36,
+        User.userId.notin_([practicalLecturer, tutorialLecturer])
+    ).all()
+
+    if eligible_invigilators:
+        chosen = random.choice(eligible_invigilators)
+        db.session.add(InvigilatorAttendance(
+            reportId=new_report.invigilationReportId,
+            invigilatorId=chosen.userId,
+            checkIn=None, checkOut=None, remark=None
+        ))
+
+    return new_exam
+
+
 # Admin Validation Function 5: Check Lecturer [Id, Email, Contact Must be Unique in Database]
 def check_staff(id, email, contact):
     if not email_format(email):
