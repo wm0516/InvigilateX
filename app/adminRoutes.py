@@ -621,6 +621,7 @@ def admin_manageExam():
                                     practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
                                     student_text = row['no of']
                                     venue_text = str(row['room']).upper()
+                                    invigilatorNo_text = str(row['no of invigilator'])
 
                                     valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                                     if valid:
@@ -632,7 +633,8 @@ def admin_manageExam():
                                             courseSection=courseSection_text,
                                             venue_text=venue_text,
                                             practicalLecturer=practicalLecturer_text,
-                                            tutorialLecturer=tutorialLecturer_text
+                                            tutorialLecturer=tutorialLecturer_text,
+                                            invigilatorNo=invigilatorNo_text
                                         )
                                         db.session.commit()
                                         exam_records_added += 1
@@ -672,6 +674,7 @@ def admin_manageExam():
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
                 student_text = request.form.get('student', '').strip()
                 venue_text = request.form.get('venue', '').strip()
+                invigilatorNo_text = request.form.get('invigilatorNo', '').strip()
 
                 valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
@@ -683,7 +686,7 @@ def admin_manageExam():
                                            startTime_text=startTime_text, endTime_text=endTime_text,
                                            programCode_text=programCode_text, courseSection_text=courseSection_text,
                                            practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text, 
-                                           student_text=student_text, venue_text=venue_text,
+                                           student_text=student_text, venue_text=venue_text, invigilatorNo_text=invigilatorNo_text,
                                            active_tab='admin_manageExamtab')
                 
 
@@ -695,7 +698,8 @@ def admin_manageExam():
                     courseSection=courseSection_text,
                     venue_text=venue_text,
                     practicalLecturer=practicalLecturer_text,
-                    tutorialLecturer=tutorialLecturer_text
+                    tutorialLecturer=tutorialLecturer_text,
+                    invigilatorNo=invigilatorNo_text
                 )
                 db.session.add(new_exam)
                 db.session.commit()
