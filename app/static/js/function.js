@@ -195,14 +195,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 // Admin Manage Exam Page: Function to track the selected date and display out the day
+// Admin Manage Exam Page: Function to track the selected date, time and display out the day
 document.addEventListener("DOMContentLoaded", function () {
     const examDateInput = document.getElementById('examDate');
     const examDayInput = document.getElementById('examDay');
+    const examStartTimeInput = document.getElementById('startTime');
+    const examEndTimeInput = document.getElementById('endTime');
 
-    if (!examDateInput || !examDayInput) {
+    if (!examDateInput || !examDayInput || !examStartTimeInput || !examEndTimeInput) {
         return; // Exit if not on the exam page
     }
 
+    // Utility: format date as YYYY-MM-DD
     const formatDate = (date) => {
         const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -210,21 +214,17 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${yyyy}-${mm}-${dd}`;
     };
 
+    // Restrict min and max date
     const today = new Date();
     const minDate = formatDate(today);
     const nextYearSameDay = new Date(today);
     nextYearSameDay.setFullYear(today.getFullYear() + 1);
     const maxDate = formatDate(nextYearSameDay);
 
-    if (minDate === maxDate) {
-        alert("Error: Minimum and maximum exam date cannot be the same.");
-        examDateInput.disabled = true; // prevent invalid input
-        return;
-    }
-
     examDateInput.min = minDate;
     examDateInput.max = maxDate;
 
+    // When selecting a date
     examDateInput.addEventListener('change', function () {
         const selectedDate = new Date(this.value);
         const day = selectedDate.getDay();
@@ -239,8 +239,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
         examDayInput.value = days[day];
+
+        // If the selected date is today, restrict start time
+        if (selected === minDate) {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            examStartTimeInput.min = `${hh}:${mm}`;
+        } else {
+            examStartTimeInput.min = "00:00"; // reset to default
+        }
+
+        examStartTimeInput.value = '';
+        examEndTimeInput.value = '';
     });
+
+    // Validate start and end times
+    function validateTimes() {
+        const start = examStartTimeInput.value;
+        const end = examEndTimeInput.value;
+
+        if (start && end) {
+            if (end <= start) {
+                alert("End time must be later than start time.");
+                examEndTimeInput.value = '';
+            }
+        }
+    }
+
+    examStartTimeInput.addEventListener('change', validateTimes);
+    examEndTimeInput.addEventListener('change', validateTimes);
 });
+
 
 
 // Admin Manage Exam Page: Function to Read Selected "Department Code" and related "Course Code" will be displayed out
