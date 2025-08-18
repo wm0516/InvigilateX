@@ -26,10 +26,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     invigilationReport_data = InvigilationReport.query.all()
-    attendances = InvigilatorAttendance.query.all()
+    attendances = InvigilatorAttendance.query.join(Exam).join(InvigilationReport).all()
 
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', 
-                           attendances=attendances, invigilationReport_data=invigilationReport_data)
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
 
 
 # function for admin to manage department information (adding, editing, and removing)

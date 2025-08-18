@@ -28,24 +28,20 @@
                 </tr>
             </thead>
             <tbody>
-                {% set count = namespace(value=1) %}
-                {% for row in invigilationReport_data %}
-                    {% for att in row.attendances %}
-                        <tr>
-                            <td>{{ count.value }}</td>
-                            <td>{{ att.invigilator.userName }}</td>
-                            <td>{{ att.invigilator.userDepartment }}</td>
-                            <td>{{ att.invigilator.userContact }}</td>
-                            <td>{{ att.exam.examId }}</td>
-                            <td>{{ att.exam.examCourseCodeSection }}</td>
-                            <td>{{ att.exam.examStartTime }} - {{ att.exam.examEndTime }}</td>
-                            <td>{{ att.exam.examNoInvigilator }}</td>
-                            <td>{{ att.checkIn }}</td>
-                            <td>{{ att.checkOut }}</td>
-                            <td>{{ att.remark }}</td>
-                        </tr>
-                        {% set count.value = count.value + 1 %}
-                    {% endfor %}
+                {% for att in attendances %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ att.invigilator.userName }}</td>
+                    <td>{{ att.invigilator.userDepartment }}</td>
+                    <td>{{ att.invigilator.userContact }}</td>
+                    <td>{{ att.exam.examId }}</td>
+                    <td>{{ att.exam.examCourseCodeSection }}</td>
+                    <td>{{ att.exam.examStartTime }} - {{ att.exam.examEndTime }}</td>
+                    <td>{{ att.exam.examNoInvigilator }}</td>
+                    <td>{{ att.checkIn }}</td>
+                    <td>{{ att.checkOut }}</td>
+                    <td>{{ att.remark }}</td>
+                </tr>
                 {% endfor %}
             </tbody>
 
