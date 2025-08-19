@@ -71,8 +71,8 @@ def admin_manageDepartment():
             new_department = Department(
                 departmentCode=departmentCode_text.upper(),
                 departmentName=departmentName_text.upper(),
-                deanId=deanName.upper(),
-                hopId=hopName.upper()
+                deanId=deanName.upper() if deanName else None,
+                hopId=hopName.upper() if hopName else None
             )
             db.session.add(new_department)
             db.session.commit()
