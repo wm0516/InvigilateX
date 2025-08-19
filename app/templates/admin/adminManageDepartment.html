@@ -48,12 +48,41 @@
             <div class="profile-frame">
                 <div class="form-left">
                     <label>Department Code</label>
-                    <input type="text" name="departmentCode" value="{{ departmentCode_text }}" required>
+                    <input type="text" name="departmentCode" value="{{ departmentCode_text }}" required><br>
+                    
+                    <label>Department Name</label>
+                    <input type="text" name="departmentName" value="{{ departmentName_text }}" required>
+                </div>
+
+                <div class="form-middle">
+
+                    <label>Hop Name</label>
+                    <select id="hopName" name="hopName" onchange="updateEmail('hopName','hopEmail')">
+                        <option value="" disabled selected>Select a Hop</option>
+                        {% for hop in hop_list %}
+                            <option value="{{ hop.userId }}" data-email="{{ hop.userEmail }}">
+                                ({{ hop.userId }}) {{ hop.userName }}
+                            </option>
+                        {% endfor %}
+                    </select><br>
+
+                    <label>Hop Email</label>
+                    <input type="email" id="hopEmail" name="hopEmail" readonly>
                 </div>
 
                 <div class="form-right">
-                    <label>Department Name</label>
-                    <input type="text" name="departmentName" value="{{ departmentName_text }}" required>
+                    <label>Dean Name</label>
+                    <select id="deanName" name="deanName" onchange="updateEmail('deanName','deanEmail')">
+                        <option value="" disabled selected>Select a Dean</option>
+                        {% for dean in dean_list %}
+                            <option value="{{ dean.userId }}" data-email="{{ dean.userEmail }}">
+                                ({{ dean.userId }}) {{ dean.userName }} 
+                            </option>
+                        {% endfor %}
+                    </select><br>
+
+                    <label>Dean Email</label>
+                    <input type="email" id="deanEmail" name="deanEmail" readonly>
                 </div>
             </div>
 

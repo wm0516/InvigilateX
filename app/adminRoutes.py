@@ -38,8 +38,14 @@ def admin_manageInvigilationReport():
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
+    dean_list = User.query.filter(User.userLevel == 2).all()
+    hop_list = User.query.filter(User.userLevel == 3).all()
     departmentCode_text = ''
     departmentName_text = ''
+    deanName = ''
+    deanEmail_text = ''
+    hopName = ''
+    hopEmail_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -50,16 +56,23 @@ def admin_manageDepartment():
         else:
             departmentCode_text = request.form.get('departmentCode', '').strip()
             departmentName_text = request.form.get('departmentName', '').strip()
+            deanName = request.form.get('deanName', '').strip()
+            deanEmail_text = request.form.get('deanEmail', '').strip()
+            hopName = request.form.get('hopName', '').strip()
+            hopEmail_text = request.form.get('hopEmail', '').strip()
 
             valid, result = check_department(departmentCode_text, departmentName_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data,
-                                       departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
+                return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list,
+                                       hop_list=hop_list, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text, deanName=deanName, deanEmail_text=deanEmail_text,
+                                       hopName=hopName, hopEmail_text=hopEmail_text)
 
             new_department = Department(
                 departmentCode=departmentCode_text.upper(),
-                departmentName=departmentName_text.upper()
+                departmentName=departmentName_text.upper(),
+                deanId=deanName.upper(),
+                hopId=hopName.upper()
             )
             db.session.add(new_department)
             db.session.commit()
@@ -67,7 +80,7 @@ def admin_manageDepartment():
             return redirect(url_for('admin_manageDepartment'))
 
     # GET request or after redirect
-    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data)
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
 
 
 # function for admin to manage venue information (adding, editing, and removing)
@@ -408,7 +421,7 @@ def admin_manageStaff():
 def admin_manageCourse():
     course_data = Course.query.all()
     department_data = Department.query.all()
-    lecturer_data = User.query.filter(User.userLevel == 1)
+    lecturer_data = User.query.filter(User.userLevel == 1).all()
 
     # Default form field values
     courseDepartment_text = ''

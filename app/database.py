@@ -17,24 +17,27 @@ from datetime import datetime, timezone
 # NOT NULL = MUST HAVE DATA 
 # NULL = OPTIONAL HAVE DATA
 
-# Database Relationship
-# 'Department' under 'User'(userDepartment)
-# 'Course' under 'User'(Lecturer teach course), 'Department'(Course under which department)
-# 'Exam' has 'Course'(know which course in exam), 'Venue'(where the exam venue allocated)
-# 'InvigilationReport' has 'Exam'(know which exam with the details)
-# 'InvigilationAttendance' has 'InvigilationReport'(Invigilator checkin and checkout, with the total of invigilation hour)
+
 
 
 
 
 class Department(db.Model):
     __tablename__ = 'Department'
-    departmentCode = db.Column(db.String(10), primary_key=True)  # [PK] Refer to Department Code
-    departmentName = db.Column(db.String(60), nullable=False)    # Refer to Department Name
+    departmentCode = db.Column(db.String(10), primary_key=True)                     # [PK] Department Code
+    departmentName = db.Column(db.String(60), nullable=False)                       # Department Name
+    deanId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)  # Dean (FK to User)
+    hopId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)   # HOP (FK to User)
+
+    # Relationship
+    dean = db.relationship("User", foreign_keys=[deanId], backref="dean_of_departments")
+    hop = db.relationship("User", foreign_keys=[hopId], backref="hop_of_departments")
     '''
     CREATE TABLE Department (
         departmentCode VARCHAR(10) NOT NULL PRIMARY KEY,
-        departmentName VARCHAR(60) NOT NULL
+        departmentName VARCHAR(60) NOT NULL,
+        deanId VARCHAR(20) NULL,
+        hopId VARCHAR(20) NULL
     );
     '''
 
@@ -55,7 +58,7 @@ class User(db.Model):
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     
     # Relationship
-    department = db.relationship("Department", backref="users")
+    department = db.relationship("Department", backref="users", foreign_keys=[userDepartment])
     '''
     CREATE TABLE User (
         userId VARCHAR(20) PRIMARY KEY,
