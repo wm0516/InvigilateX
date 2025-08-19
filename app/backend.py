@@ -230,6 +230,7 @@ def check_exam(courseSection, date, starttime, endtime):
     return True, ""
 
 
+# Admin Validation Function 5: Insert Exam, InvigilatorReport Database
 def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     # --- 1. Create Exam ---
     new_exam = Exam(
