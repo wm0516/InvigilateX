@@ -45,12 +45,12 @@ class User(db.Model):
     '''
     CREATE TABLE User (
         userId VARCHAR(20) PRIMARY KEY,
-        userDepartment VARCHAR(10),
         userName VARCHAR(255),
+        userGender VARCHAR(10),
+        userDepartment VARCHAR(10),
         userLevel INT,
         userEmail VARCHAR(50),
         userContact VARCHAR(15),
-        userGender VARCHAR(10),
         userPassword VARCHAR(255),
         userStatus BOOLEAN DEFAULT FALSE,
         userRegisterDateTime DATETIME,
@@ -105,10 +105,12 @@ class Department(db.Model):
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
-    venueNumber = db.Column(db.String(10), primary_key=True)  # [PK] Refer to VenueNumber
-    venueFloor = db.Column(db.String(10), nullable=False)     # Refer to the Floor of Venue
-    venueCapacity = db.Column(db.Integer, nullable=False)     # Refer to the Capacity of Venue
-    venueStatus = db.Column(db.String(15), nullable=False)    # Refer to Status of Venue {'Available', 'Unavailable', 'In Service'}
+    venueNumber = db.Column(db.String(10), primary_key=True)   # [PK] Venue identifier
+    venueFloor = db.Column(db.String(10), nullable=False)      # Floor of venue
+    venueCapacity = db.Column(db.Integer, nullable=False)      # Capacity of venue
+    venueStatus = db.Column(db.String(15), nullable=False)     # {'Available', 'Unavailable', 'In Service'}
+    # Relationship
+    availabilities = db.relationship("VenueAvailability", back_populates="venue")
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(10) NOT NULL PRIMARY KEY,
@@ -119,13 +121,33 @@ class Venue(db.Model):
     '''
 
 
+class VenueAvailability(db.Model):
+    __tablename__ = 'VenueAvailability'
+    availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)
+    startDateTime = db.Column(db.DateTime, nullable=False)   # Start date & time
+    endDateTime = db.Column(db.DateTime, nullable=False)     # End date & time
+    status = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)
+    # Relationship
+    venue = db.relationship("Venue", back_populates="availabilities")
+    '''
+    CREATE TABLE VenueAvailability (
+        availabilityId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        venueNumber VARCHAR(10) NOT NULL,
+        startDateTime DATETIME NOT NULL,
+        endDateTime DATETIME NOT NULL,
+        status ENUM('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE') NOT NULL,
+        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
+    );
+    '''
+
+
 class Course(db.Model):
     __tablename__ = 'Course'
     courseCodeSection = db.Column(db.String(20), primary_key=True)                                               # [PK] Refer to CourseCodeSection
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
-    coursePractical = db.Column(db.String(255), db.ForeignKey('User.userId'), nullable=False)                    # [FK ]Refer to Course Practical Lecturer
-    courseTutorial = db.Column(db.String(255), db.ForeignKey('User.userId'), nullable=False)                     # [FK] Refer to Course Tutorial Lecturer
-    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=True)                              # Refer to courseExam details
+    coursePractical = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                    # [FK ]Refer to Course Practical Lecturer
+    courseTutorial = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                     # [FK] Refer to Course Tutorial Lecturer
     courseExamStatus = db.Column(db.Boolean, nullable=False)                                                     # Refer to courseExamStatus whether have exam or not
     courseCode = db.Column(db.String(10), nullable=False)                                                        # Refer to CourseCode
     courseSection = db.Column(db.String(10), nullable=False)                                                     # Refer to CourseSection
@@ -137,23 +159,20 @@ class Course(db.Model):
     department = db.relationship("Department", backref="courses")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
-    exam = db.relationship("Exam", foreign_keys=[courseExamId], backref="courses_using_exam")
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
-        courseDepartment VARCHAR(10) NOT NULL,
-        coursePractical VARCHAR(255) NOT NULL,
-        courseTutorial VARCHAR(255) NOT NULL,
-        courseExamId INT NULL,
         courseCode VARCHAR(10) NOT NULL,
         courseSection VARCHAR(10) NOT NULL,
         courseName VARCHAR(50) NOT NULL,
+        courseDepartment VARCHAR(10) NOT NULL,
+        coursePractical VARCHAR(20) NOT NULL,
+        courseTutorial VARCHAR(20) NOT NULL,
         courseHour INT NOT NULL,
         courseStudent INT NOT NULL,
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
-        FOREIGN KEY (courseTutorial) REFERENCES User(userId),
-        FOREIGN KEY (courseExam) REFERENCES Exam(examId)
+        FOREIGN KEY (courseTutorial) REFERENCES User(userId)
     );
     '''
 
