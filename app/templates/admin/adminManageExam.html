@@ -110,7 +110,7 @@
                         <option value="" disabled selected>Select Program Code</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }}">
-                                ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                                [{{ dept.departmentCode }}] {{ dept.departmentName }}
                             </option>
                         {% endfor %}
                     </select>
@@ -122,7 +122,7 @@
                         <option value="" disabled selected>Select Course Section</option>
                         {% for course in course_data %}
                             <option value="{{ course.courseCodeSection }}">
-                                ({{ course.courseCodeSection }}) - {{ course.courseName }}
+                                [{{ course.courseCodeSection }}] - {{ course.courseName }}
                             </option>   
                         {% endfor %}
                     </select><br>
@@ -143,7 +143,7 @@
                         <option value="" disabled selected>Select Venue</option>
                         {% for venue in venue_data %}
                             <option value="{{ venue.venueNumber }}">
-                                {{ venue.venueNumber }} - (Venue Capacity: {{ venue.venueCapacity }})
+                                [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
                             </option>
                         {% endfor %}
                     </select><br>

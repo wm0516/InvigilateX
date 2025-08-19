@@ -101,7 +101,7 @@
                         <option value="" disabled selected>Select Department</option>
                         {% for dept in department_data %}
                             <option value="{{ dept.departmentCode }}">
-                                ({{ dept.departmentCode }}) {{ dept.departmentName }}
+                                [{{ dept.departmentCode }}] {{ dept.departmentName }}
                             </option>
                         {% endfor %}
                     </select><br>

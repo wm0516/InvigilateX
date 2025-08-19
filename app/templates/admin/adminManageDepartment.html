@@ -61,7 +61,7 @@
                         <option value="" disabled selected>Select a Hop</option>
                         {% for hop in hop_list %}
                             <option value="{{ hop.userId }}" data-email="{{ hop.userEmail }}">
-                                ({{ hop.userId }}) {{ hop.userName }}
+                                [{{ hop.userId }}] {{ hop.userName }}
                             </option>
                         {% endfor %}
                     </select><br>
@@ -76,7 +76,7 @@
                         <option value="" disabled selected>Select a Dean</option>
                         {% for dean in dean_list %}
                             <option value="{{ dean.userId }}" data-email="{{ dean.userEmail }}">
-                                ({{ dean.userId }}) {{ dean.userName }} 
+                                [{{ dean.userId }}] {{ dean.userName }} 
                             </option>
                         {% endfor %}
                     </select><br>
