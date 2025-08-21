@@ -276,8 +276,7 @@ def get_available_venues(examDate, startTime, endTime):
     return usable_venues
 
 
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_text,
-                            practicalLecturer, tutorialLecturer, invigilatorNo):
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     """
     Handles updating exam details, venue availability, creating reports,
     and assigning invigilators. Expects proper datetime objects for start_dt and end_dt.
