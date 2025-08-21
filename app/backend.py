@@ -228,7 +228,7 @@ def check_exam(courseSection, date, start_dt, end_dt, venue):
 
     # 2. Check if this course already has an exam
     exam_for_course = Exam.query.filter_by(examId=course.courseExamId).first()
-    if exam_for_course and exam_for_course.examDate is not None:
+    if exam_for_course:
         return False, f"Course {courseSection} already has an exam scheduled"
 
     # 3. Check if another exam overlaps
