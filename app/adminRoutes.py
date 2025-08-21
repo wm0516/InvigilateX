@@ -596,14 +596,13 @@ def admin_manageExam():
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
     exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()# Display out only with value data, null value data will not be displayed out 
 
-    course_data = (Course.query.join(Exam)  # assumes Course has relationship with Exam
-        .filter(
-            or_(
-                Exam.examStartTime.is_(None),
-                Exam.examEndTime.is_(None)
+ 
+    course_data = (Course.query.join(Exam).filter(or_(
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None)
             )
         ).all()
-    ) # For course selection dropdown and show out related tutorial, practical, and number of students
+    )       
 
     # Default values for manual form
     examDate_text = ''
