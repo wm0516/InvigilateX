@@ -197,12 +197,12 @@
                     <td>{{ row.courseCode }}</td>
                     <td>{{ row.courseSection }}</td>
                     <td>{{ row.courseName }}</td>
-                    <td>{{ row.courseHour }}</td>
-                    <td>{{ row.courseExamId }}</td>
+                    <td>[{{ row.courseHour }}]</td>
+                    <td>[{{ row.courseExamId }}]</td>
                     <td>{{ row.courseDepartment }}</td>
                     <td>{{ row.practicalLecturer.userName }}</td>
                     <td>{{ row.tutorialLecturer.userName }}</td>
-                    <td>{{ row.courseStudent }}</td>
+                    <td>[{{ row.courseStudent }}]</td>
                 </tr>
                 {% endfor %}
             </tbody>

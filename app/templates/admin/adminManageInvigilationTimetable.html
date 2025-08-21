@@ -5,7 +5,7 @@
 <div class="menu-section">
     <h2>Manage Invigilation Timetable</h2>    
     <form method="POST">  
-        
+
     </form>
 
     <br><br>
@@ -51,8 +51,8 @@
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseName }}</td>
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseDepartment }}</td>
                                 <td rowspan="{{ rowspan }}">
-                                    Practical Lecturer: <br>[{{ att.report.exam.course.practicalLecturer.userName }}] <br>
-                                    Tutorial Lecturer: <br>[{{ att.report.exam.course.tutorialLecturer.userName }}]
+                                    P: [{{ att.report.exam.course.practicalLecturer.userName }}] <br>
+                                    T: [{{ att.report.exam.course.tutorialLecturer.userName }}]
                                 </td>
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                             {% endif %}
