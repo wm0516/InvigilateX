@@ -16,9 +16,11 @@
                 <tr>
                     <th>Exam ID</th>
                     <th>Exam Course Code/Section</th>
+                    <th>Exam Course Name</th>
                     <th>Exam Start</th>
                     <th>Exam End</th>
                     <th>Total of Invigilator</th>
+                    <th>Total of Students</th>
                     <th>Invigilator [ID] & Name</th>
                     <th>Contact</th>
                     <th>Check-in Time</th>
@@ -34,6 +36,7 @@
                             {% if loop.first %}
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseCodeSection }}</td>
+                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseName }}</td>
                                 <td rowspan="{{ rowspan }}">
                                     {{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }} <br>
                                     [{{ att.report.exam.examStartTime.strftime("%A") }}] <br>
@@ -44,7 +47,8 @@
                                     [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
                                     {{ att.report.exam.examEndTime.strftime("%H:%M") }}
                                 </td>
-                                <td rowspan="{{ rowspan }}">{{ att.report.exam.examNoInvigilator }}</td>
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.course.courseStudent }}]</td>
                             {% endif %}
 
                             <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>

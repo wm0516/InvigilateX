@@ -25,7 +25,6 @@
                     <th>Course Name</th>
                     <th>Course Department</th>
                     <th>Practical & Tutorial Lecturer</th>
-                    <th>Total of Students</th>
                     <th>Total of Invigilator</th>
                     <th>Invigilator [ID] & Name</th>
                     <th>Contact</th>
@@ -55,10 +54,9 @@
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseName }}</td>
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseDepartment }}</td>
                                 <td rowspan="{{ rowspan }}">
-                                    Practical Lecturer: [{{ att.report.exam.course.coursePractical.userName }}] <br>
-                                    Tutorial Lecturer: [{{ att.report.exam.course.courseTutorial.userName }}]
+                                    Practical Lecturer: <br>[{{ att.report.exam.course.practicalLecturer.userName }}] <br>
+                                    Tutorial Lecturer: <br>[{{ att.report.exam.course.tutorialLecturer.userName }}]
                                 </td>
-                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseStudent }}</td>
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.examNoInvigilator }}</td>
                             {% endif %}
                             <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
