@@ -209,21 +209,21 @@
             </thead>
             <tbody>
                 {% for row in exam_data %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>[{{ row.examId }}]</td>
-                    <td>{{ row.examDate }} [{{ row.examDay }}]</td>
-                    <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
-                    <td>{{ row.examVenue }}</td>
-                    {% for course in course_data %}
-                        <td>{{ course.courseCode }}</td>
-                        <td>{{ course.courseCodeSection }}</td>
-                        <td>{{ course.practicalLecturer.userName }}</td>
-                        <td>{{ course.tutorialLecturer.userName }}</td>
-                        <td>{{ course.courseStudent }}</td>
-                    {% endfor %}
-                    <td>{{ row.examNoInvigilator }}</td>
-                </tr>
+                    {% for course in course_data %} 
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>[{{ row.examId }}]</td>
+                            <td>{{ row.examDate }} [{{ row.examDay }}]</td>
+                            <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
+                            <td>{{ row.examVenue }}</td>
+                            <td>{{ course.courseCode }}</td>
+                            <td>{{ course.courseCodeSection }}</td>
+                            <td>{{ course.practicalLecturer.userName }}</td>
+                            <td>{{ course.tutorialLecturer.userName }}</td>
+                            <td>{{ course.courseStudent }}</td>
+                            <td>{{ row.examNoInvigilator }}</td>
+                        </tr>
+                     {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
