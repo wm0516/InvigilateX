@@ -664,7 +664,7 @@ def admin_manageExam():
 
                                     valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, venue_text)
                                     if valid:
-                                        create_exam_and_related(examDate_text, examDay_text, startTime_text, endTime_text, 
+                                        create_exam_and_related(examDate_text, startTime_text, endTime_text, 
                                                                 courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
                                         db.session.commit()
                                         exam_records_added += 1
@@ -736,7 +736,7 @@ def admin_manageExam():
                                            active_tab='admin_manageExamtab')
                 
 
-                create_exam_and_related(examDate_text, examDay_text, start_dt, end_dt, courseSection_text, venue_text, 
+                create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, 
                                         practicalLecturer_text, tutorialLecturer_text,invigilatorNo_text)
                 db.session.commit()
                 flash("New Exam Record Added Successfully", "success")

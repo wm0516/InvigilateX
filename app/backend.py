@@ -276,7 +276,7 @@ def get_available_venues(examDate, startTime, endTime):
     return usable_venues
 
 
-def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
+def create_exam_and_related(examDate, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     # 1. Find the course
     course = Course.query.filter_by(courseCodeSection=courseSection).first()
     if not course:
@@ -288,8 +288,6 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
         raise ValueError(f"Exam for course {courseSection} not found")
 
     # 3. Update the exam details
-    exam.examDate = examDate
-    exam.examDay = examDay
     exam.examStartTime = startTime
     exam.examEndTime = endTime
     exam.examVenue = venue_text
