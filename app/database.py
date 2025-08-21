@@ -131,7 +131,7 @@ class Exam(db.Model):
     examNoInvigilator = db.Column(db.Integer, nullable=True)                                    # Refer to total of invigilator need for the exam sessions
     
     # Relationship
-    course = db.relationship("Course", back_populates="exam")  # many exams -> one course
+    course = db.relationship("Course", back_populates="exam", uselist=False)  # many exams -> one course
     venue = db.relationship("Venue", back_populates="exams")
     '''
     CREATE TABLE Exam (
