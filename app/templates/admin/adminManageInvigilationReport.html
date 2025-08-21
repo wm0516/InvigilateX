@@ -14,6 +14,7 @@
     <br><br>
     <h3>List of Lecturer Invigilation Report</h3>
     <div class="user-table-container">
+        {% set counter = 1 %}
         <table class="user-data-table">
             <thead>
                 <tr>
@@ -35,7 +36,7 @@
                     {% set rowspan = grouped|length %}
                     {% for att in grouped %}
                         <tr>
-                            <td>{{ loop.index }}</td>
+                            <td>{{ counter }}</td>
                             <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
                             <td>{{ att.invigilator.userContact }}</td>
 
@@ -59,11 +60,11 @@
                             <td>{{ att.checkOut }}</td>
                             <td>{{ att.remark }}</td>
                         </tr>
+                        {% set counter = counter + 1 %}
                     {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
-
     </div>
 </div>
 
