@@ -700,25 +700,32 @@ def admin_manageExam():
         # ===== Manual Add =====
         elif form_type == 'manual':
             try:
-                # Ensure the inputs are strings
-                startDate_raw = str(request.form.get('startDate', '').strip())
-                endDate_raw   = str(request.form.get('endDate', '').strip())
-                startTime_raw = str(request.form.get('startTime', '').strip())
-                endTime_raw   = str(request.form.get('endTime', '').strip())
+                # Get form values
+                startDate_raw = request.form.get('startDate', '').strip()
+                endDate_raw = request.form.get('endDate', '').strip()
+                startTime_raw = request.form.get('startTime', '').strip()
+                endTime_raw = request.form.get('endTime', '').strip()
 
-                if not startDate_raw or not startTime_raw or not endDate_raw or not endTime_raw:
-                    flash("Start and End date/time are required", "error")
-                    return redirect(url_for('admin_manageExam'))
+                # Debugging step: Print the types of raw values
+                print(f"startDate_raw: {startDate_raw} (type: {type(startDate_raw)})")
+                print(f"endDate_raw: {endDate_raw} (type: {type(endDate_raw)})")
 
-                # Normalize to HH:MM:SS
+                # Ensure these are strings (if they are datetime objects, convert to string)
+                if isinstance(startDate_raw, datetime):
+                    startDate_raw = startDate_raw.strftime("%Y-%m-%d")
+                if isinstance(endDate_raw, datetime):
+                    endDate_raw = endDate_raw.strftime("%Y-%m-%d")
+
+                # Ensure time is in HH:MM:SS format
                 if len(startTime_raw) == 5:
                     startTime_raw += ":00"
                 if len(endTime_raw) == 5:
                     endTime_raw += ":00"
 
-                # Now use strptime without error
+                # Now safely parse datetime
                 start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-                end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+                end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+
 
                 # --- Other fields ---
                 programCode_text = request.form.get('programCode', '').strip()
