@@ -614,6 +614,7 @@ def admin_manageExam():
         form_type = request.form.get('form_type')
 
         # ===== File Upload =====
+        '''
         if form_type == 'upload':
             file = request.files.get('exam_file')
             print(f"Read file: {file}")
@@ -693,8 +694,9 @@ def admin_manageExam():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageExam'))
+        '''
 
-        elif form_type == 'announce':
+        if form_type == 'announce':
             return redirect(url_for('admin_manageExam'))
 
         # ===== Manual Add =====
