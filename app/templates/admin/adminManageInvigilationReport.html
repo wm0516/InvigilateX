@@ -4,28 +4,23 @@
 
 <div class="menu-section">
     <h2>Manage Invigilation Report</h2>
-    <form method="POST">  
-        <h3>Insert Ratio For Each Department to Generate Invigilation Timetable</h3>
-        <label>Check this part, whether each admin able to select for all or just under self</label><br>
-        <lable>Try to display out all the ratio based on the department on that page instead of empty frame</lable><br>
-        <label>Now able to update the ratio, but without the main function to read the lecturers flexibility</label>
+    <form method="POST">
+
     </form>
 
     <br><br>
     <h3>List of Lecturer Invigilation Report</h3>
     <div class="user-table-container">
-        {% set counter = 1 %}
         <table class="user-data-table">
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Invigilator [ID] & Name</th>
-                    <th>Contact</th>
                     <th>Exam ID</th>
                     <th>Exam Course Code/Section</th>
                     <th>Exam Start</th>
                     <th>Exam End</th>
                     <th>Total of Invigilator</th>
+                    <th>Invigilator [ID] & Name</th>
+                    <th>Contact</th>
                     <th>Check-in Time</th>
                     <th>Check-out Time</th>
                     <th>Status</th>
@@ -36,10 +31,6 @@
                     {% set rowspan = grouped|length %}
                     {% for att in grouped %}
                         <tr>
-                            <td>{{ counter }}</td>
-                            <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
-                            <td>{{ att.invigilator.userContact }}</td>
-
                             {% if loop.first %}
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseCodeSection }}</td>
@@ -56,15 +47,17 @@
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.examNoInvigilator }}</td>
                             {% endif %}
 
+                            <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
+                            <td>{{ att.invigilator.userContact }}</td>
                             <td>{{ att.checkIn }}</td>
                             <td>{{ att.checkOut }}</td>
                             <td>{{ att.remark }}</td>
                         </tr>
-                        {% set counter = counter + 1 %}
                     {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
+
     </div>
 </div>
 
