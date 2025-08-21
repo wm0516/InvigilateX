@@ -127,7 +127,7 @@ class Exam(db.Model):
     examNoInvigilator = db.Column(db.Integer, nullable=True)                                    # Refer to total of invigilator need for the exam sessions
     
     # Relationship
-    courses = db.relationship("Course", back_populates="exam", lazy=True)  # many exams -> one course
+    course = db.relationship("Course", back_populates="exam", uselist=False)  # One Exam ↔ One Course
     venue = db.relationship("Venue", back_populates="exams")
     '''
     CREATE TABLE Exam (
@@ -157,7 +157,7 @@ class Course(db.Model):
     department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
-    exam = db.relationship("Exam", back_populates="courses") # one course -> one exam
+    exam = db.relationship("Exam", back_populates="course")  # One Course ↔ One Exam
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
