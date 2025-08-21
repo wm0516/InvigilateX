@@ -215,35 +215,6 @@ def check_venue(roomNumber, capacity):
     
     return True, ""
 
-# Admin Validation Function 4: Check Exam [Exam Date, StartTime, EndTime, and CourseSectionCode Must be Unique in Database]
-def check_exam(courseSection, date, start_dt, end_dt, venue):
-    # Handle overnight exams (e.g. 22:00 → 02:00 next day)
-    if end_dt <= start_dt:
-        end_dt += timedelta(days=1)
-
-    # 1. Find the course
-    course = Course.query.filter_by(courseCodeSection=courseSection).first()
-    if not course:
-        return False, f"Course {courseSection} not found"
-
-    # 2. Check if this course already has an exam
-    exam_for_course = Exam.query.filter_by(examId=course.courseExamId).first()
-    if exam_for_course:
-        return False, f"Course {courseSection} already has an exam scheduled"
-
-    # 3. Check if another exam overlaps
-    clash = Exam.query.filter(
-        Exam.examStartTime < end_dt,
-        Exam.examEndTime > start_dt,
-        Exam.examVenue == venue
-    ).first()
-    if clash:
-        return False, "Another exam already overlaps with this time slot"
-
-    return True, ""
-
-
-
 
 def get_available_venues(examDate, startTime, endTime):
     # Return a list of venueNumbers that are AVAILABLE during the given exam slot.

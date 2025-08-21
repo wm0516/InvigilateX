@@ -126,15 +126,15 @@
                     </select><br>
 
                     <label>Course Practical Lecturer</label>
-                    <input type="text" id="practicalLecturer" name="practicalLecturer" value="{{ practicalLecturer_text }}" readonly><br>
+                    <input type="text" id="practicalLecturer" name="practicalLecturer" readonly><br>
 
                     <label>Course Tutorial Lecturer</label>
-                    <input type="text" id="tutorialLecturer" name="tutorialLecturer" value="{{ tutorialLecturer_text }}" readonly>
+                    <input type="text" id="tutorialLecturer" name="tutorialLecturer" readonly>
                 </div> 
 
                 <div class="form-right">
                     <label>No. of Students</label>
-                    <input type="number" id="student" name="student" value="{{ student_text }}" readonly><br>
+                    <input type="number" id="student" name="student" readonly><br>
 
                     <label>Venue</label>
                     <select name="venue" id="venueSection" required>
@@ -215,6 +215,11 @@
                     <td>{{ row.examDate }} [{{ row.examDay }}]</td>
                     <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
                     <td>{{ row.examVenue }}</td>
+                    <td>{{ row.courses.courseCode }}</td>
+                    <td>{{ row.courses.courseCodeSection }}</td>
+                    <td>{{ row.courses.practicalLecturer.userName }}</td>
+                    <td>{{ row.courses.tutorialLecturer.userName }}</td>
+                    <td>{{ row.courses.courseStudent }}</td>
                     <td>{{ row.examNoInvigilator }}</td>
                 </tr>
                 {% endfor %}

@@ -96,7 +96,6 @@ class Venue(db.Model):
     );
     '''
 
-
 class VenueAvailability(db.Model):
     __tablename__ = 'VenueAvailability'
     availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -155,7 +154,7 @@ class Course(db.Model):
     courseStudent = db.Column(db.Integer, nullable=False)                                                        # Refer to Course Total Number of Students
     
     # Relationship
-    department = db.relationship("Department", backref="courses")
+    department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
     exam = db.relationship("Exam", back_populates="courses") # one course -> one exam

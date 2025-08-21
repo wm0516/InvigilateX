@@ -598,15 +598,9 @@ def admin_manageExam():
     course_data = Course.query.join(Exam).filter(Exam.examStartTime.is_(None), Exam.examEndTime.is_(None)).all()
  
     # Default values for manual form
-    examDate_text = ''
-    examDay_text = ''
-    startTime_text = ''
-    endTime_text = ''
-    programCode_text = ''
     courseSection_text = ''
     practicalLecturer_text = ''
     tutorialLecturer_text = ''
-    student_text = ''
     venue_text = ''
     invigilatorNo_text = ''
 
@@ -727,7 +721,6 @@ def admin_manageExam():
 
                 # --- Call core function ---
                 create_exam_and_related(start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
-
                 flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))
 
@@ -736,7 +729,6 @@ def admin_manageExam():
                 traceback.print_exc()
                 flash(f"Error processing manual form: {manual_err}", 'error')
                 return redirect(url_for('admin_manageExam'))
-
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
 
