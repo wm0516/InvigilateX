@@ -691,12 +691,15 @@ def admin_manageExam():
         # ===== Manual Add =====
         elif form_type == 'manual':
             try:
+                # --- Dates & Times ---
+                startDate_raw = request.form.get('startDate', '').strip()
+                endDate_raw   = request.form.get('endDate', '').strip()
+                startTime_raw = request.form.get('startTime', '').strip()
+                endTime_raw   = request.form.get('endTime', '').strip()
 
-                examDate_text_raw = request.form.get('examDate', '').strip()
-                examDate_text = parse_date(examDate_text_raw)  # -> datetime.date
-
-                startTime_raw = request.form.get('startTime', '').strip()  # "08:17"
-                endTime_raw = request.form.get('endTime', '').strip()      # "10:30"
+                if not startDate_raw or not startTime_raw or not endDate_raw or not endTime_raw:
+                    flash("Start and End date/time are required", "error")
+                    return redirect(url_for('admin_manageExam'))
 
                 # Normalize to HH:MM:SS
                 if len(startTime_raw) == 5:
@@ -704,41 +707,36 @@ def admin_manageExam():
                 if len(endTime_raw) == 5:
                     endTime_raw += ":00"
 
-                # Build full datetime
-                start_dt = datetime.strptime(f"{examDate_text} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-                end_dt = datetime.strptime(f"{examDate_text} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+                # Parse into datetime
+                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
+                end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
 
-
-                # examDate_text_raw = request.form.get('examDate', '').strip()
-                # examDate_text = parse_date(examDate_text_raw)
-                examDay_text = request.form.get('examDay', '').strip()
-                # startTime_text = request.form.get('startTime', '').strip()
-                # endTime_text = request.form.get('endTime', '').strip()
+                # --- Other fields ---
                 programCode_text = request.form.get('programCode', '').strip()
                 courseSection_text = request.form.get('courseSection', '').strip()
                 practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                student_text = int(request.form.get('student', ''))
+                student_text = int(request.form.get('student', '0'))
                 venue_text = request.form.get('venue', '').strip()
-                invigilatorNo_text = int(request.form.get('invigilatorNo', ''))
+                invigilatorNo_text = int(request.form.get('invigilatorNo', '0'))
 
-                valid, result = check_exam(courseSection_text, examDate_text, start_dt, end_dt, venue_text)
+                # --- Validation & Save ---
+                valid, result = check_exam(courseSection_text, start_dt.date(), start_dt, end_dt, venue_text)
                 if not valid:
                     flash(result, 'error')
                     return render_template('admin/adminManageExam.html',
-                                           exam_data=exam_data, course_data=course_data, venue_data=venue_data,
-                                           department_data=department_data,
-                                           examDate_text=examDate_text, examDay_text=examDay_text,
-                                           start_dt=start_dt, end_dt=end_dt,
-                                           programCode_text=programCode_text, courseSection_text=courseSection_text,
-                                           practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text, 
-                                           student_text=student_text, venue_text=venue_text, invigilatorNo_text=invigilatorNo_text,
-                                           active_tab='admin_manageExamtab')
-                
+                                        exam_data=exam_data, course_data=course_data, venue_data=venue_data,
+                                        department_data=department_data,
+                                        start_dt=start_dt, end_dt=end_dt,
+                                        programCode_text=programCode_text, courseSection_text=courseSection_text,
+                                        practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text,
+                                        student_text=student_text, venue_text=venue_text, invigilatorNo_text=invigilatorNo_text,
+                                        active_tab='admin_manageExamtab')
 
-                create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, 
-                                        practicalLecturer_text, tutorialLecturer_text,invigilatorNo_text)
+                create_exam_and_related(start_dt.date(), start_dt, end_dt, courseSection_text, venue_text,
+                                        practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
                 db.session.commit()
+
                 flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))
 
@@ -747,6 +745,7 @@ def admin_manageExam():
                 traceback.print_exc()
                 flash(f"Error processing manual form: {manual_err}", 'error')
                 return redirect(url_for('admin_manageExam'))
+
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
 
