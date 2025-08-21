@@ -15,17 +15,17 @@
             <thead>
                 <tr>
                     <th>Exam ID</th>
-                    <th>Exam Course Code/Section</th>
-                    <th>Exam Course Name</th>
-                    <th>Exam Start</th>
-                    <th>Exam End</th>
-                    <th>Total of Invigilator</th>
-                    <th>Total of Students</th>
-                    <th>Invigilator [ID] & Name</th>
+                    <th>Course Code/Section</th>
+                    <th>Course Name</th>
+                    <th>Exam Start Time</th>
+                    <th>Exam End Time</th>
+                    <th>Number of Students</th>
+                    <th>Number of Invigilators</th>
+                    <th>Invigilator ID & Name</th>
                     <th>Contact</th>
                     <th>Check-in Time</th>
                     <th>Check-out Time</th>
-                    <th>Status</th>
+                    <th>Attendance Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,8 +47,8 @@
                                     [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
                                     {{ att.report.exam.examEndTime.strftime("%H:%M") }}
                                 </td>
-                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.course.courseStudent }}]</td>
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                             {% endif %}
 
                             <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>

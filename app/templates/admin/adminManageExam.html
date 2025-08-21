@@ -195,17 +195,17 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Exam Id</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Venue</th>
-                    <th>Program Code</th>
-                    <th>Course / Section</th>
+                    <th>Exam ID</th>
+                    <th>Course/Section</th>
                     <th>Course Name</th>
+                    <th>Course Department</th>
                     <th>Practical Lecturer</th>
                     <th>Tutorial Lecturer</th>
-                    <th>No. of Student(s)</th>
-                    <th>No. of Invigilator(s)</th>
+                    <th>Exam Start Time</th>
+                    <th>Exam End Time</th>
+                    <th>Exam Venue</th>
+                    <th>Number of Students</th>
+                    <th>Number of Invigilators</th>
                 </tr>
             </thead>
             <tbody>
@@ -213,6 +213,11 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>[{{ row.examId }}]</td>
+                        <td>{{ row.course.courseCodeSection }}</td>
+                        <td>{{ row.course.courseName }}</td>
+                        <td>{{ row.course.courseCode }}</td>
+                        <td>{{ row.course.practicalLecturer.userName }}</td>
+                        <td>{{ row.course.tutorialLecturer.userName }}</td>
 
                         <!-- Start: show Date, Day, Time together -->
                         <td>
@@ -229,11 +234,6 @@
                         </td>
 
                         <td>{{ row.examVenue }}</td>
-                        <td>{{ row.course.courseCode }}</td>
-                        <td>{{ row.course.courseCodeSection }}</td>
-                        <td>{{ row.course.courseName }}</td>
-                        <td>{{ row.course.practicalLecturer.userName }}</td>
-                        <td>{{ row.course.tutorialLecturer.userName }}</td>
                         <td>[{{ row.course.courseStudent }}]</td>
                         <td>[{{ row.examNoInvigilator }}]</td>
                     </tr>
