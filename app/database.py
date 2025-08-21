@@ -124,14 +124,12 @@ class Exam(db.Model):
     __tablename__ = 'Exam'
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                        # [PK] Refer to Exam ID
     examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)     # Refer to Exam Venue
-    examDate = db.Column(db.Date, nullable=True)                                                # Refer to Exam Date
-    examDay = db.Column(db.String(10), nullable=True)                                           # Refer to Exam Day
     examStartTime = db.Column(db.DateTime, nullable=True)                                       # Refer to Exam StartTime
     examEndTime = db.Column(db.DateTime, nullable=True)                                         # Refer to Exam EndTime
     examNoInvigilator = db.Column(db.Integer, nullable=True)                                    # Refer to total of invigilator need for the exam sessions
     
     # Relationship
-    course = db.relationship("Course", back_populates="exam", uselist=False)  # many exams -> one course
+    courses = db.relationship("Course", back_populates="exam")  # many exams -> one course
     venue = db.relationship("Venue", back_populates="exams")
     '''
     CREATE TABLE Exam (

@@ -482,7 +482,17 @@ def admin_manageCourse():
 
                                     valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
                                     if valid:
-                                        # 1. Create and add the course
+                                        # 1. Create Exam
+                                        new_exam = Exam(
+                                            examVenue=None,
+                                            examStartTime=None,
+                                            examEndTime=None,
+                                            examNoInvigilator=None,
+                                        )
+                                        db.session.add(new_exam)
+                                        db.session.flush()  # ensures examId is generated
+
+                                        # 2. Create and add the course
                                         new_course = Course(
                                             courseDepartment=department_text.upper(),
                                             courseCodeSection=courseCodeSection_text.upper(),
@@ -492,28 +502,13 @@ def admin_manageCourse():
                                             courseHour=courseHour_text,
                                             coursePractical=coursePractical_text.upper(),
                                             courseTutorial=courseTutorial_text.upper(),
-                                            courseStudent=courseStudent_text
+                                            courseStudent=courseStudent_text,
+                                            courseExamId=new_exam.examId
                                         )
                                         db.session.add(new_course)
                                         db.session.flush()  # makes new_course available in session
 
-                                        # 2. Create exam linked to that course
-                                        new_exam = Exam(
-                                            examVenue=None,
-                                            examDate=None,
-                                            examDay=None,
-                                            examStartTime=None,
-                                            examEndTime=None,
-                                            examNoInvigilator=None,
-                                            courses=[new_course]   # <-- this links the relationship
-                                        )
-                                        db.session.add(new_exam)
-                                        db.session.flush()  # ensures examId is generated
-
-                                        # 3. OR explicitly set the FK
-                                        new_course.courseExamId = new_exam.examId
-
-                                        # 4. Commit everything
+                                        # 3. Commit everything
                                         db.session.commit()
                                         course_records_added += 1
                                 except Exception as row_err:
@@ -559,39 +554,35 @@ def admin_manageCourse():
                                        courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, 
                                        courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
-            # 1. Create and add the course
-            new_course = Course(
-                courseDepartment=department_text.upper(),
-                courseCodeSection=courseCodeSection_text.upper(),
-                courseCode=courseCode_text.upper(),
-                courseSection=courseSection_text.upper(),
-                courseName=courseName_text.upper(),
-                courseHour=courseHour_text,
-                coursePractical=coursePractical_text.upper(),
-                courseTutorial=courseTutorial_text.upper(),
-                courseStudent=courseStudent_text
-            )
-            db.session.add(new_course)
-            db.session.flush()  # makes new_course available in session
+            if valid:
+                # 1. Create Exam
+                new_exam = Exam(
+                    examVenue=None,
+                    examStartTime=None,
+                    examEndTime=None,
+                    examNoInvigilator=None,
+                )
+                db.session.add(new_exam)
+                db.session.flush()  # ensures examId is generated
 
-            # 2. Create exam linked to that course
-            new_exam = Exam(
-                examVenue=None,
-                examDate=None,
-                examDay=None,
-                examStartTime=None,
-                examEndTime=None,
-                examNoInvigilator=None,
-                courses=[new_course]   # <-- this links the relationship
-            )
-            db.session.add(new_exam)
-            db.session.flush()  # ensures examId is generated
+                # 2. Create and add the course
+                new_course = Course(
+                    courseDepartment=department_text.upper(),
+                    courseCodeSection=courseCodeSection_text.upper(),
+                    courseCode=courseCode_text.upper(),
+                    courseSection=courseSection_text.upper(),
+                    courseName=courseName_text.upper(),
+                    courseHour=courseHour_text,
+                    coursePractical=coursePractical_text.upper(),
+                    courseTutorial=courseTutorial_text.upper(),
+                    courseStudent=courseStudent_text,
+                    courseExamId=new_exam.examId
+                )
+                db.session.add(new_course)
+                db.session.flush()  # makes new_course available in session
 
-            # 3. OR explicitly set the FK
-            new_course.courseExamId = new_exam.examId
-
-            # 4. Commit everything
-            db.session.commit()
+                # 3. Commit everything
+                db.session.commit()
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
             
@@ -601,15 +592,10 @@ def admin_manageCourse():
 # Function for admin to manage exam information (adding, editing, and removing)
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
-    exam_data = Exam.query.filter(
-        Exam.examDate.isnot(None),
-        Exam.examStartTime.isnot(None),
-        Exam.examEndTime.isnot(None)
-    ).all() # Display out only with value data, null value data will not be displayed out 
+    exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all() # Display out only with value data, null value data will not be displayed out 
     department_data = Department.query.all() # For department code dropdown
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
-    course_data = Course.query.join(Exam).filter(Exam.examDate.is_(None)).all()  # For course selection dropdown and show out related tutorial, practical, and number of students
-    # invigilationReport_data = InvigilationReport.query.all()
+    course_data = Course.query.join(Exam).filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()  # For course selection dropdown and show out related tutorial, practical, and number of students
 
     # Default values for manual form
     examDate_text = ''

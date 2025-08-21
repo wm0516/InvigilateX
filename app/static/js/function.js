@@ -196,79 +196,79 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Admin Manage Exam Page: Function to track the selected date and display out the day
 // Admin Manage Exam Page: Function to track the selected date, time and display out the day
-document.addEventListener("DOMContentLoaded", function () {
-    const examDateInput = document.getElementById('examDate');
-    const examDayInput = document.getElementById('examDay');
-    const examStartTimeInput = document.getElementById('startTime');
-    const examEndTimeInput = document.getElementById('endTime');
+document.addEventListener("DOMContentLoaded", function() {
+    const startDate = document.getElementById("startDate");
+    const startTime = document.getElementById("startTime");
+    const endDate = document.getElementById("endDate");
+    const endTime = document.getElementById("endTime");
 
-    if (!examDateInput || !examDayInput || !examStartTimeInput || !examEndTimeInput) {
-        return; // Exit if not on the exam page
-    }
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    const nextYear = new Date(now);
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const nextYearDate = nextYear.toISOString().split("T")[0];
 
-    // Utility: format date as YYYY-MM-DD
-    const formatDate = (date) => {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-    };
+    // Restrict date pickers
+    startDate.min = today;
+    startDate.max = nextYearDate;
+    endDate.min = today;
+    endDate.max = nextYearDate;
 
-    // Restrict min and max date
-    const today = new Date();
-    const minDate = formatDate(today);
-    const nextYearSameDay = new Date(today);
-    nextYearSameDay.setFullYear(today.getFullYear() + 1);
-    const maxDate = formatDate(nextYearSameDay);
+    // Default: set both dates to today
+    startDate.value = today;
+    endDate.value = today;
 
-    examDateInput.min = minDate;
-    examDateInput.max = maxDate;
-
-    // When selecting a date
-    examDateInput.addEventListener('change', function () {
-        const selectedDate = new Date(this.value);
-        const day = selectedDate.getDay();
-
-        const selected = formatDate(selectedDate);
-        if (selected < minDate || selected > maxDate) {
-            alert("Date must be within one year from today.");
-            this.value = '';
-            examDayInput.value = '';
-            return;
-        }
-
-        const days = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
-        examDayInput.value = days[day];
-
-        // If the selected date is today, restrict start time
-        if (selected === minDate) {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            examStartTimeInput.min = `${hh}:${mm}`;
+    // Restrict time: disable past times if today is selected
+    function restrictStartTime() {
+        if (startDate.value === today) {
+            let hh = String(now.getHours()).padStart(2, "0");
+            let mm = String(now.getMinutes()).padStart(2, "0");
+            startTime.min = hh + ":" + mm;  // from now onwards
         } else {
-            examStartTimeInput.min = "00:00"; // reset to default
-        }
-
-        examStartTimeInput.value = '';
-        examEndTimeInput.value = '';
-    });
-
-    // Validate start and end times
-    function validateTimes() {
-        const start = examStartTimeInput.value;
-        const end = examEndTimeInput.value;
-
-        if (start && end) {
-            if (end <= start) {
-                alert("End time must be later than start time.");
-                examEndTimeInput.value = '';
-            }
+            startTime.min = "00:00"; // full day allowed
         }
     }
 
-    examStartTimeInput.addEventListener('change', validateTimes);
-    examEndTimeInput.addEventListener('change', validateTimes);
+    function restrictEndTime() {
+        if (endDate.value === today) {
+            let hh = String(now.getHours()).padStart(2, "0");
+            let mm = String(now.getMinutes()).padStart(2, "0");
+            endTime.min = hh + ":" + mm;
+        } else {
+            endTime.min = "00:00";
+        }
+    }
+
+    // Adjust end date automatically
+    function adjustEndDate() {
+        if (!startDate.value || !startTime.value || !endTime.value) return;
+
+        const start = new Date(startDate.value + "T" + startTime.value);
+        let end = new Date(endDate.value + "T" + endTime.value);
+
+        // If end time is earlier than start time → assume overnight
+        if (end < start) {
+            let nextDay = new Date(start);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDate.value = nextDay.toISOString().split("T")[0];
+        } else {
+            endDate.value = startDate.value;
+        }
+    }
+
+    // Bind events
+    startDate.addEventListener("change", () => {
+        endDate.value = startDate.value;
+        restrictStartTime();
+        restrictEndTime();
+    });
+    endDate.addEventListener("change", restrictEndTime);
+    startTime.addEventListener("change", adjustEndDate);
+    endTime.addEventListener("change", adjustEndDate);
+
+    // Initial restriction setup
+    restrictStartTime();
+    restrictEndTime();
 });
 
 

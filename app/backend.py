@@ -216,32 +216,6 @@ def check_venue(roomNumber, capacity):
     return True, ""
 
 # Admin Validation Function 4: Check Exam [Exam Date, StartTime, EndTime, and CourseSectionCode Must be Unique in Database]
-def check_exam(courseSection, date, starttime, endtime):
-    # 1. Convert start/end time strings into datetime
-    start_dt = datetime.combine(date, datetime.strptime(starttime, "%H:%M").time())
-    end_dt = datetime.combine(date, datetime.strptime(endtime, "%H:%M").time())
-
-    # 2. Find the course
-    course = Course.query.filter_by(courseCodeSection=courseSection).first()
-    if not course:
-        return False, f"Course {courseSection} not found"
-
-    # 3. Check if this course already has an exam
-    exam_for_course = Exam.query.filter_by(examId=course.courseExamId).first()
-    if exam_for_course and exam_for_course.examDate is not None:
-        return False, f"Course {courseSection} already has an exam scheduled"
-
-    # 4. Check if another exam is already happening at the same datetime
-    exam_exists = Exam.query.filter_by(
-        examDate=date,
-        examStartTime=start_dt,
-        examEndTime=end_dt
-    ).first()
-    if exam_exists:
-        return False, "An exam is already scheduled at the same date and time"
-
-    return True, ""
-
 def check_exam(courseSection, date, start_dt, end_dt, venue):
     # Handle overnight exams (e.g. 22:00 → 02:00 next day)
     if end_dt <= start_dt:
@@ -259,7 +233,6 @@ def check_exam(courseSection, date, start_dt, end_dt, venue):
 
     # 3. Check if another exam overlaps
     clash = Exam.query.filter(
-        Exam.examDate == date,
         Exam.examStartTime < end_dt,
         Exam.examEndTime > start_dt,
         Exam.examVenue == venue
