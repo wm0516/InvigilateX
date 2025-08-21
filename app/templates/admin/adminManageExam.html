@@ -216,14 +216,14 @@
                         <!-- Start: show Date, Day, Time together -->
                         <td>
                             {{ row.examStartTime.strftime("%Y-%m-%d") }} <br>
-                            ({{ row.examStartTime.strftime("%A") }}) <br>
+                            [{{ row.examStartTime.strftime("%A") }}] <br>
                             {{ row.examStartTime.strftime("%H:%M") }}
                         </td>
 
                         <!-- End: show Date, Day, Time together -->
                         <td>
                             {{ row.examEndTime.strftime("%Y-%m-%d") }} <br>
-                            ({{ row.examEndTime.strftime("%A") }}) <br>
+                            [{{ row.examEndTime.strftime("%A") }}] <br>
                             {{ row.examEndTime.strftime("%H:%M") }}
                         </td>
 
