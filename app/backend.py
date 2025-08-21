@@ -217,18 +217,24 @@ def check_venue(roomNumber, capacity):
 
 # Admin Validation Function 4: Check Exam [Exam Date, StartTime, EndTime, and CourseSectionCode Must be Unique in Database]
 def check_exam(courseSection, date, starttime, endtime):
+    # 1. Find the course
+    course = Course.query.filter_by(courseCodeSection=courseSection).first()
+    if not course:
+        return False, f"Course {courseSection} not found"
+
+    # 2. Check if this course already has an exam
+    exam_for_course = Exam.query.filter_by(examId=course.courseExamId).first()
+    if exam_for_course and exam_for_course.examDate is not None:
+        return False, f"Course {courseSection} already has an exam scheduled"
+
+    # 3. (Optional) Check if another exam is already happening at the same time
     exam_exists = Exam.query.filter_by(
         examDate=date,
         examStartTime=starttime,
-        examEndTime=endtime,
-        examCourseCodeSection=courseSection
+        examEndTime=endtime
     ).first()
     if exam_exists:
-        return False, "Exam With Same Course/Section, Date, And Time Already Registered"
-
-    usable = get_available_venues(date, starttime, endtime)
-    if not usable:
-        return False, "No available venues match the selected time slot"
+        return False, "An exam is already scheduled at the same date and time"
 
     return True, ""
 
