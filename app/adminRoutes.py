@@ -662,12 +662,10 @@ def admin_manageExam():
                                     venue_text = str(row['room']).upper()
                                     invigilatorNo_text = row['no of invigilator']
 
-                                    valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, venue_text)
-                                    if valid:
-                                        create_exam_and_related(examDate_text, startTime_text, endTime_text, 
-                                                                courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
-                                        db.session.commit()
-                                        exam_records_added += 1
+                                    create_exam_and_related(examDate_text, startTime_text, endTime_text, 
+                                                            courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
+                                    db.session.commit()
+                                    exam_records_added += 1
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
@@ -720,21 +718,7 @@ def admin_manageExam():
                 venue_text = request.form.get('venue', '').strip()
                 invigilatorNo_text = int(request.form.get('invigilatorNo', '0'))
 
-                # --- Validation & Save ---
-                valid, result = check_exam(courseSection_text, start_dt.date(), start_dt, end_dt, venue_text)
-                if not valid:
-                    flash(result, 'error')
-                    return render_template('admin/adminManageExam.html',
-                                        exam_data=exam_data, course_data=course_data, venue_data=venue_data,
-                                        department_data=department_data,
-                                        start_dt=start_dt, end_dt=end_dt,
-                                        programCode_text=programCode_text, courseSection_text=courseSection_text,
-                                        practicalLecturer_text=practicalLecturer_text, tutorialLecturer_text=tutorialLecturer_text,
-                                        student_text=student_text, venue_text=venue_text, invigilatorNo_text=invigilatorNo_text,
-                                        active_tab='admin_manageExamtab')
-
-                create_exam_and_related(start_dt.date(), start_dt, end_dt, courseSection_text, venue_text,
-                                        practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
+                create_exam_and_related(start_dt.date(), start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
                 db.session.commit()
 
                 flash("New Exam Record Added Successfully", "success")
