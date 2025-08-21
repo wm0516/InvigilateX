@@ -196,7 +196,7 @@ def standardize_time_with_seconds(time_value):
         return time_value.strftime("%H:%M:%S")
     elif isinstance(time_value, str):
         # Try multiple formats
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p"):
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p"):  # Handle 12-hour format with AM/PM
             try:
                 dt = datetime.strptime(time_value.strip(), fmt)
                 return dt.strftime("%H:%M:%S")
@@ -651,21 +651,32 @@ def admin_manageExam():
 
                             for index, row in df.iterrows():
                                 try:
-                                    examDate_text = parse_date(row['date'])
-                                    examDay_text = row['day'].upper()
-                                    startTime_text = standardize_time_with_seconds(row['start'])
-                                    endTime_text = standardize_time_with_seconds(row['end'])
-                                    programCode_text = str(row['program']).upper()
+                                    # Parse the date, time, and other data
+                                    examDate_text = parse_date(row['date'])  # Parsed date from Excel
+                                    startTime_text = standardize_time_with_seconds(row['start'])  # Parsed time from Excel
+                                    endTime_text = standardize_time_with_seconds(row['end'])  # Parsed time from Excel
+
+                                    if not examDate_text:
+                                        raise ValueError(f"Invalid date at row {index}")
+
+                                    if not startTime_text or not endTime_text:
+                                        raise ValueError(f"Invalid time at row {index}")
+
+                                    # Convert date and time into datetime
+                                    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
+                                    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
+
+                                    # Additional data parsing
                                     courseSection_text = str(row['course/sec']).upper()
                                     practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
-                                    student_text = row['no of']
                                     venue_text = str(row['room']).upper()
                                     invigilatorNo_text = row['no of invigilator']
 
-                                    create_exam_and_related(examDate_text, startTime_text, endTime_text, 
-                                                            courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
+                                    # Now proceed with your existing logic, e.g., create the exam and save it
+                                    create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
                                     db.session.commit()
                                     exam_records_added += 1
+
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
@@ -708,6 +719,8 @@ def admin_manageExam():
                 # Parse into datetime
                 start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
                 end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+
+                
 
                 # --- Other fields ---
                 programCode_text = request.form.get('programCode', '').strip()
