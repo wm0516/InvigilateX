@@ -79,7 +79,7 @@ class User(db.Model):
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
-    venueNumber = db.Column(db.String(10), primary_key=True)                                     # [PK] Venue identifier
+    venueNumber = db.Column(db.String(20), primary_key=True)                                     # [PK] Venue identifier
     venueFloor = db.Column(db.String(10), nullable=False)                                        # Floor of venue
     venueCapacity = db.Column(db.Integer, nullable=False)                                        # Capacity of venue
     venueStatus = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)   # {'Available', 'Unavailable', 'In Service'}
@@ -89,7 +89,7 @@ class Venue(db.Model):
     exams = db.relationship("Exam", back_populates="venue")
     '''
     CREATE TABLE Venue (
-        venueNumber VARCHAR(10) NOT NULL PRIMARY KEY,
+        venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
         venueFloor VARCHAR(10) NOT NULL,
         venueCapacity INT NOT NULL,
         venueStatus ENUM('AVAILABLE','UNAVAILABLE','IN SERVICE') NOT NULL

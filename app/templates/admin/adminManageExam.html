@@ -201,6 +201,7 @@
                     <th>Venue</th>
                     <th>Program Code</th>
                     <th>Course / Section</th>
+                    <th>Course Name</th>
                     <th>Practical Lecturer</th>
                     <th>Tutorial Lecturer</th>
                     <th>No. of Student(s)</th>
@@ -230,6 +231,7 @@
                         <td>{{ row.examVenue }}</td>
                         <td>{{ row.course.courseCode }}</td>
                         <td>{{ row.course.courseCodeSection }}</td>
+                        <td>{{ row.course.courseName }}</td>
                         <td>{{ row.course.practicalLecturer.userName }}</td>
                         <td>{{ row.course.tutorialLecturer.userName }}</td>
                         <td>[{{ row.course.courseStudent }}]</td>
