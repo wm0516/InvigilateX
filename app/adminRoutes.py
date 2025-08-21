@@ -726,7 +726,6 @@ def admin_manageExam():
                 start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
                 end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
 
-
                 # --- Other fields ---
                 programCode_text = request.form.get('programCode', '').strip()
                 courseSection_text = request.form.get('courseSection', '').strip()
