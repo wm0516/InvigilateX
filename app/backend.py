@@ -242,6 +242,36 @@ def check_exam(courseSection, date, starttime, endtime):
 
     return True, ""
 
+def check_exam(courseSection, date, starttime, endtime, venue):
+    # Parse date + time → datetime
+    start_dt = datetime.combine(date, datetime.strptime(starttime, "%H:%M").time())
+    end_dt = datetime.combine(date, datetime.strptime(endtime, "%H:%M").time())
+
+    # Handle overnight exams (e.g. 22:00 → 02:00 next day)
+    if end_dt <= start_dt:
+        end_dt += timedelta(days=1)
+
+    # 1. Find the course
+    course = Course.query.filter_by(courseCodeSection=courseSection).first()
+    if not course:
+        return False, f"Course {courseSection} not found"
+
+    # 2. Check if this course already has an exam
+    exam_for_course = Exam.query.filter_by(examId=course.courseExamId).first()
+    if exam_for_course and exam_for_course.examDate is not None:
+        return False, f"Course {courseSection} already has an exam scheduled"
+
+    # 3. Check if another exam overlaps (same day/time range)
+    clash = Exam.query.filter(
+        Exam.examDate == date,
+        Exam.examStartTime < end_dt,
+        Exam.examEndTime > start_dt,
+        Exam.examVenue == venue
+    ).first()
+    if clash:
+        return False, "Another exam already overlaps with this time slot"
+
+    return True, ""
 
 
 
