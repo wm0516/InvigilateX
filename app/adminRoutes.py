@@ -613,49 +613,43 @@ def admin_manageExam():
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
+        # ===== File Upload =====
+
+
         if form_type == 'announce':
             return redirect(url_for('admin_manageExam'))
 
         # ===== Manual Add =====
         elif form_type == 'manual':
             try:
-
+                # --- Raw input ---
                 startDate_raw = request.form.get('startDate', '').strip()
                 endDate_raw = request.form.get('endDate', '').strip()
                 startTime_raw = request.form.get('startTime', '').strip()
                 endTime_raw = request.form.get('endTime', '').strip()
 
-                # Debugging step: Print the types of raw values
-                print(f"startDate_raw: {startDate_raw} (type: {type(startDate_raw)})")
-                print(f"endDate_raw: {endDate_raw} (type: {type(endDate_raw)})")
-
-                # Ensure date values are strings
-                if isinstance(startDate_raw, datetime):
-                    startDate_raw = startDate_raw.strftime("%Y-%m-%d")
-                if isinstance(endDate_raw, datetime):
-                    endDate_raw = endDate_raw.strftime("%Y-%m-%d")
-
-                # Ensure time values are in HH:MM:SS
-                if len(startTime_raw) == 5:   # HH:MM → append :00
+                # --- Normalize time strings ---
+                if len(startTime_raw) == 5:   # HH:MM → add :00
                     startTime_raw += ":00"
                 if len(endTime_raw) == 5:
                     endTime_raw += ":00"
 
-                # Final parse (now guaranteed safe)
-                start_dt = datetime.strptime(f"{str(startDate_raw)} {str(startTime_raw)}", "%Y-%m-%d %H:%M:%S")
-                end_dt = datetime.strptime(f"{str(endDate_raw)} {str(endTime_raw)}", "%Y-%m-%d %H:%M:%S")
+                # --- Convert to datetime objects ---
+                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
+                end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
 
                 # --- Other fields ---
-                programCode_text = request.form.get('programCode', '').strip()
                 courseSection_text = request.form.get('courseSection', '').strip()
+                venue_text = request.form.get('venue', '').strip()
                 practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                student_text = int(request.form.get('student', '0'))
-                venue_text = request.form.get('venue', '').strip()
                 invigilatorNo_text = int(request.form.get('invigilatorNo', '0'))
 
-                create_exam_and_related(start_dt.date(), start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
-                db.session.commit()
+                # --- Call core function ---
+                create_exam_and_related(
+                    start_dt, end_dt, courseSection_text, venue_text,
+                    practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text
+                )
 
                 flash("New Exam Record Added Successfully", "success")
                 return redirect(url_for('admin_manageExam'))

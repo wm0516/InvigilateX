@@ -276,7 +276,12 @@ def get_available_venues(examDate, startTime, endTime):
     return usable_venues
 
 
-def create_exam_and_related(examDate, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text,
+                            practicalLecturer, tutorialLecturer, invigilatorNo):
+    """
+    Handles updating exam details, venue availability, creating reports,
+    and assigning invigilators. Expects proper datetime objects for start_dt and end_dt.
+    """
     # 1. Find the course
     course = Course.query.filter_by(courseCodeSection=courseSection).first()
     if not course:
@@ -288,8 +293,8 @@ def create_exam_and_related(examDate, startTime, endTime, courseSection, venue_t
         raise ValueError(f"Exam for course {courseSection} not found")
 
     # 3. Update the exam details
-    exam.examStartTime = startTime
-    exam.examEndTime = endTime
+    exam.examStartTime = start_dt
+    exam.examEndTime = end_dt
     exam.examVenue = venue_text
     exam.examNoInvigilator = invigilatorNo
 
@@ -297,17 +302,15 @@ def create_exam_and_related(examDate, startTime, endTime, courseSection, venue_t
     course.coursePractical = practicalLecturer
     course.courseTutorial = tutorialLecturer
 
-    # 5. Save Venue Availability (convert date + time into datetime)
-    start_dt = datetime.combine(examDate, datetime.strptime(startTime, "%H:%M:%S").time())
-    end_dt = datetime.combine(examDate, datetime.strptime(endTime, "%H:%M:%S").time())
-
-    if end_dt <= start_dt:  # overnight case
-        end_dt += timedelta(days=1)
+    # 5. Save Venue Availability (handle overnight case)
+    adj_end_dt = end_dt
+    if end_dt <= start_dt:  # overnight exam
+        adj_end_dt = end_dt + timedelta(days=1)
 
     new_availability = VenueAvailability(
         venueNumber=venue_text,
         startDateTime=start_dt,
-        endDateTime=end_dt,
+        endDateTime=adj_end_dt,
         status="UNAVAILABLE"
     )
     db.session.add(new_availability)
@@ -318,7 +321,7 @@ def create_exam_and_related(examDate, startTime, endTime, courseSection, venue_t
     db.session.flush()  # ensures invigilationReportId is available
 
     # 7. Calculate Exam Duration
-    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+    pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
     # 8. Get Eligible Invigilators (exclude lecturers)
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
@@ -364,7 +367,6 @@ def create_exam_and_related(examDate, startTime, endTime, courseSection, venue_t
 
     # 11. Final Commit
     db.session.commit()
-
     return exam
 
 
