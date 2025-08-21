@@ -225,6 +225,7 @@ html, body {
 
 .user-table-container {
     margin: 20px 0;
+    overflow-x: auto;
 }
 
 .user-data-table, .enter-data-table {
@@ -257,7 +258,7 @@ html, body {
 }
 
 .user-data-table td {
-    padding: 1%;
+    padding: 10px 20px;
     border-bottom: 1px solid #e0e0e0;
     color: #333;
     font-size: 0.95em;
