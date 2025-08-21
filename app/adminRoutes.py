@@ -22,6 +22,27 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
+# function for admin manage lecturer timetable (adding, editing, and removing)
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    user_data = User.query.all()
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
+
+
+
+# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
+@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+def admin_manageInvigilationTimetable():
+    attendances = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .all()
+    )
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
+
+
+
 # function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
@@ -213,24 +234,6 @@ def standardize_time_with_seconds(time_value):
 
 
 
-
-# function for admin manage lecturer timetable (adding, editing, and removing)
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    user_data = User.query.all()
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
-
-
-
-# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
-@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
-def admin_manageInvigilationTimetable():
-    exam_data = Exam.query.all()
-    user_data = User.query.all()
-    department_data = Department.query.all()
-
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', 
-                           user_data=user_data, exam_data=exam_data, department_data=department_data)
 
 
 

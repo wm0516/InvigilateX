@@ -17,41 +17,52 @@
         <table class="user-data-table">
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Exam Date</th>
-                    <th>Exam Day</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Program Code</th>
-                    <th>Course/Section</th>
-                    <th>Lecturer</th>
-                    <th>No. of Students</th>
-                    <th>Room</th>
-                    <th>Chief Inviglator</th>  
-                    <th>Invigilator 1</th>
-                    <th>Invigilator 2</th>
-                    <th>Backup Invigilator</th>
+                    <th>Exam ID</th>
+                    <th>Course Code/Section</th>
+                    <th>Course Department</th>
+                    <th>Total of Students</th>
+                    <th>Practical & Tutorial Lecturer</th>
+                    <th>Exam Start</th>
+                    <th>Exam End</th>
+                    <th>Total of Invigilator</th>
+                    <th>Invigilator [ID] & Name</th>
+                    <th>Contact</th>
+                    <th>Status</th>
                 </tr>
             </thead>
+
             <tbody>
-                {% for row in exam_data %}
-                <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <!-- <td>{{ row.examID  }}</td> -->
-                    <td>{{ row.examDate }}</td>
-                    <td>{{ row.examDay }}</td>
-                    <td>{{ row.examStartTime }}</td>
-                    <td>{{ row.examEndTime }}</td>
-                    <td>{{ row.examProgramCode }}</td>
-                    <td>{{ row.examCourseCodeSection }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examTotalStudent }}</td>
-                    <td>{{ row.examVenue }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                </tr>
+                {% for exam, grouped in attendances|groupby("report.exam.examId") %}
+                    {% set rowspan = grouped|length %}
+                    {% for att in grouped %}
+                        <tr>
+                            {% if loop.first %}
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
+                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseCodeSection }}</td>
+                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseDepartment }}</td>
+                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseStudent }}</td>
+                                <td rowspan="{{ rowspan }}">
+                                    Practical Lecturer: [{{ att.report.exam.course.coursePractical }}] <br>
+                                    Tutorial Lecturer: [{{ att.report.exam.course.courseTutorial }}]
+                                </td>
+                                <td rowspan="{{ rowspan }}">
+                                    {{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }} <br>
+                                    [{{ att.report.exam.examStartTime.strftime("%A") }}] <br>
+                                    {{ att.report.exam.examStartTime.strftime("%H:%M") }}
+                                </td>
+                                <td rowspan="{{ rowspan }}">
+                                    {{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }} <br>
+                                    [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
+                                    {{ att.report.exam.examEndTime.strftime("%H:%M") }}
+                                </td>
+                                <td rowspan="{{ rowspan }}">{{ att.report.exam.examNoInvigilator }}</td>
+                            {% endif %}
+
+                            <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
+                            <td>{{ att.invigilator.userContact }}</td>
+                            <td>{{ att.remark }}</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
