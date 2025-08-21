@@ -196,8 +196,8 @@
                 <tr>
                     <th>No</th>
                     <th>Exam Id</th>
-                    <th>Exam Date & Day</th>
-                    <th>Start - End Time</th>
+                    <th>Exam Date & Start - End Time</th>
+                    <th>Exam Day</th>
                     <th>Venue</th>
                     <th>Program Code</th>
                     <th>Course/Section</th>
@@ -212,15 +212,15 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>[{{ row.examId }}]</td>
-                        <td>{{ row.examDate }} [{{ row.examDay }}]</td>
-                        <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>                    
+                        <td>{{ row.examStartTime }} - {{ row.examEndTime }}</td>  
+                        <td>{{ row.examStartTime.strftime("%A") }}</td>                  
                         <td>{{ row.examVenue }}</td>
                         <td>{{ row.course.courseCode }}</td>
                         <td>{{ row.course.courseCodeSection }}</td>
                         <td>{{ row.course.practicalLecturer.userName }}</td>
                         <td>{{ row.course.tutorialLecturer.userName }}</td>
-                        <td>{{ row.course.courseStudent }}</td>
-                        <td>{{ row.examNoInvigilator }}</td>
+                        <td>[{{ row.course.courseStudent }}]</td>
+                        <td>[{{ row.examNoInvigilator }}]</td>
                     </tr>
                 {% endfor %}
             </tbody>
