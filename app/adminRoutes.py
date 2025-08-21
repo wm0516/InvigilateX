@@ -595,7 +595,7 @@ def admin_manageExam():
     department_data = Department.query.all() # For department code dropdown
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
     exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
-    course_data = Course.query.all()
+    course_data = Course.query.join(Exam).filter(Exam.examStartTime.is_(None), Exam.examEndTime.is_(None)).all()
  
     # Default values for manual form
     examDate_text = ''
@@ -754,9 +754,20 @@ def get_lecturers_by_department(department_code):
 # ===== to get all course that under the department for the manage exam page ====
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
-    courses = Course.query.filter_by(courseDepartment=department_code).all()
+    courses = (
+        Course.query
+        .join(Exam)
+        .filter(
+            Course.courseDepartment == department_code,
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None)
+        )
+        .all()
+    )
+
     course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
     return jsonify(course_list)
+
 
 
 # ===== to get all course details that under the department for the manage exam page ====
