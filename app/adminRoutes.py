@@ -676,7 +676,7 @@ def admin_manageExam():
                                     venue_text = str(row['room']).upper()
                                     invigilatorNo_text = row['no of invigilator']
 
-                                    valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, venue_text)
+                                    valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                                     if valid:
                                         create_exam_and_related(examDate_text, examDay_text, startTime_text, endTime_text, 
                                                                 courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
@@ -718,7 +718,7 @@ def admin_manageExam():
                 venue_text = request.form.get('venue', '').strip()
                 invigilatorNo_text = int(request.form.get('invigilatorNo', ''))
 
-                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text, venue_text)
+                valid, result = check_exam(courseSection_text, examDate_text, startTime_text, endTime_text)
                 if not valid:
                     flash(result, 'error')
                     return render_template('admin/adminManageExam.html',
