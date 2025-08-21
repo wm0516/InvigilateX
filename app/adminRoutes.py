@@ -196,10 +196,10 @@ def standardize_time_with_seconds(time_value):
         return time_value.strftime("%H:%M:%S")
     elif isinstance(time_value, str):
         # Try multiple formats
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p"):  # Handle 12-hour format with AM/PM
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):  # Handle 12-hour format with AM/PM
             try:
                 dt = datetime.strptime(time_value.strip(), fmt)
-                return dt.strftime("%H:%M:%S")
+                return dt.strftime("%H:%M:%S")  # Convert to 24-hour format (HH:MM:SS)
             except ValueError:
                 continue
         print(f"[Time Parse Error] Could not parse: {time_value}")
