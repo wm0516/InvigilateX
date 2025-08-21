@@ -188,24 +188,24 @@ def parse_date(val):
 
 def standardize_time_with_seconds(time_value):
     """
-    Convert input time (string or datetime.time) to HH:MM:SS string format.
+    Convert input time (string or datetime.time/datetime) to HH:MM:SS string format.
     """
     if isinstance(time_value, time):
-        # If it's already a time object, format it
+        return time_value.strftime("%H:%M:%S")
+    elif isinstance(time_value, datetime):
         return time_value.strftime("%H:%M:%S")
     elif isinstance(time_value, str):
-        # Try parsing from string formats like HH:MM or HH:MM:SS
-        for fmt in ("%H:%M:%S", "%H:%M"):
+        # Try multiple formats
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M %p"):
             try:
-                dt = datetime.strptime(time_value, fmt)
+                dt = datetime.strptime(time_value.strip(), fmt)
                 return dt.strftime("%H:%M:%S")
             except ValueError:
                 continue
-        # If parsing fails, just return the original string (or handle error)
-        return time_value
+        print(f"[Time Parse Error] Could not parse: {time_value}")
+        return None
     else:
-        # If it's something else (e.g., None), return empty string or handle accordingly
-        return ""
+        return None
 
 
 
