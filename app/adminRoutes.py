@@ -613,7 +613,88 @@ def admin_manageExam():
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
+        # ===== File Upload =====
+        '''
+        if form_type == 'upload':
+            file = request.files.get('exam_file')
+            print(f"Read file: {file}")
+            if file and file.filename:
+                try:
+                    file_stream = BytesIO(file.read())
+                    excel_file = pd.ExcelFile(file_stream)
 
+                    abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
+                    exam_records_added = 0
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            df = pd.read_excel(
+                                excel_file,
+                                sheet_name=sheet_name,
+                                usecols="A:I",
+                                skiprows=1
+                            )
+                            df.columns = [str(col).strip().lower() for col in df.columns]
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                            print(f"Read file table: {expected_cols}")
+
+                            if df.columns.tolist() != expected_cols:
+                                raise ValueError("Excel columns do not match expected format")
+                            
+                            # Normalize all string columns except 'day' to lowercase
+                            for col in df.columns:
+                                if col != 'day':
+                                    df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+
+                            # Convert 'day' abbreviations to full day names
+                            df['day'] = df['day'].apply(
+                                lambda x: abbr_to_full.get(str(x).strip()[:3].lower(), x) if isinstance(x, str) else x
+                            )
+
+                            for index, row in df.iterrows():
+                                try:
+                                    # Parse the date, time, and other data
+                                    examDate_text = parse_date(row['date'])  # Parsed date from Excel
+                                    startTime_text = standardize_time_with_seconds(row['start'])  # Parsed time from Excel
+                                    endTime_text = standardize_time_with_seconds(row['end'])  # Parsed time from Excel
+
+                                    if not examDate_text:
+                                        raise ValueError(f"Invalid date at row {index}")
+
+                                    if not startTime_text or not endTime_text:
+                                        raise ValueError(f"Invalid time at row {index}")
+
+                                    # Convert date and time into datetime
+                                    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
+                                    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
+
+                                    # Additional data parsing
+                                    courseSection_text = str(row['course/sec']).upper()
+                                    practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
+                                    venue_text = str(row['room']).upper()
+                                    invigilatorNo_text = row['no of invigilator']
+
+                                    # Now proceed with your existing logic, e.g., create the exam and save it
+                                    create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
+                                    db.session.commit()
+                                    exam_records_added += 1
+
+                                except Exception as row_err:
+                                    print(f"[Row Error] {row_err}")
+                        except Exception as sheet_err:
+                            print(f"[Sheet Error] {sheet_err}")
+
+                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
+                          'success' if exam_records_added > 0 else 'error')
+                    return redirect(url_for('admin_manageExam'))
+
+                except Exception as e:
+                    print(f"[File Processing Error] {e}")
+                    flash('File processing error: File upload in wrong format', 'error')
+                    return redirect(url_for('admin_manageExam'))
+            else:
+                flash("No file uploaded", 'error')
+                return redirect(url_for('admin_manageExam'))
+        '''
 
         if form_type == 'announce':
             return redirect(url_for('admin_manageExam'))
@@ -621,7 +702,7 @@ def admin_manageExam():
         # ===== Manual Add =====
         elif form_type == 'manual':
             try:
-                # Get form values
+
                 startDate_raw = request.form.get('startDate', '').strip()
                 endDate_raw = request.form.get('endDate', '').strip()
                 startTime_raw = request.form.get('startTime', '').strip()
@@ -631,21 +712,21 @@ def admin_manageExam():
                 print(f"startDate_raw: {startDate_raw} (type: {type(startDate_raw)})")
                 print(f"endDate_raw: {endDate_raw} (type: {type(endDate_raw)})")
 
-                # Ensure these are strings (if they are datetime objects, convert to string)
+                # Ensure date values are strings
                 if isinstance(startDate_raw, datetime):
                     startDate_raw = startDate_raw.strftime("%Y-%m-%d")
                 if isinstance(endDate_raw, datetime):
                     endDate_raw = endDate_raw.strftime("%Y-%m-%d")
 
-                # Ensure time is in HH:MM:SS format
-                if len(startTime_raw) == 5:
+                # Ensure time values are in HH:MM:SS
+                if len(startTime_raw) == 5:   # HH:MM → append :00
                     startTime_raw += ":00"
                 if len(endTime_raw) == 5:
                     endTime_raw += ":00"
 
-                # Now safely parse datetime
-                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-                end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+                # Final parse (now guaranteed safe)
+                start_dt = datetime.strptime(f"{str(startDate_raw)} {str(startTime_raw)}", "%Y-%m-%d %H:%M:%S")
+                end_dt = datetime.strptime(f"{str(endDate_raw)} {str(endTime_raw)}", "%Y-%m-%d %H:%M:%S")
 
                 # --- Other fields ---
                 programCode_text = request.form.get('programCode', '').strip()
