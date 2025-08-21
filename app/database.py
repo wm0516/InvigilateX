@@ -46,12 +46,12 @@ class User(db.Model):
     __tablename__ = 'User'
     userId = db.Column(db.String(20), primary_key=True)                                                               # [PK]Refer to Staff ID
     userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'))                             # [FK] Refer to Staff Department
-    userName = db.Column(db.String(255))                                                                              # Refer to Staff Name
-    userLevel = db.Column(db.Integer)                                                                                 # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
-    userEmail = db.Column(db.String(255))                                                                             # Refer to Staff INTI email
-    userContact = db.Column(db.String(15))                                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
-    userGender = db.Column(db.String(10))                                                                             # Refer to Staff Gender
-    userPassword = db.Column(db.String(255))                                                                          # Refer to Staff Password
+    userName = db.Column(db.String(255), nullable=False)                                                              # Refer to Staff Name
+    userLevel = db.Column(db.Integer, nullable=False)                                                                 # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
+    userEmail = db.Column(db.String(255), nullable=False)                                                             # Refer to Staff INTI email
+    userContact = db.Column(db.String(15), nullable=False)                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
+    userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
+    userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
     userStatus = db.Column(db.Boolean, default=False)                                                                 # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
     userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
@@ -62,21 +62,20 @@ class User(db.Model):
     '''
     CREATE TABLE User (
         userId VARCHAR(20) PRIMARY KEY,
-        userName VARCHAR(255),
-        userGender VARCHAR(10),
-        userEmail VARCHAR(255),
-        userContact VARCHAR(15),
-        userLevel INT,
-        userDepartment VARCHAR(10),
-        userPassword VARCHAR(255),
+        userName VARCHAR(255) NOT NULL,
+        userGender VARCHAR(10) NOT NULL,
+        userEmail VARCHAR(255) NOT NULL,
+        userContact VARCHAR(15) NOT NULL,
+        userLevel INT NOT NULL,
+        userDepartment VARCHAR(10) NOT NULL,,
+        userPassword VARCHAR(255) NOT NULL,
         userStatus BOOLEAN DEFAULT FALSE,
-        userRegisterDateTime DATETIME,
+        userRegisterDateTime DATETIME NOT NULL,
         userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
-
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -134,8 +133,6 @@ class Exam(db.Model):
     '''
     CREATE TABLE Exam (
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        examDate DATE NULL,
-        examDay VARCHAR(10) NULL,
         examStartTime DateTime NULL,
         examEndTime DateTime NULL,
         examVenue VARCHAR(10) NULL,
@@ -173,7 +170,7 @@ class Course(db.Model):
         courseDepartment VARCHAR(10) NOT NULL,
         coursePractical VARCHAR(20) NOT NULL,
         courseTutorial VARCHAR(20) NOT NULL,
-        courseExamId INT NULL,
+        courseExamId INT NOT NULL,
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
         FOREIGN KEY (courseTutorial) REFERENCES User(userId),
