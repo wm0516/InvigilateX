@@ -265,71 +265,72 @@ def get_available_venues(examDate, startTime, endTime):
     return usable_venues
 
 
-# Admin Validation Function 5: Insert Exam, InvigilatorReport Database
 def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
-    # --- 1. Create Exam ---
-    new_exam = Exam(
-        examVenue=venue_text,
-        examDate=examDate,
-        examDay=examDay,
-        examStartTime=startTime,
-        examEndTime=endTime,
-        examNoInvigilator=invigilatorNo
-    )
-    db.session.add(new_exam)
-    db.session.flush()  # ensures examId is available
+    # 1. Find the course
+    course = Course.query.filter_by(courseCodeSection=courseSection).first()
+    if not course:
+        raise ValueError(f"Course with section {courseSection} not found")
 
-    # --- 2. Get AVAILABLE Venues ---
+    # 2. Find the related exam
+    exam = Exam.query.filter_by(examId=course.courseExamId).first()
+    if not exam:
+        raise ValueError(f"Exam for course {courseSection} not found")
+
+    # 3. Update the exam details
+    exam.examDate = examDate
+    exam.examDay = examDay
+    exam.examStartTime = startTime
+    exam.examEndTime = endTime
+    exam.examVenue = venue_text
+    exam.examNoInvigilator = invigilatorNo
+
+    # 4. Update lecturer assignments if needed
+    course.coursePractical = practicalLecturer
+    course.courseTutorial = tutorialLecturer
+
+    # 5. Save Venue Availability (convert date + time into datetime)
+    start_dt = datetime.combine(examDate, datetime.strptime(startTime, "%H:%M:%S").time())
+    end_dt = datetime.combine(examDate, datetime.strptime(endTime, "%H:%M:%S").time())
+
+    if end_dt <= start_dt:  # overnight case
+        end_dt += timedelta(days=1)
+
     new_availability = VenueAvailability(
-        venueNumber=chosenVenue,
-        startDateTime=startTime,
-        endDateTime=endTime,
+        venueNumber=venue_text,
+        startDateTime=start_dt,
+        endDateTime=end_dt,
         status="UNAVAILABLE"
     )
     db.session.add(new_availability)
 
-
-    # --- 3. Update Course ---
-    course = Course.query.filter_by(courseCodeSection=courseSection).first()
-    if course:
-        course.courseExamId = new_exam.examId
-        db.session.flush()
-
-    # --- 4. Create Invigilation Report ---
-    new_report = InvigilationReport(examId=new_exam.examId)
+    # 6. Create Invigilation Report
+    new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
-    db.session.flush()  
+    db.session.flush()  # ensures invigilationReportId is available
 
-    # --- 5. Calculate Exam Duration (handle overnight) ---
-    start_dt = datetime.strptime(startTime, "%H:%M:%S")
-    end_dt = datetime.strptime(endTime, "%H:%M:%S")
-
-    if end_dt <= start_dt:  # overnight case (e.g., 22:00 -> 02:00 next day)
-        end_dt += timedelta(days=1)
-
+    # 7. Calculate Exam Duration
     pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-    # --- 6. Get Eligible Invigilators (exclude assigned lecturers) ---
+    # 8. Get Eligible Invigilators (exclude lecturers)
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
     eligible_invigilators = User.query.filter(
-        ~User.userId.in_(exclude_ids),   # Exclude specific IDs
-        User.userLevel == 1              # Only select users with level 1
+        ~User.userId.in_(exclude_ids),
+        User.userLevel == 1
     ).all()
 
     if not eligible_invigilators:
         raise ValueError("No eligible invigilators available for assignment.")
 
-    # --- 7. Sort Eligible Invigilators by Workload ---
+    # 9. Sort Eligible Invigilators by workload
     eligible_invigilators.sort(
         key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
     )
 
-    # --- 8. Assign Invigilators ---
+    # 10. Assign Invigilators
     for _ in range(invigilatorNo):
         if not eligible_invigilators:
-            break  # stop if we run out of eligible invigilators
+            break
 
-        # Get the lowest workload among remaining
         lowest_hours = (eligible_invigilators[0].userCumulativeHours or 0) + \
                        (eligible_invigilators[0].userPendingCumulativeHours or 0)
 
@@ -338,13 +339,9 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
             if ((inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)) == lowest_hours
         ]
 
-        # Randomly choose one from the lowest candidates
         chosen = random.choice(lowest_candidates)
-
-        # Update chosen invigilator workload
         chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
 
-        # Save attendance record
         attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,
@@ -354,13 +351,12 @@ def create_exam_and_related(examDate, examDay, startTime, endTime, courseSection
         )
         db.session.add(attendance)
 
-        # Remove chosen from pool to avoid duplicate assignment
         eligible_invigilators.remove(chosen)
 
-    # --- 9. Final Commit ---
+    # 11. Final Commit
     db.session.commit()
 
-    return new_exam
+    return exam
 
 
 
