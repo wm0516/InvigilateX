@@ -618,6 +618,7 @@ def admin_manageExam():
     tutorialLecturer_text = ''
     student_text = ''
     venue_text = ''
+    invigilatorNo_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')

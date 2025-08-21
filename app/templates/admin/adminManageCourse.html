@@ -183,11 +183,11 @@
                     <th>Course Section</th>
                     <th>Course Name</th>
                     <th>Credit Hour(s)</th>
+                    <th>Exam Id</th>
                     <th>Department</th>
                     <th>Practical Lecturer</th>
                     <th>Tutorial Lecturer</th>
                     <th>No. of Students</th>
-                    <th>Exam Status with Exam Id</th>
                 </tr>
             </thead>
             <tbody>
@@ -198,11 +198,11 @@
                     <td>{{ row.courseSection }}</td>
                     <td>{{ row.courseName }}</td>
                     <td>{{ row.courseHour }}</td>
+                    <td>{{ row.courseExamId }}</td>
                     <td>{{ row.courseDepartment }}</td>
                     <td>{{ row.practicalLecturer.userName }}</td>
                     <td>{{ row.tutorialLecturer.userName }}</td>
                     <td>{{ row.courseStudent }}</td>
-                    <td>{{ [row.courseExamStatus] }} {{ row.courseExamId }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
