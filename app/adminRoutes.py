@@ -700,11 +700,11 @@ def admin_manageExam():
         # ===== Manual Add =====
         elif form_type == 'manual':
             try:
-                # --- Dates & Times ---
-                startDate_raw = request.form.get('startDate', '').strip()
-                endDate_raw   = request.form.get('endDate', '').strip()
-                startTime_raw = request.form.get('startTime', '').strip()
-                endTime_raw   = request.form.get('endTime', '').strip()
+                # Ensure the inputs are strings
+                startDate_raw = str(request.form.get('startDate', '').strip())
+                endDate_raw   = str(request.form.get('endDate', '').strip())
+                startTime_raw = str(request.form.get('startTime', '').strip())
+                endTime_raw   = str(request.form.get('endTime', '').strip())
 
                 if not startDate_raw or not startTime_raw or not endDate_raw or not endTime_raw:
                     flash("Start and End date/time are required", "error")
@@ -716,11 +716,9 @@ def admin_manageExam():
                 if len(endTime_raw) == 5:
                     endTime_raw += ":00"
 
-                # Parse into datetime
+                # Now use strptime without error
                 start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
                 end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
-
-                
 
                 # --- Other fields ---
                 programCode_text = request.form.get('programCode', '').strip()
