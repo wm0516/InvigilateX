@@ -15,6 +15,18 @@
             <thead>
                 <tr>
                     <th>Exam ID</th>
+                    <th>Course Details</th>
+                    <th>Exam Start Time</th>
+                    <th>Exam End Time</th>
+                    <th>Exam Venue</th>
+                    <th>Number of Invigilators</th>
+                    <th>Invigilator Details/th>
+                    <th>Contact</th>
+                    <th>Attendance Status</th>
+                </tr>
+
+                <tr>
+                    <th>Exam ID</th>
                     <th>Course Code/Section</th>
                     <th>Course Name</th>
                     <th>Course Department</th>
@@ -35,11 +47,12 @@
                     {% for att in grouped %}
                         <tr>
                             {% if loop.first %}
-                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
-                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseCodeSection }}</td>
-                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseName }}</td>
-                                <td rowspan="{{ rowspan }}">{{ att.report.exam.course.courseDepartment }}</td>
+                                <td>[{{ att.report.exam.examId }}]</td>
                                 <td rowspan="{{ rowspan }}">
+                                    Course Name: {{ att.report.exam.course.courseName }} <br>
+                                    Course Code/Section: {{ att.report.exam.course.courseCodeSection }}<br>
+                                    Program Code: {{ att.report.exam.course.courseDepartment }} <br>
+                                    Number of Students: [{{ att.report.exam.course.courseStudent }}] <br>
                                     P: [{{ att.report.exam.course.practicalLecturer.userName }}] <br>
                                     T: [{{ att.report.exam.course.tutorialLecturer.userName }}]
                                 </td>
@@ -62,9 +75,9 @@
                             
                             <td rowspan="{ rowspan }">
                                 ID: [{{ att.invigilator.userId }}] <br>
-                                Name: {{ att.invigilator.userName }}
+                                Name: {{ att.invigilator.userName }} <br>
+                                Contact: {{ att.invigilator.userContact }}
                             </td>
-                            <td>{{ att.invigilator.userContact }}</td>
                             <td>{{ att.remark }}</td>
                         </tr>
                     {% endfor %}
