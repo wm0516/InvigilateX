@@ -2,52 +2,8 @@
 {% extends "admin/adminBase.html" %}
 {% block title %}Admin Homepage{% endblock %}
 {% block content %}
-<div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
-    <!-- Row 1 First Fesatures to upload merge schedule files--> 
+<div class="menu-grid">
     <div class="menu-section">
-        <!--   <h2>Upload File</h2><br>  -->
-        <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;"><h2>Manage Timetable</h2></a>
-        <li class="submenu">
-            <strong>  Purpose:</strong>
-            <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
-            </ul>
-        </li>
-    </div>
-
-    <!-- Row 2 First auto generated scdehule-->
-    <div class="menu-section">
-        <!-- <h2>Generate Exam Schedule</h2> -->
-        <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;"><h2>Manage Staff</h2></a>
-        <li class="submenu">
-            <strong>  Functionality:</strong>
-            <ul>
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
-            </ul>
-        </li>
-    </div>
-
-    <!-- Row 2 Second on managing lecturers-->
-    <div class="menu-section">
-    <!-- <h2>Settings</h2> -->
-        <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;"><h2>Manage Exam</h2></a>
-        <li class="submenu">
-            <strong>  Account Controls: </strong>
-            <ul>
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
-            </ul>
-        </li>
-    </div>
-</div>
-<br>
-
-<div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
-    <!-- Row 1 First Fesatures to upload merge schedule files--> 
-    <div class="menu-section">
-        <!--   <h2>Upload File</h2><br>  -->
         <a href="{{ url_for('admin_manageCourse')}}" style="text-decoration: none;"><h2>Manage Course</h2></a>
         <li class="submenu">
             <strong>  Purpose:</strong>
@@ -58,23 +14,7 @@
         </li>
     </div>
 
-    <!-- Row 2 First auto generated scdehule-->
     <div class="menu-section">
-        <!-- <h2>Generate Exam Schedule</h2> -->
-        <a href="{{ url_for('admin_manageInvigilationTimetable')}}" style="text-decoration: none;"><h2>Manage Invigilation Timetable</h2></a>
-        <li class="submenu">
-            <strong>  Functionality:</strong>
-            <ul>
-                <li>Automatically assign examiners based on availability</li>
-                <li>Review and manage generated exam timetables</li>
-                <li>Distribute schedules via email</li>
-                <li>Download schedule in PDF format</li>
-            </ul>
-        </li>
-    </div>
-
-    <div class="menu-section">
-        <!--   <h2>Upload File</h2><br>  -->
         <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
         <li class="submenu">
             <strong>  Purpose:</strong>
@@ -84,13 +24,67 @@
             </ul>
         </li>
     </div>
-</div>
-<br>
 
-<div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
-    <!-- Row 1 First Fesatures to upload merge schedule files--> 
     <div class="menu-section">
-        <!--   <h2>Upload File</h2><br>  -->
+        <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;"><h2>Manage Venue</h2></a>
+        <li class="submenu">
+            <strong>  Purpose:</strong>
+            <ul>    
+                <li>Upload merged lecturer schedule files</li>
+                <li>Access and review combined lecturer timetables</li>
+            </ul>
+        </li>
+    </div>
+</div><br>
+
+<div class="menu-grid">
+    <div class="menu-section">
+        <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;"><h2>Manage Exam</h2></a>
+        <li class="submenu">
+            <strong>  Account Controls: </strong>
+            <ul>
+                <li>Upload merged lecturer schedule files</li>
+                <li>Access and review combined lecturer timetables</li>
+            </ul>
+        </li>
+    </div>
+
+    <div class="menu-section">
+        <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;"><h2>Manage Staff</h2></a>
+        <li class="submenu">
+            <strong>  Functionality:</strong>
+            <ul>
+                <li>Upload merged lecturer schedule files</li>
+                <li>Access and review combined lecturer timetables</li>
+            </ul>
+        </li>
+    </div>
+
+    <div class="menu-section">
+        <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;"><h2>Manage Timetable</h2></a>
+        <li class="submenu">
+            <strong>  Purpose:</strong>
+            <ul>    
+                <li>Upload merged lecturer schedule files</li>
+                <li>Access and review combined lecturer timetables</li>
+            </ul>
+        </li>
+    </div>
+</div><br>
+
+<div class="menu-grid">
+    <div class="menu-section">
+        <a href="{{ url_for('admin_manageInvigilationTimetable')}}" style="text-decoration: none;"><h2>Manage Invigilation Timetable</h2></a>
+        <li class="submenu">
+            <strong>  Functionality:</strong>
+            <ul>
+                <li>Automatically assign examiners based on availability</li>
+                <li>Review and manage generated exam timetables</li>
+            </ul>
+        </li>
+    </div>
+
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;"><h2>Manage Inviglation Report</h2></a>
         <li class="submenu">
             <strong>  Purpose:</strong>
@@ -102,8 +96,7 @@
     </div>
 
     <div class="menu-section">
-        <!--   <h2>Upload File</h2><br>  -->
-        <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;"><h2>Manage Venue</h2></a>
+        <a href="{{ url_for('admin_Profile')}}" style="text-decoration: none;"><h2>Profile</h2></a>
         <li class="submenu">
             <strong>  Purpose:</strong>
             <ul>    
@@ -112,13 +105,12 @@
             </ul>
         </li>
     </div>
-
-
 </div>
 {% endblock %}
 
-<!-- 
- 
 
 
--->
+
+
+
+

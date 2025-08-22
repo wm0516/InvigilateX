@@ -383,8 +383,10 @@ input, select{
 
 /* Main menu container layout (frame divide in the big frame) */
 .menu-grid {
-    width: 95%;
+    width: 100%;
     display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1%;
 }
 
 /* Main menu container layout (small frame that divide in the big frame) */
