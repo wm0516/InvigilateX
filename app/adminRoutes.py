@@ -29,7 +29,6 @@ def admin_manageTimetable():
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
 
 
-
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
@@ -64,9 +63,7 @@ def admin_manageDepartment():
     departmentCode_text = ''
     departmentName_text = ''
     deanName = ''
-    deanEmail_text = ''
     hopName = ''
-    hopEmail_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -78,16 +75,13 @@ def admin_manageDepartment():
             departmentCode_text = request.form.get('departmentCode', '').strip()
             departmentName_text = request.form.get('departmentName', '').strip()
             deanName = request.form.get('deanName', '').strip()
-            deanEmail_text = request.form.get('deanEmail', '').strip()
             hopName = request.form.get('hopName', '').strip()
-            hopEmail_text = request.form.get('hopEmail', '').strip()
 
             valid, result = check_department(departmentCode_text, departmentName_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list,
-                                       hop_list=hop_list, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text, deanName=deanName, deanEmail_text=deanEmail_text,
-                                       hopName=hopName, hopEmail_text=hopEmail_text)
+                return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, 
+                                       dean_list=dean_list, hop_list=hop_list, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
 
             new_department = Department(
                 departmentCode=departmentCode_text.upper(),
@@ -100,7 +94,6 @@ def admin_manageDepartment():
             flash("New Department Added Successfully", "success")
             return redirect(url_for('admin_manageDepartment'))
 
-    # GET request or after redirect
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
 
 
@@ -116,14 +109,13 @@ def admin_manageVenue():
     if request.method == 'POST':
         venueNumber_text = request.form.get('venueNumber', '').strip()
         venueFloor_text = request.form.get('venueFloor', '').strip()
-        venueCapacity_text = request.form.get('venueCapacity', '').strip()
+        venueCapacity_text = int(request.form.get('venueCapacity', '0'))
         venueStatus_text = request.form.get('venueStatus', '').strip()
 
         valid, result = check_venue(venueNumber_text, venueCapacity_text)
         if not valid:
             flash(result, 'error')
-            return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, 
-                                   venueFloor_text=venueFloor_text, venueCapacity_text=venueCapacity_text, venueStatus_text=venueStatus_text)
+            return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=venueCapacity_text)
 
         new_venue = Venue(
             venueNumber=venueNumber_text.upper(),
