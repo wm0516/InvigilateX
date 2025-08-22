@@ -109,7 +109,7 @@ def admin_manageVenue():
     if request.method == 'POST':
         venueNumber_text = request.form.get('venueNumber', '').strip()
         venueFloor_text = request.form.get('venueFloor', '').strip()
-        venueCapacity_text = int(request.form.get('venueCapacity', '0'))
+        venueCapacity_text = request.form.get('venueCapacity', '').strip()
         venueStatus_text = request.form.get('venueStatus', '').strip()
 
         valid, result = check_venue(venueNumber_text, venueCapacity_text)
@@ -475,7 +475,7 @@ def admin_manageCourse():
                                     courseStudent_text = str(row['no of students'])
                                     courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
-                                    valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
+                                    valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
                                     if valid:
                                         # 1. Create Exam
                                         new_exam = Exam(
@@ -542,7 +542,7 @@ def admin_manageCourse():
             courseStudent_text = request.form.get('courseStudent', '').strip()
             courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
-            valid, result = check_course(courseCode_text, courseSection_text, courseHour_text)
+            valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
             if not valid:
                 flash(result, 'error')
                 return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,

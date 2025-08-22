@@ -175,18 +175,31 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 
 
 # Admin Validation Function 1: Check Course [Course Code/Section Must be Unique in Database, and Hour Must be Integer]
-def check_course(code, section, hour):
+def check_course(code, section, hour, students):
     courseCodeSection_text = (code + '/' + section)
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
         return False, "Course Already Registered"
     
+    # Validate 'hour'
     try:
-        int(hour)
+        hour = int(hour)
     except ValueError:
-        return False, "Hour(s) must be in Integer"
+        return False, "Hour must be an integer"
+    if hour < 0:
+        return False, "Hour cannot be negative"
+    
+    # Validate 'students'
+    try:
+        students = int(students)
+    except ValueError:
+        return False, "Students must be an integer"
+    if students < 0:
+        return False, "Students cannot be negative"
 
     return True, ""
+
+
 
 # Admin Validation Function 2: Check Department [Department Code and Name Must be Unique in Database]
 def check_department(code, name):
@@ -209,11 +222,17 @@ def check_venue(roomNumber, capacity):
         return False, "Venue Room Number Already Registered"
     
     try:
-        int(capacity)
+        # Convert to integer
+        capacity = int(capacity)
     except ValueError:
-        return False, "Capacity must be in Integer"
+        return False, "Capacity must be an integer"
+    
+    if capacity < 0:
+        return False, "Capacity cannot be negative"
     
     return True, ""
+    
+
 
 
 def get_available_venues(examDate, startTime, endTime):
@@ -261,6 +280,12 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     exam = Exam.query.filter_by(examId=course.courseExamId).first()
     if not exam:
         raise ValueError(f"Exam for course {courseSection} not found")
+    
+    try:
+        # Convert to integer
+        invigilatorNo = int(invigilatorNo)
+    except ValueError:
+        return False, "Number of Invigilatiors must be an integer"
 
     # 3. Update the exam details
     exam.examStartTime = start_dt
