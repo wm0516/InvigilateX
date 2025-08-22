@@ -35,7 +35,7 @@ html, body {
 
 /* Sidebar locked in place and non-scrollable */
 .sidebar {
-    width: 20%; /* Changed back to 15% */
+    width: 15%;
     display: flex;
     flex-direction: column;
     border-right: 1px solid #e0e0e0;
