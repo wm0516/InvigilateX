@@ -208,7 +208,10 @@ def check_venue(roomNumber, capacity):
     if existing_roomNumber:
         return False, "Venue Room Number Already Registered"
     
-
+    try:
+        int(capacity)
+    except ValueError:
+        return False, "Capacity must be in Integer"
     
     return True, ""
 
