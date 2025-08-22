@@ -28,11 +28,12 @@
             <tbody>
                 {% for exam, grouped in attendances|groupby("report.exam.examId") %}
                     {% set rowspan = grouped|length %}
+                    
                     {% for att in grouped %}
                         <tr>
                             {% if loop.first %}
                                 <!-- Exam ID -->
-                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
+                                <td rowspan="{{ rowspan }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
 
                                 <!-- Course Details -->
                                 <td rowspan="{{ rowspan }}">
@@ -57,21 +58,21 @@
                                     [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
                                     {{ att.report.exam.examEndTime.strftime("%H:%M") }}
                                 </td>
-                                
-                                <!-- Exam Venue with Number of Invigilator(s)-->
+
+                                <!-- Exam Venue -->
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.examVenue }}</td>
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
-
-                                <!-- Invigilator Details -->
-                                <td rowspan="{{ rowspan }}">
-                                    ID: [{{ att.invigilator.userId }}] <br>
-                                    Name: {{ att.invigilator.userName }} <br>
-                                    Contact: {{ att.invigilator.userContact }}
-                                </td>
-                                
-                                <!-- Attendance Status -->
-                                <td rowspan="{{ rowspan }}">{{ att.remark }}</td>
                             {% endif %}
+
+                            <!-- Invigilator Details (one per row) -->
+                            <td>
+                                ID: [{{ att.invigilator.userId }}] <br>
+                                Name: {{ att.invigilator.userName }} <br>
+                                Contact: {{ att.invigilator.userContact }}
+                            </td>
+
+                            <!-- Attendance Status (per invigilator) -->
+                            <td>{{ att.remark }}</td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
