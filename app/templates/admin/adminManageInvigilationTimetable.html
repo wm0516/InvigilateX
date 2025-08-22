@@ -59,7 +59,11 @@
                                 <td rowspan="{{ rowspan }}">{{ att.report.exam.examVenue }}</td>
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                             {% endif %}
-                            <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
+                            
+                            <td rowspan="{ rowspan }">
+                                ID: [{{ att.invigilator.userId }}] <br>
+                                Name: {{ att.invigilator.userName }}
+                            </td>
                             <td>{{ att.invigilator.userContact }}</td>
                             <td>{{ att.remark }}</td>
                         </tr>
