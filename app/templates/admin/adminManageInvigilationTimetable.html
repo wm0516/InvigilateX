@@ -68,10 +68,10 @@
                                     Name: {{ att.invigilator.userName }} <br>
                                     Contact: {{ att.invigilator.userContact }}
                                 </td>
+                                
+                                <!-- Attendance Status -->
+                                <td rowspan="{{ rowspan }}">{{ att.remark }}</td>
                             {% endif %}
-                            
-                            <!-- Attendance Status -->
-                            <td rowspan="{{ rowspan }}">{{ att.remark }}</td>
                         </tr>
                     {% endfor %}
                 {% endfor %}

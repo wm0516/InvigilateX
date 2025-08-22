@@ -64,16 +64,16 @@
                                 Name: {{ att.invigilator.userName }} <br>
                                 Contact: {{ att.invigilator.userContact }}
                             </td>
+                            
+                            <!-- Check-in Time -->
+                            <td rowspan="{{ rowspan }}">{{ att.checkIn }}</td>
+
+                            <!-- Check-out Time -->
+                            <td rowspan="{{ rowspan }}">{{ att.checkOut }}</td>
+
+                            <!-- Attendance Status -->
+                            <td rowspan="{{ rowspan }}">{{ att.remark }}</td>
                         {% endif %}
-
-                        <!-- Check-in Time -->
-                        <td rowspan="{{ rowspan }}">{{ att.checkIn }}</td>
-
-                        <!-- Check-out Time -->
-                        <td rowspan="{{ rowspan }}">{{ att.checkOut }}</td>
-
-                        <!-- Attendance Status -->
-                        <td rowspan="{{ rowspan }}">{{ att.remark }}</td>
                     </tr>
                 {% endfor %}
             {% endfor %}
