@@ -207,7 +207,7 @@
                         <td>{{ loop.index }}</td>
 
                         <!-- Course Details -->
-                        <td rowspan="{{ rowspan }}">
+                        <td>
                             Course Name        : {{ row.course.courseName }} <br>
                             Course Code/Section: {{ row.course.courseCodeSection }}<br>
                             Program Code       : {{ row.course.courseDepartment }} <br>
@@ -219,7 +219,7 @@
                         <td>[{{ row.examId }}]</td>
 
                         <!-- Exam Details -->
-                        <td rowspan="{{ rowspan }}">
+                        <td>
                             Exam Date  : [{{ row.examStartTime.strftime("%Y-%m-%d") }}] - [{{ row.examEndTime.strftime("%Y-%m-%d") }}] <br>      
                             Exam Day   : [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] <br>
                             Exam Time  : [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}] <br>
