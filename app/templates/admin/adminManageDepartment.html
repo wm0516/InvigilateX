@@ -129,17 +129,46 @@
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
-                    <td>
-                        Dean ID     : {{ row.dean.userId if row.dean else '' }} <br>
-                        Dean Name   : {{ row.dean.userName if row.dean else '' }} <br>
-                        Dean Email  : {{ row.dean.userEmail if row.dean else '' }} <br>
-                        Dean Contact: {{ row.dean.userContact if row.dean else '' }}
+                    <td style="border-bottom:none;">
+                        <table style="border-collapse: collapse;">
+                            <tr>
+                                <td style="font-weight:bold;">Dean ID</td>
+                                <td>: {{ row.dean.userId if row.dean else '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Dean Name</td>
+                                <td>: {{ row.dean.userName if row.dean else '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Dean Email</td>
+                                <td>: {{ row.dean.userEmail if row.dean else '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Dean Contact</td>
+                                <td>: {{ row.dean.userContact if row.dean else '' }}</td>
+                            </tr>
+                        </table>
                     </td>
-                    <td>
-                        Hop ID     : {{ row.hop.userId if row.hop else '' }} <br>
-                        Hop Name   : {{ row.hop.userName if row.hop else '' }} <br>
-                        Hop Email  : {{ row.hop.userEmail if row.hop else '' }} <br>
-                        Hop Contact: {{ row.hop.userContact if row.hop else '' }}
+
+                    <td style="border-bottom:none;">
+                        <table style="border-collapse: collapse;">
+                            <tr>
+                                <td style="font-weight:bold;">Hop ID</td>
+                                <td>: {{ row.hop.userId if row.hop else '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Hop Name</td>
+                                <td>: {{ row.hop.userName if row.hop else '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Hop Email</td>
+                                <td>: {{ row.hop.userEmail if row.hop else '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:bold;">Hop Contact</td>
+                                <td>: {{ row.hop.userContact if row.hop else '' }}</td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
                 {% endfor %}
@@ -148,3 +177,6 @@
     </div>
 </div>
 {% endblock %}
+
+
+

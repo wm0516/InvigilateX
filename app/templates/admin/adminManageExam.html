@@ -207,24 +207,61 @@
                         <td>{{ loop.index }}</td>
 
                         <!-- Course Details -->
-                        <td>
-                            Course Name        : {{ row.course.courseName }} <br>
-                            Course Code/Section: {{ row.course.courseCodeSection }}<br>
-                            Program Code       : {{ row.course.courseDepartment }} <br>
-                            Number of Students : {{ row.course.courseStudent }} <br>
-                            Practical Lecturer : {{ row.course.practicalLecturer.userName }} <br>
-                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName }}
+                        <td style="border-bottom:none;">
+                            <table style="border-collapse: collapse;">
+                                <tr>
+                                    <td style="font-weight:bold;">Course Name</td>
+                                    <td>: {{ row.course.courseName }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Course Code/Section</td>
+                                    <td>: {{ row.course.courseCodeSection }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Program Code</td>
+                                    <td>: {{ row.course.courseDepartment }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Number of Students</td>
+                                    <td>: {{ row.course.courseStudent }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Practical Lecturer</td>
+                                    <td>: {{ row.course.practicalLecturer.userName }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Tutorial Lecturer </td>
+                                    <td>: {{ row.course.tutorialLecturer.userName }}</td>
+                                </tr>
+                            </table>
                         </td>
 
                         <td>[{{ row.examId }}]</td>
 
                         <!-- Exam Details -->
-                        <td>
-                            Exam Date  : [{{ row.examStartTime.strftime("%Y-%m-%d") }}] - [{{ row.examEndTime.strftime("%Y-%m-%d") }}] <br>      
-                            Exam Day   : [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] <br>
-                            Exam Time  : [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}] <br>
-                            Exam Period: [{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m] <br>
-                            Exam Venue : [{{ row.examVenue }}]
+                        <td style="border-bottom:none;">
+                            <table style="border-collapse: collapse;">
+                                <tr>
+                                    <td style="font-weight:bold;">Exam Date</td>
+                                    <td>: [{{ row.examStartTime.strftime("%Y-%m-%d") }}] - [{{ row.examEndTime.strftime("%Y-%m-%d") }}]</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Exam Day</td>
+                                    <td>: [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Exam Time</td>
+                                    <td>: [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}]</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Exam Period</td>
+                                    <td>: [{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m]</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight:bold;">Exam Venue</td>
+                                    <td>: [{{ row.examVenue }}]</td>
+                                </tr>
+                            </table>
                         </td>
                         
                         <td>[{{ row.examNoInvigilator }}]</td>
@@ -235,7 +272,5 @@
     </div>
 </div>
 {% endblock %}
-
-
 
 
