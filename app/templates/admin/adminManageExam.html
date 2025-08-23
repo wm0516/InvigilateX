@@ -223,7 +223,7 @@
                             Exam Date  : {{ row.examStartTime.strftime("%Y-%m-%d") }} - {{ row.examEndTime.strftime("%Y-%m-%d") }} <br>      
                             Exam Day   : {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }} <br>
                             Exam Time  : {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }} <br>
-                            Exam Period: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m
+                            Exam Period: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m <br>
                             Exam Venue : {{ row.examVenue }}
                         </td>
                         
