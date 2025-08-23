@@ -61,23 +61,23 @@
 
                             <!-- Number of Invigilators -->
                             <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
-
-                            <!-- Invigilator Details -->
-                            <td>
-                                ID: [{{ att.invigilator.userId }}] <br>
-                                Name: {{ att.invigilator.userName }} <br>
-                                Contact: {{ att.invigilator.userContact }}
-                            </td>
-                            
-                            <!-- Check-in Time -->
-                            <td>{{ att.checkIn }}</td>
-
-                            <!-- Check-out Time -->
-                            <td>{{ att.checkOut }}</td>
-
-                            <!-- Attendance Status -->
-                            <td>{{ att.remark }}</td>
                         {% endif %}
+
+                        <!-- Invigilator Details -->
+                        <td>
+                            ID: [{{ att.invigilator.userId }}] <br>
+                            Name: {{ att.invigilator.userName }} <br>
+                            Contact: {{ att.invigilator.userContact }}
+                        </td>
+                        
+                        <!-- Check-in Time -->
+                        <td>{{ att.checkIn }}</td>
+
+                        <!-- Check-out Time -->
+                        <td>{{ att.checkOut }}</td>
+
+                        <!-- Attendance Status -->
+                        <td>{{ att.remark }}</td>
                     </tr>
                 {% endfor %}
             {% endfor %}
