@@ -130,15 +130,15 @@
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
                     <td rowspan="{{ rowspan }}">
-                        Dean ID: {{ row.dean.userId if row.dean else '' }} <br>
-                        Dean Name: {{ row.dean.userName if row.dean else '' }} <br>
-                        Dean Email: {{ row.dean.userEmail if row.dean else '' }} <br>
+                        Dean ID     : {{ row.dean.userId if row.dean else '' }} <br>
+                        Dean Name   : {{ row.dean.userName if row.dean else '' }} <br>
+                        Dean Email  : {{ row.dean.userEmail if row.dean else '' }} <br>
                         Dean Contact: {{ row.dean.userContact if row.dean else '' }}
                     </td>
                     <td rowspan="{{ rowspan }}">
-                        Hop ID: {{ row.hop.userId if row.hop else '' }} <br>
-                        Hop Name: {{ row.hop.userName if row.hop else '' }} <br>
-                        Hop Email: {{ row.hop.userEmail if row.hop else '' }} <br>
+                        Hop ID     : {{ row.hop.userId if row.hop else '' }} <br>
+                        Hop Name   : {{ row.hop.userName if row.hop else '' }} <br>
+                        Hop Email  : {{ row.hop.userEmail if row.hop else '' }} <br>
                         Hop Contact: {{ row.hop.userContact if row.hop else '' }}
                     </td>
                 </tr>
