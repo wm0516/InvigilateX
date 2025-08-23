@@ -35,17 +35,17 @@
                         
                             <!-- Course Details -->
                             <td rowspan="{{ rowspan }}">
-                                Course Name: {{ att.report.exam.course.courseName }} <br>
+                                Course Name        : {{ att.report.exam.course.courseName }} <br>
                                 Course Code/Section: {{ att.report.exam.course.courseCodeSection }}<br>
-                                Number of Students: [{{ att.report.exam.course.courseStudent }}]
+                                Number of Students : {{ att.report.exam.course.courseStudent }}
                             </td>
 
                             <!-- Exam Details -->
                             <td rowspan="{{ rowspan }}">
                                 Exam Date : {{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }} - {{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }} <br>      
-                                Exam Day  : [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
+                                Exam Day   : {{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }} <br>
                                 Exam Time : {{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }} <br>
-                                Exam Venue: [{{ att.report.exam.examVenue }}]
+                                Exam Venue: {{ att.report.exam.examVenue }}
                             </td>
 
                             <!-- Number of Invigilators -->
@@ -54,8 +54,8 @@
 
                         <!-- Invigilator Details -->
                         <td>
-                            ID: [{{ att.invigilator.userId }}] <br>
-                            Name: {{ att.invigilator.userName }} <br>
+                            ID     : {{ att.invigilator.userId }} <br>
+                            Name   : {{ att.invigilator.userName }} <br>
                             Contact: {{ att.invigilator.userContact }}
                         </td>
                         
