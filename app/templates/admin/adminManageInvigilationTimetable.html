@@ -33,61 +33,23 @@
                                 <!-- Exam ID -->
                                 <td rowspan="{{ rowspan }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
 
-                                <!-- Course Details -->
-                                <td rowspan="{{ rowspan }}" style="border-bottom:none;">
-                                    <table style="border-collapse: collapse;">
-                                        <tr>
-                                            <td style="font-weight:bold;">Course Name</td>
-                                            <td>: {{ att.report.exam.course.courseName }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Course Code/Section</td>
-                                            <td>: {{ att.report.exam.course.courseCodeSection }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Program Code</td>
-                                            <td>: {{ att.report.exam.course.courseDepartment }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Number of Students</td>
-                                            <td>: {{ att.report.exam.course.courseStudent }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Practical Lecturer</td>
-                                            <td>: {{ att.report.exam.course.practicalLecturer.userName }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Tutorial Lecturer </td>
-                                            <td>: {{ att.report.exam.course.tutorialLecturer.userName }} </td>
-                                        </tr>
-                                    </table>
-                                </td>
+                            <!-- Course Details -->
+                            <td rowspan="{{ rowspan }}">
+                                Course Name        : {{ att.report.exam.course.courseName }} <br>
+                                Course Code/Section: {{ att.report.exam.course.courseCodeSection }}<br>
+                                Number of Students : {{ att.report.exam.course.courseStudent }}
+                            </td>
 
-                                <!-- Exam Details -->
-                                <td rowspan="{{ rowspan }}" style="border-bottom:none;">
-                                    <table style="border-collapse: collapse;">
-                                        <tr>
-                                            <td style="font-weight:bold;">Exam Date</td>
-                                            <td>: [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }}] - [{{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}]</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Exam Day</td>
-                                            <td>: [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}]</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Exam Time</td>
-                                            <td>: [{{ att.report.exam.examStartTime.strftime("%H:%M") }}] - [{{ att.report.exam.examEndTime.strftime("%H:%M") }}]</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Exam Period</td>
-                                            <td>: [{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h - {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 60) // 3600 }}m]</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="font-weight:bold;">Exam Venue</td>
-                                            <td>: [{{ att.report.exam.examNoInvigilator }}]</td>
-                                        </tr>
-                                    </table>
-                                </td>
+                            <!-- Exam Details -->
+                            <td rowspan="{{ rowspan }}">
+                                Exam Date   : [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }}] - [{{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}] <br>      
+                                Exam Day    : [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
+                                Exam Time   : [{{ att.report.exam.examStartTime.strftime("%H:%M") }}] - [{{ att.report.exam.examEndTime.strftime("%H:%M") }}] <br>
+                                Exam Period : [{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h - 
+                                              {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 60) // 3600 }}m]<br>
+                                Exam Venue  : [{{ att.report.exam.examVenue }}]
+                            </td>
+
 
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                             {% endif %}

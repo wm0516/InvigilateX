@@ -197,17 +197,9 @@
                     <td>[{{ row.courseHour }}]</td>
                     <td>{{ row.courseDepartment }}</td>
                     <td>[{{ row.courseExamId }}]</td>
-                    <td style="border-bottom:none;">
-                        <table style="border-collapse: collapse;">
-                            <tr>
-                                <td style="font-weight:bold;">Practical Lecturer</td>
-                                <td>: {{ row.practicalLecturer.userName }}</td>
-                            </tr>
-                            <tr>
-                                <td style="font-weight:bold;">Tutorial Lecturer</td>
-                                <td>: {{ row.tutorialLecturer.userName }}</td>
-                            </tr>
-                        </table>
+                    <td>
+                        Practical Lecturer: {{ row.practicalLecturer.userName }} <br>
+                        Tutorial Lecturer : {{ row.tutorialLecturer.userName }}
                     </td>
                     <td>[{{ row.courseStudent }}]</td>
                 </tr>
@@ -217,4 +209,3 @@
     </div>
 </div>
 {% endblock %}
-
