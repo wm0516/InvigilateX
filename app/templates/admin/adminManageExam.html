@@ -207,21 +207,21 @@
                         <td>{{ loop.index }}</td>
 
                         <!-- Course Details -->
-                        <td rowspan="{{ rowspan }}" style="white-space: pre;">
-Course Name        : {{ row.course.courseName }} 
-Course Code/Section: {{ row.course.courseCodeSection }}
-Program Code       : {{ row.course.courseDepartment }} 
-Number of Students : {{ row.course.courseStudent }} 
-Practical Lecturer : {{ row.course.practicalLecturer.userName }} 
-Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName }}
+                        <td rowspan="{{ rowspan }}">
+                            Course Name        : {{ row.course.courseName }} <br>
+                            Course Code/Section: {{ row.course.courseCodeSection }}<br>
+                            Program Code       : {{ row.course.courseDepartment }} <br>
+                            Number of Students : {{ row.course.courseStudent }} <br>
+                            Practical Lecturer : {{ row.course.practicalLecturer.userName }} <br>
+                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName }}
                         </td>
 
                         <td>[{{ row.examId }}]</td>
 
                         <!-- Exam Details -->
-                        <td rowspan="{{ rowspan }}" style="white-space: pre;">
+                        <td rowspan="{{ rowspan }}">
                             Exam Date : {{ row.examStartTime.strftime("%Y-%m-%d") }} - {{ row.examEndTime.strftime("%Y-%m-%d") }} <br>      
-                            Exam Day   : {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }} <br>
+                            Exam Day  : {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}] <br>
                             Exam Time : {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }} <br>
                             Exam Venue: {{ row.examVenue }}
                         </td>
