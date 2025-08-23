@@ -184,6 +184,7 @@
                     <th>Credit Hour(s)</th>
                     <th>Course Department</th>
                     <th>Exam ID</th>
+                    <th>Lecturer Details</th>
                     <th>Practical Lecturer</th>
                     <th>Tutorial Lecturer</th>
                     <th>Number of Students</th>
@@ -198,6 +199,10 @@
                     <td>[{{ row.courseHour }}]</td>
                     <td>{{ row.courseDepartment }}</td>
                     <td>[{{ row.courseExamId }}]</td>
+                    <td rowspan="{{ rowspan }}">
+                        {{ row.practicalLecturer.userName }} <br>
+                        {{ row.tutorialLecturer.userName }}
+                    </td>
                     <td>{{ row.practicalLecturer.userName }}</td>
                     <td>{{ row.tutorialLecturer.userName }}</td>
                     <td>[{{ row.courseStudent }}]</td>
