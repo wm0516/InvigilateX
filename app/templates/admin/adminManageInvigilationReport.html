@@ -18,6 +18,7 @@
                 <th>Course Details</th>
                 <th>Exam Start Time</th>
                 <th>Exam End Time</th>
+                <th>Exam Venue</th>
                 <th>Number of Invigilators</th>
                 <th>Invigilator Details</th>
                 <th>Check-in Time</th>
@@ -54,6 +55,9 @@
                                 [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
                                 {{ att.report.exam.examEndTime.strftime("%H:%M") }}
                             </td>
+
+                            <!-- Exam Venue -->
+                            <td rowspan="{{ rowspan }}">[{{ att.report.exam.examVenue }}]</td>
 
                             <!-- Number of Invigilators -->
                             <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>

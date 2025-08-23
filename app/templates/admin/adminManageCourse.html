@@ -185,8 +185,6 @@
                     <th>Course Department</th>
                     <th>Exam ID</th>
                     <th>Lecturer Details</th>
-                    <th>Practical Lecturer</th>
-                    <th>Tutorial Lecturer</th>
                     <th>Number of Students</th>
                 </tr>   
             </thead>
@@ -200,11 +198,9 @@
                     <td>{{ row.courseDepartment }}</td>
                     <td>[{{ row.courseExamId }}]</td>
                     <td rowspan="{{ rowspan }}">
-                        {{ row.practicalLecturer.userName }} <br>
-                        {{ row.tutorialLecturer.userName }}
+                        Practical Lecturer: {{ row.practicalLecturer.userName }} <br>
+                        Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
                     </td>
-                    <td>{{ row.practicalLecturer.userName }}</td>
-                    <td>{{ row.tutorialLecturer.userName }}</td>
                     <td>[{{ row.courseStudent }}]</td>
                 </tr>
                 {% endfor %}

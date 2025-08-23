@@ -42,7 +42,7 @@ html, body {
     background-color: #E1F5FE;
     transition: width 0.3s ease;
     flex-shrink: 0;
-    overflow: hidden; /* Fully lock scroll */
+    overflow-y: auto;
     height: 100%;
     position: relative; /* Optional: make fixed if you want sticky effect */
 }
