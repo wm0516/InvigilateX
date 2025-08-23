@@ -129,13 +129,13 @@
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
-                    <td rowspan="{{ rowspan }}">
+                    <td rowspan="{{ rowspan }}" style="white-space: pre;">
                         Dean ID     : {{ row.dean.userId if row.dean else '' }} <br>
                         Dean Name   : {{ row.dean.userName if row.dean else '' }} <br>
                         Dean Email  : {{ row.dean.userEmail if row.dean else '' }} <br>
                         Dean Contact: {{ row.dean.userContact if row.dean else '' }}
                     </td>
-                    <td rowspan="{{ rowspan }}">
+                    <td rowspan="{{ rowspan }}" style="white-space: pre;">
                         Hop ID     : {{ row.hop.userId if row.hop else '' }} <br>
                         Hop Name   : {{ row.hop.userName if row.hop else '' }} <br>
                         Hop Email  : {{ row.hop.userEmail if row.hop else '' }} <br>
