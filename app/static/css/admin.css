@@ -273,6 +273,10 @@ html, body {
 }
 
 
+.standard_data {
+    border-bottom: none;
+    font-weight: bold;
+}
 
 
 
