@@ -9,9 +9,6 @@ from flask_bcrypt import Bcrypt
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
 import os, json
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -20,7 +17,6 @@ UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
