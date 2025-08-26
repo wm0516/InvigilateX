@@ -23,6 +23,15 @@
         <div class="button-wrapper">
             <button type="submit">Upload/Add New Lecturer Timetable</button>
         </div>
+        
+        {% for file in files %}
+            <li>
+                {{ loop.index }}. 
+                <a href="{{ file.webViewLink }}" target="_blank">{{ file.name }}</a>
+                ({{ file.mimeType }})
+            </li>
+        {% endfor %}
+
     </form>
 
     
