@@ -756,13 +756,12 @@ def get_course_details(program_code, course_code_section):
 
 
 
-# Path to service account JSON
-SERVICE_ACCOUNT_FILE = "/home/WM05/xenon-chain-460911-p8-e236f3552ab0.json"
-SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 def get_drive_service():
+    SERVICE_ACCOUNT_FILE = '/home/TomazHayden/xenon-chain-460911-p8-0931c798d991.json'
+    SCOPES = ['https://www.googleapis.com/auth/drive']
     creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    return build("drive", "v3", credentials=creds)
+    return build('drive', 'v3', credentials=creds)
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
