@@ -23,7 +23,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
-
 # function for admin manage lecturer timetable (adding, editing, and removing)
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
@@ -221,31 +220,6 @@ def standardize_time_with_seconds(time_value):
         return None
     else:
         return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
