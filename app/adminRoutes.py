@@ -3,14 +3,16 @@ from app import app
 from .backend import *
 from .database import *
 from datetime import  datetime, time
-import calendar
-import os
 from io import BytesIO
 import pandas as pd
 from flask_bcrypt import Bcrypt
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+import os, json
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -23,11 +25,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
+'''
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     user_data = User.query.all()
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
-
+'''
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
@@ -779,6 +782,95 @@ def get_course_details(program_code, course_code_section):
 
 
 
+
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+# Path to credentials.json you downloaded from Google Cloud
+GOOGLE_CLIENT_SECRETS_FILE = "credentials.json"
+SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
+
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    if "credentials" not in session:
+        return redirect(url_for("authorize"))
+
+    # Load credentials from the session (convert JSON string back to dict if needed)
+    creds = Credentials.from_authorized_user_info(
+        session["credentials"] if isinstance(session["credentials"], dict) else json.loads(session["credentials"])
+    )
+
+    # Connect to Google Drive API
+    service = build("drive", "v3", credentials=creds)
+
+    # Step 1: Find the 'soc' folder
+    folder_results = service.files().list(
+        q="name = 'soc' and mimeType = 'application/vnd.google-apps.folder'",
+        fields="files(id, name)"
+    ).execute()
+
+    folders = folder_results.get("files", [])
+    if not folders:
+        return "No folder named 'soc' found in your Drive."
+
+    soc_folder_id = folders[0]["id"]
+
+    # Step 2: Get all PDFs inside 'soc' folder
+    file_results = service.files().list(
+        q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
+        fields="files(id, name, mimeType, webViewLink)"
+    ).execute()
+
+    items = file_results.get("files", [])
+
+    # Step 3: Save creds back to session (refresh tokens, etc.)
+    session["credentials"] = {
+        "token": creds.token,
+        "refresh_token": creds.refresh_token,
+        "token_uri": creds.token_uri,
+        "client_id": creds.client_id,
+        "client_secret": creds.client_secret,
+        "scopes": creds.scopes
+    }
+
+    # Step 4: Render nicely in HTML
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
+
+
+@app.route("/authorize")
+def authorize():
+    flow = Flow.from_client_secrets_file(
+        GOOGLE_CLIENT_SECRETS_FILE, scopes=SCOPES)
+    flow.redirect_uri = url_for("oauth2callback", _external=True)
+
+    authorization_url, state = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="true"
+    )
+
+    session["state"] = state
+    return redirect(authorization_url)
+
+@app.route("/oauth2callback")   # ✅ matches your Google Cloud Console
+def oauth2callback():
+    state = session["state"]
+
+    flow = Flow.from_client_secrets_file(
+        GOOGLE_CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+    flow.redirect_uri = url_for("oauth2callback", _external=True)
+
+    flow.fetch_token(authorization_response=request.url)
+    creds = flow.credentials
+
+    # Store credentials in session as dict (not string!)
+    session["credentials"] = {
+        "token": creds.token,
+        "refresh_token": creds.refresh_token,
+        "token_uri": creds.token_uri,
+        "client_id": creds.client_id,
+        "client_secret": creds.client_secret,
+        "scopes": creds.scopes
+    }
+
+    return redirect(url_for("index"))
 
 
 
