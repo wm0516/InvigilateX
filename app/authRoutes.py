@@ -191,22 +191,22 @@ def inject_user_data():
 
 
 # admin homepage
-@app.route('/admin/Home', methods=['GET', 'POST'])
+@app.route('/admin/home', methods=['GET', 'POST'])
 def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 # dean homepage
-@app.route('/dean/Home', methods=['GET', 'POST'])
+@app.route('/dean/home', methods=['GET', 'POST'])
 def dean_homepage():
     return render_template('dean/deanHomepage.html', active_tab='dean_hometab')
 
 # hop homepage
-@app.route('/hop/Home', methods=['GET', 'POST'])
+@app.route('/hop/home', methods=['GET', 'POST'])
 def hop_homepage():
     return render_template('hop/hopHomepage.html', active_tab='hop_hometab')
 
 # lecturer homepage
-@app.route('/lecturer/Home', methods=['GET', 'POST'])
+@app.route('/lecturer/home', methods=['GET', 'POST'])
 def lecturer_homepage():
     return render_template('lecturer/lecturerHomepage.html', active_tab='lecturer_hometab')
 

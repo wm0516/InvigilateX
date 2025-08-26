@@ -66,7 +66,7 @@ function toggleSidebar() {
 // Homepage Tab Function
 document.addEventListener('DOMContentLoaded', function() {
   const mainRouteToTab = {
-    '/admin/Home': 'admin_hometab',
+    '/admin/home': 'admin_hometab',
     '/admin/manageTimetable': 'admin_manageTimetabletab',
     '/admin/manageExam': 'admin_manageExamtab',
     '/admin/manageCourse': 'admin_manageCoursetab',
@@ -76,18 +76,18 @@ document.addEventListener('DOMContentLoaded', function() {
     '/admin/manageDepartment': 'admin_manageDepartmenttab',
     '/admin/manageVenue': 'admin_manageVenuetab',
 
-    '/lecturer/Home': 'lecturer_hometab',
+    '/lecturer/home': 'lecturer_hometab',
     '/lecturer/timetable': 'lecturer_timetabletab',
     '/lecturer/invigilationTimetable': 'lecturer_invigilationTimetabletab',
     '/lecturer/invigilationReport': 'lecturer_invigilationReporttab',
     '/lecturer/profile': 'lecturer_profiletab',
 
-    '/dean/Home': 'dean_hometab',
+    '/dean/home': 'dean_hometab',
     '/dean/timetable': 'dean_timetabletab',
     '/dean/invigilationReport': 'dean_invigilationReporttab',
     '/dean/profile': 'dean_profiletab',
 
-    '/hop/Home': 'hop_hometab',
+    '/hop/home': 'hop_hometab',
     '/hop/timetable': 'hop_timetabletab',
     '/hop/invigilationReport': 'hop_invigilationReporttab',
     '/hop/profile': 'hop_profiletab'
