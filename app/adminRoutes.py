@@ -14,6 +14,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
+
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create upload folder if not exist
@@ -21,12 +22,12 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
-'''
+
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     user_data = User.query.all()
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
-'''
+
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
@@ -746,8 +747,6 @@ def get_course_details(program_code, course_code_section):
             "student": selected_course.courseStudent
         })
     return jsonify({"error": "Course not found"})
-
-
 
 
 
