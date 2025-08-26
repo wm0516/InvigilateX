@@ -777,9 +777,12 @@ def get_course_details(program_code, course_code_section):
     return jsonify({"error": "Course not found"})
 
 
-
-
-
+'''
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    user_data = User.query.all()
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
+'''
 
 
 
@@ -790,6 +793,7 @@ SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
+    user_data = User.query.all()
     if "credentials" not in session:
         return redirect(url_for("authorize"))
 
@@ -871,7 +875,3 @@ def oauth2callback():
     }
 
     return redirect(url_for("admin_manageTimetable"))
-
-
-
-
