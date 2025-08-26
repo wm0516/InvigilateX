@@ -763,7 +763,7 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 GOOGLE_CLIENT_SECRETS_FILE = "credentials.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
-@app.route("/")
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     user_data = User.query.all()
     if "credentials" not in session:
