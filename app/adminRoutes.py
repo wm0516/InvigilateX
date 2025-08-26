@@ -762,7 +762,7 @@ def get_course_details(program_code, course_code_section):
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 # Path to credentials.json you downloaded from Google Cloud
-GOOGLE_CLIENT_SECRETS_FILE = "credentials.json"
+GOOGLE_CLIENT_SECRETS_FILE = '/home/InvigilateX/credentials.json'
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
