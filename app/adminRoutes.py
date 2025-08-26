@@ -768,25 +768,34 @@ def admin_manageTimetable():
     if "credentials" not in session:
         return redirect(url_for("authorize"))
 
-    # Load credentials from the session (convert JSON string back to dict if needed)
-    creds = Credentials.from_authorized_user_info(
-        session["credentials"] if isinstance(session["credentials"], dict) else json.loads(session["credentials"])
+    # 🔑 Rebuild credentials explicitly (safer than from_authorized_user_info)
+    creds = Credentials(
+        token=session["credentials"].get("token"),
+        refresh_token=session["credentials"].get("refresh_token"),
+        token_uri=session["credentials"].get("token_uri"),
+        client_id=session["credentials"].get("client_id"),
+        client_secret=session["credentials"].get("client_secret"),
+        scopes=session["credentials"].get("scopes")
     )
 
     # Connect to Google Drive API
     service = build("drive", "v3", credentials=creds)
 
-    # Step 1: Find the 'soc' folder
+    # Step 1: Find all folders named 'SOC' (case-insensitive match)
     folder_results = service.files().list(
-        q="name = 'soc' and mimeType = 'application/vnd.google-apps.folder'",
-        fields="files(id, name)"
+        q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
+        fields="files(id, name, parents)"
     ).execute()
 
     folders = folder_results.get("files", [])
-    if not folders:
-        return "No folder named 'soc' found in your Drive."
 
-    soc_folder_id = folders[0]["id"]
+    # Debug print
+    print("DEBUG FOUND FOLDERS:", folders)
+
+    if not folders:
+        return "No folder named 'SOC' found in your Drive. Check sharing/permissions."
+
+    soc_folder_id = folders[0]["id"]  # take first match
 
     # Step 2: Get all PDFs inside 'soc' folder
     file_results = service.files().list(
@@ -796,7 +805,7 @@ def admin_manageTimetable():
 
     items = file_results.get("files", [])
 
-    # Step 3: Save creds back to session (refresh tokens, etc.)
+    # Step 3: Save updated creds (in case token was refreshed)
     session["credentials"] = {
         "token": creds.token,
         "refresh_token": creds.refresh_token,
@@ -806,38 +815,57 @@ def admin_manageTimetable():
         "scopes": creds.scopes
     }
 
-    # Step 4: Render nicely in HTML
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', files=items)
-
+    return render_template(
+        'admin/adminManageTimetable.html',
+        active_tab='admin_manageTimetabletab',
+        files=items
+    )
 
 
 @app.route("/authorize")
 def authorize():
     flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRETS_FILE, scopes=SCOPES)
+        GOOGLE_CLIENT_SECRETS_FILE,
+        scopes=SCOPES
+    )
     flow.redirect_uri = url_for("oauth2callback", _external=True)
 
+    # 🔑 Force refresh_token every time
     authorization_url, state = flow.authorization_url(
         access_type="offline",
-        include_granted_scopes="true"
+        include_granted_scopes="true",
+        prompt="consent"
     )
 
     session["state"] = state
     return redirect(authorization_url)
 
 
-@app.route("/oauth2callback")   # ✅ matches your Google Cloud Console
+@app.route("/oauth2callback")
 def oauth2callback():
     state = session["state"]
 
     flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+        GOOGLE_CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        state=state
+    )
     flow.redirect_uri = url_for("oauth2callback", _external=True)
 
     flow.fetch_token(authorization_response=request.url)
     creds = flow.credentials
 
-    # Store credentials in session as dict (not string!)
+    # 🔍 Debug print to confirm refresh_token is present
+    print("DEBUG CREDS AFTER LOGIN:", {
+        "token": creds.token,
+        "refresh_token": creds.refresh_token,
+        "token_uri": creds.token_uri,
+        "client_id": creds.client_id,
+        "client_secret": creds.client_secret,
+        "scopes": creds.scopes
+    })
+
+    # Save credentials in session
     session["credentials"] = {
         "token": creds.token,
         "refresh_token": creds.refresh_token,
