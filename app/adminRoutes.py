@@ -765,7 +765,6 @@ SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    user_data = User.query.all()
     if "credentials" not in session:
         return redirect(url_for("authorize"))
 
@@ -808,8 +807,7 @@ def admin_manageTimetable():
     }
 
     # Step 4: Render nicely in HTML
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data, files=items)
-
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', files=items)
 
 
 
@@ -850,11 +848,4 @@ def oauth2callback():
     }
 
     return redirect(url_for("admin_manageTimetable"))
-
-@app.route("/logout")
-def logout():
-    session.clear()  # remove all stored credentials and state
-    return redirect(url_for("authorize"))  # redirect to login again
-
-
 
