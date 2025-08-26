@@ -13,8 +13,6 @@ import os, json
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -753,38 +751,3 @@ def get_course_details(program_code, course_code_section):
 
 
 
-def get_drive_service():
-    SERVICE_ACCOUNT_FILE = '/home/WM05/xenon-chain-460911-p8-0931c798d991.json'
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    return build('drive', 'v3', credentials=creds)
-
-@app.route('/admin/manageTimetable')
-def admin_manageTimetable():
-    service = get_drive_service()
-
-    # Find folder 'SOC'
-    folder_results = service.files().list(
-        q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
-        fields="files(id, name)"
-    ).execute()
-
-    folders = folder_results.get("files", [])
-    if not folders:
-        return "No folder named 'SOC' found."
-
-    soc_folder_id = folders[0]["id"]
-
-    # Get PDFs inside the folder
-    file_results = service.files().list(
-        q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
-        fields="files(id, name, webViewLink)"
-    ).execute()
-
-    items = file_results.get("files", [])
-
-    return render_template(
-        "admin/adminManageTimetable.html",
-        active_tab="admin_manageTimetabletab",
-        files=items
-    )
