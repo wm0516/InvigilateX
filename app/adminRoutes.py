@@ -13,10 +13,8 @@ import os, json
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
-
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -758,115 +756,40 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-# Path to credentials.json you downloaded from Google Cloud
-GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/xenon-chain-460911-p8-e236f3552ab0.json'   
+# Path to service account JSON
+SERVICE_ACCOUNT_FILE = "/home/WM05/xenon-chain-460911-p8-e236f3552ab0.json"
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def get_drive_service():
+    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    return build("drive", "v3", credentials=creds)
+
+@app.route('/admin/manageTimetable')
 def admin_manageTimetable():
-    creds = None
+    service = get_drive_service()
 
-    # Check if we already have credentials
-    if "credentials" in session:
-        creds = Credentials(
-            token=session["credentials"].get("token"),
-            refresh_token=session["credentials"].get("refresh_token"),
-            token_uri=session["credentials"].get("token_uri"),
-            client_id=session["credentials"].get("client_id"),
-            client_secret=session["credentials"].get("client_secret"),
-            scopes=session["credentials"].get("scopes")
-        )
-
-    # If no creds → show page with button
-    if not creds:
-        return render_template(
-            "admin/adminManageTimetable.html",
-            active_tab="admin_manageTimetabletab",
-            files=None,   # no files yet
-            needs_auth=True   # flag to show button
-        )
-
-    # --- If creds exist → connect to Google Drive ---
-    service = build("drive", "v3", credentials=creds)
-
+    # Find folder 'SOC'
     folder_results = service.files().list(
         q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
-        fields="files(id, name, parents)"
+        fields="files(id, name)"
     ).execute()
 
     folders = folder_results.get("files", [])
     if not folders:
-        return "No folder named 'SOC' found in your Drive. Check sharing/permissions."
+        return "No folder named 'SOC' found."
 
     soc_folder_id = folders[0]["id"]
 
+    # Get PDFs inside the folder
     file_results = service.files().list(
         q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
-        fields="files(id, name, mimeType, webViewLink)"
+        fields="files(id, name, webViewLink)"
     ).execute()
 
     items = file_results.get("files", [])
 
-    # Save creds back (in case token was refreshed)
-    session["credentials"] = {
-        "token": creds.token,
-        "refresh_token": creds.refresh_token,
-        "token_uri": creds.token_uri,
-        "client_id": creds.client_id,
-        "client_secret": creds.client_secret,
-        "scopes": creds.scopes
-    }
-
     return render_template(
         "admin/adminManageTimetable.html",
         active_tab="admin_manageTimetabletab",
-        files=items,
-        needs_auth=False
+        files=items
     )
-
-
-@app.route("/authorize")
-def authorize():
-    flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRETS_FILE,
-        scopes=SCOPES
-    )
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
-
-    authorization_url, state = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="true",
-        prompt="consent"
-    )
-    session["state"] = state
-    return redirect(authorization_url)
-
-
-@app.route("/oauth2callback")
-def oauth2callback():
-    state = session["state"]
-
-    flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        state=state
-    )
-    flow.redirect_uri = url_for("oauth2callback", _external=True)
-
-    flow.fetch_token(authorization_response=request.url)
-    creds = flow.credentials
-
-    # Save credentials
-    session["credentials"] = {
-        "token": creds.token,
-        "refresh_token": creds.refresh_token,
-        "token_uri": creds.token_uri, # type: ignore
-        "client_id": creds.client_id,
-        "client_secret": creds.client_secret,
-        "scopes": creds.scopes
-    }
-
-    return redirect(url_for("admin_manageTimetable"))
