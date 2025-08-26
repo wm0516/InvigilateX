@@ -24,14 +24,19 @@
             <button type="submit">Upload/Add New Lecturer Timetable</button>
         </div>
         
-        {% for file in files %}
-            <li>
-                {{ loop.index }}. 
-                <a href="{{ file.webViewLink }}" target="_blank">{{ file.name }}</a>
-                ({{ file.mimeType }})
-            </li>
+        {% if needs_auth %}
+        <p>You need to connect to Google Drive first.</p>
+        <a href="{{ url_for('authorize') }}">
+            <button>Connect to Google Drive</button>
+        </a>
+        {% else %}
+        <h3>Files from SOC folder:</h3>
+        <ul>
+        {% for f in files %}
+            <li><a href="{{ f.webViewLink }}" target="_blank">{{ f.name }}</a></li>
         {% endfor %}
-
+        </ul>
+        {% endif %}
     </form>
 
     
