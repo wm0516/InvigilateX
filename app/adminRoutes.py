@@ -870,7 +870,7 @@ def oauth2callback():
         "scopes": creds.scopes
     }
 
-    return redirect(url_for("index"))
+    return redirect(url_for("def admin_manageTimetable"))
 
 
 
