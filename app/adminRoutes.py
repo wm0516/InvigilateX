@@ -753,10 +753,6 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-
-
 def get_drive_service():
     SERVICE_ACCOUNT_FILE = '/home/WM05/xenon-chain-460911-p8-0931c798d991.json'
     SCOPES = ['https://www.googleapis.com/auth/drive']
