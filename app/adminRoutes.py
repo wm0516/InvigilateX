@@ -10,11 +10,18 @@ from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os, json
+
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
+
+try:
+    from google.oauth2.service_account import Credentials
+    from googleapiclient.discovery import build
+except ImportError:
+    Credentials = None
+    build = None
+
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
