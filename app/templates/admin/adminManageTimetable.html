@@ -5,46 +5,21 @@
 <div class="menu-section">
     <h2>Upload Lecturer Timetable</h2>
 
-    <iframe 
-        id="gdrive-folder"
-        src="https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid"
-        style="width:100%; height:600px; border:0;">
-    </iframe>
+    <form>
+        <iframe 
+            id="gdrive-folder"
+            src="https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid"
+            style="width:100%; height:600px; border:0;">
+        </iframe>
 
-    <script>
-        setInterval(() => {
-            const iframe = document.getElementById("gdrive-folder");
-            // Add timestamp to avoid cache
-            iframe.src = "https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid&t=" + new Date().getTime();
-        }, 5 * 60 * 1000); // every 5 minutes
-    </script>
-
-
-    <form id="uploadTimetableForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
-        <label for="timetable_list">
-            <div class="upload-container" id="timetableUploadContainer">
-                <div class="upload-text">Upload file format with according format<br><br>Click to upload or drag and drop with below file format</div>
-                <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                <!-- Selected file display -->
-                <div id="timetableSelectedFileName" class="file-name-display"></div>
-            </div>
-        </label>
-        <input type="file" id="lecturer_list" name="lecturer_file" accept=".xlsx,.xls,.xlsm" required style="display: none;">
-        
-        <!-- Result feedback -->
-        <div id="timetableUploadResult" class="result-message"></div>
-        <div id="timetableUploadErrors" class="error-message"></div>
-        
-        <!-- Submit button -->
-        <div class="button-wrapper">
-            <button type="submit">Upload/Add New Lecturer Timetable</button>
-        </div>
-        
+        <script>
+            setInterval(() => {
+                const iframe = document.getElementById("gdrive-folder");
+                // Add timestamp to avoid cache
+                iframe.src = "https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid&t=" + new Date().getTime();
+            }, 5 * 60 * 1000); // every 5 minutes
+        </script>
     </form>
-
-
-    
-
     <br><br>
     <h2>List of Staff Timetable</h2>
     <!--<label>
