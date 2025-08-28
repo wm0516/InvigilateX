@@ -745,7 +745,11 @@ def get_course_details(program_code, course_code_section):
 
 
 
+USE_GOOGLE_DRIVE = os.getenv("USE_GOOGLE_DRIVE", "1") == "1"
+
 def get_drive_service():
+    if not USE_GOOGLE_DRIVE:
+        return None
     try:
         SERVICE_ACCOUNT_FILE = os.path.expanduser("~/xenon-chain-460911-p8-0931c798d991.json")
         SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -755,36 +759,54 @@ def get_drive_service():
         print(f"[Drive Error] {e}")
         return None
 
+
     
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
+    # On PythonAnywhere free, Google Drive is not accessible
+    if os.getenv("PYTHONANYWHERE_FREE", "1") == "1":
+        flash("Google Drive integration not available on free hosting", "error")
+        return render_template(
+            "admin/adminManageTimetable.html",
+            active_tab="admin_manageTimetabletab",
+            files=[]
+        )
+
+    # === This part only works if running on a server with Google Drive access ===
     service = get_drive_service()
     if not service:
         flash("Google Drive integration not available", "error")
         return render_template("admin/adminManageTimetable.html", files=[])
 
-    # Find folder 'SOC'
-    folder_results = service.files().list(
-        q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
-        fields="files(id, name)"
-    ).execute()
+    try:
+        # Find folder 'SOC'
+        folder_results = service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
+            fields="files(id, name)"
+        ).execute()
 
-    folders = folder_results.get("files", [])
-    if not folders:
-        return "No folder named 'SOC' found."
+        folders = folder_results.get("files", [])
+        if not folders:
+            flash("No folder named 'SOC' found.", "error")
+            return render_template("admin/adminManageTimetable.html", files=[])
 
-    soc_folder_id = folders[0]["id"]
+        soc_folder_id = folders[0]["id"]
 
-    # Get PDFs inside the folder
-    file_results = service.files().list(
-        q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
-        fields="files(id, name, webViewLink)"
-    ).execute()
+        # Get PDFs inside the folder
+        file_results = service.files().list(
+            q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
+            fields="files(id, name, webViewLink)"
+        ).execute()
 
-    items = file_results.get("files", [])
+        items = file_results.get("files", [])
+
+    except Exception as e:
+        flash(f"Google Drive error: {e}", "error")
+        items = []
 
     return render_template(
         "admin/adminManageTimetable.html",
         active_tab="admin_manageTimetabletab",
         files=items
     )
+
