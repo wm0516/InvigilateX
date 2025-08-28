@@ -376,7 +376,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+// Refresh Google Drive link in every 10 seconds
+document.addEventListener("DOMContentLoaded", function () {
+    const iframe = document.getElementById("gdrive-folder");
+    const flashContainer = document.getElementById("flash-message");
+    const refreshBtn = document.getElementById("refresh-btn");
 
+    function showFlash(message) {
+        if (flashContainer) {
+            flashContainer.innerText = message;
+            flashContainer.style.display = 'block';
+            flashContainer.style.opacity = 1;
 
+            // fade out smoothly after 3s
+            setTimeout(() => {
+                flashContainer.style.transition = "opacity 1s ease";
+                flashContainer.style.opacity = 0;
+                setTimeout(() => {
+                    flashContainer.style.display = 'none';
+                    flashContainer.style.transition = ""; // reset
+                }, 1000);
+            }, 2500);
+        }
+    }
 
+    if (refreshBtn && iframe) {
+        refreshBtn.addEventListener("click", () => {
+            // refresh iframe (avoid full reload flicker)
+            iframe.src = iframe.src.split("&t=")[0] + "&t=" + Date.now();
 
+            // show success message
+            showFlash("✅ Refresh done!");
+        });
+    }
+});
