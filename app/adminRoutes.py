@@ -795,7 +795,7 @@ def admin_manageTimetable():
     else:
         needs_auth = True
 
-    return render_template("admin/upload.html", needs_auth=needs_auth, files=files, user_data=[])
+    return render_template("admin/adminManageTimetable.html", needs_auth=needs_auth, files=files, user_data=[])
 
 
 @app.route('/authorize')
@@ -804,7 +804,7 @@ def authorize():
     from google_auth_oauthlib.flow import Flow
 
     flow = Flow.from_client_secrets_file(
-        "credentials.json",  # <-- your OAuth client credentials.json
+        "/home/WM05/xenon-chain-460911-p8-0931c798d991.json",  # <-- your OAuth client credentials.json
         scopes=SCOPES,
         redirect_uri=url_for('oauth2callback', _external=True)
     )
@@ -820,7 +820,7 @@ def oauth2callback():
 
     state = session['state']
     flow = Flow.from_client_secrets_file(
-        "credentials.json",
+        "/home/WM05/xenon-chain-460911-p8-0931c798d991.json",
         scopes=SCOPES,
         state=state,
         redirect_uri=url_for('oauth2callback', _external=True)
