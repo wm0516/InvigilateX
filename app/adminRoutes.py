@@ -832,7 +832,7 @@ def oauth2callback():
     session['credentials'] = {
         'token': creds.token,
         'refresh_token': creds.refresh_token,
-        'token_uri': creds.token_uri,
+        'token_uri': creds.token_uri, # type: ignore
         'client_id': creds.client_id,
         'client_secret': creds.client_secret,
         'scopes': creds.scopes
