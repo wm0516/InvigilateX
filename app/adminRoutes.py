@@ -755,16 +755,17 @@ def get_course_details(program_code, course_code_section):
 USE_GOOGLE_DRIVE = os.getenv("USE_GOOGLE_DRIVE", "1") == "1"
 
 def get_drive_service():
-    if not USE_GOOGLE_DRIVE:
+    if not USE_GOOGLE_DRIVE or not Credentials or not build:
         return None
     try:
-        SERVICE_ACCOUNT_FILE = os.path.expanduser("~/xenon-chain-460911-p8-0931c798d991.json")
+        SERVICE_ACCOUNT_FILE = os.path.join(os.getcwd(), "xenon-chain-460911-p8-0931c798d991.json")
         SCOPES = ['https://www.googleapis.com/auth/drive']
         creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         return build('drive', 'v3', credentials=creds)
     except Exception as e:
         print(f"[Drive Error] {e}")
         return None
+
 
 
     
