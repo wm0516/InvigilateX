@@ -1,122 +1,69 @@
-<!-- upload.html -->
-{% extends "adminPart/adminBase.html" %}
-{% block title %}Admin ManageInvigilationTimetable{% endblock %}
-{% block content %}
+USE_GOOGLE_DRIVE = os.getenv("USE_GOOGLE_DRIVE", "1") == "1"
 
-<!-- Row 1 First Fesatures to upload merge schedule files--> 
-<div class="menu-section">
-    <h2>Manage Invigilation Timetable</h2>    
-    <form method="POST">  
-        <h3>Insert Ratio For Each Department to Generate Invigilation Timetable</h3>
-        <label>Check this part, whether each admin able to select for all or just under self</label><br>
-        <lable>Try to display out all the ratio based on the department on that page instead of empty frame</lable><br>
-        <label>Now able to update the ratio, but without the main function to read the lecturers flexibility</label>
-        <!--
-        <div style="display: flex; justify-content: space-evenly;">
-            Left Table
-            <div>
-                <table class="enter-data-table"> 
-                    <tr style="text-align: center;">
-                        <th>Department</th>
-                        <th>Ratio</th>
-                    </tr>
-                    {% for dept in department_data[:department_data|length//2] %}
-                    <tr>
-                        <td><label> {{ dept.departmentCode }} - {{ dept.departmentName }} </label></td>
-                        <td><input type="number" name="ratio[]" value="{{ ratio_text }}"></td>
-                        <input type="hidden" name="deptcode[]" value="{{ dept.departmentCode }}">
-                    </tr>
-                    {% endfor %}
-                </table>    
-            </div>
-
-            Right Table 
-            <div>
-                <table class="enter-data-table"> 
-                    <tr style="text-align: center;">
-                        <th>Department</th>
-                        <th>Ratio</th>
-                    </tr>
-                    {% for dept in department_data[department_data|length//2:] %}
-                    <tr>
-                        <td><label> {{ dept.departmentCode }} - {{ dept.departmentName }} </label></td>
-                        <td><input type="number" name="ratio[]" value="{{ ratio_text }}"></td>
-                        <input type="hidden" name="deptcode[]" value="{{ dept.departmentCode }}">
-                    </tr>
-                    {% endfor %}
-                </table>    
-            </div>
-        </div>
-        <br>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <br>
-
-        <div class="button-wrapper">
-                <button type="submit">Generate Invigilation Timetable</button>
-        </div>
-        -->
-    </form>
+def get_drive_service():
+    if not USE_GOOGLE_DRIVE:
+        return None
+    try:
+        SERVICE_ACCOUNT_FILE = os.path.expanduser("~/xenon-chain-460911-p8-0931c798d991.json")
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        return build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        print(f"[Drive Error] {e}")
+        return None
 
 
+    
+@app.route('/admin/manageTimetable')
+def admin_manageTimetable():
+    # On PythonAnywhere free, Google Drive is not accessible
+    if os.getenv("PYTHONANYWHERE_FREE", "1") == "1":
+        flash("Google Drive integration not available on free hosting", "error")
+        return render_template(
+            "admin/adminManageTimetable.html",
+            active_tab="admin_manageTimetabletab",
+            files=[]
+        )
 
-    <br><br>
-    <h3>List of All Exam Sessions Details</h3>
-    <div class="user-table-container">
-        <table class="user-data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Exam Date</th>
-                    <th>Exam Day</th>
-                    <th>Start Time</th>
-                    <th>End Time</th>
-                    <th>Program Code</th>
-                    <th>Course/Section</th>
-                    <th>Lecturer</th>
-                    <th>No. of Students</th>
-                    <th>Room</th>
-                    <th>Chief Inviglator</th>  
-                    <th>Invigilator 1</th>
-                    <th>Invigilator 2</th>
-                    <th>Backup Invigilator</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in exam_data %}
-                <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <!-- <td>{{ row.examID  }}</td> -->
-                    <td>{{ row.examDate }}</td>
-                    <td>{{ row.examDay }}</td>
-                    <td>{{ row.examStartTime }}</td>
-                    <td>{{ row.examEndTime }}</td>
-                    <td>{{ row.examProgramCode }}</td>
-                    <td>{{ row.examCourseSectionCode }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examTotalStudent }}</td>
-                    <td>{{ row.examVenue }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                    <td>{{ row.examLecturer }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
+    # === This part only works if running on a server with Google Drive access ===
+    service = get_drive_service()
+    if not service:
+        flash("Google Drive integration not available", "error")
+        return render_template("admin/adminManageTimetable.html", files=[])
 
-{% endblock %}
+    try:
+        # Find folder 'SOC'
+        folder_results = service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
+            fields="files(id, name)"
+        ).execute()
 
-<!--
+        folders = folder_results.get("files", [])
+        if not folders:
+            flash("No folder named 'SOC' found.", "error")
+            return render_template("admin/adminManageTimetable.html", files=[])
 
--->
+        soc_folder_id = folders[0]["id"]
+
+        # Get PDFs inside the folder
+        file_results = service.files().list(
+            q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
+            fields="files(id, name, webViewLink)"
+        ).execute()
+
+        items = file_results.get("files", [])
+
+    except Exception as e:
+        flash(f"Google Drive error: {e}", "error")
+        items = []
+
+    return render_template(
+        "admin/adminManageTimetable.html",
+        active_tab="admin_manageTimetabletab",
+        files=items
+    )
+
+
+    
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build

@@ -10,13 +10,9 @@ from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os, json
-
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -25,6 +21,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab')
+
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
@@ -745,97 +745,3 @@ def get_course_details(program_code, course_code_section):
         })
     return jsonify({"error": "Course not found"})
 
-
-
-
-
-
-
-
-
-# Google API settings
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-
-# -------------------
-# Google Drive helpers
-# -------------------
-def get_drive_service():
-    """Return Drive API service if authorized, else None."""
-    if 'credentials' not in session:
-        return None
-
-    creds = Credentials(**session['credentials'])
-    try:
-        service = build('drive', 'v3', credentials=creds)
-        return service
-    except Exception as e:
-        print(f"[Drive Error] {e}")
-        return None
-
-# -------------------
-# Routes
-# -------------------
-
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    service = get_drive_service()
-    files = []
-    needs_auth = False
-
-    if service:
-        try:
-            results = service.files().list(
-                q="'<YOUR_SOC_FOLDER_ID>' in parents and trashed = false",
-                pageSize=10,
-                fields="files(id, name, webViewLink)"
-            ).execute()
-            files = results.get('files', [])
-        except Exception as e:
-            flash(f"Google Drive error: {e}", "error")
-    else:
-        needs_auth = True
-
-    return render_template("admin/adminManageTimetable.html", needs_auth=needs_auth, files=files, user_data=[])
-
-
-@app.route('/authorize')
-def authorize():
-    """Redirects user to Google OAuth consent screen."""
-    from google_auth_oauthlib.flow import Flow
-
-    flow = Flow.from_client_secrets_file(
-        "/home/WM05/xenon-chain-460911-p8-0931c798d991.json",  # <-- your OAuth client credentials.json
-        scopes=SCOPES,
-        redirect_uri=url_for('oauth2callback', _external=True)
-    )
-    authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
-    session['state'] = state
-    return redirect(authorization_url)
-
-
-@app.route('/oauth2callback')
-def oauth2callback():
-    """Handles OAuth callback and saves credentials in session."""
-    from google_auth_oauthlib.flow import Flow
-
-    state = session['state']
-    flow = Flow.from_client_secrets_file(
-        "/home/WM05/xenon-chain-460911-p8-0931c798d991.json",
-        scopes=SCOPES,
-        state=state,
-        redirect_uri=url_for('oauth2callback', _external=True)
-    )
-
-    flow.fetch_token(authorization_response=request.url)
-
-    creds = flow.credentials
-    session['credentials'] = {
-        'token': creds.token,
-        'refresh_token': creds.refresh_token,
-        'token_uri': creds.token_uri, # type: ignore
-        'client_id': creds.client_id,
-        'client_secret': creds.client_secret,
-        'scopes': creds.scopes
-    }
-
-    return redirect(url_for('admin_manageTimetable'))

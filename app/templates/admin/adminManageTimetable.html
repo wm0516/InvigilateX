@@ -26,25 +26,6 @@
         
     </form>
 
-    {% if needs_auth %}
-        <div class="google-drive-connect">
-            <p>You need to connect to Google Drive first.</p>
-            <a href="{{ url_for('authorize') }}">
-                <button type="button">Connect to Google Drive</button>
-            </a>
-        </div>
-    {% else %}
-        <h3>Files from SOC folder:</h3>
-        {% if files %}
-            <ul>
-            {% for f in files %}
-                <li><a href="{{ f.webViewLink }}" target="_blank">{{ f.name }}</a></li>
-            {% endfor %}
-            </ul>
-        {% else %}
-            <p>No files found in SOC folder.</p>
-        {% endif %}
-    {% endif %}
 
     
 
