@@ -752,6 +752,12 @@ def get_course_details(program_code, course_code_section):
 
 
 
+
+
+
+
+
+
 USE_GOOGLE_DRIVE = os.getenv("USE_GOOGLE_DRIVE", "1") == "1"
 
 def get_drive_service():
@@ -767,8 +773,6 @@ def get_drive_service():
         return None
 
 
-
-    
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
     # On PythonAnywhere free, Google Drive is not accessible
