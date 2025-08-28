@@ -751,17 +751,25 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
 def get_drive_service():
-    SERVICE_ACCOUNT_FILE = '/home/WM05/xenon-chain-460911-p8-0931c798d991.json'
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    return build('drive', 'v3', credentials=creds)
+    try:
+        SERVICE_ACCOUNT_FILE = os.path.expanduser("~/xenon-chain-460911-p8-0931c798d991.json")
+        SCOPES = ['https://www.googleapis.com/auth/drive']
+        creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        return build('drive', 'v3', credentials=creds)
+    except Exception as e:
+        print(f"[Drive Error] {e}")
+        return None
 
+
+
+    
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
     service = get_drive_service()
+    if not service:
+        flash("Google Drive integration not available", "error")
+        return render_template("admin/adminManageTimetable.html", files=[])
 
     # Find folder 'SOC'
     folder_results = service.files().list(
