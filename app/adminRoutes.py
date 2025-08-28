@@ -23,12 +23,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # function for admin manage lecturer timetable (adding, editing, and removing)
-'''
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    user_data = User.query.all()
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', user_data=user_data)
-'''
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
@@ -760,8 +754,6 @@ def get_drive_service():
     except Exception as e:
         print(f"[Drive Error] {e}")
         return None
-
-
 
     
 @app.route('/admin/manageTimetable')
