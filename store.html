@@ -67,3 +67,50 @@ def admin_manageTimetable():
     
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+
+
+
+
+    <!--
+    <br><br>
+    <h2>List of Staff Timetable</h2>
+    <label>
+        To Do: <br>
+        1. Allow edit based on the Id <br>
+        2. Deactivated will send an email to the upload email address for activation link <br>
+        Question: <br>
+        1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
+        2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
+    </label>
+
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Day/Time</th>
+                    <th>08:00-09:00</th>
+                    <th>09:00-10:00</th>
+                    <th>10:00-11:00</th>
+                    <th>11:00-12:00</th>
+                    <th>12:00-13:00</th>
+                    <th>13:00-14:00</th>
+                    <th>14:00-15:00</th>
+                    <th>15:00-16:00</th>
+                    <th>16:00-17:00</th>
+                    <th>17:00-18:00</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in user_data %}
+                <tr>
+                    <td>Monday</td>
+                    <td>Tuesday</td>
+                    <td>Wednesday</td>
+                    <td>Thursday</td>
+                    <td>Friday</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    -->

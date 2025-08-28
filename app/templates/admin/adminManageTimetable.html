@@ -1,13 +1,12 @@
-<!-- upload.html -->
+<!-- upload.html -->    
 {% extends "admin/adminBase.html" %}
 {% block title %}Admin ManageTimetable{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <h2>Upload Lecturer Timetable</h2>
+    <h2>Manage Lecturer Timetable</h2>
 
     <form>
         <iframe 
-            id="gdrive-folder"
             src="https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid"
             style="width:100%; height:600px; border:0;">
         </iframe>
@@ -17,19 +16,20 @@
                 const iframe = document.getElementById("gdrive-folder");
                 // Add timestamp to avoid cache
                 iframe.src = "https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid&t=" + new Date().getTime();
-            }, 5 * 60 * 1000); // every 5 minutes
+            }, 0 * 10 * 1000); // every 5 minutes
         </script>
     </form>
+    <!--
     <br><br>
     <h2>List of Staff Timetable</h2>
-    <!--<label>
+    <label>
         To Do: <br>
         1. Allow edit based on the Id <br>
         2. Deactivated will send an email to the upload email address for activation link <br>
         Question: <br>
         1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
         2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
-    </label>-->
+    </label>
 
     <div class="user-table-container">
         <table class="user-data-table">
@@ -61,6 +61,7 @@
             </tbody>
         </table>
     </div>
+    -->
 </div>
 
 
