@@ -15,13 +15,8 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-try:
-    from google.oauth2.service_account import Credentials
-    from googleapiclient.discovery import build
-except ImportError:
-    Credentials = None
-    build = None
-
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -758,67 +753,89 @@ def get_course_details(program_code, course_code_section):
 
 
 
-USE_GOOGLE_DRIVE = os.getenv("USE_GOOGLE_DRIVE", "1") == "1"
+# Google API settings
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
+# -------------------
+# Google Drive helpers
+# -------------------
 def get_drive_service():
-    if not USE_GOOGLE_DRIVE or not Credentials or not build:
+    """Return Drive API service if authorized, else None."""
+    if 'credentials' not in session:
         return None
+
+    creds = Credentials(**session['credentials'])
     try:
-        SERVICE_ACCOUNT_FILE = os.path.join(os.getcwd(), "xenon-chain-460911-p8-0931c798d991.json")
-        SCOPES = ['https://www.googleapis.com/auth/drive']
-        creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-        return build('drive', 'v3', credentials=creds)
+        service = build('drive', 'v3', credentials=creds)
+        return service
     except Exception as e:
         print(f"[Drive Error] {e}")
         return None
 
+# -------------------
+# Routes
+# -------------------
 
-@app.route('/admin/manageTimetable')
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # On PythonAnywhere free, Google Drive is not accessible
-    if os.getenv("PYTHONANYWHERE_FREE", "1") == "1":
-        flash("Google Drive integration not available on free hosting", "error")
-        return render_template(
-            "admin/adminManageTimetable.html",
-            active_tab="admin_manageTimetabletab",
-            files=[]
-        )
-
-    # === This part only works if running on a server with Google Drive access ===
     service = get_drive_service()
-    if not service:
-        flash("Google Drive integration not available", "error")
-        return render_template("admin/adminManageTimetable.html", files=[])
+    files = []
+    needs_auth = False
 
-    try:
-        # Find folder 'SOC'
-        folder_results = service.files().list(
-            q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
-            fields="files(id, name)"
-        ).execute()
+    if service:
+        try:
+            results = service.files().list(
+                q="'<YOUR_SOC_FOLDER_ID>' in parents and trashed = false",
+                pageSize=10,
+                fields="files(id, name, webViewLink)"
+            ).execute()
+            files = results.get('files', [])
+        except Exception as e:
+            flash(f"Google Drive error: {e}", "error")
+    else:
+        needs_auth = True
 
-        folders = folder_results.get("files", [])
-        if not folders:
-            flash("No folder named 'SOC' found.", "error")
-            return render_template("admin/adminManageTimetable.html", files=[])
+    return render_template("admin/upload.html", needs_auth=needs_auth, files=files, user_data=[])
 
-        soc_folder_id = folders[0]["id"]
 
-        # Get PDFs inside the folder
-        file_results = service.files().list(
-            q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
-            fields="files(id, name, webViewLink)"
-        ).execute()
+@app.route('/authorize')
+def authorize():
+    """Redirects user to Google OAuth consent screen."""
+    from google_auth_oauthlib.flow import Flow
 
-        items = file_results.get("files", [])
+    flow = Flow.from_client_secrets_file(
+        "credentials.json",  # <-- your OAuth client credentials.json
+        scopes=SCOPES,
+        redirect_uri=url_for('oauth2callback', _external=True)
+    )
+    authorization_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true')
+    session['state'] = state
+    return redirect(authorization_url)
 
-    except Exception as e:
-        flash(f"Google Drive error: {e}", "error")
-        items = []
 
-    return render_template(
-        "admin/adminManageTimetable.html",
-        active_tab="admin_manageTimetabletab",
-        files=items
+@app.route('/oauth2callback')
+def oauth2callback():
+    """Handles OAuth callback and saves credentials in session."""
+    from google_auth_oauthlib.flow import Flow
+
+    state = session['state']
+    flow = Flow.from_client_secrets_file(
+        "credentials.json",
+        scopes=SCOPES,
+        state=state,
+        redirect_uri=url_for('oauth2callback', _external=True)
     )
 
+    flow.fetch_token(authorization_response=request.url)
+
+    creds = flow.credentials
+    session['credentials'] = {
+        'token': creds.token,
+        'refresh_token': creds.refresh_token,
+        'token_uri': creds.token_uri,
+        'client_id': creds.client_id,
+        'client_secret': creds.client_secret,
+        'scopes': creds.scopes
+    }
+
+    return redirect(url_for('admin_manageTimetable'))
