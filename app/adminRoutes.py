@@ -813,8 +813,18 @@ def parse_activity(line):
 
 @app.route("/admin/manageTimetable", methods=["GET", "POST"])
 def admin_manageTimetable():
+    structured = None
+
     if request.method == "POST":
-        file = request.files["pdf"]
+        if "timetablePDF_file" not in request.files:
+            flash("No file part", "error")
+            return redirect(request.url)
+
+        file = request.files["timetablePDF_file"]
+
+        if file.filename == "":
+            flash("No selected file", "error")
+            return redirect(request.url)
 
         reader = PyPDF2.PdfReader(file.stream)
         text = ""
@@ -823,11 +833,9 @@ def admin_manageTimetable():
 
         # Remove ALL whitespace
         text = re.sub(r"\s+", "", text)
-
-        # Convert everything to UPPERCASE
         text = text.upper()
 
-        # --- Step 1: Extract title (first line until first time row) ---
+        # --- Step 1: Extract title ---
         match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
         if match_title:
             title = match_title.group(1).strip()
@@ -837,7 +845,7 @@ def admin_manageTimetable():
             title = "TIMETABLE"
             timerow = ""
 
-        # --- Extract lecturer name from title ---
+        # --- Extract lecturer name ---
         lecturer_name = None
         match_name = re.search(r"-(.*?)\(", title)
         if match_name:
@@ -856,13 +864,13 @@ def admin_manageTimetable():
             else:
                 text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
 
-        # --- Step 4: Clean up multiple blank lines ---
+        # --- Step 4: Clean up ---
         text = re.sub(r"\n{3,}", "\n\n", text)
 
         # --- Step 5: Build structured JSON ---
         structured = {
             "title": title,
-            "lecturer": lecturer_name, 
+            "lecturer": lecturer_name,
             "timerow": timerow,
             "days": {}
         }
@@ -873,15 +881,21 @@ def admin_manageTimetable():
             if not line:
                 continue
 
-            # Detect day
             if line in days:
                 current_day = line
                 structured["days"][current_day] = []
             else:
-                # Parse activity under the current day
                 if current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
                     structured["days"][current_day].append(parse_activity(line))
 
-        return f"<pre>{json.dumps(structured, indent=2)}</pre>"
+    return render_template("admin/adminManageTimetable.html", active_tab="admin_manageTimetabletab", structured=structured)
 
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab')
+
+
+
+
+
+
+
+
+

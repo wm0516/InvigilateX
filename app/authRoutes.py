@@ -189,24 +189,38 @@ def inject_user_data():
         'user_status': ''
     }
 
+# protect all routes by checking if the user is logged in
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("Please log in first", "error")
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 # admin homepage
 @app.route('/admin/home', methods=['GET', 'POST'])
+# @login_required
 def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 # dean homepage
 @app.route('/dean/home', methods=['GET', 'POST'])
+# @login_required
 def dean_homepage():
     return render_template('dean/deanHomepage.html', active_tab='dean_hometab')
 
 # hop homepage
 @app.route('/hop/home', methods=['GET', 'POST'])
+# @login_required
 def hop_homepage():
     return render_template('hop/hopHomepage.html', active_tab='hop_hometab')
 
 # lecturer homepage
 @app.route('/lecturer/home', methods=['GET', 'POST'])
+# @login_required
 def lecturer_homepage():
     return render_template('lecturer/lecturerHomepage.html', active_tab='lecturer_hometab')
 

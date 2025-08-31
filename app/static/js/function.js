@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload('course_list', 'courseUploadContainer', 'courseSelectedFileName');
     setupFileUpload('exam_list', 'examUploadContainer', 'examSelectedFileName');
     setupFileUpload('staff_list', 'staffUploadContainer', 'staffSelectedFileName');
-    setupFileUpload('timetable_list', 'timetableUploadContainer', 'timetableSelectedFileName');
+    setupFileUpload('timetablePDF_list', 'timetablePDFUploadContainer', 'timetablePDFSelectedFileName');
 });
 
 

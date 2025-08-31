@@ -384,6 +384,15 @@ input, select{
     gap: 1%;
 }
 
+/* Each activity styled as a card */
+.activity-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
 /* Main menu container layout (small frame that divide in the big frame) */
 .menu-section {
     background-color: white;

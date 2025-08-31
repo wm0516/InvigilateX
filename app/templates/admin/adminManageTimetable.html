@@ -2,25 +2,84 @@
 {% block title %}Admin ManageTimetable{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <h2>Manage Lecturer Timetable</h2>  
+    <h2>Manage Timetable</h2>
 
-    <div class="button-wrapper">
-        <button type="button" id="refresh-btn">
-            <i class="fas fa-rotate"></i>
-            Refresh Timetable
-        </button>
-    </div>
+    <form action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+        <div id="uploadSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
+                <h4 style="text-align: center;">File Upload Section</h4>
+                <label for="timetablePDF_list">
+                    <div class="upload-container" id="timetablePDFUploadContainer">
+                        <div class="upload-text">
+                            Upload a file in PDF Format<br><br><br>
+                            Click to upload or drag and drop with below file format
+                        </div>
+                        <div class="file-types">PDF</div><br>
+                        <!-- Selected file display -->
+                        <div id="timetablePDFSelectedFileName" class="file-name-display"></div>
+                    </div>
+                </label>
+                <input type="file" id="timetablePDF_list" name="timetablePDF_file" accept=".pdf" style="display: none;">
 
-    <!-- flash message -->
-    <div class="alert alert-success" id="flash-message" style="display: none;"></div>
-    <br>
+                <br>
+                {% if pdfUploadResult %}
+                    <div class="result-message">{{ pdfUploadResult }}</div>
+                {% elif pdfUploadErrors %}
+                    <div class="error-message">{{ pdfUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
 
-    <form>
-        <iframe     
-            id="gdrive-folder"
-            src="https://drive.google.com/embeddedfolderview?id=1i4MFaRbrrJhhGmtBYyC9SWSH5tF6LvvF#grid"
-            style="width:100%; height:600px; border:0;">
-        </iframe>
+                <!-- Upload Form Submit -->
+                <div class="button-wrapper">
+                    <button type="submit">Upload Exam</button>
+                </div>
+            </div>
+        </div>
     </form>
+
+
+    {% if structured %}
+        {% for day, activities in structured.days.items() %}
+            <h4>{{ day }}</h4>
+            <div class="menu-grid">
+                {% for act in activities %}
+                    <div class="activity-card">
+                        <b>Lecturer Name:   </b> {{ structured.lecturer }} <br>
+                        <b>Session Type:    </b> {{ act.class_type }} <br>
+                        <b>Time:            </b> {{ act.time }} <br>
+                        <b>Course Name:     </b> {{ act.course }} <br>
+                        <b>Venue:           </b> {{ act.room }} <br>
+                        <b>Weeks Effective: </b> {{ act.weeks_range | join(", ") }} <br>
+                        <b>Date Range:      </b> {{ act.weeks_date }} <br>
+
+                        {% if act.sections %}
+                            <b>Sections:    </b><br>
+                            {% for sec in act.sections %}
+                                {{ sec.intake }} | {{ sec.course_code }} | {{ sec.section }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            <hr>
+        {% endfor %}
+    {% endif %}
+
+    <br><br>
+    <h2>Timetable Calander</h2>
+
+
 </div>
 {% endblock %}
+
+
+
+
+
+
