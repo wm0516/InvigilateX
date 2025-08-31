@@ -10,6 +10,9 @@ from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os, json
+import PyPDF2
+import re
+
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -20,10 +23,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
-# function for admin manage lecturer timetable (adding, editing, and removing)
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab')
+
 
 
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
@@ -745,3 +745,143 @@ def get_course_details(program_code, course_code_section):
         })
     return jsonify({"error": "Course not found"})
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def parse_activity(line):
+    """Parse one activity line into structured data."""
+    activity = {}
+
+    # Class type (LECTURE/TUTORIAL/PRACTICAL)
+    m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
+    if m_type:
+        activity["class_type"] = m_type.group(1)
+
+    # Time
+    m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
+    if m_time:
+        activity["time"] = m_time.group(1)
+
+    # Weeks and date range
+    m_weeks = re.search(r"WEEKS:([^C]+)", line)
+    if m_weeks:
+        weeks_data = m_weeks.group(1).split(",")
+        if len(weeks_data) > 1:
+            activity["weeks_range"] = weeks_data[:-1]
+            activity["weeks_date"] = weeks_data[-1]
+        else:
+            activity["weeks_range"] = weeks_data
+
+    # Course name
+    m_course = re.search(r"COURSES:([^;]+);", line)
+    if m_course:
+        activity["course"] = m_course.group(1)
+
+    # Sections
+    m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
+    if m_sections:
+        sections = m_sections.group(1).strip(";").split(";")
+        activity["sections"] = []
+        for sec in sections:
+            if "|" in sec:
+                intake, code, sec_name = sec.split("|")
+                activity["sections"].append({
+                    "intake": intake,
+                    "course_code": code,
+                    "section": sec_name
+                })
+
+    # Room
+    m_room = re.search(r"ROOMS:([^;]+);", line)
+    if m_room:
+        activity["room"] = m_room.group(1)
+
+    return activity
+
+
+
+@app.route("/admin/manageTimetable", methods=["GET", "POST"])
+def admin_manageTimetable():
+    if request.method == "POST":
+        file = request.files["pdf"]
+
+        reader = PyPDF2.PdfReader(file.stream)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + " "
+
+        # Remove ALL whitespace
+        text = re.sub(r"\s+", "", text)
+
+        # Convert everything to UPPERCASE
+        text = text.upper()
+
+        # --- Step 1: Extract title (first line until first time row) ---
+        match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
+        if match_title:
+            title = match_title.group(1).strip()
+            timerow = match_title.group(2).strip()
+            text = text.replace(title, "").replace(timerow, "")
+        else:
+            title = "TIMETABLE"
+            timerow = ""
+
+        # --- Extract lecturer name from title ---
+        lecturer_name = None
+        match_name = re.search(r"-(.*?)\(", title)
+        if match_name:
+            lecturer_name = match_name.group(1)
+
+        # --- Step 2: Insert days with blank line before them ---
+        days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+        for day in days:
+            text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
+
+        # --- Step 3: Break activities so each starts on new line ---
+        keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
+        for kw in keywords:
+            if kw == "PUBLISHED":
+                text = re.sub(kw, f"\n\n{kw}", text, flags=re.IGNORECASE)
+            else:
+                text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
+
+        # --- Step 4: Clean up multiple blank lines ---
+        text = re.sub(r"\n{3,}", "\n\n", text)
+
+        # --- Step 5: Build structured JSON ---
+        structured = {
+            "title": title,
+            "lecturer": lecturer_name, 
+            "timerow": timerow,
+            "days": {}
+        }
+        current_day = None
+
+        for line in text.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+
+            # Detect day
+            if line in days:
+                current_day = line
+                structured["days"][current_day] = []
+            else:
+                # Parse activity under the current day
+                if current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
+                    structured["days"][current_day].append(parse_activity(line))
+
+        return f"<pre>{json.dumps(structured, indent=2)}</pre>"
+
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab')
