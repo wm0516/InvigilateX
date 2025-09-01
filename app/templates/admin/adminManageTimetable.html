@@ -21,8 +21,10 @@
                     <li><a href="{{ file.webViewLink }}" target="_blank">{{ loop.index }}. {{ file.name }}</a></li>
                 {% endfor %}
             </ul>
+        {% else %}
+            <p>No files found or an error occurred.</p>
         {% endif %}
+
     </form>
 
 </div>
-{% endblock %}

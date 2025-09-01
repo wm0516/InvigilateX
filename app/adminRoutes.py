@@ -777,9 +777,6 @@ def admin_manageTimetable():
 
 
 
-import re
-from datetime import datetime
-
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     try:
@@ -789,12 +786,9 @@ def fetch_drive_files():
         if not creds_dict:
             return "Error: No credentials found in session. Please authenticate first."
 
-        # If creds_dict is a string (JSON format), deserialize it into a dictionary
+        # Deserialize credentials
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
-
-        if 'token' not in creds_dict or 'refresh_token' not in creds_dict:
-            return "Error: Invalid credentials data. Please authenticate again."
 
         creds = Credentials(
             token=creds_dict.get('token'),
@@ -804,6 +798,7 @@ def fetch_drive_files():
             client_secret=creds_dict.get('client_secret'),
             scopes=creds_dict.get('scopes')
         )
+
     except Exception as e:
         return f"Error loading credentials: {str(e)}"
 
@@ -819,12 +814,13 @@ def fetch_drive_files():
     folders = folder_results.get('files', [])
     if not folders:
         return "SOC folder not found"
-
+    
+    # Get the ID of the SOC folder
     soc_folder_id = folders[0]['id']
 
-    # Fetch and process files
+    # Fetch files from SOC folder
     pdf_files = []
-    seen_files = {}  # Dictionary to track the latest file per base name
+    seen_files = {}
     page_token = None
 
     while True:
@@ -834,25 +830,25 @@ def fetch_drive_files():
             pageToken=page_token
         ).execute()
 
+        # Log the response to check what files are being fetched
+        print(response)
+
         for file in response.get('files', []):
-            # Extract base name and date from filename (e.g., abc_01012025.pdf)
+            # Extract base name and date from filename
             match = re.match(r"^([a-zA-Z0-9_-]+)(_?(\d{8}))?\.pdf$", file['name'])
             if match:
                 base_name = match.group(1)
-                date_str = match.group(3)  # Extract date if it exists (e.g., 01012025)
+                date_str = match.group(3)
 
                 if date_str:
-                    # Parse the date string in ddmmyyyy format
                     try:
                         file_date = datetime.strptime(date_str, "%d%m%Y")
                     except ValueError:
-                        continue  # Skip files with invalid date format
+                        continue
 
-                    # Check if we have a newer file for this base_name
                     if base_name not in seen_files or seen_files[base_name]['date'] < file_date:
                         seen_files[base_name] = {'file': file, 'date': file_date}
                 else:
-                    # If no date part, just assume it's the original (old) version
                     if base_name not in seen_files:
                         seen_files[base_name] = {'file': file, 'date': None}
 
@@ -860,15 +856,18 @@ def fetch_drive_files():
         if not page_token:
             break
 
-    # Only keep the latest version (file with the most recent date)
+    # Only keep the latest version
     latest_files = [info['file'] for info in seen_files.values()]
 
-    # Save back credentials
+    print("Fetched files:", latest_files)
+
     session['credentials'] = creds.to_json()
 
+    # If no files are fetched, ensure you display a message
+    if not latest_files:
+        return "No PDF files found in the SOC folder."
+
     return render_template('admin/adminManageTimetable.html', files=latest_files, active_tab='admin_manageTimetabletab', authorized=True)
-
-
 
 
 
