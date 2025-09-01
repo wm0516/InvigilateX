@@ -772,7 +772,7 @@ def admin_manageTimetable():
     if 'credentials' not in session:
         return redirect(url_for('authorize'))
 
-    creds = Credentials.from_authorized_user_info(session['credentials'])
+    creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
 
     # Connect to Drive
     drive_service = build('drive', 'v3', credentials=creds)
