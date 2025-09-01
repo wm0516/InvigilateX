@@ -864,7 +864,7 @@ def fetch_drive_files():
             response = drive_service.files().list(
                 q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
                 spaces='drive',
-                fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
+                fields='nextPageToken, files(id, name, webViewLink)',
                 pageToken=page_token
             ).execute()
 
@@ -876,16 +876,34 @@ def fetch_drive_files():
 
                 app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
-                if base_name:
-                    # Use the file's modifiedTime if timestamp is None
-                    file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
+                if not base_name:
+                    continue
 
-                    if base_name not in seen_files:
-                        seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
-                    else:
-                        # If the timestamp of the current file is later, update it
-                        if file_timestamp > seen_files[base_name]['timestamp']:
-                            seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
+                if base_name not in seen_files:
+                    seen_files[base_name] = {
+                        'file': file,
+                        'timestamp': timestamp,
+                        'has_timestamp': bool(timestamp)
+                    }
+                else:
+                    current = seen_files[base_name]
+
+                    # Case 1: Current has no timestamp but new one has timestamp → replace
+                    if not current['has_timestamp'] and timestamp:
+                        seen_files[base_name] = {
+                            'file': file,
+                            'timestamp': timestamp,
+                            'has_timestamp': True
+                        }
+                    # Case 2: Both have timestamps → keep the latest timestamp
+                    elif current['has_timestamp'] and timestamp:
+                        if timestamp > current['timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': timestamp,
+                                'has_timestamp': True
+                            }
+                    # Case 3: Both have no timestamp → do nothing (keep the first one)
 
             page_token = response.get('nextPageToken')
             if not page_token:
@@ -906,6 +924,7 @@ def fetch_drive_files():
     app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
 
     return redirect(url_for('admin_manageTimetable'))
+
 
 
 @app.route('/admin/authorize')
