@@ -12,20 +12,19 @@
                 </div>
             {% endfor %}
         {% endif %}
-        <br>
 
         {% if not files %}
             {% if not authorized %}
-                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
+                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
             {% else %}
-                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Load Drive Files</a>
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
             {% endif %}
         {% endif %}
         <br>
-        
+
         {% if files %}
             <h3>PDF Files from SOC Folder:</h3>
-            <div class="menu-grid">
+            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                 {% for file in files %}
                     <div>
                         <a href="{{ file.webViewLink }}" target="_blank">
@@ -34,7 +33,7 @@
                     </div>
                 {% endfor %}
             </div>
-{% endif %}
+        {% endif %}
     </form>
 </div>
 {% endblock %}
