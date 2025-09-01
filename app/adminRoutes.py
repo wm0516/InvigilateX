@@ -757,6 +757,7 @@ def get_course_details(program_code, course_code_section):
 
 
 
+
 CLIENT_SECRETS_FILE = "/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json"  # Your OAuth client secret JSON file
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'  # Update accordingly
@@ -770,6 +771,12 @@ def admin_manageTimetable():
     creds = Credentials(**session['credentials'])
 
     try:
+        # Check if the credentials are expired
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            session['credentials'] = creds_to_dict(creds)
+            session.modified = True  # Ensure the session is updated
+
         drive_service = build('drive', 'v3', credentials=creds)
 
         # Find folder named "SOC"
@@ -793,11 +800,13 @@ def admin_manageTimetable():
 
         # Save refreshed credentials back to session
         session['credentials'] = creds_to_dict(creds)
+        session.modified = True  # Ensure the session is updated
 
         return render_template('admin/adminManageTimetable.html', files=files)
 
     except Exception as e:
         return f"An error occurred: {e}"
+
 
 
 @app.route('/admin/authorize')
@@ -816,6 +825,17 @@ def admin_authorize():
     return redirect(authorization_url)
 
 
+def creds_to_dict(creds):
+    return {
+        'token': creds.token,
+        'refresh_token': creds.refresh_token,
+        'token_uri': creds.token_uri,
+        'client_id': creds.client_id,
+        'client_secret': creds.client_secret,
+        'scopes': creds.scopes
+    }
+
+
 @app.route('/admin/oauth2callback')
 def admin_oauth2callback():
     state = session.get('state')
@@ -831,22 +851,5 @@ def admin_oauth2callback():
     session['credentials'] = creds_to_dict(creds)
 
     return redirect(url_for('admin_manageTimetable'))
-
-
-@app.route('/admin/logout')
-def admin_logout():
-    session.clear()
-    return redirect(url_for('admin_manageTimetable'))
-
-
-def creds_to_dict(creds):
-    return {
-        'token': creds.token,
-        'refresh_token': creds.refresh_token,
-        'token_uri': creds.token_uri,
-        'client_id': creds.client_id,
-        'client_secret': creds.client_secret,
-        'scopes': creds.scopes
-    }
 
 
