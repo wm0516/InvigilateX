@@ -13,7 +13,7 @@ import os
 import json
 import PyPDF2
 import re
-
+from collections import defaultdict
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -790,8 +790,7 @@ def extract_base_name_and_timestamp(file_name):
         except ValueError:
             return None, None
     else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
-        base_name = file_name[:-4]
+        base_name = file_name[:-4]  # Treat the full filename (minus .pdf) as base_name if no timestamp
 
     return base_name, timestamp
 
@@ -805,7 +804,6 @@ def admin_manageTimetable():
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None
     )
-
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -856,7 +854,6 @@ def fetch_drive_files():
         return redirect(url_for('admin_manageTimetable'))
 
     # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
-    # Fetch the files from Google Drive and keep only the latest per base name
     try:
         seen_files = {}
         page_token = None
@@ -879,7 +876,6 @@ def fetch_drive_files():
                 app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
                 if base_name:
-                    # Use timestamp if available; else fallback to modifiedTime from Drive metadata
                     file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
 
                     if base_name not in seen_files:
@@ -892,60 +888,31 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        # After sorting files by base name:
-        filtered_files = sorted(
-            seen_files.values(),
-            key=lambda x: x['file']['name'].split('_')[0]  # Sort based on base name
-        )
+        # Step 4: Group files by base name and keep the latest file for each group
+        files_by_base_name = defaultdict(list)
 
-        # Initialize the list to store the final set of files
+        for file in seen_files.values():
+            base_name = file['file']['name'].split('_')[0]
+            files_by_base_name[base_name].append(file)
+
+        # Step 5: Sort each group by timestamp (latest first) and pick the latest file
         final_files = []
+        for base_name, group in files_by_base_name.items():
+            group.sort(key=lambda x: x['timestamp'], reverse=True)  # Sort by timestamp, latest first
+            final_files.append(group[0]['file'])  # Keep the latest file from each group
 
-        # Start with a pointer (index) to compare files one by one
-        pointer = 0
-
-        while pointer < len(filtered_files):
-            current_file = filtered_files[pointer]
-            base_name = current_file['file']['name'].split('_')[0]  # Get the base name (before timestamp)
-            current_timestamp = current_file['timestamp']  # Current file timestamp
-
-            # Check if there's a next file to compare with
-            if pointer + 1 < len(filtered_files):
-                next_file = filtered_files[pointer + 1]
-                next_base_name = next_file['file']['name'].split('_')[0]  # Next file base name
-                next_timestamp = next_file['timestamp']  # Next file timestamp
-
-                # If base names are the same, compare timestamps and keep the latest
-                if base_name == next_base_name:
-                    if next_timestamp > current_timestamp:
-                        # Replace current file with the next one if next timestamp is newer
-                        final_files.append(next_file['file'])
-                    else:
-                        final_files.append(current_file['file'])
-                    pointer += 1  # Skip the next file since it’s already handled
-                else:
-                    # If base names are different, add current file to the final list
-                    final_files.append(current_file['file'])
-            else:
-                # If there's no next file, just add the current file to the final list
-                final_files.append(current_file['file'])
-
-            pointer += 1  # Move to the next file
-
-        # Now, final_files will contain the filtered and correctly sorted list of files
+        # Save filtered files in session for displaying later
         session['drive_files'] = final_files
-
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
         app.logger.error(f"Error fetching files from Google Drive: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
-    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
+    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
+    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
 
     return redirect(url_for('admin_manageTimetable'))
-
 
 
 @app.route('/admin/authorize')
@@ -1001,3 +968,20 @@ def oauth2callback():
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
