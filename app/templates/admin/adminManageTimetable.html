@@ -9,7 +9,7 @@
         <ul>
             {% for file in files %}
                 <li>
-                    <strong>{{ file['name'] }}</strong>
+                    <strong>{{ loop.index }} {{ file['name'] }}</strong>
                     <!-- Link to view file in Google Drive -->
                     <a href="https://drive.google.com/file/d/{{ file['id'] }}/view" target="_blank">View</a>
                     <!-- Direct download link -->
