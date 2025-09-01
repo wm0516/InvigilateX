@@ -6,7 +6,7 @@
     <form style="max-height: 500px; overflow-y: auto;">
         <!-- Refresh Button -->
          <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
-        <br>
+        <br><br>
 
         {% if not files %}
             {% if not authorized %}
