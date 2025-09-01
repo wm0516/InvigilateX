@@ -10,13 +10,13 @@
             {% if not authorized %}
                 <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
             {% else %}
-                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success" id="loadFilesBtn">Click here to load files from Google Drive</a>
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
             {% endif %}
         {% endif %}
 
         {% if files %}
             <!-- Refresh Button -->
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning" id="refreshFilesBtn">Click here to refresh the files from Google Drive</a>
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
             <br><br>
 
             <h3>PDF Files from SOC Folder:</h3>
@@ -29,19 +29,6 @@
                     </div>
                 {% endfor %}
             </div>
-        {% endif %}
-
-        <!-- Processing Progress -->
-        {% if processing_status and processing_status.is_processing %}
-        <div id="processingProgress" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
-            <h4>Processing Files...</h4>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <progress id="progressBar" value="{{ processing_status.processed }}" max="{{ processing_status.total }}" style="width: 300px;"></progress>
-                <span id="progressText">{{ processing_status.processed }}/{{ processing_status.total }}</span>
-            </div>
-            <p>Current file: <strong id="currentFileName">{{ processing_status.current_file }}</strong></p>
-            <p><small>This may take a while for large files. Please wait...</small></p>
-        </div>
         {% endif %}
 
         <br><br>
@@ -83,5 +70,4 @@
         {% endfor %}
     {% endif %}
 </div>
-
 {% endblock %}
