@@ -4,21 +4,21 @@
 <div class="menu-section">
     <h2>Manage Timetable</h2>
     <form style="max-height: 500px; overflow-y: auto;">
-        <br>
-        {% if get_flashed_messages(with_categories=true) %}
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-
         {% if not files %}
             {% if not authorized %}
                 <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
             {% else %}
                 <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
             {% endif %}
+        {% endif %}
+        <br>
+
+        {% if get_flashed_messages(with_categories=true) %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+            {% endfor %}
         {% endif %}
         <br>
 
