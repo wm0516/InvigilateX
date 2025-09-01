@@ -767,29 +767,31 @@ GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0d
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
-@app.route('/admin/manageTimetable')
-def admin_manageTimetable():
-    return render_template('admin/adminManageTimetable.html', files=None,  # No files yet
-        active_tab='admin_manageTimetabletab', authorized='credentials' in session  # Show button if credentials exist
-    )
 
 # Function to extract base name and timestamp
 def extract_base_name_and_timestamp(file_name):
+    # Match file names with timestamps (e.g., Ts. Vasuky_140425 onwards.pdf)
     match = re.match(r"^(.*?)(_([0-9]{6}))?(\s.*)?\.pdf$", file_name)
     if match:
         base_name = match.group(1)
-        timestamp_str = match.group(3)
+        timestamp_str = match.group(3)  # Get the timestamp part
         if timestamp_str:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+            try:
+                timestamp = datetime.strptime(timestamp_str, "%d%m%y")  # Convert to datetime object
+            except ValueError:
+                return None, None  # In case of a bad timestamp format
         else:
             timestamp = None
         return base_name, timestamp
     return None, None
 
 
+@app.route('/admin/manageTimetable')
+def admin_manageTimetable():
+    return render_template('admin/adminManageTimetable.html', files=None,  # No files yet
+                           active_tab='admin_manageTimetabletab', authorized='credentials' in session  # Show button if credentials exist
+                           )
 
-import re
-from datetime import datetime
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -824,7 +826,7 @@ def fetch_drive_files():
         folder_results = drive_service.files().list(
             q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
             spaces='drive',
-            fields='files(id, name)',
+            fields='files(id, name)'
         ).execute()
 
         folders = folder_results.get('files', [])
@@ -857,13 +859,13 @@ def fetch_drive_files():
                 # Extract base name and timestamp
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
 
-                if base_name:
+                if base_name and timestamp:
                     # If file with the same base_name exists, compare timestamps and keep the latest
                     if base_name not in seen_files:
                         seen_files[base_name] = {'file': file, 'timestamp': timestamp}
                     else:
                         # Compare timestamps and update if the new file is newer
-                        if timestamp and (timestamp > seen_files[base_name]['timestamp']):
+                        if timestamp > seen_files[base_name]['timestamp']:
                             seen_files[base_name] = {'file': file, 'timestamp': timestamp}
 
             page_token = response.get('nextPageToken', None)
@@ -892,8 +894,6 @@ def fetch_drive_files():
         flash(f"Error processing the files: {str(e)}", 'error')
         app.logger.error(f"Error processing the files: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
-
-
 
 
 @app.route('/admin/authorize')
