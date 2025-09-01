@@ -759,9 +759,6 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-
 # OAuth config
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
@@ -774,11 +771,6 @@ def extract_base_name_and_timestamp(file_name):
     e.g. "Ts. Vasuky_140425 onwards.pdf"
     Returns: (base_name, datetime object) or (None, None)
     """
-    # Regex breakdown:
-    # ^(.*?): base name (non-greedy)
-    # _([0-9]{6}): underscore followed by 6 digit date (ddmmyy)
-    # (.*)?: optional anything after timestamp
-    # \.pdf$: file extension
     pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
@@ -794,6 +786,9 @@ def extract_base_name_and_timestamp(file_name):
             timestamp = datetime.strptime(timestamp_str, "%d%m%y")
         except ValueError:
             return None, None
+    else:
+        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        base_name = file_name[:-4]
 
     return base_name, timestamp
 
@@ -834,11 +829,10 @@ def fetch_drive_files():
         app.logger.error(f"Error loading credentials: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
-    # Step 2: Build Drive service
+    # Step 2: Build Drive service and find SOC folder
     try:
         drive_service = build('drive', 'v3', credentials=creds)
 
-        # Step 3: Find SOC folder
         folder_results = drive_service.files().list(
             q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
             spaces='drive',
@@ -858,7 +852,7 @@ def fetch_drive_files():
         app.logger.error(f"Error accessing Google Drive folder: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
-    # Step 4: Fetch PDF files from SOC folder and pick latest per base name
+    # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
     try:
         seen_files = {}
         page_token = None
@@ -877,7 +871,11 @@ def fetch_drive_files():
 
             for file in files_in_page:
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+
+                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
+
                 if base_name:
+                    # Use timestamp if available; else fallback to modifiedTime from Drive metadata
                     file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
 
                     if base_name not in seen_files:
@@ -890,11 +888,9 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        # Prepare files list for rendering or further processing
         filtered_files = [data['file'] for data in seen_files.values()]
-        flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'info')
 
-        # Save files in session to display on manage timetable page
+        # Save filtered files in session for displaying later
         session['drive_files'] = filtered_files
 
     except Exception as e:
@@ -902,7 +898,9 @@ def fetch_drive_files():
         app.logger.error(f"Error fetching files from Google Drive: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
-    flash(f"Successfully fetched {len(filtered_files)} files from SOC folder.", 'success')
+    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'success')
+    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
+
     return redirect(url_for('admin_manageTimetable'))
 
 
@@ -943,7 +941,6 @@ def oauth2callback():
         flow.fetch_token(authorization_response=request.url)
         creds = flow.credentials
 
-        # Save credentials in session
         session['credentials'] = {
             'token': creds.token,
             'refresh_token': creds.refresh_token,
