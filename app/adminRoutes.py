@@ -794,7 +794,7 @@ def admin_manageTimetable():
         # Save refreshed credentials back to session
         session['credentials'] = creds_to_dict(creds)
 
-        return render_template('admin_manageTimetable', files=files)
+        return render_template('admin/adminManageTimetable', files=files)
 
     except Exception as e:
         return f"An error occurred: {e}"
