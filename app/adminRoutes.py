@@ -780,7 +780,7 @@ def admin_manageTimetable():
     files = list_drive_files()
 
     # Render template with results
-    return render_template("admin/manageTimetable.html", files=files)
+    return render_template("admin/adminManageTimetable.html", files=files)
 
 
 
