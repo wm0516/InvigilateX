@@ -877,8 +877,9 @@ def parse_activity(line):
 def parse_pdf_text(text):
     structured = None
 
-    # Clean and format the text
-    text = re.sub(r"\s+", " ", text).strip().upper()
+    # Remove ALL whitespace
+    text = re.sub(r"\s+", "", text)
+    text = text.upper()
 
     # --- Step 1: Extract title ---
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
