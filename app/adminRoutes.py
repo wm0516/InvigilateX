@@ -892,17 +892,49 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        # Sort files based on base name (before timestamp) lexicographically
+        # After sorting files by base name:
         filtered_files = sorted(
             seen_files.values(),
-            key=lambda x: x['file']['name'].split('_')[0]  # Use base name to sort
+            key=lambda x: x['file']['name'].split('_')[0]  # Sort based on base name
         )
 
-        # Extract only file objects after sorting
-        filtered_files = [data['file'] for data in filtered_files]
+        # Initialize the list to store the final set of files
+        final_files = []
 
-        # Save filtered files in session for displaying later
-        session['drive_files'] = filtered_files
+        # Start with a pointer (index) to compare files one by one
+        pointer = 0
+
+        while pointer < len(filtered_files):
+            current_file = filtered_files[pointer]
+            base_name = current_file['file']['name'].split('_')[0]  # Get the base name (before timestamp)
+            current_timestamp = current_file['timestamp']  # Current file timestamp
+
+            # Check if there's a next file to compare with
+            if pointer + 1 < len(filtered_files):
+                next_file = filtered_files[pointer + 1]
+                next_base_name = next_file['file']['name'].split('_')[0]  # Next file base name
+                next_timestamp = next_file['timestamp']  # Next file timestamp
+
+                # If base names are the same, compare timestamps and keep the latest
+                if base_name == next_base_name:
+                    if next_timestamp > current_timestamp:
+                        # Replace current file with the next one if next timestamp is newer
+                        final_files.append(next_file['file'])
+                    else:
+                        final_files.append(current_file['file'])
+                    pointer += 1  # Skip the next file since it’s already handled
+                else:
+                    # If base names are different, add current file to the final list
+                    final_files.append(current_file['file'])
+            else:
+                # If there's no next file, just add the current file to the final list
+                final_files.append(current_file['file'])
+
+            pointer += 1  # Move to the next file
+
+        # Now, final_files will contain the filtered and correctly sorted list of files
+        session['drive_files'] = final_files
+
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')

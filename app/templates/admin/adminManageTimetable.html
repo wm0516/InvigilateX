@@ -14,16 +14,24 @@
             {% endif %}
         {% endif %}
 
-        {% if files %}
-            <h3>PDF Files from SOC Folder:</h3>
-            <ul>
+        <!-- Assuming you are using Jinja templating -->
+        <h1>Filtered Files</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>File Name</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
                 {% for file in files %}
-                    <li><a href="{{ file.webViewLink }}" target="_blank">{{ loop.index }}. {{ file.name }}</a></li>
+                    <tr>
+                        <td>{{ file['name'] }}</td>
+                        <td><a href="{{ file['webViewLink'] }}" target="_blank">View</a></td>
+                    </tr>
                 {% endfor %}
-            </ul>
-        {% else %}
-            <p>No files found or an error occurred.</p>
-        {% endif %}
+            </tbody>
+        </table>
 
         <br>
         {% if get_flashed_messages(with_categories=true) %}
@@ -40,3 +48,4 @@
 </div>
 
 {% endblock %}
+
