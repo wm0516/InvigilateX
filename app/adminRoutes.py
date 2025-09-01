@@ -768,41 +768,56 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
 
-# Function to extract base name and timestamp
 def extract_base_name_and_timestamp(file_name):
-    # Match file names with timestamps (e.g., Ts. Vasuky_140425 onwards.pdf)
-    match = re.match(r"^(.*?)(_([0-9]{6}))?(\s.*)?\.pdf$", file_name)
-    if match:
-        base_name = match.group(1)
-        timestamp_str = match.group(3)  # Get the timestamp part
-        if timestamp_str:
-            try:
-                timestamp = datetime.strptime(timestamp_str, "%d%m%y")  # Convert to datetime object
-            except ValueError:
-                return None, None  # In case of a bad timestamp format
-        else:
-            timestamp = None
-        return base_name, timestamp
-    return None, None
+    """
+    Extract base name and timestamp from a file name of the format:
+    e.g. "Ts. Vasuky_140425 onwards.pdf"
+    Returns: (base_name, datetime object) or (None, None)
+    """
+    # Regex breakdown:
+    # ^(.*?): base name (non-greedy)
+    # _([0-9]{6}): underscore followed by 6 digit date (ddmmyy)
+    # (.*)?: optional anything after timestamp
+    # \.pdf$: file extension
+    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
+
+    if not match:
+        return None, None
+
+    base_name = match.group(1)
+    timestamp_str = match.group(2)
+
+    timestamp = None
+    if timestamp_str:
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            return None, None
+
+    return base_name, timestamp
 
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
-    return render_template('admin/adminManageTimetable.html', files=None,  # No files yet
-                           active_tab='admin_manageTimetabletab', authorized='credentials' in session  # Show button if credentials exist
-                           )
+    files = session.get('drive_files')  # Get files saved in session for display
+    return render_template(
+        'admin/adminManageTimetable.html',
+        files=files,
+        active_tab='admin_manageTimetabletab',
+        authorized='credentials' in session and session['credentials'] is not None
+    )
 
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
-    try:
-        # Check if 'credentials' exist in session and ensure it's not None
-        creds_dict = session.get('credentials')
-        if not creds_dict:
-            flash("No credentials found in session. Please authenticate first", 'error')
-            return redirect(url_for('authorize'))
+    # Step 1: Load credentials from session
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        flash("No credentials found in session. Please authenticate first.", 'error')
+        return redirect(url_for('authorize'))
 
-        # Deserialize credentials
+    try:
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
 
@@ -815,14 +830,15 @@ def fetch_drive_files():
             scopes=creds_dict.get('scopes')
         )
     except Exception as e:
-        flash(f"Error loading credentials: {str(e)}", 'error')
-        app.logger.error(f"Error loading credentials: {str(e)}")  # Log the error
+        flash(f"Error loading credentials: {e}", 'error')
+        app.logger.error(f"Error loading credentials: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
+    # Step 2: Build Drive service
     try:
         drive_service = build('drive', 'v3', credentials=creds)
 
-        # Find SOC folder and retrieve files...
+        # Step 3: Find SOC folder
         folder_results = drive_service.files().list(
             q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
             spaces='drive',
@@ -832,54 +848,58 @@ def fetch_drive_files():
         folders = folder_results.get('files', [])
         if not folders:
             flash("SOC folder not found", 'error')
-            app.logger.error("SOC folder not found")  # Log the error
+            app.logger.error("SOC folder not found")
             return redirect(url_for('admin_manageTimetable'))
 
         soc_folder_id = folders[0]['id']
+
     except Exception as e:
-        flash(f"Error accessing Google Drive folder: {str(e)}", 'error')
-        app.logger.error(f"Error accessing Google Drive folder: {str(e)}")  # Log the error
+        flash(f"Error accessing Google Drive folder: {e}", 'error')
+        app.logger.error(f"Error accessing Google Drive folder: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
+    # Step 4: Fetch PDF files from SOC folder and pick latest per base name
     try:
-        # Fetch PDF files from SOC folder
-        pdf_files = []
         seen_files = {}
-
-        # Fetch files in pages
         page_token = None
+
         while True:
-            # Query to list PDF files only from the SOC folder
             response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",  # Filter by MIME type for PDFs
+                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+                spaces='drive',
                 fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
                 pageToken=page_token
             ).execute()
 
             for file in response.get('files', []):
-                # Extract base name and timestamp
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+                if base_name:
+                    # Use modifiedTime if timestamp is missing to approximate latest
+                    file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
 
-                if base_name and timestamp:
-                    # If file with the same base_name exists, compare timestamps and keep the latest
                     if base_name not in seen_files:
-                        seen_files[base_name] = {'file': file, 'timestamp': timestamp}
+                        seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
                     else:
-                        # Compare timestamps and update if the new file is newer
-                        if timestamp > seen_files[base_name]['timestamp']:
-                            seen_files[base_name] = {'file': file, 'timestamp': timestamp}
+                        if file_timestamp > seen_files[base_name]['timestamp']:
+                            seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
 
-            page_token = response.get('nextPageToken', None)
+            page_token = response.get('nextPageToken')
             if not page_token:
                 break
 
-    except Exception as e:
-        flash(f"Error fetching files from Google Drive: {str(e)}", 'error')
-        app.logger.error(f"Error fetching files from Google Drive: {str(e)}")  # Log the error
-        return redirect(url_for('admin_manageTimetable'))
-    
-    return redirect(url_for('admin_manageTimetable'))
+        # Prepare files list for rendering or further processing
+        filtered_files = [data['file'] for data in seen_files.values()]
 
+        # Save files in session to display on manage timetable page
+        session['drive_files'] = filtered_files
+
+    except Exception as e:
+        flash(f"Error fetching files from Google Drive: {e}", 'error')
+        app.logger.error(f"Error fetching files from Google Drive: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    flash(f"Successfully fetched {len(filtered_files)} files from SOC folder.", 'success')
+    return redirect(url_for('admin_manageTimetable'))
 
 
 @app.route('/admin/authorize')
@@ -917,29 +937,22 @@ def oauth2callback():
         )
 
         flow.fetch_token(authorization_response=request.url)
-
         creds = flow.credentials
 
-        # Instead of directly accessing token_uri, use getattr() to handle it safely.
-        token_uri = getattr(creds, 'token_uri', None)
-        client_id = getattr(creds, 'client_id', None)
-        client_secret = getattr(creds, 'client_secret', None)
-        scopes = getattr(creds, 'scopes', None)
-
-        # Store credentials in the session
+        # Save credentials in session
         session['credentials'] = {
             'token': creds.token,
             'refresh_token': creds.refresh_token,
-            'token_uri': token_uri,  # Store token_uri only if it exists
-            'client_id': client_id,
-            'client_secret': client_secret,
-            'scopes': scopes
+            'token_uri': getattr(creds, 'token_uri', None),
+            'client_id': getattr(creds, 'client_id', None),
+            'client_secret': getattr(creds, 'client_secret', None),
+            'scopes': getattr(creds, 'scopes', None)
         }
 
-        app.logger.info(f"OAuth2 authentication successful, credentials stored.")  # Add logging to debug
+        app.logger.info("OAuth2 authentication successful, credentials stored.")
         return redirect(url_for('admin_manageTimetable'))
 
     except Exception as e:
         flash(f"Error during OAuth2 callback: {e}", 'error')
-        app.logger.error(f"OAuth2 callback error: {e}")  # Add detailed logging for errors
+        app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
