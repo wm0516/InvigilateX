@@ -862,6 +862,7 @@ def fetch_drive_files():
     try:
         seen_files = {}
         page_token = None
+        total_files_read = 0
 
         while True:
             response = drive_service.files().list(
@@ -871,10 +872,12 @@ def fetch_drive_files():
                 pageToken=page_token
             ).execute()
 
-            for file in response.get('files', []):
+            files_in_page = response.get('files', [])
+            total_files_read += len(files_in_page)
+
+            for file in files_in_page:
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
                 if base_name:
-                    # Use modifiedTime if timestamp is missing to approximate latest
                     file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
 
                     if base_name not in seen_files:
@@ -889,6 +892,7 @@ def fetch_drive_files():
 
         # Prepare files list for rendering or further processing
         filtered_files = [data['file'] for data in seen_files.values()]
+        flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'info')
 
         # Save files in session to display on manage timetable page
         session['drive_files'] = filtered_files
