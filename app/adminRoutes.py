@@ -994,6 +994,9 @@ def fetch_drive_files():
             total_files_read += len(files_in_page)
 
             for file in files_in_page:
+                if len(seen_files) >= 3:
+                    break
+                
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
                 app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
