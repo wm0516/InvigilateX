@@ -761,7 +761,6 @@ GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0d
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
-
 def get_oauth_flow(state=None):
     """
     Creates and returns an OAuth2 flow based on whether we have a state or not.
@@ -941,12 +940,15 @@ def parse_pdf_text(text):
 def admin_manageTimetable():
     files = session.get('drive_files')  # Get files saved in session for display
     structured_timetable = session.get('structured_timetable')  # Get structured timetable if available
+    processing_status = session.get('processing_status', {})  # Get processing status
+    
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None,
-        structured=structured_timetable  # Pass structured_timetable to the template
+        structured=structured_timetable,  # Pass structured_timetable to the template
+        processing_status=processing_status  # Pass processing status
     )
 
 
@@ -955,7 +957,7 @@ def fetch_drive_files():
     creds_dict = session.get('credentials')
     if not creds_dict:
         flash("No credentials found in session. Please authenticate first.", 'error')
-        return redirect(url_for('authorize'))
+        return redirect(url_for('admin_manageTimetable'))
 
     try:
         if isinstance(creds_dict, str):
@@ -975,9 +977,9 @@ def fetch_drive_files():
 
         seen_files = {}
         page_token = None
-        total_files_read = 0
-        structured_timetable = None  # Initialize structured_timetable
-
+        all_files = []
+        
+        # First, collect all file metadata
         while True:
             response = drive_service.files().list(
                 q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
@@ -987,15 +989,38 @@ def fetch_drive_files():
             ).execute()
 
             files_in_page = response.get('files', [])
-            total_files_read += len(files_in_page)
+            all_files.extend(files_in_page)
+            
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
 
-            for file in files_in_page:
-                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
+        total_files = len(all_files)
+        session['processing_status'] = {
+            'total': total_files,
+            'processed': 0,
+            'current_file': '',
+            'is_processing': True
+        }
+        
+        # Process files one by one
+        for i, file in enumerate(all_files):
+            session['processing_status'] = {
+                'total': total_files,
+                'processed': i,
+                'current_file': file['name'],
+                'is_processing': True
+            }
+            
+            app.logger.info(f"Processing file {i+1}/{total_files}: {file['name']}")
+            
+            base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+            app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
-                if not base_name:
-                    continue
+            if not base_name:
+                continue
 
+            try:
                 # Fetch the PDF file content from Google Drive
                 file_id = file['id']
                 file_content = drive_service.files().get_media(fileId=file_id).execute()
@@ -1032,27 +1057,44 @@ def fetch_drive_files():
                             'has_timestamp': True,
                             'structured_timetable': structured_timetable
                         }
-
-            page_token = response.get('nextPageToken')
-            if not page_token:
-                break
+                        
+            except Exception as e:
+                app.logger.error(f"Error processing file {file['name']}: {e}")
+                continue
 
         final_files = [file_data['file'] for file_data in seen_files.values()]
         session['drive_files'] = final_files
 
-        # Store the structured timetable in the session
-        session['structured_timetable'] = structured_timetable
+        # Store the structured timetable from the last processed file
+        if seen_files:
+            last_file_data = list(seen_files.values())[-1]
+            session['structured_timetable'] = last_file_data['structured_timetable']
+
+        # Clear processing status
+        session['processing_status'] = {
+            'total': total_files,
+            'processed': total_files,
+            'current_file': '',
+            'is_processing': False
+        }
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
         app.logger.error(f"Error fetching files from Google Drive: {e}")
+        # Clear processing status on error
+        session['processing_status'] = {'is_processing': False}
         return redirect(url_for('admin_manageTimetable'))
 
-    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
+    flash(f"Total files read from Drive: {total_files}. After filtering, files count: {len(final_files)}", 'success')
+    app.logger.info(f"Total files read: {total_files}, filtered files kept: {len(final_files)}")
     return redirect(url_for('admin_manageTimetable'))
 
 
+@app.route('/admin/check_processing_status')
+def check_processing_status():
+    """API endpoint to check processing status"""
+    status = session.get('processing_status', {'is_processing': False})
+    return jsonify(status)
 
 
 @app.route('/admin/authorize')
