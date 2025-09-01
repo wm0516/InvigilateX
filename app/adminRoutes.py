@@ -856,7 +856,6 @@ def fetch_drive_files():
                 pageToken=page_token
             ).execute()
 
-
             for file in response.get('files', []):
                 # Extract base name and timestamp
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
@@ -878,6 +877,9 @@ def fetch_drive_files():
         flash(f"Error fetching files from Google Drive: {str(e)}", 'error')
         app.logger.error(f"Error fetching files from Google Drive: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
+    
+    return redirect(url_for('admin_manageTimetable'))
+
 
 
 @app.route('/admin/authorize')
