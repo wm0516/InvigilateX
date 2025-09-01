@@ -6,39 +6,37 @@
     <h2>Manage Timetable</h2>
 
     <form style="max-height: 500px; overflow-y: auto;">
-        {% if not authorized %}
-            <!-- Not authorized yet -->
-            <a href="{{ url_for('admin_authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
+        {% if not files %}
+            {% if not authorized %}
+                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
+            {% else %}
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Load Drive Files</a>
+            {% endif %}
+        {% endif %}
 
-        {% elif not files %}
-            <!-- Authorized but no files loaded yet -->
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Load Drive Files</a>
-
-        {% else %}
-            <!-- Files loaded -->
+        {% if files %}
             <h3>PDF Files from SOC Folder:</h3>
             <ul>
                 {% for file in files %}
-                    <li>
-                        <a href="{{ file.webViewLink }}" target="_blank">{{ loop.index }}. {{ file.name }}</a>
-                    </li>
+                    <li><a href="{{ file.webViewLink }}" target="_blank">{{ loop.index }}. {{ file.name }}</a></li>
                 {% endfor %}
             </ul>
-
-            <br>
-            <a href="{{ url_for('admin_logout') }}" class="btn btn-danger">Logout</a>
+        {% else %}
+            <p>No files found or an error occurred.</p>
         {% endif %}
 
-        <br><br>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <br>
+        {% if get_flashed_messages(with_categories=true) %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <br>
+
     </form>
+
 </div>
+
 {% endblock %}
