@@ -759,7 +759,7 @@ def get_course_details(program_code, course_code_section):
 
 CLIENT_SECRETS_FILE = "/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json"  # Your OAuth client secret JSON file
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-REDIRECT_URI = 'http://wm05.pythonanywhere.com/admin/oauth2callback'  # Update accordingly
+REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'  # Update accordingly
 
 
 @app.route('/admin/manageTimetable')
