@@ -937,20 +937,17 @@ def parse_pdf_text(text):
     return structured
 
 
-
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
     files = session.get('drive_files')  # Get files saved in session for display
-    structured_timetables = session.get('structured_timetables')  # <-- use plural dict
-
+    structured_timetable = session.get('structured_timetable')  # Get structured timetable if available
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None,
-        structured=structured_timetables   # <-- pass the whole dict
+        structured=structured_timetable  # Pass structured_timetable to the template
     )
-
 
 
 @app.route('/admin/fetch_drive_files')
@@ -980,7 +977,6 @@ def fetch_drive_files():
         page_token = None
         total_files_read = 0
         structured_timetable = None  # Initialize structured_timetable
-        all_structured = {}
 
         while True:
             response = drive_service.files().list(
@@ -1018,9 +1014,8 @@ def fetch_drive_files():
                         'file': file,
                         'timestamp': timestamp,
                         'has_timestamp': bool(timestamp),
+                        'structured_timetable': structured_timetable
                     }
-                     # always update structured data
-                    all_structured[base_name] = structured_timetable
                 else:
                     current = seen_files[base_name]
                     if not current['has_timestamp'] and timestamp:
@@ -1044,7 +1039,9 @@ def fetch_drive_files():
 
         final_files = [file_data['file'] for file_data in seen_files.values()]
         session['drive_files'] = final_files
-        session['structured_timetables'] = all_structured   # store ALL timetables
+
+        # Store the structured timetable in the session
+        session['structured_timetable'] = structured_timetable
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
