@@ -760,49 +760,115 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from google_auth_oauthlib.flow import Flow
 
-# OAuth 2.0 Client ID JSON file (downloaded from Google Cloud Console)
-CLIENT_SECRETS_FILE = '/home/WM05/mydriveapiproject-470807-10c56ca8713f.json'
 
-SCOPES = ['https://www.googleapis.com/auth/drive']
-
+'''
 @app.route("/admin/manageTimetable", methods=["GET"])
 def admin_manageTimetable():
-    # --- Step 1: If no OAuth code, redirect to Google login ---
-    if 'code' not in request.args:
-        flow = Flow.from_client_secrets_file(
-            CLIENT_SECRETS_FILE,
-            scopes=SCOPES,
-            redirect_uri=url_for('admin_manageTimetable', _external=True)
-        )
-        authorization_url, state = flow.authorization_url(
-            access_type='offline',
-            include_granted_scopes='true'
-        )
-        session['state'] = state
-        return redirect(authorization_url)
+    # --- Only accessible inside this route ---
+    def list_drive_files():
+        SERVICE_ACCOUNT_FILE = '/home/WM05/mydriveapiproject-470807-10c56ca8713f.json'
+        SCOPES = ['https://www.googleapis.com/auth/drive']
 
-    # --- Step 2: Fetch token after user login ---
-    state = session['state']
+        credentials = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+
+        service = build('drive', 'v3', credentials=credentials)
+        results = service.files().list(pageSize=10).execute()
+        items = results.get('files', [])
+
+        return items
+
+    # Call the function
+    files = list_drive_files()
+
+    # Render template with results
+    return render_template("admin/adminManageTimetable.html", files=files)
+'''
+
+
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+
+# Set these to your values
+GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/mydriveapiproject-470807-10c56ca8713f.json'
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+REDIRECT_URI = 'http://localhost:5000/oauth2callback'
+
+@app.route('/admin/manageTimetable')
+def admin_manageTimetable():
+    if 'credentials' not in session:
+        return redirect(url_for('authorize'))
+
+    creds = Credentials.from_authorized_user_info(session['credentials'])
+
+    # Connect to Drive
+    drive_service = build('drive', 'v3', credentials=creds)
+
+    # Step 1: Find the SOC folder ID
+    folder_results = drive_service.files().list(
+        q="mimeType='application/vnd.google-apps.folder' and name='SOC'",
+        spaces='drive',
+        fields='files(id, name)',
+    ).execute()
+
+    folders = folder_results.get('files', [])
+    if not folders:
+        return "SOC folder not found"
+
+    soc_folder_id = folders[0]['id']
+
+    # Step 2: List PDF files inside SOC folder
+    pdf_results = drive_service.files().list(
+        q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
+        fields='files(id, name, webViewLink)',
+    ).execute()
+
+    pdf_files = pdf_results.get('files', [])
+
+    # Save credentials back (optional refresh)
+    session['credentials'] = creds.to_json()
+
+    return render_template('admin/adminManageTimetable.html', files=pdf_files)
+
+
+@app.route('/authorize')
+def authorize():
     flow = Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE,
+        GOOGLE_CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true'
+    )
+
+    session['state'] = state
+    return redirect(authorization_url)
+
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    state = session['state']
+
+    flow = Flow.from_client_secrets_file(
+        GOOGLE_CLIENT_SECRETS_FILE,
         scopes=SCOPES,
         state=state,
-        redirect_uri=url_for('admin_manageTimetable', _external=True)
+        redirect_uri=REDIRECT_URI
     )
+
     flow.fetch_token(authorization_response=request.url)
-    credentials = flow.credentials
 
-    # --- Step 3: List files under 'SOC' folder ---
-    service = build('drive', 'v3', credentials=credentials)
+    creds = flow.credentials
+    session['credentials'] = creds.to_json()
 
-    # Replace 'SOC_FOLDER_ID' with the actual folder ID of 'SOC'
-    folder_id = "SOC_FOLDER_ID"
-    query = f"'{folder_id}' in parents and mimeType='application/pdf'"
-    results = service.files().list(q=query, pageSize=50).execute()
-    files = results.get('files', [])
+    return redirect(url_for('admin_manageTimetable'))
 
-    # --- Step 4: Render template ---
-    return render_template("admin/adminManageTimetable.html", files=files)
+
+
 
 
 
