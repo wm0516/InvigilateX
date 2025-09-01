@@ -875,33 +875,63 @@ def parse_activity(line):
 
 
 def parse_pdf_text(text):
-    structured = {
-        "title": "TIMETABLE",
-        "lecturer": None,
-        "timerow": "",
-        "days": {}
-    }
+    structured = None
 
     # Clean and format the text
     text = re.sub(r"\s+", " ", text).strip().upper()
 
-    # Extract title and time row
+    # --- Step 1: Extract title ---
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
     if match_title:
-        structured["title"] = match_title.group(1).strip()
-        structured["timerow"] = match_title.group(2).strip()
-        text = text.replace(structured["title"], "").replace(structured["timerow"], "")
+        title = match_title.group(1).strip()
+        timerow = match_title.group(2).strip()
+        text = text.replace(title, "").replace(timerow, "")
+    else:
+        title = "TIMETABLE"
+        timerow = ""
 
-    # Loop over each line of the text and parse activities
-    current_day = None
+    # --- Extract lecturer name ---
+    lecturer_name = None
+    match_name = re.search(r"-(.*?)\(", title)
+    if match_name:
+        lecturer_name = match_name.group(1)
+
+    # --- Step 2: Insert days with blank line before them ---
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    for day in days:
+        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
+
+    # --- Step 3: Break activities so each starts on new line ---
+    keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
+    for kw in keywords:
+        if kw == "PUBLISHED":
+            text = re.sub(kw, f"\n\n{kw}", text, flags=re.IGNORECASE)
+        else:
+            text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
+
+    # --- Step 4: Clean up ---
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    # --- Step 5: Build structured JSON ---
+    structured = {
+        "title": title,
+        "lecturer": lecturer_name,
+        "timerow": timerow,
+        "days": {}
+    }
+    current_day = None
+
     for line in text.splitlines():
         line = line.strip()
+        if not line:
+            continue
+
         if line in days:
             current_day = line
             structured["days"][current_day] = []
-        elif current_day:
-            structured["days"][current_day].append(parse_activity(line))
+        else:
+            if current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
+                structured["days"][current_day].append(parse_activity(line))
 
     return structured
 
