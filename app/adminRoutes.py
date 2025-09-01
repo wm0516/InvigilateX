@@ -13,7 +13,6 @@ import os
 import json
 import PyPDF2
 import re
-from collections import defaultdict
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -778,8 +777,8 @@ def get_oauth_flow(state=None):
         return flow
     except Exception as e:
         raise Exception(f"Error setting up OAuth flow: {e}")
-
-
+    
+    
 def get_drive_service_and_folder(creds):
     """
     Retrieves Google Drive service and SOC folder ID.
@@ -948,3 +947,21 @@ def oauth2callback():
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -13,15 +13,6 @@
         {% endif %}
         <br>
 
-        {% if get_flashed_messages(with_categories=true) %}
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        <br>
-
         {% if files %}
             <h3>PDF Files from SOC Folder:</h3>
             <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
@@ -34,6 +25,16 @@
                 {% endfor %}
             </div>
         {% endif %}
+
+        <br>
+        {% if get_flashed_messages(with_categories=true) %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <br>
     </form>
 </div>
 {% endblock %}
