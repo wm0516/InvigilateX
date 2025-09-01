@@ -879,24 +879,6 @@ def fetch_drive_files():
         app.logger.error(f"Error fetching files from Google Drive: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
 
-    try:
-        # Only keep the latest version of each base file
-        latest_files = [info['file'] for info in seen_files.values()]
-
-        # Update session with new credentials
-        session['credentials'] = creds.to_json()
-
-        if not latest_files:
-            flash("No PDF files found in the SOC folder.", 'warning')
-            return redirect(url_for('admin_manageTimetable'))
-
-        return render_template('admin/adminManageTimetable.html', files=latest_files, active_tab='admin_manageTimetabletab', authorized=True)
-
-    except Exception as e:
-        flash(f"Error processing the files: {str(e)}", 'error')
-        app.logger.error(f"Error processing the files: {str(e)}")  # Log the error
-        return redirect(url_for('admin_manageTimetable'))
-
 
 @app.route('/admin/authorize')
 def authorize():
