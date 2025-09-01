@@ -23,6 +23,10 @@
                     </div>
                 {% endfor %}
             </div>
+
+            <!-- Refresh Button -->
+            <br>
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Refresh Files</a>
         {% endif %}
 
         <br><br>
