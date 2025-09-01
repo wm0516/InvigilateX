@@ -765,14 +765,19 @@ REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
+    return render_template('admin/adminManageTimetable.html', files=None,  # No files yet
+        active_tab='admin_manageTimetabletab', authorized='credentials' in session  # Show button if credentials exist
+    )
+
+@app.route('/admin/fetch_drive_files')
+def fetch_drive_files():
     if 'credentials' not in session:
         return redirect(url_for('authorize'))
 
-    # ✅ Load credentials from session (parse JSON string into dict)
     creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
     drive_service = build('drive', 'v3', credentials=creds)
 
-    # Step 1: Find the SOC folder
+    # Find SOC folder
     folder_results = drive_service.files().list(
         q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
         spaces='drive',
@@ -785,7 +790,7 @@ def admin_manageTimetable():
 
     soc_folder_id = folders[0]['id']
 
-    # Step 2: Get all unique PDF files in SOC folder (with pagination)
+    # Fetch unique PDF files
     pdf_files = []
     seen_names = set()
     page_token = None
@@ -806,14 +811,22 @@ def admin_manageTimetable():
         if not page_token:
             break
 
-    # ✅ Save credentials back to session (as JSON string)
+    # Save back credentials
     session['credentials'] = creds.to_json()
 
     return render_template(
         'admin/adminManageTimetable.html',
         files=pdf_files,
         active_tab='admin_manageTimetabletab',
+        authorized=True
     )
+
+
+
+
+
+
+
 
 
 @app.route('/admin/authorize')

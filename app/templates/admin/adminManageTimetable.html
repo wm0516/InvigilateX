@@ -5,20 +5,22 @@
 <div class="menu-section">
     <h2>Manage Timetable</h2>
 
+    {% if not files %}
+        {% if not authorized %}
+            <a href="{{ url_for('authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
+        {% else %}
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Load Drive Files</a>
+        {% endif %}
+    {% endif %}
+
     {% if files %}
+        <h3>PDF Files from SOC Folder:</h3>
         <ul>
             {% for file in files %}
-                <li>
-                    <strong>{{ loop.index }} {{ file['name'] }}</strong>
-                    <!-- Link to view file in Google Drive -->
-                    <a href="https://drive.google.com/file/d/{{ file['id'] }}/view" target="_blank">View</a>
-                    <!-- Direct download link -->
-                    <a href="https://drive.google.com/uc?export=download&id={{ file['id'] }}">Download</a>
-                </li>
+                <li><a href="{{ file.webViewLink }}" target="_blank">{{ file.name }}</a></li>
             {% endfor %}
         </ul>
-    {% else %}
-        <p>No PDF files found in the 'SOC' folder.</p>
     {% endif %}
+
 </div>
 {% endblock %}
