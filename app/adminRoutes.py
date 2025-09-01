@@ -773,6 +773,8 @@ def admin_manageTimetable():
     )
 
 
+
+
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     try:
@@ -828,31 +830,32 @@ def fetch_drive_files():
 
     while True:
         try:
+            # Fetch PDF files from the SOC folder (case-insensitive for pdf/PDF)
             response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and mimeType='application/pdf' and trashed=false",
+                q=f"'{soc_folder_id}' in parents and trashed=false and (name contains '.pdf' or name contains '.PDF')",
                 fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
                 pageToken=page_token
             ).execute()
 
-            # Log the response to check what files are being fetched
-            print("Fetched Files:", response)
-
             for file in response.get('files', []):
-                # Extract base name and date from filename
-                match = re.match(r"^([a-zA-Z0-9_-]+)(_?(\d{8}))?\.pdf$", file['name'])
+                # Extract base name and date from filename (e.g., Ts. Vasuky_140425 onwards.pdf)
+                match = re.match(r"^([a-zA-Z0-9\s\._-]+)(_?(\d{6}))?(\s.*)?\.pdf$", file['name'])
                 if match:
                     base_name = match.group(1)
-                    date_str = match.group(3)
+                    date_str = match.group(3)  # Extract date part (e.g., 140425)
 
                     if date_str:
+                        # Parse the date string in ddmmyy format (e.g., 140425 -> 14-Apr-2025)
                         try:
-                            file_date = datetime.strptime(date_str, "%d%m%Y")
+                            file_date = datetime.strptime(date_str, "%d%m%y")
                         except ValueError:
                             continue  # Skip files with invalid date format
 
+                        # Check if we have a newer file for this base_name
                         if base_name not in seen_files or seen_files[base_name]['date'] < file_date:
                             seen_files[base_name] = {'file': file, 'date': file_date}
                     else:
+                        # If no date part, assume this is the original file
                         if base_name not in seen_files:
                             seen_files[base_name] = {'file': file, 'date': None}
 
@@ -863,18 +866,19 @@ def fetch_drive_files():
             flash(f"Error fetching files from Google Drive: {str(e)}", 'error')
             return redirect(url_for('admin_manageTimetable'))
 
-    # Only keep the latest version
+    # Only keep the latest version of each base file
     latest_files = [info['file'] for info in seen_files.values()]
 
-    print("Fetched files:", latest_files)
-
+    # Save credentials back into session
     session['credentials'] = creds.to_json()
 
     if not latest_files:
         flash("No PDF files found in the SOC folder.", 'warning')
         return redirect(url_for('admin_manageTimetable'))
 
+    # Render the files for the admin to view
     return render_template('admin/adminManageTimetable.html', files=latest_files, active_tab='admin_manageTimetabletab', authorized=True)
+
 
 
 @app.route('/admin/authorize')
