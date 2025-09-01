@@ -758,6 +758,7 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
+
 # OAuth config
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
@@ -773,7 +774,21 @@ def admin_manageTimetable():
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     try:
-        creds_dict = session['credentials'] 
+        # Check if 'credentials' exist in session and ensure it's not None
+        creds_dict = session.get('credentials')
+
+        # If creds_dict is None or empty, return an error message
+        if not creds_dict:
+            return "Error: No credentials found in session. Please authenticate first."
+
+        # If creds_dict is a string (JSON format), deserialize it into a dictionary
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)  # Deserialize from JSON string to dictionary
+
+        # Ensure creds_dict contains the necessary fields before using them
+        if 'token' not in creds_dict or 'refresh_token' not in creds_dict:
+            return "Error: Invalid credentials data. Please authenticate again."
+
         creds = Credentials(
             token=creds_dict.get('token'),
             refresh_token=creds_dict.get('refresh_token'),
@@ -785,9 +800,10 @@ def fetch_drive_files():
     except Exception as e:
         return f"Error loading credentials: {str(e)}"
 
+    # Continue with your existing code to access the Google Drive files...
     drive_service = build('drive', 'v3', credentials=creds)
 
-    # Find SOC folder
+    # Find SOC folder and retrieve files...
     folder_results = drive_service.files().list(
         q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
         spaces='drive',
@@ -832,7 +848,6 @@ def fetch_drive_files():
     )
 
 
-
 @app.route('/admin/authorize')
 def authorize():
     flow = Flow.from_client_secrets_file(
@@ -864,7 +879,7 @@ def oauth2callback():
     flow.fetch_token(authorization_response=request.url)
     creds = flow.credentials
 
-    # ✅ Store as dict, not JSON string
+    # Save the credentials (token, refresh_token, etc.), not the whole client secrets
     session['credentials'] = {
         'token': creds.token,
         'refresh_token': creds.refresh_token,
