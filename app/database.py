@@ -240,9 +240,9 @@ class InvigilatorAttendance(db.Model):
 class LecturerTimetable(db.Model):
     __tablename__ = 'LecturerTimetable'
     timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)   
-    lecturerId = db.Column(db.String(20), foreign_key=True)
+    #lecturerId = db.Column(db.String(20), foreign_key=True)
     lecturerMon = db.Column(db.String(255), nullable=False)
-    lecturerTues = db.Column(db.String(255), nullable=False)
+    lecturerTues = db.Column(db.String(255), nullable=False) 
     lecturerWed = db.Column(db.String(255), nullable=False)
     lecturerThurs = db.Column(db.String(255), nullable=False)
     lecturerFri = db.Column(db.String(255), nullable=False)
