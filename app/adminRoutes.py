@@ -773,13 +773,14 @@ def admin_manageTimetable():
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     try:
+        creds_dict = session['credentials'] 
         creds = Credentials(
-            token=session['credentials']['token'],
-            refresh_token=session['credentials']['refresh_token'],
-            token_uri=session['credentials']['token_uri'],
-            client_id=session['credentials']['client_id'],
-            client_secret=session['credentials']['client_secret'],
-            scopes=session['credentials']['scopes']
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
         )
     except Exception as e:
         return f"Error loading credentials: {str(e)}"
@@ -863,7 +864,7 @@ def oauth2callback():
     flow.fetch_token(authorization_response=request.url)
     creds = flow.credentials
 
-    # Save credentials (including refresh_token)
+    # ✅ Store as dict, not JSON string
     session['credentials'] = {
         'token': creds.token,
         'refresh_token': creds.refresh_token,
@@ -874,5 +875,3 @@ def oauth2callback():
     }
 
     return redirect(url_for('admin_manageTimetable'))
-
-
