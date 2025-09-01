@@ -773,13 +773,11 @@ def admin_manageTimetable():
         return redirect(url_for('authorize'))
 
     creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
-
-    # Connect to Drive
     drive_service = build('drive', 'v3', credentials=creds)
 
-    # Step 1: Find the SOC folder ID
+    # Step 1: Find the SOC folder
     folder_results = drive_service.files().list(
-        q="mimeType='application/vnd.google-apps.folder' and name='SOC'",
+        q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
         spaces='drive',
         fields='files(id, name)',
     ).execute()
@@ -790,18 +788,35 @@ def admin_manageTimetable():
 
     soc_folder_id = folders[0]['id']
 
-    # Step 2: List PDF files inside SOC folder
-    pdf_results = drive_service.files().list(
-        q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
-        fields='files(id, name, webViewLink)',
-    ).execute()
+    # Step 2: Get all unique PDF files in SOC folder (with pagination)
+    pdf_files = []
+    seen_names = set()
+    page_token = None
 
-    pdf_files = pdf_results.get('files', [])
+    while True:
+        response = drive_service.files().list(
+            q=f"'{soc_folder_id}' in parents and mimeType='application/pdf' and trashed=false",
+            fields='nextPageToken, files(id, name, webViewLink)',
+            pageToken=page_token
+        ).execute()
 
-    # Save credentials back (optional refresh)
+        for file in response.get('files', []):
+            if file['name'] not in seen_names:
+                pdf_files.append(file)
+                seen_names.add(file['name'])
+            else:
+                # Duplicate filename, skip it
+                continue
+
+        page_token = response.get('nextPageToken', None)
+        if not page_token:
+            break
+
+    # Save credentials back
     session['credentials'] = creds.to_json()
 
     return render_template('admin/adminManageTimetable.html', files=pdf_files)
+
 
 
 @app.route('/admin/authorize')
