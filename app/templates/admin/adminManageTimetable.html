@@ -6,6 +6,15 @@
     <h2>Manage Timetable</h2>
 
     <form style="max-height: 500px; overflow-y: auto;">
+        {% if get_flashed_messages(with_categories=true) %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <br>
+
         {% if not files %}
             {% if not authorized %}
                 <a href="{{ url_for('authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
@@ -21,19 +30,8 @@
                     <li><a href="{{ file.webViewLink }}" target="_blank">{{ loop.index }}. {{ file.name }}</a></li>
                 {% endfor %}
             </ul>
-        {% else %}
-            <p>No files found or an error occurred.</p>
         {% endif %}
 
-        <br>
-        {% if get_flashed_messages(with_categories=true) %}
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        <br>
 
     </form>
 
