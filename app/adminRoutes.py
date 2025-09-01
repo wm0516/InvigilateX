@@ -12,6 +12,8 @@ import traceback
 import os, json
 import PyPDF2
 import re
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -751,7 +753,11 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
+def get_drive_service():
+    SERVICE_ACCOUNT_FILE = '/home/WM05/xenon-chain-460911-p8-0931c798d991.json'
+    SCOPES = ['https://www.googleapis.com/auth/drive']
+    creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    return build('drive', 'v3', credentials=creds)
 
 
 
@@ -813,6 +819,13 @@ def parse_activity(line):
 
 @app.route("/admin/manageTimetable", methods=["GET", "POST"])
 def admin_manageTimetable():
+    service = get_drive_service()
+    results = service.files().list(pageSize=50, fields="files(id, name)").execute()
+    files = results.get('files', [])
+    for file in files:
+        print(f"{file['name']} ({file['id']})")
+
+
     structured = None
 
     if request.method == "POST":

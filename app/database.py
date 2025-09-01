@@ -239,7 +239,8 @@ class InvigilatorAttendance(db.Model):
 # Need Double Check, Haven't Record In Database
 class LecturerTimetable(db.Model):
     __tablename__ = 'LecturerTimetable'
-    lecturerId = db.Column(db.String(20), primary_key=True)
+    timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)   
+    lecturerId = db.Column(db.String(20), foreign_key=True)
     lecturerMon = db.Column(db.String(255), nullable=False)
     lecturerTues = db.Column(db.String(255), nullable=False)
     lecturerWed = db.Column(db.String(255), nullable=False)
