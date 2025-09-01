@@ -759,29 +759,28 @@ def get_course_details(program_code, course_code_section):
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
-# Path to your downloaded JSON key
-SERVICE_ACCOUNT_FILE = '/home/WM05/mydriveapiproject-470807-b5aaec17be0f.json'  # update path
-SCOPES = ['https://www.googleapis.com/auth/drive']
+@app.route("/admin/manageTimetable", methods=["GET"])
+def admin_manageTimetable():
+    # --- Only accessible inside this route ---
+    def list_drive_files():
+        SERVICE_ACCOUNT_FILE = '/home/WM05/mydriveapiproject-470807-b5aaec17be0f.json'
+        SCOPES = ['https://www.googleapis.com/auth/drive']
 
-# Create credentials
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES
-)
+        credentials = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
 
-# Build the Drive API service
-service = build('drive', 'v3', credentials=credentials)
+        service = build('drive', 'v3', credentials=credentials)
+        results = service.files().list(pageSize=10).execute()
+        items = results.get('files', [])
 
-# List first 10 files in shared Drive
-results = service.files().list(pageSize=10).execute()
-items = results.get('files', [])
+        return items
 
-if not items:
-    print('No files found.')
-else:
-    for item in items:
-        print(f"{item['name']} ({item['id']})")
+    # Call the function
+    files = list_drive_files()
 
-
+    # Render template with results
+    return render_template("admin/manageTimetable.html", files=files)
 
 
 
