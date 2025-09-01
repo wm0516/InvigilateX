@@ -758,10 +758,6 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-
-
 # OAuth config
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
@@ -774,6 +770,7 @@ def extract_base_name_and_timestamp(file_name):
     e.g. "Ts. Vasuky_140425 onwards.pdf"
     Returns: (base_name, datetime object) or (None, None)
     """
+    # Regex pattern to match the file name and extract base name and timestamp
     pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
@@ -786,6 +783,7 @@ def extract_base_name_and_timestamp(file_name):
     timestamp = None
     if timestamp_str:
         try:
+            # Convert the timestamp string into a datetime object (day, month, year)
             timestamp = datetime.strptime(timestamp_str, "%d%m%y")
         except ValueError:
             return None, None
@@ -804,6 +802,7 @@ def admin_manageTimetable():
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None
     )
+
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -876,11 +875,13 @@ def fetch_drive_files():
                 app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
                 if base_name:
+                    # Use the file's modifiedTime if timestamp is None
                     file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
 
                     if base_name not in seen_files:
                         seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
                     else:
+                        # If the timestamp of the current file is later, update it
                         if file_timestamp > seen_files[base_name]['timestamp']:
                             seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
 
@@ -888,20 +889,10 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        # Step 4: Group files by base name and keep the latest file for each group
-        files_by_base_name = defaultdict(list)
+        # Step 4: Collect only the most recent version of each base name
+        final_files = [file_data['file'] for file_data in seen_files.values()]
 
-        for file in seen_files.values():
-            base_name = file['file']['name'].split('_')[0]
-            files_by_base_name[base_name].append(file)
-
-        # Step 5: Sort each group by timestamp (latest first) and pick the latest file
-        final_files = []
-        for base_name, group in files_by_base_name.items():
-            group.sort(key=lambda x: x['timestamp'], reverse=True)  # Sort by timestamp, latest first
-            final_files.append(group[0]['file'])  # Keep the latest file from each group
-
-        # Save filtered files in session for displaying later
+        # Step 5: Save filtered files in session for displaying later
         session['drive_files'] = final_files
 
     except Exception as e:
@@ -968,20 +959,6 @@ def oauth2callback():
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
-    
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    
