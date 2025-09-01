@@ -758,32 +758,51 @@ def get_course_details(program_code, course_code_section):
 
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+from google_auth_oauthlib.flow import Flow
+
+# OAuth 2.0 Client ID JSON file (downloaded from Google Cloud Console)
+CLIENT_SECRETS_FILE = '/home/WM05/mydriveapiproject-470807-10c56ca8713f.json'
+
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 @app.route("/admin/manageTimetable", methods=["GET"])
 def admin_manageTimetable():
-    # --- Only accessible inside this route ---
-    def list_drive_files():
-        SERVICE_ACCOUNT_FILE = '/home/WM05/mydriveapiproject-470807-10c56ca8713f.json'
-        SCOPES = ['https://www.googleapis.com/auth/drive']
-
-        credentials = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+    # --- Step 1: If no OAuth code, redirect to Google login ---
+    if 'code' not in request.args:
+        flow = Flow.from_client_secrets_file(
+            CLIENT_SECRETS_FILE,
+            scopes=SCOPES,
+            redirect_uri=url_for('admin_manageTimetable', _external=True)
         )
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            include_granted_scopes='true'
+        )
+        session['state'] = state
+        return redirect(authorization_url)
 
-        service = build('drive', 'v3', credentials=credentials)
-        results = service.files().list(pageSize=10).execute()
-        items = results.get('files', [])
+    # --- Step 2: Fetch token after user login ---
+    state = session['state']
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        state=state,
+        redirect_uri=url_for('admin_manageTimetable', _external=True)
+    )
+    flow.fetch_token(authorization_response=request.url)
+    credentials = flow.credentials
 
-        return items
+    # --- Step 3: List files under 'SOC' folder ---
+    service = build('drive', 'v3', credentials=credentials)
 
-    # Call the function
-    files = list_drive_files()
+    # Replace 'SOC_FOLDER_ID' with the actual folder ID of 'SOC'
+    folder_id = "SOC_FOLDER_ID"
+    query = f"'{folder_id}' in parents and mimeType='application/pdf'"
+    results = service.files().list(q=query, pageSize=50).execute()
+    files = results.get('files', [])
 
-    # Render template with results
+    # --- Step 4: Render template ---
     return render_template("admin/adminManageTimetable.html", files=files)
-
-
-
 
 
 
