@@ -977,6 +977,7 @@ def fetch_drive_files():
         page_token = None
         total_files_read = 0
         structured_timetable = None  # Initialize structured_timetable
+        all_structured = {}
 
         while True:
             response = drive_service.files().list(
@@ -1014,8 +1015,9 @@ def fetch_drive_files():
                         'file': file,
                         'timestamp': timestamp,
                         'has_timestamp': bool(timestamp),
-                        'structured_timetable': structured_timetable
                     }
+                     # always update structured data
+                    all_structured[base_name] = structured_timetable
                 else:
                     current = seen_files[base_name]
                     if not current['has_timestamp'] and timestamp:
@@ -1039,9 +1041,7 @@ def fetch_drive_files():
 
         final_files = [file_data['file'] for file_data in seen_files.values()]
         session['drive_files'] = final_files
-
-        # Store the structured timetable in the session
-        session['structured_timetable'] = structured_timetable
+        session['structured_timetables'] = all_structured   # store ALL timetables
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
