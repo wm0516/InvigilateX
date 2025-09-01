@@ -25,6 +25,8 @@ app.config['MAIL_USERNAME'] = 'minglw04@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jsco bvwc qpor fvku'
 app.config['MAIL_DEFAULT_SENDER'] = 'minglw04@gmail.com'
 
+app.config['SESSION_TYPE'] = 'filesystem'
+
 # Initialize extensions
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)

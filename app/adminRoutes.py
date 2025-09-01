@@ -771,35 +771,23 @@ def admin_manageTimetable():
         active_tab='admin_manageTimetabletab', authorized='credentials' in session  # Show button if credentials exist
     )
 
-@app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
-    try:
-        # Check if 'credentials' exist in session and ensure it's not None
-        creds_dict = session.get('credentials')
+    creds_dict = session.get('credentials')
 
-        # If creds_dict is None or empty, return an error message
-        if not creds_dict:
-            return "Error: No credentials found in session. Please authenticate first."
+    # Debugging to check session data
+    print("Session credentials:", creds_dict)  # See if session data is available
 
-        # If creds_dict is a string (JSON format), deserialize it into a dictionary
-        if isinstance(creds_dict, str):
-            creds_dict = json.loads(creds_dict)  # Deserialize from JSON string to dictionary
+    if not creds_dict:
+        return "Error: No credentials found in session. Please authenticate first."
 
-        # Ensure creds_dict contains the necessary fields before using them
-        if 'token' not in creds_dict or 'refresh_token' not in creds_dict:
-            return "Error: Invalid credentials data. Please authenticate again."
-
-        creds = Credentials(
-            token=creds_dict.get('token'),
-            refresh_token=creds_dict.get('refresh_token'),
-            token_uri=creds_dict.get('token_uri'),
-            client_id=creds_dict.get('client_id'),
-            client_secret=creds_dict.get('client_secret'),
-            scopes=creds_dict.get('scopes')
-        )
-    except Exception as e:
-        return f"Error loading credentials: {str(e)}"
-
+    creds = Credentials(
+        token=creds_dict['token'],
+        refresh_token=creds_dict['refresh_token'],
+        token_uri=creds_dict['token_uri'],
+        client_id=creds_dict['client_id'],
+        client_secret=creds_dict['client_secret'],
+        scopes=creds_dict['scopes']
+    )
     # Continue with your existing code to access the Google Drive files...
     drive_service = build('drive', 'v3', credentials=creds)
 
@@ -846,7 +834,6 @@ def fetch_drive_files():
         active_tab='admin_manageTimetabletab',
         authorized=True
     )
-
 
 @app.route('/admin/authorize')
 def authorize():
