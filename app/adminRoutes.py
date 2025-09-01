@@ -849,11 +849,13 @@ def fetch_drive_files():
         # Fetch files in pages
         page_token = None
         while True:
+            # Query to list PDF files only from the SOC folder
             response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and trashed=false and (name contains '.pdf' or name contains '.PDF')",
+                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",  # Filter by MIME type for PDFs
                 fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
                 pageToken=page_token
             ).execute()
+
 
             for file in response.get('files', []):
                 # Extract base name and timestamp
@@ -919,26 +921,41 @@ def authorize():
 @app.route('/admin/oauth2callback')
 def oauth2callback():
     try:
-        state = session['state']
+        state = session.get('state')
+        if not state:
+            raise Exception("State is missing in session")
+
         flow = Flow.from_client_secrets_file(
             GOOGLE_CLIENT_SECRETS_FILE,
             scopes=SCOPES,
             state=state,
             redirect_uri=REDIRECT_URI
         )
+
         flow.fetch_token(authorization_response=request.url)
+
         creds = flow.credentials
 
+        # Instead of directly accessing token_uri, use getattr() to handle it safely.
+        token_uri = getattr(creds, 'token_uri', None)
+        client_id = getattr(creds, 'client_id', None)
+        client_secret = getattr(creds, 'client_secret', None)
+        scopes = getattr(creds, 'scopes', None)
+
+        # Store credentials in the session
         session['credentials'] = {
             'token': creds.token,
             'refresh_token': creds.refresh_token,
-            'token_uri': creds.token_uri,
-            'client_id': creds.client_id,
-            'client_secret': creds.client_secret,
-            'scopes': creds.scopes
+            'token_uri': token_uri,  # Store token_uri only if it exists
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'scopes': scopes
         }
 
+        app.logger.info(f"OAuth2 authentication successful, credentials stored.")  # Add logging to debug
         return redirect(url_for('admin_manageTimetable'))
+
     except Exception as e:
         flash(f"Error during OAuth2 callback: {e}", 'error')
+        app.logger.error(f"OAuth2 callback error: {e}")  # Add detailed logging for errors
         return redirect(url_for('admin_manageTimetable'))
