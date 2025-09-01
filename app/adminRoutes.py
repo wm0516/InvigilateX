@@ -815,7 +815,7 @@ def admin_manageTimetable():
     # Save credentials back
     session['credentials'] = creds.to_json()
 
-    return render_template('admin/adminManageTimetable.html', files=pdf_files, active_tab='admin_manageTimetabletab',)
+    return render_template('admin/adminManageTimetable.html', files=pdf_files, active_tab='admin_manageTimetabletab')
 
 
 
