@@ -1,29 +1,29 @@
 {% extends "admin/adminBase.html" %}
 {% block title %}Admin Manage Timetable{% endblock %}
 {% block content %}
-<div class="menu-grid">
-    <div class="menu-section">
-        <h2>Manage Timetable</h2>
-        <form style="max-height: 500px; overflow-y: auto;">
-            <br>
-            {% if get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            <br>
+<div class="menu-section">
+    <h2>Manage Timetable</h2>
+    <form style="max-height: 500px; overflow-y: auto;">
+        <br>
+        {% if get_flashed_messages(with_categories=true) %}
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+                <div class="alert alert-{{ category }}">
+                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        <br>
 
-            {% if not files %}
-                {% if not authorized %}
-                    <a href="{{ url_for('authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
-                {% else %}
-                    <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Load Drive Files</a>
-                {% endif %}
+        {% if not files %}
+            {% if not authorized %}
+                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Authorize Google Drive</a>
+            {% else %}
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Load Drive Files</a>
             {% endif %}
-            <br>
+        {% endif %}
+        <br>
 
+        <div class="menu-grid">
             {% if files %}
                 <h3>PDF Files from SOC Folder:</h3>
                 <ul>
@@ -32,7 +32,7 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
