@@ -769,30 +769,23 @@ def extract_base_name_and_timestamp(file_name):
     e.g. "Ts. Vasuky_140425 onwards.pdf"
     Returns: (base_name, datetime object) or (None, None)
     """
-    # Regex pattern to match the file name and extract base name and timestamp
-    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    # Try matching with timestamp
+    pattern = r"^(.*?)(?:[_\s]([0-9]{6}))(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
-    if not match:
-        return None, None
-
-    base_name = match.group(1)
-    timestamp_str = match.group(2)
-
-    # Remove whitespace from base_name
-    base_name = base_name.replace(" ", "")
-
-    timestamp = None
-    if timestamp_str:
+    if match:
+        base_name = match.group(1).strip()
+        timestamp_str = match.group(2)
         try:
-            # Convert the timestamp string into a datetime object (day, month, year)
             timestamp = datetime.strptime(timestamp_str, "%d%m%y")
         except ValueError:
-            return None, None
-    else:
-        base_name = file_name[:-4]  # Treat the full filename (minus .pdf) as base_name if no timestamp
+            timestamp = None
+        return base_name, timestamp
 
-    return base_name, timestamp
+    # If no timestamp, just take everything before .pdf
+    base_name = file_name[:-4].strip()
+    return base_name, None
+
 
 
 @app.route('/admin/manageTimetable')
