@@ -792,7 +792,7 @@ from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
 # Set these to your values
-GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/mydriveapiproject-470807-10c56ca8713f.json'
+GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'http://localhost:5000/oauth2callback'
 
