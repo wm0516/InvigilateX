@@ -776,9 +776,6 @@ def fetch_drive_files():
         creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
     except Exception as e:
         return f"Error loading credentials: {str(e)}"
-
-
-    creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
     drive_service = build('drive', 'v3', credentials=creds)
 
     # Find SOC folder
@@ -827,12 +824,6 @@ def fetch_drive_files():
 
 
 
-
-
-
-
-
-
 @app.route('/admin/authorize')
 def authorize():
     flow = Flow.from_client_secrets_file(
@@ -842,11 +833,13 @@ def authorize():
     )
     authorization_url, state = flow.authorization_url(
         access_type='offline',
-        include_granted_scopes='true'
+        include_granted_scopes='true',
+        prompt='consent'   # <== Add this line to force refresh_token return
     )
 
     session['state'] = state
     return redirect(authorization_url)
+
 
 
 @app.route('/admin/oauth2callback')
