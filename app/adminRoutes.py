@@ -16,6 +16,9 @@ import re
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -953,6 +956,7 @@ def admin_manageTimetable():
 
 
 
+
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     creds_dict = session.get('credentials')
@@ -973,15 +977,32 @@ def fetch_drive_files():
             scopes=creds_dict.get('scopes')
         )
 
-        # Get Drive service and folder ID
         drive_service, soc_folder_id = get_drive_service_and_folder(creds)
 
         seen_files = {}
-        page_token = None
-        total_files_read = 0
-        structured_timetable = None  # Initialize structured_timetable
         all_structured = {}
+        total_files_read = 0
+        page_token = None
 
+        pdf_tasks = []
+
+        # --- Helper function for parsing ---
+        def process_pdf(file_id, file_name, base_name, timestamp):
+            try:
+                file_content = drive_service.files().get_media(fileId=file_id).execute()
+                reader = PdfReader(BytesIO(file_content))
+                text = ""
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + " "
+                structured = parse_pdf_text(text)
+                return base_name, timestamp, structured
+            except Exception as e:
+                app.logger.error(f"Error processing {file_name}: {e}")
+                return base_name, timestamp, None
+
+        # --- Step 1: Collect all files from Drive ---
         while True:
             response = drive_service.files().list(
                 q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
@@ -996,58 +1017,59 @@ def fetch_drive_files():
             for file in files_in_page:
                 if len(seen_files) >= 3:
                     break
-                
-                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
+                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
                 if not base_name:
                     continue
 
-                # Fetch the PDF file content from Google Drive
-                file_id = file['id']
-                file_content = drive_service.files().get_media(fileId=file_id).execute()
-
-                # Read the PDF file content using PyPDF2
-                reader = PdfReader(BytesIO(file_content))
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text() + " "
-
-                # Now parse the extracted text
-                structured_timetable = parse_pdf_text(text)
-
-                if base_name not in seen_files:
+                if base_name in seen_files:
+                    current = seen_files[base_name]
+                    if current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
+                        seen_files[base_name] = {
+                            'file': file,
+                            'timestamp': timestamp,
+                            'has_timestamp': True
+                        }
+                        pdf_tasks.append((file['id'], file['name'], base_name, timestamp))
+                    elif not current['has_timestamp'] and timestamp:
+                        seen_files[base_name] = {
+                            'file': file,
+                            'timestamp': timestamp,
+                            'has_timestamp': True
+                        }
+                        pdf_tasks.append((file['id'], file['name'], base_name, timestamp))
+                else:
                     seen_files[base_name] = {
                         'file': file,
                         'timestamp': timestamp,
-                        'has_timestamp': bool(timestamp),
+                        'has_timestamp': bool(timestamp)
                     }
-                     # always update structured data
-                    all_structured[base_name] = structured_timetable
-                else:
-                    current = seen_files[base_name]
-                    if not current['has_timestamp'] and timestamp:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True,
-                            'structured_timetable': structured_timetable
-                        }
-                    elif current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True,
-                            'structured_timetable': structured_timetable
-                        }
+                    pdf_tasks.append((file['id'], file['name'], base_name, timestamp))
 
             page_token = response.get('nextPageToken')
             if not page_token:
                 break
 
+        # --- Step 2: Process PDFs concurrently (max 5 threads) ---
+        with ThreadPoolExecutor(max_workers=5) as executor:
+            futures = {
+                executor.submit(process_pdf, file_id, file_name, base_name, timestamp): base_name
+                for file_id, file_name, base_name, timestamp in pdf_tasks
+            }
+
+            for future in as_completed(futures):
+                base_name = futures[future]
+                try:
+                    name, ts, structured = future.result()
+                    if structured:
+                        all_structured[base_name] = structured
+                except Exception as e:
+                    app.logger.error(f"Thread error for {base_name}: {e}")
+
+        # --- Step 3: Save to session ---
         final_files = [file_data['file'] for file_data in seen_files.values()]
         session['drive_files'] = final_files
-        session['structured_timetables'] = all_structured   # store ALL timetables
+        session['structured_timetables'] = all_structured
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
