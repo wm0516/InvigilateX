@@ -773,9 +773,17 @@ def admin_manageTimetable():
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     try:
-        creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
+        creds = Credentials(
+            token=session['credentials']['token'],
+            refresh_token=session['credentials']['refresh_token'],
+            token_uri=session['credentials']['token_uri'],
+            client_id=session['credentials']['client_id'],
+            client_secret=session['credentials']['client_secret'],
+            scopes=session['credentials']['scopes']
+        )
     except Exception as e:
         return f"Error loading credentials: {str(e)}"
+
     drive_service = build('drive', 'v3', credentials=creds)
 
     # Find SOC folder
@@ -852,15 +860,19 @@ def oauth2callback():
         state=state,
         redirect_uri=REDIRECT_URI
     )
-
     flow.fetch_token(authorization_response=request.url)
     creds = flow.credentials
 
-    # ✅ Save credentials as JSON string
-    session['credentials'] = creds.to_json()
+    # Save credentials (including refresh_token)
+    session['credentials'] = {
+        'token': creds.token,
+        'refresh_token': creds.refresh_token,
+        'token_uri': creds.token_uri,
+        'client_id': creds.client_id,
+        'client_secret': creds.client_secret,
+        'scopes': creds.scopes
+    }
 
     return redirect(url_for('admin_manageTimetable'))
-
-
 
 
