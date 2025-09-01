@@ -772,7 +772,23 @@ def admin_manageTimetable():
         active_tab='admin_manageTimetabletab', authorized='credentials' in session  # Show button if credentials exist
     )
 
+# Function to extract base name and timestamp
+def extract_base_name_and_timestamp(file_name):
+    match = re.match(r"^(.*?)(_([0-9]{6}))?(\s.*)?\.pdf$", file_name)
+    if match:
+        base_name = match.group(1)
+        timestamp_str = match.group(3)
+        if timestamp_str:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        else:
+            timestamp = None
+        return base_name, timestamp
+    return None, None
 
+
+
+import re
+from datetime import datetime
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -826,8 +842,9 @@ def fetch_drive_files():
         # Fetch PDF files from SOC folder
         pdf_files = []
         seen_files = {}
-        page_token = None
 
+        # Fetch files in pages
+        page_token = None
         while True:
             response = drive_service.files().list(
                 q=f"'{soc_folder_id}' in parents and trashed=false and (name contains '.pdf' or name contains '.PDF')",
@@ -836,8 +853,17 @@ def fetch_drive_files():
             ).execute()
 
             for file in response.get('files', []):
-                # Process file here (same as before)
-                pass
+                # Extract base name and timestamp
+                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+
+                if base_name:
+                    # If file with the same base_name exists, compare timestamps and keep the latest
+                    if base_name not in seen_files:
+                        seen_files[base_name] = {'file': file, 'timestamp': timestamp}
+                    else:
+                        # Compare timestamps and update if the new file is newer
+                        if timestamp and (timestamp > seen_files[base_name]['timestamp']):
+                            seen_files[base_name] = {'file': file, 'timestamp': timestamp}
 
             page_token = response.get('nextPageToken', None)
             if not page_token:
@@ -851,6 +877,8 @@ def fetch_drive_files():
     try:
         # Only keep the latest version of each base file
         latest_files = [info['file'] for info in seen_files.values()]
+
+        # Update session with new credentials
         session['credentials'] = creds.to_json()
 
         if not latest_files:
@@ -863,6 +891,7 @@ def fetch_drive_files():
         flash(f"Error processing the files: {str(e)}", 'error')
         app.logger.error(f"Error processing the files: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
+
 
 
 
