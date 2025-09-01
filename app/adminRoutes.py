@@ -888,7 +888,14 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        filtered_files = [data['file'] for data in seen_files.values()]
+        # Sort by timestamp ascending (oldest first)    
+        filtered_files = sorted(
+            seen_files.values(),
+            key=lambda x: x['timestamp']
+        )
+
+        # Extract only file objects after sorting
+        filtered_files = [data['file'] for data in filtered_files]
 
         # Save filtered files in session for displaying later
         session['drive_files'] = filtered_files
