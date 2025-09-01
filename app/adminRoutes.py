@@ -794,7 +794,8 @@ from google.oauth2.credentials import Credentials
 # Set these to your values
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-REDIRECT_URI = 'http://localhost:5000/oauth2callback'
+REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
+
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
@@ -833,7 +834,7 @@ def admin_manageTimetable():
     return render_template('admin/adminManageTimetable.html', files=pdf_files)
 
 
-@app.route('/authorize')
+@app.route('/admin/authorize')
 def authorize():
     flow = Flow.from_client_secrets_file(
         GOOGLE_CLIENT_SECRETS_FILE,
@@ -849,7 +850,7 @@ def authorize():
     return redirect(authorization_url)
 
 
-@app.route('/oauth2callback')
+@app.route('/admin/oauth2callback')
 def oauth2callback():
     state = session['state']
 
