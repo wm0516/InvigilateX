@@ -14,12 +14,7 @@ import PyPDF2
 import re
 
 
-from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-import os
-import pathlib
-
 from google.oauth2.service_account import Credentials
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -767,71 +762,41 @@ def get_drive_service():
     return build('drive', 'v3', credentials=creds)
 
 
+def find_folder_id(service, folder_name):
+    query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed = false"
+    results = service.files().list(q=query, fields="files(id, name)").execute()
+    folders = results.get('files', [])
+    if not folders:
+        print(f"Folder '{folder_name}' not found.")
+        return None
+    # If multiple folders named "SOC" exist, pick the first
+    return folders[0]['id']
 
-SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
-CLIENT_SECRETS_FILE = '/home/WM05/xenon-chain-460911-p8-0931c798d991.json'
-
-# Google OAuth 2.0 Flow
-flow = Flow.from_client_secrets_file(
-    CLIENT_SECRETS_FILE,
-    scopes=SCOPES,
-    redirect_uri='http://localhost:5000/oauth2callback'
-)
-
-@app.route('/authorize')
-def authorize():
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        include_granted_scopes='true'
-    )
-    session['state'] = state
-    return redirect(authorization_url)
-
-
-@app.route('/oauth2callback')
-def oauth2callback():
-    flow.fetch_token(authorization_response=request.url)
-
-    credentials = flow.credentials
-    session['credentials'] = credentials_to_dict(credentials)
-
-    return redirect(url_for('admin_manageTimetable'))
-
+def list_files_in_folder(service, folder_id):
+    query = f"'{folder_id}' in parents and trashed = false"
+    results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
+    files = results.get('files', [])
+    return files
 
 @app.route("/admin/manageTimetable", methods=["GET"])
 def admin_manageTimetable():
-    if 'credentials' not in session:
-        return redirect('authorize')
+    service = get_drive_service()
+    
+    folder_name = 'SOC'
+    folder_id = find_folder_id(service, folder_name)
+    
+    if folder_id:
+        files = list_files_in_folder(service, folder_id)
+        print(f"Files in folder '{folder_name}':")
+        for file in files:
+            print(f" - {file['name']} (ID: {file['id']}, Type: {file['mimeType']})")
 
-    credentials = Credentials(**session['credentials'])
-    service = build('drive', 'v3', credentials=credentials)
+    return render_template("admin/adminManageTimetable.html", active_tab="admin_manageTimetabletab")
 
-    # Search for 'SOC' folder
-    folder_query = "mimeType='application/vnd.google-apps.folder' and name='SOC'"
-    folder_results = service.files().list(q=folder_query, spaces='drive', fields="files(id, name)").execute()
-    folders = folder_results.get('files', [])
 
-    files = []
-    if folders:
-        folder_id = folders[0]['id']
-        query = f"'{folder_id}' in parents"
-        results = service.files().list(q=query, fields="files(id, name)").execute()
-        files = results.get('files', [])
 
-    # Update session credentials in case they were refreshed
-    session['credentials'] = credentials_to_dict(credentials)
 
-    return render_template("admin/adminManageTimetable.html", files=files, active_tab="admin_manageTimetabletab")
 
-def credentials_to_dict(credentials):
-    return {
-        'token': credentials.token,
-        'refresh_token': credentials.refresh_token,
-        'token_uri': credentials.token_uri,
-        'client_id': credentials.client_id,
-        'client_secret': credentials.client_secret,
-        'scopes': credentials.scopes
-    }
 
 
 
