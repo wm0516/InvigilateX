@@ -856,6 +856,7 @@ def fetch_drive_files():
         return redirect(url_for('admin_manageTimetable'))
 
     # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
+    # Fetch the files from Google Drive and keep only the latest per base name
     try:
         seen_files = {}
         page_token = None
@@ -891,10 +892,10 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        # Sort by timestamp ascending (oldest first)    
+        # Sort files based on base name (before timestamp) lexicographically
         filtered_files = sorted(
             seen_files.values(),
-            key=lambda x: x['timestamp']
+            key=lambda x: x['file']['name'].split('_')[0]  # Use base name to sort
         )
 
         # Extract only file objects after sorting
@@ -912,6 +913,7 @@ def fetch_drive_files():
     app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
 
     return redirect(url_for('admin_manageTimetable'))
+
 
 
 @app.route('/admin/authorize')
