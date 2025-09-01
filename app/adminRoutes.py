@@ -14,9 +14,10 @@ import json
 import PyPDF2
 import re
 
-
+from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
-from google.oauth2.service_account import Credentials
+from google.oauth2.credentials import Credentials
+
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -754,9 +755,10 @@ def get_course_details(program_code, course_code_section):
 
 
 
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
+
+
+
+
 
 
 # OAuth config
@@ -840,12 +842,7 @@ def fetch_drive_files():
     # Save back credentials
     session['credentials'] = creds.to_json()
 
-    return render_template(
-        'admin/adminManageTimetable.html',
-        files=pdf_files,
-        active_tab='admin_manageTimetabletab',
-        authorized=True
-    )
+    return render_template('admin/adminManageTimetable.html', files=pdf_files, active_tab='admin_manageTimetabletab', authorized=True)
 
 
 @app.route('/admin/authorize')
