@@ -1,116 +1,85 @@
-USE_GOOGLE_DRIVE = os.getenv("USE_GOOGLE_DRIVE", "1") == "1"
+{% extends "admin/adminBase.html" %}
+{% block title %}Admin ManageTimetable{% endblock %}
+{% block content %}
+<div class="menu-section">
+    <h2>Manage Timetable</h2>
 
-def get_drive_service():
-    if not USE_GOOGLE_DRIVE:
-        return None
-    try:
-        SERVICE_ACCOUNT_FILE = os.path.expanduser("~/xenon-chain-460911-p8-0931c798d991.json")
-        SCOPES = ['https://www.googleapis.com/auth/drive']
-        creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-        return build('drive', 'v3', credentials=creds)
-    except Exception as e:
-        print(f"[Drive Error] {e}")
-        return None
+    <form action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+        <div id="uploadSection" class="function-frame">
+            <div class="form-left" style="width: 100%">
+                <h4 style="text-align: center;">File Upload Section</h4>
+                <label for="timetablePDF_list">
+                    <div class="upload-container" id="timetablePDFUploadContainer">
+                        <div class="upload-text">
+                            Upload a file in PDF Format<br><br><br>
+                            Click to upload or drag and drop with below file format
+                        </div>
+                        <div class="file-types">PDF</div><br>
+                        <!-- Selected file display -->
+                        <div id="timetablePDFSelectedFileName" class="file-name-display"></div>
+                    </div>
+                </label>
+                <input type="file" id="timetablePDF_list" name="timetablePDF_file" accept=".pdf" style="display: none;">
 
+                <br>
+                {% if pdfUploadResult %}
+                    <div class="result-message">{{ pdfUploadResult }}</div>
+                {% elif pdfUploadErrors %}
+                    <div class="error-message">{{ pdfUploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
 
-    
-@app.route('/admin/manageTimetable')
-def admin_manageTimetable():
-    # On PythonAnywhere free, Google Drive is not accessible
-    if os.getenv("PYTHONANYWHERE_FREE", "1") == "1":
-        flash("Google Drive integration not available on free hosting", "error")
-        return render_template(
-            "admin/adminManageTimetable.html",
-            active_tab="admin_manageTimetabletab",
-            files=[]
-        )
-
-    # === This part only works if running on a server with Google Drive access ===
-    service = get_drive_service()
-    if not service:
-        flash("Google Drive integration not available", "error")
-        return render_template("admin/adminManageTimetable.html", files=[])
-
-    try:
-        # Find folder 'SOC'
-        folder_results = service.files().list(
-            q="mimeType='application/vnd.google-apps.folder' and name contains 'SOC' and trashed=false",
-            fields="files(id, name)"
-        ).execute()
-
-        folders = folder_results.get("files", [])
-        if not folders:
-            flash("No folder named 'SOC' found.", "error")
-            return render_template("admin/adminManageTimetable.html", files=[])
-
-        soc_folder_id = folders[0]["id"]
-
-        # Get PDFs inside the folder
-        file_results = service.files().list(
-            q=f"'{soc_folder_id}' in parents and mimeType='application/pdf'",
-            fields="files(id, name, webViewLink)"
-        ).execute()
-
-        items = file_results.get("files", [])
-
-    except Exception as e:
-        flash(f"Google Drive error: {e}", "error")
-        items = []
-
-    return render_template(
-        "admin/adminManageTimetable.html",
-        active_tab="admin_manageTimetabletab",
-        files=items
-    )
+                <!-- Upload Form Submit -->
+                <div class="button-wrapper">
+                    <button type="submit">Upload Exam</button>
+                </div>
+            </div>
+        </div>
+    </form>
 
 
-    
-from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
+    {% if structured %}
+        {% for day, activities in structured.days.items() %}
+            <h4>{{ day }}</h4>
+            <div class="menu-grid">
+                {% for act in activities %}
+                    <div class="activity-card">
+                        <b>Lecturer Name:   </b> {{ structured.lecturer }} <br>
+                        <b>Session Type:    </b> {{ act.class_type }} <br>
+                        <b>Time:            </b> {{ act.time }} <br>
+                        <b>Course Name:     </b> {{ act.course }} <br>
+                        <b>Venue:           </b> {{ act.room }} <br>
+                        <b>Weeks Effective: </b> {{ act.weeks_range | join(", ") }} <br>
+                        <b>Date Range:      </b> {{ act.weeks_date }} <br>
 
-
-
-
-    <!--
-    <br><br>
-    <h2>List of Staff Timetable</h2>
-    <label>
-        To Do: <br>
-        1. Allow edit based on the Id <br>
-        2. Deactivated will send an email to the upload email address for activation link <br>
-        Question: <br>
-        1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
-        2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
-    </label>
-
-    <div class="user-table-container">
-        <table class="user-data-table">
-            <thead>
-                <tr>
-                    <th>Day/Time</th>
-                    <th>08:00-09:00</th>
-                    <th>09:00-10:00</th>
-                    <th>10:00-11:00</th>
-                    <th>11:00-12:00</th>
-                    <th>12:00-13:00</th>
-                    <th>13:00-14:00</th>
-                    <th>14:00-15:00</th>
-                    <th>15:00-16:00</th>
-                    <th>16:00-17:00</th>
-                    <th>17:00-18:00</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in user_data %}
-                <tr>
-                    <td>Monday</td>
-                    <td>Tuesday</td>
-                    <td>Wednesday</td>
-                    <td>Thursday</td>
-                    <td>Friday</td>
-                </tr>
+                        {% if act.sections %}
+                            <b>Sections:    </b><br>
+                            {% for sec in act.sections %}
+                                {{ sec.intake }} | {{ sec.course_code }} | {{ sec.section }}<br>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    -->
+            </div>
+            <hr>
+        {% endfor %}
+    {% endif %}
+
+    <br><br>
+    <h2>Timetable Calander</h2>
+
+
+</div>
+{% endblock %}
+
+
+
+
+
+
