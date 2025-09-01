@@ -9,7 +9,8 @@ from flask_bcrypt import Bcrypt
 from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
-import os, json
+import os
+import json
 import PyPDF2
 import re
 
@@ -771,8 +772,11 @@ def admin_manageTimetable():
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
-    if 'credentials' not in session:
-        return redirect(url_for('authorize'))
+    try:
+        creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
+    except Exception as e:
+        return f"Error loading credentials: {str(e)}"
+
 
     creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
     drive_service = build('drive', 'v3', credentials=creds)
