@@ -937,17 +937,20 @@ def parse_pdf_text(text):
     return structured
 
 
+
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
     files = session.get('drive_files')  # Get files saved in session for display
-    structured_timetable = session.get('structured_timetable')  # Get structured timetable if available
+    structured_timetables = session.get('structured_timetables')  # <-- use plural dict
+
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None,
-        structured=structured_timetable  # Pass structured_timetable to the template
+        structured=structured_timetables   # <-- pass the whole dict
     )
+
 
 
 @app.route('/admin/fetch_drive_files')
