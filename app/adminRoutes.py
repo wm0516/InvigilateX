@@ -753,15 +753,11 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-
-
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
-# Set these to your values
+# OAuth config
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
@@ -772,6 +768,7 @@ def admin_manageTimetable():
     if 'credentials' not in session:
         return redirect(url_for('authorize'))
 
+    # ✅ Load credentials from session (parse JSON string into dict)
     creds = Credentials.from_authorized_user_info(json.loads(session['credentials']))
     drive_service = build('drive', 'v3', credentials=creds)
 
@@ -804,19 +801,19 @@ def admin_manageTimetable():
             if file['name'] not in seen_names:
                 pdf_files.append(file)
                 seen_names.add(file['name'])
-            else:
-                # Duplicate filename, skip it
-                continue
 
         page_token = response.get('nextPageToken', None)
         if not page_token:
             break
 
-    # Save credentials back
+    # ✅ Save credentials back to session (as JSON string)
     session['credentials'] = creds.to_json()
 
-    return render_template('admin/adminManageTimetable.html', files=pdf_files, active_tab='admin_manageTimetabletab')
-
+    return render_template(
+        'admin/adminManageTimetable.html',
+        files=pdf_files,
+        active_tab='admin_manageTimetabletab',
+    )
 
 
 @app.route('/admin/authorize')
@@ -847,16 +844,12 @@ def oauth2callback():
     )
 
     flow.fetch_token(authorization_response=request.url)
-
     creds = flow.credentials
+
+    # ✅ Save credentials as JSON string
     session['credentials'] = creds.to_json()
 
     return redirect(url_for('admin_manageTimetable'))
-
-
-
-
-
 
 
 
