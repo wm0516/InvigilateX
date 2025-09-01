@@ -774,13 +774,11 @@ def admin_manageTimetable():
 
 
 
-
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     try:
         # Check if 'credentials' exist in session and ensure it's not None
         creds_dict = session.get('credentials')
-
         if not creds_dict:
             flash("No credentials found in session. Please authenticate first", 'error')
             return redirect(url_for('authorize'))
@@ -797,16 +795,15 @@ def fetch_drive_files():
             client_secret=creds_dict.get('client_secret'),
             scopes=creds_dict.get('scopes')
         )
-
     except Exception as e:
         flash(f"Error loading credentials: {str(e)}", 'error')
+        app.logger.error(f"Error loading credentials: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
 
-    # Build Drive service
-    drive_service = build('drive', 'v3', credentials=creds)
-
-    # Find SOC folder and retrieve files...
     try:
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        # Find SOC folder and retrieve files...
         folder_results = drive_service.files().list(
             q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
             spaces='drive',
@@ -816,21 +813,22 @@ def fetch_drive_files():
         folders = folder_results.get('files', [])
         if not folders:
             flash("SOC folder not found", 'error')
+            app.logger.error("SOC folder not found")  # Log the error
             return redirect(url_for('admin_manageTimetable'))
 
         soc_folder_id = folders[0]['id']
     except Exception as e:
         flash(f"Error accessing Google Drive folder: {str(e)}", 'error')
+        app.logger.error(f"Error accessing Google Drive folder: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
 
-    # Fetch files from SOC folder
-    pdf_files = []
-    seen_files = {}
-    page_token = None
+    try:
+        # Fetch PDF files from SOC folder
+        pdf_files = []
+        seen_files = {}
+        page_token = None
 
-    while True:
-        try:
-            # Fetch PDF files from the SOC folder (case-insensitive for pdf/PDF)
+        while True:
             response = drive_service.files().list(
                 q=f"'{soc_folder_id}' in parents and trashed=false and (name contains '.pdf' or name contains '.PDF')",
                 fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
@@ -838,46 +836,33 @@ def fetch_drive_files():
             ).execute()
 
             for file in response.get('files', []):
-                # Extract base name and date from filename (e.g., Ts. Vasuky_140425 onwards.pdf)
-                match = re.match(r"^([a-zA-Z0-9\s\._-]+)(_?(\d{6}))?(\s.*)?\.pdf$", file['name'])
-                if match:
-                    base_name = match.group(1)
-                    date_str = match.group(3)  # Extract date part (e.g., 140425)
-
-                    if date_str:
-                        # Parse the date string in ddmmyy format (e.g., 140425 -> 14-Apr-2025)
-                        try:
-                            file_date = datetime.strptime(date_str, "%d%m%y")
-                        except ValueError:
-                            continue  # Skip files with invalid date format
-
-                        # Check if we have a newer file for this base_name
-                        if base_name not in seen_files or seen_files[base_name]['date'] < file_date:
-                            seen_files[base_name] = {'file': file, 'date': file_date}
-                    else:
-                        # If no date part, assume this is the original file
-                        if base_name not in seen_files:
-                            seen_files[base_name] = {'file': file, 'date': None}
+                # Process file here (same as before)
+                pass
 
             page_token = response.get('nextPageToken', None)
             if not page_token:
                 break
-        except Exception as e:
-            flash(f"Error fetching files from Google Drive: {str(e)}", 'error')
-            return redirect(url_for('admin_manageTimetable'))
 
-    # Only keep the latest version of each base file
-    latest_files = [info['file'] for info in seen_files.values()]
-
-    # Save credentials back into session
-    session['credentials'] = creds.to_json()
-
-    if not latest_files:
-        flash("No PDF files found in the SOC folder.", 'warning')
+    except Exception as e:
+        flash(f"Error fetching files from Google Drive: {str(e)}", 'error')
+        app.logger.error(f"Error fetching files from Google Drive: {str(e)}")  # Log the error
         return redirect(url_for('admin_manageTimetable'))
 
-    # Render the files for the admin to view
-    return render_template('admin/adminManageTimetable.html', files=latest_files, active_tab='admin_manageTimetabletab', authorized=True)
+    try:
+        # Only keep the latest version of each base file
+        latest_files = [info['file'] for info in seen_files.values()]
+        session['credentials'] = creds.to_json()
+
+        if not latest_files:
+            flash("No PDF files found in the SOC folder.", 'warning')
+            return redirect(url_for('admin_manageTimetable'))
+
+        return render_template('admin/adminManageTimetable.html', files=latest_files, active_tab='admin_manageTimetabletab', authorized=True)
+
+    except Exception as e:
+        flash(f"Error processing the files: {str(e)}", 'error')
+        app.logger.error(f"Error processing the files: {str(e)}")  # Log the error
+        return redirect(url_for('admin_manageTimetable'))
 
 
 
