@@ -757,210 +757,96 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-# OAuth config
-GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
+CLIENT_SECRETS_FILE = "/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json"  # Your OAuth client secret JSON file
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
-
-
-def extract_base_name_and_timestamp(file_name):
-    """
-    Extract base name and timestamp from a file name of the format:
-    e.g. "Ts. Vasuky_140425 onwards.pdf"
-    Returns: (base_name, datetime object) or (None, None)
-    """
-    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
-
-    if not match:
-        return None, None
-
-    base_name = match.group(1)
-    timestamp_str = match.group(2)
-
-    timestamp = None
-    if timestamp_str:
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-        except ValueError:
-            return None, None
-    else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
-        base_name = file_name[:-4]
-
-    return base_name, timestamp
+REDIRECT_URI = 'http://wm05.pythonanywhere.com/admin/oauth2callback'  # Update accordingly
 
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
-    files = session.get('drive_files')  # Get files saved in session for display
-    return render_template(
-        'admin/adminManageTimetable.html',
-        files=files,
-        active_tab='admin_manageTimetabletab',
-        authorized='credentials' in session and session['credentials'] is not None
-    )
+    if 'credentials' not in session:
+        return redirect(url_for('admin_authorize'))
 
+    creds = Credentials(**session['credentials'])
 
-@app.route('/admin/fetch_drive_files')
-def fetch_drive_files():
-    # Step 1: Load credentials from session
-    creds_dict = session.get('credentials')
-    if not creds_dict:
-        flash("No credentials found in session. Please authenticate first.", 'error')
-        return redirect(url_for('authorize'))
-
-    try:
-        if isinstance(creds_dict, str):
-            creds_dict = json.loads(creds_dict)
-
-        creds = Credentials(
-            token=creds_dict.get('token'),
-            refresh_token=creds_dict.get('refresh_token'),
-            token_uri=creds_dict.get('token_uri'),
-            client_id=creds_dict.get('client_id'),
-            client_secret=creds_dict.get('client_secret'),
-            scopes=creds_dict.get('scopes')
-        )
-    except Exception as e:
-        flash(f"Error loading credentials: {e}", 'error')
-        app.logger.error(f"Error loading credentials: {e}")
-        return redirect(url_for('admin_manageTimetable'))
-
-    # Step 2: Build Drive service and find SOC folder
     try:
         drive_service = build('drive', 'v3', credentials=creds)
 
-        folder_results = drive_service.files().list(
+        # Find folder named "SOC"
+        folder_resp = drive_service.files().list(
             q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
-            spaces='drive',
             fields='files(id, name)'
         ).execute()
-
-        folders = folder_results.get('files', [])
+        folders = folder_resp.get('files', [])
         if not folders:
-            flash("SOC folder not found", 'error')
-            app.logger.error("SOC folder not found")
-            return redirect(url_for('admin_manageTimetable'))
+            return "SOC folder not found in your Drive."
 
         soc_folder_id = folders[0]['id']
 
-    except Exception as e:
-        flash(f"Error accessing Google Drive folder: {e}", 'error')
-        app.logger.error(f"Error accessing Google Drive folder: {e}")
-        return redirect(url_for('admin_manageTimetable'))
+        # List PDF files inside SOC folder
+        files_resp = drive_service.files().list(
+            q=f"'{soc_folder_id}' in parents and mimeType='application/pdf' and trashed=false",
+            fields='files(id, name, webViewLink)'
+        ).execute()
 
-    # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
-    try:
-        seen_files = {}
-        page_token = None
-        total_files_read = 0
+        files = files_resp.get('files', [])
 
-        while True:
-            response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
-                spaces='drive',
-                fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
-                pageToken=page_token
-            ).execute()
+        # Save refreshed credentials back to session
+        session['credentials'] = creds_to_dict(creds)
 
-            files_in_page = response.get('files', [])
-            total_files_read += len(files_in_page)
-
-            for file in files_in_page:
-                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-
-                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
-
-                if base_name:
-                    # Use timestamp if available; else fallback to modifiedTime from Drive metadata
-                    file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
-
-                    if base_name not in seen_files:
-                        seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
-                    else:
-                        if file_timestamp > seen_files[base_name]['timestamp']:
-                            seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
-
-            page_token = response.get('nextPageToken')
-            if not page_token:
-                break
-
-        # Sort by timestamp ascending (oldest first)    
-        filtered_files = sorted(
-            seen_files.values(),
-            key=lambda x: x['timestamp']
-        )
-
-        # Extract only file objects after sorting
-        filtered_files = [data['file'] for data in filtered_files]
-
-        # Save filtered files in session for displaying later
-        session['drive_files'] = filtered_files
+        return render_template('admin_manageTimetable', files=files)
 
     except Exception as e:
-        flash(f"Error fetching files from Google Drive: {e}", 'error')
-        app.logger.error(f"Error fetching files from Google Drive: {e}")
-        return redirect(url_for('admin_manageTimetable'))
+        return f"An error occurred: {e}"
 
-    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
+
+@app.route('/admin/authorize')
+def admin_authorize():
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    session['state'] = state
+    return redirect(authorization_url)
+
+
+@app.route('/admin/oauth2callback')
+def admin_oauth2callback():
+    state = session.get('state')
+    flow = Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        state=state,
+        redirect_uri=REDIRECT_URI
+    )
+    flow.fetch_token(authorization_response=request.url)
+
+    creds = flow.credentials
+    session['credentials'] = creds_to_dict(creds)
 
     return redirect(url_for('admin_manageTimetable'))
 
 
-@app.route('/admin/authorize')
-def authorize():
-    try:
-        flow = Flow.from_client_secrets_file(
-            GOOGLE_CLIENT_SECRETS_FILE,
-            scopes=SCOPES,
-            redirect_uri=REDIRECT_URI
-        )
-        authorization_url, state = flow.authorization_url(
-            access_type='offline',
-            include_granted_scopes='true',
-            prompt='consent'
-        )
-        session['state'] = state
-        return redirect(authorization_url)
-    except Exception as e:
-        flash(f"Error initiating OAuth flow: {e}", 'error')
-        return redirect(url_for('admin_manageTimetable'))
+@app.route('/admin/logout')
+def admin_logout():
+    session.clear()
+    return redirect(url_for('admin_manageTimetable'))
 
 
-@app.route('/admin/oauth2callback')
-def oauth2callback():
-    try:
-        state = session.get('state')
-        if not state:
-            raise Exception("State is missing in session")
+def creds_to_dict(creds):
+    return {
+        'token': creds.token,
+        'refresh_token': creds.refresh_token,
+        'token_uri': creds.token_uri,
+        'client_id': creds.client_id,
+        'client_secret': creds.client_secret,
+        'scopes': creds.scopes
+    }
 
-        flow = Flow.from_client_secrets_file(
-            GOOGLE_CLIENT_SECRETS_FILE,
-            scopes=SCOPES,
-            state=state,
-            redirect_uri=REDIRECT_URI
-        )
 
-        flow.fetch_token(authorization_response=request.url)
-        creds = flow.credentials
-
-        session['credentials'] = {
-            'token': creds.token,
-            'refresh_token': creds.refresh_token,
-            'token_uri': getattr(creds, 'token_uri', None),
-            'client_id': getattr(creds, 'client_id', None),
-            'client_secret': getattr(creds, 'client_secret', None),
-            'scopes': getattr(creds, 'scopes', None)
-        }
-
-        app.logger.info("OAuth2 authentication successful, credentials stored.")
-        return redirect(url_for('admin_manageTimetable'))
-
-    except Exception as e:
-        flash(f"Error during OAuth2 callback: {e}", 'error')
-        app.logger.error(f"OAuth2 callback error: {e}")
-        return redirect(url_for('admin_manageTimetable'))

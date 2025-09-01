@@ -1,530 +1,206 @@
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    color: black;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    border-bottom: 1px solid #e0e0e0;
-    background-color: white;
-    width: 100%;
-    box-sizing: border-box;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.user-info {
-    font-size: 16px;
-    text-align: left;
-}
-
-.content-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    width: 100%;
-}
-
-.sidebar {
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid #e0e0e0;
-    background-color: white;
-    transition: width 0.3s ease;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.sidebar.collapsed {
-    width: 70px;
-}
-
-.sidebar.collapsed .tab-link span {
-    display: none;
-}
-
-.sidebar .toggle-btn {
-    padding: 10px;
-    cursor: pointer;
-    text-align: right;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.tab-nav {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    flex-grow: 1;
-}
-
-.tab-link {
-    color: black;
-    padding: 10px;
-    text-decoration: none;
-    border-radius: 4px;
-    margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-}
-
-.tab-link i {
-    margin-right: 10px;
-    width: 20px;
-    text-align: center;
-    color: #555;
-}
-
-.tab-link:hover,
-.tab-link.active {
-    background-color: #f0f0f0;
-}
-
-.logout-btn {
-    padding: 15px;
-    text-align: center;
-    text-decoration: none;
-    color: black;
-    font-weight: bold;
-    border-top: 1px solid #e0e0e0;
-    display: block;
-    margin-top: auto;
-}
 
-.logout-btn:hover {
-    background-color: #f0f0f0;
-}
-
-.main-content {
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    background-color: white;
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        height: 100%;
-        z-index: 1000;
-    }
-    .sidebar.collapsed {
-        width: 0;
-        padding: 0;
-    }
-    .main-content {
-        margin-left: 70px;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-form {
-    width: 96%;
-    padding: 20px;
-    /* border: 2px solid #ccc; */
-    border-radius: 10px;
-    /* background: #fff; */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    /* margin-top: 3%; */
-    font-size: medium;
-}
-
-.form-left, .form-right {
-    display: flex;
-    flex-direction: column;
-}
-
-.input-container, .password-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Align label and input */
-    position: relative;
-}
-
-label {
-    text-align: left;
-    margin-bottom: 5px;
-}
-
-input, select {
-    width: 25vh;
-    padding: 10px;
-    margin: 1% 0;
-    box-sizing: border-box;
-}
-
-.toggle-password-btn {
-    position: absolute;
-    right: 5px;
-    top: 70%;
-    transform: translateY(-50%);
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 14px;
-    width: 20px;
-    height: 20px;
-    padding: 0;
-    color: #555;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* Main menu container layout (big frame) */
-.menu-container {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-/* Main menu container layout (frame divide in the big frame) */
-.menu-grid {
-    width: 95%;
-    display: grid;
-}
-/* Main menu container layout (small frame that divide in the big frame) */
-.menu-section {
-    background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    /* Extra */
-    border: 1px solid #ddd;
-    box-sizing: border-box;
-}
-
-
-/* Title with the layout of each frame */
-.menu-section h2 {
-    color: #2c3e50;
-    /* border-bottom: 2px solid #3498db;*/
-    padding-bottom: 10px;
-    margin-top: 0;
-}
-
-
-/* Text inside the frame with no style */ 
-.text-style {
-    font-weight: normal;
-    text-decoration: none;
-}
-
-.tab-frame {
-    border: 1px solid #ccc;
-    padding: 20px;
-    border-radius: 6px;
-    background-color: #f9f9f9;
-}
-
-
-
-/* Main container */
-.menu-container {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-
-.form-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.input-wrapper {
-    display: flex;;
-    justify-content: flex-start;
-}
-
-
-
-.main-frame {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px;
-    margin: 30px auto;
-    width: 60%;
-    border-radius: 10px;
-    background-color: #fff;
-    /*border: 1px solid #ccc;*/
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-    margin-bottom: 20px;
-}
-
-.form-frame {
-    width: 100%;
-}
-
-.input-frame {
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f1f1f1;
-}
-
-input[type="file"] {
-    font-size: medium;
-}
-
-
-.button-wrapper {
-    display: flex;
-    justify-content: center; /* Horizontally centers the button */
-}
-
-.button-wrapper button {
-    padding: 12px 24px;
-    font-size: 1.1rem;
-    border: none;
-    border-radius: 6px;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 25vh;
-}
-
-
-
-.alert {
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 5px;
-}
-
-.alert-success {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-
-.alert-error, .alert-input_error {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-
-
-
-
-
-
-/* Tab navigation styling */
-.tab-nav {
-    display: flex;
-    border-bottom: 1px solid #3498db;
-}
-
-.tab-link {
-    padding: 10px 20px;
-    background-color: #f8f9fa;
-    color: #2c3e50;
-    text-decoration: none;
-    border: 1px solid #ddd;
-    border-bottom: none;
-    margin-right: 5px;
-    border-radius: 5px 5px 0 0;
-    transition: all 0.3s;
-}
-
-.tab-link:hover {
-    background-color: #e9ecef;
-}
-
-.tab-link.active {
-    background-color: white;
-    color: #3498db;
-    font-weight: bold;
-    border-bottom: 1px solid white;
-    margin-bottom: -1px;
-}
-
-/* Tab content styling */
-.tab-content {
-    background-color: white;
-    border-radius: 0 8px 8px 8px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-.tab-pane {
-    display: none;
-}
-
-.tab-pane.active {
-    display: block;
-}
-
-/* Content section styling */
-.menu-section {
-    padding: 10px;
-}
-
-/* Subtitle heading with the layout of each frame */
-.menu-section ul {
-    list-style-type: none;
-    padding-left: 0;
-}
-
-/* Subtitle contents with the layout of each frame */
-.menu-section li {
-    padding: 5px 0;
-    margin-left: 2%;
-    border-bottom: 1px solid #eee;
-    color: #34495e;
-}
-
-/* Subtitle last line contents with the layout of each frame */
-.menu-section li:last-child {
-    border-bottom: none;
-}
-
-/* Subtitle heading style */
-.submenu ul {
-    padding-left: 20px;
-    margin-top: 5px;
-}
-
-/* Subtitle contetts style */
-.submenu li {
-    border-bottom: none;
-    font-size: 0.9em;
-    color: #7f8c8d;
-}
-
-.big-frame {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 20px;
-    margin: 20px auto;
-    width: 60%;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    border: 1px solid #ccc;
-}
-
-
-
-.small-frame {
-    width: 95%;
-    padding: 10px;
-    margin: 10px 0;
-    background-color: #f9f9f9;
-    border-radius: 6px;
-    border: 1px solid #ddd;
-}
-
-.small-frame input {
-    width: 100%;
-    border: none;
-    background: transparent;
-    font-size: 1em;
-}
-
-.big-frame button {
-    width: 25vh;
-    padding: 8px 16px;
-    margin-top: 25px;
-    align-self: center;
-}
-
-
-
-
-
-
-
-.user-table-container {
-    margin: 20px 0;
-}
-
-.user-data-table {
-    width: 100%;
-    border-collapse: collapse;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.user-data-table th {
-    background-color: #2c3e50;
-    color: white;
-    padding: 12px 15px;
-    text-align: left;
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.85em;
-    letter-spacing: 0.5px;
-}
-
-.user-data-table td {
-    padding: 15px;
-    border-bottom: 1px solid #e0e0e0;
-    color: #333;
-    font-size: 0.95em;
-}
-
-.user-data-table tr:last-child td {
-    border-bottom: none;
-}
-
-.user-data-table tr:hover {
-    background-color: #f5f7fa;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .user-data-table {
-        display: block;
-        overflow-x: auto;
-    }
-}
+# OAuth config
+GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
+
+
+def extract_base_name_and_timestamp(file_name):
+    """
+    Extract base name and timestamp from a file name of the format:
+    e.g. "Ts. Vasuky_140425 onwards.pdf"
+    Returns: (base_name, datetime object) or (None, None)
+    """
+    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
+
+    if not match:
+        return None, None
+
+    base_name = match.group(1)
+    timestamp_str = match.group(2)
+
+    timestamp = None
+    if timestamp_str:
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            return None, None
+    else:
+        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        base_name = file_name[:-4]
+
+    return base_name, timestamp
+
+
+@app.route('/admin/manageTimetable')
+def admin_manageTimetable():
+    files = session.get('drive_files')  # Get files saved in session for display
+    return render_template(
+        'admin/adminManageTimetable.html',
+        files=files,
+        active_tab='admin_manageTimetabletab',
+        authorized='credentials' in session and session['credentials'] is not None
+    )
+
+
+@app.route('/admin/fetch_drive_files')
+def fetch_drive_files():
+    # Step 1: Load credentials from session
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        flash("No credentials found in session. Please authenticate first.", 'error')
+        return redirect(url_for('authorize'))
+
+    try:
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)
+
+        creds = Credentials(
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
+        )
+    except Exception as e:
+        flash(f"Error loading credentials: {e}", 'error')
+        app.logger.error(f"Error loading credentials: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    # Step 2: Build Drive service and find SOC folder
+    try:
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        folder_results = drive_service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
+            spaces='drive',
+            fields='files(id, name)'
+        ).execute()
+
+        folders = folder_results.get('files', [])
+        if not folders:
+            flash("SOC folder not found", 'error')
+            app.logger.error("SOC folder not found")
+            return redirect(url_for('admin_manageTimetable'))
+
+        soc_folder_id = folders[0]['id']
+
+    except Exception as e:
+        flash(f"Error accessing Google Drive folder: {e}", 'error')
+        app.logger.error(f"Error accessing Google Drive folder: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
+    try:
+        seen_files = {}
+        page_token = None
+        total_files_read = 0
+
+        while True:
+            response = drive_service.files().list(
+                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+                spaces='drive',
+                fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
+                pageToken=page_token
+            ).execute()
+
+            files_in_page = response.get('files', [])
+            total_files_read += len(files_in_page)
+
+            for file in files_in_page:
+                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+
+                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
+
+                if base_name:
+                    # Use timestamp if available; else fallback to modifiedTime from Drive metadata
+                    file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
+
+                    if base_name not in seen_files:
+                        seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
+                    else:
+                        if file_timestamp > seen_files[base_name]['timestamp']:
+                            seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
+
+        # Sort by timestamp ascending (oldest first)    
+        filtered_files = sorted(
+            seen_files.values(),
+            key=lambda x: x['timestamp']
+        )
+
+        # Extract only file objects after sorting
+        filtered_files = [data['file'] for data in filtered_files]
+
+        # Save filtered files in session for displaying later
+        session['drive_files'] = filtered_files
+
+    except Exception as e:
+        flash(f"Error fetching files from Google Drive: {e}", 'error')
+        app.logger.error(f"Error fetching files from Google Drive: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'success')
+    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
+
+    return redirect(url_for('admin_manageTimetable'))
+
+
+@app.route('/admin/authorize')
+def authorize():
+    try:
+        flow = Flow.from_client_secrets_file(
+            GOOGLE_CLIENT_SECRETS_FILE,
+            scopes=SCOPES,
+            redirect_uri=REDIRECT_URI
+        )
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            include_granted_scopes='true',
+            prompt='consent'
+        )
+        session['state'] = state
+        return redirect(authorization_url)
+    except Exception as e:
+        flash(f"Error initiating OAuth flow: {e}", 'error')
+        return redirect(url_for('admin_manageTimetable'))
+
+
+@app.route('/admin/oauth2callback')
+def oauth2callback():
+    try:
+        state = session.get('state')
+        if not state:
+            raise Exception("State is missing in session")
+
+        flow = Flow.from_client_secrets_file(
+            GOOGLE_CLIENT_SECRETS_FILE,
+            scopes=SCOPES,
+            state=state,
+            redirect_uri=REDIRECT_URI
+        )
+
+        flow.fetch_token(authorization_response=request.url)
+        creds = flow.credentials
+
+        session['credentials'] = {
+            'token': creds.token,
+            'refresh_token': creds.refresh_token,
+            'token_uri': getattr(creds, 'token_uri', None),
+            'client_id': getattr(creds, 'client_id', None),
+            'client_secret': getattr(creds, 'client_secret', None),
+            'scopes': getattr(creds, 'scopes', None)
+        }
+
+        app.logger.info("OAuth2 authentication successful, credentials stored.")
+        return redirect(url_for('admin_manageTimetable'))
+
+    except Exception as e:
+        flash(f"Error during OAuth2 callback: {e}", 'error')
+        app.logger.error(f"OAuth2 callback error: {e}")
+        return redirect(url_for('admin_manageTimetable'))
