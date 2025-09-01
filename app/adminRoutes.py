@@ -757,7 +757,6 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
 # OAuth config
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
@@ -779,6 +778,9 @@ def extract_base_name_and_timestamp(file_name):
 
     base_name = match.group(1)
     timestamp_str = match.group(2)
+
+    # Remove whitespace from base_name
+    base_name = base_name.replace(" ", "")
 
     timestamp = None
     if timestamp_str:
@@ -959,6 +961,5 @@ def oauth2callback():
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
-
 
 
