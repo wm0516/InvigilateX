@@ -761,6 +761,7 @@ def get_course_details(program_code, course_code_section):
 
 
 
+
 # OAuth config
 GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
