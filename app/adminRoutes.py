@@ -12,8 +12,15 @@ import traceback
 import os, json
 import PyPDF2
 import re
-from google.oauth2.service_account import Credentials
+
+
+from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+import os
+import pathlib
+
+from google.oauth2.service_account import Credentials
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -761,7 +768,70 @@ def get_drive_service():
 
 
 
+SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly']
+CLIENT_SECRETS_FILE = '/home/WM05/xenon-chain-460911-p8-0931c798d991.json'
 
+# Google OAuth 2.0 Flow
+flow = Flow.from_client_secrets_file(
+    CLIENT_SECRETS_FILE,
+    scopes=SCOPES,
+    redirect_uri='http://localhost:5000/oauth2callback'
+)
+
+@app.route('/authorize')
+def authorize():
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true'
+    )
+    session['state'] = state
+    return redirect(authorization_url)
+
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    flow.fetch_token(authorization_response=request.url)
+
+    credentials = flow.credentials
+    session['credentials'] = credentials_to_dict(credentials)
+
+    return redirect(url_for('admin_manageTimetable'))
+
+
+@app.route("/admin/manageTimetable", methods=["GET"])
+def admin_manageTimetable():
+    if 'credentials' not in session:
+        return redirect('authorize')
+
+    credentials = Credentials(**session['credentials'])
+    service = build('drive', 'v3', credentials=credentials)
+
+    # Search for 'SOC' folder
+    folder_query = "mimeType='application/vnd.google-apps.folder' and name='SOC'"
+    folder_results = service.files().list(q=folder_query, spaces='drive', fields="files(id, name)").execute()
+    folders = folder_results.get('files', [])
+
+    files = []
+    if folders:
+        folder_id = folders[0]['id']
+        query = f"'{folder_id}' in parents"
+        results = service.files().list(q=query, fields="files(id, name)").execute()
+        files = results.get('files', [])
+
+    # Update session credentials in case they were refreshed
+    session['credentials'] = credentials_to_dict(credentials)
+
+    return render_template("admin/adminManageTimetable.html", files=files, active_tab="admin_manageTimetabletab")
+
+def credentials_to_dict(credentials):
+    return {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': credentials.scopes
+    }
 
 
 
@@ -817,6 +887,8 @@ def parse_activity(line):
 
 
 
+
+'''
 @app.route("/admin/manageTimetable", methods=["GET", "POST"])
 def admin_manageTimetable():
     service = get_drive_service()
@@ -902,7 +974,7 @@ def admin_manageTimetable():
                     structured["days"][current_day].append(parse_activity(line))
 
     return render_template("admin/adminManageTimetable.html", active_tab="admin_manageTimetabletab", structured=structured)
-
+'''
 
 
 
