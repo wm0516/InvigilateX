@@ -1,5 +1,7 @@
 {% extends "admin/adminBase.html" %}
+
 {% block title %}Admin Manage Timetable{% endblock %}
+
 {% block content %}
 <div class="menu-section">
     <h2>Manage Timetable</h2>
@@ -69,7 +71,8 @@
             </div>
             <hr>
         {% endfor %}
+    {% else %}
+        <p>No structured timetable available.</p>
     {% endif %}
-
 </div>
 {% endblock %}

@@ -909,11 +909,13 @@ def parse_pdf_text(text):
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
     files = session.get('drive_files')  # Get files saved in session for display
+    structured_timetable = session.get('structured_timetable')  # Get structured timetable if available
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
-        authorized='credentials' in session and session['credentials'] is not None
+        authorized='credentials' in session and session['credentials'] is not None,
+        structured=structured_timetable  # Pass structured_timetable to the template
     )
 
 
@@ -943,6 +945,7 @@ def fetch_drive_files():
         seen_files = {}
         page_token = None
         total_files_read = 0
+        structured_timetable = None  # Initialize structured_timetable
 
         while True:
             response = drive_service.files().list(
@@ -1006,6 +1009,9 @@ def fetch_drive_files():
         final_files = [file_data['file'] for file_data in seen_files.values()]
         session['drive_files'] = final_files
 
+        # Store the structured timetable in the session
+        session['structured_timetable'] = structured_timetable
+
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
         app.logger.error(f"Error fetching files from Google Drive: {e}")
@@ -1014,6 +1020,9 @@ def fetch_drive_files():
     flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
     app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
     return redirect(url_for('admin_manageTimetable'))
+
+
+
 
 @app.route('/admin/authorize')
 def authorize():
