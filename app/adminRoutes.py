@@ -875,8 +875,8 @@ def parse_activity(line):
 def parse_pdf_text(text):
     structured = None
 
-    # Remove ALL whitespace
-    text = re.sub(r"\s+", "", text)
+    # Remove \n and combine
+    text = text.replace('\n', ' ')
     text = text.upper()
 
     # --- Step 1: Extract title ---
@@ -1051,16 +1051,13 @@ def preview_timetable(file_id):
         reader = PdfReader(BytesIO(file_content))
         text = ""
         for page in reader.pages:
-            extracted = page.extract_text()
-            if extracted:
-                text += extracted + "\n"
+            text += page.extract_text() + " "
 
-        # Return raw extracted text
-        return jsonify({"raw_text": text.strip()})
+        structured_timetable = parse_pdf_text(text)
+        return jsonify(structured_timetable)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 
