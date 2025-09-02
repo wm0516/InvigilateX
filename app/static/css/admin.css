@@ -273,6 +273,16 @@ html, body {
 }
 
 
+.filter-container {
+    margin-bottom: 20px;
+}
+
+.filter-container select,
+.filter-container button {
+    padding: 5px;
+    margin: 5px;
+    font-size: 14px;
+}
 
 
 
