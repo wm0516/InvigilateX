@@ -913,10 +913,10 @@ def parse_pdf_text(text):
 
     # --- Step 5: Build structured JSON ---
     structured = {
+        "days": {},
         "title": title,
         "lecturer": lecturer_name,
-        "timerow": timerow,
-        "days": {}
+        "timerow": timerow
     }
     current_day = None
 
