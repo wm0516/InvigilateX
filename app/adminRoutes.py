@@ -1029,7 +1029,44 @@ def fetch_drive_files():
     return redirect(url_for('admin_manageTimetable'))
 
 
+@app.route('/admin/preview_timetable/<file_id>')
+def preview_timetable(file_id):
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        return jsonify({"error": "No credentials found"}), 401
 
+    try:
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)
+
+        creds = Credentials(
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
+        )
+
+        drive_service = build('drive', 'v3', credentials=creds)
+        file_content = drive_service.files().get_media(fileId=file_id).execute()
+
+        reader = PdfReader(BytesIO(file_content))
+        text = ""
+        for page in reader.pages:
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + "\n"
+
+        # Return raw extracted text
+        return jsonify({"raw_text": text.strip()})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+'''
 @app.route('/admin/preview_timetable/<file_id>')
 def preview_timetable(file_id):
     creds_dict = session.get('credentials')
@@ -1062,7 +1099,7 @@ def preview_timetable(file_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
+'''
 
 
 @app.route('/admin/authorize')
