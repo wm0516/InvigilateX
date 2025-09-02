@@ -874,7 +874,7 @@ def parse_activity(line):
 
 def parse_pdf_text(text):
     structured = None
-
+    
     # Remove ALL whitespace
     text = re.sub(r"\s+", "", text)
     text = text.upper()
@@ -989,7 +989,6 @@ def fetch_drive_files():
 
             for file in files_in_page:
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
                 if not base_name:
                     continue
