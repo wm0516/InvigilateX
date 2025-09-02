@@ -55,14 +55,12 @@
     </form>
 
     <br><br>
-    <div class="profile-frame">
-        <div class="form-left">
-            <h2>Timetable</h2>
-        </div>
+    <h2>Timetable</h2>
 
+    <div class="profile-frame">
         <!-- Filter Section -->
         <div class="form-right">
-            <form method="get">
+            <form method="get" style="display:flex; align-items:center; gap:8px;">
                 <label for="lecturer">Select Lecturer:</label>
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>
