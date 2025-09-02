@@ -937,7 +937,7 @@ def parse_pdf_text(text):
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # 🔹 Query 1: all timetable rows (still grouped to avoid duplicates inside the grid)
+    # Query 1: Grouped timetable rows (for timetable display)
     timetable_data = Timetable.query.group_by(
         Timetable.lecturerName,
         Timetable.courseName,
@@ -947,14 +947,14 @@ def admin_manageTimetable():
         Timetable.classTime
     ).all()
 
-    # 🔹 Query 2: distinct lecturer names (only for dropdown)
+    # Query 2: Distinct lecturer names (for dropdown only)
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
-    lecturers = sorted([row[0] for row in lecturers])  # flatten list of tuples
+    lecturers = sorted([row[0] for row in lecturers])  # flatten from [(name,), (name,)] to [name, name]
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
 
-    # 🔹 Filter timetable data when lecturer selected
+    # Filter timetable data
     if selected_lecturer:
         filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer]
     else:
@@ -969,6 +969,7 @@ def admin_manageTimetable():
         selected_lecturer=selected_lecturer,
         lecturers=lecturers
     )
+
 
 
 

@@ -61,17 +61,16 @@
 
     <!-- Filter Section -->
     <div class="filter-container">
-        <form method="GET" action="">
-            <label for="lecturer">Select Lecturer:</label>
-            <select name="lecturer" id="lecturer">
-                <option value="">All Lecturers</option>
-                {% for row in timetable_data %}
-                    <option value="{{ row.lecturerName }}">
-                        {{ row.lecturerName }}
-                    </option>
-                {% endfor %}
-            </select>
-            <button type="submit">Filter</button>
+        <form method="get">
+        <label for="lecturer">Select Lecturer:</label>
+        <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+            <option value="">All Lecturers</option>
+            {% for lecturer in lecturers %}
+                <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                    {{ lecturer }}
+                </option>
+            {% endfor %}
+        </select>
         </form>
     </div>
 
