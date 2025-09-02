@@ -5,7 +5,7 @@
 {% block content %}
 <div class="menu-section">
     <h2>Manage Timetable</h2>
-    <form style="max-height: 500px; overflow-y: auto;">
+    <form style="max-height: 400px; overflow-y: auto;">
         {% if not files %}
             {% if not authorized %}
                 <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
@@ -27,6 +27,11 @@
                             {{ loop.index }}. {{ file.name }}
                         </a>
                         <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+                    </div>
+
+                    <div id="previewArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
+                        <h4>Preview Result</h4>
+                        <pre id="previewContent">Click a preview button to load timetable...</pre>
                     </div>
                 {% endfor %}
             </div>
