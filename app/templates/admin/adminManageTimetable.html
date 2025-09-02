@@ -66,7 +66,7 @@
             <select name="lecturer" id="lecturer">
                 <option value="">All Lecturers</option>
                 {% for row in timetable_data %}
-                    <option value="{{ row.lecturerName }}" {% if selected_lecturer == row.lecturerName %}selected{% endif %}>
+                    <option value="{{ row.lecturerName }}">
                         {{ row.lecturerName }}
                     </option>
                 {% endfor %}
