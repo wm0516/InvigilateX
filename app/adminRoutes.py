@@ -937,12 +937,14 @@ def parse_pdf_text(text):
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
+    timetable_data = Timetable.query.all()
     files = session.get('drive_files')  # Get files saved in session for display
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None,
+        timetable_data=timetable_data
     )
 
 

@@ -23,7 +23,7 @@
             <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
                 Extract & Save All Timetables to Database
             </a>
-            <br><br>
+            <br><br><br>
 
             <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                 {% for file in files %}
@@ -40,7 +40,7 @@
             <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
                 <h4>Preview Result</h4>
                 <pre id="previewContent">Click a preview button to load timetable...</pre>
-            </div>x
+            </div>
         {% endif %}
 
         <br><br>
@@ -53,6 +53,61 @@
         {% endif %}
         <br>
     </form>
+
+    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00",
+                        "14:00","15:00","16:00","17:00","18:00","19:00",
+                        "20:00","21:00","22:00","23:00"] %}
+    {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+
+    <div class="user-table-container">
+        <table border="1" style="border-collapse: collapse; text-align: center; width: 100%;">
+            <thead>
+                <tr>
+                    <th>Day / Time</th>
+                    {% for slot in time_slots %}
+                        <th>{{ slot }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in week_days %}
+                <tr>
+                    <td><b>{{ day }}</b></td>
+                    {% set skip = 0 %}
+                    {% for slot in time_slots %}
+                        {% if skip > 0 %}
+                            {% set skip = skip - 1 %}
+                            {# skip this slot because it's covered by a colspan #}
+                        {% else %}
+                            {% set found = false %}
+                            {% for row in timetable_data %}
+                                {% if row.classDay == day and row.classTime.startswith(slot) %}
+                                    {% set start, end = row.classTime.split('-') %}
+                                    {% set span = (end[:2]|int) - (start[:2]|int) %}
+                                    <td colspan="{{ span }}" style="background:#d9edf7; padding:5px; border-radius:4px;">
+                                        <b>{{ row.courseCode }}</b> ({{ row.classType }})<br>
+                                        Sec: {{ row.courseSection }}<br>
+                                        Room: {{ row.classRoom }}<br>
+                                        <i>{{ row.classTime }}</i>
+                                    </td>
+                                    {% set skip = span - 1 %}
+                                    {% set found = true %}
+                                    {% break %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if not found %}
+                                <td></td>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+
 </div>
 
 
