@@ -1106,17 +1106,23 @@ def oauth2callback():
         return redirect(url_for('admin_manageTimetable'))
     
 
-def save_timetable_to_db(structured, file):
+def save_timetable_to_db(structured):
     lecturer = structured.get("lecturer")
 
-    # 🔹 Step 1: Delete old records for this lecturer (from same file)
+    # Delete old records for this lecturer
     Timetable.query.filter_by(lecturerName=lecturer).delete()
 
-    # 🔹 Step 2: Insert new rows
+    # Insert only valid rows
     for day, activities in structured["days"].items():
         for act in activities:
+            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
+                continue
+
             if act.get("sections"):
                 for sec in act["sections"]:
+                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
+                        continue
+
                     row = Timetable(
                         lecturerName=lecturer,
                         classType=act.get("class_type"),
@@ -1131,21 +1137,6 @@ def save_timetable_to_db(structured, file):
                         classWeekDate=act.get("weeks_date"),
                     )
                     db.session.add(row)
-            else:
-                row = Timetable(
-                    lecturerName=lecturer,
-                    classType=act.get("class_type"),
-                    classDay=day,
-                    classTime=act.get("time"),
-                    classRoom=act.get("room"),
-                    courseName=act.get("course"),
-                    courseIntake=None,
-                    courseCode=None,
-                    courseSection=None,
-                    classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                    classWeekDate=act.get("weeks_date"),
-                )
-                db.session.add(row)
 
     db.session.commit()
 
@@ -1187,7 +1178,7 @@ def extract_all():
 
             structured = parse_pdf_text(text)
 
-            save_timetable_to_db(structured, file)
+            save_timetable_to_db(structured)
             inserted_count += 1
 
         flash(f"Extracted and saved {inserted_count} timetables into database.", 'success')
