@@ -1,77 +1,45 @@
 {% extends "admin/adminBase.html" %}
-
-{% block title %}Admin Manage Timetable{% endblock %}
-
+{% block title %}Admin ManageTimetable{% endblock %}
 {% block content %}
 <div class="menu-section">
     <h2>Manage Timetable</h2>
-    <form style="max-height: 500px; overflow-y: auto;">
-        {% if not files %}
-            {% if not authorized %}
-                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
-            {% else %}
-                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
-            {% endif %}
-        {% endif %}
 
-        {% if files %}
-            <!-- Refresh Button -->
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
-            <br><br>
-
-            <h3>PDF Files from SOC Folder:</h3>
-            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-                {% for file in files %}
-                    <div>
-                        <a href="{{ file.webViewLink }}" target="_blank">
-                            {{ loop.index }}. {{ file.name }}
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <br><br>
-        {% if get_flashed_messages(with_categories=true) %}
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        <br>
+    <form action="{{ url_for('fetch_drive_files') }}" method="GET">
+        <button type="submit">Fetch Drive Files</button>
     </form>
 
-    <br><br>
-    {% if structured %}
-        {% set days_order = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] %}
-        {% for day in days_order %}
-            {% if day in structured.days %}
-                <h4>{{ day }}</h4>
-                <div class="menu-grid">
-                    {% for act in structured.days[day] %}
-                        <div class="activity-card">
-                            <b>Lecturer Name:   </b> {{ structured.lecturer }} <br>
-                            <b>Session Type:    </b> {{ act.class_type }} <br>
-                            <b>Time:            </b> {{ act.time }} <br>
-                            <b>Course Name:     </b> {{ act.course }} <br>
-                            <b>Venue:           </b> {{ act.room }} <br>
-                            <b>Weeks Effective: </b> {{ act.weeks_range | join(", ") }} <br>
-                            <b>Date Range:      </b> {{ act.weeks_date }} <br>
-
-                            {% if act.sections %}
-                                <b>Sections:    </b><br>
-                                {% for sec in act.sections %}
-                                    {{ sec.intake }} | {{ sec.course_code }} | {{ sec.section }}<br>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <hr>
-            {% endif %}
+    {% if files %}
+        <h3>Available Timetables</h3>
+        <ul>
+        {% for file in files %}
+            <li>
+                {{ file.name }}
+                <a href="{{ file.webViewLink }}" target="_blank">[Open in Drive]</a>
+                <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+            </li>
         {% endfor %}
-    {% endif %}
+        </ul>
 
+        <div id="previewArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
+            <h4>Preview Result</h4>
+            <pre id="previewContent">Click a preview button to load timetable...</pre>
+        </div>
+    {% else %}
+        <p>No files found. Please fetch from Google Drive.</p>
+    {% endif %}
 </div>
+
+<script>
+function previewTimetable(fileId) {
+    document.getElementById("previewContent").textContent = "Loading...";
+    fetch(`/admin/preview_timetable/${fileId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("previewContent").textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+            document.getElementById("previewContent").textContent = "Error: " + err;
+        });
+}
+</script>
 {% endblock %}

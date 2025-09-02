@@ -761,11 +761,8 @@ GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0d
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
-
 def get_oauth_flow(state=None):
-    """
-    Creates and returns an OAuth2 flow based on whether we have a state or not.
-    """
+    """Creates and returns an OAuth2 flow."""
     try:
         flow = Flow.from_client_secrets_file(
             GOOGLE_CLIENT_SECRETS_FILE,
@@ -780,12 +777,9 @@ def get_oauth_flow(state=None):
 
 
 def get_drive_service_and_folder(creds):
-    """
-    Retrieves Google Drive service and SOC folder ID.
-    """
+    """Retrieves Google Drive service and SOC folder ID."""
     try:
         drive_service = build('drive', 'v3', credentials=creds)
-
         folder_results = drive_service.files().list(
             q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
             spaces='drive',
@@ -801,11 +795,7 @@ def get_drive_service_and_folder(creds):
 
 
 def extract_base_name_and_timestamp(file_name):
-    """
-    Extract base name and timestamp from a file name of the format:
-    e.g. "Ts. Vasuky_140425 onwards.pdf"
-    Returns: (base_name, datetime object) or (None, None)
-    """
+    """Extract base name and timestamp from file name."""
     pattern = r"^(.*?)(?:[_\s](\d{6}))(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
@@ -817,7 +807,6 @@ def extract_base_name_and_timestamp(file_name):
             return base_name, timestamp
         except ValueError:
             return base_name, None
-
     return file_name[:-4].strip(), None
 
 
@@ -825,17 +814,14 @@ def parse_activity(line):
     """Parse one activity line into structured data."""
     activity = {}
 
-    # Class type (LECTURE/TUTORIAL/PRACTICAL)
     m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
     if m_type:
         activity["class_type"] = m_type.group(1)
 
-    # Time
     m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
     if m_time:
         activity["time"] = m_time.group(1)
 
-    # Weeks and date range
     m_weeks = re.search(r"WEEKS:([^C]+)", line)
     if m_weeks:
         weeks_data = m_weeks.group(1).split(",")
@@ -845,12 +831,10 @@ def parse_activity(line):
         else:
             activity["weeks_range"] = weeks_data
 
-    # Course name
     m_course = re.search(r"COURSES:([^;]+);", line)
     if m_course:
         activity["course"] = m_course.group(1)
 
-    # Sections
     m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
     if m_sections:
         sections = m_sections.group(1).strip(";").split(";")
@@ -864,7 +848,6 @@ def parse_activity(line):
                     "section": sec_name
                 })
 
-    # Room
     m_room = re.search(r"ROOMS:([^;]+);", line)
     if m_room:
         activity["room"] = m_room.group(1)
@@ -873,13 +856,10 @@ def parse_activity(line):
 
 
 def parse_pdf_text(text):
+    """Parse PDF text into structured JSON."""
     structured = None
+    text = re.sub(r"\s+", "", text).upper()
 
-    # Remove ALL whitespace
-    text = re.sub(r"\s+", "", text)
-    text = text.upper()
-
-    # --- Step 1: Extract title ---
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
     if match_title:
         title = match_title.group(1).strip()
@@ -889,18 +869,15 @@ def parse_pdf_text(text):
         title = "TIMETABLE"
         timerow = ""
 
-    # --- Extract lecturer name ---
     lecturer_name = None
     match_name = re.search(r"-(.*?)\(", title)
     if match_name:
         lecturer_name = match_name.group(1)
 
-    # --- Step 2: Insert days with blank line before them ---
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
     for day in days:
         text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
 
-    # --- Step 3: Break activities so each starts on new line ---
     keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
     for kw in keywords:
         if kw == "PUBLISHED":
@@ -908,10 +885,8 @@ def parse_pdf_text(text):
         else:
             text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
 
-    # --- Step 4: Clean up ---
     text = re.sub(r"\n{3,}", "\n\n", text)
 
-    # --- Step 5: Build structured JSON ---
     structured = {
         "title": title,
         "lecturer": lecturer_name,
@@ -937,14 +912,12 @@ def parse_pdf_text(text):
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
-    files = session.get('drive_files')  # Get files saved in session for display
-    structured_timetable = session.get('structured_timetable')  # Get structured timetable if available
+    files = session.get('drive_files')
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
-        authorized='credentials' in session and session['credentials'] is not None,
-        structured=structured_timetable  # Pass structured_timetable to the template
+        authorized='credentials' in session and session['credentials'] is not None
     )
 
 
@@ -959,89 +932,63 @@ def fetch_drive_files():
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
 
-        creds = Credentials(
-            token=creds_dict.get('token'),
-            refresh_token=creds_dict.get('refresh_token'),
-            token_uri=creds_dict.get('token_uri'),
-            client_id=creds_dict.get('client_id'),
-            client_secret=creds_dict.get('client_secret'),
-            scopes=creds_dict.get('scopes')
-        )
-
-        # Get Drive service and folder ID
+        creds = Credentials(**creds_dict)
         drive_service, soc_folder_id = get_drive_service_and_folder(creds)
 
-    all_timetables = []
-    seen_files = {}
-    page_token = None
-    total_files_read = 0
+        page_token = None
+        all_files = []
 
-    while True:
-        response = drive_service.files().list(
-            q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
-            spaces='drive',
-            fields='nextPageToken, files(id, name, webViewLink)',
-            pageToken=page_token
-        ).execute()
+        while True:
+            response = drive_service.files().list(
+                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+                spaces='drive',
+                fields='nextPageToken, files(id, name, webViewLink)',
+                pageToken=page_token
+            ).execute()
 
-        files_in_page = response.get('files', [])
-        total_files_read += len(files_in_page)
+            all_files.extend(response.get('files', []))
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
 
-        for file in files_in_page:
-            base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-            if not base_name:
-                continue
+        session['drive_files'] = all_files
 
-            file_id = file['id']
-            file_content = drive_service.files().get_media(fileId=file_id).execute()
+    except Exception as e:
+        flash(f"Error fetching files from Google Drive: {e}", 'error')
+        app.logger.error(f"Error fetching files from Google Drive: {e}")
+        return redirect(url_for('admin_manageTimetable'))
 
-            reader = PdfReader(BytesIO(file_content))
-            text = ""
-            for page in reader.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text + " "
-
-            structured_timetable = parse_pdf_text(text)
-            all_timetables.append(structured_timetable)
-
-            if base_name not in seen_files:
-                seen_files[base_name] = {
-                    'file': file,
-                    'timestamp': timestamp,
-                    'has_timestamp': bool(timestamp),
-                    'structured_timetable': structured_timetable
-                }
-            else:
-                current = seen_files[base_name]
-                if not current['has_timestamp'] and timestamp:
-                    seen_files[base_name] = {
-                        'file': file,
-                        'timestamp': timestamp,
-                        'has_timestamp': True,
-                        'structured_timetable': structured_timetable
-                    }
-                elif current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
-                    seen_files[base_name] = {
-                        'file': file,
-                        'timestamp': timestamp,
-                        'has_timestamp': True,
-                        'structured_timetable': structured_timetable
-                    }
-
-        page_token = response.get('nextPageToken')
-        if not page_token:
-            break
-
-    final_files = [file_data['file'] for file_data in seen_files.values()]
-    session['drive_files'] = final_files
-    session['structured_timetables'] = all_timetables  # store all parsed timetables
-
-    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
+    flash(f"Fetched {len(all_files)} PDF files from Drive.", 'success')
     return redirect(url_for('admin_manageTimetable'))
 
 
+@app.route('/admin/preview_timetable/<file_id>')
+def preview_timetable(file_id):
+    """Fetch and parse a single PDF only when preview is clicked."""
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        return jsonify({"error": "No credentials found"}), 401
+
+    try:
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)
+
+        creds = Credentials(**creds_dict)
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        file_content = drive_service.files().get_media(fileId=file_id).execute()
+
+        reader = PdfReader(BytesIO(file_content))
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + " "
+
+        structured_timetable = parse_pdf_text(text)
+        return jsonify(structured_timetable)
+
+    except Exception as e:
+        app.logger.error(f"Error previewing timetable: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/admin/authorize')
@@ -1086,10 +1033,6 @@ def oauth2callback():
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
-    
-
-
-
 
 
 
