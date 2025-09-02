@@ -13,6 +13,7 @@ import os
 import json
 from PyPDF2 import PdfReader
 import re
+from celery import Celery
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -940,21 +941,17 @@ def parse_pdf_text(text):
     return structured
 
 
-@app.route('/admin/manageTimetable')
-def admin_manageTimetable():
-    files = session.get('drive_files')  # Get files saved in session for display
-    structured_timetable = session.get('structured_timetable')  # Get structured timetable if available
-    processing_status = session.get('processing_status', {})  # Get processing status
-    
-    return render_template(
-        'admin/adminManageTimetable.html',
-        files=files,
-        active_tab='admin_manageTimetabletab',
-        authorized='credentials' in session and session['credentials'] is not None,
-        structured=structured_timetable,  # Pass structured_timetable to the template
-        processing_status=processing_status  # Pass processing status
+# Setup Celery
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        backend='redis://localhost:6379/0',
+        broker='redis://localhost:6379/0'
     )
+    celery.conf.update(app.config)
+    return celery
 
+celery = make_celery(app)
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -999,99 +996,74 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        total_files = len(all_files)
-        session['processing_status'] = {
-            'total': total_files,
-            'processed': 0,
-            'current_file': '',
-            'is_processing': True
-        }
-        
-        # Process files one by one
-        for i, file in enumerate(all_files):
-            session['processing_status'] = {
-                'total': total_files,
-                'processed': i,
-                'current_file': file['name'],
-                'is_processing': True
-            }
-            
-            app.logger.info(f"Processing file {i+1}/{total_files}: {file['name']}")
-            
-            base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-            app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
+        # Start background task to process PDFs
+        process_files.delay(all_files)
 
-            if not base_name:
-                continue
-
-            try:
-                # Fetch the PDF file content from Google Drive
-                file_id = file['id']
-                file_content = drive_service.files().get_media(fileId=file_id).execute()
-
-                # Read the PDF file content using PyPDF2
-                reader = PdfReader(BytesIO(file_content))
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text() + " "
-
-                # Now parse the extracted text
-                structured_timetable = parse_pdf_text(text)
-
-                if base_name not in seen_files:
-                    seen_files[base_name] = {
-                        'file': file,
-                        'timestamp': timestamp,
-                        'has_timestamp': bool(timestamp),
-                        'structured_timetable': structured_timetable
-                    }
-                else:
-                    current = seen_files[base_name]
-                    if not current['has_timestamp'] and timestamp:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True,
-                            'structured_timetable': structured_timetable
-                        }
-                    elif current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True,
-                            'structured_timetable': structured_timetable
-                        }
-                        
-            except Exception as e:
-                app.logger.error(f"Error processing file {file['name']}: {e}")
-                continue
-
-        final_files = [file_data['file'] for file_data in seen_files.values()]
-        session['drive_files'] = final_files
-
-        # Store the structured timetable from the last processed file
-        if seen_files:
-            last_file_data = list(seen_files.values())[-1]
-            session['structured_timetable'] = last_file_data['structured_timetable']
-
-        # Clear processing status
-        session['processing_status'] = {
-            'total': total_files,
-            'processed': total_files,
-            'current_file': '',
-            'is_processing': False
-        }
+        flash("Files are being processed in the background.", 'success')
+        return redirect(url_for('admin_manageTimetable'))
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
-        app.logger.error(f"Error fetching files from Google Drive: {e}")
-        # Clear processing status on error
-        session['processing_status'] = {'is_processing': False}
         return redirect(url_for('admin_manageTimetable'))
 
-    flash(f"Total files read from Drive: {total_files}. After filtering, files count: {len(final_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files}, filtered files kept: {len(final_files)}")
-    return redirect(url_for('admin_manageTimetable'))
+
+@celery.task
+def process_files(files):
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        raise Exception("No credentials found in session for file processing")
+
+    try:
+        creds = Credentials(
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
+        )
+        
+        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
+
+        structured_data = []
+        for file in files:
+            file_id = file['id']
+            file_content = drive_service.files().get_media(fileId=file_id).execute()
+
+            # Read PDF content
+            reader = PdfReader(BytesIO(file_content))
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + " "
+
+            # Parse the text
+            structured_timetable = parse_pdf_text(text)
+            structured_data.append({
+                'file': file,
+                'structured_timetable': structured_timetable
+            })
+
+        # Store the processed data in session or a database
+        session['structured_timetables'] = structured_data
+
+        app.logger.info("Finished processing files.")
+
+    except Exception as e:
+        app.logger.error(f"Error processing files: {e}")
+
+
+@app.route('/admin/manageTimetable')
+def admin_manageTimetable():
+    files = session.get('drive_files')  # Get files saved in session for display
+    structured_timetables = session.get('structured_timetables', [])  # Get structured timetables
+    
+    return render_template(
+        'admin/adminManageTimetable.html',
+        files=files,
+        active_tab='admin_manageTimetabletab',
+        authorized='credentials' in session and session['credentials'] is not None,
+        structured_timetables=structured_timetables,  # Pass all structured timetables
+    )
 
 
 @app.route('/admin/check_processing_status')
