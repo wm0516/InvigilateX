@@ -766,8 +766,6 @@ def get_oauth_flow(state=None):
     """
     Creates and returns an OAuth2 flow based on whether we have a state or not.
     """
-    from google_auth_oauthlib.flow import Flow
-
     try:
         flow = Flow.from_client_secrets_file(
             GOOGLE_CLIENT_SECRETS_FILE,
