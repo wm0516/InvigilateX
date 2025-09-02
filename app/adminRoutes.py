@@ -948,8 +948,8 @@ def admin_manageTimetable():
     selected_lecturer = request.args.get('lecturer')  # Get the selected lecturer from the URL parameters
 
     # Extract unique lecturer names from timetable_data
-    lecturers = sorted(set(row.lecturerName for row in timetable_data))
-
+    lecturers = sorted(set(row.lecturerName for row in timetable_data))  # Ensure uniqueness
+    
     # Filter the timetable data based on the selected lecturer
     if selected_lecturer:
         filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer]
@@ -965,6 +965,7 @@ def admin_manageTimetable():
         selected_lecturer=selected_lecturer,  # Pass the selected lecturer to the template
         lecturers=lecturers  # Pass the list of unique lecturers
     )
+
 
 
 

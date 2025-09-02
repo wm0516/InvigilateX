@@ -100,7 +100,7 @@
                             {% if class_day == day and time >= start_time and time < end_time %}
                                 <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
                                     <strong>{{ row.lecturerName }}</strong><br>
-                                    {{ row.classType }}<br>
+                                    <strong>[{{ row.classType }}]</strong><br>
                                     {{ row.courseName }}<br>
                                     Room: {{ row.classRoom }}
                                 </div>

@@ -272,20 +272,22 @@ html, body {
     background-color: #f5f7fa;
 }
 
-
 .filter-container {
     margin-bottom: 20px;
+    display: flex;
+    align-items: center; /* Ensures vertical alignment */
 }
 
 .filter-container select,
 .filter-container button {
     padding: 5px;
-    margin: 5px;
+    margin-right: 10px; /* Adjust space between elements */
     font-size: 14px;
 }
 
-
-
+.filter-container label {
+    margin-right: 10px; /* Adjust space between label and select */
+}
 
 
 
