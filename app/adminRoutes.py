@@ -875,13 +875,9 @@ def parse_activity(line):
 def parse_pdf_text(text):
     structured = None
 
-    # Join broken words split by newline (with optional backslash before newline)
-    text = re.sub(r'(\w)\\?\n(\w)', r'\1\2', text)
-    # Replace remaining newlines (or backslash+newline) with space to separate phrases
-    text = re.sub(r'\\?\n', ' ', text)
-    # Clean up multiple spaces if any
-    text = re.sub(r'\s+', ' ', text)
-    text = text.strip()
+    # Remove ALL whitespace
+    text = re.sub(r"\s+", "", text)
+    text = text.upper()
 
     # --- Step 1: Extract title ---
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
@@ -1029,48 +1025,8 @@ def fetch_drive_files():
     return redirect(url_for('admin_manageTimetable'))
 
 
-@app.route('/admin/preview_timetable/<file_id>')
-def preview_timetable(file_id):
-    creds_dict = session.get('credentials')
-    if not creds_dict:
-        return jsonify({"error": "No credentials found"}), 401
-
-    try:
-        if isinstance(creds_dict, str):
-            creds_dict = json.loads(creds_dict)
-
-        creds = Credentials(
-            token=creds_dict.get('token'),
-            refresh_token=creds_dict.get('refresh_token'),
-            token_uri=creds_dict.get('token_uri'),
-            client_id=creds_dict.get('client_id'),
-            client_secret=creds_dict.get('client_secret'),
-            scopes=creds_dict.get('scopes')
-        )
-
-        drive_service = build('drive', 'v3', credentials=creds)
-        file_content = drive_service.files().get_media(fileId=file_id).execute()
-
-        reader = PdfReader(BytesIO(file_content))
-        text = ""
-        for page in reader.pages:
-            extracted = page.extract_text()
-            if extracted:
-                text += extracted + " "
-
-        structured_timetable = parse_pdf_text(text)
-        return jsonify(structured_timetable, {
-            "raw_text": text.strip(),
-            "cleaned": parse_pdf_text(text)
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
-
-
-'''
 @app.route('/admin/preview_timetable/<file_id>')
 def preview_timetable(file_id):
     creds_dict = session.get('credentials')
@@ -1103,7 +1059,6 @@ def preview_timetable(file_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-'''
 
 
 @app.route('/admin/authorize')
