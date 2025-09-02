@@ -875,9 +875,13 @@ def parse_activity(line):
 def parse_pdf_text(text):
     structured = None
 
-    # Remove \n and combine
-    text = text.replace('\n', ' ')
-    text = text.upper()
+    # Join broken words split by newline (with optional backslash before newline)
+    text = re.sub(r'(\w)\\?\n(\w)', r'\1\2', text)
+    # Replace remaining newlines (or backslash+newline) with space to separate phrases
+    text = re.sub(r'\\?\n', ' ', text)
+    # Clean up multiple spaces if any
+    text = re.sub(r'\s+', ' ', text)
+    text = text.strip()
 
     # --- Step 1: Extract title ---
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
