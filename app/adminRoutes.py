@@ -874,7 +874,7 @@ def parse_activity(line):
 
 def parse_pdf_text(text):
     structured = None
-    
+
     # Remove ALL whitespace
     text = re.sub(r"\s+", "", text)
     text = text.upper()
@@ -971,83 +971,74 @@ def fetch_drive_files():
         # Get Drive service and folder ID
         drive_service, soc_folder_id = get_drive_service_and_folder(creds)
 
-        seen_files = {}
-        page_token = None
-        total_files_read = 0
-        structured_timetable = None  # Initialize structured_timetable
+    all_timetables = []
+    seen_files = {}
+    page_token = None
+    total_files_read = 0
 
-        while True:
-            response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
-                spaces='drive',
-                fields='nextPageToken, files(id, name, webViewLink)',
-                pageToken=page_token
-            ).execute()
+    while True:
+        response = drive_service.files().list(
+            q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+            spaces='drive',
+            fields='nextPageToken, files(id, name, webViewLink)',
+            pageToken=page_token
+        ).execute()
 
-            files_in_page = response.get('files', [])
-            total_files_read += len(files_in_page)
+        files_in_page = response.get('files', [])
+        total_files_read += len(files_in_page)
 
-            for file in files_in_page:
-                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+        for file in files_in_page:
+            base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+            if not base_name:
+                continue
 
-                if not base_name:
-                    continue
+            file_id = file['id']
+            file_content = drive_service.files().get_media(fileId=file_id).execute()
 
-                # Fetch the PDF file content from Google Drive
-                file_id = file['id']
-                file_content = drive_service.files().get_media(fileId=file_id).execute()
+            reader = PdfReader(BytesIO(file_content))
+            text = ""
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + " "
 
-                # Read the PDF file content using PyPDF2
-                reader = PdfReader(BytesIO(file_content))
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text() + " "
+            structured_timetable = parse_pdf_text(text)
+            all_timetables.append(structured_timetable)
 
-                # Now parse the extracted text
-                structured_timetable = parse_pdf_text(text)
-
-                if base_name not in seen_files:
+            if base_name not in seen_files:
+                seen_files[base_name] = {
+                    'file': file,
+                    'timestamp': timestamp,
+                    'has_timestamp': bool(timestamp),
+                    'structured_timetable': structured_timetable
+                }
+            else:
+                current = seen_files[base_name]
+                if not current['has_timestamp'] and timestamp:
                     seen_files[base_name] = {
                         'file': file,
                         'timestamp': timestamp,
-                        'has_timestamp': bool(timestamp),
+                        'has_timestamp': True,
                         'structured_timetable': structured_timetable
                     }
-                else:
-                    current = seen_files[base_name]
-                    if not current['has_timestamp'] and timestamp:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True,
-                            'structured_timetable': structured_timetable
-                        }
-                    elif current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True,
-                            'structured_timetable': structured_timetable
-                        }
+                elif current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
+                    seen_files[base_name] = {
+                        'file': file,
+                        'timestamp': timestamp,
+                        'has_timestamp': True,
+                        'structured_timetable': structured_timetable
+                    }
 
-            page_token = response.get('nextPageToken')
-            if not page_token:
-                break
+        page_token = response.get('nextPageToken')
+        if not page_token:
+            break
 
-        final_files = [file_data['file'] for file_data in seen_files.values()]
-        session['drive_files'] = final_files
-
-        # Store the structured timetable in the session
-        session['structured_timetable'] = structured_timetable
-
-    except Exception as e:
-        flash(f"Error fetching files from Google Drive: {e}", 'error')
-        app.logger.error(f"Error fetching files from Google Drive: {e}")
-        return redirect(url_for('admin_manageTimetable'))
+    final_files = [file_data['file'] for file_data in seen_files.values()]
+    session['drive_files'] = final_files
+    session['structured_timetables'] = all_timetables  # store all parsed timetables
 
     flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
-    return redirect(url_for('admin_manageTimetable'))
+
 
 
 
