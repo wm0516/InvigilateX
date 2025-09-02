@@ -937,7 +937,12 @@ def parse_pdf_text(text):
 
 @app.route('/admin/manageTimetable')
 def admin_manageTimetable():
-    timetable_data = Timetable.query.all()
+    timetable_data = Timetable.query.group_by(
+        Timetable.lecturerName,
+        Timetable.courseName,
+        Timetable.classRoom,
+        Timetable.classType
+    ).all()
     files = session.get('drive_files')  # Get files saved in session for display
     return render_template(
         'admin/adminManageTimetable.html',
