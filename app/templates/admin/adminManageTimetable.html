@@ -44,12 +44,10 @@
 
     <br><br>
     {% if structured %}
-        {% set days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
-        
-        {% for day in days_of_week %}
+        {% for day, activities in structured.days.items() %}
             <h4>{{ day }}</h4>
             <div class="menu-grid">
-                {% for act in structured.days[day] %}
+                {% for act in activities %}
                     <div class="activity-card">
                         <b>Lecturer Name:   </b> {{ structured.lecturer }} <br>
                         <b>Session Type:    </b> {{ act.class_type }} <br>
