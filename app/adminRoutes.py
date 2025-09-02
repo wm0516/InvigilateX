@@ -16,8 +16,6 @@ import re
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from collections import OrderedDict
-
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -1053,21 +1051,17 @@ def preview_timetable(file_id):
         reader = PdfReader(BytesIO(file_content))
         text = ""
         for page in reader.pages:
-            text += page.extract_text() + " "
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + "\n"
 
-        structured_timetable = parse_pdf_text(text)
-
-        # Reorder keys using OrderedDict
-        ordered_result = OrderedDict()
-        ordered_result["lecturer"] = structured_timetable.get("lecturer")
-        ordered_result["timerow"] = structured_timetable.get("timerow")
-        ordered_result["title"] = structured_timetable.get("title")
-        ordered_result["days"] = structured_timetable.get("days")
-
-        return jsonify(ordered_result)
+        # Return raw extracted text
+        return jsonify({"raw_text": text.strip()})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
 
 
 @app.route('/admin/authorize')
