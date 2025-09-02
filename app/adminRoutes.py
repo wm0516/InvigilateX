@@ -873,7 +873,6 @@ def parse_activity(line):
 
 
 def parse_pdf_text(text):
-    structured = None
 
     # Remove ALL whitespace
     text = re.sub(r"\s+", "", text)
@@ -1058,8 +1057,6 @@ def preview_timetable(file_id):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 
 @app.route('/admin/authorize')
