@@ -23,27 +23,33 @@
             <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
                 Extract & Save All Timetables to Database
             </a>
-            <br><br><br>
+            <br><br>
 
-            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <!-- Search Box -->
+            <input type="text" id="fileSearch" placeholder="Search files..." class="form-control mb-3" onkeyup="filterFiles()">
+
+            <!-- Files Grid -->
+            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr); gap: 10px;">
                 {% for file in files %}
                     <div>
-                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                        <a href="{{ file.webViewLink }}" target="_blank">
-                            {{ loop.index }}. {{ file.name }}
-                        </a>
+                        <button type="button" class="btn btn-sm btn-info mb-1" onclick="previewTimetable('{{ file.id }}')" aria-label="Preview timetable {{ file.name }}">
+                            Preview
+                        </button>
+                        <br>
+                        <a href="{{ file.webViewLink }}" target="_blank">{{ loop.index }}. {{ file.name }}</a>
                     </div>
                 {% endfor %}
             </div>
-            <br><br><br>
+            <br>
 
-            <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+            <!-- Preview Area -->
+            <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%; border-radius:5px;">
                 <h4>Preview Result</h4>
                 <pre id="previewContent">Click a preview button to load timetable...</pre>
             </div>
         {% endif %}
 
-        <br><br>
+        <br>
         {% if get_flashed_messages(with_categories=true) %}
             {% for category, message in get_flashed_messages(with_categories=true) %}
                 <div class="alert alert-{{ category }}">
@@ -54,75 +60,94 @@
         <br>
     </form>
 
-    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00",
-                        "14:00","15:00","16:00","17:00","18:00","19:00",
-                        "20:00","21:00","22:00","23:00"] %}
+    {# 30-minute time slots #}
+    {% set time_slots = [
+        "07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30",
+        "12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30",
+        "17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30","21:00","21:30",
+        "22:00","22:30","23:00"
+    ] %}
     {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+    {% set current_day = current_day if current_day else "" %}
 
-    <div class="user-table-container">
-        <table border="1" style="border-collapse: collapse; text-align: center; width: 100%;">
-            <thead>
-                <tr>
-                    <th>Day / Time</th>
-                    {% for slot in time_slots %}
-                        <th>{{ slot }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in week_days %}
-                <tr>
-                    <td><b>{{ day }}</b></td>
-                    {% set skip = 0 %}
-                    {% for slot in time_slots %}
-                        {% if skip > 0 %}
-                            {% set skip = skip - 1 %}
-                            {# skip this slot because it's covered by a colspan #}
-                        {% else %}
-                            {% set found = false %}
-                            {% for row in timetable_data %}
-                                {% if row.classDay == day and row.classTime.startswith(slot) %}
-                                    {% set start, end = row.classTime.split('-') %}
-                                    {% set span = (end[:2]|int) - (start[:2]|int) %}
-                                    <td colspan="{{ span }}" style="background:#d9edf7; padding:5px; border-radius:4px;">
-                                        <b>{{ row.courseCode }}</b> ({{ row.classType }})<br>
-                                        Sec: {{ row.courseSection }}<br>
-                                        Room: {{ row.classRoom }}<br>
-                                        <i>{{ row.classTime }}</i>
-                                    </td>
-                                    {% set skip = span - 1 %}
-                                    {% set found = true %}
-                                    {% break %}
+    <div class="user-table-container mt-4">
+        {% if timetable_data %}
+            <table border="1" style="border-collapse: collapse; text-align: center; width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Day / Time</th>
+                        {% for slot in time_slots %}
+                            <th>{{ slot }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in week_days %}
+                        <tr {% if day == current_day %}style="background-color:#ffffcc;"{% endif %}>
+                            <td><b>{{ day }}</b></td>
+                            {% set skip = 0 %}
+                            {% for slot in time_slots %}
+                                {% if skip > 0 %}
+                                    {% set skip = skip - 1 %}
+                                    {% continue %}
+                                {% endif %}
+
+                                {% set found = false %}
+                                {% for row in timetable_data %}
+                                    {% if row.classDay == day and row.classTime.startswith(slot) %}
+                                        {% set start, end = row.classTime.split('-') %}
+                                        {% set start_h, start_m = start.split(':') %}
+                                        {% set end_h, end_m = end.split(':') %}
+                                        {% set start_total = (start_h|int * 60) + (start_m|int) %}
+                                        {% set end_total = (end_h|int * 60) + (end_m|int) %}
+                                        {% set span = ((end_total - start_total) // 30) %}
+                                        <td colspan="{{ span }}" style="background:#d9edf7; padding:5px; border-radius:4px;">
+                                            <b>{{ row.courseCode }}</b> ({{ row.classType }})<br>
+                                            Sec: {{ row.courseSection }}<br>
+                                            Room: {{ row.classRoom }}<br>
+                                            <i>{{ row.classTime }}</i>
+                                        </td>
+                                        {% set skip = span - 1 %}
+                                        {% set found = true %}
+                                        {% break %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% if not found %}
+                                    <td></td>
                                 {% endif %}
                             {% endfor %}
-                            {% if not found %}
-                                <td></td>
-                            {% endif %}
-                        {% endif %}
+                        </tr>
                     {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        {% else %}
+            <p class="alert alert-warning mt-3">No timetable data available. Please extract from the files above.</p>
+        {% endif %}
     </div>
-
-
-
 </div>
 
-
+<!-- JavaScript Section -->
 <script>
 function previewTimetable(fileId) {
-    document.getElementById("previewContent").textContent = "Loading...";
+    const preview = document.getElementById("previewContent");
+    preview.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
     fetch(`/admin/preview_timetable/${fileId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById("previewContent").textContent = JSON.stringify(data, null, 2);
+            preview.textContent = JSON.stringify(data, null, 2);
         })
         .catch(err => {
-            document.getElementById("previewContent").textContent = "Error: " + err;
+            preview.textContent = "Error: " + err;
         });
 }
-</script>
 
+function filterFiles() {
+    const input = document.getElementById("fileSearch").value.toLowerCase();
+    const gridItems = document.querySelectorAll(".menu-grid div");
+    gridItems.forEach(div => {
+        const text = div.innerText.toLowerCase();
+        div.style.display = text.includes(input) ? "" : "none";
+    });
+}
+</script>
 {% endblock %}
