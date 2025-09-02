@@ -1056,13 +1056,17 @@ def preview_timetable(file_id):
         for page in reader.pages:
             extracted = page.extract_text()
             if extracted:
-                text += extracted + "\n"
+                text += extracted + " "
 
-        # Return raw extracted text
-        return jsonify({"raw_text": text.strip()})
+        structured_timetable = parse_pdf_text(text)
+        return jsonify(structured_timetable, {
+            "raw_text": text.strip(),
+            "cleaned": parse_pdf_text(text)
+        })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 
