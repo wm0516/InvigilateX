@@ -1038,7 +1038,8 @@ def fetch_drive_files():
     session['structured_timetables'] = all_timetables  # store all parsed timetables
 
     flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
-
+    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(final_files)}")
+    return redirect(url_for('admin_manageTimetable'))
 
 
 
