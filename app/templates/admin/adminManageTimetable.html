@@ -43,7 +43,6 @@
             </div>
         {% endif %}
 
-        
         {% if get_flashed_messages(with_categories=true) %}
             {% for category, message in get_flashed_messages(with_categories=true) %}
                 <br><br>    
@@ -55,11 +54,26 @@
         <br>
     </form>
 
-
     <br><br>
     <h2>Timetable</h2>
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
     {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+
+    <!-- Filter Section -->
+    <div class="filter-container">
+        <form method="GET" action="">
+            <label for="lecturer">Select Lecturer:</label>
+            <select name="lecturer" id="lecturer">
+                <option value="">All Lecturers</option>
+                {% for row in timetable_data %}
+                    <option value="{{ row.lecturerName }}" {% if selected_lecturer == row.lecturerName %}selected{% endif %}>
+                        {{ row.lecturerName }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit">Filter</button>
+        </form>
+    </div>
 
     <!-- Timetable Grid -->
     <div class="user-table-container">
@@ -76,22 +90,23 @@
                 {% for day in week_days %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-                        {% for time in time_slots %}
-                        <td>
-                            {% for row in timetable_data %}
-                                {% set class_day = row.classDay.upper() %}
-                                {% set class_time = row.classTime %}
-                                {% set start_time = class_time.split('-')[0] %}
-                                {% set end_time = class_time.split('-')[1] %}
-                                {% if class_day == day and time >= start_time and time < end_time %}
-                                    <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                        <strong>{{ row.lecturerName }}</strong><br>
-                                        {{ row.courseName }}<br>
-                                        Room: {{ row.classRoom }}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </td>
+                    {% for time in time_slots %}
+                    <td>
+                        {% for row in timetable_data %}
+                            {% set class_day = row.classDay.upper() %}
+                            {% set class_time = row.classTime %}
+                            {% set start_time = class_time.split('-')[0] %}
+                            {% set end_time = class_time.split('-')[1] %}
+                            {% if class_day == day and time >= start_time and time < end_time %}
+                                <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                    <strong>{{ row.lecturerName }}</strong><br>
+                                    {{ row.classType }}<br>
+                                    {{ row.courseName }}<br>
+                                    Room: {{ row.classRoom }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -99,7 +114,6 @@
         </table>
     </div>
 </div>
-
 
 <script>
 function previewTimetable(fileId) {

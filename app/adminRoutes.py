@@ -935,7 +935,7 @@ def parse_pdf_text(text):
     return structured
 
 
-@app.route('/admin/manageTimetable')
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     timetable_data = Timetable.query.group_by(
         Timetable.lecturerName,
@@ -944,13 +944,24 @@ def admin_manageTimetable():
         Timetable.classType
     ).all()
     files = session.get('drive_files')  # Get files saved in session for display
+    
+    selected_lecturer = request.args.get('lecturer')  # Get the selected lecturer from the URL parameters
+
+    # Filter the timetable data based on the selected lecturer
+    if selected_lecturer:
+        filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer]
+    else:
+        filtered_data = timetable_data  # No filter, show all data
+
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None,
-        timetable_data=timetable_data
+        timetable_data=filtered_data,  # Use filtered data here
+        selected_lecturer=selected_lecturer  # Pass the selected lecturer to the template
     )
+
 
 
 @app.route('/admin/fetch_drive_files')
