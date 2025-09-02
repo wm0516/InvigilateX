@@ -1106,7 +1106,97 @@ def oauth2callback():
         return redirect(url_for('admin_manageTimetable'))
     
 
+def save_timetable_to_db(structured, file):
+    lecturer = structured.get("lecturer")
 
+    # 🔹 Step 1: Delete old records for this lecturer (from same file)
+    Timetable.query.filter_by(lecturerName=lecturer).delete()
+
+    # 🔹 Step 2: Insert new rows
+    for day, activities in structured["days"].items():
+        for act in activities:
+            if act.get("sections"):
+                for sec in act["sections"]:
+                    row = Timetable(
+                        lecturerName=lecturer,
+                        classType=act.get("class_type"),
+                        classDay=day,
+                        classTime=act.get("time"),
+                        classRoom=act.get("room"),
+                        courseName=act.get("course"),
+                        courseIntake=sec.get("intake"),
+                        courseCode=sec.get("course_code"),
+                        courseSection=sec.get("section"),
+                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        classWeekDate=act.get("weeks_date"),
+                    )
+                    db.session.add(row)
+            else:
+                row = Timetable(
+                    lecturerName=lecturer,
+                    classType=act.get("class_type"),
+                    classDay=day,
+                    classTime=act.get("time"),
+                    classRoom=act.get("room"),
+                    courseName=act.get("course"),
+                    courseIntake=None,
+                    courseCode=None,
+                    courseSection=None,
+                    classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                    classWeekDate=act.get("weeks_date"),
+                )
+                db.session.add(row)
+
+    db.session.commit()
+
+
+@app.route('/admin/extract_all')
+def extract_all():
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        flash("No credentials found in session. Please authenticate first.", 'error')
+        return redirect(url_for('authorize'))
+
+    try:
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)
+
+        creds = Credentials(
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
+        )
+
+        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
+
+        files = session.get('drive_files', [])
+        if not files:
+            flash("No files available. Please fetch files first.", 'error')
+            return redirect(url_for('fetch_drive_files'))
+
+        inserted_count = 0
+        for file in files:
+            file_content = drive_service.files().get_media(fileId=file['id']).execute()
+            reader = PdfReader(BytesIO(file_content))
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + " "
+
+            structured = parse_pdf_text(text)
+
+            save_timetable_to_db(structured, file)
+            inserted_count += 1
+
+        flash(f"Extracted and saved {inserted_count} timetables into database.", 'success')
+        return redirect(url_for('admin_manageTimetable'))
+
+    except Exception as e:
+        flash(f"Error extracting all timetables: {e}", 'error')
+        app.logger.error(f"Error extracting all timetables: {e}")
+        return redirect(url_for('admin_manageTimetable'))
 
 
 

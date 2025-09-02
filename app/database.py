@@ -237,26 +237,41 @@ class InvigilatorAttendance(db.Model):
 
 
 # Need Double Check, Haven't Record In Database
-class LecturerTimetable(db.Model):
-    __tablename__ = 'LecturerTimetable'
+class Timetable(db.Model):
+    __tablename__ = 'Timetable'
     timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)   
-    #lecturerId = db.Column(db.String(20), foreign_key=True)
-    lecturerMon = db.Column(db.String(255), nullable=False)
-    lecturerTues = db.Column(db.String(255), nullable=False) 
-    lecturerWed = db.Column(db.String(255), nullable=False)
-    lecturerThurs = db.Column(db.String(255), nullable=False)
-    lecturerFri = db.Column(db.String(255), nullable=False)
-    '''
-    CREATE TABLE LecturerTimetable (
-        lecturerId VARCHAR(20) NOT NULL,
-        lecturerMon VARCHAR(255) NOT NULL,
-        lecturerTues VARCHAR(255) NOT NULL,
-        lecturerWed VARCHAR(255) NOT NULL,
-        lecturerThurs VARCHAR(255) NOT NULL,
-        lecturerFri VARCHAR(255) NOT NULL,
-        PRIMARY KEY (lecturerId)
-    );
-    '''
+    lecturerName = db.Column(db.String(255), nullable=True)
+    classType = db.Column(db.String(10), nullable=True)
+    classDay = db.Column(db.String(3), nullable=True)
+    classTime = db.Column(db.String(20), nullable=True)
+    classRoom = db.Column(db.String(20), nullable=True)
+    courseName = db.Column(db.String(255), nullable=True)
+    courseIntake = db.Column(db.String(50), nullable=True)
+    courseCode = db.Column(db.String(20), nullable=True)
+    courseSection = db.Column(db.String(20), nullable=True)
+    classWeekRange = db.Column(db.Text, nullable=True)
+    classWeekDate = db.Column(db.Text, nullable=True)
 
 
 
+'''
+CREATE TABLE timetables (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lecturer_name VARCHAR(255),
+    title VARCHAR(255),
+    timerow TEXT,
+    day VARCHAR(10),
+    class_type VARCHAR(50),
+    time VARCHAR(20),
+    course VARCHAR(255),
+    room VARCHAR(255),
+    intake VARCHAR(50),
+    course_code VARCHAR(50),
+    section VARCHAR(50),
+    weeks_range TEXT,
+    weeks_date TEXT,
+    file_id VARCHAR(255),
+    file_name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+'''
