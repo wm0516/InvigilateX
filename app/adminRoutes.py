@@ -937,34 +937,39 @@ def parse_pdf_text(text):
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
+    # 🔹 Query 1: all timetable rows (still grouped to avoid duplicates inside the grid)
     timetable_data = Timetable.query.group_by(
         Timetable.lecturerName,
         Timetable.courseName,
         Timetable.classRoom,
-        Timetable.classType
+        Timetable.classType,
+        Timetable.classDay,
+        Timetable.classTime
     ).all()
-    files = session.get('drive_files')  # Get files saved in session for display
-    
-    selected_lecturer = request.args.get('lecturer')  # Get the selected lecturer from the URL parameters
 
-    # Extract unique lecturer names from timetable_data
-    lecturers = sorted(set(row.lecturerName for row in timetable_data))  # Ensure uniqueness
-    
-    # Filter the timetable data based on the selected lecturer
+    # 🔹 Query 2: distinct lecturer names (only for dropdown)
+    lecturers = db.session.query(Timetable.lecturerName).distinct().all()
+    lecturers = sorted([row[0] for row in lecturers])  # flatten list of tuples
+
+    files = session.get('drive_files')
+    selected_lecturer = request.args.get('lecturer')
+
+    # 🔹 Filter timetable data when lecturer selected
     if selected_lecturer:
         filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer]
     else:
-        filtered_data = timetable_data  # No filter, show all data
+        filtered_data = timetable_data
 
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
         active_tab='admin_manageTimetabletab',
         authorized='credentials' in session and session['credentials'] is not None,
-        timetable_data=filtered_data,  # Use filtered data here
-        selected_lecturer=selected_lecturer,  # Pass the selected lecturer to the template
-        lecturers=lecturers  # Pass the list of unique lecturers
+        timetable_data=filtered_data,
+        selected_lecturer=selected_lecturer,
+        lecturers=lecturers
     )
+
 
 
 
