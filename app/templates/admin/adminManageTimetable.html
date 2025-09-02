@@ -30,6 +30,11 @@
                     </div>
                 {% endfor %}
             </div>
+
+            <div id="previewArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
+                <h4>Preview Result</h4>
+                <pre id="previewContent">Click a preview button to load timetable...</pre>
+            </div>
         {% endif %}
 
         <br><br>
@@ -42,39 +47,6 @@
         {% endif %}
         <br>
     </form>
-
-    <div id="previewArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
-        <h4>Preview Result</h4>
-        <pre id="previewContent">Click a preview button to load timetable...</pre>
-    </div>
-
-    <br><br>
-    {% if structured %}
-        {% for day, activities in structured.days.items() %}
-            <h4>{{ day }}</h4>
-            <div class="menu-grid">
-                {% for act in activities %}
-                    <div class="activity-card">
-                        <b>Lecturer Name:   </b> {{ structured.lecturer }} <br>
-                        <b>Session Type:    </b> {{ act.class_type }} <br>
-                        <b>Time:            </b> {{ act.time }} <br>
-                        <b>Course Name:     </b> {{ act.course }} <br>
-                        <b>Venue:           </b> {{ act.room }} <br>
-                        <b>Weeks Effective: </b> {{ act.weeks_range | join(", ") }} <br>
-                        <b>Date Range:      </b> {{ act.weeks_date }} <br>
-
-                        {% if act.sections %}
-                            <b>Sections:    </b><br>
-                            {% for sec in act.sections %}
-                                {{ sec.intake }} | {{ sec.course_code }} | {{ sec.section }}<br>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-            <hr>
-        {% endfor %}
-    {% endif %}
 </div>
 
 
