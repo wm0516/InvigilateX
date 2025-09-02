@@ -23,15 +23,10 @@
             <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                 {% for file in files %}
                     <div>
+                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
                         <a href="{{ file.webViewLink }}" target="_blank">
                             {{ loop.index }}. {{ file.name }}
                         </a>
-                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                    </div>
-
-                    <div id="previewArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
-                        <h4>Preview Result</h4>
-                        <pre id="previewContent">Click a preview button to load timetable...</pre>
                     </div>
                 {% endfor %}
             </div>
@@ -47,6 +42,11 @@
         {% endif %}
         <br>
     </form>
+
+    <div id="previewArea" style="margin-top:20px; border:1px solid #ccc; padding:10px;">
+        <h4>Preview Result</h4>
+        <pre id="previewContent">Click a preview button to load timetable...</pre>
+    </div>
 
     <br><br>
     {% if structured %}
