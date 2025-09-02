@@ -16,6 +16,7 @@ import re
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from collections import OrderedDict
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -916,7 +917,7 @@ def parse_pdf_text(text):
         "title": title,
         "lecturer": lecturer_name,
         "timerow": timerow,
-        "days": {}
+         "days": OrderedDict((day, []) for day in ["MON", "TUE", "WED", "THU", "FRI"])
     }
     current_day = None
 
@@ -927,7 +928,6 @@ def parse_pdf_text(text):
 
         if line in days:
             current_day = line
-            structured["days"][current_day] = []
         else:
             if current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
                 structured["days"][current_day].append(parse_activity(line))
