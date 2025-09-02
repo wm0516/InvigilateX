@@ -55,25 +55,29 @@
     </form>
 
     <br><br>
-    <h2>Timetable</h2>
+    <div class="profile-frame">
+        <div class="form-left">
+            <h2>Timetable</h2>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="form-right">
+            <form method="get">
+                <label for="lecturer">Select Lecturer:</label>
+                <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                    <option value="">All Lecturers</option>
+                    {% for lecturer in lecturers %}
+                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
     {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
-
-    <!-- Filter Section -->
-
-        <form method="get">
-            <label for="lecturer">Select Lecturer:</label>
-            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
-                <option value="">All Lecturers</option>
-                {% for lecturer in lecturers %}
-                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                        {{ lecturer }}
-                    </option>
-                {% endfor %}
-            </select>
-        </form>
-
-
 
     <!-- Timetable Grid -->
     <div class="user-table-container">
