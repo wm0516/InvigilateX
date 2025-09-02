@@ -62,17 +62,18 @@
     <!-- Filter Section -->
     <div class="filter-container">
         <form method="get">
-        <label for="lecturer">Select Lecturer:</label>
-        <select name="lecturer" id="lecturer" onchange="this.form.submit()">
-            <option value="">All Lecturers</option>
-            {% for lecturer in lecturers %}
-                <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                    {{ lecturer }}
-                </option>
-            {% endfor %}
-        </select>
+            <label for="lecturer">Select Lecturer:</label>
+            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                <option value="">All Lecturers</option>
+                {% for lecturer in lecturers %}
+                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                        {{ lecturer }}
+                    </option>
+                {% endfor %}
+            </select>
         </form>
     </div>
+
 
     <!-- Timetable Grid -->
     <div class="user-table-container">

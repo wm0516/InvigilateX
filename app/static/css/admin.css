@@ -278,18 +278,17 @@ html, body {
     align-items: center; /* Ensures vertical alignment */
 }
 
-.filter-container select,
-.filter-container button {
+.filter-container label {
+    margin-right: 10px; /* Adjust space between label and select */
+    white-space: nowrap; /* Prevents text wrapping */
+}
+
+.filter-container select {
     padding: 5px;
     margin-right: 10px; /* Adjust space between elements */
     font-size: 14px;
+    display: inline-block; /* Ensures select stays inline with label */
 }
-
-.filter-container label {
-    margin-right: 10px; /* Adjust space between label and select */
-}
-    
-
 
 
 
