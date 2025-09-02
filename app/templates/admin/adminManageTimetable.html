@@ -20,6 +20,11 @@
             <br><br>
 
             <h3>PDF Files from SOC Folder:</h3>
+            <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
+                Extract & Save All Timetables to Database
+            </a>
+            <br><br>
+
             <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                 {% for file in files %}
                     <div>
@@ -32,14 +37,10 @@
             </div>
             <br><br><br>
 
-            <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
-                Extract & Save All Timetables to Database
-            </a>
-
             <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
                 <h4>Preview Result</h4>
                 <pre id="previewContent">Click a preview button to load timetable...</pre>
-            </div>
+            </div>x
         {% endif %}
 
         <br><br>
