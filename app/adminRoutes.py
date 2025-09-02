@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, Response
 from app import app
 from .backend import *
 from .database import *
@@ -913,10 +913,10 @@ def parse_pdf_text(text):
 
     # --- Step 5: Build structured JSON ---
     structured = {
-        "days": {},
         "title": title,
         "lecturer": lecturer_name,
-        "timerow": timerow
+        "timerow": timerow,
+        "days": {}
     }
     current_day = None
 
@@ -1032,7 +1032,7 @@ def preview_timetable(file_id):
     creds_dict = session.get('credentials')
     if not creds_dict:
         return jsonify({"error": "No credentials found"}), 401
-
+    
     try:
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
@@ -1055,7 +1055,8 @@ def preview_timetable(file_id):
             text += page.extract_text() + " "
 
         structured_timetable = parse_pdf_text(text)
-        return jsonify(structured_timetable)
+        json_str = json.dumps(structured_timetable, indent=4, sort_keys=False)
+        return Response(json_str, mimetype='application/json')
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
