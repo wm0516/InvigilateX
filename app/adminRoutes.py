@@ -54,7 +54,7 @@ def admin_manageInvigilationReport():
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
-    
+
     # Get all currently assigned dean and hop IDs
     assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
     assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
@@ -108,41 +108,44 @@ def admin_manageDepartment():
 
 
 
-
-
-
-# function for admin to manage venue information (adding, editing, and removing)
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     venue_data = Venue.query.all()
-    venueNumber_text = ''
-    venueFloor_text = ''
-    venueCapacity_text = ''
-    venueStatus_text = ''
 
     if request.method == 'POST':
-        venueNumber_text = request.form.get('venueNumber', '').strip()
+        venueNumber_text = request.form.get('venueNumber', '').strip().upper()
         venueFloor_text = request.form.get('venueFloor', '').strip()
         venueCapacity_text = request.form.get('venueCapacity', '').strip()
         venueStatus_text = request.form.get('venueStatus', '').strip()
 
-        valid, result = check_venue(venueNumber_text, venueCapacity_text)
-        if not valid:
-            flash(result, 'error')
-            return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=venueCapacity_text)
+        if Venue.query.filter_by(venueNumber=venueNumber_text).first():
+            flash("Venue Room Already Exists", 'error')
+        else:
+            try:
+                capacity = int(venueCapacity_text)
+                if capacity < 0:
+                    raise ValueError
+                
+                db.session.add(
+                    Venue(
+                        venueNumber=venueNumber_text,
+                        venueFloor=venueFloor_text,
+                        venueCapacity=capacity,
+                        venueStatus=venueStatus_text
+                    )
+                )
+                db.session.commit()
+                flash("Venue Added", "success")
+                return redirect(url_for('admin_manageVenue'))
+            except ValueError:
+                flash("Capacity must be a non-negative integer", 'error')
 
-        new_venue = Venue(
-            venueNumber=venueNumber_text.upper(),
-            venueFloor=venueFloor_text.upper(),
-            venueCapacity=venueCapacity_text,
-            venueStatus=venueStatus_text.upper()
-        )
-        db.session.add(new_venue)
-        db.session.commit()
-        flash("New Venue Added Successfully", "success")
-        return redirect(url_for('admin_manageVenue'))
+        return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=capacity)
 
     return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
+
+
+
 
 
 # Can move those validation into a function then call again

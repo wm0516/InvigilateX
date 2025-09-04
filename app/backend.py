@@ -199,25 +199,6 @@ def check_course(code, section, hour, students):
 
 
 
-# Admin Validation Function 3: Check Venue [Venue Room Must be Unique in Database, and Capacity Must be Integer]
-def check_venue(roomNumber, capacity):
-    # Check for duplicates
-    existing_roomNumber = Venue.query.filter(Venue.venueNumber == roomNumber).first()
-    if existing_roomNumber:
-        return False, "Venue Room Number Already Registered"
-    
-    try:
-        # Convert to integer
-        capacity = int(capacity)
-    except ValueError:
-        return False, "Capacity must be an integer"
-    
-    if capacity < 0:
-        return False, "Capacity cannot be negative"
-    
-    return True, ""
-    
-
 
 
 def get_available_venues(examDate, startTime, endTime):

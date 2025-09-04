@@ -90,7 +90,7 @@
         <div id="manualSection" class="function-frame" style="width:100%">
             <h4 style="text-align: center;">Manual Data Entry Section</h4>
             <div class="profile-frame">
-                <div class="form-left">
+                <div class="form-left" style="margin: auto;">
                     <label>Exam Start Date & Time</label>
                     <div style="display: flex; gap: 2%;">
                         <input type="date" id="startDate" name="startDate" required>
@@ -114,7 +114,7 @@
                     </select>
                 </div>
 
-                <div class="form-middle">
+                <div class="form-middle" style="margin: auto;">
                     <label>Course/Section</label>
                     <select name="courseSection" id="courseSection" required>
                         <option value="" disabled selected>Select Course Section</option>
@@ -132,7 +132,7 @@
                     <input type="text" id="tutorialLecturer" name="tutorialLecturer" readonly>
                 </div> 
 
-                <div class="form-right">
+                <div class="form-right" style="margin: auto;">
                     <label>Number of Students</label>
                     <input type="number" id="student" name="student" readonly><br>
 
@@ -147,7 +147,7 @@
                     </select><br>
 
                     <label>Number of Invigilators</label>
-                    <input type="number" id="invigilatorNo" name="invigilatorNo" value="{{ invigilatorNo_text }}" min="1" step="1" required><br>
+                    <input type="number" id="invigilatorNo" name="invigilatorNo" value="{{ invigilatorNo_text }}" min="1" step="1" required>    
                 </div>
             </div>
 
