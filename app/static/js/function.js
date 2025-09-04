@@ -193,8 +193,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// Admin Manage Exam Page: Function to track the selected date and display out the day
-// Admin Manage Exam Page: Function to track the selected date, time and display out the day
+// Admin Manage Exam Page(Manual): Function to track the selected date and display out the day
 document.addEventListener("DOMContentLoaded", function() {
     const startDate = document.getElementById("startDate");
     const startTime = document.getElementById("startTime");
@@ -272,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-// Admin Manage Exam Page: Function to Read Selected "Department Code" and related "Course Code" will be displayed out
+// Admin Manage Exam Page(Manual): Function to Read Selected "Department Code" and related "Course Code" will be displayed out
 document.addEventListener("DOMContentLoaded", function() {
     const programCode = document.getElementById('programCode');
     if (!programCode) return; // Stop here if not on this page
@@ -306,7 +305,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-// Admin Manage Exam Page: Function to Read Selected "Course Code Section" and related "Total of Students, Practical and Tutorial Lecturer" will be displayed out
+// Admin Manage Exam Page(Manual): Function to Read Selected "Course Code Section" and related "Total of Students, Practical and Tutorial Lecturer" will be displayed out
 document.addEventListener("DOMContentLoaded", function () {
     const courseSectionEl = document.getElementById('courseSection');
     if (!courseSectionEl) {
@@ -337,7 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-// Admin Manage Course Page: Function to Read Selected "Department Code" and related "Lecturer" will be displayed out
+// Admin Manage Course Page(Manual): Function to Read Selected "Department Code" and related "Lecturer" will be displayed out
 document.addEventListener('DOMContentLoaded', function () {
     const departmentCode = document.getElementById('departmentCode');
     if (!departmentCode) return; // Stop if not on this page
