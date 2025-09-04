@@ -6,7 +6,6 @@ from datetime import  datetime, time
 from io import BytesIO
 import pandas as pd
 from flask_bcrypt import Bcrypt
-from sqlalchemy import func
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os
@@ -21,7 +20,6 @@ from google.oauth2.credentials import Credentials
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
-
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create upload folder if not exist
@@ -31,72 +29,80 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
-# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
-@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
-def admin_manageInvigilationTimetable():
-    attendances = (
+def get_all_attendances():
+    return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .all()
     )
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
 
+# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
+@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+def admin_manageInvigilationTimetable():
+    attendances = get_all_attendances()
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
 
 
 # function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
-    attendances = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .all()
-    )
+    attendances = get_all_attendances()
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
 
 
-# function for admin to manage department information (adding, editing, and removing)
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
-    dean_list = User.query.filter(User.userLevel == 2).all()
-    hop_list = User.query.filter(User.userLevel == 3).all()
-    departmentCode_text = ''
-    departmentName_text = ''
-    deanName = ''
-    hopName = ''
+    dean_list = User.query.filter_by(userLevel=2).all()
+    hop_list = User.query.filter_by(userLevel=3).all()
 
     if request.method == 'POST':
-        form_type = request.form.get('form_type')
+        departmentCode = request.form.get('departmentCode', '').strip().upper()
+        departmentName = request.form.get('departmentName', '').strip().upper()
+        deanId = request.form.get('deanName', '').strip().upper()
+        hopId = request.form.get('hopName', '').strip().upper()
 
-        if form_type == 'announce':
-            return redirect(url_for('admin_manageDepartment'))
+        dept = Department.query.filter_by(departmentCode=departmentCode, departmentName=departmentName).first()
 
+        if dept:
+            updated = False
+            if deanId and not dept.deanId:
+                dept.deanId = deanId
+                updated = True
+            if hopId and not dept.hopId:
+                dept.hopId = hopId
+                updated = True
+            if updated:
+                db.session.commit()
+                flash("Department updated with new Dean and HOP", "success")
+            else:
+                flash("No changes made. Dean and HOP already set.", "error")
         else:
-            departmentCode_text = request.form.get('departmentCode', '').strip()
-            departmentName_text = request.form.get('departmentName', '').strip()
-            deanName = request.form.get('deanName', '').strip()
-            hopName = request.form.get('hopName', '').strip()
+            # Check for conflicts
+            if Department.query.filter_by(departmentCode=departmentCode).first():
+                flash("Department Code already exists.", "error")
+            elif Department.query.filter_by(departmentName=departmentName).first():
+                flash("Department Name already exists.", "error")
+            else:
+                new_dept = Department(
+                    departmentCode=departmentCode, 
+                    departmentName=departmentName,
+                    deanId=deanId if deanId else None,
+                    hopId=hopId if hopId else None
+                    )
+                db.session.add(new_dept)
+                db.session.commit()
+                flash("New Department Added", "success")
 
-            valid, result = check_department(departmentCode_text, departmentName_text)
-            if not valid:
-                flash(result, 'error')
-                return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, 
-                                       dean_list=dean_list, hop_list=hop_list, departmentCode_text=departmentCode_text, departmentName_text=departmentName_text)
-
-            new_department = Department(
-                departmentCode=departmentCode_text.upper(),
-                departmentName=departmentName_text.upper(),
-                deanId=deanName.upper() if deanName else None,
-                hopId=hopName.upper() if hopName else None
-            )
-            db.session.add(new_department)
-            db.session.commit()
-            flash("New Department Added Successfully", "success")
-            return redirect(url_for('admin_manageDepartment'))
+        return redirect(url_for('admin_manageDepartment'))
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
+
+
+
+
+
 
 
 # function for admin to manage venue information (adding, editing, and removing)

@@ -35,13 +35,16 @@ role_map = {
 def email_format(email):
     return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
 
+
 # Basic Validation Function 2: Contact Number Format [Start With 01 and Total Length in Between 10-11]
 def contact_format(contact):
     return bool(re.match(r"^01\d{8,9}$", contact))
 
+
 # Basic Validation Function 3: Password Format [With Min 8-20 Length and Include Special Character]
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
+
 
 # Basic Validation Function 4: Check Unique Contact [Contact Was Unique in Database]
 def check_contact(contact):
@@ -49,14 +52,6 @@ def check_contact(contact):
     if existing_contact:
         return False, "Contact Number Already Registered"
     return True, ""
-
-
-
-
-
-
-
-
 
 
 # FrontPart Validation Function 1: Check Login [Email and Password]
@@ -70,6 +65,7 @@ def check_login(loginEmail, loginPassword):
         return False, "User Role is NotRecognized", None
 
     return True, user.userId, user.userLevel
+
 
 # FrontPart Validation Function 2: Check Access [If Not User Will Show "Unauthorized Access"]
 def role_required(required_role):
@@ -86,6 +82,7 @@ def role_required(required_role):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
 
 # FrontPart Validation Function 3: Check Register [ID, Email, and Contact must be unique]
 def check_register(id, email, contact, password1, password2):
@@ -201,18 +198,6 @@ def check_course(code, section, hour, students):
 
 
 
-# Admin Validation Function 2: Check Department [Department Code and Name Must be Unique in Database]
-def check_department(code, name):
-    # Check for duplicates
-    existing_departmentCode = Department.query.filter(Department.departmentCode == code).first()
-    if existing_departmentCode:
-        return False, "Department Code Already Registered"
-    
-    existing_departmentName = Department.query.filter(Department.departmentName == name).first()
-    if existing_departmentName:
-        return False, "Department Name Already Registered"
-    
-    return True, ""
 
 # Admin Validation Function 3: Check Venue [Venue Room Must be Unique in Database, and Capacity Must be Integer]
 def check_venue(roomNumber, capacity):
