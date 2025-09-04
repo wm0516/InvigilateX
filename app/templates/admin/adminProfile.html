@@ -4,10 +4,7 @@
 <div class="menu-section">
     <h2>Profile</h2>
     <form method="post">
-        <label>Now display out the contact number value, everytime click on the button will show 'Similar Contact Number Update'</label><br>
-        <label>Does allow admin to change their department? Only admin able to change</label><br><br><br>
-
-        <div class="profile-frame">
+        <div>
             <div class="form-left">
                 <label>Full Name as per IC</label>
                 <input type="text" name="username" value="{{ admin_name }}" readonly><br>
@@ -52,7 +49,7 @@
             </div>
         </div>
 
-        <br>
+        <br><br>
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
