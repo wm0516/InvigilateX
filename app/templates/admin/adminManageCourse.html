@@ -64,7 +64,7 @@
                         <div id="courseSelectedFileName" class="file-name-display"></div>
                     </div>
                 </label>
-                <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+                <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;" required>
                 <!-- 🔽 Add this hidden input here -->
                 <input type="hidden" name="form_type" value="upload">
 
@@ -150,7 +150,7 @@
             <!-- 🔽 Add this hidden input here -->
             <input type="hidden" name="form_type" value="manual">
             
-            <br>
+            <br><br>
             {% if courseUploadResult %}
                 <div class="result-message">{{ courseUploadResult }}</div>
             {% elif courseUploadErrors %}
