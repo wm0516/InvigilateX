@@ -54,8 +54,14 @@ def admin_manageInvigilationReport():
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
-    dean_list = User.query.filter_by(userLevel=2).all()
-    hop_list = User.query.filter_by(userLevel=3).all()
+    
+    # Get all currently assigned dean and hop IDs
+    assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
+    assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
+
+    # Exclude those already assigned
+    dean_list = User.query.filter(User.userLevel == 2, ~User.userId.in_(assigned_dean_ids)).all()
+    hop_list = User.query.filter(User.userLevel == 3, ~User.userId.in_(assigned_hop_ids)).all()
 
     if request.method == 'POST':
         departmentCode = request.form.get('departmentCode', '').strip().upper()
@@ -77,7 +83,7 @@ def admin_manageDepartment():
                 db.session.commit()
                 flash("Department updated with new Dean and HOP", "success")
             else:
-                flash("No changes made. Dean and HOP already set.", "error")
+                flash("Department Code or Department Name already exists.", "error")
         else:
             # Check for conflicts
             if Department.query.filter_by(departmentCode=departmentCode).first():
