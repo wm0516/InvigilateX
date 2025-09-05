@@ -357,13 +357,15 @@ def check_profile(id, contact, password1, password2):
     if contact:
         user_record = User.query.filter(User.userId == id).first()
         if not user_record:
-            return False, "User not found"  # avoid None access
+            return False, "User not found"
         
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
         
-        if contact != user_record.userContact and check_contact(contact):
-            return False, "Contact Number Already exists"
+        if contact != user_record.userContact:
+            is_unique, msg = check_contact(contact)
+            if not is_unique:
+                return False, msg
 
     # If any password is entered, both must be present and match
     if password1 or password2:
