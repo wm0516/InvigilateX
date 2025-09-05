@@ -58,8 +58,10 @@
                         <div class="upload-text">
                             Upload a file with an empty first row. Data should start from columns A to H,<br>
                             labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']<br><br><br>
-                            Click to upload or drag and drop with below file format
-                            <button onclick="downloadExcel()">Download Template</button>
+                            Click to upload or drag and drop with below file format<br><br>
+                            <a href="static/excel_template/testCourse.xlsx" download>
+                                <button>Download Excel Template</button>
+                            </a>
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
                         <div id="courseSelectedFileName" class="file-name-display"></div>
