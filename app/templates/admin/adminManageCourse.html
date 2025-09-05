@@ -58,10 +58,7 @@
                         <div class="upload-text">
                             Upload a file with an empty first row. Data should start from columns A to H,<br>
                             labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']<br><br><br>
-                            Click to upload or drag and drop with below file format<br><br>
-                            <a href="static/excel_template/testCourse.xlsx" download>
-                                <button>Download Excel Template</button>
-                            </a>
+                            Click to upload or drag and drop with below file format
                         </div>
                         <div class="file-types">XLSX, XLS, or XLSM</div><br>
                         <div id="courseSelectedFileName" class="file-name-display"></div>
@@ -70,6 +67,10 @@
                 <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
                 <!-- 🔽 Add this hidden input here -->
                 <input type="hidden" name="form_type" value="upload">
+                <br><br>
+                <a href="static/excel_template/testCourse.xlsx" download>
+                    <button>Download Excel Template</button>
+                </a>
 
                 <br><br>
                 {% if courseUploadResult %}
@@ -91,19 +92,6 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            function downloadExcel() {
-                const worksheet = XLSX.utils.aoa_to_sheet([
-                ["Name", "Email", "Age"],
-                ["(Put name here)", "(Put email here)", "(Put age here)"]
-                ]);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
-
-                XLSX.writeFile(workbook, "user_template.xlsx");
-            }
-        </script>
     </form>
 
     <!-- Manual Form -->
