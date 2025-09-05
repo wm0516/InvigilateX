@@ -183,6 +183,7 @@ def admin_profile():
     return render_template(
         'admin/adminProfile.html',
         active_tab='admin_profiletab',
+        admin_data=admin,
         admin_password1_text=admin_password1_text,
         admin_password2_text=admin_password2_text,
         error_message=error_message
