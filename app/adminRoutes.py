@@ -37,6 +37,7 @@ def get_all_attendances():
         .all()
     )
 
+
 # function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
@@ -106,6 +107,40 @@ def admin_manageDepartment():
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
 
 
+# Can move those validation into a function then call again
+@app.route('/admin/profile', methods=['GET', 'POST'])
+def admin_profile():
+    adminId = session.get('user_id')
+    admin = User.query.filter_by(userId=adminId).first()
+    
+    # Pre-fill existing data
+    admin_password1_text = ''
+    admin_password2_text = ''
+    error_message = None
+
+    if request.method == 'POST':
+        admin_contact_text = request.form.get('contact', '').strip()
+        admin_password1_text = request.form.get('password1', '').strip()
+        admin_password2_text = request.form.get('password2', '').strip()
+
+        valid, message = check_profile(adminId, admin_contact_text, admin_password1_text, admin_password2_text)
+        if not valid:
+            flash(message, 'error')
+            return redirect(url_for('admin_profile'))
+
+        if valid and admin:
+            if admin_contact_text:
+                admin.userContact = admin_contact_text
+            if admin_password1_text:
+                hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
+                admin.userPassword = hashed_pw
+
+            db.session.commit()
+            flash("Successfully updated", 'success')
+            return redirect(url_for('admin_profile'))
+
+    return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin.userContact if admin else '', 
+                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text, error_message=error_message)
 
 
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
@@ -148,47 +183,19 @@ def admin_manageVenue():
 
 
 
-# Can move those validation into a function then call again
-@app.route('/admin/profile', methods=['GET', 'POST'])
-def admin_profile():
-    adminId = session.get('user_id')
-    admin = User.query.filter_by(userId=adminId).first()
-    
-    # Pre-fill existing data
-    admin_password1_text = ''
-    admin_password2_text = ''
-    error_message = None
 
-    if request.method == 'POST':
-        admin_contact_text = request.form.get('contact', '').strip()
-        admin_password1_text = request.form.get('password1', '').strip()
-        admin_password2_text = request.form.get('password2', '').strip()
 
-        valid, message = check_profile(adminId, admin_contact_text, admin_password1_text, admin_password2_text)
-        if not valid:
-            flash(message, 'error')
-            return redirect(url_for('admin_profile'))
 
-        if valid and admin:
-            if admin_contact_text:
-                admin.userContact = admin_contact_text
-            if admin_password1_text:
-                hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
-                admin.userPassword = hashed_pw
 
-            db.session.commit()
-            flash("Successfully updated", 'success')
-            return redirect(url_for('admin_profile'))
 
-    return render_template(
-        'admin/adminProfile.html',
-        active_tab='admin_profiletab',
-        admin_data=admin,
-        admin_contact_text=admin.userContact if admin else '',
-        admin_password1_text=admin_password1_text,
-        admin_password2_text=admin_password2_text,
-        error_message=error_message
-    )
+
+
+
+
+
+
+
+
 
 
 # function for handle date from excel file and read it
@@ -708,6 +715,10 @@ def admin_manageExam():
                 return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
+
+
+
+
 
 
 # ===== to get the all lecturers only that under the department search for the manage course page =====
