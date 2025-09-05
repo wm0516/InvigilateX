@@ -183,18 +183,6 @@ def admin_profile():
     return render_template(
         'admin/adminProfile.html',
         active_tab='admin_profiletab',
-        admin_name=admin.userName if admin else '',
-        admin_id=admin.userId if admin else '',
-        admin_email=admin.userEmail if admin else '',
-        admin_department_text=admin.userDepartment if admin else '',
-        admin_gender=admin.userGender if admin else '',
-        admin_role_text={
-            LECTURER: "LECTURER",
-            HOP: "HOP",
-            DEAN: "DEAN",
-            ADMIN: "ADMIN"
-        }.get(admin.userLevel, "Unknown") if admin else '',
-        admin_contact_text=admin.userContact if admin else '',
         admin_password1_text=admin_password1_text,
         admin_password2_text=admin_password2_text,
         error_message=error_message
