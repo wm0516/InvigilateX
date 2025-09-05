@@ -184,6 +184,7 @@ def admin_profile():
         'admin/adminProfile.html',
         active_tab='admin_profiletab',
         admin_data=admin,
+        admin_contact_text=admin.userContact if admin else '',
         admin_password1_text=admin_password1_text,
         admin_password2_text=admin_password2_text,
         error_message=error_message
