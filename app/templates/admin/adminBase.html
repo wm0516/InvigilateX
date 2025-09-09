@@ -72,24 +72,24 @@
             {% block head_title %}{% endblock %}
             {% if show_tabs %}
                 <!-- Top Navigation Tabs -->
-                <div class="tab-container"> 
+                <div class="tab-container">
                     <div class="second-nav">
-                        {% if show_announce_section %}
+                        {% if self.announce_section %}
                             <a href="#announce" class="tab-link active" data-section="announceSection">
                                 <i class="fas fa-envelope"></i>
                                 <span>Notification</span>
                             </a>
                         {% endif %}
-                        {% if show_upload_section %}
+                        {% if self.upload_section %}
                             <a href="#upload" class="tab-link" data-section="uploadSection">
                                 <i class="fas fa-upload"></i>
                                 <span>Upload File</span>
                             </a>
                         {% endif %}
-                        {% if show_manual_section %}
+                        {% if self.manual_section %}
                             <a href="#manual" class="tab-link" data-section="manualSection">
                                 <i class="fas fa-plus"></i>
-                                <span>Manually Insert</span>  
+                                <span>Manually Insert</span>
                             </a>
                         {% endif %}
                     </div>
@@ -110,18 +110,18 @@
                 <br>
 
                 <!-- Tab Content Sections -->
-                {% if show_announce_section %}
+                {% if self.announce_section %}
                     {% block announce_section %}{% endblock %}
                 {% endif %}
-                {% if show_upload_section %}
+                {% if self.upload_section %}
                     {% block upload_section %}{% endblock %}
                 {% endif %}
-                {% if show_manual_section %}
+                {% if self.manual_section %}
                     {% block manual_section %}{% endblock %}
                 {% endif %}
-            <br>    
             {% endif %}
-            
+            <br>
+
             <!-- Main Page-Specific Content -->
             {% block content %}{% endblock %}
         </main>
