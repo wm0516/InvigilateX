@@ -95,21 +95,22 @@
                     </div>
                 </div>
 
+                <!-- Flash Message Section -->
+                {% if uploadResult %}
+                    <div class="result-message">{{ uploadResult }}</div>
+                {% elif uploadErrors %}
+                    <div class="error-message">{{ uploadErrors }}</div>
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                        <div class="alert alert-{{ category }}">
+                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <br>
+
                 <!-- Tab Content Sections -->
                 {% if self.announce_section %}
-                    <!-- Flash Message Section -->
-                    {% if uploadResult %}
-                        <div class="result-message">{{ uploadResult }}</div>
-                    {% elif uploadErrors %}
-                        <div class="error-message">{{ uploadErrors }}</div>
-                    {% elif get_flashed_messages(with_categories=true) %}
-                        {% for category, message in get_flashed_messages(with_categories=true) %}
-                            <div class="alert alert-{{ category }}">
-                                <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    <br>
                     {% block announce_section %}{% endblock %}
                 {% endif %}
                 {% if self.upload_section %}
