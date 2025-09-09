@@ -34,7 +34,7 @@
             </label>
             <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
-            
+
             <a href="static/excel_template/testCourse.xlsx" download>
                 <button>Download Excel Template</button>
             </a>
@@ -106,7 +106,7 @@
                 <input type="number" name="courseStudent" value="{{ courseStudent_text }}" min="1" step="1" required>
             </div>
         </div>
-
+        
         <input type="hidden" name="form_type" value="manual">
         <br><br>
 
@@ -121,7 +121,6 @@
 {% block content %}
 <div class="menu-section">
     <h2>List of Course</h2>
-
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>

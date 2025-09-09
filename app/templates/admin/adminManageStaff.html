@@ -1,176 +1,115 @@
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
 {% block title %}Admin ManageStaff{% endblock %}
-{% block content %}
-<div class="menu-section">
-    <h2>Manage Staff</h2>
-    <!-- Top Centered Tabs -->
-    <div class="tab-container">
-        <div class="second-nav">
-            <a href="#announce" class="tab-link active" data-section="announceSection">
-                <i class="fas fa-envelope"></i>
-                <span>Notification</span>
-            </a>
-            <a href="#upload" class="tab-link" data-section="uploadSection">
-                <i class="fas fa-upload"></i>
-                <span>Upload File</span>
-            </a>
-            <a href="#manual" class="tab-link" data-section="manualSection">
-                <i class="fas fa-plus"></i>
-                <span>Manually Insert</span>
-            </a>
+{% block head_title %}<h2>Manage Staff</h2>{% endblock %}
+
+{% block announce_section %}
+<!-- Announce Form -->
+<form id="announceForm" action="{{ url_for('admin_manageStaff') }}" method="POST" enctype="multipart/form-data">
+    <div id="announceSection" class="function-frame">
+        <input type="hidden" name="form_type" value="announce">
+        <div class="form-left" style="width: 100%">
         </div>
     </div>
+</form>
+{% endblock %}
 
-    <!-- Announce Form -->
-    <form id="announceForm" action="{{ url_for('admin_manageStaff') }}" method="POST" enctype="multipart/form-data">
-        <div id="announceSection" class="function-frame">
-            <div class="form-left" style="width: 100%">
-                <br>
-                {% if staffUploadResult %}
-                    <div class="result-message">{{ staffUploadResult }}</div>
-                {% elif staffUploadErrors %}
-                    <div class="error-message">{{ staffUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <br>
-            </div>
-        </div>
-    </form>
-
-        <!-- Upload Form -->
-    <form id="uploadForm" action="{{ url_for('admin_manageStaff') }}" method="POST" style="display: none;">
-        <div id="uploadSection" class="function-frame">
-            <div class="form-left" style="width: 100%">
-                <h4 style="text-align: center;">File Upload Section</h4>
-                <label for="staff_list">
-                    <div class="upload-container" id="staffUploadContainer">
-                        <div class="upload-text">
-                            Upload a file with an empty first row. Data should start from columns A to G,<br> 
-                            labeled as: ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', and 'Gender']<br><br><br>
-                            Click to upload or drag and drop with below file format
-                        </div>
-                        <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                        <!-- Selected file display -->
-                        <div id="staffSelectedFileName" class="file-name-display"></div>
+{% block upload_section %}
+<!-- Upload Form -->
+<form id="uploadForm" action="{{ url_for('admin_manageStaff') }}" method="POST" style="display: none;">
+    <div id="uploadSection" class="function-frame">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="staff_list">
+                <div class="upload-container" id="staffUploadContainer">
+                    <div class="upload-text">
+                        Upload a file with an empty first row. Data should start from columns A to G,<br> 
+                        labeled as: ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', and 'Gender']<br><br><br>
+                        Click to upload or drag and drop with below file format
                     </div>
-                </label>
-                <input type="file" id="staff_list" name="staff_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
-                <!-- 🔽 Add this hidden input here -->
-                <input type="hidden" name="form_type" value="upload">
-
-                <br><br>
-                {% if staffUploadResult %}
-                    <div class="result-message">{{ staffUploadResult }}</div>
-                {% elif staffUploadErrors %}
-                    <div class="error-message">{{ staffUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <br>
-
-                <!-- Upload Form Submit -->
-                <div class="button-wrapper">
-                    <button type="submit">Upload New Staff</button>
+                    <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                    <!-- Selected file display -->
+                    <div id="staffSelectedFileName" class="file-name-display"></div>
                 </div>
-            </div>
-        </div>
-    </form>
-
-
-    <!-- Manual Form -->
-    <form id="manualForm" action="{{ url_for('admin_manageStaff') }}" method="POST" style="display: none;">
-        <div id="manualSection" class="function-frame" style="width:100%">
-            <h4 style="text-align: center;">Manual Data Entry Section</h4>
-            <div class="profile-frame">
-                <div class="form-left">
-                    <label>Staff ID</label>
-                    <input type="text" name="userid" value="{{ id_text }}" required><br>
-
-                    <label>Staff Name</label>
-                    <input type="text" name="username" value="{{ name_text }}" required><br>
-
-                    <label>Staff Email Address</label>
-                    <input type="email" name="email" value="{{ email_text }}" required>
-                </div>
-
-                <div class="form-middle">
-                    <label>Staff Contact Number</label>
-                    <input type="tel" name="contact" value="{{ contact_text }}" required><br>
-                    
-                    <label>Staff Gender</label>
-                    <select name="gender" required>
-                        <option value="" disabled selected>Select Gender</option>
-                        <option value="MALE">MALE</option>
-                        <option value="FEMALE">FEMALE</option>
-                    </select>
-                </div>
-
-                <div class="form-right">
-                    <label>Staff Role</label>
-                    <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}" required>
-                        <option value="" disabled selected>Select Role</option>
-                        <option value="LECTURER">LECTURER</option>
-                        <option value="DEAN">DEAN</option>
-                        <option value="HOP">(HOP) HEAD OF PROGRAM</option>
-                        <option value="ADMIN">ADMIN</option>
-                    </select><br>
-
-                    <label id="departmentLabel">Department</label>
-                    <select name="department" required>
-                        <option value="" disabled selected>Select Department</option>
-                        {% for dept in department_data %}
-                            <option value="{{ dept.departmentCode }}">
-                                [{{ dept.departmentCode }}] {{ dept.departmentName }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div> 
-
+            </label>
+            <input type="file" id="staff_list" name="staff_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <!-- 🔽 Add this hidden input here -->
-            <input type="hidden" name="form_type" value="manual">
-
-            <br>
-            {% if staffUploadResult %}
-                <div class="result-message">{{ staffUploadResult }}</div>
-            {% elif staffUploadErrors %}
-                <div class="error-message">{{ staffUploadErrors }}</div>
-            {% elif get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+            <input type="hidden" name="form_type" value="upload">
             <br>
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Add New Staff</button>
+                <button type="submit">Upload New Staff</button>
             </div>
         </div>
-    </form>
+    </div>
+</form>
+{% endblock %}
 
-    <br><br>
+{% block manual_section %}
+<!-- Manual Form -->
+<form id="manualForm" action="{{ url_for('admin_manageStaff') }}" method="POST" style="display: none;">
+    <div id="manualSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Manual Data Entry Section</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Staff ID</label>
+                <input type="text" name="userid" value="{{ id_text }}" required><br>
+
+                <label>Staff Name</label>
+                <input type="text" name="username" value="{{ name_text }}" required><br>
+
+                <label>Staff Email Address</label>
+                <input type="email" name="email" value="{{ email_text }}" required>
+            </div>
+
+            <div class="form-middle">
+                <label>Staff Contact Number</label>
+                <input type="tel" name="contact" value="{{ contact_text }}" required><br>
+                
+                <label>Staff Gender</label>
+                <select name="gender" required>
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="MALE">MALE</option>
+                    <option value="FEMALE">FEMALE</option>
+                </select>
+            </div>
+
+            <div class="form-right">
+                <label>Staff Role</label>
+                <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}" required>
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="LECTURER">LECTURER</option>
+                    <option value="DEAN">DEAN</option>
+                    <option value="HOP">(HOP) HEAD OF PROGRAM</option>
+                    <option value="ADMIN">ADMIN</option>
+                </select><br>
+
+                <label id="departmentLabel">Department</label>
+                <select name="department" required>
+                    <option value="" disabled selected>Select Department</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}">
+                            [{{ dept.departmentCode }}] {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div> 
+
+        <input type="hidden" name="form_type" value="manual">
+        <br><br>
+
+        <div class="button-wrapper">
+            <button type="submit">Add New Staff</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="menu-section">
     <h2>List of Staff</h2>
-    <!--<label>
-        To Do: <br>
-        1. Allow edit based on the Id <br>
-        2. Deactivated will send an email to the upload email address for activation link <br>
-        Question: <br>
-        1. For the Department, what looks inside Excel, does I need to set if SOE to SOE - School of Engineering <br>
-        2. For the Contact, because of the Excel can't start with 0, so does I need to add in 0 
-    </label>-->
-
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -226,6 +165,4 @@
         </table>
     </div>
 </div>
-
-
 {% endblock %}

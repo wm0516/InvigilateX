@@ -1,100 +1,66 @@
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
 {% block title %}Admin ManageVenue{% endblock %}
-{% block content %}
+{% block head_title %}<h2>Manage Venue</h2>{% endblock %}
 
-<div class="menu-section">
-    <h2>Manage Venue</h2>
-    <!-- Top Centered Tabs -->
-    <div class="tab-container">
-        <div class="second-nav">
-            <a href="#announce" class="tab-link active" data-section="announceSection">
-                <i class="fas fa-envelope"></i>
-                <span>Notification</span>
-            </a>
-            <a href="#manual" class="tab-link" data-section="manualSection">
-                <i class="fas fa-plus"></i>
-                <span>Manually Insert</span>
-            </a>
+{% block announce_section %}
+<!-- Announce Form -->
+<form id="announceForm" action="{{ url_for('admin_manageVenue') }}" method="POST" enctype="multipart/form-data">
+    <div id="announceSection" class="function-frame">
+        <input type="hidden" name="form_type" value="announce">
+        <div class="form-left" style="width: 100%">
         </div>
     </div>
+</form>
+{% endblock %}
 
-    <!-- Announce Form -->
-    <form id="announceForm" action="{{ url_for('admin_manageVenue') }}" method="POST" enctype="multipart/form-data">
-        <div id="announceSection" class="function-frame">
-            <div class="form-left" style="width: 100%">
-                <br>
-                {% if venueUploadResult %}
-                    <div class="result-message">{{ venueUploadResult }}</div>
-                {% elif venueUploadErrors %}
-                    <div class="error-message">{{ venueUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <br>
+{% block manual_section %}
+<!-- Manual Form -->
+<form id="manualForm" action="{{ url_for('admin_manageVenue') }}" method="POST" style="display: none;">
+    <div id="manualSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Manual Data Entry Section</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Venue Number</label>
+                <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
+
+                <label>Venue Floor</label>
+                <select name="venueFloor" required>
+                    <option value="" disabled selected>Venue Floor</option>
+                    <option value="FLOOR 2">FLOOR 2</option>
+                    <option value="FLOOR 3">FLOOR 3</option>
+                    <option value="FLOOR 4">FLOOR 4</option>
+                    <option value="FLOOR 5">FLOOR 5</option>
+                    <option value="FLOOR 6">FLOOR 6</option>
+                </select>
+            </div>
+
+            <div class="form-right">
+                <label>Venue Capacity</label>
+                <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" min="1" step="1" required><br>
+
+                <label>Venue Status</label>
+                <select name="venueStatus" required>
+                    <option value="" disabled selected>Venue Current Status</option>
+                    <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="UNAVAILABLE">UNAVAILABLE</option>
+                    <option value="IN SERVICE">IN SERVICE</option>
+                </select>
             </div>
         </div>
-    </form>
+        <br>
 
-    <!-- Manual Form -->
-    <form id="manualForm" action="{{ url_for('admin_manageVenue') }}" method="POST" style="display: none;">
-        <div id="manualSection" class="function-frame" style="width:100%">
-            <h4 style="text-align: center;">Manual Data Entry Section</h4>
-            <div class="profile-frame">
-                <div class="form-left">
-                    <label>Venue Number</label>
-                    <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
-
-                    <label>Venue Floor</label>
-                    <select name="venueFloor" required>
-                        <option value="" disabled selected>Venue Floor</option>
-                        <option value="FLOOR 2">FLOOR 2</option>
-                        <option value="FLOOR 3">FLOOR 3</option>
-                        <option value="FLOOR 4">FLOOR 4</option>
-                        <option value="FLOOR 5">FLOOR 5</option>
-                        <option value="FLOOR 6">FLOOR 6</option>
-                    </select>
-                </div>
-
-                <div class="form-right">
-                    <label>Venue Capacity</label>
-                    <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" min="1" step="1" required><br>
-
-                    <label>Venue Status</label>
-                    <select name="venueStatus" required>
-                        <option value="" disabled selected>Venue Current Status</option>
-                        <option value="AVAILABLE">AVAILABLE</option>
-                        <option value="UNAVAILABLE">UNAVAILABLE</option>
-                        <option value="IN SERVICE">IN SERVICE</option>
-                    </select>
-                </div>
-            </div>
-                 
-            <br><br>
-            {% if venueUploadResult %}
-                <div class="result-message">{{ venueUploadResult }}</div>
-            {% elif venueUploadErrors %}
-                <div class="error-message">{{ venueUploadErrors }}</div>
-            {% elif get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            <br>
-
-            <!-- Upload Form Submit -->
-            <div class="button-wrapper">
-                <button type="submit">Add New Venue</button>
-            </div>
+        <!-- Upload Form Submit -->
+        <div class="button-wrapper">
+            <button type="submit">Add New Venue</button>
         </div>
-    </form>
+    </div>
+</form>
+{% endblock %}
 
-    <br><br>
+
+{% block content %}
+<div class="menu-section">
     <h2>List of Venue</h2>
     <div class="user-table-container">
         <table class="user-data-table">

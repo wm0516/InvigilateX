@@ -1,108 +1,72 @@
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
 {% block title %}Admin ManageDepartment{% endblock %}
-{% block content %}
+{% block head_title %}<h2>Manage Department</h2>{% endblock %}
 
-<div class="menu-section">
-    <h2>Manage Department</h2>
-    <!-- Top Centered Tabs -->
-    <div class="tab-container">
-        <div class="second-nav">
-            <a href="#announce" class="tab-link active" data-section="announceSection">
-                <i class="fas fa-envelope"></i>
-                <span>Notification</span>
-            </a>
-            <a href="#manual" class="tab-link" data-section="manualSection">
-                <i class="fas fa-plus"></i>
-                <span>Manually Insert</span>
-            </a>
+{% block announce_section %}
+<!-- Announce Form -->
+<form id="announceForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" enctype="multipart/form-data">
+    <div id="announceSection" class="function-frame">
+        <input type="hidden" name="form_type" value="announce">
+        <div class="form-left" style="width: 100%">
         </div>
     </div>
+</form>
+{% endblock %}
 
-    <!-- Announce Form -->
-    <form id="announceForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" enctype="multipart/form-data">
-        <div id="announceSection" class="function-frame">
-            <!-- 🔽 Add this hidden input here -->
-            <input type="hidden" name="form_type" value="announce">
-            <div class="form-left" style="width: 100%">
-                <br>
-                {% if departmentUploadResult %}
-                    <div class="result-message">{{ departmentUploadResult }}</div>
-                {% elif departmentUploadErrors %}
-                    <div class="error-message">{{ departmentUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
+{% block manual_section %}
+<!-- Manual Form -->
+<form id="manualForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" style="display: none;">
+    <div id="manualSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Manual Data Entry Section</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Department Code</label>
+                <input type="text" name="departmentCode" value="{{ departmentCode_text }}" required><br>
+                
+                <label>Department Name</label>
+                <input type="text" name="departmentName" value="{{ departmentName_text }}" required>
+            </div>
+
+            <div class="form-right">
+                <label>Hop Name</label>
+                <select id="hopName" name="hopName" onchange="updateEmail('hopName','hopEmail')">
+                    <option value="" disabled selected>Select a Hop</option>
+                    {% for hop in hop_list %}
+                        <option value="{{ hop.userId }}" data-email="{{ hop.userEmail }}">
+                            [{{ hop.userId }}] {{ hop.userName }}
+                        </option>
                     {% endfor %}
-                {% endif %}
-                <br>
+                </select><br>
+
+                
+                <label>Dean Name</label>
+                <select id="deanName" name="deanName" onchange="updateEmail('deanName','deanEmail')">
+                    <option value="" disabled selected>Select a Dean</option>
+                    {% for dean in dean_list %}
+                        <option value="{{ dean.userId }}" data-email="{{ dean.userEmail }}">
+                            [{{ dean.userId }}] {{ dean.userName }} 
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
-    </form>
 
-    <!-- Manual Form -->
-    <form id="manualForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" style="display: none;">
-        <div id="manualSection" class="function-frame" style="width:100%">
-            <h4 style="text-align: center;">Manual Data Entry Section</h4>
-            <div class="profile-frame">
-                <div class="form-left">
-                    <label>Department Code</label>
-                    <input type="text" name="departmentCode" value="{{ departmentCode_text }}" required><br>
-                    
-                    <label>Department Name</label>
-                    <input type="text" name="departmentName" value="{{ departmentName_text }}" required>
-                </div>
+        <!-- 🔽 Add this hidden input here -->
+        <input type="hidden" name="form_type" value="manual">
+        <br>
 
-                <div class="form-right">
-                    <label>Hop Name</label>
-                    <select id="hopName" name="hopName" onchange="updateEmail('hopName','hopEmail')">
-                        <option value="" disabled selected>Select a Hop</option>
-                        {% for hop in hop_list %}
-                            <option value="{{ hop.userId }}" data-email="{{ hop.userEmail }}">
-                                [{{ hop.userId }}] {{ hop.userName }}
-                            </option>
-                        {% endfor %}
-                    </select><br>
-
-                    
-                    <label>Dean Name</label>
-                    <select id="deanName" name="deanName" onchange="updateEmail('deanName','deanEmail')">
-                        <option value="" disabled selected>Select a Dean</option>
-                        {% for dean in dean_list %}
-                            <option value="{{ dean.userId }}" data-email="{{ dean.userEmail }}">
-                                [{{ dean.userId }}] {{ dean.userName }} 
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <!-- 🔽 Add this hidden input here -->
-            <input type="hidden" name="form_type" value="manual">
-                 
-            <br><br>
-            {% if departmentUploadResult %}
-                <div class="result-message">{{ departmentUploadResult }}</div>
-            {% elif departmentUploadErrors %}
-                <div class="error-message">{{ departmentUploadErrors }}</div>
-            {% elif get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            <br>
-
-            <!-- Upload Form Submit -->
-            <div class="button-wrapper">
-                <button type="submit">Add New Department</button>
-            </div>
+        <!-- Upload Form Submit -->
+        <div class="button-wrapper">
+            <button type="submit">Add New Department</button>
         </div>
-    </form>
-    
-    <br><br>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block content %}
+<div class="menu-section">
     <h2>List of Department</h2>
     <div class="user-table-container">
         <table class="user-data-table">

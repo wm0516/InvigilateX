@@ -1,195 +1,134 @@
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
 {% block title %}Admin ManageExam{% endblock %}
-{% block content %}
-<div class="menu-section">
-    <h2>Manage Exam</h2>
-    <!-- Top Centered Tabs -->
-    <div class="tab-container">
-        <div class="second-nav">
-            <a href="#announce" class="tab-link active" data-section="announceSection">
-                <i class="fas fa-envelope"></i>
-                <span>Notification</span>
-            </a>
-            <a href="#upload" class="tab-link" data-section="uploadSection">
-                <i class="fas fa-upload"></i>
-                <span>Upload File</span>
-            </a>
-            <a href="#manual" class="tab-link" data-section="manualSection">
-                <i class="fas fa-plus"></i>
-                <span>Manually Insert</span>
-            </a>
+{% block head_title %}<h2>Manage Exam</h2>{% endblock %}
+
+{% block announce_section %}
+<!-- Announce Form -->
+<form id="announceForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
+    <div id="announceSection" class="function-frame">
+        <input type="hidden" name="form_type" value="announce">
+        <div class="form-left" style="width: 100%">
         </div>
     </div>
+</form>
+{% endblock %}
 
-    <!-- Announce Form -->
-    <form id="announceForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
-        <div id="announceSection" class="function-frame">
-            <div class="form-left" style="width: 100%">
-                <br>
-                {% if examUploadResult %}
-                    <div class="result-message">{{ examUploadResult }}</div>
-                {% elif examUploadErrors %}
-                    <div class="error-message">{{ examUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <br>
-            </div>
-        </div>
-    </form>
-
-    <!-- Upload Form -->
-    <form id="uploadForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-        <div id="uploadSection" class="function-frame">
-            <div class="form-left" style="width: 100%">
-                <h4 style="text-align: center;">File Upload Section</h4>
-                <label for="exam_list">
-                    <div class="upload-container" id="examUploadContainer">
-                        <div class="upload-text">
-                            Upload a file with an empty first row. Data should start from columns A to J,<br> 
-                            labeled as: ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']<br><br><br>
-                            Click to upload or drag and drop with below file format
-                        </div>
-                        <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                        <!-- Selected file display -->
-                        <div id="examSelectedFileName" class="file-name-display"></div>
+{% block upload_section %}
+<!-- Upload Form -->
+<form id="uploadForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+    <div id="uploadSection" class="function-frame">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="exam_list">
+                <div class="upload-container" id="examUploadContainer">
+                    <div class="upload-text">
+                        Upload a file with an empty first row. Data should start from columns A to J,<br> 
+                        labeled as: ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']<br><br><br>
+                        Click to upload or drag and drop with below file format
                     </div>
-                </label>
-                <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
-                <!-- 🔽 Add this hidden input here -->
-                <input type="hidden" name="form_type" value="upload">
-
-                <br>
-                {% if examUploadResult %}
-                    <div class="result-message">{{ examUploadResult }}</div>
-                {% elif examUploadErrors %}
-                    <div class="error-message">{{ examUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-                <br>
-
-                <!-- Upload Form Submit -->
-                <div class="button-wrapper">
-                    <button type="submit">Upload Exam</button>
+                    <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                    <!-- Selected file display -->
+                    <div id="examSelectedFileName" class="file-name-display"></div>
                 </div>
-            </div>
-        </div>
-    </form>
-
-    <!-- Manual Form -->
-    <form id="manualForm" action="{{ url_for('admin_manageExam') }}" method="POST" style="display: none;">
-        <div id="manualSection" class="function-frame" style="width:100%">
-            <h4 style="text-align: center;">Manual Data Entry Section</h4>
-            <div class="profile-frame">
-                <div class="form-left" style="margin: auto;">
-                    <label>Exam Start Date & Time</label>
-                    <div style="display: flex; gap: 2%;">
-                        <input type="date" id="startDate" name="startDate" required>
-                        <input type="time" id="startTime" name="startTime" required>
-                    </div><br>
-
-                    <label>Exam End Date & Time</label>
-                    <div style="display: flex; gap: 2%;">
-                        <input type="date" id="endDate" name="endDate" required>
-                        <input type="time" id="endTime" name="endTime" required>
-                    </div><br>
-
-                    <label>Program Code</label>
-                    <select name="programCode" id="programCode" required>
-                        <option value="" disabled selected>Select Program Code</option>
-                        {% for dept in department_data %}
-                            <option value="{{ dept.departmentCode }}">
-                                [{{ dept.departmentCode }}] {{ dept.departmentName }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="form-middle" style="margin: auto;">
-                    <label>Course/Section</label>
-                    <select name="courseSection" id="courseSection" required>
-                        <option value="" disabled selected>Select Course Section</option>
-                        {% for course in course_data %}
-                            <option value="{{ course.courseCodeSection }}">
-                                [{{ course.courseCodeSection }}] - {{ course.courseName }}
-                            </option>   
-                        {% endfor %}
-                    </select><br>
-
-                    <label>Course Practical Lecturer</label>
-                    <input type="text" id="practicalLecturer" name="practicalLecturer" readonly><br>
-
-                    <label>Course Tutorial Lecturer</label>
-                    <input type="text" id="tutorialLecturer" name="tutorialLecturer" readonly>
-                </div> 
-
-                <div class="form-right" style="margin: auto;">
-                    <label>Number of Students</label>
-                    <input type="number" id="student" name="student" readonly><br>
-
-                    <label>Venue</label>
-                    <select name="venue" id="venueSection" required>
-                        <option value="" disabled selected>Select Venue</option>
-                        {% for venue in venue_data %}
-                            <option value="{{ venue.venueNumber }}">
-                                [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
-                            </option>
-                        {% endfor %}
-                    </select><br>
-
-                    <label>Number of Invigilators</label>
-                    <input type="number" id="invigilatorNo" name="invigilatorNo" value="{{ invigilatorNo_text }}" min="1" step="1" required>    
-                </div>
-            </div>
-
+            </label>
+            <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <!-- 🔽 Add this hidden input here -->
-            <input type="hidden" name="form_type" value="manual">
-
-            <br><br>
-            {% if courseUploadResult %}
-                <div class="result-message">{{ courseUploadResult }}</div>
-            {% elif courseUploadErrors %}
-                <div class="error-message">{{ courseUploadErrors }}</div>
-            {% elif get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+            <input type="hidden" name="form_type" value="upload">
             <br>
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Add New Exam</button>
+                <button type="submit">Upload Exam</button>
             </div>
         </div>
-    </form>
+    </div>
+</form>
+{% endblock %}
+
+{% block manual_section %}
+<!-- Manual Form -->
+<form id="manualForm" action="{{ url_for('admin_manageExam') }}" method="POST" style="display: none;">
+    <div id="manualSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Manual Data Entry Section</h4>
+        <div class="profile-frame">
+            <div class="form-left" style="margin: auto;">
+                <label>Exam Start Date & Time</label>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="startDate" name="startDate" required>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div><br>
+
+                <label>Exam End Date & Time</label>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="endDate" name="endDate" required>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div><br>
+
+                <label>Program Code</label>
+                <select name="programCode" id="programCode" required>
+                    <option value="" disabled selected>Select Program Code</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}">
+                            [{{ dept.departmentCode }}] {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-middle" style="margin: auto;">
+                <label>Course/Section</label>
+                <select name="courseSection" id="courseSection" required>
+                    <option value="" disabled selected>Select Course Section</option>
+                    {% for course in course_data %}
+                        <option value="{{ course.courseCodeSection }}">
+                            [{{ course.courseCodeSection }}] - {{ course.courseName }}
+                        </option>   
+                    {% endfor %}
+                </select><br>
+
+                <label>Course Practical Lecturer</label>
+                <input type="text" id="practicalLecturer" name="practicalLecturer" readonly><br>
+
+                <label>Course Tutorial Lecturer</label>
+                <input type="text" id="tutorialLecturer" name="tutorialLecturer" readonly>
+            </div> 
+
+            <div class="form-right" style="margin: auto;">
+                <label>Number of Students</label>
+                <input type="number" id="student" name="student" readonly><br>
+
+                <label>Venue</label>
+                <select name="venue" id="venueSection" required>
+                    <option value="" disabled selected>Select Venue</option>
+                    {% for venue in venue_data %}
+                        <option value="{{ venue.venueNumber }}">
+                            [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
+                        </option>
+                    {% endfor %}
+                </select><br>
+
+                <label>Number of Invigilators</label>
+                <input type="number" id="invigilatorNo" name="invigilatorNo" value="{{ invigilatorNo_text }}" min="1" step="1" required>    
+            </div>
+        </div>
+
+        <!-- 🔽 Add this hidden input here -->
+        <input type="hidden" name="form_type" value="manual">
+        <br>
+
+        <!-- Upload Form Submit -->
+        <div class="button-wrapper">
+            <button type="submit">Add New Exam</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
 
 
-    <br><br>
+{% block content %}
+<div class="menu-section">
     <h2>List of Exam</h2>
-    <!--<label>
-        Alert<br>
-        1. ID as the PK<br>
-        2. All able to edit<br>
-        3. With a dropdown by category frame<br>
-        4. Add 'add and edit button'<br>
-        Question<br>
-        1. Does ExamDay is manually insert or need to use ExamDate to determine the day<br>
-        2. Can ExamDay and ExamDate combine by "row.examDate" "row.examDay"<br>
-        3. Can StartTime and EndTime combine by "row.examStartTime" - "row.examEndTime"
-    </label>-->
-
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>

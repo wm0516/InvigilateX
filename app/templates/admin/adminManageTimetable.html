@@ -1,62 +1,70 @@
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
+{% block title %}Admin ManageTimetable{% endblock %}
+{% block head_title %}<h2>Manage Timetable</h2>{% endblock %}
 
-{% block title %}Admin Manage Timetable{% endblock %}
+{% block announce_section %}
+<!-- Announce Form -->
+<form id="announceForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+    <div id="announceSection" class="function-frame">
+        <input type="hidden" name="form_type" value="announce">
+        <div class="form-left" style="width: 100%">
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block upload_section %}
+<form>
+    {% if not files %}
+        {% if not authorized %}
+            <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
+        {% else %}
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
+        {% endif %}
+    {% endif %}
+
+    {% if files %}
+        <!-- Refresh Button -->
+        <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
+        <br><br>
+
+        <h3>PDF Files from SOC Folder:</h3>
+        <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
+            Extract & Save All Timetables to Database
+        </a>
+        <br><br><br>
+
+        <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+            {% for file in files %}
+                <div>
+                    <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+                    <a href="{{ file.webViewLink }}" target="_blank">
+                        {{ loop.index }}. {{ file.name }}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+        <br><br><br>
+
+        <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+            <h4>Preview Result</h4>
+            <pre id="previewContent">Click a preview button to load timetable...</pre>
+        </div>
+    {% endif %}
+</form>
+{% endblock %}
+
+
+
+
+
+
+
 
 {% block content %}
 <div class="menu-section">
-    <h2>Manage Timetable</h2>
-    <form>
-        {% if not files %}
-            {% if not authorized %}
-                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
-            {% else %}
-                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
-            {% endif %}
-        {% endif %}
-
-        {% if files %}
-            <!-- Refresh Button -->
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
-            <br><br>
-
-            <h3>PDF Files from SOC Folder:</h3>
-            <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
-                Extract & Save All Timetables to Database
-            </a>
-            <br><br><br>
-
-            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-                {% for file in files %}
-                    <div>
-                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                        <a href="{{ file.webViewLink }}" target="_blank">
-                            {{ loop.index }}. {{ file.name }}
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
-            <br><br><br>
-
-            <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-                <h4>Preview Result</h4>
-                <pre id="previewContent">Click a preview button to load timetable...</pre>
-            </div>
-        {% endif %}
-
-        {% if get_flashed_messages(with_categories=true) %}
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <br><br>    
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-        <br>
-    </form>
-
-    <br><br>
     <h2>Timetable</h2>
-
     <div class="profile-frame">
         <!-- Filter Section -->
         <div class="form-right">

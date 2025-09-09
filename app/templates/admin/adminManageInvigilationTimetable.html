@@ -1,14 +1,21 @@
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
 {% block title %}Admin ManageInvigilationTimetable{% endblock %}
+{% block head_title %}<h2>Manage Invigilation Timetable</h2>{% endblock %}
+
+{% block announce_section %}
+<!-- Announce Form -->
+<form id="announceForm" action="{{ url_for('admin_manageInvigilationTimetable') }}" method="POST" enctype="multipart/form-data">
+    <div id="announceSection" class="function-frame">
+        <input type="hidden" name="form_type" value="announce">
+        <div class="form-left" style="width: 100%">
+        </div>
+    </div>
+</form>
+{% endblock %}
+
 {% block content %}
-
 <div class="menu-section">
-    <h2>Manage Invigilation Timetable</h2>    
-    <form method="POST">  
-
-    </form>
-
-    <br><br>
     <h2>List of All Exam Sessions Details</h2>
     <div class="user-table-container">
         <table class="user-data-table">
