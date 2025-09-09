@@ -42,14 +42,14 @@ def get_all_attendances():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     attendances = get_all_attendances()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances, show_tabs=True, show_announce_section=True)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
 
 
 # function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, show_tabs=True, show_announce_section=True)
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
 
 
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
@@ -104,8 +104,8 @@ def admin_manageDepartment():
 
         return redirect(url_for('admin_manageDepartment'))
 
-    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data,
-                           dean_list=dean_list, hop_list=hop_list, show_tabs=True, show_announce_section=True, show_manual_section=True)
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
+
 
 # Can move those validation into a function then call again
 @app.route('/admin/profile', methods=['GET', 'POST'])
@@ -177,7 +177,13 @@ def admin_manageVenue():
 
         return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=capacity)
 
-    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, show_tabs=True, show_announce_section=True, show_manual_section=True)
+    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
+
+
+
+
+
+
 
 
 
@@ -391,8 +397,7 @@ def admin_manageStaff():
             flash("New Staff Added Successfully", "success")
             return redirect(url_for('admin_manageStaff'))
 
-    return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data, 
-                           show_tabs=True, show_announce_section=True, show_upload_section=True, show_manual_section=True)
+    return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
 
 
 # Function for admin to manage course information (adding, editing, and removing)
@@ -531,8 +536,7 @@ def admin_manageCourse():
                 flash(result, 'error')
                 return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,
                                        courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, 
-                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text,
-                                       show_tabs=True, show_announce_section=True, show_upload_section=True, show_manual_section=True)
+                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
             if valid:
                 # 1. Create Exam
@@ -566,9 +570,7 @@ def admin_manageCourse():
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
             
-    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,
-                            show_tabs=True, show_announce_section=True, show_upload_section=True, show_manual_section=True)
-
+    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
 
 
 # Function for admin to manage exam information (adding, editing, and removing)
@@ -712,8 +714,8 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", 'error')
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data,
-                            show_tabs=True, show_announce_section=True, show_upload_section=True, show_manual_section=True)
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
+
 
 
 
@@ -988,8 +990,8 @@ def admin_manageTimetable():
         authorized='credentials' in session and session['credentials'] is not None,
         timetable_data=filtered_data,
         selected_lecturer=selected_lecturer,
-        lecturers=lecturers,
-        show_tabs=True, show_announce_section=True, show_upload_section=True, show_manual_section=True)
+        lecturers=lecturers
+    )
 
 
 
