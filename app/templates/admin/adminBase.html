@@ -74,19 +74,21 @@
                 <!-- Top Navigation Tabs -->
                 <div class="tab-container">
                     <div class="second-nav">
-                        {% if self.announce_section %}
+                        {% if show_announce %}
                             <a href="#announce" class="tab-link active" data-section="announceSection">
                                 <i class="fas fa-envelope"></i>
                                 <span>Notification</span>
                             </a>
                         {% endif %}
-                        {% if self.upload_section %}
+
+                        {% if show_upload %}
                             <a href="#upload" class="tab-link" data-section="uploadSection">
                                 <i class="fas fa-upload"></i>
                                 <span>Upload File</span>
                             </a>
                         {% endif %}
-                        {% if self.manual_section %}
+
+                        {% if show_manual %}
                             <a href="#manual" class="tab-link" data-section="manualSection">
                                 <i class="fas fa-plus"></i>
                                 <span>Manually Insert</span>
@@ -110,13 +112,13 @@
                 <br>
 
                 <!-- Tab Content Sections -->
-                {% if self.announce_section %}
+                {% if show_announce %}
                     {% block announce_section %}{% endblock %}
                 {% endif %}
-                {% if self.upload_section %}
+                {% if show_upload %}
                     {% block upload_section %}{% endblock %}
                 {% endif %}
-                {% if self.manual_section %}
+                {% if show_manual %}
                     {% block manual_section %}{% endblock %}
                 {% endif %}
             {% endif %}
