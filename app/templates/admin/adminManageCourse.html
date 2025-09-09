@@ -1,7 +1,6 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
 {% block title %}Admin ManageCourse{% endblock %}
-
 {% block head_title %}<h2>Manage Course</h2>{% endblock %}
 
 {% block announce_section %}
@@ -9,7 +8,6 @@
 <form id="announceForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
     <div id="announceSection" class="function-frame">
         <input type="hidden" name="form_type" value="announce">
-
         <div class="form-left" style="width: 100%">
         </div>
     </div>
@@ -36,8 +34,7 @@
             </label>
             <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
-
-            <br><br>
+            
             <a href="static/excel_template/testCourse.xlsx" download>
                 <button>Download Excel Template</button>
             </a>
@@ -111,7 +108,7 @@
         </div>
 
         <input type="hidden" name="form_type" value="manual">
-        <br>
+        <br><br>
 
         <div class="button-wrapper">
             <button type="submit">Add New Course</button>
