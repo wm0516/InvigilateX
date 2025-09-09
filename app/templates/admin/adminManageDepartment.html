@@ -3,7 +3,7 @@
 {% block title %}Admin ManageDepartment{% endblock %}
 {% block head_title %}<h2>Manage Department</h2>{% endblock %}
 
-{% block announce_section %}
+{% block show_announce_section %}
 <!-- Announce Form -->
 <form id="announceForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" enctype="multipart/form-data">
     <div id="announceSection" class="function-frame">
@@ -14,7 +14,7 @@
 </form>
 {% endblock %}
 
-{% block manual_section %}
+{% block show_manual_section %}
 <!-- Manual Form -->
 <form id="manualForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" style="display: none;">
     <div id="manualSection" class="function-frame" style="width:100%">
