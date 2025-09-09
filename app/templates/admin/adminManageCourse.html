@@ -2,6 +2,8 @@
 {% set show_tabs = true %}
 {% block title %}Admin ManageCourse{% endblock %}
 
+{% block title %}<h2>Manage Course</h2>{% endblock %}
+
 {% block announce_section %}
 <!-- Announce Form -->
 <form id="announceForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
@@ -9,19 +11,6 @@
         <input type="hidden" name="form_type" value="announce">
 
         <div class="form-left" style="width: 100%">
-            <br>
-            {% if courseUploadResult %}
-                <div class="result-message">{{ courseUploadResult }}</div>
-            {% elif courseUploadErrors %}
-                <div class="error-message">{{ courseUploadErrors }}</div>
-            {% elif get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
-            <br>
         </div>
     </div>
 </form>
@@ -52,18 +41,6 @@
             <a href="static/excel_template/testCourse.xlsx" download>
                 <button>Download Excel Template</button>
             </a>
-            <br><br>
-            {% if courseUploadResult %}
-                <div class="result-message">{{ courseUploadResult }}</div>
-            {% elif courseUploadErrors %}
-                <div class="error-message">{{ courseUploadErrors }}</div>
-            {% elif get_flashed_messages(with_categories=true) %}
-                {% for category, message in get_flashed_messages(with_categories=true) %}
-                    <div class="alert alert-{{ category }}">
-                        <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
             <br>
 
             <div class="button-wrapper">
@@ -134,19 +111,6 @@
         </div>
 
         <input type="hidden" name="form_type" value="manual">
-
-        <br><br>
-        {% if courseUploadResult %}
-            <div class="result-message">{{ courseUploadResult }}</div>
-        {% elif courseUploadErrors %}
-            <div class="error-message">{{ courseUploadErrors }}</div>
-        {% elif get_flashed_messages(with_categories=true) %}
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
         <br>
 
         <div class="button-wrapper">
@@ -159,9 +123,6 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>Manage Course</h2>
-
-    <br><br>
     <h2>List of Course</h2>
 
     <div class="user-table-container">
