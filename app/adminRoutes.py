@@ -170,7 +170,7 @@ def admin_manageVenue():
             except ValueError:
                 flash("Capacity must be a non-negative integer", 'error')
 
-        return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=capacity)
+        return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=venueCapacity_text)
 
     return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
 
