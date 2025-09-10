@@ -894,7 +894,7 @@ def parse_pdf_text(text):
     structured = None
 
     # Remove ALL whitespace
-    # text = re.sub(r"\s+", "", text)
+    text = re.sub(r"\s+", "", text)
     text = text.upper()
 
     # --- Step 1: Extract title ---
