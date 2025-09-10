@@ -125,23 +125,45 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
-        if (selectedForm) selectedForm.style.display = "block";
+        if (selectedForm) {
+            selectedForm.style.display = "block";
 
-        tabLinks.forEach(tab => tab.classList.remove("active"));
-        const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
-        if (clickedTab) clickedTab.classList.add("active");
+            tabLinks.forEach(tab => tab.classList.remove("active"));
+            const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
+            if (clickedTab) clickedTab.classList.add("active");
+
+            // Save the current tab to sessionStorage
+            sessionStorage.setItem("activeTab", sectionId);
+        } else {
+            console.warn("Section not found:", sectionId);
+        }
     }
 
-    // Attach click listeners
+    // Attach tab link click listeners
     tabLinks.forEach(tab => {
         tab.addEventListener("click", function (event) {
             showSection(this.dataset.section, event);
         });
     });
 
-    // ✅ Always show default section on page load
-    showSection("announceSection");
+    // Determine the correct section to show on load
+    const savedSection = sessionStorage.getItem("activeTab");
+
+    // Check if the saved section actually exists on this page
+    const availableForms = ["announceForm", "uploadForm", "manualForm"].filter(id => document.getElementById(id));
+    const defaultSection = availableForms.length > 0 ? availableForms[0].replace("Form", "Section") : null;
+
+    if (savedSection && document.getElementById(savedSection.replace("Section", "Form"))) {
+        showSection(savedSection);
+    } else if (defaultSection) {
+        showSection(defaultSection);
+    }
 });
+
+
+
+
+
 
 
 // Admin Page: Function of Upload File 
