@@ -59,6 +59,12 @@ def admin_manageDepartment():
     # Get all currently assigned dean and hop IDs
     assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
     assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
+    
+    # Default values for GET requests
+    departmentCode = ''
+    departmentName = ''
+    deanId = ''
+    hopId = ''
 
     # Exclude those already assigned
     dean_list = User.query.filter(User.userLevel == 2, ~User.userId.in_(assigned_dean_ids)).all()
@@ -146,6 +152,12 @@ def admin_profile():
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     venue_data = Venue.query.all()
+
+    # Default values for GET requests
+    venueNumber_text = ''
+    venueFloor_text = ''
+    venueCapacity_text = ''
+    venueStatus_text = ''
 
     if request.method == 'POST':
         venueNumber_text = request.form.get('venueNumber', '').strip().upper()
@@ -538,6 +550,9 @@ def admin_manageCourse():
                                        courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, 
                                        courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
+            courseHour_int = int(courseHour_text)
+            courseStudent_int = int(courseStudent_text)
+
             if valid:
                 # 1. Create Exam
                 new_exam = Exam(
@@ -556,10 +571,10 @@ def admin_manageCourse():
                     courseCode=courseCode_text.upper(),
                     courseSection=courseSection_text.upper(),
                     courseName=courseName_text.upper(),
-                    courseHour=courseHour_text,
+                    courseHour=courseHour_int,
                     coursePractical=coursePractical_text.upper(),
                     courseTutorial=courseTutorial_text.upper(),
-                    courseStudent=courseStudent_text,
+                    courseStudent=courseStudent_int,
                     courseExamId=new_exam.examId
                 )
                 db.session.add(new_course)
