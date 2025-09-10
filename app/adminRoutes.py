@@ -113,11 +113,6 @@ def admin_profile():
     adminId = session.get('user_id')
     admin = User.query.filter_by(userId=adminId).first()
     
-    # Pre-fill existing data
-    admin_password1_text = ''
-    admin_password2_text = ''
-    error_message = None
-
     if request.method == 'POST':
         admin_contact_text = request.form.get('contact', '').strip()
         admin_password1_text = request.form.get('password1', '').strip()
