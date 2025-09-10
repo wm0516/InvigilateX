@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Second Navigation Tab For Certain Page
 document.addEventListener("DOMContentLoaded", function () {
     const tabLinks = document.querySelectorAll(".second-nav .tab-link");
+    const tabKey = window.location.pathname + "_activeTab"; // Unique key per page
 
     function showSection(sectionId, event) {
         if (event) event.preventDefault();
@@ -132,8 +133,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
             if (clickedTab) clickedTab.classList.add("active");
 
-            // Save the current tab to sessionStorage
-            sessionStorage.setItem("activeTab", sectionId);
+            // Save the current tab to sessionStorage using a page-specific key
+            sessionStorage.setItem(tabKey, sectionId);
         } else {
             console.warn("Section not found:", sectionId);
         }
@@ -147,7 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // Determine the correct section to show on load
-    const savedSection = sessionStorage.getItem("activeTab");
+    const savedSection = sessionStorage.getItem(tabKey);
 
     // Check if the saved section actually exists on this page
     const availableForms = ["announceForm", "uploadForm", "manualForm"].filter(id => document.getElementById(id));
@@ -159,11 +160,6 @@ document.addEventListener("DOMContentLoaded", function () {
         showSection(defaultSection);
     }
 });
-
-
-
-
-
 
 
 // Admin Page: Function of Upload File 

@@ -135,7 +135,7 @@ def admin_profile():
             return redirect(url_for('admin_profile'))
 
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin.userContact if admin else '', 
-                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text, error_message=error_message)
+                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
 
 
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
