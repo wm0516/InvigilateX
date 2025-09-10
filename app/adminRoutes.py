@@ -112,6 +112,11 @@ def admin_manageDepartment():
 def admin_profile():
     adminId = session.get('user_id')
     admin = User.query.filter_by(userId=adminId).first()
+
+    # Default values for GET requests
+    admin_contact_text = admin.userContact if admin else ''
+    admin_password1_text = ''
+    admin_password2_text = ''
     
     if request.method == 'POST':
         admin_contact_text = request.form.get('contact', '').strip()
@@ -134,7 +139,7 @@ def admin_profile():
             flash("Successfully updated", 'success')
             return redirect(url_for('admin_profile'))
 
-    return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin.userContact if admin else '', 
+    return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
                            admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
 
 
