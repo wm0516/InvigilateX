@@ -22,7 +22,9 @@
     {% if not files %}
         {% if not authorized %}
             <div class="button-wrapper">
-                <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
+                <button>
+                    <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
+                </button>
             </div>
         {% else %}
             <div class="button-wrapper">
