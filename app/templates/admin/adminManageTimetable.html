@@ -19,37 +19,40 @@
 
 {% block upload_section %}
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
-    {% if not files %}
-        {% if not authorized %}
-            <a href="{{ url_for('authorize') }}" class="button-wrapper">Click here to authorize Google Drive</a>
-        {% else %}
-            <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i> Click here to load files from Google Drive</a>
+    <div class="button-wrapper">
+        {% if not files %}
+            {% if not authorized %}
+                <a href="{{ url_for('authorize') }}" class="button-wrapper">Click here to authorize Google Drive</a>
+            {% else %}
+                <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i> Click here to load files from Google Drive</a>
+            {% endif %}
         {% endif %}
-    {% endif %}
 
-    {% if files %}
-        <!-- Refresh Button -->
-        <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i>Refresh</a>
-        <a href="{{ url_for('extract_all') }}" class="button-wrapper">Extract & Save All Timetables to Database</a>
+        {% if files %}
+            <!-- Refresh Button -->
+            <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i>Refresh</a>
+            <a href="{{ url_for('extract_all') }}" class="button-wrapper">Extract & Save All Timetables to Database</a>
 
-        <h3>PDF Files from SOC Folder:</h3>
-        <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-            {% for file in files %}
-                <div>
-                    <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                    <a href="{{ file.webViewLink }}" target="_blank">
-                        {{ loop.index }}. {{ file.name }}
-                    </a>
-                </div>
-            {% endfor %}
-        </div>
-        <br><br>
+            <h3>PDF Files from SOC Folder:</h3>
+            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+                {% for file in files %}
+                    <div>
+                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+                        <a href="{{ file.webViewLink }}" target="_blank">
+                            {{ loop.index }}. {{ file.name }}
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            <br><br>
 
-        <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-            <h4>Preview Result</h4>
-            <pre id="previewContent">Click a preview button to load timetable...</pre>
-        </div>
-    {% endif %}
+            <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+                <h4>Preview Result</h4>
+                <pre id="previewContent">Click a preview button to load timetable...</pre>
+            </div>
+        {% endif %} 
+    </div>
+
 </form>
 {% endblock %}
 
