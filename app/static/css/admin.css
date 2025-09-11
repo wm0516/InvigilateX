@@ -487,8 +487,7 @@ input, select{
     justify-content: center; /* Horizontally centers the button */
 }
 
-.button-wrapper button, 
-.button-wrapper a {
+.button-wrapper button {
     padding: 12px 24px;
     font-size: 1.1rem;
     border: none;
