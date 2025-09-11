@@ -357,6 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // Admin Manage Course Page(Manual): Function to Read Selected "Department Code" and related "Lecturer" will be displayed out
 document.addEventListener('DOMContentLoaded', function () {
     const departmentCode = document.getElementById('departmentCode');
+    console.log("Selected Department Code is:", departmentCode);
     if (!departmentCode) return; // Stop if not on this page
 
     const practicalSelect = document.getElementById('practicalLecturerSelect');
