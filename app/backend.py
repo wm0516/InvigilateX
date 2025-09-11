@@ -196,6 +196,37 @@ def check_course(code, section, hour, students):
 
     return True, ""
 
+# Creates a new Exam and Course entry in the database.
+def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+    course_code_section = f"{code}/{section}"
+
+    # 1. Create Exam
+    new_exam = Exam(
+        examVenue=None,
+        examStartTime=None,
+        examEndTime=None,
+        examNoInvigilator=None,
+    )
+    db.session.add(new_exam)
+    db.session.flush()
+
+    # 2. Create and add the Course
+    new_course = Course(
+        courseDepartment=department.upper(),
+        courseCodeSection=course_code_section.upper(),
+        courseCode=code.upper(),
+        courseSection=section.upper(),
+        courseName=name.upper(),
+        courseHour=hour,
+        coursePractical=practical.upper(),
+        courseTutorial=tutorial.upper(),
+        courseStudent=students,
+        courseExamId=new_exam.examId
+    )
+    db.session.add(new_course)
+    db.session.flush()
+    db.session.commit()
+
 
 
 

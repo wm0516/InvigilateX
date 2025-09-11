@@ -412,7 +412,9 @@ def admin_manageStaff():
     return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
 
 
-# Function for admin to manage course information (adding, editing, and removing)
+
+
+# Main route
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     course_data = Course.query.all()
@@ -432,15 +434,13 @@ def admin_manageCourse():
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
 
+        # --------------------- UPLOAD FORM ---------------------
         if form_type == 'upload':
             file = request.files.get('course_file')
-            print(f"Found: {file}")
             if file and file.filename:
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
-                    print(f"Found sheets: {excel_file.sheet_names}")
-
                     course_records_added = 0
 
                     for sheet_name in excel_file.sheet_names:
@@ -452,60 +452,38 @@ def admin_manageCourse():
                                 skiprows=1  
                             )
 
-                            print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            #  Normalize all string values to lowercase
                             for col in df.columns:
                                 df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
                             for index, row in df.iterrows():
                                 try:
                                     courseDepartment_text = str(row['department code'])
-                                    department_text = courseDepartment_text.split('-')[0].strip()
                                     courseCode_text = str(row['course code'])
                                     courseSection_text = str(row['course section'])
                                     courseName_text = str(row['course name'])
-                                    courseHour_text = int(row['credit hour'])
+                                    courseHour_text = row['credit hour']
                                     coursePractical_text = str(row['practical lecturer'])
                                     courseTutorial_text = str(row['tutorial lecturer'])
-                                    courseStudent_text = str(row['no of students'])
-                                    courseCodeSection_text = courseCode_text + '/' + courseSection_text
+                                    courseStudent_text = row['no of students']
 
                                     valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
                                     if valid:
-                                        # 1. Create Exam
-                                        new_exam = Exam(
-                                            examVenue=None,
-                                            examStartTime=None,
-                                            examEndTime=None,
-                                            examNoInvigilator=None,
+                                        create_course_and_exam(
+                                            department=courseDepartment_text,
+                                            code=courseCode_text,
+                                            section=courseSection_text,
+                                            name=courseName_text,
+                                            hour=int(courseHour_text),
+                                            practical=coursePractical_text,
+                                            tutorial=courseTutorial_text,
+                                            students=int(courseStudent_text)
                                         )
-                                        db.session.add(new_exam)
-                                        db.session.flush()  # ensures examId is generated
-
-                                        # 2. Create and add the course
-                                        new_course = Course(
-                                            courseDepartment=department_text.upper(),
-                                            courseCodeSection=courseCodeSection_text.upper(),
-                                            courseCode=courseCode_text.upper(),
-                                            courseSection=courseSection_text.upper(),
-                                            courseName=courseName_text.upper(),
-                                            courseHour=courseHour_text,
-                                            coursePractical=coursePractical_text.upper(),
-                                            courseTutorial=courseTutorial_text.upper(),
-                                            courseStudent=courseStudent_text,
-                                            courseExamId=new_exam.examId
-                                        )
-                                        db.session.add(new_course)
-                                        db.session.flush()  # makes new_course available in session
-
-                                        # 3. Commit everything
-                                        db.session.commit()
                                         course_records_added += 1
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
@@ -513,7 +491,7 @@ def admin_manageCourse():
                             print(f"[Sheet Error] {sheet_err}")
 
                     if course_records_added > 0:
-                        flash(f"Successful upload {course_records_added} record(s)", 'success')
+                        flash(f"Successful upload of {course_records_added} record(s)", 'success')
                     else:
                         flash("No data uploaded", 'error')
 
@@ -526,11 +504,12 @@ def admin_manageCourse():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
-        
 
+        # --------------------- ANNOUNCE FORM ---------------------
         elif form_type == 'announce':
             return redirect(url_for('admin_manageCourse'))
 
+        # --------------------- MANUAL ADD COURSE FORM ---------------------
         else:
             courseDepartment_text = request.form.get('departmentCode', '').strip()
             department_text = courseDepartment_text.split('-')[0].strip()
@@ -541,51 +520,75 @@ def admin_manageCourse():
             coursePractical_text = request.form.get('practicalLecturerSelect', '').strip()
             courseTutorial_text = request.form.get('tutorialLecturerSelect', '').strip()
             courseStudent_text = request.form.get('courseStudent', '').strip()
-            courseCodeSection_text = courseCode_text + '/' + courseSection_text
 
             valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
             if not valid:
                 flash(result, 'error')
-                return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data,
-                                       courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text, courseName_text=courseName_text, 
-                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text, courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
+                return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data, 
+                                       courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text,courseName_text=courseName_text, 
+                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text,courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
 
-            courseHour_int = int(courseHour_text)
-            courseStudent_int = int(courseStudent_text)
+            # All valid, proceed to add course
+            create_course_and_exam(
+                department=department_text,
+                code=courseCode_text,
+                section=courseSection_text,
+                name=courseName_text,
+                hour=int(courseHour_text),
+                practical=coursePractical_text,
+                tutorial=courseTutorial_text,
+                students=int(courseStudent_text)
+            )
 
-            if valid:
-                # 1. Create Exam
-                new_exam = Exam(
-                    examVenue=None,
-                    examStartTime=None,
-                    examEndTime=None,
-                    examNoInvigilator=None,
-                )
-                db.session.add(new_exam)
-                db.session.flush()  # ensures examId is generated
-
-                # 2. Create and add the course
-                new_course = Course(
-                    courseDepartment=department_text.upper(),
-                    courseCodeSection=courseCodeSection_text.upper(),
-                    courseCode=courseCode_text.upper(),
-                    courseSection=courseSection_text.upper(),
-                    courseName=courseName_text.upper(),
-                    courseHour=courseHour_int,
-                    coursePractical=coursePractical_text.upper(),
-                    courseTutorial=courseTutorial_text.upper(),
-                    courseStudent=courseStudent_int,
-                    courseExamId=new_exam.examId
-                )
-                db.session.add(new_course)
-                db.session.flush()  # makes new_course available in session
-
-                # 3. Commit everything
-                db.session.commit()
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
-            
+
+    # GET request fallback
     return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, lecturer_data=lecturer_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Function for admin to manage exam information (adding, editing, and removing)
