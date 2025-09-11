@@ -512,7 +512,6 @@ def admin_manageCourse():
         # --------------------- MANUAL ADD COURSE FORM ---------------------
         else:
             courseDepartment_text = request.form.get('departmentCode', '').strip()
-            department_text = courseDepartment_text.split('-')[0].strip()
             courseCode_text = request.form.get('courseCode', '').replace(' ', '')
             courseSection_text = request.form.get('courseSection', '').replace(' ', '')
             courseName_text = request.form.get('courseName', '').strip()
@@ -530,7 +529,7 @@ def admin_manageCourse():
 
             # All valid, proceed to add course
             create_course_and_exam(
-                department=department_text,
+                department=courseDepartment_text,
                 code=courseCode_text,
                 section=courseSection_text,
                 name=courseName_text,

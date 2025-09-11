@@ -196,6 +196,9 @@ def check_course(code, section, hour, students):
 
     return True, ""
 
+
+
+
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
     course_code_section = f"{code}/{section}"
