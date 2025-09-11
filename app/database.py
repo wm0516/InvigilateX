@@ -98,22 +98,25 @@ class Venue(db.Model):
 
 class VenueAvailability(db.Model):
     __tablename__ = 'VenueAvailability'
-    availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)
-    startDateTime = db.Column(db.DateTime, nullable=False)   # Start date & time
-    endDateTime = db.Column(db.DateTime, nullable=False)     # End date & time
-    status = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)
+    availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)                # Refer to VenueAvailabilty ID
+    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                # Refer to Exam ID
+    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)  # Refer to Venue Number
+    startDateTime = db.Column(db.DateTime, nullable=False)                                      # Refer to Exam Start date & time        
+    endDateTime = db.Column(db.DateTime, nullable=False)                                        # Refer to Exam End date & time
     
     # Relationship
     venue = db.relationship("Venue", back_populates="availabilities")
+    exam = db.relationship("Exam", back_populates="exam")
     '''
     CREATE TABLE VenueAvailability (
         availabilityId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        examId INT NOT NULL,
         venueNumber VARCHAR(10) NOT NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
         status ENUM('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE') NOT NULL,
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
+        FOREIGN KEY (examId) REFERENCES Exam(examId)
     );
     '''
 

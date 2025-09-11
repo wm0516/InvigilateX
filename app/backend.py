@@ -306,7 +306,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         venueNumber=venue_text,
         startDateTime=start_dt,
         endDateTime=adj_end_dt,
-        status="UNAVAILABLE"
+        examId=exam.examId
     )
     db.session.add(new_availability)
 
