@@ -357,7 +357,6 @@ document.addEventListener("DOMContentLoaded", function () {
 // Admin Manage Course Page(Manual): Function to Read Selected "Department Code" and related "Lecturer" will be displayed out
 document.addEventListener('DOMContentLoaded', function () {
     const departmentCode = document.getElementById('departmentCode');
-    console.log("Selected Department Code is:", departmentCode);
     if (!departmentCode) return; // Stop if not on this page
 
     const practicalSelect = document.getElementById('practicalLecturerSelect');
@@ -365,6 +364,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     departmentCode.addEventListener('change', function () {
         const deptValue = this.value;
+        console.log("Selected Department Code is:", deptValue);
 
         // Reset both selects to default placeholder
         practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
