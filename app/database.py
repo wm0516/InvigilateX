@@ -115,7 +115,7 @@ class VenueAvailability(db.Model):
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
         status ENUM('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE') NOT NULL,
-        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
+        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber),
         FOREIGN KEY (examId) REFERENCES Exam(examId)
     );
     '''
