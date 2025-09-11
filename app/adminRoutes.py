@@ -745,7 +745,7 @@ def get_lecturers_by_department(department_code):
     print(f"User Department Code is: {department_code}")
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
-    return jsonify(lecturers_list)
+    return jsonify(lecturers_list)  
 
 
 # ===== to get all course that under the department for the manage exam page ====
