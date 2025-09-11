@@ -99,7 +99,6 @@ class VenueAvailability(db.Model):
     venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)   # [FK] Venue Number
     startDateTime = db.Column(db.DateTime, nullable=False)                                       # Start DateTime
     endDateTime = db.Column(db.DateTime, nullable=False)                                         # End DateTime
-    status = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)        # Venue status for that time
 
     # Relationships
     exam = db.relationship("Exam", back_populates="venue_availabilities")
@@ -112,7 +111,6 @@ class VenueAvailability(db.Model):
         venueNumber VARCHAR(10) NOT NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
-        status ENUM('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE') NOT NULL,
         FOREIGN KEY (examId) REFERENCES Exam(examId),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
     );
