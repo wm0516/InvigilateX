@@ -505,8 +505,8 @@ def admin_manageCourse():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
 
-        # --------------------- ANNOUNCE FORM ---------------------
-        elif form_type == 'announce':
+        # --------------------- DASHBOARD FORM ---------------------
+        elif form_type == 'dashboard':
             return redirect(url_for('admin_manageCourse'))
 
         # --------------------- MANUAL ADD COURSE FORM ---------------------
@@ -691,7 +691,7 @@ def admin_manageExam():
                 return redirect(url_for('admin_manageExam'))
         '''
 
-        if form_type == 'announce':
+        if form_type == 'dashboard':
             return redirect(url_for('admin_manageExam'))
 
         # ===== Manual Add =====

@@ -74,10 +74,10 @@
                 <!-- Top Navigation Tabs -->
                 <div class="tab-container">
                     <div class="second-nav">
-                        {% if show_announce %}
-                            <a href="#announce" class="tab-link active" data-section="announceSection">
+                        {% if show_dashboard %}
+                            <a href="#dashboard" class="tab-link active" data-section="dashboardSection">
                                 <i class="fas fa-envelope"></i>
-                                <span>Notification</span>
+                                <span>Dashboard</span>
                             </a>
                         {% endif %}
 
@@ -112,8 +112,8 @@
                 <br>
 
                 <!-- Tab Content Sections -->
-                {% if show_announce %}
-                    {% block announce_section %}{% endblock %}
+                {% if show_dashboard %}
+                    {% block dashboard_section %}{% endblock %}
                 {% endif %}
                 {% if show_upload %}
                     {% block upload_section %}{% endblock %}

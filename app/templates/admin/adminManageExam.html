@@ -1,16 +1,16 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
 {% set show_upload = true %}
-{% set show_announce = true %}
+{% set show_dashboard = true %}
 {% set show_manual = true %}
 {% block title %}Admin ManageExam{% endblock %}
 {% block head_title %}<h2>Manage Exam</h2>{% endblock %}
 
-{% block announce_section %}
-<!-- Announce Form -->
-<form id="announceForm" action="{{ url_for('admin_manageExam') }}" method="POST" >
-    <div id="announceSection" class="function-frame">
-        <input type="hidden" name="form_type" value="announce">
+{% block dashboard_section %}
+<!-- Dashboard Form -->
+<form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST" >
+    <div id="dashboardSection" class="function-frame">
+        <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
         </div>
     </div>
