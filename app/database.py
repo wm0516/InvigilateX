@@ -19,9 +19,6 @@ from datetime import datetime, timezone
 
 
 
-
-
-
 class Department(db.Model):
     __tablename__ = 'Department'
     departmentCode = db.Column(db.String(10), primary_key=True)                     # [PK] Department Code
@@ -40,7 +37,6 @@ class Department(db.Model):
         hopId VARCHAR(20) NULL
     );
     '''
-
 
 class User(db.Model):
     __tablename__ = 'User'
@@ -82,11 +78,11 @@ class Venue(db.Model):
     venueNumber = db.Column(db.String(20), primary_key=True)                                     # [PK] Venue identifier
     venueFloor = db.Column(db.String(10), nullable=False)                                        # Floor of venue
     venueCapacity = db.Column(db.Integer, nullable=False)                                        # Capacity of venue
-    venueStatus = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)   # {'Available', 'Unavailable', 'In Service'}
-    
-    # Relationship
-    availabilities = db.relationship("VenueAvailability", back_populates="venue")
-    exams = db.relationship("Exam", back_populates="venue")
+    venueStatus = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)   # Venue overall status
+
+    # Relationships
+    availabilities = db.relationship("VenueAvailability", back_populates="venue")               # One Venue ↔ Many VenueAvailability
+    exams = db.relationship("Exam", back_populates="venue")                                     # One Venue ↔ Many Exams
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -98,15 +94,17 @@ class Venue(db.Model):
 
 class VenueAvailability(db.Model):
     __tablename__ = 'VenueAvailability'
-    availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)                # Refer to VenueAvailabilty ID
-    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                # Refer to Exam ID
-    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)  # Refer to Venue Number
-    startDateTime = db.Column(db.DateTime, nullable=False)                                      # Refer to Exam Start date & time        
-    endDateTime = db.Column(db.DateTime, nullable=False)                                        # Refer to Exam End date & time
-    
-    # Relationship
+    availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)                 # [PK] Availability ID
+    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Exam ID
+    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)   # [FK] Venue Number
+    startDateTime = db.Column(db.DateTime, nullable=False)                                       # Start DateTime
+    endDateTime = db.Column(db.DateTime, nullable=False)                                         # End DateTime
+    status = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)        # Venue status for that time
+
+    # Relationships
+    exam = db.relationship("Exam", back_populates="venue_availabilities")
     venue = db.relationship("Venue", back_populates="availabilities")
-    exam = db.relationship("Exam", back_populates="exam")
+
     '''
     CREATE TABLE VenueAvailability (
         availabilityId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -115,28 +113,30 @@ class VenueAvailability(db.Model):
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
         status ENUM('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE') NOT NULL,
-        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber),
-        FOREIGN KEY (examId) REFERENCES Exam(examId)
+        FOREIGN KEY (examId) REFERENCES Exam(examId),
+        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
     );
     '''
 
-
 class Exam(db.Model):
     __tablename__ = 'Exam'
-    examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                        # [PK] Refer to Exam ID
-    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)     # Refer to Exam Venue
-    examStartTime = db.Column(db.DateTime, nullable=True)                                       # Refer to Exam StartTime
-    examEndTime = db.Column(db.DateTime, nullable=True)                                         # Refer to Exam EndTime
-    examNoInvigilator = db.Column(db.Integer, nullable=True)                                    # Refer to total of invigilator need for the exam sessions
-    
-    # Relationship
-    course = db.relationship("Course", back_populates="exam", uselist=False)  # One Exam ↔ One Course
-    venue = db.relationship("Venue", back_populates="exams")
+    examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                         # [PK] Refer to Exam ID
+    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)      # Refer to Exam Venue
+    examStartTime = db.Column(db.DateTime, nullable=True)                                        # Refer to Exam StartTime
+    examEndTime = db.Column(db.DateTime, nullable=True)                                          # Refer to Exam EndTime
+    examNoInvigilator = db.Column(db.Integer, nullable=True)                                     # Number of invigilators needed
+
+    # Relationships
+    course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
+    venue = db.relationship("Venue", back_populates="exams")                                     # Many Exams ↔ One Venue
+    venue_availabilities = db.relationship("VenueAvailability", back_populates="exam")           # One Exam ↔ Many VenueAvailability
+    invigilation_reports = db.relationship("InvigilationReport", backref="exam")                 # One Exam ↔ Many InvigilationReport
+
     '''
     CREATE TABLE Exam (
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        examStartTime DateTime NULL,
-        examEndTime DateTime NULL,
+        examStartTime DATETIME NULL,
+        examEndTime DATETIME NULL,
         examVenue VARCHAR(10) NULL,
         examNoInvigilator INT NULL,
         FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
@@ -182,12 +182,11 @@ class Course(db.Model):
 
 class InvigilationReport(db.Model):
     __tablename__ = 'InvigilationReport'
-    invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)      # [PK] Refer to Invigilation Report ID
-    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)            # [FK] Refer to Which Exam, and with the details of 
-    remarks = db.Column(db.Text, nullable=True)                                             # Refer to any remarks of exam sessions
+    invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)           # [PK] Refer to Invigilation Report ID
+    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Refer to Which Exam, and with the details of
+    remarks = db.Column(db.Text, nullable=True)                                                  # Remarks on session
 
-    # Relationship
-    exam = db.relationship("Exam", backref="invigilation_reports")
+    # Relationships
     attendances = db.relationship("InvigilatorAttendance", backref="report", cascade="all, delete-orphan")
     '''
     CREATE TABLE InvigilationReport (
@@ -195,20 +194,19 @@ class InvigilationReport(db.Model):
         examId INT NOT NULL,
         remarks TEXT NULL,
         FOREIGN KEY (examId) REFERENCES Exam(examId)
-    );  
+    );
     '''
-
 
 class InvigilatorAttendance(db.Model):
     __tablename__ = 'InvigilatorAttendance'
     attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
     reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)     # [FK] Refer to Invigilation Report with the exam details
     invigilatorId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
-    checkIn = db.Column(db.DateTime, nullable=True)                                                                # Refer to invigilator check in time (must before 1 hour exam start)
-    checkOut = db.Column(db.DateTime, nullable=True)                                                               # Refer to invigilator check out time (must before 1 hour exam end)
-    remark = db.Column(db.Text, nullable=True)                                                                     # Refer to invigilator checkin and checkout early or late, and show exam process
+    checkIn = db.Column(db.DateTime, nullable=True)                                                                # Check-in time
+    checkOut = db.Column(db.DateTime, nullable=True)                                                               # Check-out time
+    remark = db.Column(db.Text, nullable=True)                                                                     # Notes
 
-    # Relationship
+    # Relationships
     invigilator = db.relationship("User")
     '''
     CREATE TABLE InvigilatorAttendance (
@@ -222,22 +220,6 @@ class InvigilatorAttendance(db.Model):
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
     );
     '''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Need Double Check, Record In Database
 class Timetable(db.Model):
