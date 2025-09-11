@@ -21,21 +21,33 @@
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     {% if not files %}
         {% if not authorized %}
-            <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
+            <div class="button-wrapper">
+                <button type="submit">
+                    <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
+                </button>
+            </div>
         {% else %}
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
+            <div class="button-wrapper">
+                <button type="submit">
+                    <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
+                </button>
+            </div>
         {% endif %}
     {% endif %}
 
     {% if files %}
         <!-- Refresh Button -->
-        <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
+        <div class="button-wrapper">
+            <button type="submit">
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
+            </button>
+        </div>
         <br><br>
 
         <h3>PDF Files from SOC Folder:</h3>
-        <a href="{{ url_for('extract_all') }}" class="btn btn-danger">
-            Extract & Save All Timetables to Database
-        </a>
+        <button type="submit">
+            <a href="{{ url_for('extract_all') }}" class="btn btn-danger">Extract & Save All Timetables to Database</a>
+        </button>
         <br><br><br>
 
         <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
