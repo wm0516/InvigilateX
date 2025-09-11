@@ -23,15 +23,7 @@
         {% if not authorized %}
             <a href="{{ url_for('authorize') }}" class="button-wrapper">Click here to authorize Google Drive</a>
         {% else %}
-            <div class="button-wrapper">
-                <form action="{{ url_for('fetch_drive_files') }}" method="get">
-                    <button type="submit" class="btn-refresh">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
-                </form>
-            </div>
-
-            <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i> Refresh</a>
+            <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i> Click here to load files from Google Drive</a>
         {% endif %}
     {% endif %}
 
@@ -39,7 +31,6 @@
         <!-- Refresh Button -->
         <a href="{{ url_for('fetch_drive_files') }}" class="button-wrapper"><i class="fas fa-sync-alt"></i>Refresh</a>
         <a href="{{ url_for('extract_all') }}" class="button-wrapper">Extract & Save All Timetables to Database</a>
-        <br><br>
 
         <h3>PDF Files from SOC Folder:</h3>
         <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
