@@ -92,30 +92,6 @@ class Venue(db.Model):
     );
     '''
 
-class VenueAvailability(db.Model):
-    __tablename__ = 'VenueAvailability'
-    availabilityId = db.Column(db.Integer, primary_key=True, autoincrement=True)                 # [PK] Availability ID
-    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Exam ID
-    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)   # [FK] Venue Number
-    startDateTime = db.Column(db.DateTime, nullable=False)                                       # Start DateTime
-    endDateTime = db.Column(db.DateTime, nullable=False)                                         # End DateTime
-
-    # Relationships
-    exam = db.relationship("Exam", back_populates="venue_availabilities")
-    venue = db.relationship("Venue", back_populates="availabilities")
-
-    '''
-    CREATE TABLE VenueAvailability (
-        availabilityId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        examId INT NOT NULL,
-        venueNumber VARCHAR(10) NOT NULL,
-        startDateTime DATETIME NOT NULL,
-        endDateTime DATETIME NOT NULL,
-        FOREIGN KEY (examId) REFERENCES Exam(examId),
-        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
-    );
-    '''
-
 class Exam(db.Model):
     __tablename__ = 'Exam'
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                         # [PK] Refer to Exam ID
@@ -138,6 +114,30 @@ class Exam(db.Model):
         examVenue VARCHAR(10) NULL,
         examNoInvigilator INT NULL,
         FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
+    );
+    '''
+
+class VenueAvailability(db.Model):
+    __tablename__ = 'VenueAvailability'
+    examVenueId = db.Column(db.Integer, primary_key=True, autoincrement=True)                 # [PK] Availability ID
+    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Exam ID
+    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)   # [FK] Venue Number
+    startDateTime = db.Column(db.DateTime, nullable=False)                                       # Start DateTime
+    endDateTime = db.Column(db.DateTime, nullable=False)                                         # End DateTime
+
+    # Relationships
+    exam = db.relationship("Exam", back_populates="venue_availabilities")
+    venue = db.relationship("Venue", back_populates="availabilities")
+
+    '''
+    CREATE TABLE VenueAvailability (
+        examVenueId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        examId INT NOT NULL,
+        venueNumber VARCHAR(10) NOT NULL,
+        startDateTime DATETIME NOT NULL,
+        endDateTime DATETIME NOT NULL,
+        FOREIGN KEY (examId) REFERENCES Exam(examId),
+        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
     );
     '''
 
