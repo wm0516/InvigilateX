@@ -209,7 +209,7 @@ class InvigilatorAttendance(db.Model):
     '''
     CREATE TABLE InvigilatorAttendance (
         attendanceId INT AUTO_INCREMENT PRIMARY KEY,
-        reportId INT NOT NULL,
+        reportId INT NOT NULL,  
         invigilatorId VARCHAR(20) NOT NULL,
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
