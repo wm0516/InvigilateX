@@ -22,13 +22,11 @@
     {% if not files %}
         {% if not authorized %}
             <div class="button-wrapper">
-                <button>
-                    <a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a>
-                </button>
+                <button><a href="{{ url_for('authorize') }}" class="btn btn-primary">Click here to authorize Google Drive</a></button>
             </div>
         {% else %}
             <div class="button-wrapper">
-                <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a>
+                <button><a href="{{ url_for('fetch_drive_files') }}" class="btn btn-success">Click here to load files from Google Drive</a></button>
             </div>
         {% endif %}
     {% endif %}
@@ -36,13 +34,13 @@
     {% if files %}
         <!-- Refresh Button -->
         <div class="button-wrapper">
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a>
+            <button><a href="{{ url_for('fetch_drive_files') }}" class="btn btn-warning">Click here to refresh the files from Google Drive</a></button>
         </div>
         <br><br>
 
         <h3>PDF Files from SOC Folder:</h3>
         <div class="button-wrapper">
-            <a href="{{ url_for('extract_all') }}" class="btn btn-danger">Extract & Save All Timetables to Database</a>
+            <button><a href="{{ url_for('extract_all') }}" class="btn btn-danger">Extract & Save All Timetables to Database</a></button>
         </div>
         <br><br><br>
 
