@@ -1004,7 +1004,7 @@ def admin_manageTimetable():
     lecturers = sorted([row[0] for row in lecturers])  # flatten from [(name,), (name,)] to [name, name]
 
     if request.method == "POST":
-        files = request.files.getlist("pdf")  # handle multiple PDFs
+        files = request.files.getlist("timetable_file")  # handle multiple PDFs
 
         results = []
         for file in files:
@@ -1032,7 +1032,8 @@ def admin_manageTimetable():
         authorized='credentials' in session and session['credentials'] is not None,
         timetable_data=filtered_data,
         selected_lecturer=selected_lecturer,
-        lecturers=lecturers
+        lecturers=lecturers,
+        results=results
     )
 
 

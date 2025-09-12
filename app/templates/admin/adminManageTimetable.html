@@ -44,6 +44,13 @@
             <div class="button-wrapper">
                 <button type="submit">Upload New Staff</button>
             </div>
+
+            {% if results %}
+                <h4>Parsed Upload Results:</h4>
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 1%;">
+                    <pre>{{ results | tojson(indent=2) }}</pre>
+                </div>
+            {% endif %}
         </div>
     </div>
 </form>
