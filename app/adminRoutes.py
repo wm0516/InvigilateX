@@ -1015,6 +1015,8 @@ def admin_manageTimetable():
 
             structured = parse_pdf_text(raw_text)
             results.append(structured)
+    else:
+        results = []
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
