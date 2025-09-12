@@ -49,21 +49,11 @@
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-                            <button type="button" onclick="showUploadPreview({{ loop.index0 }})">Preview</button>
+                            <button type="button" onclick="showUploadPreview('{{ loop.index0 }}')">Preview</button>
                             {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
                 </div>
-                <br><br>
-
-                {% for file in files %}
-                    <div>
-                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                        <a href="{{ file.webViewLink }}" target="_blank">
-                            {{ loop.index }}. {{ file.name }}
-                        </a>
-                    </div>
-                {% endfor %}
             {% endif %}
 
         </div>

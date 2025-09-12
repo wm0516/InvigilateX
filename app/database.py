@@ -236,18 +236,18 @@ class Timetable(db.Model):
     classWeekDate = db.Column(db.Text, nullable=True)
 
     '''
-    class Timetable(db.Model):
-        __tablename__ = 'Timetable' 
-        timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True) 
-        lecturerName = db.Column(db.String(255), nullable=True) 
-        classType = db.Column(db.String(10), nullable=True) 
-        classDay = db.Column(db.String(3), nullable=True) 
-        classTime = db.Column(db.String(20), nullable=True) 
-        classRoom = db.Column(db.String(20), nullable=True) 
-        courseName = db.Column(db.String(255), nullable=True) 
-        courseIntake = db.Column(db.String(50), nullable=True) 
-        courseCode = db.Column(db.String(20), nullable=True) 
-        courseSection = db.Column(db.String(20), nullable=True) 
-        classWeekRange = db.Column(db.Text, nullable=True) 
-        classWeekDate = db.Column(db.Text, nullable=True)
+    CREATE TABLE Timetable (
+        timetableId INT AUTO_INCREMENT PRIMARY KEY,
+        lecturerName VARCHAR(255),
+        classType VARCHAR(10),
+        classDay VARCHAR(3),
+        classTime VARCHAR(20),
+        classRoom VARCHAR(20),
+        courseName VARCHAR(255),
+        courseIntake VARCHAR(50),
+        courseCode VARCHAR(20),
+        courseSection VARCHAR(20),
+        classWeekRange TEXT,
+        classWeekDate TEXT
+    );
     '''
