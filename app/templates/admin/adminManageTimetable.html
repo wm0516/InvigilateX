@@ -33,13 +33,19 @@
 
     {% if files %}
         <!-- Refresh Button -->
-        <div class="button-wrapper">
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
+        <div class="profile-frame">
+            <div class="form-left">
+                <div class="button-wrapper">
+                    <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
+                </div>
+            </div>
+            <div class="form-right">
+                <div class="button-wrapper">
+                    <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
+                </div>
+            </div>
         </div>
-        <div class="button-wrapper">
-            <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
-        </div>
-
+        
         <h3>PDF Files from SOC Folder:</h3>
         <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
             {% for file in files %}
