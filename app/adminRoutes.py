@@ -1020,7 +1020,10 @@ def admin_manageTimetable():
                 raw_text += page.extract_text() + " "
 
             structured = parse_pdf_text(raw_text)
-            results.append(structured)
+            results.append({
+                "filename": file.filename,
+                "data": structured
+            })
     else:
         results = []
 

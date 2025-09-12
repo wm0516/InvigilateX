@@ -45,11 +45,27 @@
             </div>
 
             {% if results %}
-                <h4>Parsed Upload Results:</h4>
-                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 1%;">
-                    <pre>{{ results | tojson(indent=2) }}</pre>
+                <h4>Uploaded Files:</h4>
+                <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    {% for file in results %}
+                        <div>
+                            <button type="button" onclick="showUploadPreview({{ loop.index0 }})">Preview</button>
+                            {{ loop.index }}. {{ file.filename }}
+                        </div>
+                    {% endfor %}
                 </div>
+                <br><br>
+
+                {% for file in files %}
+                    <div>
+                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+                        <a href="{{ file.webViewLink }}" target="_blank">
+                            {{ loop.index }}. {{ file.name }}
+                        </a>
+                    </div>
+                {% endfor %}
             {% endif %}
+
         </div>
     </div>
 </form>
