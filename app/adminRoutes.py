@@ -12,6 +12,7 @@ import os
 import json
 from PyPDF2 import PdfReader
 import re
+import PyPDF2
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
@@ -921,18 +922,31 @@ def parse_pdf_text(text):
     # --- Step 1: Extract title ---
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
     if match_title:
+        raw_name = match_title.group(1)
+        formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
+        
+        # Fix common Malaysian abbreviations
+        formatted_name = formatted_name.replace("A/ P", "A/P")
+        formatted_name = formatted_name.replace("A/ L", "A/L")
+        lecturer_name = formatted_name
+    else:
+        lecturer_name = "UNKNOWN"
+    
+    # Step 4: Replace name inside the text
+    if lecturer_name != "UNKNOWN":
+        text = text.replace(raw_name, lecturer_name.replace(" ", ""))
+
+    # Step 5: Convert to UPPERCASE
+    text = text.upper()
+
+    # Step 6: Extract title and timerow again
+    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
+    if match_title:
         title = match_title.group(1).strip()
         timerow = match_title.group(2).strip()
         text = text.replace(title, "").replace(timerow, "")
     else:
         title = "TIMETABLE"
-        timerow = ""
-
-    # --- Extract lecturer name ---
-    lecturer_name = None
-    match_name = re.search(r"-(.*?)\(", title)
-    if match_name:
-        lecturer_name = match_name.group(1)
 
     # --- Step 2: Insert days with blank line before them ---
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
@@ -957,13 +971,12 @@ def parse_pdf_text(text):
         "timerow": timerow,
         "days": {}
     }
-    current_day = None
 
+    current_day = None
     for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
-
         if line in days:
             current_day = line
             structured["days"][current_day] = []
@@ -989,6 +1002,19 @@ def admin_manageTimetable():
     # Query 2: Distinct lecturer names (for dropdown only)
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
     lecturers = sorted([row[0] for row in lecturers])  # flatten from [(name,), (name,)] to [name, name]
+
+    if request.method == "POST":
+        files = request.files.getlist("pdf")  # handle multiple PDFs
+
+        results = []
+        for file in files:
+            reader = PyPDF2.PdfReader(file.stream)
+            raw_text = ""
+            for page in reader.pages:
+                raw_text += page.extract_text() + " "
+
+            structured = parse_pdf_text(raw_text)
+            results.append(structured)
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')

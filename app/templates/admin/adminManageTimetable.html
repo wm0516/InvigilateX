@@ -18,6 +18,35 @@
 {% endblock %} 
 
 {% block upload_section %}
+<!-- Upload Form -->
+<form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+    <div id="uploadSection" class="function-frame">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="timetable_list">
+                <div class="upload-container" id="timetableUploadContainer">
+                    <div class="upload-text">
+                        Upload a file with an empty first row. Data should start from columns A to G,<br> 
+                        labeled as: ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', and 'Gender']<br><br><br>
+                        Click to upload or drag and drop with below file format
+                    </div>
+                    <div class="file-types">PDF</div><br>
+                    <!-- Selected file display -->
+                    <div id="timetableSelectedFileName" class="file-name-display"></div>
+                </div>
+            </label>
+            <input type="file" id="timetable_list" name="timetable_file" accept=".pdf" style="display: none;" multiple>
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="upload">
+            <br>
+
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Upload New Staff</button>
+            </div>
+        </div>
+    </div>
+</form>
 {% endblock %} 
 
 
