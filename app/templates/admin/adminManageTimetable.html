@@ -22,7 +22,7 @@
 
 
 {% block manual_section %}
-<form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+<form id="manualForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     {% if not files %}
         {% if not authorized %}
             <div class="button-wrapper">
