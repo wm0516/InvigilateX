@@ -21,9 +21,13 @@
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     {% if not files %}
         {% if not authorized %}
-            <a href="{{ url_for('authorize') }}" class="btn-link">Click here to authorize Google Drive</a>
-        {% else %}
-            <a href="{{ url_for('fetch_drive_files') }}" class="btn-link">Click here to load files from Google Drive</a>
+            <div class="button-wrapper">
+                <a href="{{ url_for('authorize') }}" class="btn-link">Click here to authorize Google Drive</a>
+            </div>
+        {% else %}  
+            <div class="button-wrapper">
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn-link">Click here to load files from Google Drive</a>
+            </div>
         {% endif %}
     {% endif %}
 
@@ -32,7 +36,6 @@
         <div class="button-wrapper">
             <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
         </div>
-        <br><br>
         <div class="button-wrapper">
             <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
         </div>
