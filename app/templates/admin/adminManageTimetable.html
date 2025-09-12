@@ -45,17 +45,22 @@
             </div>
 
             {% if results %}
-                <h4>Uploaded Files:</h4>
+                <h3>Uploaded Files:</h3>
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-                            <button type="button" onclick="showUploadPreview('{{ loop.index0 }}')">Preview</button>
+                            <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
                             {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
                 </div>
-            {% endif %}
+                <br><br>
 
+                <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+                    <h4>Preview Result</h4>
+                    <pre id="previewContent">Click a preview button to load timetable...</pre>
+                </div>
+            {% endif %}
         </div>
     </div>
 </form>
