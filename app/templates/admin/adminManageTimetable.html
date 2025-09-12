@@ -2,7 +2,7 @@
 {% set show_tabs = true %}
 {% set show_upload = true %}
 {% set show_dashboard = true %}
-{% set show_manual = false %}
+{% set show_manual = true %}
 {% block title %}Admin ManageTimetable{% endblock %}
 {% block head_title %}<h2>Manage Timetable</h2>{% endblock %}
 
@@ -15,9 +15,13 @@
         </div>
     </div>  
 </form>
-{% endblock %}
+{% endblock %} 
 
 {% block upload_section %}
+{% endblock %} 
+
+
+{% block manual_section %}
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     {% if not files %}
         {% if not authorized %}
@@ -33,19 +37,13 @@
 
     {% if files %}
         <!-- Refresh Button -->
-        <div class="profile-frame">
-            <div class="form-left">
-                <div class="button-wrapper">
-                    <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
-                </div>
-            </div>
-            <div class="form-right">
-                <div class="button-wrapper">
-                    <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
-                </div>
-            </div>
+        <div class="button-wrapper">
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
         </div>
-        
+        <div class="button-wrapper">
+            <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
+        </div>
+
         <h3>PDF Files from SOC Folder:</h3>
         <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
             {% for file in files %}
