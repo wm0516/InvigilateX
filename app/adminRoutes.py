@@ -913,31 +913,37 @@ def parse_activity(line):
 
 
 def parse_pdf_text(text):
-    structured = None
+    # Step 1: Remove all whitespace
+    text_no_whitespace = re.sub(r"\s+", "", text)
 
-    # Remove ALL whitespace
-    text = re.sub(r"\s+", "", text)
-    text = text.upper()
+    # Step 2: Extract name before uppercasing
+    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
+    if title_match:
+        title_raw = title_match.group(1)
+        timerow = title_match.group(2)
+    else:
+        title_raw = ""
+        timerow = ""
 
-    # --- Step 1: Extract title ---
-    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
-    if match_title:
-        raw_name = match_title.group(1)
+    # Step 3: Extract and format the name
+    lecturer_name = None
+    name_match = re.search(r"-([^-()]+)\(", title_raw)
+    if name_match:
+        raw_name = name_match.group(1)
         formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-        
         # Fix common Malaysian abbreviations
         formatted_name = formatted_name.replace("A/ P", "A/P")
         formatted_name = formatted_name.replace("A/ L", "A/L")
         lecturer_name = formatted_name
     else:
         lecturer_name = "UNKNOWN"
-    
+
     # Step 4: Replace name inside the text
     if lecturer_name != "UNKNOWN":
-        text = text.replace(raw_name, lecturer_name.replace(" ", ""))
+        text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
 
     # Step 5: Convert to UPPERCASE
-    text = text.upper()
+    text = text_no_whitespace.upper()
 
     # Step 6: Extract title and timerow again
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
@@ -948,12 +954,12 @@ def parse_pdf_text(text):
     else:
         title = "TIMETABLE"
 
-    # --- Step 2: Insert days with blank line before them ---
+    # Insert days with blank line
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
     for day in days:
         text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
 
-    # --- Step 3: Break activities so each starts on new line ---
+    # Break activities
     keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
     for kw in keywords:
         if kw == "PUBLISHED":
@@ -961,10 +967,10 @@ def parse_pdf_text(text):
         else:
             text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
 
-    # --- Step 4: Clean up ---
+    # Clean blank lines
     text = re.sub(r"\n{3,}", "\n\n", text)
 
-    # --- Step 5: Build structured JSON ---
+    # Build structured JSON
     structured = {
         "title": title,
         "lecturer": lecturer_name,
