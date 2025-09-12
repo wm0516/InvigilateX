@@ -26,11 +26,10 @@
             <label for="timetable_list">
                 <div class="upload-container" id="timetableUploadContainer">
                     <div class="upload-text">
-                        Upload a file with an empty first row. Data should start from columns A to G,<br> 
-                        labeled as: ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', and 'Gender']<br><br><br>
+                        Upload in PDF file format<br><br><br>
                         Click to upload or drag and drop with below file format
                     </div>
-                    <div class="file-types">PDF</div><br>
+                    <div class="file-types">PDF ONLY</div><br>
                     <!-- Selected file display -->
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
@@ -42,7 +41,7 @@
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Upload New Staff</button>
+                <button type="submit">Upload Lecturer Timetable</button>
             </div>
 
             {% if results %}
