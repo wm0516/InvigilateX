@@ -16,6 +16,9 @@ import PyPDF2
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from google.oauth2 import id_token
+from google.auth.transport import requests as grequests
+
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -1230,6 +1233,9 @@ def reauthorize():
     return redirect(url_for('authorize'))
 
 
+from google.oauth2 import id_token
+from google.auth.transport import requests as grequests
+
 @app.route('/admin/oauth2callback')
 def oauth2callback():
     try:
@@ -1247,15 +1253,30 @@ def oauth2callback():
             'token_uri': getattr(creds, 'token_uri', None),
             'client_id': getattr(creds, 'client_id', None),
             'client_secret': getattr(creds, 'client_secret', None),
-            'scopes': getattr(creds, 'scopes', None)
+            'scopes': getattr(creds, 'scopes', None),
+            'id_token': getattr(creds, 'id_token', None)  # keep id_token for email
         }
 
-        app.logger.info("OAuth2 authentication successful, credentials stored.")
-        return redirect(url_for('admin_manageTimetable'))
+        # Extract email from ID token if available
+        session['user_email'] = None
+        if creds.id_token:
+            try:
+                idinfo = id_token.verify_oauth2_token(creds.id_token, grequests.Request())
+                session['user_email'] = idinfo.get('email')
+            except Exception as e:
+                app.logger.warning(f"Failed to extract email from ID token: {e}")
+
+        flash("Successfully authorized Google Drive!", "success")
+        app.logger.info("OAuth2 authentication successful, credentials and user email stored.")
+
+        # after auth → go fetch files
+        return redirect(url_for('fetch_drive_files'))
+
     except Exception as e:
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
+
     
 
 def save_timetable_to_db(structured):
