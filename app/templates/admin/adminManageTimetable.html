@@ -188,28 +188,20 @@
             </tbody>
         </table>
     </div>
-</div>  
+</div>
 
 <script>
 function previewTimetable(fileId) {
+    document.getElementById("previewContent").textContent = "Loading...";
     fetch(`/admin/preview_timetable/${fileId}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Failed to fetch preview");
-            }
-            return response.json();  // <-- this fails if the response is HTML
-        })
+        .then(response => response.json())
         .then(data => {
-            // Do something with the structured timetable
-            console.log("Preview:", data);
-            // You could display it in a modal, etc.
+            document.getElementById("previewContent").textContent = JSON.stringify(data, null, 2);
         })
-        .catch(error => {
-            console.error("Error loading preview:", error);
-            alert("Error loading preview");
+        .catch(err => {
+            document.getElementById("previewContent").textContent = "Error: " + err;
         });
 }
-
 </script>
 
 {% endblock %}
