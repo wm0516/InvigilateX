@@ -1024,46 +1024,21 @@ def admin_manageTimetable():
             flash("No file uploaded. Please select at least one PDF.", "error")
             return redirect(url_for("admin_manageTimetable"))
 
-        grouped_files = {}
+        # Wrap files to match expected structure
+        wrapped_files = [{"filename": f.filename, "file": f.stream} for f in uploaded_files]
 
-        for file in uploaded_files:
-            base_name = extract_base_name(file.filename)
-            if not base_name:
-                continue
-
-            # Read PDF and parse
-            try:
-                reader = PyPDF2.PdfReader(file.stream)
-                raw_text = ""
-                for page in reader.pages:
-                    raw_text += page.extract_text() + " "
-
-                structured = parse_pdf_text(raw_text)
-                week_start_date = get_week_start_date(structured)
-
-                if base_name not in grouped_files:
-                    grouped_files[base_name] = {
-                        "file": file,
-                        "structured": structured,
-                        "week_start_date": week_start_date
-                    }
-                else:
-                    current = grouped_files[base_name]
-                    if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
-                        grouped_files[base_name] = {
-                            "file": file,
-                            "structured": structured,
-                            "week_start_date": week_start_date
-                        }
-            except Exception as e:
-                flash(f"Error processing file {file.filename}: {str(e)}", "error")
-                continue
+        grouped_files = group_latest_timetable_files(wrapped_files)
 
         if not grouped_files:
             flash("No valid PDF files were processed.", "error")
             return redirect(url_for("admin_manageTimetable"))
 
         flash(f"Successfully read {len(grouped_files)} file(s).", "success")
+
+        results = [
+            {"filename": data["filename"], "data": data["structured"]}
+            for data in grouped_files.values()
+        ]
 
         for data in grouped_files.values():
             results.append({
@@ -1117,6 +1092,7 @@ def fetch_drive_files():
         page_token = None
         total_files_read = 0
 
+        drive_files_raw = []
         while True:
             response = drive_service.files().list(
                 q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
@@ -1125,26 +1101,33 @@ def fetch_drive_files():
                 pageToken=page_token
             ).execute()
 
-            files_in_page = response.get('files', [])
-            total_files_read += len(files_in_page)
-
-            for file in files_in_page:
-                base_name = extract_base_name(file['name'])
-                if not base_name:
-                    continue
-
-                # If already seen, skip or replace (you can adjust this logic as needed)
-                if base_name not in seen_files:
-                    seen_files[base_name] = file
-
+            for file in response.get('files', []):
+                file_content = drive_service.files().get_media(fileId=file['id']).execute()
+                drive_files_raw.append({
+                    "name": file['name'],
+                    "id": file['id'],
+                    "link": file.get('webViewLink'),
+                    "content": file_content
+                })
 
             page_token = response.get('nextPageToken')
             if not page_token:
                 break
 
-        final_files = list(seen_files.values())
+        # Now filter using same logic
+        grouped_files = group_latest_timetable_files(drive_files_raw)
+
+        # Prepare for session
+        final_files = []
+        for data in grouped_files.values():
+            final_files.append({
+                "id": data.get("id"),  # You may store `id` if needed
+                "name": data["filename"],
+                "webViewLink": data.get("link")
+            })
 
         session['drive_files'] = final_files
+
 
     except Exception as e:
         flash(f"Error fetching files from Google Drive: {e}", 'error')
@@ -1154,6 +1137,63 @@ def fetch_drive_files():
     flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
     return redirect(url_for('admin_manageTimetable'))
 
+
+
+
+def group_latest_timetable_files(files):
+    """
+    Groups the uploaded/drive timetable files by lecturer name (base name),
+    keeping only the latest version based on week_start_date.
+    Accepts a list of dicts with keys: filename (or name), content/file stream.
+    """
+    grouped_files = {}
+
+    for file in files:
+        try:
+            # Detect source: Drive file or Uploaded file
+            filename = file.get("filename") or file.get("name")
+            file_stream = file.get("file") or file.get("content")
+            base_name = extract_base_name(filename)
+
+            if not base_name:
+                continue
+
+            # Extract PDF text
+            if isinstance(file_stream, bytes):
+                reader = PdfReader(BytesIO(file_stream))
+            else:
+                reader = PyPDF2.PdfReader(file_stream)
+
+            raw_text = ""
+            for page in reader.pages:
+                raw_text += page.extract_text() + " "
+
+            structured = parse_pdf_text(raw_text)
+            week_start_date = get_week_start_date(structured)
+
+            # Compare or insert
+            if base_name not in grouped_files:
+                grouped_files[base_name] = {
+                    "filename": filename,
+                    "file": file_stream,
+                    "structured": structured,
+                    "week_start_date": week_start_date
+                }
+            else:
+                existing = grouped_files[base_name]
+                if week_start_date and (not existing["week_start_date"] or week_start_date > existing["week_start_date"]):
+                    grouped_files[base_name] = {
+                        "filename": filename,
+                        "file": file_stream,
+                        "structured": structured,
+                        "week_start_date": week_start_date
+                    }
+
+        except Exception as e:
+            app.logger.error(f"Error processing file {file.get('filename') or file.get('name')}: {str(e)}")
+            continue
+
+    return grouped_files
 
 
 
