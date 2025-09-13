@@ -1061,17 +1061,17 @@ def admin_manageTimetable():
 
         flash(f"Successfully read {len(grouped_files)} file(s).", "success")
 
-        for index, data in enumerate(grouped_files.values()):
+        for data in grouped_files.values():
             results.append({
-                "preview_id": f"uploaded-{index}",
                 "filename": data["file"].filename,
-                "structured": data["structured"]
+                "data": data["structured"]
             })
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
+
     filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer] if selected_lecturer else timetable_data
-    session["uploaded_results"] = results
+
     return render_template(
         'admin/adminManageTimetable.html',
         files=files,
@@ -1140,6 +1140,7 @@ def fetch_drive_files():
                 break
 
         final_files = list(seen_files.values())
+
         session['drive_files'] = final_files
 
     except Exception as e:
@@ -1152,23 +1153,14 @@ def fetch_drive_files():
 
 
 
+
 @app.route('/admin/preview_timetable/<file_id>')
 def preview_timetable(file_id):
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        return jsonify({"error": "No credentials found"}), 401
+    
     try:
-        app.logger.info(f"Preview requested for file_id: {file_id}")
-
-        if file_id.startswith("uploaded-"):
-            uploaded_results = session.get("uploaded_results", [])
-            for item in uploaded_results:
-                if item["preview_id"] == file_id:
-                    return jsonify(item["structured"])
-            return jsonify({"error": "Uploaded file not found"}), 404
-
-        creds_dict = session.get('credentials')
-        if not creds_dict:
-            app.logger.warning("No credentials found in session")
-            return jsonify({"error": "No credentials found"}), 401
-
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
 
@@ -1185,17 +1177,16 @@ def preview_timetable(file_id):
         file_content = drive_service.files().get_media(fileId=file_id).execute()
 
         reader = PdfReader(BytesIO(file_content))
-        text = "".join([page.extract_text() + " " for page in reader.pages])
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + " "
 
         structured_timetable = parse_pdf_text(text)
-
-        app.logger.info(f"Preview data structure for {file_id} parsed successfully")
-        return jsonify(structured_timetable)
+        json_str = json.dumps(structured_timetable, indent=4, sort_keys=False)
+        return Response(json_str, mimetype='application/json')
 
     except Exception as e:
-        app.logger.error(f"Error previewing file {file_id}: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
-
 
 
 @app.route('/admin/authorize')
