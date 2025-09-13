@@ -1013,10 +1013,12 @@ def admin_manageTimetable():
         Timetable.classTime
     ).all()
 
+    # Get list of distinct lecturers
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
     lecturers = sorted([row[0] for row in lecturers])
 
     results = []
+
     if request.method == "POST" and request.form.get('form_type') == 'upload':
         uploaded_files = request.files.getlist("timetable_file")
 
@@ -1027,6 +1029,7 @@ def admin_manageTimetable():
         # Wrap files to match expected structure
         wrapped_files = [{"filename": f.filename, "file": f.stream} for f in uploaded_files]
 
+        # Process and group the timetable files
         grouped_files = group_latest_timetable_files(wrapped_files)
 
         if not grouped_files:
@@ -1035,21 +1038,21 @@ def admin_manageTimetable():
 
         flash(f"Successfully read {len(grouped_files)} file(s).", "success")
 
+        # Prepare the results for rendering
         results = [
             {"filename": data["filename"], "data": data["structured"]}
             for data in grouped_files.values()
         ]
 
-        for data in grouped_files.values():
-            results.append({
-                "filename": data["file"].filename,
-                "data": data["structured"]
-            })
-
+    # Get Google Drive files from session (if any)
     files = session.get('drive_files')
-    selected_lecturer = request.args.get('lecturer')
 
-    filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer] if selected_lecturer else timetable_data
+    # Filtering logic for timetable display
+    selected_lecturer = request.args.get('lecturer')
+    filtered_data = (
+        [row for row in timetable_data if row.lecturerName == selected_lecturer]
+        if selected_lecturer else timetable_data
+    )
 
     return render_template(
         'admin/adminManageTimetable.html',
@@ -1065,78 +1068,41 @@ def admin_manageTimetable():
 
 
 
+@app.route('/upload_timetables', methods=['GET', 'POST'])
+def upload_timetables():
+    results = []
 
-@app.route('/admin/fetch_drive_files')
-def fetch_drive_files():
-    creds_dict = session.get('credentials')
-    if not creds_dict:
-        flash("No credentials found in session. Please authenticate first.", 'error')
-        return redirect(url_for('authorize'))
+    if request.method == "POST" and request.form.get('form_type') == 'upload':
+        uploaded_files = request.files.getlist("timetable_file")
 
-    try:
-        if isinstance(creds_dict, str):
-            creds_dict = json.loads(creds_dict)
+        # Check if any files were uploaded
+        if not uploaded_files or all(f.filename == '' for f in uploaded_files):
+            flash("No file uploaded. Please select at least one PDF.", "error")
+            return redirect(url_for("upload_timetables"))
 
-        creds = Credentials(
-            token=creds_dict.get('token'),
-            refresh_token=creds_dict.get('refresh_token'),
-            token_uri=creds_dict.get('token_uri'),
-            client_id=creds_dict.get('client_id'),
-            client_secret=creds_dict.get('client_secret'),
-            scopes=creds_dict.get('scopes')
-        )
+        # Wrap files for processing function
+        wrapped_files = [{"filename": f.filename, "file": f.stream} for f in uploaded_files]
 
-        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
+        # Call your shared processing function
+        grouped_files = group_latest_timetable_files(wrapped_files)
 
-        seen_files = {}
-        page_token = None
-        total_files_read = 0
+        if not grouped_files:
+            flash("No valid PDF files were processed.", "error")
+            return redirect(url_for("upload_timetables"))
 
-        drive_files_raw = []
-        while True:
-            response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
-                spaces='drive',
-                fields='nextPageToken, files(id, name, webViewLink)',
-                pageToken=page_token
-            ).execute()
+        flash(f"Successfully read {len(grouped_files)} file(s).", "success")
 
-            for file in response.get('files', []):
-                file_content = drive_service.files().get_media(fileId=file['id']).execute()
-                drive_files_raw.append({
-                    "name": file['name'],
-                    "id": file['id'],
-                    "link": file.get('webViewLink'),
-                    "content": file_content
-                })
+        # Prepare data for the template
+        results = [
+            {"filename": data["filename"], "data": data["structured"]}
+            for data in grouped_files.values()
+        ]
 
-            page_token = response.get('nextPageToken')
-            if not page_token:
-                break
-
-        # Now filter using same logic
-        grouped_files = group_latest_timetable_files(drive_files_raw)
-
-        # Prepare for session
-        final_files = []
-        for data in grouped_files.values():
-            final_files.append({
-                "id": data.get("id"),  # You may store `id` if needed
-                "name": data["filename"],
-                "webViewLink": data.get("link")
-            })
-
-        session['drive_files'] = final_files
-
-
-    except Exception as e:
-        flash(f"Error fetching files from Google Drive: {e}", 'error')
-        app.logger.error(f"Error fetching files from Google Drive: {e}")
-        return redirect(url_for('admin_manageTimetable'))
-
-    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
-    return redirect(url_for('admin_manageTimetable'))
-
+    # Render your upload page with the results of processing
+    return render_template(
+        'upload_timetables.html',
+        results=results
+    )
 
 
 
