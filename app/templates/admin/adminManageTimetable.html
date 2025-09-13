@@ -103,9 +103,9 @@
             </a>
         </div>
 
-        {% if session['user_email'] %}
+        {% if session.get('user_email') %}
             <p style="margin-top: 10px; font-size: 0.95rem; color: #333;">
-                Current login as: <strong>{{ session['user_email'] }}</strong>
+                Current login as: <strong>{{ session.get('user_email') }}</strong>
             </p>
         {% endif %}
 

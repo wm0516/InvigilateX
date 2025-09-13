@@ -1253,29 +1253,25 @@ def oauth2callback():
             'token_uri': getattr(creds, 'token_uri', None),
             'client_id': getattr(creds, 'client_id', None),
             'client_secret': getattr(creds, 'client_secret', None),
-            'scopes': getattr(creds, 'scopes', None),
-            'id_token': getattr(creds, 'id_token', None)  # keep id_token for email
+            'scopes': getattr(creds, 'scopes', None)
         }
 
-        # Extract email from ID token if available
-        session['user_email'] = None
-        if creds.id_token:
-            try:
-                idinfo = id_token.verify_oauth2_token(creds.id_token, grequests.Request())
-                session['user_email'] = idinfo.get('email')
-            except Exception as e:
-                app.logger.warning(f"Failed to extract email from ID token: {e}")
+        # ✅ Extract email from id_token if available
+        if hasattr(creds, "id_token") and creds.id_token:
+            session['user_email'] = creds.id_token.get("email")
+            app.logger.info(f"User logged in as: {session['user_email']}")
+        else:
+            session['user_email'] = None
+            app.logger.warning("No email found in credentials")
 
         flash("Successfully authorized Google Drive!", "success")
-        app.logger.info("OAuth2 authentication successful, credentials and user email stored.")
-
-        # after auth → go fetch files
-        return redirect(url_for('fetch_drive_files'))
+        return redirect(url_for('admin_manageTimetable'))
 
     except Exception as e:
-        flash(f"Error during OAuth2 callback: {e}", 'error')
+        flash(f"Error during OAuth2 callback: {e}", "error")
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
+
 
     
 
