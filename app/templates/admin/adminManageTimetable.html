@@ -40,9 +40,9 @@
 
             <!-- Show Refresh + Save buttons when results exist -->
             <div class="button-container">
-                <div class="btn-primary">
-                    <i>Upload to Preview Lecturer Timetable</i>
-                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-upload" style="margin-right: 5px;"></i>Upload to Preview Lecturer Timetable
+                </button>
                 {% if results %}
                     <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
                         <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
