@@ -851,6 +851,8 @@ def extract_base_name(file_name):
     base = re.sub(r"[_\s]\d{6}.*$", "", base)  # remove trailing _140425 onwards
     return base.strip()
 
+
+
 def get_week_start_date(structured):    
     """
     Extract the weekStartDate (earliest part of classWeekDate).
@@ -1124,36 +1126,20 @@ def fetch_drive_files():
             total_files_read += len(files_in_page)
 
             for file in files_in_page:
-                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+                base_name = extract_base_name(file['name'])
                 if not base_name:
                     continue
 
+                # If already seen, skip or replace (you can adjust this logic as needed)
                 if base_name not in seen_files:
-                    seen_files[base_name] = {
-                        'file': file,
-                        'timestamp': timestamp,
-                        'has_timestamp': bool(timestamp)
-                    }
-                else:
-                    current = seen_files[base_name]
-                    if not current['has_timestamp'] and timestamp:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True
-                        }
-                    elif current['has_timestamp'] and timestamp and timestamp > current['timestamp']:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': timestamp,
-                            'has_timestamp': True
-                        }
+                    seen_files[base_name] = file
+
 
             page_token = response.get('nextPageToken')
             if not page_token:
                 break
 
-        final_files = [file_data['file'] for file_data in seen_files.values()]
+        final_files = list(seen_files.values())
         session['drive_files'] = final_files
 
     except Exception as e:
