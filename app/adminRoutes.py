@@ -1013,12 +1013,10 @@ def admin_manageTimetable():
         Timetable.classTime
     ).all()
 
-    # Get list of distinct lecturers
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
     lecturers = sorted([row[0] for row in lecturers])
 
     results = []
-
     if request.method == "POST" and request.form.get('form_type') == 'upload':
         uploaded_files = request.files.getlist("timetable_file")
 
@@ -1026,11 +1024,40 @@ def admin_manageTimetable():
             flash("No file uploaded. Please select at least one PDF.", "error")
             return redirect(url_for("admin_manageTimetable"))
 
-        # Wrap files to match expected structure
-        wrapped_files = [{"filename": f.filename, "file": f.stream} for f in uploaded_files]
+        grouped_files = {}
 
-        # Process and group the timetable files
-        grouped_files = group_latest_timetable_files(wrapped_files)
+        for file in uploaded_files:
+            base_name = extract_base_name(file.filename)
+            if not base_name:
+                continue
+
+            # Read PDF and parse
+            try:
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = ""
+                for page in reader.pages:
+                    raw_text += page.extract_text() + " "
+
+                structured = parse_pdf_text(raw_text)
+                week_start_date = get_week_start_date(structured)
+
+                if base_name not in grouped_files:
+                    grouped_files[base_name] = {
+                        "file": file,
+                        "structured": structured,
+                        "week_start_date": week_start_date
+                    }
+                else:
+                    current = grouped_files[base_name]
+                    if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
+                        grouped_files[base_name] = {
+                            "file": file,
+                            "structured": structured,
+                            "week_start_date": week_start_date
+                        }
+            except Exception as e:
+                flash(f"Error processing file {file.filename}: {str(e)}", "error")
+                continue
 
         if not grouped_files:
             flash("No valid PDF files were processed.", "error")
@@ -1038,21 +1065,16 @@ def admin_manageTimetable():
 
         flash(f"Successfully read {len(grouped_files)} file(s).", "success")
 
-        # Prepare the results for rendering
-        results = [
-            {"filename": data["filename"], "data": data["structured"]}
-            for data in grouped_files.values()
-        ]
+        for data in grouped_files.values():
+            results.append({
+                "filename": data["file"].filename,
+                "data": data["structured"]
+            })
 
-    # Get Google Drive files from session (if any)
     files = session.get('drive_files')
-
-    # Filtering logic for timetable display
     selected_lecturer = request.args.get('lecturer')
-    filtered_data = (
-        [row for row in timetable_data if row.lecturerName == selected_lecturer]
-        if selected_lecturer else timetable_data
-    )
+
+    filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer] if selected_lecturer else timetable_data
 
     return render_template(
         'admin/adminManageTimetable.html',
@@ -1065,11 +1087,15 @@ def admin_manageTimetable():
         results=results
     )
 
+
+
+
+
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     creds_dict = session.get('credentials')
     if not creds_dict:
-        flash("No credentials found. Please authorize first.", "error")
+        flash("No credentials found in session. Please authenticate first.", 'error')
         return redirect(url_for('authorize'))
 
     try:
@@ -1087,116 +1113,47 @@ def fetch_drive_files():
 
         drive_service, soc_folder_id = get_drive_service_and_folder(creds)
 
-        # List files in the SOC folder
-        results = drive_service.files().list(
-            q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
-            fields="files(id, name, webViewLink)"
-        ).execute()
+        seen_files = {}
+        page_token = None
+        total_files_read = 0
 
-        files = results.get('files', [])
-        session['drive_files'] = files
+        while True:
+            response = drive_service.files().list(
+                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+                spaces='drive',
+                fields='nextPageToken, files(id, name, webViewLink)',
+                pageToken=page_token
+            ).execute()
 
-        flash(f"Loaded {len(files)} files from Google Drive SOC folder.", "success")
-        return redirect(url_for('admin_manageTimetable'))
+            files_in_page = response.get('files', [])
+            total_files_read += len(files_in_page)
+
+            for file in files_in_page:
+                base_name = extract_base_name(file['name'])
+                if not base_name:
+                    continue
+
+                # If already seen, skip or replace (you can adjust this logic as needed)
+                if base_name not in seen_files:
+                    seen_files[base_name] = file
+
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
+
+        final_files = list(seen_files.values())
+
+        session['drive_files'] = final_files
+
     except Exception as e:
-        flash(f"Error fetching Drive files: {e}", "error")
-        app.logger.error(f"Error fetching Drive files: {e}")
+        flash(f"Error fetching files from Google Drive: {e}", 'error')
+        app.logger.error(f"Error fetching files from Google Drive: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
+    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
+    return redirect(url_for('admin_manageTimetable'))
 
-
-@app.route('/upload_timetables', methods=['GET', 'POST'])
-def upload_timetables():
-    results = []
-
-    if request.method == "POST" and request.form.get('form_type') == 'upload':
-        uploaded_files = request.files.getlist("timetable_file")
-
-        # Check if any files were uploaded
-        if not uploaded_files or all(f.filename == '' for f in uploaded_files):
-            flash("No file uploaded. Please select at least one PDF.", "error")
-            return redirect(url_for("upload_timetables"))
-
-        # Wrap files for processing function
-        wrapped_files = [{"filename": f.filename, "file": f.stream} for f in uploaded_files]
-
-        # Call your shared processing function
-        grouped_files = group_latest_timetable_files(wrapped_files)
-
-        if not grouped_files:
-            flash("No valid PDF files were processed.", "error")
-            return redirect(url_for("upload_timetables"))
-
-        flash(f"Successfully read {len(grouped_files)} file(s).", "success")
-
-        # Prepare data for the template
-        results = [
-            {"filename": data["filename"], "data": data["structured"]}
-            for data in grouped_files.values()
-        ]
-
-    # Render your upload page with the results of processing
-    return render_template(
-        'upload_timetables.html',
-        results=results
-    )
-
-
-
-def group_latest_timetable_files(files):
-    """
-    Groups the uploaded/drive timetable files by lecturer name (base name),
-    keeping only the latest version based on week_start_date.
-    Accepts a list of dicts with keys: filename (or name), content/file stream.
-    """
-    grouped_files = {}
-
-    for file in files:
-        try:
-            # Detect source: Drive file or Uploaded file
-            filename = file.get("filename") or file.get("name")
-            file_stream = file.get("file") or file.get("content")
-            base_name = extract_base_name(filename)
-
-            if not base_name:
-                continue
-
-            # Extract PDF text
-            if isinstance(file_stream, bytes):
-                reader = PdfReader(BytesIO(file_stream))
-            else:
-                reader = PyPDF2.PdfReader(file_stream)
-
-            raw_text = ""
-            for page in reader.pages:
-                raw_text += page.extract_text() + " "
-
-            structured = parse_pdf_text(raw_text)
-            week_start_date = get_week_start_date(structured)
-
-            # Compare or insert
-            if base_name not in grouped_files:
-                grouped_files[base_name] = {
-                    "filename": filename,
-                    "file": file_stream,
-                    "structured": structured,
-                    "week_start_date": week_start_date
-                }
-            else:
-                existing = grouped_files[base_name]
-                if week_start_date and (not existing["week_start_date"] or week_start_date > existing["week_start_date"]):
-                    grouped_files[base_name] = {
-                        "filename": filename,
-                        "file": file_stream,
-                        "structured": structured,
-                        "week_start_date": week_start_date
-                    }
-
-        except Exception as e:
-            app.logger.error(f"Error processing file {file.get('filename') or file.get('name')}: {str(e)}")
-            continue
-
-    return grouped_files
 
 
 
