@@ -1018,7 +1018,9 @@ def admin_manageTimetable():
 
             # Read PDF and parse
             try:
-                reader = PyPDF2.PdfReader(file.stream)
+                file_bytes = file.read()
+                reader = PyPDF2.PdfReader(BytesIO(file_bytes))
+
                 raw_text = ""
                 for page in reader.pages:
                     raw_text += page.extract_text() + " "
