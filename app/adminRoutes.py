@@ -1011,8 +1011,14 @@ def admin_manageTimetable():
 
     results = []
     if request.method == "POST":
-        uploaded_files = request.files.getlist("timetable_file")  # multiple PDFs
+        uploaded_files = request.files.getlist("timetable_file")
 
+        # Handle empty upload
+        if not uploaded_files or all(f.filename == '' for f in uploaded_files):
+            flash("No file uploaded. Please select at least one PDF.", "error")
+            return redirect(url_for("admin_manageTimetable"))
+
+        # Filter duplicates like Drive section
         seen_files = {}
         for file in uploaded_files:
             base_name, timestamp = extract_base_name_and_timestamp(file.filename)
@@ -1027,7 +1033,6 @@ def admin_manageTimetable():
                 }
             else:
                 current = seen_files[base_name]
-                # Prefer files with timestamp
                 if not current["has_timestamp"] and timestamp:
                     seen_files[base_name] = {
                         "file": file,
@@ -1041,7 +1046,11 @@ def admin_manageTimetable():
                         "has_timestamp": True
                     }
 
-        # Parse only the filtered files
+        if not seen_files:
+            flash("No valid PDF files were processed.", "error")
+            return redirect(url_for("admin_manageTimetable"))
+
+        # Parse only filtered files
         for data in seen_files.values():
             file = data["file"]
             reader = PyPDF2.PdfReader(file.stream)
@@ -1054,6 +1063,10 @@ def admin_manageTimetable():
                 "filename": file.filename,
                 "data": structured
             })
+
+        # store results in session for saving later
+        session["uploaded_results"] = results
+        flash(f"Successfully read {len(results)} file(s).", "success")
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
@@ -1074,8 +1087,6 @@ def admin_manageTimetable():
         lecturers=lecturers,
         results=results
     )
-
-
 
 
 
