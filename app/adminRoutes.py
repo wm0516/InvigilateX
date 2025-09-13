@@ -1017,7 +1017,7 @@ def admin_manageTimetable():
     lecturers = sorted([row[0] for row in lecturers])
 
     results = []
-    if request.method == "POST":
+    if request.method == "POST" and request.form.get('form_type') == 'upload':
         uploaded_files = request.files.getlist("timetable_file")
 
         if not uploaded_files or all(f.filename == '' for f in uploaded_files):
@@ -1032,28 +1032,32 @@ def admin_manageTimetable():
                 continue
 
             # Read PDF and parse
-            reader = PyPDF2.PdfReader(file.stream)
-            raw_text = ""
-            for page in reader.pages:
-                raw_text += page.extract_text() + " "
+            try:
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = ""
+                for page in reader.pages:
+                    raw_text += page.extract_text() + " "
 
-            structured = parse_pdf_text(raw_text)
-            week_start_date = get_week_start_date(structured)
+                structured = parse_pdf_text(raw_text)
+                week_start_date = get_week_start_date(structured)
 
-            if base_name not in grouped_files:
-                grouped_files[base_name] = {
-                    "file": file,
-                    "structured": structured,
-                    "week_start_date": week_start_date
-                }
-            else:
-                current = grouped_files[base_name]
-                if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
+                if base_name not in grouped_files:
                     grouped_files[base_name] = {
                         "file": file,
                         "structured": structured,
                         "week_start_date": week_start_date
                     }
+                else:
+                    current = grouped_files[base_name]
+                    if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
+                        grouped_files[base_name] = {
+                            "file": file,
+                            "structured": structured,
+                            "week_start_date": week_start_date
+                        }
+            except Exception as e:
+                flash(f"Error processing file {file.filename}: {str(e)}", "error")
+                continue
 
         if not grouped_files:
             flash("No valid PDF files were processed.", "error")
@@ -1082,7 +1086,6 @@ def admin_manageTimetable():
         lecturers=lecturers,
         results=results
     )
-
 
 
 
@@ -1322,7 +1325,27 @@ def extract_all():
         app.logger.error(f"Error extracting all timetables: {e}")
         return redirect(url_for('admin_manageTimetable'))
 
+@app.route('/admin/preview_uploaded_timetable', methods=['POST'])
+def preview_uploaded_timetable():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    
+    try:
+        # Read PDF and parse
+        reader = PyPDF2.PdfReader(file.stream)
+        raw_text = ""
+        for page in reader.pages:
+            raw_text += page.extract_text() + " "
 
+        structured = parse_pdf_text(raw_text)
+        return jsonify(structured)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 

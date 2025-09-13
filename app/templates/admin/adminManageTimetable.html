@@ -43,39 +43,35 @@
                 <button type="submit">Upload and Preview Lecturer Timetable</button>
             </div>
 
+            {% if results %}
             <div class="button-container">
-                {% if results %}
-                    <a href="{{ url_for('extract_all') }}" class="btn-secondary">
-                        <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
-                    </a>   
-                {% endif %}
+                <a href="{{ url_for('extract_all') }}" class="btn-secondary">
+                    <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
+                </a>   
             </div>
+            {% endif %}
 
             {% if results %}
                 <h3>Uploaded Files:</h3>
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-                            <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                            <a href="{{ file.webViewLink }}" target="_blank">
-                                {{ loop.index }}. {{ file.name }}
-                            </a>
+                            <button type="button" onclick="previewUploadedTimetable('{{ file.filename }}', {{ file.data | tojson }})">Preview</button>
+                            {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
                 </div>
                 <br><br>
 
-                <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+                <div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
                     <h4>Preview Result</h4>
-                    <pre id="previewContent">Click a preview button to load timetable...</pre>
+                    <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
                 </div>
             {% endif %}
         </div>
     </div>
 </form>
 {% endblock %}
-
-
 
 {% block manual_section %}
 <form id="manualForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
@@ -118,14 +114,13 @@
         </div>  
         <br><br>
 
-        <div id="previewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+        <div id="manualPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
             <h4>Preview Result</h4>
-            <pre id="previewContent">Click a preview button to load timetable...</pre>
+            <pre id="manualPreviewContent">Click a preview button to load timetable...</pre>
         </div>
     {% endif %}
 </form>
 {% endblock %}
-
 
 {% block content %}
 <div class="menu-section">
@@ -191,16 +186,22 @@
 </div>
 
 <script>
+// Function to preview Google Drive files (manual section)
 function previewTimetable(fileId) {
-    document.getElementById("previewContent").textContent = "Loading...";
+    document.getElementById("manualPreviewContent").textContent = "Loading...";
     fetch(`/admin/preview_timetable/${fileId}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById("previewContent").textContent = JSON.stringify(data, null, 2);
+            document.getElementById("manualPreviewContent").textContent = JSON.stringify(data, null, 2);
         })
         .catch(err => {
-            document.getElementById("previewContent").textContent = "Error: " + err;
+            document.getElementById("manualPreviewContent").textContent = "Error: " + err;
         });
+}
+
+// Function to preview uploaded files (upload section)
+function previewUploadedTimetable(filename, data) {
+    document.getElementById("uploadPreviewContent").textContent = JSON.stringify(data, null, 2);
 }
 </script>
 
