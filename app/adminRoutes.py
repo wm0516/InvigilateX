@@ -1155,11 +1155,23 @@ def fetch_drive_files():
 
 @app.route('/admin/preview_timetable/<file_id>')
 def preview_timetable(file_id):
-    creds_dict = session.get('credentials')
-    if not creds_dict:
-        return jsonify({"error": "No credentials found"}), 401
-    
     try:
+        # Case 1: Uploaded file (e.g. preview_id = uploaded-0, uploaded-1)
+        if file_id.startswith("uploaded-"):
+            uploaded_results = session.get("uploaded_results", [])
+            for item in uploaded_results:
+                if item["preview_id"] == file_id:
+                    return Response(
+                        json.dumps(item["structured"], indent=4, sort_keys=False),
+                        mimetype='application/json'
+                    )
+            return jsonify({"error": "Uploaded file not found"}), 404
+
+        # Case 2: Google Drive file
+        creds_dict = session.get('credentials')
+        if not creds_dict:
+            return jsonify({"error": "No credentials found"}), 401
+
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
 
@@ -1181,11 +1193,14 @@ def preview_timetable(file_id):
             text += page.extract_text() + " "
 
         structured_timetable = parse_pdf_text(text)
-        json_str = json.dumps(structured_timetable, indent=4, sort_keys=False)
-        return Response(json_str, mimetype='application/json')
+        return Response(
+            json.dumps(structured_timetable, indent=4, sort_keys=False),
+            mimetype='application/json'
+        )
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/admin/authorize')

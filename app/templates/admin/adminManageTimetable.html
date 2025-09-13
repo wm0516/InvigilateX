@@ -192,22 +192,14 @@
 
 <script>
 function previewTimetable(fileId) {
-    const preview = document.getElementById("previewContent");
-    preview.textContent = "Loading...";
-
+    document.getElementById("previewContent").textContent = "Loading...";
     fetch(`/admin/preview_timetable/${fileId}`)
-        .then(async response => {
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                const data = await response.json();
-                preview.textContent = JSON.stringify(data, null, 2);
-            } else {
-                const text = await response.text();
-                preview.textContent = "Error (non-JSON response):\n" + text;
-            }
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("previewContent").textContent = JSON.stringify(data, null, 2);
         })
         .catch(err => {
-            preview.textContent = "Error fetching timetable:\n" + err;
+            document.getElementById("previewContent").textContent = "Error: " + err;
         });
 }
 </script>
