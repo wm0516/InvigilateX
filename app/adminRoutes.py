@@ -16,9 +16,6 @@ import PyPDF2
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from google.oauth2 import id_token
-from google.auth.transport import requests as grequests
-
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -1224,12 +1221,10 @@ def authorize():
         flash(f"Error initiating OAuth flow: {e}", 'error')
         return redirect(url_for('admin_manageTimetable'))
 
-
 @app.route('/reauthorize')
 def reauthorize():
     # clear old credentials
     session.pop('credentials', None)
-    flash("Re-authorization started. Please authorize again.", "warning")
     return redirect(url_for('authorize'))
 
 
@@ -1244,31 +1239,21 @@ def oauth2callback():
         flow.fetch_token(authorization_response=request.url)
 
         creds = flow.credentials
-
-        # ✅ Store only minimal credentials in session
         session['credentials'] = {
             'token': creds.token,
             'refresh_token': creds.refresh_token,
+            'token_uri': getattr(creds, 'token_uri', None),
+            'client_id': getattr(creds, 'client_id', None),
+            'client_secret': getattr(creds, 'client_secret', None),
+            'scopes': getattr(creds, 'scopes', None)
         }
 
-        # ✅ Extract email from ID token
-        session['user_email'] = None
-        if creds.id_token:
-            try:
-                idinfo = id_token.verify_oauth2_token(creds.id_token, grequests.Request())
-                session['user_email'] = idinfo.get('email')
-                app.logger.info(f"User logged in as {session['user_email']}")
-            except Exception as e:
-                app.logger.warning(f"Could not verify ID token: {e}")
-
-        flash("Successfully authorized Google Drive!", "success")
+        app.logger.info("OAuth2 authentication successful, credentials stored.")
         return redirect(url_for('admin_manageTimetable'))
-
     except Exception as e:
         flash(f"Error during OAuth2 callback: {e}", 'error')
         app.logger.error(f"OAuth2 callback error: {e}")
         return redirect(url_for('admin_manageTimetable'))
-
     
 
 def save_timetable_to_db(structured):
