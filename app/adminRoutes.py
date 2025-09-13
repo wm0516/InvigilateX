@@ -1065,6 +1065,43 @@ def admin_manageTimetable():
         results=results
     )
 
+@app.route('/admin/fetch_drive_files')
+def fetch_drive_files():
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        flash("No credentials found. Please authorize first.", "error")
+        return redirect(url_for('authorize'))
+
+    try:
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)
+
+        creds = Credentials(
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
+        )
+
+        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
+
+        # List files in the SOC folder
+        results = drive_service.files().list(
+            q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+            fields="files(id, name, webViewLink)"
+        ).execute()
+
+        files = results.get('files', [])
+        session['drive_files'] = files
+
+        flash(f"Loaded {len(files)} files from Google Drive SOC folder.", "success")
+        return redirect(url_for('admin_manageTimetable'))
+    except Exception as e:
+        flash(f"Error fetching Drive files: {e}", "error")
+        app.logger.error(f"Error fetching Drive files: {e}")
+        return redirect(url_for('admin_manageTimetable'))
 
 
 

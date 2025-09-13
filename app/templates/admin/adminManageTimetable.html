@@ -82,7 +82,7 @@
             </div>
         {% else %}  
             <div class="button-wrapper">
-                <a href="{{ url_for('group_latest_timetable_files') }}" class="btn-link">Click here to load files from Google Drive</a>
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn-link">Click here to load files from Google Drive</a>
             </div>
         {% endif %}
     {% endif %}
@@ -93,7 +93,7 @@
             <a href="{{ url_for('reauthorize') }}" class="btn-warning">
                 <i class="fas fa-key" style="margin-right: 5px;"></i>Re-Authorize Google Drive
             </a>
-            <a href="{{ url_for('group_latest_timetable_files') }}" class="btn-primary">
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
                 <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
             </a>
             <a href="{{ url_for('extract_all') }}" class="btn-secondary">
