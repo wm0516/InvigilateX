@@ -600,7 +600,6 @@ input, select{
 
 
 .button-container {
-    display: flex;
     gap: 15px; /* space between buttons */
     margin: 15px 0;
     justify-content: flex-start; /* left aligned */
