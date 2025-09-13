@@ -42,9 +42,13 @@
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
                 <button type="submit">Upload Lecturer Timetable</button>
-            </div>
+            </div>        
 
             {% if results %}
+                <div class="button-wrapper">
+                    <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
+                </div>
+                
                 <h3>Uploaded Files:</h3>
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
