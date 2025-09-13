@@ -38,22 +38,20 @@
             <input type="hidden" name="form_type" value="upload">
             <br>
 
-            {% if results %}
-                <!-- Show Refresh + Save buttons when results exist -->
-                <div class="button-container">
+            <!-- Show Refresh + Save buttons when results exist -->
+            <div class="button-container">
+                <div class="btn-primary">
+                    <button type="submit">Upload Lecturer Timetable</button>
+                </div>
+                {% if results %}
                     <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
                         <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
                     </a>
                     <a href="{{ url_for('extract_all') }}" class="btn-secondary">
                         <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
-                    </a>
-                </div>
-            {% else %}
-                <!-- Show Upload button before any upload -->
-                <div class="button-wrapper">
-                    <button type="submit">Upload Lecturer Timetable</button>
-                </div>
-            {% endif %}
+                    </a>   
+                {% endif %}
+            </div>
 
             {% if results %}
                 <h3>Uploaded Files:</h3>
