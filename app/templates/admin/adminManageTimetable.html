@@ -35,24 +35,27 @@
                 </div>
             </label>
             <input type="file" id="timetable_list" name="timetable_file" accept=".pdf" style="display: none;" multiple>
-            <!-- 🔽 Add this hidden input here -->
             <input type="hidden" name="form_type" value="upload">
             <br>
 
-            <!-- Upload Form Submit -->
-            <div class="button-wrapper">
-                <button type="submit">Upload Lecturer Timetable</button>
-            </div>        
+            {% if results %}
+                <!-- Show Refresh + Save buttons when results exist -->
+                <div class="button-container">
+                    <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
+                        <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
+                    </a>
+                    <a href="{{ url_for('extract_all') }}" class="btn-secondary">
+                        <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
+                    </a>
+                </div>
+            {% else %}
+                <!-- Show Upload button before any upload -->
+                <div class="button-wrapper">
+                    <button type="submit">Upload Lecturer Timetable</button>
+                </div>
+            {% endif %}
 
             {% if results %}
-                <!-- Refresh Button -->
-                <div class="button-wrapper">
-                    <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
-                </div>
-                <div class="button-wrapper">
-                    <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
-                </div>
-
                 <h3>Uploaded Files:</h3>
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
@@ -72,7 +75,8 @@
         </div>
     </div>
 </form>
-{% endblock %} 
+{% endblock %}
+
 
 
 {% block manual_section %}
