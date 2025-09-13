@@ -1245,10 +1245,9 @@ def oauth2callback():
 def save_timetable_to_db(structured):
     lecturer = structured.get("lecturer")
 
-    # Delete old records for this lecturer
-    Timetable.query.filter_by(lecturerName=lecturer).delete()
+    # Collect all new entries first
+    new_entries = []
 
-    # Insert only valid rows
     for day, activities in structured["days"].items():
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
@@ -1259,22 +1258,40 @@ def save_timetable_to_db(structured):
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
 
-                    row = Timetable(
-                        lecturerName=lecturer,
-                        classType=act.get("class_type"),
-                        classDay=day,
-                        classTime=act.get("time"),
-                        classRoom=act.get("room"),
-                        courseName=act.get("course"),
-                        courseIntake=sec.get("intake"),
-                        courseCode=sec.get("course_code"),
-                        courseSection=sec.get("section"),
-                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        classWeekDate=act.get("weeks_date"),
-                    )
-                    db.session.add(row)
+                    new_entries.append({
+                        "lecturerName": lecturer,
+                        "classType": act.get("class_type"),
+                        "classDay": day,
+                        "classTime": act.get("time"),
+                        "classRoom": act.get("room"),
+                        "courseName": act.get("course"),
+                        "courseIntake": sec.get("intake"),
+                        "courseCode": sec.get("course_code"),
+                        "courseSection": sec.get("section"),
+                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        "classWeekDate": act.get("weeks_date"),
+                    })
+
+    # Delete only matching existing rows for this lecturer
+    for entry in new_entries:
+        Timetable.query.filter_by(
+            lecturerName=entry["lecturerName"],
+            classType=entry["classType"],
+            classDay=entry["classDay"],
+            classTime=entry["classTime"],
+            classRoom=entry["classRoom"],
+            courseIntake=entry["courseIntake"],
+            courseCode=entry["courseCode"],
+            courseSection=entry["courseSection"]
+        ).delete()
+
+    # Add new rows
+    for entry in new_entries:
+        row = Timetable(**entry)
+        db.session.add(row)
 
     db.session.commit()
+
 
 
 @app.route('/admin/extract_all')
