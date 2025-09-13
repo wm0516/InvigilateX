@@ -20,11 +20,11 @@
 {% block upload_section %}
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
-    <div id="uploadSection" class="function-frame">
+    <div id="uploadSection" style="margin: auto;">
         <div class="form-left" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="timetable_list">
-                <div class="upload-container" id="timetableUploadContainer">
+                <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
                     <div class="upload-text">
                         Upload in PDF file format<br><br><br>
                         Click to upload or drag and drop with below file format
@@ -45,10 +45,14 @@
             </div>        
 
             {% if results %}
+                <!-- Refresh Button -->
+                <div class="button-wrapper">
+                    <a href="{{ url_for('fetch_drive_files') }}" class="btn-link"><i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh</a>
+                </div>
                 <div class="button-wrapper">
                     <a href="{{ url_for('extract_all') }}" class="btn-link">Extract & Save All Timetables to Database</a>
                 </div>
-                
+
                 <h3>Uploaded Files:</h3>
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
