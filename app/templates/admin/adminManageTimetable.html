@@ -200,9 +200,17 @@ function previewTimetable(fileId) {
 }
 
 // Function to preview uploaded files (upload section)
-function previewUploadedTimetable(filename, data) {
-    document.getElementById("uploadPreviewContent").textContent = JSON.stringify(data, null, 2);
+function previewUploadedTimetable(index) {
+    const data = uploadedTimetableData[index];
+    const previewElement = document.getElementById("uploadPreviewContent");
+    if (data) {
+        previewElement.textContent = JSON.stringify(data, null, 2);
+    } else {
+        previewElement.textContent = "No structured data found.";
+    }
 }
+
+
 </script>
 
 {% endblock %}

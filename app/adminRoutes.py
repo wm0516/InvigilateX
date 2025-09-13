@@ -801,11 +801,8 @@ GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0d
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
-
+# Creates and returns an OAuth2 flow based on whether we have a state or not.
 def get_oauth_flow(state=None):
-    """
-    Creates and returns an OAuth2 flow based on whether we have a state or not.
-    """
     try:
         flow = Flow.from_client_secrets_file(
             GOOGLE_CLIENT_SECRETS_FILE,
@@ -818,11 +815,8 @@ def get_oauth_flow(state=None):
     except Exception as e:
         raise Exception(f"Error setting up OAuth flow: {e}")
 
-
+# Retrieves Google Drive service and SOC folder ID.
 def get_drive_service_and_folder(creds):
-    """
-    Retrieves Google Drive service and SOC folder ID.
-    """
     try:
         drive_service = build('drive', 'v3', credentials=creds)
 
@@ -839,25 +833,14 @@ def get_drive_service_and_folder(creds):
     except Exception as e:
         raise Exception(f"Error accessing Google Drive folder: {e}")
 
-
+# Filter multiple same filename
 def extract_base_name(file_name):
-    """
-    Extract base name from file name, ignoring any timestamp part.
-    Example:
-        "Mr. Shahriman.pdf" -> "Mr. Shahriman"
-        "Mr. Shahriman_140425 onwards.pdf" -> "Mr. Shahriman"
-    """
     base = re.sub(r"\.pdf$", "", file_name, flags=re.IGNORECASE)
     base = re.sub(r"[_\s]\d{6}.*$", "", base)  # remove trailing _140425 onwards
     return base.strip()
 
-
-
-def get_week_start_date(structured):    
-    """
-    Extract the weekStartDate (earliest part of classWeekDate).
-    Example: "4/7/2025-7/20/2025" -> datetime(2025, 4, 7)
-    """
+# Filter duplicate file and get with the latest date
+def get_week_start_date(structured):
     for day, activities in structured.get("days", {}).items():
         for act in activities:
             if act.get("weeks_date"):
@@ -868,9 +851,8 @@ def get_week_start_date(structured):
                     continue
     return None
 
-
+# Convert raw text from PDF into a structured data
 def parse_activity(line):
-    """Parse one activity line into structured data."""
     activity = {}
 
     # Class type (LECTURE/TUTORIAL/PRACTICAL)
@@ -919,12 +901,12 @@ def parse_activity(line):
 
     return activity
 
-
+# Re-format the layout of the text raw from PDF
 def parse_pdf_text(text):
     # Step 1: Remove all whitespace
     text_no_whitespace = re.sub(r"\s+", "", text)
 
-    # Step 2: Extract name before uppercasing
+    # Step 2: Extract lecturer name before uppercasing
     title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
     if title_match:
         title_raw = title_match.group(1)
@@ -999,6 +981,9 @@ def parse_pdf_text(text):
                 structured["days"][current_day].append(parse_activity(line))
 
     return structured
+
+
+
 
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
