@@ -1009,11 +1009,41 @@ def admin_manageTimetable():
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
     lecturers = sorted([row[0] for row in lecturers])  # flatten from [(name,), (name,)] to [name, name]
 
+    results = []
     if request.method == "POST":
-        files = request.files.getlist("timetable_file")  # handle multiple PDFs
+        uploaded_files = request.files.getlist("timetable_file")  # multiple PDFs
 
-        results = []
-        for file in files:
+        seen_files = {}
+        for file in uploaded_files:
+            base_name, timestamp = extract_base_name_and_timestamp(file.filename)
+            if not base_name:
+                continue
+
+            if base_name not in seen_files:
+                seen_files[base_name] = {
+                    "file": file,
+                    "timestamp": timestamp,
+                    "has_timestamp": bool(timestamp)
+                }
+            else:
+                current = seen_files[base_name]
+                # Prefer files with timestamp
+                if not current["has_timestamp"] and timestamp:
+                    seen_files[base_name] = {
+                        "file": file,
+                        "timestamp": timestamp,
+                        "has_timestamp": True
+                    }
+                elif current["has_timestamp"] and timestamp and timestamp > current["timestamp"]:
+                    seen_files[base_name] = {
+                        "file": file,
+                        "timestamp": timestamp,
+                        "has_timestamp": True
+                    }
+
+        # Parse only the filtered files
+        for data in seen_files.values():
+            file = data["file"]
             reader = PyPDF2.PdfReader(file.stream)
             raw_text = ""
             for page in reader.pages:
@@ -1024,8 +1054,6 @@ def admin_manageTimetable():
                 "filename": file.filename,
                 "data": structured
             })
-    else:
-        results = []
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
@@ -1046,7 +1074,6 @@ def admin_manageTimetable():
         lecturers=lecturers,
         results=results
     )
-
 
 
 
