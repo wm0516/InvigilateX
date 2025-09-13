@@ -1155,7 +1155,8 @@ def fetch_drive_files():
 @app.route('/admin/preview_timetable/<file_id>')
 def preview_timetable(file_id):
     try:
-        # Case 1: Uploaded file preview
+        app.logger.info(f"Preview requested for file_id: {file_id}")
+
         if file_id.startswith("uploaded-"):
             uploaded_results = session.get("uploaded_results", [])
             for item in uploaded_results:
@@ -1163,12 +1164,11 @@ def preview_timetable(file_id):
                     return jsonify(item["structured"])
             return jsonify({"error": "Uploaded file not found"}), 404
 
-        # Case 2: Google Drive file (requires credentials)
         creds_dict = session.get('credentials')
         if not creds_dict:
+            app.logger.warning("No credentials found in session")
             return jsonify({"error": "No credentials found"}), 401
 
-        # Convert from str to dict if needed
         if isinstance(creds_dict, str):
             creds_dict = json.loads(creds_dict)
 
@@ -1188,9 +1188,12 @@ def preview_timetable(file_id):
         text = "".join([page.extract_text() + " " for page in reader.pages])
 
         structured_timetable = parse_pdf_text(text)
+
+        app.logger.info(f"Preview data structure for {file_id} parsed successfully")
         return jsonify(structured_timetable)
 
     except Exception as e:
+        app.logger.error(f"Error previewing file {file_id}: {e}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 
