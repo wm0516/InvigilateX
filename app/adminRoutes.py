@@ -1222,6 +1222,14 @@ def authorize():
         return redirect(url_for('admin_manageTimetable'))
 
 
+@app.route('/reauthorize')
+def reauthorize():
+    # clear old credentials
+    session.pop('credentials', None)
+    flash("Re-authorization started. Please authorize again.", "warning")
+    return redirect(url_for('authorize'))
+
+
 @app.route('/admin/oauth2callback')
 def oauth2callback():
     try:

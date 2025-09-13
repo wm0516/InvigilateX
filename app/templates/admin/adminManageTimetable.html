@@ -92,7 +92,7 @@
     {% if files %}
         <!-- Refresh Button -->
         <div class="button-container">
-            <a href="{{ url_for('authorize') }}" class="btn-warning">
+            <a href="{{ url_for('reauthorize') }}" class="btn-warning">
                 <i class="fas fa-key" style="margin-right: 5px;"></i>Authorize Google Drive
             </a>
             <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
