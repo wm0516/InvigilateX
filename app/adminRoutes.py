@@ -840,25 +840,31 @@ def get_drive_service_and_folder(creds):
         raise Exception(f"Error accessing Google Drive folder: {e}")
 
 
-def extract_base_name_and_timestamp(file_name):
+def extract_base_name(file_name):
     """
-    Extract base name and timestamp from a file name of the format:
-    e.g. "Ts. Vasuky_140425 onwards.pdf"
-    Returns: (base_name, datetime object) or (None, None)
+    Extract base name from file name, ignoring any timestamp part.
+    Example:
+        "Mr. Shahriman.pdf" -> "Mr. Shahriman"
+        "Mr. Shahriman_140425 onwards.pdf" -> "Mr. Shahriman"
     """
-    pattern = r"^(.*?)(?:[_\s](\d{6}))(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
+    base = re.sub(r"\.pdf$", "", file_name, flags=re.IGNORECASE)
+    base = re.sub(r"[_\s]\d{6}.*$", "", base)  # remove trailing _140425 onwards
+    return base.strip()
 
-    if match:
-        base_name = match.group(1).strip()
-        timestamp_str = match.group(2)
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-            return base_name, timestamp
-        except ValueError:
-            return base_name, None
-
-    return file_name[:-4].strip(), None
+def get_week_start_date(structured):    
+    """
+    Extract the weekStartDate (earliest part of classWeekDate).
+    Example: "4/7/2025-7/20/2025" -> datetime(2025, 4, 7)
+    """
+    for day, activities in structured.get("days", {}).items():
+        for act in activities:
+            if act.get("weeks_date"):
+                try:
+                    start_str = act["weeks_date"].split("-")[0].strip()
+                    return datetime.strptime(start_str, "%m/%d/%Y")
+                except Exception:
+                    continue
+    return None
 
 
 def parse_activity(line):
@@ -995,7 +1001,7 @@ def parse_pdf_text(text):
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # Query 1: Grouped timetable rows (for timetable display)
+    # Query existing timetables
     timetable_data = Timetable.query.group_by(
         Timetable.lecturerName,
         Timetable.courseName,
@@ -1005,74 +1011,64 @@ def admin_manageTimetable():
         Timetable.classTime
     ).all()
 
-    # Query 2: Distinct lecturer names (for dropdown only)
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
-    lecturers = sorted([row[0] for row in lecturers])  # flatten from [(name,), (name,)] to [name, name]
+    lecturers = sorted([row[0] for row in lecturers])
 
     results = []
     if request.method == "POST":
-        uploaded_files = request.files.getlist("timetable_file")  # multiple PDFs
+        uploaded_files = request.files.getlist("timetable_file")
 
         if not uploaded_files or all(f.filename == '' for f in uploaded_files):
             flash("No file uploaded. Please select at least one PDF.", "error")
             return redirect(url_for("admin_manageTimetable"))
 
-        seen_files = {}
-        for file in uploaded_files: 
-            base_name, timestamp = extract_base_name_and_timestamp(file.filename)
+        grouped_files = {}
+
+        for file in uploaded_files:
+            base_name = extract_base_name(file.filename)
             if not base_name:
                 continue
 
-            if base_name not in seen_files:
-                seen_files[base_name] = {
-                    "file": file,
-                    "timestamp": timestamp,
-                    "has_timestamp": bool(timestamp)
-                }
-            else:
-                current = seen_files[base_name]
-                # Prefer files with timestamp
-                if not current["has_timestamp"] and timestamp:
-                    seen_files[base_name] = {
-                        "file": file,
-                        "timestamp": timestamp,
-                        "has_timestamp": True
-                    }
-                elif current["has_timestamp"] and timestamp and timestamp > current["timestamp"]:
-                    seen_files[base_name] = {
-                        "file": file,
-                        "timestamp": timestamp,
-                        "has_timestamp": True
-                    }
-        
-        if not seen_files:
-            flash("No valid PDF files were processed.", "error")
-            return redirect(url_for("admin_manageTimetable"))
-
-        flash(f"Successfully read {len(seen_files)} file(s).", "success")
-
-        # Parse only the filtered files
-        for data in seen_files.values():
-            file = data["file"]
+            # Read PDF and parse
             reader = PyPDF2.PdfReader(file.stream)
             raw_text = ""
             for page in reader.pages:
                 raw_text += page.extract_text() + " "
 
             structured = parse_pdf_text(raw_text)
+            week_start_date = get_week_start_date(structured)
+
+            if base_name not in grouped_files:
+                grouped_files[base_name] = {
+                    "file": file,
+                    "structured": structured,
+                    "week_start_date": week_start_date
+                }
+            else:
+                current = grouped_files[base_name]
+                if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
+                    grouped_files[base_name] = {
+                        "file": file,
+                        "structured": structured,
+                        "week_start_date": week_start_date
+                    }
+
+        if not grouped_files:
+            flash("No valid PDF files were processed.", "error")
+            return redirect(url_for("admin_manageTimetable"))
+
+        flash(f"Successfully read {len(grouped_files)} file(s).", "success")
+
+        for data in grouped_files.values():
             results.append({
-                "filename": file.filename,
-                "data": structured
+                "filename": data["file"].filename,
+                "data": data["structured"]
             })
 
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
 
-    # Filter timetable data
-    if selected_lecturer:
-        filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer]
-    else:
-        filtered_data = timetable_data
+    filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer] if selected_lecturer else timetable_data
 
     return render_template(
         'admin/adminManageTimetable.html',
