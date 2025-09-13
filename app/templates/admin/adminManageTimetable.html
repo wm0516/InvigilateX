@@ -44,10 +44,7 @@
             </div>
 
             <div class="button-container">
-                {% if results %}        
-                    <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
-                        <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
-                    </a>
+                {% if results %}
                     <a href="{{ url_for('extract_all') }}" class="btn-secondary">
                         <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
                     </a>   
