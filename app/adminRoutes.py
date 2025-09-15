@@ -1154,7 +1154,7 @@ def fetch_drive_files():
             week_start_date = get_week_start_date(structured)
             lecturer_name = structured.get('lecturer')
 
-            grouped_files.setdefault(base_name, []).append({
+            grouped_files.setdefault(lecturer_name, []).append({
                 'file': file,
                 'structured': structured,
                 'lecturer': lecturer_name,
@@ -1163,14 +1163,19 @@ def fetch_drive_files():
             })
 
         final_files = []
-        for base_name, group in grouped_files.items():
+        for lecturer, group in grouped_files.items():
             latest = pick_latest_file(group)
+            if not latest:  # ⛔ skip if pick_latest_file returned None
+                continue
+
             final_files.append({
                 'id': latest['file']['id'],
                 'name': latest['file']['name'],
-                'webViewLink': latest['file'].get('webViewLink'),
-                'lecturer': latest['lecturer']
+                'lecturer': latest.get('lecturer'),
+                'time': latest.get('week_start_date') or latest.get('file_date') or latest['file'].get('modifiedTime'),
+                'webViewLink': latest['file'].get('webViewLink')
             })
+
 
         session['drive_files'] = final_files
         flash('Drive files fetched successfully.', 'success')
@@ -1178,6 +1183,7 @@ def fetch_drive_files():
         flash(f'Error fetching files: {e}', 'danger')
 
     return redirect(url_for('admin_manageTimetable'))
+
 
 
 @app.route('/admin/preview_timetable/<file_id>')
@@ -1236,19 +1242,22 @@ def extract_all():
 def admin_manageTimetable():
     selected_lecturer = request.args.get('lecturer')
 
+    # get DB data (if needed)
     timetable_data = []  # Timetable.query.all()
     if selected_lecturer:
         timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
 
+    # get drive files
     files = session.get('drive_files', [])
     if selected_lecturer:
         files = [f for f in files if f.get('lecturer') == selected_lecturer]
 
-    lecturers = set()
-    lecturers.update(f.get('lecturer') for f in files if f.get('lecturer'))
+    # collect lecturer list for dropdown
+    lecturers = set(f.get('lecturer') for f in session.get('drive_files', []) if f.get('lecturer'))
 
-    upload_results = []  # keep uploaded parsed files
+    upload_results = []
 
+    # handle upload
     if request.method == 'POST' and 'timetable_file' in request.files:
         uploaded = request.files.getlist('timetable_file')
         for f in uploaded:
@@ -1265,24 +1274,14 @@ def admin_manageTimetable():
                 except Exception as e:
                     flash(f'Error processing {f.filename}: {e}', 'error')
 
-        return render_template(
-            'admin/adminManageTimetable.html',
-            timetable_data=timetable_data,
-            files=files,
-            lecturers=sorted(list(lecturers)),
-            selected_lecturer=selected_lecturer,
-            results=upload_results  # ✅ Pass results to template
-        )
-
     return render_template(
         'admin/adminManageTimetable.html',
         timetable_data=timetable_data,
-        files=files,
+        files=files,   # ✅ each file has {name, lecturer, time}
         lecturers=sorted(list(lecturers)),
         selected_lecturer=selected_lecturer,
-        results=None  # ensure variable always exists
+        results=upload_results if upload_results else None
     )
-
 
 
 
