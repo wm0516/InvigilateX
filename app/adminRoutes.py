@@ -1141,7 +1141,7 @@ def admin_manageTimetable():
         return redirect(url_for('admin_manageTimetable'))
     
     return render_template(
-        "admin/manageTimetable.html",
+        "admin/admminManageTimetable.html",
         timetable_data=timetable_data,
         files=files,
         lecturers=lecturers,
