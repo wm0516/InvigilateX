@@ -22,163 +22,139 @@
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" style="margin: auto;">
         <div class="form-left" style="width: 100%">
-            <h4 style="text-align: center;">File Upload Section</h4>
-            <label for="timetable_list">
+            <h4 style="text-align: center;">Upload Timetable PDF</h4>
+            <label for="timetable_file">
                 <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
                     <div class="upload-text">
-                        Upload in PDF file format<br><br><br>
-                        Click to upload or drag and drop with below file format
+                        Upload timetable in PDF format<br><br><br>
+                        Click to upload or drag and drop
                     </div>
                     <div class="file-types">PDF ONLY</div><br>
                     <!-- Selected file display -->
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
-            <input type="file" id="timetable_list" name="timetable_file" accept=".pdf" style="display: none;" multiple>
-            <input type="hidden" name="form_type" value="upload">
+            <input type="file" id="timetable_file" name="timetable_file" accept=".pdf" style="display: none;">
             <br>
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Upload and Preview Lecturer Timetable</button>
+                <button type="submit">Upload and Save Timetable</button>
             </div>
-
-            {% if results %}
-            <div class="button-container">
-                <a href="{{ url_for('extract_all') }}" class="btn-secondary">
-                    <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
-                </a>   
-            </div>
-            {% endif %}
-
-            {% if results %}
-                <h3>Uploaded Files:</h3>
-                <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-                    {% for file in results %}
-                        <div>
-                            <button type="button" onclick='previewUploadedTimetable({{ file.data | tojson | safe }})'>Preview</button>
-                            {{ loop.index }}. {{ file.filename }}
-                        </div>
-                    {% endfor %}
-                </div>
-                <br><br>
-
-                <div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-                    <h4>Preview Result</h4>
-                    <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
-                </div>
-            {% endif %}
         </div>
     </div>
 </form>
+
+<script>
+// Display selected file name
+document.getElementById('timetable_file').addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name || 'No file selected';
+    document.getElementById('timetableSelectedFileName').textContent = fileName;
+});
+</script>
 {% endblock %}
 
 {% block manual_section %}
-<form id="manualForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
-    {% if not files %}
-        {% if not authorized %}
-            <div class="button-wrapper">
-                <a href="{{ url_for('authorize') }}" class="btn-link">Click here to authorize Google Drive</a>
-            </div>
-        {% else %}  
-            <div class="button-wrapper">
-                <a href="{{ url_for('fetch_drive_files') }}" class="btn-link">Click here to load files from Google Drive</a>
-            </div>
-        {% endif %}
-    {% endif %}
-
-    {% if files %}
-        <!-- Refresh Button -->
+<div class="manual-section">
+    <h4>Google Drive Integration</h4>
+    
+    {% if not session.get('credentials') %}
+        <div class="button-wrapper">
+            <a href="{{ url_for('authorize') }}" class="btn-link">Authorize Google Drive Access</a>
+        </div>
+    {% else %}
         <div class="button-container">
             <a href="{{ url_for('reauthorize') }}" class="btn-warning">
-                <i class="fas fa-key" style="margin-right: 5px;"></i>Re-Authorize Google Drive
+                <i class="fas fa-key" style="margin-right: 5px;"></i>Re-Authorize
             </a>
             <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
-                <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
+                <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh Files
             </a>
             <a href="{{ url_for('extract_all') }}" class="btn-secondary">
-                <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
+                <i class="fas fa-database" style="margin-right: 5px;"></i>Save All to Database
             </a>
         </div>
-
-        <h3>PDF Files from SOC Folder:</h3>
-        <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-            {% for file in files %}
-                <div>
-                    <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
-                    <a href="{{ file.webViewLink }}" target="_blank">
-                        {{ loop.index }}. {{ file.name }}
-                    </a>
-                </div>
-            {% endfor %}
-        </div>  
-        <br><br>
-
-        <div id="manualPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-            <h4>Preview Result</h4>
-            <pre id="manualPreviewContent">Click a preview button to load timetable...</pre>
-        </div>
+        
+        {% if files %}
+            <h4>PDF Files from Google Drive:</h4>
+            <div class="file-list">
+                {% for file in files %}
+                    <div class="file-item">
+                        <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+                        <a href="{{ file.webViewLink }}" target="_blank" title="Open in Google Drive">
+                            {{ loop.index }}. {{ file.name }}
+                        </a>
+                        {% if file.lecturer %}
+                            <span class="lecturer-name">({{ file.lecturer }})</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div id="manualPreviewArea" class="preview-area">
+                <h4>Preview Result</h4>
+                <pre id="manualPreviewContent">Click a preview button to load timetable...</pre>
+            </div>
+        {% else %}
+            <p>No files found in Google Drive. Click "Refresh Files" to load them.</p>
+        {% endif %}
     {% endif %}
-</form>
+</div>
 {% endblock %}
 
 {% block content %}
 <div class="menu-section">
-    <h2>Timetable</h2>
-    <div class="profile-frame">
-        <!-- Filter Section -->
-        <div class="form-right">
-            <form method="get" style="display:flex; align-items:center; gap:8px;">
-                <label for="lecturer">Select Lecturer:</label>
-                <select name="lecturer" id="lecturer" onchange="this.form.submit()">
-                    <option value="">All Lecturers</option>
-                    {% for lecturer in lecturers %}
-                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                            {{ lecturer }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </form>
-        </div>
+    <h2>Timetable View</h2>
+    
+    <!-- Filter Section -->
+    <div class="filter-section">
+        <form method="get" class="filter-form">
+            <label for="lecturer">Filter by Lecturer:</label>
+            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                <option value="">All Lecturers</option>
+                {% for lecturer in lecturers %}
+                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                        {{ lecturer }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
     
-    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-    {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
-
     <!-- Timetable Grid -->
-    <div class="user-table-container">
-        <table class="user-data-table" border="1">
+    <div class="timetable-container">
+        <table class="timetable-grid">
             <thead>
                 <tr>
-                    <th>Day / Time</th>
-                    {% for time in time_slots %}
-                        <th>{{ time }}</th>
+                    <th>Time/Day</th>
+                    {% for day in ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] %}
+                        <th>{{ day }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for day in week_days %}
-                <tr>
-                    <td><strong>{{ day }}</strong></td>
-                    {% for time in time_slots %}
-                    <td>
-                        {% for row in timetable_data %}
-                            {% set class_day = row.classDay.upper() %}
-                            {% set class_time = row.classTime %}
-                            {% set start_time = class_time.split('-')[0] %}
-                            {% set end_time = class_time.split('-')[1] %}
-                            {% if class_day == day and time >= start_time and time < end_time %}
-                                <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                    <strong>{{ row.lecturerName }}</strong><br>
-                                    <strong>[{{ row.classType }}]</strong><br>
-                                    {{ row.courseName }}<br>
-                                    Room: {{ row.classRoom }}
-                                </div>
-                            {% endif %}
+                {% for hour in range(7, 24) %}
+                    <tr>
+                        <td class="time-slot">{{ "%02d:00" % hour }}</td>
+                        {% for day in ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] %}
+                            <td>
+                                {% for item in timetable_data %}
+                                    {% if item.classDay == day %}
+                                        {% set start_hour = item.classTime.split('-')[0].split(':')[0] | int %}
+                                        {% set end_hour = item.classTime.split('-')[1].split(':')[0] | int %}
+                                        {% if start_hour <= hour < end_hour %}
+                                            <div class="timetable-item">
+                                                <strong>{{ item.lecturerName }}</strong>
+                                                <br>[{{ item.classType }}]
+                                                <br>{{ item.courseName }}
+                                                <br>Room: {{ item.classRoom }}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
                         {% endfor %}
-                    </td>
-                    {% endfor %}
-                </tr>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -186,7 +162,7 @@
 </div>
 
 <script>
-// Function to preview Google Drive files (manual section)
+// Function to preview Google Drive files
 function previewTimetable(fileId) {
     document.getElementById("manualPreviewContent").textContent = "Loading...";
     fetch(`/admin/preview_timetable/${fileId}`)
@@ -198,17 +174,5 @@ function previewTimetable(fileId) {
             document.getElementById("manualPreviewContent").textContent = "Error: " + err;
         });
 }
-
-// Function to preview uploaded files (upload section)
-function previewUploadedTimetable(data) {
-    const previewElement = document.getElementById("uploadPreviewContent");
-    if (data) {
-        previewElement.textContent = JSON.stringify(data, null, 2);
-    } else {
-        previewElement.textContent = "No structured data found.";
-    }
-}
-
 </script>
-
 {% endblock %}
