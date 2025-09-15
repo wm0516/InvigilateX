@@ -56,7 +56,7 @@
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-                            <button type="button" onclick="previewUploadedTimetable('{{ file.filename }}', {{ file.data | tojson }})">Preview</button>
+                            <button type="button" onclick="previewUploadedTimetable({{ file.data | tojson | safe }})">Preview</button>
                             {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
@@ -200,8 +200,7 @@ function previewTimetable(fileId) {
 }
 
 // Function to preview uploaded files (upload section)
-function previewUploadedTimetable(index) {
-    const data = uploadedTimetableData[index];
+function previewUploadedTimetable(data) {
     const previewElement = document.getElementById("uploadPreviewContent");
     if (data) {
         previewElement.textContent = JSON.stringify(data, null, 2);
@@ -209,6 +208,7 @@ function previewUploadedTimetable(index) {
         previewElement.textContent = "No structured data found.";
     }
 }
+
 
 
 </script>

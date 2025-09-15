@@ -1077,8 +1077,6 @@ def admin_manageTimetable():
 
 
 
-
-
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
     creds_dict = session.get('credentials')
@@ -1101,7 +1099,7 @@ def fetch_drive_files():
 
         drive_service, soc_folder_id = get_drive_service_and_folder(creds)
 
-        seen_files = {}
+        grouped_files = {}
         page_token = None
         total_files_read = 0
 
@@ -1121,17 +1119,34 @@ def fetch_drive_files():
                 if not base_name:
                     continue
 
-                # If already seen, skip or replace (you can adjust this logic as needed)
-                if base_name not in seen_files:
-                    seen_files[base_name] = file
+                # Fetch file content just enough to parse week_start_date
+                file_content = drive_service.files().get_media(fileId=file['id']).execute()
+                reader = PdfReader(BytesIO(file_content))
+                raw_text = ""
+                for page in reader.pages:
+                    raw_text += page.extract_text() + " "
 
+                structured = parse_pdf_text(raw_text)
+                week_start_date = get_week_start_date(structured)
+
+                if base_name not in grouped_files:
+                    grouped_files[base_name] = {
+                        "file": file,
+                        "week_start_date": week_start_date
+                    }
+                else:
+                    current = grouped_files[base_name]
+                    if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
+                        grouped_files[base_name] = {
+                            "file": file,
+                            "week_start_date": week_start_date
+                        }
 
             page_token = response.get('nextPageToken')
             if not page_token:
                 break
 
-        final_files = list(seen_files.values())
-
+        final_files = [v["file"] for v in grouped_files.values()]
         session['drive_files'] = final_files
 
     except Exception as e:
@@ -1141,6 +1156,7 @@ def fetch_drive_files():
 
     flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
     return redirect(url_for('admin_manageTimetable'))
+
 
 
 
