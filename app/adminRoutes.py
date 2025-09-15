@@ -835,15 +835,23 @@ def get_drive_service_and_folder(creds):
 
 
 
-def extract_base_name(file_name):
-    # Remove extension first
+def extract_base_name_and_date(file_name):
     name_without_ext = os.path.splitext(file_name)[0]
-    # Split at first underscore
-    base_name = name_without_ext.split("_")[0]
-    # Remove all whitespace
-    base_name = re.sub(r"\s+", "", base_name)
-    return base_name
 
+    # Try to capture suffix like _140425 onwards
+    m = re.search(r"_(\d{6})", name_without_ext)
+    file_date = None
+    if m:
+        try:
+            file_date = datetime.strptime(m.group(1), "%y%m%d")
+        except Exception:
+            pass
+
+    # Base name = before underscore, no spaces
+    base_name = name_without_ext.split("_")[0]
+    base_name = re.sub(r"\s+", "", base_name)
+
+    return base_name, file_date
 
 # Filter duplicate file and get with the latest date
 def get_week_start_date(structured):
@@ -1017,9 +1025,8 @@ def admin_manageTimetable():
             return redirect(url_for("admin_manageTimetable"))
 
         grouped_files = {}
-
         for file in uploaded_files:
-            base_name = extract_base_name(file.filename)
+            base_name, file_date = extract_base_name_and_date(file.filename)
             if not base_name:
                 continue
 
@@ -1039,7 +1046,8 @@ def admin_manageTimetable():
                 grouped_files[base_name].append({
                     "file": file,
                     "structured": structured,
-                    "week_start_date": week_start_date
+                    # prefer timetable date, else fallback to filename date
+                    "week_start_date": week_start_date or file_date
                 })
 
             except Exception as e:
