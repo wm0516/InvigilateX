@@ -34,7 +34,7 @@
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
-            <input type="file" id="timetable_list" name="timetable_file" accept=".pdf" style="display: none;" multiple>
+            <input type="file" id="timetable_list" name="timetable_file[]" accept=".pdf" style="display: none;" multiple>
             <input type="hidden" name="form_type" value="upload">
             <br>
 
@@ -48,7 +48,7 @@
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-                            <button type="button" onclick='previewUploadedTimetable({{ file.data | tojson | safe }})'>Preview</button>
+                            <button type="button" onclick='previewUploadedTimetable({{ file | tojson | safe }})'>Preview</button>
                             {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
@@ -129,19 +129,6 @@
 </div>
 
 <script>
-// Function to preview Google Drive files (manual section)
-function previewTimetable(fileId) {
-    document.getElementById("manualPreviewContent").textContent = "Loading...";
-    fetch(`/admin/preview_timetable/${fileId}`)
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById("manualPreviewContent").textContent = JSON.stringify(data, null, 2);
-        })
-        .catch(err => {
-            document.getElementById("manualPreviewContent").textContent = "Error: " + err;
-        });
-}
-
 // Function to preview uploaded files (upload section)
 function previewUploadedTimetable(data) {
     const previewElement = document.getElementById("uploadPreviewContent");
@@ -151,9 +138,6 @@ function previewUploadedTimetable(data) {
         previewElement.textContent = "No structured data found.";
     }
 }
-
-
-
 </script>
 
 {% endblock %}

@@ -790,8 +790,6 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
 def extract_base_name_and_timestamp_simple(file_name):
     """
     Extract base name as everything before first underscore (if any),
@@ -987,18 +985,9 @@ def save_timetable_to_db(structured):
                         "classWeekDate": act.get("weeks_date"),
                     })
 
-    # Delete only matching existing rows for this lecturer
-    for entry in new_entries:
-        Timetable.query.filter_by(
-            lecturerName=entry["lecturerName"],
-            classType=entry["classType"],
-            classDay=entry["classDay"],
-            classTime=entry["classTime"],
-            classRoom=entry["classRoom"],
-            courseIntake=entry["courseIntake"],
-            courseCode=entry["courseCode"],
-            courseSection=entry["courseSection"]
-        ).delete()
+    # Delete existing rows for this lecturer first to avoid duplicates
+    Timetable.query.filter_by(lecturerName=lecturer).delete()
+    db.session.commit()
 
     # Add new rows
     for entry in new_entries:
@@ -1013,11 +1002,10 @@ def admin_manageTimetable():
     timetable_data = Timetable.query.all()
 
     if request.method == "POST":
-        # Detect form type to differentiate between upload or save
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
-            files = request.files.getlist("timetable_file")  # handle multiple PDFs
+            files = request.files.getlist("timetable_file[]")  # Fix: name ends with []
             all_files = [file.filename for file in files]
             total_files_read = len(all_files)
 
@@ -1026,8 +1014,7 @@ def admin_manageTimetable():
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
 
-                if base_name is None:
-                    continue
+                # No need to check if base_name is None, always string
 
                 if base_name not in latest_files:
                     latest_files[base_name] = (timestamp, file)
@@ -1037,9 +1024,8 @@ def admin_manageTimetable():
                         if existing_timestamp is None or timestamp > existing_timestamp:
                             latest_files[base_name] = (timestamp, file)
                     else:
-                        # If no timestamp, keep existing if timestamp exists
                         if existing_timestamp is None:
-                            pass  # keep first if both have no timestamp
+                            pass
                         else:
                             continue
 
@@ -1051,7 +1037,9 @@ def admin_manageTimetable():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = ""
                 for page in reader.pages:
-                    raw_text += page.extract_text() + " "
+                    page_text = page.extract_text()
+                    if page_text:
+                        raw_text += page_text + " "
 
                 structured = parse_timetable(raw_text)
                 # Attach filename for preview buttons
@@ -1072,7 +1060,6 @@ def admin_manageTimetable():
             )
 
         elif form_type == 'save':
-            # Here expect JSON string or something similar with structured data
             import json
             data_json = request.form.get('structured_data')
             if not data_json:
@@ -1085,4 +1072,3 @@ def admin_manageTimetable():
 
     # GET request
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data)
-
