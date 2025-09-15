@@ -1045,6 +1045,7 @@ def admin_manageTimetable():
                 # Attach filename for preview buttons
                 structured['filename'] = file.filename
                 results.append(structured)
+                save_timetable_to_db(structured)
 
             return render_template(
                 'admin/adminManageTimetable.html',
