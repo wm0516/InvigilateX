@@ -1126,7 +1126,7 @@ def fetch_drive_files():
             total_files_read += len(files_in_page)
 
             for file in files_in_page:
-                base_name = extract_base_name(file['name'])
+                base_name = extract_base_name_and_date(file['name'])
                 if not base_name:
                     continue
 
