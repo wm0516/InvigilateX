@@ -884,109 +884,135 @@ def get_week_start_date(structured):
                     continue
     return None
 
-
 def parse_activity(line):
+    """Parse one activity line into structured data."""
     activity = {}
+
+    # Class type (LECTURE/TUTORIAL/PRACTICAL)
     m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
     if m_type:
-        activity['class_type'] = m_type.group(1)
+        activity["class_type"] = m_type.group(1)
 
+    # Time
     m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
     if m_time:
-        activity['time'] = m_time.group(1)
+        activity["time"] = m_time.group(1)
 
+    # Weeks and date range
     m_weeks = re.search(r"WEEKS:([^C]+)", line)
     if m_weeks:
-        weeks_data = [w.strip() for w in m_weeks.group(1).split(',') if w.strip()]
+        weeks_data = m_weeks.group(1).split(",")
         if len(weeks_data) > 1:
-            activity['weeks_range'] = weeks_data[:-1]
-            activity['weeks_date'] = weeks_data[-1]
+            activity["weeks_range"] = weeks_data[:-1]
+            activity["weeks_date"] = weeks_data[-1]
         else:
-            activity['weeks_range'] = weeks_data
+            activity["weeks_range"] = weeks_data
 
+    # Course name
     m_course = re.search(r"COURSES:([^;]+);", line)
     if m_course:
-        activity['course'] = m_course.group(1)
+        activity["course"] = m_course.group(1)
 
+    # Sections
     m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
     if m_sections:
-        sections = [s.strip() for s in m_sections.group(1).strip(';').split(';') if s.strip()]
-        activity['sections'] = []
+        sections = m_sections.group(1).strip(";").split(";")
+        activity["sections"] = []
         for sec in sections:
-            if '|' in sec:
-                parts = [p.strip() for p in sec.split('|')]
-                if len(parts) >= 3:
-                    intake, code, sec_name = parts[0], parts[1], parts[2]
-                    activity['sections'].append({
-                        'intake': intake,
-                        'course_code': code,
-                        'section': sec_name
-                    })
+            if "|" in sec:
+                intake, code, sec_name = sec.split("|")
+                activity["sections"].append({
+                    "intake": intake,
+                    "course_code": code,
+                    "section": sec_name
+                })
 
+    # Room
     m_room = re.search(r"ROOMS:([^;]+);", line)
     if m_room:
-        activity['room'] = m_room.group(1)
+        activity["room"] = m_room.group(1)
 
     return activity
 
 
-def parse_pdf_text(text):
-    # Remove excessive whitespace but keep minimal separators for parsing
-    text_no_whitespace = re.sub(r"\s+", " ", text).strip()
+def parse_timetable(raw_text):
+    """Extract timetable info from raw PDF text."""
+    # Step 1: Remove all whitespace
+    text_no_whitespace = re.sub(r"\s+", "", raw_text)
 
-    # Try to extract lecturer name (best-effort)
-    lecturer_name = 'UNKNOWN'
-    raw_name = None
-    name_match = re.search(r"-([^-()]+)\(", text_no_whitespace)
+    # Step 2: Extract name before uppercasing
+    lecturer_name = None
+    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
+    if title_match:
+        title_raw = title_match.group(1)
+        timerow = title_match.group(2)
+    else:
+        title_raw = ""
+        timerow = ""
+
+    # Step 3: Extract and format the name
+    name_match = re.search(r"-([^-()]+)\(", title_raw)
     if name_match:
-        raw_name = name_match.group(1).strip()
-        # Insert space before capital letters that are stuck: e.g. LAIKIM -> LAI KIM
+        raw_name = name_match.group(1)
         formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-        formatted_name = formatted_name.replace('A/ P', 'A/P').replace('A/ L', 'A/L')
+
+        # Fix common Malaysian abbreviations
+        formatted_name = formatted_name.replace("A/ P", "A/P")
+        formatted_name = formatted_name.replace("A/ L", "A/L")
         lecturer_name = formatted_name
+    else:
+        lecturer_name = "UNKNOWN"
 
-    # Uppercase everything for uniform parsing
-    upper_text = text_no_whitespace.upper()
+    # Step 4: Replace name inside the text
+    if lecturer_name != "UNKNOWN":
+        text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
 
-    # Extract a timerow if present
-    timerow_match = re.search(r"(07:00.*?23:00)", upper_text)
-    timerow = timerow_match.group(1) if timerow_match else ''
+    # Step 5: Convert to UPPERCASE
+    text = text_no_whitespace.upper()
 
-    # Remove the header/title portion to simplify day/activity extraction
-    if timerow:
-        upper_text = upper_text.replace(timerow, '')
+    # Step 6: Extract title and timerow again
+    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
+    if match_title:
+        title = match_title.group(1).strip()
+        timerow = match_title.group(2).strip()
+        text = text.replace(title, "").replace(timerow, "")
+    else:
+        title = "TIMETABLE"
 
-    # Insert day separators
+    # Insert days with blank line
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
     for day in days:
-        upper_text = re.sub(fr"\b{day}\b", f"\n\n{day}", upper_text)
+        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
 
-    # Break activities by keywords
-    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
-        if kw == 'PUBLISHED':
-            upper_text = re.sub(fr"\b{kw}\b", f"\n\n{kw}", upper_text)
+    # Break activities
+    keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
+    for kw in keywords:
+        if kw == "PUBLISHED":
+            text = re.sub(kw, f"\n\n{kw}", text, flags=re.IGNORECASE)
         else:
-            upper_text = re.sub(fr"\b{kw}\b", f"\n{kw}", upper_text)
+            text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
 
-    upper_text = re.sub(r"\n{3,}", "\n\n", upper_text)
+    # Clean blank lines
+    text = re.sub(r"\n{3,}", "\n\n", text)
 
-    structured = {'title': 'TIMETABLE', 'lecturer': lecturer_name, 'timerow': timerow, 'days': {}}
+    # Build structured JSON
+    structured = {
+        "title": title,
+        "lecturer": lecturer_name,
+        "timerow": timerow,
+        "days": {}
+    }
+
     current_day = None
-    for line in upper_text.splitlines():
+    for line in text.splitlines():
         line = line.strip()
         if not line:
             continue
         if line in days:
             current_day = line
-            structured['days'][current_day] = []
-        else:
-            if current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
-                try:
-                    parsed = parse_activity(line)
-                    structured['days'][current_day].append(parsed)
-                except Exception:
-                    # ignore parse errors for a line
-                    continue
+            structured["days"][current_day] = []
+        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
+            structured["days"][current_day].append(parse_activity(line))
 
     return structured
 
@@ -1157,7 +1183,7 @@ def preview_timetable(file_id):
         fh.seek(0)
         reader = PdfReader(fh)
         raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
-        structured = parse_pdf_text(raw_text)
+        structured = parse_timetable(raw_text)
 
         return Response(json.dumps(structured, indent=4), mimetype='application/json')
     except Exception as e:
@@ -1175,7 +1201,7 @@ def preview_uploaded_timetable():
     try:
         reader = PdfReader(file.stream)
         raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
-        structured = parse_pdf_text(raw_text)
+        structured = parse_timetable(raw_text)
         return jsonify(structured)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -1247,10 +1273,8 @@ def admin_manageTimetable():
         for key, (f, _) in grouped_uploads.items():
             try:
                 reader = PdfReader(f.stream)
-                structured = parse_pdf_text(" ".join(page.extract_text() or "" for page in reader.pages))
+                structured = parse_timetable(" ".join(page.extract_text() or "" for page in reader.pages))
                 save_timetable_to_db(structured)
-                upload_results.append({'filename': f.filename, 'data': structured})
-                flash(f'Uploaded and saved: {f.filename}', 'success')
             except Exception as e:
                 flash(f'Error processing {f.filename}: {e}', 'error')
 
