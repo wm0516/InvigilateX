@@ -1119,7 +1119,7 @@ def fetch_drive_files():
                 if not base_name:
                     continue
 
-                # Fetch file content just enough to parse week_start_date
+                # Read the file content (to extract structured timetable data)
                 file_content = drive_service.files().get_media(fileId=file['id']).execute()
                 reader = PdfReader(BytesIO(file_content))
                 raw_text = ""
@@ -1129,18 +1129,21 @@ def fetch_drive_files():
                 structured = parse_pdf_text(raw_text)
                 week_start_date = get_week_start_date(structured)
 
+                # 🔎 DEBUG LOGGING HERE
+                app.logger.info(f"Processing: {file['name']}, base={base_name}, week_start_date={week_start_date}")
+
+                # Allocate into grouped_files
                 if base_name not in grouped_files:
-                    grouped_files[base_name] = {
-                        "file": file,
-                        "week_start_date": week_start_date
-                    }
+                    grouped_files[base_name] = {"file": file, "week_start_date": week_start_date}
                 else:
                     current = grouped_files[base_name]
+                    app.logger.info(
+                        f"Comparing {file['name']} ({week_start_date}) "
+                        f"with {current['file']['name']} ({current['week_start_date']})"
+                    )
                     if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
-                        grouped_files[base_name] = {
-                            "file": file,
-                            "week_start_date": week_start_date
-                        }
+                        grouped_files[base_name] = {"file": file, "week_start_date": week_start_date}
+
 
             page_token = response.get('nextPageToken')
             if not page_token:
