@@ -833,12 +833,16 @@ def get_drive_service_and_folder(creds):
     except Exception as e:
         raise Exception(f"Error accessing Google Drive folder: {e}")
 
-# Filter multiple same filename
-def extract_base_name(file_name):
-    # Split at first underscore and remove all whitespace
-    base_name = file_name.split("_")[0]
-    base_name = re.sub(r"\s+", "", base_name)
-    return base_name
+
+def extract_base_name(filename):
+    # Remove everything after "_" (e.g., the date and onwards.pdf)
+    base_part = filename.split('_')[0]
+    # Remove .pdf (if included by mistake)
+    base_part = base_part.replace('.pdf', '')
+    # Remove whitespace and punctuation
+    base_part = re.sub(r'[^a-zA-Z0-9]', '', base_part)
+    return base_part.lower()
+
 
 
 # Filter duplicate file and get with the latest date
@@ -1147,14 +1151,13 @@ def fetch_drive_files():
 
         # ✅ Keep only the latest file per group
         final_files = []
-        for base_name, group in grouped_files.items():
-            group_sorted = sorted(group, key=lambda x: x["week_start_date"] or datetime.min, reverse=True)
-            latest = group_sorted[0]
+        for group in grouped_files.values():
+            latest = sorted(
+                group,
+                key=lambda x: x["week_start_date"] or datetime.min,
+                reverse=True
+            )[0]
             final_files.append(latest["file"])
-
-            # ✅ Optional logging of skipped duplicates
-            for older in group_sorted[1:]:
-                app.logger.info(f"Skipped older file: {older['file']['name']} (latest is {latest['file']['name']})")
 
         session['drive_files'] = final_files
 
