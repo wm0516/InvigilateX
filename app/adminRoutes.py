@@ -1184,21 +1184,51 @@ def fetch_drive_files():
 
             files_in_page = response.get('files', [])
             total_files_read += len(files_in_page)
-
+            
             for file in files_in_page:
                 base_name, timestamp = extract_base_name_and_timestamp(file['name'])
 
                 app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
 
                 if base_name:
-                    # Use timestamp if available; else fallback to modifiedTime from Drive metadata
-                    file_timestamp = timestamp or datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
+                    # Use timestamp if available; else fallback to modifiedTime
+                    file_timestamp = timestamp
+                    has_timestamp = timestamp is not None
+
+                    if not has_timestamp:
+                        file_timestamp = datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
 
                     if base_name not in seen_files:
-                        seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
+                        seen_files[base_name] = {
+                            'file': file,
+                            'timestamp': file_timestamp,
+                            'has_timestamp': has_timestamp
+                        }
                     else:
-                        if file_timestamp > seen_files[base_name]['timestamp']:
-                            seen_files[base_name] = {'file': file, 'timestamp': file_timestamp}
+                        existing = seen_files[base_name]
+
+                        # Rule 1: Prefer file with timestamp over one without
+                        if has_timestamp and not existing['has_timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': file_timestamp,
+                                'has_timestamp': has_timestamp
+                            }
+                        # Rule 2: If both have timestamps → pick latest
+                        elif has_timestamp and existing['has_timestamp'] and file_timestamp > existing['timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': file_timestamp,
+                                'has_timestamp': has_timestamp
+                            }
+                        # Rule 3: If neither has timestamp → use latest modifiedTime
+                        elif not has_timestamp and not existing['has_timestamp'] and file_timestamp > existing['timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': file_timestamp,
+                                'has_timestamp': has_timestamp
+                            }
+
 
             page_token = response.get('nextPageToken')
             if not page_token:
