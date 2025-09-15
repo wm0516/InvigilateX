@@ -905,6 +905,7 @@ def parse_activity(line):
 def parse_pdf_text(text):
     # Step 1: Remove all whitespace
     text_no_whitespace = re.sub(r"\s+", "", text)
+    print(text)
 
     # Step 2: Extract lecturer name before uppercasing
     title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
