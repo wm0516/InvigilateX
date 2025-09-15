@@ -1,5 +1,96 @@
 
 
+
+
+# OAuth config
+GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
+
+
+def require_credentials(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not session.get('credentials'):
+            flash('No credentials found. Please authorize first.', 'error')
+            return redirect(url_for('authorize'))
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def build_credentials_from_session():
+    """Build google.oauth2.credentials.Credentials from session storage."""
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        return None
+    if isinstance(creds_dict, str):
+        creds_dict = json.loads(creds_dict)
+
+    return Credentials(
+        token=creds_dict.get('token'),
+        refresh_token=creds_dict.get('refresh_token'),
+        token_uri=creds_dict.get('token_uri'),
+        client_id=creds_dict.get('client_id'),
+        client_secret=creds_dict.get('client_secret'),
+        scopes=creds_dict.get('scopes')
+    )
+
+
+def get_oauth_flow(state=None):
+    flow = Flow.from_client_secrets_file(
+        GOOGLE_CLIENT_SECRETS_FILE,
+        scopes=SCOPES,
+        redirect_uri=REDIRECT_URI
+    )
+    if state:
+        flow.state = state
+    return flow
+
+
+def get_drive_service_and_folder(creds):
+    """Return drive service and SOC folder id (raises Exception if missing)."""
+    drive_service = build('drive', 'v3', credentials=creds)
+    folder_results = drive_service.files().list(
+        q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
+        spaces='drive',
+        fields='files(id, name)'
+    ).execute()
+    folders = folder_results.get('files', [])
+    if not folders:
+        raise Exception('SOC folder not found')
+    return drive_service, folders[0]['id']
+
+
+
+# --- Parsing utilities (kept similar to your original logic but centralized) ---
+def extract_base_name_and_timestamp(file_name):
+    """
+    Extract base name and timestamp from a file name of the format:
+    e.g. "Ts. Vasuky_140425 onwards.pdf"
+    Returns: (base_name, datetime object) or (None, None)
+    """
+    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
+
+    if not match:
+        return None, None
+
+    base_name = match.group(1)
+    timestamp_str = match.group(2)
+
+    timestamp = None
+    if timestamp_str:
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            return None, None
+    else:
+        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        base_name = file_name[:-4]
+
+    return base_name, timestamp
+
+
 def parse_activity(line):
     """Parse one activity line into structured data."""
     activity = {}
@@ -51,95 +142,137 @@ def parse_activity(line):
     return activity
 
 
+def parse_pdf_text(text):
+    """Extract timetable info from raw PDF text."""
+    # Step 1: Remove all whitespace
+    text_no_whitespace = re.sub(r"\s+", "", text)
 
+    # Step 2: Extract name before uppercasing
+    lecturer_name = None
+    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
+    if title_match:
+        title_raw = title_match.group(1)
+        timerow = title_match.group(2)
+    else:
+        title_raw = ""
+        timerow = ""
 
-'''
-@app.route("/admin/manageTimetable", methods=["GET", "POST"])
-def admin_manageTimetable():
-    service = get_drive_service()
-    results = service.files().list(pageSize=50, fields="files(id, name)").execute()
-    files = results.get('files', [])
-    for file in files:
-        print(f"{file['name']} ({file['id']})")
+    # Step 3: Extract and format the name
+    name_match = re.search(r"-([^-()]+)\(", title_raw)
+    if name_match:
+        raw_name = name_match.group(1)
+        formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
 
+        # Fix common Malaysian abbreviations
+        formatted_name = formatted_name.replace("A/ P", "A/P")
+        formatted_name = formatted_name.replace("A/ L", "A/L")
+        lecturer_name = formatted_name
+    else:
+        lecturer_name = "UNKNOWN"
 
-    structured = None
+    # Step 4: Replace name inside the text
+    if lecturer_name != "UNKNOWN":
+        text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
 
-    if request.method == "POST":
-        if "timetablePDF_file" not in request.files:
-            flash("No file part", "error")
-            return redirect(request.url)
+    # Step 5: Convert to UPPERCASE
+    text = text_no_whitespace.upper()
 
-        file = request.files["timetablePDF_file"]
+    # Step 6: Extract title and timerow again
+    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
+    if match_title:
+        title = match_title.group(1).strip()
+        timerow = match_title.group(2).strip()
+        text = text.replace(title, "").replace(timerow, "")
+    else:
+        title = "TIMETABLE"
 
-        if file.filename == "":
-            flash("No selected file", "error")
-            return redirect(request.url)
+    # Insert days with blank line
+    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    for day in days:
+        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
 
-        reader = PyPDF2.PdfReader(file.stream)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() + " "
-
-        # Remove ALL whitespace
-        text = re.sub(r"\s+", "", text)
-        text = text.upper()
-
-        # --- Step 1: Extract title ---
-        match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
-        if match_title:
-            title = match_title.group(1).strip()
-            timerow = match_title.group(2).strip()
-            text = text.replace(title, "").replace(timerow, "")
+    # Break activities
+    keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
+    for kw in keywords:
+        if kw == "PUBLISHED":
+            text = re.sub(kw, f"\n\n{kw}", text, flags=re.IGNORECASE)
         else:
-            title = "TIMETABLE"
-            timerow = ""
+            text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
 
-        # --- Extract lecturer name ---
-        lecturer_name = None
-        match_name = re.search(r"-(.*?)\(", title)
-        if match_name:
-            lecturer_name = match_name.group(1)
+    # Clean blank lines
+    text = re.sub(r"\n{3,}", "\n\n", text)
 
-        # --- Step 2: Insert days with blank line before them ---
-        days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-        for day in days:
-            text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
+    # Build structured JSON
+    structured = {
+        "title": title,
+        "lecturer": lecturer_name,
+        "timerow": timerow,
+        "days": {}
+    }
 
-        # --- Step 3: Break activities so each starts on new line ---
-        keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
-        for kw in keywords:
-            if kw == "PUBLISHED":
-                text = re.sub(kw, f"\n\n{kw}", text, flags=re.IGNORECASE)
-            else:
-                text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
+    current_day = None
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line in days:
+            current_day = line
+            structured["days"][current_day] = []
+        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
+            structured["days"][current_day].append(parse_activity(line))
 
-        # --- Step 4: Clean up ---
-        text = re.sub(r"\n{3,}", "\n\n", text)
+    return structured
 
-        # --- Step 5: Build structured JSON ---
-        structured = {
-            "title": title,
-            "lecturer": lecturer_name,
-            "timerow": timerow,
-            "days": {}
-        }
-        current_day = None
 
-        for line in text.splitlines():
-            line = line.strip()
-            if not line:
+
+def save_timetable_to_db(structured):
+    # Collect all new entries first
+    new_entries = []
+    lecturer = structured.get("lecturer")
+
+    for day, activities in structured["days"].items():
+        for act in activities:
+            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
                 continue
 
-            if line in days:
-                current_day = line
-                structured["days"][current_day] = []
-            else:
-                if current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
-                    structured["days"][current_day].append(parse_activity(line))
+            if act.get("sections"):
+                for sec in act["sections"]:
+                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
+                        continue
 
-    return render_template("admin/adminManageTimetable.html", active_tab="admin_manageTimetabletab", structured=structured)
-'''
+                    new_entries.append({
+                        "lecturerName": lecturer,
+                        "classType": act.get("class_type"),
+                        "classDay": day,
+                        "classTime": act.get("time"),
+                        "classRoom": act.get("room"),
+                        "courseName": act.get("course"),
+                        "courseIntake": sec.get("intake"),
+                        "courseCode": sec.get("course_code"),
+                        "courseSection": sec.get("section"),
+                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        "classWeekDate": act.get("weeks_date"),
+                    })
+
+    # Delete only matching existing rows for this lecturer
+    for entry in new_entries:
+        Timetable.query.filter_by(
+            lecturerName=entry["lecturerName"],
+            classType=entry["classType"],
+            classDay=entry["classDay"],
+            classTime=entry["classTime"],
+            classRoom=entry["classRoom"],
+            courseIntake=entry["courseIntake"],
+            courseCode=entry["courseCode"],
+            courseSection=entry["courseSection"]
+        ).delete()
+
+    # Add new rows
+    for entry in new_entries:
+        row = Timetable(**entry)
+        db.session.add(row)
+
+    db.session.commit()
 
 
 
@@ -147,101 +280,528 @@ def admin_manageTimetable():
 
 
 
+# --- ROUTES ---
+@app.route('/admin/authorize')
+def authorize():
+    try:
+        flow = get_oauth_flow()
+        authorization_url, state = flow.authorization_url(
+            access_type='offline', include_granted_scopes='true', prompt='consent'
+        )
+        session['state'] = state
+        return redirect(authorization_url)
+    except Exception as e:
+        flash(f'Error initiating OAuth flow: {e}', 'error')
+        return redirect(url_for('admin_manageTimetable'))
+
+
+@app.route('/admin/oauth2callback')
+def oauth2callback():
+    try:
+        state = session.get('state')
+        if not state:
+            raise Exception('State missing in session')
+        flow = get_oauth_flow(state=state)
+        flow.fetch_token(authorization_response=request.url)
+        creds = flow.credentials
+        session['credentials'] = json.dumps({
+            'token': creds.token,
+            'refresh_token': getattr(creds, 'refresh_token', None),
+            'token_uri': getattr(creds, 'token_uri', None),
+            'client_id': getattr(creds, 'client_id', None),
+            'client_secret': getattr(creds, 'client_secret', None),
+            'scopes': getattr(creds, 'scopes', None)
+        })
+        flash('OAuth2 authentication successful.', 'success')
+        return redirect(url_for('admin_manageTimetable'))
+    except Exception as e:
+        flash(f'Error during OAuth2 callback: {e}', 'error')
+        return redirect(url_for('admin_manageTimetable'))
+
+
+@app.route('/reauthorize')
+def reauthorize():
+    session.pop('credentials', None)
+    return redirect(url_for('authorize'))
+
+@app.route('/admin/fetch_drive_files')
+def fetch_drive_files():
+    # Step 1: Load credentials from session
+    creds_dict = session.get('credentials')
+    if not creds_dict:
+        flash("No credentials found in session. Please authenticate first.", 'error')
+        return redirect(url_for('authorize'))
+
+    try:
+        if isinstance(creds_dict, str):
+            creds_dict = json.loads(creds_dict)
+
+        creds = Credentials(
+            token=creds_dict.get('token'),
+            refresh_token=creds_dict.get('refresh_token'),
+            token_uri=creds_dict.get('token_uri'),
+            client_id=creds_dict.get('client_id'),
+            client_secret=creds_dict.get('client_secret'),
+            scopes=creds_dict.get('scopes')
+        )
+    except Exception as e:
+        flash(f"Error loading credentials: {e}", 'error')
+        app.logger.error(f"Error loading credentials: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    # Step 2: Build Drive service and find SOC folder
+    try:
+        drive_service = build('drive', 'v3', credentials=creds)
+
+        folder_results = drive_service.files().list(
+            q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
+            spaces='drive',
+            fields='files(id, name)'
+        ).execute()
+
+        folders = folder_results.get('files', [])
+        if not folders:
+            flash("SOC folder not found", 'error')
+            app.logger.error("SOC folder not found")
+            return redirect(url_for('admin_manageTimetable'))
+
+        soc_folder_id = folders[0]['id']
+
+    except Exception as e:
+        flash(f"Error accessing Google Drive folder: {e}", 'error')
+        app.logger.error(f"Error accessing Google Drive folder: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
+    try:
+        seen_files = {}
+        page_token = None
+        total_files_read = 0
+
+        while True:
+            response = drive_service.files().list(
+                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
+                spaces='drive',
+                fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
+                pageToken=page_token
+            ).execute()
+
+            files_in_page = response.get('files', [])
+            total_files_read += len(files_in_page)
+
+            for file in files_in_page:
+                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
+
+                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
+
+                if base_name:
+                    # Use timestamp if available; else fallback to modifiedTime
+                    file_timestamp = timestamp
+                    has_timestamp = timestamp is not None
+
+                    if not has_timestamp:
+                        file_timestamp = datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
+
+                    if base_name not in seen_files:
+                        seen_files[base_name] = {
+                            'file': file,
+                            'timestamp': file_timestamp,
+                            'has_timestamp': has_timestamp
+                        }
+                    else:
+                        existing = seen_files[base_name]
+
+                        # Rule 1: Prefer file with timestamp over one without
+                        if has_timestamp and not existing['has_timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': file_timestamp,
+                                'has_timestamp': has_timestamp
+                            }
+                        # Rule 2: If both have timestamps → pick latest
+                        elif has_timestamp and existing['has_timestamp'] and file_timestamp > existing['timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': file_timestamp,
+                                'has_timestamp': has_timestamp
+                            }
+                        # Rule 3: If neither has timestamp → use latest modifiedTime
+                        elif not has_timestamp and not existing['has_timestamp'] and file_timestamp > existing['timestamp']:
+                            seen_files[base_name] = {
+                                'file': file,
+                                'timestamp': file_timestamp,
+                                'has_timestamp': has_timestamp
+                            }
+
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
+
+        # Sort by timestamp ascending (oldest first)    
+        filtered_files = sorted(
+            seen_files.values(),
+            key=lambda x: x['timestamp']
+        )
+
+        # Extract only file objects after sorting
+        filtered_files = [data['file'] for data in filtered_files]
+
+        # Save filtered files in session for displaying later
+        session['drive_files'] = filtered_files
+
+    except Exception as e:
+        flash(f"Error fetching files from Google Drive: {e}", 'error')
+        app.logger.error(f"Error fetching files from Google Drive: {e}")
+        return redirect(url_for('admin_manageTimetable'))
+
+    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'success')
+    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
+
+    return redirect(url_for('admin_manageTimetable'))
+
+
+
+@app.route('/admin/preview_timetable/<file_id>')
+@require_credentials
+def preview_timetable(file_id):
+    try:
+        creds = build_credentials_from_session()
+        drive_service = build('drive', 'v3', credentials=creds)
+        structured = fetch_and_extract_structured(file_id, drive_service)
+        return Response(json.dumps(structured, indent=4), mimetype='application/json')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/admin/preview_uploaded_timetable', methods=['POST'])
+def preview_uploaded_timetable():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    try:
+        reader = PdfReader(file.stream)
+        structured = extract_structured_from_pdf_reader(reader)
+        return jsonify(structured)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/admin/extract_all')
+@require_credentials
+def extract_all():
+    try:
+        creds = build_credentials_from_session()
+        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
+
+        files = session.get('drive_files', [])
+        if not files:
+            flash('No files available. Please fetch files first.', 'error')
+            return redirect(url_for('fetch_drive_files'))
+
+        inserted_count = 0
+        for file in files:
+            structured = fetch_and_extract_structured(file['id'], drive_service)
+            save_timetable_to_db(structured)
+            inserted_count += 1
+
+        flash(f'Extracted and saved {inserted_count} timetables into database.', 'success')
+        return redirect(url_for('admin_manageTimetable'))
+    except Exception as e:
+        flash(f'Error extracting all timetables: {e}', 'error')
+        return redirect(url_for('admin_manageTimetable'))
+
+
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    selected_lecturer = request.args.get('lecturer')
+
+    # get DB data (if needed)
+    timetable_data = []  # Timetable.query.all()
+    if selected_lecturer:
+        timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
+
+    # get drive files
+    files = session.get('drive_files', [])
+    if selected_lecturer:
+        files = [f for f in files if f.get('lecturer') == selected_lecturer]
+
+    # collect lecturer list for dropdown
+    lecturers = set(f.get('lecturer') for f in session.get('drive_files', []) if f.get('lecturer'))
+
+    upload_results = []
+
+    # handle upload
+    if request.method == 'POST' and 'timetable_file' in request.files:
+        uploaded = request.files.getlist('timetable_file')
+        for f in uploaded:
+            if f and f.filename:
+                try:
+                    reader = PdfReader(f.stream)
+                    structured = extract_structured_from_pdf_reader(reader)
+                    save_timetable_to_db(structured)
+                    upload_results.append({
+                        'filename': f.filename,
+                        'data': structured
+                    })
+                except Exception as e:
+                    flash(f'Error processing {f.filename}: {e}', 'error')
+
+    return render_template(
+        'admin/adminManageTimetable.html',
+        timetable_data=timetable_data,
+        files=files,   # ✅ each file has {name, lecturer, time}
+        lecturers=sorted(list(lecturers)),
+        selected_lecturer=selected_lecturer,
+        results=upload_results if upload_results else None
+    )
+
+
+
+def fetch_and_extract_structured(file_id, drive_service):
+    """Download a PDF file from Google Drive and parse it into structured JSON."""
+    request = drive_service.files().get_media(fileId=file_id)
+    file_stream = io.BytesIO(request.execute())
+
+    reader = PdfReader(file_stream)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() or ""
+
+    return parse_pdf_text(text)
+
+def extract_structured_from_pdf_reader(reader):
+    """Take a PdfReader object and return structured timetable JSON."""
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() or ""
+    return parse_pdf_text(text)
 
 
 
 
-
-
-
-
-
-
-
-
-
+/*
 {% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
+{% set show_upload = true %}
+{% set show_dashboard = true %}
+{% set show_manual = true %}
 {% block title %}Admin ManageTimetable{% endblock %}
-{% block content %}
-<div class="menu-section">
-    <h2>Manage Timetable</h2>
+{% block head_title %}<h2>Manage Timetable</h2>{% endblock %}
 
-    <form action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
-        <div id="uploadSection" class="function-frame">
-            <div class="form-left" style="width: 100%">
-                <h4 style="text-align: center;">File Upload Section</h4>
-                <label for="timetablePDF_list">
-                    <div class="upload-container" id="timetablePDFUploadContainer">
-                        <div class="upload-text">
-                            Upload a file in PDF Format<br><br><br>
-                            Click to upload or drag and drop with below file format
-                        </div>
-                        <div class="file-types">PDF</div><br>
-                        <!-- Selected file display -->
-                        <div id="timetablePDFSelectedFileName" class="file-name-display"></div>
+{% block dashboard_section %}
+<!-- Dashboard Form -->
+<form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
+    <div id="dashboardSection" class="function-frame">
+        <input type="hidden" name="form_type" value="dashboard">
+        <div class="form-left" style="width: 100%">
+        </div>
+    </div>  
+</form>
+{% endblock %} 
+
+{% block upload_section %}
+<!-- Upload Form -->
+<form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+    <div id="uploadSection" style="margin: auto;">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="timetable_list">
+                <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
+                    <div class="upload-text">
+                        Upload in PDF file format<br><br><br>
+                        Click to upload or drag and drop with below file format
                     </div>
-                </label>
-                <input type="file" id="timetablePDF_list" name="timetablePDF_file" accept=".pdf" style="display: none;">
+                    <div class="file-types">PDF ONLY</div><br>
+                    <!-- Selected file display -->
+                    <div id="timetableSelectedFileName" class="file-name-display"></div>
+                </div>
+            </label>
+            <input type="file" id="timetable_list" name="timetable_file" accept=".pdf" style="display: none;" multiple>
+            <input type="hidden" name="form_type" value="upload">
+            <br>
 
-                <br>
-                {% if pdfUploadResult %}
-                    <div class="result-message">{{ pdfUploadResult }}</div>
-                {% elif pdfUploadErrors %}
-                    <div class="error-message">{{ pdfUploadErrors }}</div>
-                {% elif get_flashed_messages(with_categories=true) %}
-                    {% for category, message in get_flashed_messages(with_categories=true) %}
-                        <div class="alert alert-{{ category }}">
-                            <strong>{{ category.capitalize() }}:</strong> {{ message }}
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Upload and Preview Lecturer Timetable</button>
+            </div>
+
+            {% if results %}
+            <div class="button-container">
+                <a href="{{ url_for('extract_all') }}" class="btn-secondary">
+                    <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
+                </a>   
+            </div>
+            {% endif %}
+
+            {% if results %}
+                <h3>Uploaded Files:</h3>
+                <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+                    {% for file in results %}
+                        <div>
+                            <button type="button" onclick='previewUploadedTimetable({{ file.data | tojson | safe }})'>Preview</button>
+                            {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
-                {% endif %}
-                <br>
-
-                <!-- Upload Form Submit -->
-                <div class="button-wrapper">
-                    <button type="submit">Upload Exam</button>
                 </div>
-            </div>
+                <br><br>
+
+                <div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+                    <h4>Preview Result</h4>
+                    <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
+                </div>
+            {% endif %}
         </div>
-    </form>
+    </div>
+</form>
+{% endblock %}
 
-
-    {% if structured %}
-        {% for day, activities in structured.days.items() %}
-            <h4>{{ day }}</h4>
-            <div class="menu-grid">
-                {% for act in activities %}
-                    <div class="activity-card">
-                        <b>Lecturer Name:   </b> {{ structured.lecturer }} <br>
-                        <b>Session Type:    </b> {{ act.class_type }} <br>
-                        <b>Time:            </b> {{ act.time }} <br>
-                        <b>Course Name:     </b> {{ act.course }} <br>
-                        <b>Venue:           </b> {{ act.room }} <br>
-                        <b>Weeks Effective: </b> {{ act.weeks_range | join(", ") }} <br>
-                        <b>Date Range:      </b> {{ act.weeks_date }} <br>
-
-                        {% if act.sections %}
-                            <b>Sections:    </b><br>
-                            {% for sec in act.sections %}
-                                {{ sec.intake }} | {{ sec.course_code }} | {{ sec.section }}<br>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                {% endfor %}
+{% block manual_section %}
+<form id="manualForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+    {% if not files %}
+        {% if not authorized %}
+            <div class="button-wrapper">
+                <a href="{{ url_for('authorize') }}" class="btn-link">Click here to authorize Google Drive</a>
             </div>
-            <hr>
-        {% endfor %}
+        {% else %}  
+            <div class="button-wrapper">
+                <a href="{{ url_for('fetch_drive_files') }}" class="btn-link">Click here to load files from Google Drive</a>
+            </div>
+        {% endif %}
     {% endif %}
 
-    <br><br>
-    <h2>Timetable Calander</h2>
+    {% if files %}
+        <!-- Refresh Button -->
+        <div class="button-container">
+            <a href="{{ url_for('reauthorize') }}" class="btn-warning">
+                <i class="fas fa-key" style="margin-right: 5px;"></i>Re-Authorize Google Drive
+            </a>
+            <a href="{{ url_for('fetch_drive_files') }}" class="btn-primary">
+                <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>Refresh
+            </a>
+            <a href="{{ url_for('extract_all') }}" class="btn-secondary">
+                <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
+            </a>
+        </div>
 
+        <h3>PDF Files from SOC Folder:</h3>
+        <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+            {% for file in files %}
+                <div>
+                    <button type="button" onclick="previewTimetable('{{ file.id }}')">Preview</button>
+                    <a href="{{ file.webViewLink }}" target="_blank">
+                        {{ loop.index }}. {{ file.name }}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>  
+        <br><br>
 
+        <div id="manualPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+            <h4>Preview Result</h4>
+            <pre id="manualPreviewContent">Click a preview button to load timetable...</pre>
+        </div>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="menu-section">
+    <h2>Timetable</h2>
+    <div class="profile-frame">
+        <!-- Filter Section -->
+        <div class="form-right">
+            <form method="get" style="display:flex; align-items:center; gap:8px;">
+                <label for="lecturer">Select Lecturer:</label>
+                <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                    <option value="">All Lecturers</option>
+                    {% for lecturer in lecturers %}
+                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+    </div>
+    
+    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+    {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+
+    <!-- Timetable Grid -->
+    <div class="user-table-container">
+        <table class="user-data-table" border="1">
+            <thead>
+                <tr>
+                    <th>Day / Time</th>
+                    {% for time in time_slots %}
+                        <th>{{ time }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in week_days %}
+                <tr>
+                    <td><strong>{{ day }}</strong></td>
+                    {% for time in time_slots %}
+                    <td>
+                        {% for row in timetable_data %}
+                            {% set class_day = row.classDay.upper() %}
+                            {% set class_time = row.classTime %}
+                            {% set start_time = class_time.split('-')[0] %}
+                            {% set end_time = class_time.split('-')[1] %}
+                            {% if class_day == day and time >= start_time and time < end_time %}
+                                <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                    <strong>{{ row.lecturerName }}</strong><br>
+                                    <strong>[{{ row.classType }}]</strong><br>
+                                    {{ row.courseName }}<br>
+                                    Room: {{ row.classRoom }}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
+
+<script>
+// Function to preview Google Drive files (manual section)
+function previewTimetable(fileId) {
+    document.getElementById("manualPreviewContent").textContent = "Loading...";
+    fetch(`/admin/preview_timetable/${fileId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("manualPreviewContent").textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(err => {
+            document.getElementById("manualPreviewContent").textContent = "Error: " + err;
+        });
+}
+
+// Function to preview uploaded files (upload section)
+function previewUploadedTimetable(data) {
+    const previewElement = document.getElementById("uploadPreviewContent");
+    if (data) {
+        previewElement.textContent = JSON.stringify(data, null, 2);
+    } else {
+        previewElement.textContent = "No structured data found.";
+    }
+}
+
+
+
+</script>
+
 {% endblock %}
 
 
 
-
+*/
 
 

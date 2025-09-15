@@ -792,99 +792,37 @@ def get_course_details(program_code, course_code_section):
 
 
 
-
-
-
-
-
-
-# OAuth config
-GOOGLE_CLIENT_SECRETS_FILE = '/home/WM05/client_secret_255383845871-8dpli4cgss0dmguacaccimgtmhad46d4.apps.googleusercontent.com.json'
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
-
-
-def require_credentials(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        if not session.get('credentials'):
-            flash('No credentials found. Please authorize first.', 'error')
-            return redirect(url_for('authorize'))
-        return func(*args, **kwargs)
-    return wrapper
-
-
-def build_credentials_from_session():
-    """Build google.oauth2.credentials.Credentials from session storage."""
-    creds_dict = session.get('credentials')
-    if not creds_dict:
-        return None
-    if isinstance(creds_dict, str):
-        creds_dict = json.loads(creds_dict)
-
-    return Credentials(
-        token=creds_dict.get('token'),
-        refresh_token=creds_dict.get('refresh_token'),
-        token_uri=creds_dict.get('token_uri'),
-        client_id=creds_dict.get('client_id'),
-        client_secret=creds_dict.get('client_secret'),
-        scopes=creds_dict.get('scopes')
-    )
-
-
-def get_oauth_flow(state=None):
-    flow = Flow.from_client_secrets_file(
-        GOOGLE_CLIENT_SECRETS_FILE,
-        scopes=SCOPES,
-        redirect_uri=REDIRECT_URI
-    )
-    if state:
-        flow.state = state
-    return flow
-
-
-def get_drive_service_and_folder(creds):
-    """Return drive service and SOC folder id (raises Exception if missing)."""
-    drive_service = build('drive', 'v3', credentials=creds)
-    folder_results = drive_service.files().list(
-        q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
-        spaces='drive',
-        fields='files(id, name)'
-    ).execute()
-    folders = folder_results.get('files', [])
-    if not folders:
-        raise Exception('SOC folder not found')
-    return drive_service, folders[0]['id']
-
-
-
-# --- Parsing utilities (kept similar to your original logic but centralized) ---
-def extract_base_name_and_timestamp(file_name):
+def extract_base_name_and_timestamp_simple(file_name):
     """
-    Extract base name and timestamp from a file name of the format:
-    e.g. "Ts. Vasuky_140425 onwards.pdf"
-    Returns: (base_name, datetime object) or (None, None)
+    Extract base name as everything before first underscore (if any),
+    timestamp as 6 digits after underscore if present.
+
+    Returns (base_name, datetime object or None)
     """
-    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
+    # Remove extension first
+    name_only = file_name[:-4] if file_name.lower().endswith('.pdf') else file_name
 
-    if not match:
-        return None, None
+    # Split by underscore
+    parts = name_only.split('_', 1)
 
-    base_name = match.group(1)
-    timestamp_str = match.group(2)
-
-    timestamp = None
-    if timestamp_str:
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-        except ValueError:
-            return None, None
+    if len(parts) == 1:
+        # No underscore - base name is full name
+        base_name = parts[0]
+        timestamp = None
     else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
-        base_name = file_name[:-4]
+        base_name = parts[0]
+        # Extract 6 digit timestamp at start of second part if present
+        timestamp_match = re.match(r"(\d{6})", parts[1])
+        if timestamp_match:
+            ts_str = timestamp_match.group(1)
+            try:
+                timestamp = datetime.strptime(ts_str, "%d%m%y")
+            except ValueError:
+                timestamp = None
+        else:
+            timestamp = None
 
-    return base_name, timestamp
+    return base_name.strip(), timestamp
 
 
 def parse_activity(line):
@@ -938,10 +876,10 @@ def parse_activity(line):
     return activity
 
 
-def parse_pdf_text(text):
+def parse_timetable(raw_text):
     """Extract timetable info from raw PDF text."""
     # Step 1: Remove all whitespace
-    text_no_whitespace = re.sub(r"\s+", "", text)
+    text_no_whitespace = re.sub(r"\s+", "", raw_text)
 
     # Step 2: Extract name before uppercasing
     lecturer_name = None
@@ -1020,7 +958,6 @@ def parse_pdf_text(text):
     return structured
 
 
-
 def save_timetable_to_db(structured):
     # Collect all new entries first
     new_entries = []
@@ -1071,314 +1008,81 @@ def save_timetable_to_db(structured):
     db.session.commit()
 
 
-
-
-
-
-
-# --- ROUTES ---
-@app.route('/admin/authorize')
-def authorize():
-    try:
-        flow = get_oauth_flow()
-        authorization_url, state = flow.authorization_url(
-            access_type='offline', include_granted_scopes='true', prompt='consent'
-        )
-        session['state'] = state
-        return redirect(authorization_url)
-    except Exception as e:
-        flash(f'Error initiating OAuth flow: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
-
-
-@app.route('/admin/oauth2callback')
-def oauth2callback():
-    try:
-        state = session.get('state')
-        if not state:
-            raise Exception('State missing in session')
-        flow = get_oauth_flow(state=state)
-        flow.fetch_token(authorization_response=request.url)
-        creds = flow.credentials
-        session['credentials'] = json.dumps({
-            'token': creds.token,
-            'refresh_token': getattr(creds, 'refresh_token', None),
-            'token_uri': getattr(creds, 'token_uri', None),
-            'client_id': getattr(creds, 'client_id', None),
-            'client_secret': getattr(creds, 'client_secret', None),
-            'scopes': getattr(creds, 'scopes', None)
-        })
-        flash('OAuth2 authentication successful.', 'success')
-        return redirect(url_for('admin_manageTimetable'))
-    except Exception as e:
-        flash(f'Error during OAuth2 callback: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
-
-
-@app.route('/reauthorize')
-def reauthorize():
-    session.pop('credentials', None)
-    return redirect(url_for('authorize'))
-
-@app.route('/admin/fetch_drive_files')
-def fetch_drive_files():
-    # Step 1: Load credentials from session
-    creds_dict = session.get('credentials')
-    if not creds_dict:
-        flash("No credentials found in session. Please authenticate first.", 'error')
-        return redirect(url_for('authorize'))
-
-    try:
-        if isinstance(creds_dict, str):
-            creds_dict = json.loads(creds_dict)
-
-        creds = Credentials(
-            token=creds_dict.get('token'),
-            refresh_token=creds_dict.get('refresh_token'),
-            token_uri=creds_dict.get('token_uri'),
-            client_id=creds_dict.get('client_id'),
-            client_secret=creds_dict.get('client_secret'),
-            scopes=creds_dict.get('scopes')
-        )
-    except Exception as e:
-        flash(f"Error loading credentials: {e}", 'error')
-        app.logger.error(f"Error loading credentials: {e}")
-        return redirect(url_for('admin_manageTimetable'))
-
-    # Step 2: Build Drive service and find SOC folder
-    try:
-        drive_service = build('drive', 'v3', credentials=creds)
-
-        folder_results = drive_service.files().list(
-            q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
-            spaces='drive',
-            fields='files(id, name)'
-        ).execute()
-
-        folders = folder_results.get('files', [])
-        if not folders:
-            flash("SOC folder not found", 'error')
-            app.logger.error("SOC folder not found")
-            return redirect(url_for('admin_manageTimetable'))
-
-        soc_folder_id = folders[0]['id']
-
-    except Exception as e:
-        flash(f"Error accessing Google Drive folder: {e}", 'error')
-        app.logger.error(f"Error accessing Google Drive folder: {e}")
-        return redirect(url_for('admin_manageTimetable'))
-
-    # Step 3: Fetch PDF files from SOC folder and keep only latest per base name
-    try:
-        seen_files = {}
-        page_token = None
-        total_files_read = 0
-
-        while True:
-            response = drive_service.files().list(
-                q=f"'{soc_folder_id}' in parents and trashed=false and mimeType='application/pdf'",
-                spaces='drive',
-                fields='nextPageToken, files(id, name, webViewLink, modifiedTime)',
-                pageToken=page_token
-            ).execute()
-
-            files_in_page = response.get('files', [])
-            total_files_read += len(files_in_page)
-            
-            for file in files_in_page:
-                base_name, timestamp = extract_base_name_and_timestamp(file['name'])
-
-                app.logger.info(f"Processing file: {file['name']} | Base Name: {base_name} | Timestamp: {timestamp}")
-
-                if base_name:
-                    # Use timestamp if available; else fallback to modifiedTime
-                    file_timestamp = timestamp
-                    has_timestamp = timestamp is not None
-
-                    if not has_timestamp:
-                        file_timestamp = datetime.strptime(file['modifiedTime'][:10], "%Y-%m-%d")
-
-                    if base_name not in seen_files:
-                        seen_files[base_name] = {
-                            'file': file,
-                            'timestamp': file_timestamp,
-                            'has_timestamp': has_timestamp
-                        }
-                    else:
-                        existing = seen_files[base_name]
-
-                        # Rule 1: Prefer file with timestamp over one without
-                        if has_timestamp and not existing['has_timestamp']:
-                            seen_files[base_name] = {
-                                'file': file,
-                                'timestamp': file_timestamp,
-                                'has_timestamp': has_timestamp
-                            }
-                        # Rule 2: If both have timestamps → pick latest
-                        elif has_timestamp and existing['has_timestamp'] and file_timestamp > existing['timestamp']:
-                            seen_files[base_name] = {
-                                'file': file,
-                                'timestamp': file_timestamp,
-                                'has_timestamp': has_timestamp
-                            }
-                        # Rule 3: If neither has timestamp → use latest modifiedTime
-                        elif not has_timestamp and not existing['has_timestamp'] and file_timestamp > existing['timestamp']:
-                            seen_files[base_name] = {
-                                'file': file,
-                                'timestamp': file_timestamp,
-                                'has_timestamp': has_timestamp
-                            }
-
-
-            page_token = response.get('nextPageToken')
-            if not page_token:
-                break
-
-        # Sort by timestamp ascending (oldest first)    
-        filtered_files = sorted(
-            seen_files.values(),
-            key=lambda x: x['timestamp']
-        )
-
-        # Extract only file objects after sorting
-        filtered_files = [data['file'] for data in filtered_files]
-
-        # Save filtered files in session for displaying later
-        session['drive_files'] = filtered_files
-
-    except Exception as e:
-        flash(f"Error fetching files from Google Drive: {e}", 'error')
-        app.logger.error(f"Error fetching files from Google Drive: {e}")
-        return redirect(url_for('admin_manageTimetable'))
-
-    flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(filtered_files)}", 'success')
-    app.logger.info(f"Total files read: {total_files_read}, filtered files kept: {len(filtered_files)}")
-
-    return redirect(url_for('admin_manageTimetable'))
-
-
-
-@app.route('/admin/preview_timetable/<file_id>')
-@require_credentials
-def preview_timetable(file_id):
-    try:
-        creds = build_credentials_from_session()
-        drive_service = build('drive', 'v3', credentials=creds)
-        structured = fetch_and_extract_structured(file_id, drive_service)
-        return Response(json.dumps(structured, indent=4), mimetype='application/json')
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/admin/preview_uploaded_timetable', methods=['POST'])
-def preview_uploaded_timetable():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-    try:
-        reader = PdfReader(file.stream)
-        structured = extract_structured_from_pdf_reader(reader)
-        return jsonify(structured)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/admin/extract_all')
-@require_credentials
-def extract_all():
-    try:
-        creds = build_credentials_from_session()
-        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
-
-        files = session.get('drive_files', [])
-        if not files:
-            flash('No files available. Please fetch files first.', 'error')
-            return redirect(url_for('fetch_drive_files'))
-
-        inserted_count = 0
-        for file in files:
-            structured = fetch_and_extract_structured(file['id'], drive_service)
-            save_timetable_to_db(structured)
-            inserted_count += 1
-
-        flash(f'Extracted and saved {inserted_count} timetables into database.', 'success')
-        return redirect(url_for('admin_manageTimetable'))
-    except Exception as e:
-        flash(f'Error extracting all timetables: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
-
-
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    selected_lecturer = request.args.get('lecturer')
+    timetable_data = Timetable.query.all()
 
-    # get DB data (if needed)
-    timetable_data = []  # Timetable.query.all()
-    if selected_lecturer:
-        timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
+    if request.method == "POST":
+        # Detect form type to differentiate between upload or save
+        form_type = request.form.get('form_type')
 
-    # get drive files
-    files = session.get('drive_files', [])
-    if selected_lecturer:
-        files = [f for f in files if f.get('lecturer') == selected_lecturer]
+        if form_type == 'upload':
+            files = request.files.getlist("timetable_file")  # handle multiple PDFs
+            all_files = [file.filename for file in files]
+            total_files_read = len(all_files)
 
-    # collect lecturer list for dropdown
-    lecturers = set(f.get('lecturer') for f in session.get('drive_files', []) if f.get('lecturer'))
+            latest_files = {}
 
-    upload_results = []
+            for file in files:
+                base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
 
-    # handle upload
-    if request.method == 'POST' and 'timetable_file' in request.files:
-        uploaded = request.files.getlist('timetable_file')
-        for f in uploaded:
-            if f and f.filename:
-                try:
-                    reader = PdfReader(f.stream)
-                    structured = extract_structured_from_pdf_reader(reader)
-                    save_timetable_to_db(structured)
-                    upload_results.append({
-                        'filename': f.filename,
-                        'data': structured
-                    })
-                    flash(f'Uploaded and saved: {f.filename}', 'success')
-                except Exception as e:
-                    flash(f'Error processing {f.filename}: {e}', 'error')
+                if base_name is None:
+                    continue
 
-    return render_template(
-        'admin/adminManageTimetable.html',
-        timetable_data=timetable_data,
-        files=files,   # ✅ each file has {name, lecturer, time}
-        lecturers=sorted(list(lecturers)),
-        selected_lecturer=selected_lecturer,
-        results=upload_results if upload_results else None
-    )
+                if base_name not in latest_files:
+                    latest_files[base_name] = (timestamp, file)
+                else:
+                    existing_timestamp, existing_file = latest_files[base_name]
+                    if timestamp is not None:
+                        if existing_timestamp is None or timestamp > existing_timestamp:
+                            latest_files[base_name] = (timestamp, file)
+                    else:
+                        # If no timestamp, keep existing if timestamp exists
+                        if existing_timestamp is None:
+                            pass  # keep first if both have no timestamp
+                        else:
+                            continue
 
+            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
+            total_files_filtered = len(filtered_filenames)
 
+            results = []
+            for base_name, (timestamp, file) in latest_files.items():
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = ""
+                for page in reader.pages:
+                    raw_text += page.extract_text() + " "
 
-def fetch_and_extract_structured(file_id, drive_service):
-    """Download a PDF file from Google Drive and parse it into structured JSON."""
-    request = drive_service.files().get_media(fileId=file_id)
-    file_stream = io.BytesIO(request.execute())
+                structured = parse_timetable(raw_text)
+                # Attach filename for preview buttons
+                structured['filename'] = file.filename
+                results.append(structured)
 
-    reader = PdfReader(file_stream)
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text() or ""
+            return render_template(
+                'admin/adminManageTimetable.html',
+                active_tab='admin_manageTimetabletab',
+                timetable_data=timetable_data,
+                results=results,
+                upload_summary={
+                    "total_files_uploaded": total_files_read,
+                    "files_uploaded": all_files,
+                    "total_files_after_filter": total_files_filtered,
+                    "files_after_filter": filtered_filenames,
+                }
+            )
 
-    return parse_pdf_text(text)
+        elif form_type == 'save':
+            # Here expect JSON string or something similar with structured data
+            import json
+            data_json = request.form.get('structured_data')
+            if not data_json:
+                return "No data to save", 400
 
-def extract_structured_from_pdf_reader(reader):
-    """Take a PdfReader object and return structured timetable JSON."""
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text() or ""
-    return parse_pdf_text(text)
+            structured = json.loads(data_json)
+            save_timetable_to_db(structured)
 
+            return redirect(url_for('admin_manageTimetable'))
 
-
-
-
-
+    # GET request
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data)
 
