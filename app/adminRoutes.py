@@ -834,7 +834,6 @@ def get_drive_service_and_folder(creds):
         raise Exception(f"Error accessing Google Drive folder: {e}")
 
 
-
 def extract_base_name_and_date(file_name):
     name_without_ext = os.path.splitext(file_name)[0]
 
@@ -853,7 +852,7 @@ def extract_base_name_and_date(file_name):
 
     return base_name, file_date
 
-# Filter duplicate file and get with the latest date
+
 def get_week_start_date(structured):
     for day, activities in structured.get("days", {}).items():
         for act in activities:
@@ -1000,10 +999,8 @@ def parse_pdf_text(text):
 
 
 
-
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # Query existing timetables
     timetable_data = Timetable.query.group_by(
         Timetable.lecturerName,
         Timetable.courseName,
@@ -1046,7 +1043,7 @@ def admin_manageTimetable():
                 grouped_files[base_name].append({
                     "file": file,
                     "structured": structured,
-                    # prefer timetable date, else fallback to filename date
+                    # ✅ prefer timetable date, else fallback to filename date
                     "week_start_date": week_start_date or file_date
                 })
 
@@ -1054,7 +1051,6 @@ def admin_manageTimetable():
                 flash(f"Error processing file {file.filename}: {str(e)}", "error")
                 continue
 
-        # After processing all, keep only the latest version of each group
         latest_results = []
         for group in grouped_files.values():
             latest = sorted(
@@ -1065,7 +1061,7 @@ def admin_manageTimetable():
             latest_results.append({
                 "filename": latest["file"].filename,
                 "data": latest["structured"]
-            })  
+            })
         results = latest_results
 
         if not grouped_files:
@@ -1073,9 +1069,20 @@ def admin_manageTimetable():
             return redirect(url_for("admin_manageTimetable"))
 
         flash(f"Successfully read {len(grouped_files)} file(s).", "success")
-    files = session.get('drive_files')
+
+    # --- Manual files (from Google Drive) ---
+    files = session.get('drive_files', [])
     selected_lecturer = request.args.get('lecturer')
-    filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer] if selected_lecturer else timetable_data
+
+    # ✅ apply filter to DB timetable
+    filtered_data = (
+        [row for row in timetable_data if row.lecturerName == selected_lecturer]
+        if selected_lecturer else timetable_data
+    )
+
+    # ✅ apply filter to Google Drive preview files
+    if selected_lecturer:
+        files = [f for f in files if f.get("lecturer") == selected_lecturer]
 
     return render_template(
         'admin/adminManageTimetable.html',
@@ -1087,6 +1094,8 @@ def admin_manageTimetable():
         lecturers=lecturers,
         results=results
     )
+
+
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -1112,7 +1121,7 @@ def fetch_drive_files():
 
         grouped_files = {}
         total_files_read = 0
-        page_token = None  # ✅ FIXED
+        page_token = None
 
         while True:
             response = drive_service.files().list(
@@ -1126,7 +1135,7 @@ def fetch_drive_files():
             total_files_read += len(files_in_page)
 
             for file in files_in_page:
-                base_name = extract_base_name_and_date(file['name'])
+                base_name, file_date = extract_base_name_and_date(file['name'])
                 if not base_name:
                     continue
 
@@ -1146,7 +1155,7 @@ def fetch_drive_files():
                     grouped_files[base_name].append({
                         "file": file,
                         "structured": structured,
-                        "week_start_date": week_start_date
+                        "week_start_date": week_start_date or file_date
                     })
 
                 except Exception as e:
@@ -1157,7 +1166,7 @@ def fetch_drive_files():
             if not page_token:
                 break
 
-        # ✅ Keep only the latest file per group
+        # ✅ Keep only latest per group
         final_files = []
         for group in grouped_files.values():
             latest = sorted(
@@ -1165,7 +1174,11 @@ def fetch_drive_files():
                 key=lambda x: x["week_start_date"] or datetime.min,
                 reverse=True
             )[0]
-            final_files.append(latest["file"])
+
+            # ✅ also store lecturer for filtering
+            file_entry = latest["file"].copy()
+            file_entry["lecturer"] = latest["structured"].get("lecturer", "UNKNOWN")
+            final_files.append(file_entry)
 
         session['drive_files'] = final_files
 
