@@ -834,15 +834,15 @@ def get_drive_service_and_folder(creds):
         raise Exception(f"Error accessing Google Drive folder: {e}")
 
 
-def extract_base_name(filename):
-    # Remove everything after "_" (e.g., the date and onwards.pdf)
-    base_part = filename.split('_')[0]
-    # Remove .pdf (if included by mistake)
-    base_part = base_part.replace('.pdf', '')
-    # Remove whitespace and punctuation
-    base_part = re.sub(r'[^a-zA-Z0-9]', '', base_part)
-    return base_part.lower()
 
+def extract_base_name(file_name):
+    # Remove extension first
+    name_without_ext = os.path.splitext(file_name)[0]
+    # Split at first underscore
+    base_name = name_without_ext.split("_")[0]
+    # Remove all whitespace
+    base_name = re.sub(r"\s+", "", base_name)
+    return base_name
 
 
 # Filter duplicate file and get with the latest date
