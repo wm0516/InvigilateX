@@ -804,7 +804,6 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
 
-
 def require_credentials(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -1237,7 +1236,6 @@ def extract_all():
 def admin_manageTimetable():
     selected_lecturer = request.args.get('lecturer')
 
-    # TODO: Replace Timetable.query.all() with your DB query
     timetable_data = []  # Timetable.query.all()
     if selected_lecturer:
         timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
@@ -1247,35 +1245,43 @@ def admin_manageTimetable():
         files = [f for f in files if f.get('lecturer') == selected_lecturer]
 
     lecturers = set()
-    # Add lecturers from DB (pseudo)
-    # for row in Timetable.query.all():
-    #     lecturers.add(row.lecturerName)
     lecturers.update(f.get('lecturer') for f in files if f.get('lecturer'))
 
+    upload_results = []  # keep uploaded parsed files
+
     if request.method == 'POST' and 'timetable_file' in request.files:
-        # Handle uploaded file
         uploaded = request.files.getlist('timetable_file')
-        # If you only want single file, use request.files['timetable_file']
         for f in uploaded:
             if f and f.filename:
                 try:
                     reader = PdfReader(f.stream)
                     structured = extract_structured_from_pdf_reader(reader)
                     save_timetable_to_db(structured)
+                    upload_results.append({
+                        'filename': f.filename,
+                        'data': structured
+                    })
                     flash(f'Uploaded and saved: {f.filename}', 'success')
                 except Exception as e:
                     flash(f'Error processing {f.filename}: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
+
+        return render_template(
+            'admin/adminManageTimetable.html',
+            timetable_data=timetable_data,
+            files=files,
+            lecturers=sorted(list(lecturers)),
+            selected_lecturer=selected_lecturer,
+            results=upload_results  # ✅ Pass results to template
+        )
 
     return render_template(
         'admin/adminManageTimetable.html',
         timetable_data=timetable_data,
         files=files,
         lecturers=sorted(list(lecturers)),
-        selected_lecturer=selected_lecturer
+        selected_lecturer=selected_lecturer,
+        results=None  # ensure variable always exists
     )
-
-
 
 
 

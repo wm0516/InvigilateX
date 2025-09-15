@@ -56,16 +56,10 @@
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-<button type="button" onclick='previewUploadedTimetable({{ file.data | tojson | safe }})'>Preview</button>
+                            <button type="button" onclick='previewUploadedTimetable({{ file.data | tojson | safe }})'>Preview</button>
                             {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
-                </div>
-                <br><br>
-
-                <div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-                    <h4>Preview Result</h4>
-                    <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
                 </div>
             {% endif %}
         </div>
