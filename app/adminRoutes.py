@@ -804,6 +804,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 REDIRECT_URI = 'https://wm05.pythonanywhere.com/admin/oauth2callback'
 
 
+# --- OAuth Utilities ---
 def require_credentials(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -813,9 +814,7 @@ def require_credentials(func):
         return func(*args, **kwargs)
     return wrapper
 
-
 def build_credentials_from_session():
-    """Build google.oauth2.credentials.Credentials from session storage."""
     creds_dict = session.get('credentials')
     if not creds_dict:
         return None
@@ -831,7 +830,6 @@ def build_credentials_from_session():
         scopes=creds_dict.get('scopes')
     )
 
-
 def get_oauth_flow(state=None):
     flow = Flow.from_client_secrets_file(
         GOOGLE_CLIENT_SECRETS_FILE,
@@ -842,71 +840,7 @@ def get_oauth_flow(state=None):
         flow.state = state
     return flow
 
-
-def get_drive_service_and_folder(creds):
-    """Return drive service and SOC folder id (raises Exception if missing)."""
-    drive_service = build('drive', 'v3', credentials=creds)
-    folder_results = drive_service.files().list(
-        q="mimeType='application/vnd.google-apps.folder' and name='SOC' and trashed=false",
-        spaces='drive',
-        fields='files(id, name)'
-    ).execute()
-    folders = folder_results.get('files', [])
-    if not folders:
-        raise Exception('SOC folder not found')
-    return drive_service, folders[0]['id']
-
-
-def extract_structured_from_pdf_reader(reader: PdfReader):
-    """Centralized PDF -> structured JSON conversion."""
-    raw_text = ''
-    for page in reader.pages:
-        raw_text += (page.extract_text() or '') + ' '
-    return parse_pdf_text(raw_text)
-
-
-def fetch_and_extract_structured(file_id, service):
-    """Download file from Drive and return structured timetable JSON."""
-    request = service.files().get_media(fileId=file_id)
-    fh = io.BytesIO()
-    downloader = MediaIoBaseDownload(fh, request)
-    done = False
-    while not done:
-        status, done = downloader.next_chunk()
-
-    fh.seek(0)
-    reader = PdfReader(fh)
-    return extract_structured_from_pdf_reader(reader)
-
-
-# --- Parsing utilities (kept similar to your original logic but centralized) ---
-def extract_base_name_and_date(file_name):
-    name_without_ext = os.path.splitext(file_name)[0]
-    file_date = None
-    date_match = re.search(r"_(\d{6})", name_without_ext)
-    if date_match:
-        try:
-            file_date = datetime.strptime(date_match.group(1), "%y%m%d")
-        except ValueError:
-            file_date = None
-
-    base_name = name_without_ext.split("_")[0]
-    base_name = re.sub(r"\s+", "", base_name)
-    return base_name, file_date
-
-
-def get_week_start_date(structured):
-    for day, activities in structured.get('days', {}).items():
-        for act in activities:
-            if act.get('weeks_date'):
-                try:
-                    start_str = act['weeks_date'].split('-')[0].strip()
-                    return datetime.strptime(start_str, '%m/%d/%Y')
-                except Exception:
-                    continue
-    return None
-
-
+# --- PDF Parsing ---
 def parse_activity(line):
     activity = {}
     m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
@@ -951,48 +885,17 @@ def parse_activity(line):
 
     return activity
 
-
 def parse_pdf_text(text):
-    # Remove excessive whitespace but keep minimal separators for parsing
-    text_no_whitespace = re.sub(r"\s+", " ", text).strip()
-
-    # Try to extract lecturer name (best-effort)
-    lecturer_name = 'UNKNOWN'
-    raw_name = None
-    name_match = re.search(r"-([^-()]+)\(", text_no_whitespace)
-    if name_match:
-        raw_name = name_match.group(1).strip()
-        # Insert space before capital letters that are stuck: e.g. LAIKIM -> LAI KIM
-        formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-        formatted_name = formatted_name.replace('A/ P', 'A/P').replace('A/ L', 'A/L')
-        lecturer_name = formatted_name
-
-    # Uppercase everything for uniform parsing
-    upper_text = text_no_whitespace.upper()
-
-    # Extract a timerow if present
-    timerow_match = re.search(r"(07:00.*?23:00)", upper_text)
-    timerow = timerow_match.group(1) if timerow_match else ''
-
-    # Remove the header/title portion to simplify day/activity extraction
-    if timerow:
-        upper_text = upper_text.replace(timerow, '')
-
-    # Insert day separators
+    text = re.sub(r"\s+", " ", text).strip()
+    upper_text = text.upper()
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
     for day in days:
         upper_text = re.sub(fr"\b{day}\b", f"\n\n{day}", upper_text)
-
-    # Break activities by keywords
     for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
-        if kw == 'PUBLISHED':
-            upper_text = re.sub(fr"\b{kw}\b", f"\n\n{kw}", upper_text)
-        else:
-            upper_text = re.sub(fr"\b{kw}\b", f"\n{kw}", upper_text)
-
+        upper_text = re.sub(fr"\b{kw}\b", f"\n{kw}", upper_text)
     upper_text = re.sub(r"\n{3,}", "\n\n", upper_text)
 
-    structured = {'title': 'TIMETABLE', 'lecturer': lecturer_name, 'timerow': timerow, 'days': {}}
+    structured = {'title': 'TIMETABLE', 'days': {}}
     current_day = None
     for line in upper_text.splitlines():
         line = line.strip()
@@ -1006,52 +909,66 @@ def parse_pdf_text(text):
                 try:
                     parsed = parse_activity(line)
                     structured['days'][current_day].append(parsed)
-                except Exception:
-                    # ignore parse errors for a line
+                except:
                     continue
-
     return structured
 
+def extract_structured_from_pdf_reader(reader: PdfReader):
+    raw_text = ''
+    for page in reader.pages:
+        raw_text += (page.extract_text() or '') + ' '
+    return parse_pdf_text(raw_text)
+
+def fetch_and_extract_structured(file_id, service):
+    request = service.files().get_media(fileId=file_id)
+    fh = io.BytesIO()
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+    while not done:
+        _, done = downloader.next_chunk()
+    fh.seek(0)
+    reader = PdfReader(fh)
+    return extract_structured_from_pdf_reader(reader)
+
+# --- Utilities ---
+def extract_base_name_and_date(file_name):
+    name_without_ext = os.path.splitext(file_name)[0]
+    file_date = None
+    date_match = re.search(r"_(\d{6})", name_without_ext)
+    if date_match:
+        try:
+            file_date = datetime.datetime.strptime(date_match.group(1), "%y%m%d")
+        except ValueError:
+            pass
+    base_name = name_without_ext.split("_")[0]
+    base_name = re.sub(r"\s+", "", base_name)
+    return base_name, file_date
 
 def pick_latest_file(group):
-    """Pick the best candidate from a group of file dicts.
-    Priority: week_start_date > file_date > drive modifiedTime > first
-    """
     if not group:
         return None
-
     valid_week = [f for f in group if f.get('week_start_date')]
     if valid_week:
         return max(valid_week, key=lambda f: f['week_start_date'])
-
     valid_file_date = [f for f in group if f.get('file_date')]
     if valid_file_date:
         return max(valid_file_date, key=lambda f: f['file_date'])
-
     valid_drive_dates = [f for f in group if f.get('file', {}).get('modifiedTime')]
     if valid_drive_dates:
         return max(valid_drive_dates, key=lambda f: f['file']['modifiedTime'])
-
     return group[0]
 
-
 def save_timetable_to_db(structured):
-    # Collect all new entries first
     new_entries = []
-    lecturer = structured.get("lecturer")
-
     for day, activities in structured["days"].items():
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
                 continue
-
             if act.get("sections"):
                 for sec in act["sections"]:
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
-
                     new_entries.append({
-                        "lecturerName": lecturer,
                         "classType": act.get("class_type"),
                         "classDay": day,
                         "classTime": act.get("time"),
@@ -1063,11 +980,9 @@ def save_timetable_to_db(structured):
                         "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
                         "classWeekDate": act.get("weeks_date"),
                     })
-
-    # Delete only matching existing rows for this lecturer
+    # Delete existing matching rows by time/course
     for entry in new_entries:
         Timetable.query.filter_by(
-            lecturerName=entry["lecturerName"],
             classType=entry["classType"],
             classDay=entry["classDay"],
             classTime=entry["classTime"],
@@ -1076,218 +991,111 @@ def save_timetable_to_db(structured):
             courseCode=entry["courseCode"],
             courseSection=entry["courseSection"]
         ).delete()
-
-    # Add new rows
     for entry in new_entries:
-        row = Timetable(**entry)
-        db.session.add(row)
-
+        db.session.add(Timetable(**entry))
     db.session.commit()
 
-
-
-
-
-
-
-# --- ROUTES ---
+# --- Routes ---
 @app.route('/admin/authorize')
 def authorize():
-    try:
-        flow = get_oauth_flow()
-        authorization_url, state = flow.authorization_url(
-            access_type='offline', include_granted_scopes='true', prompt='consent'
-        )
-        session['state'] = state
-        return redirect(authorization_url)
-    except Exception as e:
-        flash(f'Error initiating OAuth flow: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
-
+    flow = get_oauth_flow()
+    auth_url, state = flow.authorization_url(access_type='offline', include_granted_scopes='true', prompt='consent')
+    session['state'] = state
+    return redirect(auth_url)
 
 @app.route('/admin/oauth2callback')
 def oauth2callback():
-    try:
-        state = session.get('state')
-        if not state:
-            raise Exception('State missing in session')
-        flow = get_oauth_flow(state=state)
-        flow.fetch_token(authorization_response=request.url)
-        creds = flow.credentials
-        session['credentials'] = json.dumps({
-            'token': creds.token,
-            'refresh_token': getattr(creds, 'refresh_token', None),
-            'token_uri': getattr(creds, 'token_uri', None),
-            'client_id': getattr(creds, 'client_id', None),
-            'client_secret': getattr(creds, 'client_secret', None),
-            'scopes': getattr(creds, 'scopes', None)
-        })
-        flash('OAuth2 authentication successful.', 'success')
-        return redirect(url_for('admin_manageTimetable'))
-    except Exception as e:
-        flash(f'Error during OAuth2 callback: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
-
-
-@app.route('/reauthorize')
-def reauthorize():
-    session.pop('credentials', None)
-    return redirect(url_for('authorize'))
-
+    flow = get_oauth_flow(session.get('state'))
+    flow.fetch_token(authorization_response=request.url)
+    creds = flow.credentials
+    session['credentials'] = json.dumps({
+        'token': creds.token,
+        'refresh_token': getattr(creds, 'refresh_token', None),
+        'token_uri': getattr(creds, 'token_uri', None),
+        'client_id': getattr(creds, 'client_id', None),
+        'client_secret': getattr(creds, 'client_secret', None),
+        'scopes': getattr(creds, 'scopes', None)
+    })
+    flash('OAuth2 authentication successful.', 'success')
+    return redirect(url_for('admin_manageTimetable'))
 
 @app.route('/admin/fetch_drive_files')
 @require_credentials
 def fetch_drive_files():
-    try:
-        creds = build_credentials_from_session()
-        drive_service = build('drive', 'v3', credentials=creds)
-        results = drive_service.files().list(
-            q="mimeType='application/pdf' and trashed=false",
-            fields='files(id, name, webViewLink, modifiedTime)'
-        ).execute()
-        files = results.get('files', [])
-
-        grouped_files = {}
-        for file in files:
-            base_name, file_date = extract_base_name_and_date(file['name'])
-            structured = fetch_and_extract_structured(file['id'], drive_service)
-            week_start_date = get_week_start_date(structured)
-            lecturer_name = structured.get('lecturer')
-
-            grouped_files.setdefault(lecturer_name, []).append({
-                'file': file,
-                'structured': structured,
-                'lecturer': lecturer_name,
-                'week_start_date': week_start_date,
-                'file_date': file_date
-            })
-
-        final_files = []
-        for lecturer, group in grouped_files.items():
-            latest = pick_latest_file(group)
-            if not latest:  # ⛔ skip if pick_latest_file returned None
-                continue
-
+    creds = build_credentials_from_session()
+    drive_service = build('drive', 'v3', credentials=creds)
+    results = drive_service.files().list(
+        q="mimeType='application/pdf' and trashed=false",
+        fields='files(id, name, webViewLink, modifiedTime)'
+    ).execute()
+    files = results.get('files', [])
+    
+    grouped_files = {}
+    for file in files:
+        base_name, file_date = extract_base_name_and_date(file['name'])
+        structured = fetch_and_extract_structured(file['id'], drive_service)
+        grouped_files.setdefault(base_name, []).append({
+            'file': file,
+            'structured': structured,
+            'week_start_date': None,  # Optional, can calculate if needed
+            'file_date': file_date
+        })
+    final_files = []
+    for base_name, group in grouped_files.items():
+        latest = pick_latest_file(group)
+        if latest:
             final_files.append({
                 'id': latest['file']['id'],
                 'name': latest['file']['name'],
-                'lecturer': latest.get('lecturer'),
-                'time': latest.get('week_start_date') or latest.get('file_date') or latest['file'].get('modifiedTime'),
+                'base_name': base_name,
                 'webViewLink': latest['file'].get('webViewLink')
             })
-
-
-        session['drive_files'] = final_files
-        flash('Drive files fetched successfully.', 'success')
-    except Exception as e:
-        flash(f'Error fetching files: {e}', 'danger')
-
+    session['drive_files'] = final_files
+    flash('Drive files fetched successfully.', 'success')
     return redirect(url_for('admin_manageTimetable'))
-
-
-
-@app.route('/admin/preview_timetable/<file_id>')
-@require_credentials
-def preview_timetable(file_id):
-    try:
-        creds = build_credentials_from_session()
-        drive_service = build('drive', 'v3', credentials=creds)
-        structured = fetch_and_extract_structured(file_id, drive_service)
-        return Response(json.dumps(structured, indent=4), mimetype='application/json')
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 
 @app.route('/admin/preview_uploaded_timetable', methods=['POST'])
 def preview_uploaded_timetable():
     if 'file' not in request.files:
         return jsonify({'error': 'No file uploaded'}), 400
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
-    try:
-        reader = PdfReader(file.stream)
-        structured = extract_structured_from_pdf_reader(reader)
-        return jsonify(structured)
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+    reader = PdfReader(file.stream)
+    structured = extract_structured_from_pdf_reader(reader)
+    return jsonify(structured)
 
 @app.route('/admin/extract_all')
 @require_credentials
 def extract_all():
-    try:
-        creds = build_credentials_from_session()
-        drive_service, soc_folder_id = get_drive_service_and_folder(creds)
-
-        files = session.get('drive_files', [])
-        if not files:
-            flash('No files available. Please fetch files first.', 'error')
-            return redirect(url_for('fetch_drive_files'))
-
-        inserted_count = 0
-        for file in files:
-            structured = fetch_and_extract_structured(file['id'], drive_service)
-            save_timetable_to_db(structured)
-            inserted_count += 1
-
-        flash(f'Extracted and saved {inserted_count} timetables into database.', 'success')
-        return redirect(url_for('admin_manageTimetable'))
-    except Exception as e:
-        flash(f'Error extracting all timetables: {e}', 'error')
-        return redirect(url_for('admin_manageTimetable'))
-
+    creds = build_credentials_from_session()
+    drive_service = build('drive', 'v3', credentials=creds)
+    files = session.get('drive_files', [])
+    inserted_count = 0
+    for file in files:
+        structured = fetch_and_extract_structured(file['id'], drive_service)
+        save_timetable_to_db(structured)
+        inserted_count += 1
+    flash(f'Extracted and saved {inserted_count} timetables into database.', 'success')
+    return redirect(url_for('admin_manageTimetable'))
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    selected_lecturer = request.args.get('lecturer')
-
-    # get DB data (if needed)
-    timetable_data = []  # Timetable.query.all()
-    if selected_lecturer:
-        timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
-
-    # get drive files
-    files = session.get('drive_files', [])
-    if selected_lecturer:
-        files = [f for f in files if f.get('lecturer') == selected_lecturer]
-
-    # collect lecturer list for dropdown
-    lecturers = set(f.get('lecturer') for f in session.get('drive_files', []) if f.get('lecturer'))
-
     upload_results = []
-
-    # handle upload
     if request.method == 'POST' and 'timetable_file' in request.files:
         uploaded = request.files.getlist('timetable_file')
         for f in uploaded:
             if f and f.filename:
-                try:
-                    reader = PdfReader(f.stream)
-                    structured = extract_structured_from_pdf_reader(reader)
-                    save_timetable_to_db(structured)
-                    upload_results.append({
-                        'filename': f.filename,
-                        'data': structured
-                    })
-                    flash(f'Uploaded and saved: {f.filename}', 'success')
-                except Exception as e:
-                    flash(f'Error processing {f.filename}: {e}', 'error')
+                reader = PdfReader(f.stream)
+                structured = extract_structured_from_pdf_reader(reader)
+                save_timetable_to_db(structured)
+                upload_results.append({'filename': f.filename, 'data': structured})
+                flash(f'Uploaded and saved: {f.filename}', 'success')
 
-    return render_template(
-        'admin/adminManageTimetable.html',
-        timetable_data=timetable_data,
-        files=files,   # ✅ each file has {name, lecturer, time}
-        lecturers=sorted(list(lecturers)),
-        selected_lecturer=selected_lecturer,
-        results=upload_results if upload_results else None
-    )
-
-
-
-
-
-
+    files = session.get('drive_files', [])
+    timetable_data = Timetable.query.all()
+    return render_template('admin/adminManageTimetable.html',
+                           timetable_data=timetable_data,
+                           files=files,
+                           results=upload_results if upload_results else None)
 
 
 
