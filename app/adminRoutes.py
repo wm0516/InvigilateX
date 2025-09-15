@@ -835,9 +835,11 @@ def get_drive_service_and_folder(creds):
 
 # Filter multiple same filename
 def extract_base_name(file_name):
-    base = re.sub(r"\.pdf$", "", file_name, flags=re.IGNORECASE)
-    base = re.sub(r"[_\s]\d{6}.*$", "", base)  # remove trailing _140425 onwards
-    return base.strip()
+    # Split at first underscore and remove all whitespace
+    base_name = file_name.split("_")[0]
+    base_name = re.sub(r"\s+", "", base_name)
+    return base_name
+
 
 # Filter duplicate file and get with the latest date
 def get_week_start_date(structured):
@@ -1017,11 +1019,9 @@ def admin_manageTimetable():
             if not base_name:
                 continue
 
-            # Read PDF and parse
             try:
                 file_bytes = file.read()
                 reader = PyPDF2.PdfReader(BytesIO(file_bytes))
-
                 raw_text = ""
                 for page in reader.pages:
                     raw_text += page.extract_text() + " "
@@ -1030,38 +1030,39 @@ def admin_manageTimetable():
                 week_start_date = get_week_start_date(structured)
 
                 if base_name not in grouped_files:
-                    grouped_files[base_name] = {
-                        "file": file,
-                        "structured": structured,
-                        "week_start_date": week_start_date
-                    }
-                else:
-                    current = grouped_files[base_name]
-                    if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
-                        grouped_files[base_name] = {
-                            "file": file,
-                            "structured": structured,
-                            "week_start_date": week_start_date
-                        }
+                    grouped_files[base_name] = []
+
+                grouped_files[base_name].append({
+                    "file": file,
+                    "structured": structured,
+                    "week_start_date": week_start_date
+                })
+
             except Exception as e:
                 flash(f"Error processing file {file.filename}: {str(e)}", "error")
                 continue
+
+        # After processing all, keep only the latest version of each group
+        latest_results = []
+        for group in grouped_files.values():
+            latest = sorted(
+                group,
+                key=lambda x: x["week_start_date"] or datetime.min,
+                reverse=True
+            )[0]
+            latest_results.append({
+                "filename": latest["file"].filename,
+                "data": latest["structured"]
+            })  
+        results = latest_results
 
         if not grouped_files:
             flash("No valid PDF files were processed.", "error")
             return redirect(url_for("admin_manageTimetable"))
 
         flash(f"Successfully read {len(grouped_files)} file(s).", "success")
-
-        for data in grouped_files.values():
-            results.append({
-                "filename": data["file"].filename,
-                "data": data["structured"]
-            })
-
     files = session.get('drive_files')
     selected_lecturer = request.args.get('lecturer')
-
     filtered_data = [row for row in timetable_data if row.lecturerName == selected_lecturer] if selected_lecturer else timetable_data
 
     return render_template(
@@ -1074,8 +1075,6 @@ def admin_manageTimetable():
         lecturers=lecturers,
         results=results
     )
-
-
 
 @app.route('/admin/fetch_drive_files')
 def fetch_drive_files():
@@ -1100,8 +1099,8 @@ def fetch_drive_files():
         drive_service, soc_folder_id = get_drive_service_and_folder(creds)
 
         grouped_files = {}
-        page_token = None
         total_files_read = 0
+        page_token = None  # ✅ FIXED
 
         while True:
             response = drive_service.files().list(
@@ -1119,37 +1118,44 @@ def fetch_drive_files():
                 if not base_name:
                     continue
 
-                # Read the file content (to extract structured timetable data)
-                file_content = drive_service.files().get_media(fileId=file['id']).execute()
-                reader = PdfReader(BytesIO(file_content))
-                raw_text = ""
-                for page in reader.pages:
-                    raw_text += page.extract_text() + " "
+                try:
+                    file_content = drive_service.files().get_media(fileId=file['id']).execute()
+                    reader = PdfReader(BytesIO(file_content))
+                    raw_text = ""
+                    for page in reader.pages:
+                        raw_text += page.extract_text() + " "
 
-                structured = parse_pdf_text(raw_text)
-                week_start_date = get_week_start_date(structured)
+                    structured = parse_pdf_text(raw_text)
+                    week_start_date = get_week_start_date(structured)
 
-                # 🔎 DEBUG LOGGING HERE
-                app.logger.info(f"Processing: {file['name']}, base={base_name}, week_start_date={week_start_date}")
+                    if base_name not in grouped_files:
+                        grouped_files[base_name] = []
 
-                # Allocate into grouped_files
-                if base_name not in grouped_files:
-                    grouped_files[base_name] = {"file": file, "week_start_date": week_start_date}
-                else:
-                    current = grouped_files[base_name]
-                    app.logger.info(
-                        f"Comparing {file['name']} ({week_start_date}) "
-                        f"with {current['file']['name']} ({current['week_start_date']})"
-                    )
-                    if week_start_date and (not current["week_start_date"] or week_start_date > current["week_start_date"]):
-                        grouped_files[base_name] = {"file": file, "week_start_date": week_start_date}
+                    grouped_files[base_name].append({
+                        "file": file,
+                        "structured": structured,
+                        "week_start_date": week_start_date
+                    })
 
+                except Exception as e:
+                    app.logger.error(f"Failed to read {file['name']}: {e}")
+                    continue
 
             page_token = response.get('nextPageToken')
             if not page_token:
                 break
 
-        final_files = [v["file"] for v in grouped_files.values()]
+        # ✅ Keep only the latest file per group
+        final_files = []
+        for base_name, group in grouped_files.items():
+            group_sorted = sorted(group, key=lambda x: x["week_start_date"] or datetime.min, reverse=True)
+            latest = group_sorted[0]
+            final_files.append(latest["file"])
+
+            # ✅ Optional logging of skipped duplicates
+            for older in group_sorted[1:]:
+                app.logger.info(f"Skipped older file: {older['file']['name']} (latest is {latest['file']['name']})")
+
         session['drive_files'] = final_files
 
     except Exception as e:
@@ -1159,8 +1165,6 @@ def fetch_drive_files():
 
     flash(f"Total files read from Drive: {total_files_read}. After filtering, files count: {len(final_files)}", 'success')
     return redirect(url_for('admin_manageTimetable'))
-
-
 
 
 
