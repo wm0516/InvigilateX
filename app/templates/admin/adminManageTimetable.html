@@ -56,7 +56,7 @@
                 <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                     {% for file in results %}
                         <div>
-                            <button type="button" onclick="previewUploadedTimetable({{ file.data | tojson | safe }})">Preview</button>
+                            <button type="button" onclick='previewUploadedTimetable({{ file.data | tojson | safe }})'>Preview</button>
                             {{ loop.index }}. {{ file.filename }}
                         </div>
                     {% endfor %}
@@ -208,8 +208,6 @@ function previewUploadedTimetable(data) {
         previewElement.textContent = "No structured data found.";
     }
 }
-
-
 
 </script>
 
