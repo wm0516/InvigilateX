@@ -70,7 +70,7 @@
     <h2>Timetable</h2>
     <div class="profile-frame">
         <!-- Filter Section -->
-        <div class="form-right">
+        <div class="form-right" style="width: 100%;">
             <form method="get" style="display:flex; align-items:center; gap:8px;">
                 <label for="lecturer">Select_Lecturer:</label>
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
@@ -86,7 +86,7 @@
                 {% if selected_lecturer %}
                 <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" 
                         style="margin-left: 10px; padding: 4px 8px;">
-                    Clear Filter
+                    Clear_Filter
                 </button>
                 {% endif %}
             </form>
