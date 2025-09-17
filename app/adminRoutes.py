@@ -997,12 +997,16 @@ def save_timetable_to_db(structured):
     db.session.commit()
 
 
-
-
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
+    # Get selected lecturer from query parameter
     selected_lecturer = request.args.get('lecturer', '')
-    timetable_data = Timetable.query.all()
+    
+    # Base query - filter by selected lecturer if provided
+    if selected_lecturer:
+        timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all()
+    else:
+        timetable_data = Timetable.query.all()
     
     # Get unique lecturers for the filter dropdown
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
@@ -1088,7 +1092,11 @@ def admin_manageTimetable():
                 return redirect(url_for('admin_manageTimetable'))
 
     # GET request
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer)
+    return render_template('admin/adminManageTimetable.html', 
+                         active_tab='admin_manageTimetabletab', 
+                         timetable_data=timetable_data,
+                         lecturers=lecturers,
+                         selected_lecturer=selected_lecturer)
 
 
 
