@@ -105,7 +105,7 @@
                     <td><strong>{{ day }}</strong></td>
                     {% for time in time_slots %}
                     <td>
-                        {% set displayed_rows = [] %}
+                        {% set displayed_rows = {} %}
                         {% for row in timetable_data %}
                             {% set class_day = row.classDay %}
                             {% set class_time = row.classTime %}
@@ -113,8 +113,8 @@
                             {% set end_time = class_time.split('-')[1] %}
                             {% if class_day == day and time >= start_time and time < end_time %}
                                 {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                {% if key not in displayed_rows %}
-                                    {% do displayed_rows.append(key) %}
+                                {% if not displayed_rows[key] %}
+                                    {% set _ = displayed_rows.update({key: true}) %}
                                     <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
                                         <strong>{{ row.lecturerName }}</strong><br>
                                         <strong>[{{ row.classType }}]</strong><br>
