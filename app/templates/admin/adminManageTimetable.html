@@ -111,25 +111,25 @@
                 {% for day in week_days %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-                    {% set col = 0 %}
-                    {% while col < time_slots | length %}
-                        {% set time = time_slots[col] %}
-                        {% set match_found = false %}
-                        {% for row in timetable_data %}
-                            {% set class_day = row.classDay %}
-                            {% set class_time = row.classTime %}
-                            {% set start_time = class_time.split('-')[0] %}
-                            {% set end_time = class_time.split('-')[1] %}
 
-                            {% if class_day == day and time == start_time %}
-                                {% if not selected_lecturer or selected_lecturer == row.lecturerName %}
-                                    {# Start building merge #}
+                    {% if selected_lecturer %}
+                        {# --------------------- Merged View When Lecturer is Selected --------------------- #}
+                        {% set col = 0 %}
+                        {% while col < time_slots | length %}
+                            {% set time = time_slots[col] %}
+                            {% set match_found = false %}
+                            {% for row in timetable_data %}
+                                {% set class_day = row.classDay %}
+                                {% set class_time = row.classTime %}
+                                {% set start_time = class_time.split('-')[0] %}
+                                {% set end_time = class_time.split('-')[1] %}
+
+                                {% if class_day == day and time == start_time and row.lecturerName == selected_lecturer %}
                                     {% set span = 1 %}
                                     {% set merged_end_time = end_time %}
-                                    {% set current_index = col %}
                                     {% set key = row.lecturerName ~ row.classType ~ row.courseName ~ row.classRoom %}
 
-                                    {# Check forward for identical entries #}
+                                    {# Look ahead to find continuous same blocks #}
                                     {% for i in range(col + 1, time_slots | length) %}
                                         {% set next_time = time_slots[i] %}
                                         {% set next_row = None %}
@@ -138,7 +138,8 @@
                                                 r.lecturerName == row.lecturerName and
                                                 r.classType == row.classType and
                                                 r.courseName == row.courseName and
-                                                r.classRoom == row.classRoom %}
+                                                r.classRoom == row.classRoom and
+                                                r.classTime == row.classTime %}
                                                 {% set next_row = r %}
                                                 {% break %}
                                             {% endif %}
@@ -165,17 +166,43 @@
                                     {% set match_found = true %}
                                     {% break %}
                                 {% endif %}
-                            {% endif %}
-                        {% endfor %}
+                            {% endfor %}
 
-                        {% if not match_found %}
-                            <td></td>
-                            {% set col = col + 1 %}
-                        {% endif %}
-                    {% endwhile %}
+                            {% if not match_found %}
+                                <td></td>
+                                {% set col = col + 1 %}
+                            {% endif %}
+                        {% endwhile %}
+                    {% else %}
+                        {# --------------------- Original View (No Merging) When No Lecturer Selected --------------------- #}
+                        {% for time in time_slots %}
+                        <td>
+                            {% set displayed_rows = {} %}
+                            {% for row in timetable_data %}
+                                {% set class_day = row.classDay %}
+                                {% set class_time = row.classTime %}
+                                {% set start_time = class_time.split('-')[0] %}
+                                {% set end_time = class_time.split('-')[1] %}
+                                {% if class_day == day and time >= start_time and time < end_time %}
+                                    {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                    {% if not displayed_rows[key] %}
+                                        {% set _ = displayed_rows.update({key: true}) %}
+                                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                            <strong>{{ row.lecturerName }}</strong><br>
+                                            <strong>[{{ row.classType }}]</strong><br>
+                                            {{ row.courseName }}<br>
+                                            Room: {{ row.classRoom }}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        {% endfor %}
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
+
         </table>
     </div>
 </div>
