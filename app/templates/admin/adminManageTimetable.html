@@ -119,15 +119,16 @@
                     {% endfor %}
                     
                     {# render the merged activity cell #}
-                    <td colspan="{{ activity.end_idx - activity.start_idx }}">
-                        <div style="border:1px solid #999; margin:2px; padding:2px;">
-                            <strong>{{ activity.lecturer }}</strong><br>
-                            <strong>[{{ activity.type }}]</strong><br>
-                            {{ activity.course }}<br>
-                            Room: {{ activity.room }}<br>
-                            {{ time_slots[activity.start_idx] }} - {{ time_slots[activity.end_idx] }}
+                    <td>
+                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                            <strong>{{ row.lecturerName }}</strong><br>
+                            <strong>[{{ row.classType }}]</strong><br>
+                            {{ row.courseName }}<br>
+                            Room: {{ row.classRoom }}<br>
+                            {{ row.classTime }}
                         </div>
                     </td>
+
                     
                     {% set current = activity.end_idx %}
                 {% endfor %}
@@ -139,6 +140,7 @@
             </tr>
             {% endfor %}
             </tbody>
+
         </table>
     </div>
 </div>

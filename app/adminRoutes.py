@@ -997,47 +997,73 @@ def save_timetable_to_db(structured):
     db.session.commit()
 
 
-def merge_timetable_slots(timetable_data, time_slots, week_days):
-    merged = {day: [] for day in week_days}
-    for day in week_days:
-        day_classes = [row for row in timetable_data if row.classDay == day]
-        for row in day_classes:
-            start_time, end_time = row.classTime.split("-")
-            try:
-                start_idx = time_slots.index(start_time)
-                end_idx = time_slots.index(end_time)
-            except ValueError:
-                continue  # skip if invalid time
+def merge_consecutive_classes(timetable_data, time_slots):
+    merged = []
+    
+    # Sort by lecturer, day, then start time
+    timetable_data_sorted = sorted(
+        timetable_data,
+        key=lambda r: (r.lecturerName, r.classDay, r.classTime)
+    )
 
-            merged[day].append({
-                "lecturer": row.lecturerName,
-                "type": row.classType,
-                "course": row.courseName,
-                "room": row.classRoom,
-                "start_idx": start_idx,
-                "end_idx": end_idx,
-            })
+    prev = None
+    for row in timetable_data_sorted:
+        start_time, end_time = row.classTime.split("-")
+        
+        if prev:
+            # Check if this row can merge with previous
+            same_class = (
+                row.lecturerName == prev["lecturerName"] and
+                row.classType == prev["classType"] and
+                row.classDay == prev["classDay"] and
+                row.classRoom == prev["classRoom"] and
+                row.courseName == prev["courseName"]
+            )
+            consecutive = prev["end_time"] == start_time  # back-to-back
+
+            if same_class and consecutive:
+                # Extend the end time
+                prev["end_time"] = end_time
+                prev["classTime"] = prev["start_time"] + "-" + end_time
+                continue
+            else:
+                merged.append(prev)
+        
+        # Start new merge block
+        prev = {
+            "lecturerName": row.lecturerName,
+            "classType": row.classType,
+            "classDay": row.classDay,
+            "classRoom": row.classRoom,
+            "courseName": row.courseName,
+            "start_time": start_time,
+            "end_time": end_time,
+            "classTime": row.classTime,
+        }
+    
+    # Append last one
+    if prev:
+        merged.append(prev)
+    
     return merged
+
 
 
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # Get selected lecturer from query parameter
     selected_lecturer = request.args.get('lecturer', '')
-    
-    # Base query - filter by selected lecturer if provided
+
     if selected_lecturer:
         timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all()
+        time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"]
+        timetable_data = merge_consecutive_classes(timetable_data, time_slots)
     else:
         timetable_data = Timetable.query.all()
     
     # Get unique lecturers for the filter dropdown
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
     lecturers = [lecturer[0] for lecturer in lecturers] if lecturers else []
-    time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"]
-    week_days = ["MON", "TUE", "WED", "THU", "FRI"]
-    merged_data = merge_timetable_slots(timetable_data, time_slots, week_days)
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
