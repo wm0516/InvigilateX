@@ -108,39 +108,35 @@
                 </tr>
             </thead>
             <tbody>
-            {% for day in week_days %}
-            <tr>
-                <td><strong>{{ day }}</strong></td>
-                {% set current = 0 %}
-                {% for activity in merged_data[day]|sort(attribute='start_idx') %}
-                    {# fill empty slots before this activity starts #}
-                    {% for _ in range(current, activity.start_idx) %}
-                        <td></td>
-                    {% endfor %}
-                    
-                    {# render the merged activity cell #}
+                {% for day in week_days %}
+                <tr>
+                    <td><strong>{{ day }}</strong></td>
+                    {% for time in time_slots %}
                     <td>
-                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                            <strong>{{ row.lecturerName }}</strong><br>
-                            <strong>[{{ row.classType }}]</strong><br>
-                            {{ row.courseName }}<br>
-                            Room: {{ row.classRoom }}<br>
-                            {{ row.classTime }}
-                        </div>
+                        {% set displayed_rows = {} %}
+                        {% for row in timetable_data %}
+                            {% set class_day = row.classDay %}
+                            {% set class_time = row.classTime %}
+                            {% set start_time = class_time.split('-')[0] %}
+                            {% set end_time = class_time.split('-')[1] %}
+                            {% if class_day == day and time >= start_time and time < end_time %}
+                                {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                {% if not displayed_rows[key] %}
+                                    {% set _ = displayed_rows.update({key: true}) %}
+                                    <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                        <strong>{{ row.lecturerName }}</strong><br>
+                                        <strong>[{{ row.classType }}]</strong><br>
+                                        {{ row.courseName }}<br>
+                                        Room: {{ row.classRoom }}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
                     </td>
-
-                    
-                    {% set current = activity.end_idx %}
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-
-                {# fill empty slots after last activity #}
-                {% for _ in range(current, time_slots|length) %}
-                    <td></td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
             </tbody>
-
         </table>
     </div>
 </div>
