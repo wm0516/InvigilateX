@@ -1003,7 +1003,11 @@ def admin_manageTimetable():
         Timetable.lecturerName,
         Timetable.courseName,
         Timetable.classRoom
-    ).distinct().all()
+    ).distinct().order_by(
+        Timetable.lecturerName,
+        Timetable.courseName,
+        Timetable.classRoom
+    ).all()
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
