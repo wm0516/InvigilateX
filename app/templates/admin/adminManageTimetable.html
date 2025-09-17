@@ -113,51 +113,25 @@
                     <td><strong>{{ day }}</strong></td>
                     {% for time in time_slots %}
                     <td>
-                        {% set cell_classes = [] %}
+                        {% set displayed_rows = {} %}
                         {% for row in timetable_data %}
                             {% set class_day = row.classDay %}
                             {% set class_time = row.classTime %}
                             {% set start_time = class_time.split('-')[0] %}
                             {% set end_time = class_time.split('-')[1] %}
-                            
                             {% if class_day == day and time >= start_time and time < end_time %}
-                                {% set class_key = row.lecturerName ~ "|" ~ row.classDay ~ "|" ~ row.classTime ~ "|" ~ row.classType %}
-                                {% if class_key not in cell_classes %}
-                                    {% set _ = cell_classes.append(class_key) %}
+                                {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                {% if not displayed_rows[key] %}
+                                    {% set _ = displayed_rows.update({key: true}) %}
+                                    <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                        <strong>{{ row.lecturerName }}</strong><br>
+                                        <strong>[{{ row.classType }}]</strong><br>
+                                        {{ row.courseName }}<br>
+                                        Room: {{ row.classRoom }}
+                                    </div>
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
-                        
-                        {% if cell_classes %}
-                            {% for class_key in cell_classes %}
-                                {% set class_parts = class_key.split("|") %}
-                                {% set lecturer = class_parts[0] %}
-                                {% set class_day = class_parts[1] %}
-                                {% set class_time = class_parts[2] %}
-                                {% set class_type = class_parts[3] %}
-                                
-                                {% set courses = [] %}
-                                {% set rooms = [] %}
-                                
-                                {% for row in timetable_data %}
-                                    {% if row.lecturerName == lecturer and row.classDay == class_day and row.classTime == class_time and row.classType == class_type %}
-                                        {% if row.courseName not in courses %}
-                                            {% set _ = courses.append(row.courseName) %}
-                                        {% endif %}
-                                        {% if row.classRoom not in rooms %}
-                                            {% set _ = rooms.append(row.classRoom) %}
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                                
-                                <div style="border: 1px solid #999; margin: 2px; padding: 2px; background-color: #f9f9f9;">
-                                    <strong>{{ lecturer }}</strong><br>
-                                    <strong>[{{ class_type }}]</strong><br>
-                                    {{ courses|join(', ') }}<br>
-                                    Room: {{ rooms|join(', ') }}
-                                </div>
-                            {% endfor %}
-                        {% endif %}
                     </td>
                     {% endfor %}
                 </tr>
@@ -178,4 +152,5 @@ function previewUploadedTimetable(data) {
     }
 }
 </script>
+
 {% endblock %}
