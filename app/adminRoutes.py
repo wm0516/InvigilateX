@@ -1000,16 +1000,15 @@ def save_timetable_to_db(structured):
 def merge_timetable_slots(timetable_data, time_slots, week_days):
     merged = {day: [] for day in week_days}
     for day in week_days:
-        # Filter activities for this day
         day_classes = [row for row in timetable_data if row.classDay == day]
         for row in day_classes:
             start_time, end_time = row.classTime.split("-")
-            # find positions in time_slots
             try:
                 start_idx = time_slots.index(start_time)
                 end_idx = time_slots.index(end_time)
             except ValueError:
-                continue  # skip if time not found in slots
+                continue  # skip if invalid time
+
             merged[day].append({
                 "lecturer": row.lecturerName,
                 "type": row.classType,
@@ -1019,6 +1018,7 @@ def merge_timetable_slots(timetable_data, time_slots, week_days):
                 "end_idx": end_idx,
             })
     return merged
+
 
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
@@ -1035,6 +1035,9 @@ def admin_manageTimetable():
     # Get unique lecturers for the filter dropdown
     lecturers = db.session.query(Timetable.lecturerName).distinct().all()
     lecturers = [lecturer[0] for lecturer in lecturers] if lecturers else []
+    time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"]
+    week_days = ["MON", "TUE", "WED", "THU", "FRI"]
+    merged_data = merge_timetable_slots(timetable_data, time_slots, week_days)
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
@@ -1116,11 +1119,7 @@ def admin_manageTimetable():
                 return redirect(url_for('admin_manageTimetable'))
 
     # GET request
-    return render_template('admin/adminManageTimetable.html', 
-                         active_tab='admin_manageTimetabletab', 
-                         timetable_data=timetable_data,
-                         lecturers=lecturers,
-                         selected_lecturer=selected_lecturer)
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer,merged_data=merged_data)
 
 
 

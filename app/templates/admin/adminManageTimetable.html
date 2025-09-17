@@ -111,32 +111,31 @@
             {% for day in week_days %}
             <tr>
                 <td><strong>{{ day }}</strong></td>
-                {% set day_classes = merged[day] %}
-                {% set i = 0 %}
-                {% while i < time_slots|length %}
-                    {% set activity = None %}
-                    {% for c in day_classes %}
-                        {% if c.start_idx == i %}
-                            {% set activity = c %}
-                        {% endif %}
+                {% set current = 0 %}
+                {% for activity in merged_data[day]|sort(attribute='start_idx') %}
+                    {# fill empty slots before this activity starts #}
+                    {% for _ in range(current, activity.start_idx) %}
+                        <td></td>
                     {% endfor %}
                     
-                    {% if activity %}
-                        <td colspan="{{ activity.end_idx - activity.start_idx }}">
-                            <div style="border:1px solid #999; margin:2px; padding:2px;">
-                                <strong>{{ activity.lecturer }}</strong><br>
-                                <strong>[{{ activity.type }}]</strong><br>
-                                {{ activity.course }}<br>
-                                Room: {{ activity.room }}<br>
-                                {{ time_slots[activity.start_idx] }} - {{ time_slots[activity.end_idx] }}
-                            </div>
-                        </td>
-                        {% set i = activity.end_idx %}
-                    {% else %}
-                        <td></td>
-                        {% set i = i + 1 %}
-                    {% endif %}
-                {% endwhile %}
+                    {# render the merged activity cell #}
+                    <td colspan="{{ activity.end_idx - activity.start_idx }}">
+                        <div style="border:1px solid #999; margin:2px; padding:2px;">
+                            <strong>{{ activity.lecturer }}</strong><br>
+                            <strong>[{{ activity.type }}]</strong><br>
+                            {{ activity.course }}<br>
+                            Room: {{ activity.room }}<br>
+                            {{ time_slots[activity.start_idx] }} - {{ time_slots[activity.end_idx] }}
+                        </div>
+                    </td>
+                    
+                    {% set current = activity.end_idx %}
+                {% endfor %}
+
+                {# fill empty slots after last activity #}
+                {% for _ in range(current, time_slots|length) %}
+                    <td></td>
+                {% endfor %}
             </tr>
             {% endfor %}
             </tbody>
