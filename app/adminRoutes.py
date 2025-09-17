@@ -1145,7 +1145,7 @@ def admin_manageTimetable():
                 return redirect(url_for('admin_manageTimetable'))
 
     # GET request
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer,merged_data=merged_data)
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer)
 
 
 
