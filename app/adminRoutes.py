@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, Response
+from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from app import app
 from .backend import *
 from .database import *
@@ -9,15 +9,8 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os
-import io
-import json
-from PyPDF2 import PdfReader
 import re
 import PyPDF2
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-from googleapiclient.http import MediaIoBaseDownload
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -1005,7 +998,7 @@ def admin_manageTimetable():
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
-            files = request.files.getlist("timetable_file[]")  # Fix: name ends with []
+            files = request.files.getlist("timetable_file")
             all_files = [file.filename for file in files]
             total_files_read = len(all_files)
 
