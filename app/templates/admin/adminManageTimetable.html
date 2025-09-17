@@ -111,63 +111,49 @@
                 {% for day in week_days %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-
-                    {% set col = 0 %}
-                    {% while col < time_slots|length %}
-                        {% set time = time_slots[col] %}
-                        {% set match_found = false %}
-                        {% for row in timetable_data %}
-                            {% set class_day = row.classDay %}
-                            {% set class_time = row.classTime %}
-                            {% set start_time = class_time.split('-')[0] %}
-                            {% set end_time = class_time.split('-')[1] %}
-
-                            {% if class_day == day and time == start_time %}
-                                {% if not selected_lecturer or selected_lecturer == row.lecturerName %}
-                                    {% set span = 1 %}
-                                    {% set next_col = col + 1 %}
-
-                                    {% for next_time in time_slots[next_col:] %}
-                                        {% for next_row in timetable_data %}
-                                            {% set next_day = next_row.classDay %}
-                                            {% set next_class_time = next_row.classTime %}
-                                            {% set next_start = next_class_time.split('-')[0] %}
-                                            {% set next_end = next_class_time.split('-')[1] %}
-
-                                            {% if next_day == day and next_start == time_slots[next_col] and
-                                                selected_lecturer == next_row.lecturerName and
-                                                row.classType == next_row.classType and
-                                                row.courseName == next_row.courseName and
-                                                row.classRoom == next_row.classRoom and
-                                                row.classTime == next_row.classTime %}
-                                                {% set span = span + 1 %}
-                                                {% set next_col = next_col + 1 %}
-                                            {% else %}
-                                                {% set next_col = time_slots|length %} {# Break loop #}
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endfor %}
-
-                                    <td colspan="{{ span }}">
-                                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                            <strong>{{ row.lecturerName }}</strong><br>
-                                            <strong>[{{ row.classType }}]</strong><br>
-                                            {{ row.courseName }}<br>
-                                            Room: {{ row.classRoom }}
-                                        </div>
-                                    </td>
-                                    {% set col = col + span %}
-                                    {% set match_found = true %}
-                                    {% break %}
+                    
+                    {% for time_slot in time_slots %}
+                        {% set cell_content = none %}
+                        {% set cell_colspan = 1 %}
+                        
+                        {% for item in timetable_data %}
+                            {% if item.classDay == day %}
+                                {% set item_start_time = item.classTime.split('-')[0] %}
+                                {% set item_end_time = item.classTime.split('-')[1] %}
+                                
+                                {% if time_slot == item_start_time %}
+                                    {% if not selected_lecturer or selected_lecturer == item.lecturerName %}
+                                        {% set cell_content = item %}
+                                        {% set cell_colspan = 1 %}
+                                        
+                                        {# Calculate colspan based on duration #}
+                                        {% set start_index = time_slots.index(item_start_time) %}
+                                        {% set end_index = time_slots.index(item_end_time) %}
+                                        {% if end_index > start_index %}
+                                            {% set cell_colspan = end_index - start_index %}
+                                        {% endif %}
+                                    {% endif %}
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
-
-                        {% if not match_found %}
+                        
+                        {% if cell_content %}
+                            <td colspan="{{ cell_colspan }}">
+                                <div style="border: 1px solid #999; margin: 2px; padding: 2px; background-color: #f8f8f8;">
+                                    <strong>{{ cell_content.lecturerName }}</strong><br>
+                                    <strong>[{{ cell_content.classType }}]</strong><br>
+                                    {{ cell_content.courseName }}<br>
+                                    Room: {{ cell_content.classRoom }}
+                                </div>
+                            </td>
+                            {# Skip the next cells based on colspan #}
+                            {% for i in range(1, cell_colspan) %}
+                                </tr><tr><td style="display: none;"></td>
+                            {% endfor %}
+                        {% else %}
                             <td></td>
-                            {% set col = col + 1 %}
                         {% endif %}
-                    {% endwhile %}
+                    {% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
