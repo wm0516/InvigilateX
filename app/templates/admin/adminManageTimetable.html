@@ -107,7 +107,7 @@
                     <td>
                         {% set displayed_rows = [] %}
                         {% for row in timetable_data %}
-                            {% set class_day = row.classDay.upper() %}
+                            {% set class_day = row.classDay %}
                             {% set class_time = row.classTime %}
                             {% set start_time = class_time.split('-')[0] %}
                             {% set end_time = class_time.split('-')[1] %}

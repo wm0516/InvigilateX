@@ -1073,3 +1073,20 @@ def admin_manageTimetable():
 
     # GET request
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
