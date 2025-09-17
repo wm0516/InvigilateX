@@ -997,7 +997,8 @@ def admin_manageTimetable():
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
-        if form_type == 'upload':
+    if form_type == 'upload':
+        try:
             files = request.files.getlist("timetable_file")
             all_files = [file.filename for file in files]
             total_files_read = len(all_files)
@@ -1006,8 +1007,6 @@ def admin_manageTimetable():
 
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
-
-                # No need to check if base_name is None, always string
 
                 if base_name not in latest_files:
                     latest_files[base_name] = (timestamp, file)
@@ -1027,18 +1026,27 @@ def admin_manageTimetable():
 
             results = []
             for base_name, (timestamp, file) in latest_files.items():
-                reader = PyPDF2.PdfReader(file.stream)
+                try:
+                    reader = PyPDF2.PdfReader(file.stream)
+                except Exception as e:
+                    app.logger.error(f"Failed to read PDF {file.filename}: {e}")
+                    continue
+
                 raw_text = ""
                 for page in reader.pages:
                     page_text = page.extract_text()
                     if page_text:
                         raw_text += page_text + " "
 
-                structured = parse_timetable(raw_text)
-                # Attach filename for preview buttons
-                structured['filename'] = file.filename
-                results.append(structured)
-                save_timetable_to_db(structured)
+                try:
+                    structured = parse_timetable(raw_text)
+                    structured['filename'] = file.filename
+                    results.append(structured)
+                    save_timetable_to_db(structured)
+                except Exception as e:
+                    app.logger.error(f"Failed to parse/save timetable {file.filename}: {e}")
+                    app.logger.error(traceback.format_exc())
+                    continue
 
             return render_template(
                 'admin/adminManageTimetable.html',
@@ -1052,17 +1060,23 @@ def admin_manageTimetable():
                     "files_after_filter": filtered_filenames,
                 }
             )
-
-        elif form_type == 'save':
-            import json
-            data_json = request.form.get('structured_data')
-            if not data_json:
-                return "No data to save", 400
-
-            structured = json.loads(data_json)
-            save_timetable_to_db(structured)
-
+        except Exception as e:
+            app.logger.error(f"Unhandled error during upload: {e}")
+            app.logger.error(traceback.format_exc())
+            flash("An error occurred during file upload. Please check logs.")
             return redirect(url_for('admin_manageTimetable'))
+
+
+    elif form_type == 'save':
+        import json
+        data_json = request.form.get('structured_data')
+        if not data_json:
+            return "No data to save", 400
+
+        structured = json.loads(data_json)
+        save_timetable_to_db(structured)
+
+        return redirect(url_for('admin_manageTimetable'))
 
     # GET request
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data)
