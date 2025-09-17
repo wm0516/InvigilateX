@@ -1053,7 +1053,6 @@ def admin_manageTimetable():
                 structured = parse_timetable(raw_text)
                 structured['filename'] = file.filename
                 results.append(structured)
-                save_timetable_to_db(structured)
 
             # Refresh timetable data after upload
             if selected_lecturer:
@@ -1077,19 +1076,10 @@ def admin_manageTimetable():
             )
 
         elif form_type == 'save':
-            import json
             data_json = request.form.get('structured_data')
-            if not data_json:
-                return "No data to save", 400
-
-            structured = json.loads(data_json)
-            save_timetable_to_db(structured)
-            
-            # Redirect back with the same lecturer filter
-            if selected_lecturer:
-                return redirect(url_for('admin_manageTimetable', lecturer=selected_lecturer))
-            else:
-                return redirect(url_for('admin_manageTimetable'))
+            structured_list = json.loads(data_json)
+            for structured in structured_list:
+                save_timetable_to_db(structured)
 
     # GET request
     return render_template('admin/adminManageTimetable.html', 

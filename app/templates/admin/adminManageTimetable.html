@@ -40,10 +40,14 @@
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit">Upload and Preview Lecturer Timetable</button>
+                <button type="submit" id="uploadButton">Upload and Preview Lecturer Timetable</button>
             </div>
 
             {% if results %}
+            <div class="button-container">
+                <button type="submit" id="saveButton">Update to Database</button> 
+            </div>
+
             <h3>Uploaded Files:</h3>
             <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                 {% for file in results %}
@@ -151,6 +155,14 @@ function previewUploadedTimetable(data) {
         previewElement.textContent = "No structured data found.";
     }
 }
+
+document.getElementById('uploadButton').addEventListener('click', function () {
+    document.getElementById('form_type').value = 'upload';
+});
+
+document.getElementById('saveButton').addEventListener('click', function () {
+    document.getElementById('form_type').value = 'save';
+});
 </script>
 
 {% endblock %}
