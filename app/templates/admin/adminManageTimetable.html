@@ -107,88 +107,39 @@
                     {% endfor %}
                 </tr>
             </thead>
-<tbody>
-  {% for day in week_days %}
-  <tr>
-    <td><strong>{{ day }}</strong></td>
-
-    {% if selected_lecturer %}
-      {% set col = 0 %}
-      {% while col < time_slots | length %}
-        {% set time = time_slots[col] %}
-        {% set match = namespace(found=false) %}
-
-        {% for row in timetable_data %}
-          {% set start = row.classTime.split('-')[0] %}
-          {% set end = row.classTime.split('-')[1] %}
-
-          {% if row.classDay == day and row.lecturerName == selected_lecturer and start == time %}
-            {# Initialize span count #}
-            {% set span = 1 %}
-            {% set merged_end = end %}
-            {% for i in range(col + 1, time_slots | length) %}
-              {% set next_time = time_slots[i] %}
-              {% for r in timetable_data %}
-                {% if r.classDay == day and r.lecturerName == row.lecturerName and
-                      r.classType == row.classType and r.courseName == row.courseName and
-                      r.classRoom == row.classRoom and r.classTime == row.classTime and
-                      r.classTime.split('-')[0] == next_time %}
-                  {% set span = span + 1 %}
-                  {% set merged_end = r.classTime.split('-')[1] %}
-                  {% break %}
-                {% endif %}
-              {% endfor %}
-              {% if next_time != merged_end %}{% break %}{% endif %}
+            <tbody>
+            {% for day in week_days %}
+            <tr>
+                <td><strong>{{ day }}</strong></td>
+                {% set day_classes = merged[day] %}
+                {% set i = 0 %}
+                {% while i < time_slots|length %}
+                    {% set activity = None %}
+                    {% for c in day_classes %}
+                        {% if c.start_idx == i %}
+                            {% set activity = c %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if activity %}
+                        <td colspan="{{ activity.end_idx - activity.start_idx }}">
+                            <div style="border:1px solid #999; margin:2px; padding:2px;">
+                                <strong>{{ activity.lecturer }}</strong><br>
+                                <strong>[{{ activity.type }}]</strong><br>
+                                {{ activity.course }}<br>
+                                Room: {{ activity.room }}<br>
+                                {{ time_slots[activity.start_idx] }} - {{ time_slots[activity.end_idx] }}
+                            </div>
+                        </td>
+                        {% set i = activity.end_idx %}
+                    {% else %}
+                        <td></td>
+                        {% set i = i + 1 %}
+                    {% endif %}
+                {% endwhile %}
+            </tr>
             {% endfor %}
-
-            <td colspan="{{ span }}">
-              <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                <strong>{{ row.lecturerName }}</strong><br>
-                <strong>[{{ row.classType }}]</strong><br>
-                {{ row.courseName }}<br>
-                Room: {{ row.classRoom }}<br>
-                <small>{{ start }} - {{ merged_end }}</small>
-              </div>
-            </td>
-            {% set col = col + span %}
-            {% set match.found = true %}
-            {% break %}
-          {% endif %}
-        {% endfor %}
-
-        {% if not match.found %}
-          <td></td>
-          {% set col = col + 1 %}
-        {% endif %}
-      {% endwhile %}
-    {% else %}
-      {% for time in time_slots %}
-      <td>
-        {% set displayed = {} %}
-        {% for row in timetable_data %}
-          {% set start = row.classTime.split('-')[0] %}
-          {% set end = row.classTime.split('-')[1] %}
-          {% if row.classDay == day and time >= start and time < end %}
-            {% set key = row.lecturerName ~ row.classType ~ row.classTime ~ row.classRoom ~ row.courseName %}
-            {% if not displayed[key] %}
-              {% set _ = displayed.update({key: true}) %}
-              <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                <strong>{{ row.lecturerName }}</strong><br>
-                <strong>[{{ row.classType }}]</strong><br>
-                {{ row.courseName }}<br>
-                Room: {{ row.classRoom }}
-              </div>
-            {% endif %}
-          {% endif %}
-        {% endfor %}
-      </td>
-      {% endfor %}
-    {% endif %}
-  </tr>
-  {% endfor %}
-</tbody>
-
-
+            </tbody>
         </table>
     </div>
 </div>

@@ -997,6 +997,30 @@ def save_timetable_to_db(structured):
     db.session.commit()
 
 
+def merge_timetable_slots(timetable_data, time_slots, week_days):
+    merged = {day: [] for day in week_days}
+    for day in week_days:
+        # Filter activities for this day
+        day_classes = [row for row in timetable_data if row.classDay == day]
+        for row in day_classes:
+            start_time, end_time = row.classTime.split("-")
+            # find positions in time_slots
+            try:
+                start_idx = time_slots.index(start_time)
+                end_idx = time_slots.index(end_time)
+            except ValueError:
+                continue  # skip if time not found in slots
+            merged[day].append({
+                "lecturer": row.lecturerName,
+                "type": row.classType,
+                "course": row.courseName,
+                "room": row.classRoom,
+                "start_idx": start_idx,
+                "end_idx": end_idx,
+            })
+    return merged
+
+
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     # Get selected lecturer from query parameter
