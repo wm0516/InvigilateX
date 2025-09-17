@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, Response
 from app import app
 from .backend import *
 from .database import *
@@ -9,8 +9,15 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os
+import io
+import json
+from PyPDF2 import PdfReader
 import re
 import PyPDF2
+from google_auth_oauthlib.flow import Flow
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+from googleapiclient.http import MediaIoBaseDownload
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -992,14 +999,24 @@ def save_timetable_to_db(structured):
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    timetable_data = Timetable.query.all()
+    # Get selected lecturer from query parameter
+    selected_lecturer = request.args.get('lecturer', '')
+    
+    # Base query - filter by selected lecturer if provided
+    if selected_lecturer:
+        timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all()
+    else:
+        timetable_data = Timetable.query.all()
+    
+    # Get unique lecturers for the filter dropdown
+    lecturers = db.session.query(Timetable.lecturerName).distinct().all()
+    lecturers = [lecturer[0] for lecturer in lecturers] if lecturers else []
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
-    if form_type == 'upload':
-        try:
-            files = request.files.getlist("timetable_file")
+        if form_type == 'upload':
+            files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
             total_files_read = len(all_files)
 
@@ -1026,32 +1043,30 @@ def admin_manageTimetable():
 
             results = []
             for base_name, (timestamp, file) in latest_files.items():
-                try:
-                    reader = PyPDF2.PdfReader(file.stream)
-                except Exception as e:
-                    app.logger.error(f"Failed to read PDF {file.filename}: {e}")
-                    continue
-
+                reader = PyPDF2.PdfReader(file.stream)
                 raw_text = ""
                 for page in reader.pages:
                     page_text = page.extract_text()
                     if page_text:
                         raw_text += page_text + " "
 
-                try:
-                    structured = parse_timetable(raw_text)
-                    structured['filename'] = file.filename
-                    results.append(structured)
-                    save_timetable_to_db(structured)
-                except Exception as e:
-                    app.logger.error(f"Failed to parse/save timetable {file.filename}: {e}")
-                    app.logger.error(traceback.format_exc())
-                    continue
+                structured = parse_timetable(raw_text)
+                structured['filename'] = file.filename
+                results.append(structured)
+                save_timetable_to_db(structured)
+
+            # Refresh timetable data after upload
+            if selected_lecturer:
+                timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all()
+            else:
+                timetable_data = Timetable.query.all()
 
             return render_template(
                 'admin/adminManageTimetable.html',
                 active_tab='admin_manageTimetabletab',
                 timetable_data=timetable_data,
+                lecturers=lecturers,
+                selected_lecturer=selected_lecturer,  # Pass selected lecturer back
                 results=results,
                 upload_summary={
                     "total_files_uploaded": total_files_read,
@@ -1060,30 +1075,28 @@ def admin_manageTimetable():
                     "files_after_filter": filtered_filenames,
                 }
             )
-        except Exception as e:
-            app.logger.error(f"Unhandled error during upload: {e}")
-            app.logger.error(traceback.format_exc())
-            flash("An error occurred during file upload. Please check logs.")
-            return redirect(url_for('admin_manageTimetable'))
 
+        elif form_type == 'save':
+            import json
+            data_json = request.form.get('structured_data')
+            if not data_json:
+                return "No data to save", 400
 
-    elif form_type == 'save':
-        import json
-        data_json = request.form.get('structured_data')
-        if not data_json:
-            return "No data to save", 400
-
-        structured = json.loads(data_json)
-        save_timetable_to_db(structured)
-
-        return redirect(url_for('admin_manageTimetable'))
+            structured = json.loads(data_json)
+            save_timetable_to_db(structured)
+            
+            # Redirect back with the same lecturer filter
+            if selected_lecturer:
+                return redirect(url_for('admin_manageTimetable', lecturer=selected_lecturer))
+            else:
+                return redirect(url_for('admin_manageTimetable'))
 
     # GET request
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data)
-
-
-
-
+    return render_template('admin/adminManageTimetable.html', 
+                         active_tab='admin_manageTimetabletab', 
+                         timetable_data=timetable_data,
+                         lecturers=lecturers,
+                         selected_lecturer=selected_lecturer)
 
 
 

@@ -25,7 +25,7 @@
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="timetable_list">
                 <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
-                    <div class="upload-text">   
+                    <div class="upload-text">
                         Upload in PDF file format<br><br><br>
                         Click to upload or drag and drop with below file format
                     </div>
@@ -34,7 +34,7 @@
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
-            <input type="file" id="timetable_list" name="timetable_file" accept=".pdf" style="display: none;" multiple>
+            <input type="file" id="timetable_list" name="timetable_file[]" accept=".pdf" style="display: none;" multiple>
             <input type="hidden" name="form_type" value="upload">
             <br>
 
@@ -81,6 +81,14 @@
                         </option>
                     {% endfor %}
                 </select>
+                
+                <!-- Add a "Clear Filter" button -->
+                {% if selected_lecturer %}
+                <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" 
+                        style="margin-left: 10px; padding: 4px 8px;">
+                    Clear Filter
+                </button>
+                {% endif %}
             </form>
         </div>
     </div>
