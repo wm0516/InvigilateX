@@ -111,55 +111,49 @@
                 {% for day in week_days %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-                    {% set displayed = [] %}
                     {% set displayed_keys = [] %}
-                    {% for day in week_days %}
-                    <tr>
-                        <td><strong>{{ day }}</strong></td>
-                        {% set col = 0 %}
-                        {% while col < time_slots|length %}
-                            {% set time = time_slots[col] %}
-                            {% set matched_row = None %}
-                            {% for row in timetable_data %}
-                                {% if row.classDay == day %}
-                                    {% set start_time = row.classTime.split('-')[0] %}
-                                    {% set end_time = row.classTime.split('-')[1] %}
-                                    {% if time == start_time %}
-                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                        {% if key not in displayed_keys %}
-                                            {% set _ = displayed_keys.append(key) %}
-                                            {% set matched_row = row %}
-                                            {% break %}
-                                        {% endif %}
+                    {% set i = 0 %}
+                    {% for _ in range(time_slots | length) %}
+                        {% if i >= time_slots | length %}
+                            {% break %}
+                        {% endif %}
+
+                        {% set time = time_slots[i] %}
+                        {% set matched_row = None %}
+                        {% for row in timetable_data %}
+                            {% if row.classDay == day %}
+                                {% set start_time = row.classTime.split('-')[0] %}
+                                {% set end_time = row.classTime.split('-')[1] %}
+                                {% if time == start_time %}
+                                    {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                    {% if key not in displayed_keys %}
+                                        {% set _ = displayed_keys.append(key) %}
+                                        {% set matched_row = row %}
+                                        {% break %}
                                     {% endif %}
                                 {% endif %}
-                            {% endfor %}
-
-                            {% if matched_row %}
-                                {% set start = matched_row.classTime.split('-')[0] %}
-                                {% set end = matched_row.classTime.split('-')[1] %}
-
-                                {% set start_index = time_slots.index(start) %}
-                                {% set end_index = time_slots.index(end) %}
-                                {% set colspan = end_index - start_index %}
-
-                                <td colspan="{{ colspan }}" style="background-color: #eef; border: 1px solid #999; padding: 4px;">
-                                    <strong>{{ matched_row.lecturerName }}</strong><br>
-                                    <strong>[{{ matched_row.classType }}]</strong><br>
-                                    {{ matched_row.courseName }}<br>
-                                    Room: {{ matched_row.classRoom }}
-                                </td>
-
-                                {% set col = col + colspan %}
-                            {% else %}
-                                <td></td>
-                                {% set col = col + 1 %}
                             {% endif %}
-                        {% endwhile %}
-                    </tr>
-                    {% endfor %}
+                        {% endfor %}
 
-                    </td>
+                        {% if matched_row %}
+                            {% set start = matched_row.classTime.split('-')[0] %}
+                            {% set end = matched_row.classTime.split('-')[1] %}
+                            {% set start_index = time_slots.index(start) %}
+                            {% set end_index = time_slots.index(end) %}
+                            {% set colspan = end_index - start_index %}
+
+                            <td colspan="{{ colspan }}" style="background-color: #eef; border: 1px solid #999; padding: 4px;">
+                                <strong>{{ matched_row.lecturerName }}</strong><br>
+                                <strong>[{{ matched_row.classType }}]</strong><br>
+                                {{ matched_row.courseName }}<br>
+                                Room: {{ matched_row.classRoom }}
+                            </td>
+
+                            {% set i = i + colspan %}
+                        {% else %}
+                            <td></td>
+                            {% set i = i + 1 %}
+                        {% endif %}
                     {% endfor %}
                 </tr>
                 {% endfor %}
