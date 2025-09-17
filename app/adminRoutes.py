@@ -999,15 +999,7 @@ def save_timetable_to_db(structured):
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    timetable_data = Timetable.query.with_entities(
-        Timetable.lecturerName,
-        Timetable.courseName,
-        Timetable.classRoom
-    ).distinct().order_by(
-        Timetable.lecturerName,
-        Timetable.courseName,
-        Timetable.classRoom
-    ).all()
+    timetable_data = Timetable.query.all()
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
