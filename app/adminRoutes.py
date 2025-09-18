@@ -801,39 +801,6 @@ def get_course_details(program_code, course_code_section):
 
 
 
-def extract_base_name_and_timestamp_simple(file_name):
-    """
-    Extract base name as everything before first underscore (if any),
-    timestamp as 6 digits after underscore if present.
-
-    Returns (base_name, datetime object or None)
-    """
-    # Remove extension first
-    name_only = file_name[:-4] if file_name.lower().endswith('.pdf') else file_name
-
-    # Split by underscore
-    parts = name_only.split('_', 1)
-
-    if len(parts) == 1:
-        # No underscore - base name is full name
-        base_name = parts[0]
-        timestamp = None
-    else:
-        base_name = parts[0]
-        # Extract 6 digit timestamp at start of second part if present
-        timestamp_match = re.match(r"(\d{6})", parts[1])
-        if timestamp_match:
-            ts_str = timestamp_match.group(1)
-            try:
-                timestamp = datetime.strptime(ts_str, "%d%m%y")
-            except ValueError:
-                timestamp = None
-        else:
-            timestamp = None
-
-    return base_name.strip(), timestamp
-
-
 def parse_activity(line):
     """Parse one activity line into structured data."""
     activity = {}
@@ -1006,6 +973,37 @@ def save_timetable_to_db(structured):
     return len(new_entries)  # ✅ Return total rows saved
 
 
+def extract_base_name_and_timestamp_simple(file_name):
+    """
+    Extract base name as everything before first underscore (if any),
+    timestamp as 6 digits after underscore if present.
+
+    Returns (base_name, datetime object or None)
+    """
+    # Remove extension first
+    name_only = file_name[:-4] if file_name.lower().endswith('.pdf') else file_name
+
+    # Split by underscore
+    parts = name_only.split('_', 1)
+
+    if len(parts) == 1:
+        # No underscore - base name is full name
+        base_name = parts[0]
+        timestamp = None
+    else:
+        base_name = parts[0]
+        # Extract 6 digit timestamp at start of second part if present
+        timestamp_match = re.match(r"(\d{6})", parts[1])
+        if timestamp_match:
+            ts_str = timestamp_match.group(1)
+            try:
+                timestamp = datetime.strptime(ts_str, "%d%m%y")
+            except ValueError:
+                timestamp = None
+        else:
+            timestamp = None
+
+    return base_name.strip(), timestamp
 
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
@@ -1025,10 +1023,19 @@ def admin_manageTimetable():
                 continue
 
             try:
+                # Extract base name and timestamp
+                base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
+
+                # Read PDF and parse timetable
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
                 structured = parse_timetable(raw_text)
+
+                # Add filename, base_name, timestamp to structured data for reference
                 structured['filename'] = file.filename
+                structured['base_name'] = base_name
+                structured['timestamp'] = timestamp.strftime("%d-%m-%Y") if timestamp else None
+
                 results.append(structured)
 
                 # Save automatically if valid timetable detected
@@ -1051,10 +1058,6 @@ def admin_manageTimetable():
         results=results,
         total_rows_saved=total_rows_saved
     )
-
-
-
-
 
 
 
