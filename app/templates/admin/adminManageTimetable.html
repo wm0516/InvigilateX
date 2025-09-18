@@ -40,7 +40,7 @@
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit" name="action" value="preview" id="uploadButton">Upload and Preview Lecturer Timetable</button>
+                <button type="submit" id="uploadButton">Upload and Preview Lecturer Timetable</button>
             </div>
 
             <h3>Uploaded Files:</h3>
@@ -94,11 +94,11 @@
                 </button>
                 {% endif %}
             </form>
-            {% if upload_summary.total_rows_saved is defined %}
+                {% if total_rows_saved > 0 %}
                 <div class="info-box" style="margin-top: 20px; color: green;">
-                    ✅ Total rows saved to database: {{ upload_summary.total_rows_saved }}
+                    ✅ Total rows saved to database: {{ total_rows_saved }}
                 </div>
-            {% endif %}
+                {% endif %}
         </div>
     </div>
     
