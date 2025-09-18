@@ -43,13 +43,6 @@
                 <button type="submit" name="action" value="preview" id="uploadButton">Upload and Preview Lecturer Timetable</button>
             </div>
 
-            {% if results %}
-            <div class="button-container">
-                <button type="submit" id="saveButton" class="btn-primary" name="action" value="save">
-                    <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
-                </button>
-            </div>
-
             <h3>Uploaded Files:</h3>
             <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
                 {% for file in results %}
@@ -65,6 +58,11 @@
                 <h4>Preview Result</h4>
                 <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
             </div>
+
+            {% if total_rows_saved > 0 %}
+                <div class="info-box" style="margin-top: 20px; color: green;">
+                    ✅ Total rows saved to database: {{ total_rows_saved }}
+                </div>
             {% endif %}
         </div>
     </div>
@@ -96,6 +94,11 @@
                 </button>
                 {% endif %}
             </form>
+            {% if upload_summary.total_rows_saved is defined %}
+                <div class="info-box" style="margin-top: 20px; color: green;">
+                    ✅ Total rows saved to database: {{ upload_summary.total_rows_saved }}
+                </div>
+            {% endif %}
         </div>
     </div>
     
@@ -148,7 +151,17 @@
 </div>
 
 <script>
-// Function to preview uploaded files (upload section)
+document.getElementById('timetable_list').addEventListener('change', function() {
+    const files = this.files;
+    const display = document.getElementById('timetableSelectedFileName');
+    let names = [];
+    for (let i=0; i<files.length; i++) {
+        names.push(files[i].name);
+    }
+    display.textContent = names.join(", ");
+});
+
+// Preview function
 function previewUploadedTimetable(data) {
     const previewElement = document.getElementById("uploadPreviewContent");
     if (data) {
@@ -157,14 +170,6 @@ function previewUploadedTimetable(data) {
         previewElement.textContent = "No structured data found.";
     }
 }
-
-document.getElementById('uploadButton').addEventListener('click', function () {
-    document.getElementById('form_type').value = 'upload';
-});
-
-document.getElementById('saveButton').addEventListener('click', function () {
-    document.getElementById('form_type').value = 'save';
-});
 </script>
 
 {% endblock %}

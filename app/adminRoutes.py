@@ -968,7 +968,6 @@ def parse_timetable(raw_text):
 
 
 def save_timetable_to_db(structured):
-    # Collect all new entries first
     new_entries = []
     lecturer = structured.get("lecturer")
 
@@ -996,16 +995,16 @@ def save_timetable_to_db(structured):
                         "classWeekDate": act.get("weeks_date"),
                     })
 
-    # Delete existing rows for this lecturer first to avoid duplicates
+    # Delete old entries for this lecturer
     Timetable.query.filter_by(lecturerName=lecturer).delete()
     db.session.commit()
 
-    # Add new rows
     for entry in new_entries:
-        row = Timetable(**entry)
-        db.session.add(row)
+        db.session.add(Timetable(**entry))
 
     db.session.commit()
+    return len(new_entries)  # ✅ Return total rows saved
+
 
 
 
@@ -1015,43 +1014,34 @@ def admin_manageTimetable():
     timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
     lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
 
-    results = []
-    upload_summary = {}
+    results = []  # to hold structured data for each uploaded file (for preview)
+    total_rows_saved = 0
 
     if request.method == 'POST':
-        action = request.form.get('action')
         files = request.files.getlist("timetable_file[]")
 
-        # Step 1: Filter latest files by base name and timestamp
-        latest_files = {}
         for file in files:
-            base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
-            existing = latest_files.get(base_name)
-            if not existing or (timestamp and (not existing[0] or timestamp > existing[0])):
-                latest_files[base_name] = (timestamp, file)
+            if not file or not file.filename:
+                continue
 
-        # Step 2: Parse files
-        for _, file in latest_files.values():
-            reader = PyPDF2.PdfReader(file.stream)
-            raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
-            structured = parse_timetable(raw_text)
-            structured['filename'] = file.filename
-            results.append(structured)
+            try:
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
+                structured = parse_timetable(raw_text)
+                structured['filename'] = file.filename
+                results.append(structured)
 
-            # Only save if user clicked "save"
-            if action == "save":
-                save_timetable_to_db(structured)
+                # Save automatically if valid timetable detected
+                if structured and structured.get("days"):
+                    rows_saved = save_timetable_to_db(structured)
+                    total_rows_saved += rows_saved
 
-        upload_summary = {
-            "total_files_uploaded": len(files),
-            "files_uploaded": [f.filename for f in files],
-            "total_files_after_filter": len(latest_files),
-            "files_after_filter": [f.filename for (_, f) in latest_files.values()],
-        }
+            except Exception as e:
+                print(f"Error processing file {file.filename}: {e}")
+                continue
 
-        # Refresh timetable data after save
-        if action == "save":
-            timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
+        # Refresh timetable after saving
+        timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
 
     return render_template('admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
@@ -1059,7 +1049,7 @@ def admin_manageTimetable():
         lecturers=lecturers,
         selected_lecturer=selected_lecturer,
         results=results,
-        upload_summary=upload_summary
+        total_rows_saved=total_rows_saved
     )
 
 
