@@ -1008,88 +1008,59 @@ def save_timetable_to_db(structured):
     db.session.commit()
 
 
+
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # Get selected lecturer from query parameter
     selected_lecturer = request.args.get('lecturer', '')
-    
-    # Base query - filter by selected lecturer if provided
-    if selected_lecturer:
-        timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all()
-    else:
-        timetable_data = Timetable.query.all()
-    
-    # Get unique lecturers for the filter dropdown
-    lecturers = db.session.query(Timetable.lecturerName).distinct().all()
-    lecturers = [lecturer[0] for lecturer in lecturers] if lecturers else []
+    timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
+    lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
 
-    if request.method == "POST":
-        form_type = request.form.get('form_type')
+    results = []
+    upload_summary = {}
 
-        if form_type == 'upload':
-            files = request.files.getlist("timetable_file[]")
-            all_files = [file.filename for file in files]
-            total_files_read = len(all_files)
-            latest_files = {}
+    if request.method == 'POST':
+        action = request.form.get('action')
+        files = request.files.getlist("timetable_file[]")
 
-            for file in files:
-                base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
+        # Step 1: Filter latest files by base name and timestamp
+        latest_files = {}
+        for file in files:
+            base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
+            existing = latest_files.get(base_name)
+            if not existing or (timestamp and (not existing[0] or timestamp > existing[0])):
+                latest_files[base_name] = (timestamp, file)
 
-                if base_name not in latest_files:
-                    latest_files[base_name] = (timestamp, file)
-                else:
-                    existing_timestamp, existing_file = latest_files[base_name]
-                    if timestamp is not None:
-                        if existing_timestamp is None or timestamp > existing_timestamp:
-                            latest_files[base_name] = (timestamp, file)
-                    else:
-                        if existing_timestamp is None:
-                            pass
-                        else:
-                            continue
+        # Step 2: Parse files
+        for _, file in latest_files.values():
+            reader = PyPDF2.PdfReader(file.stream)
+            raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
+            structured = parse_timetable(raw_text)
+            structured['filename'] = file.filename
+            results.append(structured)
 
-            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
-            total_files_filtered = len(filtered_filenames)
-
-            results = []
-            for base_name, (timestamp, file) in latest_files.items():
-                reader = PyPDF2.PdfReader(file.stream)
-                raw_text = ""
-                for page in reader.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        raw_text += page_text + " "
-
-                structured = parse_timetable(raw_text)
-                structured['filename'] = file.filename
-                results.append(structured)
-
-            # Refresh timetable data after upload
-            if selected_lecturer:
-                timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all()
-            else:
-                timetable_data = Timetable.query.all()
-
-            return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data,
-                lecturers=lecturers, selected_lecturer=selected_lecturer, results=results, 
-                upload_summary={
-                    "total_files_uploaded": total_files_read,
-                    "files_uploaded": all_files,
-                    "total_files_after_filter": total_files_filtered,
-                    "files_after_filter": filtered_filenames,
-                }
-            )
-
-        elif form_type == 'save':
-            data_json = request.form.get('structured_data')
-            structured_list = json.loads(data_json)
-            for structured in structured_list:
+            # Only save if user clicked "save"
+            if action == "save":
                 save_timetable_to_db(structured)
 
-    # GET request
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer)
+        upload_summary = {
+            "total_files_uploaded": len(files),
+            "files_uploaded": [f.filename for f in files],
+            "total_files_after_filter": len(latest_files),
+            "files_after_filter": [f.filename for (_, f) in latest_files.values()],
+        }
 
+        # Refresh timetable data after save
+        if action == "save":
+            timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
 
+    return render_template('admin/adminManageTimetable.html',
+        active_tab='admin_manageTimetabletab',
+        timetable_data=timetable_data,
+        lecturers=lecturers,
+        selected_lecturer=selected_lecturer,
+        results=results,
+        upload_summary=upload_summary
+    )
 
 
 

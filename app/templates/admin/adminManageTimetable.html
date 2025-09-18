@@ -34,7 +34,7 @@
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
-            <input type="file" id="timetable_list" name="timetable_file[]" accept=".pdf" style="display: none;" multiple>
+            <input type="file" id="timetable_list" name="timetable_file[]" value="preview" accept=".pdf" style="display: none;" multiple>
             <input type="hidden" name="form_type" value="upload">
             <br>
 
@@ -45,7 +45,7 @@
 
             {% if results %}
             <div class="button-container">
-                <button type="submit" id="saveButton" class="btn-secondary">
+                <button type="submit" id="saveButton" class="btn-primary" value="save">
                     <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
                 </button>
             </div>
