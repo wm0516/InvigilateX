@@ -934,7 +934,9 @@ def parse_timetable(raw_text):
     return structured
 
 
+
 def save_timetable_to_db(structured):
+    # Collect all new entries first
     new_entries = []
     lecturer = structured.get("lecturer")
     filename = structured.get("filename", "UNKNOWN")
@@ -964,53 +966,59 @@ def save_timetable_to_db(structured):
                         "classWeekDate": act.get("weeks_date"),
                     })
 
-    # Delete old entries for this lecturer
-    Timetable.query.filter_by(lecturerName=lecturer).delete()
-    db.session.commit()
-
+    # Delete only matching existing rows for this lecturer
     for entry in new_entries:
-        db.session.add(Timetable(**entry))
+        Timetable.query.filter_by(
+            filename=entry["filename"],
+            lecturerName=entry["lecturerName"],
+            classType=entry["classType"],
+            classDay=entry["classDay"],
+            classTime=entry["classTime"],
+            classRoom=entry["classRoom"],
+            courseIntake=entry["courseIntake"],
+            courseCode=entry["courseCode"],
+            courseSection=entry["courseSection"]
+        ).delete()
+
+    # Add new rows
+    for entry in new_entries:
+        row = Timetable(**entry)
+        db.session.add(row)
 
     db.session.commit()
     return len(new_entries)  # ✅ Return total rows saved
 
 
-def extract_base_name_and_timestamp_simple(file_name):
-    """
-    Extract base name as everything before first underscore (if any),
-    timestamp as 6 digits after underscore if present.
+# --- Parsing utilities (kept similar to your original logic but centralized) ---
+def extract_base_name_and_timestamp(file_name):
+    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
 
-    Returns (base_name, datetime object or None)
-    """
-    # Remove extension first
-    name_only = file_name[:-4] if file_name.lower().endswith('.pdf') else file_name
+    if not match:
+        return None, None
 
-    # Split by underscore
-    parts = name_only.split('_', 1)
+    base_name = match.group(1)
+    timestamp_str = match.group(2)
 
-    if len(parts) == 1:
-        # No underscore - base name is full name
-        base_name = parts[0]
-        timestamp = None
+    timestamp = None
+    if timestamp_str:
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            return None, None
     else:
-        base_name = parts[0]
-        # Extract 6 digit timestamp at start of second part if present
-        timestamp_match = re.match(r"(\d{6})", parts[1])
-        if timestamp_match:
-            ts_str = timestamp_match.group(1)
-            try:
-                timestamp = datetime.strptime(ts_str, "%d%m%y")
-            except ValueError:
-                timestamp = None
-        else:
-            timestamp = None
+        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        base_name = file_name[:-4]
 
-    return base_name.strip(), timestamp
+    return base_name, timestamp
 
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    selected_lecturer = request.args.get('lecturer', '')
+    selected_lecturer = request.args.get('lecturer')
+    timetable_data = []  # Timetable.query.all()
+    if selected_lecturer:
+        timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
 
     # Get distinct lecturer names for dropdown (already grouped)
     lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
@@ -1025,7 +1033,7 @@ def admin_manageTimetable():
 
             try:
                 # Ensure base name is extracted before parsing
-                base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
+                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
 
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
@@ -1042,19 +1050,6 @@ def admin_manageTimetable():
             except Exception as e:
                 print(f"Error processing file {file.filename}: {e}")
                 continue
-
-        # Refresh timetable data after uploading
-        timetable_data = (
-            Timetable.query.filter_by(lecturerName=selected_lecturer).all()
-            if selected_lecturer else Timetable.query.all()
-        )
-
-    else:
-        # GET request
-        timetable_data = (
-            Timetable.query.filter_by(lecturerName=selected_lecturer).all()
-            if selected_lecturer else Timetable.query.all()
-        )
 
     return render_template('admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
