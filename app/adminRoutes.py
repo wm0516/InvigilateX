@@ -790,6 +790,17 @@ def get_course_details(program_code, course_code_section):
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 def extract_base_name_and_timestamp_simple(file_name):
     """
     Extract base name as everything before first underscore (if any),
@@ -1019,7 +1030,6 @@ def admin_manageTimetable():
             files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
             total_files_read = len(all_files)
-
             latest_files = {}
 
             for file in files:
@@ -1060,13 +1070,8 @@ def admin_manageTimetable():
             else:
                 timetable_data = Timetable.query.all()
 
-            return render_template(
-                'admin/adminManageTimetable.html',
-                active_tab='admin_manageTimetabletab',
-                timetable_data=timetable_data,
-                lecturers=lecturers,
-                selected_lecturer=selected_lecturer,  # Pass selected lecturer back
-                results=results,
+            return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data,
+                lecturers=lecturers, selected_lecturer=selected_lecturer, results=results, 
                 upload_summary={
                     "total_files_uploaded": total_files_read,
                     "files_uploaded": all_files,
@@ -1082,11 +1087,7 @@ def admin_manageTimetable():
                 save_timetable_to_db(structured)
 
     # GET request
-    return render_template('admin/adminManageTimetable.html', 
-                         active_tab='admin_manageTimetabletab', 
-                         timetable_data=timetable_data,
-                         lecturers=lecturers,
-                         selected_lecturer=selected_lecturer)
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer)
 
 
 

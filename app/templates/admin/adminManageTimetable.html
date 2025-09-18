@@ -19,10 +19,12 @@
 
 {% block upload_section %}
 <!-- Upload Form -->
+<!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" style="margin: auto;">
         <div class="form-left" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
+            <!-- Upload area -->
             <label for="timetable_list">
                 <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
                     <div class="upload-text">
@@ -30,45 +32,52 @@
                         Click to upload or drag and drop with below file format
                     </div>
                     <div class="file-types">PDF ONLY</div><br>
-                    <!-- Selected file display -->
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
+
             <input type="file" id="timetable_list" name="timetable_file[]" accept=".pdf" style="display: none;" multiple>
             <input type="hidden" name="form_type" value="upload">
-            <br>
 
-            <!-- Upload Form Submit -->
+            <!-- Upload Submit -->
             <div class="button-wrapper">
                 <button type="submit" id="uploadButton">Upload and Preview Lecturer Timetable</button>
             </div>
-
-            {% if results %}
-            <div class="button-container">
-                <button type="submit" id="saveButton" class="btn-secondary">
-                    <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
-                </button>
-            </div>
-
-            <h3>Uploaded Files:</h3>
-            <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-                {% for file in results %}
-                    <div>
-                        <button type="button" onclick='previewUploadedTimetable({{ file | tojson | safe }})'>Preview</button>
-                        {{ loop.index }}. {{ file.filename }}
-                    </div>
-                {% endfor %}
-            </div>
-            <br><br>
-
-            <div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-                <h4>Preview Result</h4>
-                <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
-            </div>
-            {% endif %}
         </div>
     </div>
 </form>
+
+
+<!-- Save Form (placed outside uploadForm) -->
+{% if results %}
+<form id="saveForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
+    <input type="hidden" name="form_type" value="save">
+    <input type="hidden" id="structured_data_input" name="structured_data" value="">
+
+    <div class="button-container">
+        <button type="submit" id="saveButton" class="btn-primary">
+            <i class="fas fa-database" style="margin-right: 5px;"></i>Save to Database
+        </button>
+    </div>
+</form>
+
+<!-- Upload Preview -->
+<h3>Uploaded Files:</h3>
+<div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
+    {% for file in results %}
+        <div>
+            <button type="button" onclick='previewUploadedTimetable({{ file | tojson | safe }})'>Preview</button>
+            {{ loop.index }}. {{ file.filename }}
+        </div>
+    {% endfor %}
+</div>
+<br><br>
+
+<div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+    <h4>Preview Result</h4>
+    <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -148,7 +157,6 @@
 </div>
 
 <script>
-// Function to preview uploaded files (upload section)
 function previewUploadedTimetable(data) {
     const previewElement = document.getElementById("uploadPreviewContent");
     if (data) {
@@ -156,15 +164,24 @@ function previewUploadedTimetable(data) {
     } else {
         previewElement.textContent = "No structured data found.";
     }
+
+    window.selectedStructuredData = data;
 }
 
-document.getElementById('uploadButton').addEventListener('click', function () {
-    document.getElementById('form_type').value = 'upload';
+document.getElementById('saveButton').addEventListener('click', function () {
+    const hiddenInput = document.getElementById("structured_data_input");
+    let data = {{ results | tojson | safe }};
+    hiddenInput.value = JSON.stringify(data);
 });
 
-document.getElementById('saveButton').addEventListener('click', function () {
-    document.getElementById('form_type').value = 'save';
-});
+const saveButton = document.getElementById("saveButton");
+if (!window.selectedStructuredData) {
+    saveButton.disabled = true;
+} else {
+    saveButton.disabled = false;
+}
+
+
 </script>
 
 {% endblock %}
