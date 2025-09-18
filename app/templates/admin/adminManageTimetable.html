@@ -61,7 +61,7 @@
         <!-- Filter Section -->
         <div class="form-right" style="width: None;">
             <form method="get" style="display:flex; align-items:center; gap:8px;">
-                <label for="lecturer">Select_Lecturer:</label>
+                <label for="lecturer">Select Lecturer:</label>
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>
                     {% for lecturer in lecturers %}
@@ -70,20 +70,19 @@
                         </option>
                     {% endfor %}
                 </select>
-                
-                <!-- Add a "Clear Filter" button -->
+
                 {% if selected_lecturer %}
-                <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" 
-                        style="margin-left: 10px; padding: 4px 8px;">
-                    Clear_Filter
-                </button>
+                    <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'"
+                            style="margin-left: 10px; padding: 4px 8px;">
+                        Clear Filter
+                    </button>
                 {% endif %}
             </form>
-                {% if total_rows_saved > 0 %}
-                <div class="info-box" style="margin-top: 20px; color: green;">
-                    ✅ Total rows saved to database: {{ total_rows_saved }}
-                </div>
-                {% endif %}
+            {% if total_rows_saved > 0 %}
+            <div class="info-box" style="margin-top: 20px; color: green;">
+                ✅ Total rows saved to database: {{ total_rows_saved }}
+            </div>
+            {% endif %}
         </div>
     </div>
     
@@ -92,17 +91,17 @@
 
     <!-- Timetable Grid -->
     <div class="user-table-container">
-        {% if timetable_data %}
-            <table class="user-data-table" border="1">
-                <thead>
-                    <tr>
-                        <th>Day / Time</th>
-                        {% for time in time_slots %}
-                            <th>{{ time }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
+        <table class="user-data-table" border="1">
+            <thead>
+                <tr>
+                    <th>Day / Time</th>
+                    {% for time in time_slots %}
+                        <th>{{ time }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if timetable_data %}
                     {% for day in week_days %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
@@ -131,15 +130,10 @@
                         {% endfor %}
                     </tr>
                     {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <div class="info-box" style="margin-top: 20px; text-align: center; color: gray;">
-                📄 No timetable data available. Please upload a timetable PDF.
-            </div>
-        {% endif %}
+                {% endif %}
+            </tbody>
+        </table>
     </div>
-
 </div>
 
 <script>

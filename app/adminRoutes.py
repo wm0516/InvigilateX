@@ -1011,7 +1011,8 @@ def extract_base_name_and_timestamp_simple(file_name):
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     selected_lecturer = request.args.get('lecturer', '')
-    timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
+
+    # Get distinct lecturer names for dropdown (already grouped)
     lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
     total_rows_saved = 0
 
@@ -1023,11 +1024,16 @@ def admin_manageTimetable():
                 continue
 
             try:
+                # Ensure base name is extracted before parsing
                 base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
+
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
+
                 structured = parse_timetable(raw_text)
-                structured["filename"] = base_name  # Add this line!
+
+                # Set filename to base name (used in DB)
+                structured["filename"] = base_name
 
                 if structured and structured.get("days"):
                     rows_saved = save_timetable_to_db(structured)
@@ -1037,8 +1043,18 @@ def admin_manageTimetable():
                 print(f"Error processing file {file.filename}: {e}")
                 continue
 
-        # Refresh timetable data after saving
-        timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
+        # Refresh timetable data after uploading
+        timetable_data = (
+            Timetable.query.filter_by(lecturerName=selected_lecturer).all()
+            if selected_lecturer else Timetable.query.all()
+        )
+
+    else:
+        # GET request
+        timetable_data = (
+            Timetable.query.filter_by(lecturerName=selected_lecturer).all()
+            if selected_lecturer else Timetable.query.all()
+        )
 
     return render_template('admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
@@ -1047,7 +1063,6 @@ def admin_manageTimetable():
         selected_lecturer=selected_lecturer,
         total_rows_saved=total_rows_saved
     )
-
 
 
 
