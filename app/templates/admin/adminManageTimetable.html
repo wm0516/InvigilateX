@@ -40,37 +40,19 @@
 
             <!-- Upload Form Submit -->
             <div class="button-wrapper">
-                <button type="submit" id="uploadButton">Upload and Preview Lecturer Timetable</button>
+                <button type="submit" id="uploadButton">Upload Lecturer Timetable</button>
             </div>
 
-            {% for file in results %}
-                <h3>Uploaded Files:</h3>
-                <div class="menu-grid" style="grid-template-columns: repeat(4, 1fr);">
-                    {% for file in results %}
-                        <div>
-                            <button type="button" onclick='previewUploadedTimetable({{ file | tojson | safe }})'>Preview</button>
-                            {{ loop.index }}. {{ file.filename }}<br>
-                            Base Name: {{ file.base_name }}<br>
-                            Timestamp: {{ file.timestamp or "N/A" }}
-                        </div>
-                    {% endfor %}
+            {% if total_rows_saved > 0 %}
+                <div class="info-box" style="margin-top: 20px; color: green;">
+                    ✅ Total rows saved to database: {{ total_rows_saved }}
                 </div>
-
-                <div id="uploadPreviewArea" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-                    <h4>Preview Result</h4>
-                    <pre id="uploadPreviewContent">Click a preview button to load timetable...</pre>
-                </div>
-
-                {% if total_rows_saved > 0 %}
-                    <div class="info-box" style="margin-top: 20px; color: green;">
-                        ✅ Total rows saved to database: {{ total_rows_saved }}
-                    </div>
-                {% endif %}
-            {% endfor %}
+            {% endif %}
         </div>
     </div>
 </form>
 {% endblock %}
+
 
 {% block content %}
 <div class="menu-section">
@@ -163,16 +145,7 @@ document.getElementById('timetable_list').addEventListener('change', function() 
     }
     display.textContent = names.join(", ");
 });
-
-// Preview function
-function previewUploadedTimetable(data) {
-    const previewElement = document.getElementById("uploadPreviewContent");
-    if (data) {
-        previewElement.textContent = JSON.stringify(data, null, 2);
-    } else {
-        previewElement.textContent = "No structured data found.";
-    }
-}
 </script>
+
 
 {% endblock %}

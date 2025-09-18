@@ -222,22 +222,24 @@ class InvigilatorAttendance(db.Model):
 # Need Double Check, Record In Database
 class Timetable(db.Model):
     __tablename__ = 'Timetable'
-    timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)   
-    lecturerName = db.Column(db.String(255), nullable=True)
-    classType = db.Column(db.String(10), nullable=True)
+    timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    filename = db.Column(db.Text, nullable=False)
+    lecturerName = db.Column(db.String(255), nullable=False)
+    classType = db.Column(db.String(10), nullable=False)
     classDay = db.Column(db.String(3), nullable=True)
-    classTime = db.Column(db.String(20), nullable=True)
-    classRoom = db.Column(db.String(20), nullable=True)
-    courseName = db.Column(db.String(255), nullable=True)
-    courseIntake = db.Column(db.String(50), nullable=True)
-    courseCode = db.Column(db.String(20), nullable=True)
-    courseSection = db.Column(db.String(20), nullable=True)
-    classWeekRange = db.Column(db.Text, nullable=True)
-    classWeekDate = db.Column(db.Text, nullable=True)
+    classTime = db.Column(db.String(20), nullable=False)
+    classRoom = db.Column(db.String(20), nullable=False)
+    courseName = db.Column(db.String(255), nullable=False)
+    courseIntake = db.Column(db.String(50), nullable=False)
+    courseCode = db.Column(db.String(20), nullable=False)
+    courseSection = db.Column(db.String(20), nullable=False)
+    classWeekRange = db.Column(db.Text, nullable=False)
+    classWeekDate = db.Column(db.Text, nullable=False)
 
     '''
     CREATE TABLE Timetable (
         timetableId INT AUTO_INCREMENT PRIMARY KEY,
+        filename TEXT,
         lecturerName VARCHAR(255),
         classType VARCHAR(10),
         classDay VARCHAR(3),

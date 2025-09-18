@@ -937,6 +937,7 @@ def parse_timetable(raw_text):
 def save_timetable_to_db(structured):
     new_entries = []
     lecturer = structured.get("lecturer")
+    filename = structured.get("filename", "UNKNOWN")
 
     for day, activities in structured["days"].items():
         for act in activities:
@@ -949,6 +950,7 @@ def save_timetable_to_db(structured):
                         continue
 
                     new_entries.append({
+                        "filename": filename, 
                         "lecturerName": lecturer,
                         "classType": act.get("class_type"),
                         "classDay": day,
@@ -1011,8 +1013,6 @@ def admin_manageTimetable():
     selected_lecturer = request.args.get('lecturer', '')
     timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
     lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
-
-    results = []  # to hold structured data for each uploaded file (for preview)
     total_rows_saved = 0
 
     if request.method == 'POST':
@@ -1023,22 +1023,12 @@ def admin_manageTimetable():
                 continue
 
             try:
-                # Extract base name and timestamp
                 base_name, timestamp = extract_base_name_and_timestamp_simple(file.filename)
-
-                # Read PDF and parse timetable
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
                 structured = parse_timetable(raw_text)
+                structured["filename"] = base_name  # Add this line!
 
-                # Add filename, base_name, timestamp to structured data for reference
-                structured['filename'] = file.filename
-                structured['base_name'] = base_name
-                structured['timestamp'] = timestamp.strftime("%d-%m-%Y") if timestamp else None
-
-                results.append(structured)
-
-                # Save automatically if valid timetable detected
                 if structured and structured.get("days"):
                     rows_saved = save_timetable_to_db(structured)
                     total_rows_saved += rows_saved
@@ -1047,7 +1037,7 @@ def admin_manageTimetable():
                 print(f"Error processing file {file.filename}: {e}")
                 continue
 
-        # Refresh timetable after saving
+        # Refresh timetable data after saving
         timetable_data = Timetable.query.filter_by(lecturerName=selected_lecturer).all() if selected_lecturer else Timetable.query.all()
 
     return render_template('admin/adminManageTimetable.html',
@@ -1055,11 +1045,8 @@ def admin_manageTimetable():
         timetable_data=timetable_data,
         lecturers=lecturers,
         selected_lecturer=selected_lecturer,
-        results=results,
         total_rows_saved=total_rows_saved
     )
-
-
 
 
 
