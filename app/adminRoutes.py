@@ -1022,7 +1022,6 @@ def admin_manageTimetable():
 
     # Get distinct lecturer names for dropdown (already grouped)
     lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
-    total_rows_saved = 0
 
     if request.method == 'POST':
         files = request.files.getlist("timetable_file[]")
@@ -1044,8 +1043,7 @@ def admin_manageTimetable():
                 structured["filename"] = base_name
 
                 if structured and structured.get("days"):
-                    rows_saved = save_timetable_to_db(structured)
-                    total_rows_saved += rows_saved
+                    save_timetable_to_db(structured)
 
             except Exception as e:
                 print(f"Error processing file {file.filename}: {e}")
@@ -1055,8 +1053,7 @@ def admin_manageTimetable():
         active_tab='admin_manageTimetabletab',
         timetable_data=timetable_data,
         lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        total_rows_saved=total_rows_saved
+        selected_lecturer=selected_lecturer
     )
 
 
