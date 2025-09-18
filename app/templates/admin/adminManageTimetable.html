@@ -92,47 +92,54 @@
 
     <!-- Timetable Grid -->
     <div class="user-table-container">
-        <table class="user-data-table" border="1">
-            <thead>
-                <tr>
-                    <th>Day / Time</th>
-                    {% for time in time_slots %}
-                        <th>{{ time }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in week_days %}
-                <tr>
-                    <td><strong>{{ day }}</strong></td>
-                    {% for time in time_slots %}
-                    <td>
-                        {% set displayed_rows = {} %}
-                        {% for row in timetable_data %}
-                            {% set class_day = row.classDay %}
-                            {% set class_time = row.classTime %}
-                            {% set start_time = class_time.split('-')[0] %}
-                            {% set end_time = class_time.split('-')[1] %}
-                            {% if class_day == day and time >= start_time and time < end_time %}
-                                {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                {% if not displayed_rows[key] %}
-                                    {% set _ = displayed_rows.update({key: true}) %}
-                                    <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                        <strong>{{ row.lecturerName }}</strong><br>
-                                        <strong>[{{ row.classType }}]</strong><br>
-                                        {{ row.courseName }}<br>
-                                        Room: {{ row.classRoom }}
-                                    </div>
-                                {% endif %}
-                            {% endif %}
+        {% if timetable_data %}
+            <table class="user-data-table" border="1">
+                <thead>
+                    <tr>
+                        <th>Day / Time</th>
+                        {% for time in time_slots %}
+                            <th>{{ time }}</th>
                         {% endfor %}
-                    </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day in week_days %}
+                    <tr>
+                        <td><strong>{{ day }}</strong></td>
+                        {% for time in time_slots %}
+                        <td>
+                            {% set displayed_rows = {} %}
+                            {% for row in timetable_data %}
+                                {% set class_day = row.classDay %}
+                                {% set class_time = row.classTime %}
+                                {% set start_time = class_time.split('-')[0] %}
+                                {% set end_time = class_time.split('-')[1] %}
+                                {% if class_day == day and time >= start_time and time < end_time %}
+                                    {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                    {% if not displayed_rows[key] %}
+                                        {% set _ = displayed_rows.update({key: true}) %}
+                                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                            <strong>{{ row.lecturerName }}</strong><br>
+                                            <strong>[{{ row.classType }}]</strong><br>
+                                            {{ row.courseName }}<br>
+                                            Room: {{ row.classRoom }}
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        {% endfor %}
+                    </tr>
                     {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        {% else %}
+            <div class="info-box" style="margin-top: 20px; text-align: center; color: gray;">
+                📄 No timetable data available. Please upload a timetable PDF.
+            </div>
+        {% endif %}
     </div>
+
 </div>
 
 <script>
