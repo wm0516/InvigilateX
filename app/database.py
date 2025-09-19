@@ -161,22 +161,22 @@ class Course(db.Model):
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
     exam = db.relationship("Exam", back_populates="course")  # One Course ↔ One Exam
     '''
-        CREATE TABLE Course (
-            courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
-            courseCode VARCHAR(10) NULL,
-            courseSection VARCHAR(10) NULL,
-            courseName VARCHAR(50) NULL,
-            courseHour INT NULL,
-            courseStudent INT NULL,
-            courseDepartment VARCHAR(10) NULL,
-            coursePractical VARCHAR(20) NULL,
-            courseTutorial VARCHAR(20) NULL,
-            courseExamId INT NULL,
-            FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
-            FOREIGN KEY (coursePractical) REFERENCES User(userId),
-            FOREIGN KEY (courseTutorial) REFERENCES User(userId),
-            FOREIGN KEY (courseExamId) REFERENCES Exam(examId)
-        );
+    CREATE TABLE Course (
+        courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
+        courseCode VARCHAR(10) NULL,
+        courseSection VARCHAR(10) NULL,
+        courseName VARCHAR(50) NULL,
+        courseHour INT NULL,
+        courseStudent INT NULL,
+        courseDepartment VARCHAR(10) NULL,
+        coursePractical VARCHAR(20) NULL,
+        courseTutorial VARCHAR(20) NULL,
+        courseExamId INT NULL,
+        FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
+        FOREIGN KEY (coursePractical) REFERENCES User(userId),
+        FOREIGN KEY (courseTutorial) REFERENCES User(userId),
+        FOREIGN KEY (courseExamId) REFERENCES Exam(examId)
+    );
     '''
 
 class InvigilationReport(db.Model):
