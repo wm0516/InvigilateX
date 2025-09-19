@@ -362,8 +362,8 @@ def admin_manageCourse():
                                     courseSection_text = str(row['course section'])
                                     courseName_text = str(row['course name'])
                                     courseHour_text = row['credit hour']
-                                    coursePractical_text = str(row['practical lecturer']).upper()
-                                    courseTutorial_text = str(row['tutorial lecturer']).upper()
+                                    coursePractical_text = str(row['practical lecturer'])
+                                    courseTutorial_text = str(row['tutorial lecturer'])
                                     courseStudent_text = row['no of students']
 
                                     # Look up lecturers
