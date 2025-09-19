@@ -2,6 +2,7 @@ from flask import render_template, request, redirect, url_for, flash, session, j
 from app import app
 from .backend import *
 from .database import *
+import calendar
 from datetime import  datetime, time
 from io import BytesIO
 import pandas as pd
@@ -583,7 +584,6 @@ def admin_manageExam():
         form_type = request.form.get('form_type')
 
         # ===== File Upload =====
-        '''
         if form_type == 'upload':
             file = request.files.get('exam_file')
             print(f"Read file: {file}")
@@ -663,7 +663,6 @@ def admin_manageExam():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageExam'))
-        '''
 
         if form_type == 'dashboard':
             return redirect(url_for('admin_manageExam'))

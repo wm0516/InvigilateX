@@ -142,7 +142,7 @@
                             {% if row.practicalLecturer is none %}[ERROR]{% endif %}
                             Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else row.coursePracticalName }}
                         </span>
-                        <br><br>
+                        <br>
 
                         <span {% if row.tutorialLecturer is none %}style="color:red;"{% endif %}>
                             {% if row.tutorialLecturer is none %}[ERROR]{% endif %}

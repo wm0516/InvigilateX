@@ -207,33 +207,36 @@ def create_course_and_exam(department, code, section, name, hour, practical_name
     practical_user = User.query.filter_by(userName=practical_name.upper()).first() if practical_name else None
     tutorial_user = User.query.filter_by(userName=tutorial_name.upper()).first() if tutorial_name else None
 
-    # 2. Create Exam
-    new_exam = Exam(
-        examVenue=None,
-        examStartTime=None,
-        examEndTime=None,
-        examNoInvigilator=None,
-    )
-    db.session.add(new_exam)
-    db.session.flush()
+    # 2. Only create Exam if BOTH coursePractical AND courseTutorial are assigned
+    new_exam = None
+    if practical_user and tutorial_user:
+        new_exam = Exam(
+            examVenue=None,
+            examStartTime=None,
+            examEndTime=None,
+            examNoInvigilator=None,
+        )
+        db.session.add(new_exam)
+        db.session.flush()  # generate examId
 
     # 3. Save Course (always keep the original Excel values in coursePracticalName/tutorialName)
     new_course = Course(
-        courseDepartment=department.upper(),
+        courseDepartment=department.upper() if department else None,
         courseCodeSection=course_code_section.upper(),
-        courseCode=code.upper(),
-        courseSection=section.upper(),
-        courseName=name.upper(),
+        courseCode=code.upper() if code else None,
+        courseSection=section.upper() if section else None,
+        courseName=name.upper() if name else None,
         courseHour=hour,
         coursePractical=practical_user.userId if practical_user else None,
         courseTutorial=tutorial_user.userId if tutorial_user else None,
         coursePracticalName=practical_name.upper() if practical_name else None,
         courseTutorialName=tutorial_name.upper() if tutorial_name else None,
         courseStudent=students,
-        courseExamId=new_exam.examId
+        courseExamId=new_exam.examId if new_exam else None
     )
     db.session.add(new_course)
     db.session.commit()
+
 
 
 
