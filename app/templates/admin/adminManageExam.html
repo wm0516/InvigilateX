@@ -142,7 +142,7 @@
                     <th>Exam Details</th>
                     <th>Number of Invigilators</th>
                 </tr>
-            </thead>
+            </thead>    
             <tbody>
                 {% for row in exam_data %}
                     <tr>
@@ -154,8 +154,8 @@
                             Course Code/Section: {{ row.course.courseCodeSection }}<br>
                             Program Code       : {{ row.course.courseDepartment }} <br>
                             Number of Students : {{ row.course.courseStudent }} <br>
-                            Practical Lecturer : {{ row.course.practicalLecturer.userName }} <br>
-                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName }}
+                            Practical Lecturer : {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }} <br>
+                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}
                         </td>
 
                         <td>[{{ row.examId }}]</td>
