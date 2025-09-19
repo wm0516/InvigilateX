@@ -378,8 +378,8 @@ def admin_manageCourse():
                                         section=courseSection_text,
                                         name=courseName_text,
                                         hour=int(courseHour_text),
-                                        practical_name=coursePractical_text,
-                                        tutorial_name=courseTutorial_text,
+                                        practical=coursePractical_text,
+                                        tutorial=courseTutorial_text,
                                         students=int(courseStudent_text)
                                     )
                                     course_records_added += 1
@@ -441,8 +441,8 @@ def admin_manageCourse():
                 section=courseSection_text,
                 name=courseName_text,
                 hour=int(courseHour_text),
-                practical_name=coursePractical_text,
-                tutorial_name=courseTutorial_text,
+                practical=coursePractical_text,
+                tutorial=courseTutorial_text,
                 students=int(courseStudent_text)
             )
 

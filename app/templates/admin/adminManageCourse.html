@@ -140,13 +140,13 @@
                     <td>
                         <span {% if row.practicalLecturer is none %}style="color:red;"{% endif %}>
                             {% if row.practicalLecturer is none %}[ERROR]{% endif %}
-                            Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else row.coursePracticalName }}
+                            Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else None }}
                         </span>
                         <br>
 
                         <span {% if row.tutorialLecturer is none %}style="color:red;"{% endif %}>
                             {% if row.tutorialLecturer is none %}[ERROR]{% endif %}
-                            Tutorial Lecturer: {{ row.tutorialLecturer.userName if row.tutorialLecturer else row.courseTutorialName }}
+                            Tutorial Lecturer: {{ row.tutorialLecturer.userName if row.tutorialLecturer else row.None }}
                         </span>
                     </td>
                     <td>[{{ row.courseStudent }}]</td>
