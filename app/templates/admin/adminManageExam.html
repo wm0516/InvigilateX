@@ -154,8 +154,8 @@
                             Course Code/Section: {{ row.course.courseCodeSection }}<br>
                             Program Code       : {{ row.course.courseDepartment }} <br>
                             Number of Students : {{ row.course.courseStudent }} <br>
-                            Practical Lecturer : {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }} <br>
-                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}
+                            Practical Lecturer : {{ row.course.practicalLecturer.userName }} <br>
+                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName }}
                         </td>
 
                         <td>[{{ row.examId }}]</td>

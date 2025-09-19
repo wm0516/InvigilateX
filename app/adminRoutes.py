@@ -571,19 +571,15 @@ def admin_manageExam():
     department_data = Department.query.all() # For department code dropdown
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
     exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
-    course_data = Course.query.join(Exam).filter(
+    course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None),
-            Course.courseName.isnot(None),
-            Course.courseCode.isnot(None),
-            Course.courseSection.isnot(None),
-            Course.coursePractical.isnot(None),
-            Course.courseTutorial.isnot(None),
-            Course.courseStudent.isnot(None)
+            Course.courseExamId.isnot(None),       # Must have an associated exam
+            Exam.examStartTime.is_(None),          # Exam start time is NULL
+            Exam.examEndTime.is_(None)             # Exam end time is NULL
         )
     ).all()
-    
+
+
     # Default values for manual form
     courseSection_text = ''
     practicalLecturer_text = ''
