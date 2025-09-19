@@ -38,11 +38,6 @@
             <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
 
-            <a href="static/excel_template/testCourse.xlsx" download>
-                <button>Download Excel Template</button>
-            </a>
-            <br>
-
             <div class="button-wrapper">
                 <button type="submit">Upload Course</button>
             </div>
@@ -110,7 +105,6 @@
 </form>
 {% endblock %}
 
-
 {% block content %}
 <div class="menu-section">
     <h2>List of Course</h2> 
@@ -150,7 +144,6 @@
                             <span style="color:red;">[ERROR] Practical Lecturer missing</span>
                         {% endif %}
                         <br>
-
                         {% if row.tutorialLecturer %}
                             Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
                         {% else %}
