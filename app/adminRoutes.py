@@ -326,14 +326,12 @@ def admin_manageCourse():
         if form_type == 'upload':
             file = request.files.get('course_file')
             if file and file.filename:
-                print(f"Uploaded file: {file.filename}")
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     course_records_added = 0
 
                     for sheet_name in excel_file.sheet_names:
-                        print("Excel Sheets:", excel_file.sheet_names)
                         try:
                             df = pd.read_excel(
                                 excel_file,
@@ -343,15 +341,7 @@ def admin_manageCourse():
                             )
 
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = [
-                                'department code', 'course code', 'course section',
-                                'course name', 'credit hour',
-                                'practical lecturer', 'tutorial lecturer',
-                                'no of students'
-                            ]
-                            print(f"\n[Sheet: {sheet_name}] Preview:")
-                            print(df.head())
-                            print("Detected columns:", df.columns.tolist())
+                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
@@ -744,14 +734,14 @@ def admin_manageStaff():
         if form_type == 'upload':
             file = request.files.get('staff_file')
             if file and file.filename:
+                print(f"Uploaded file: {file.filename}")
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
-                    print(f"Found sheets: {excel_file.sheet_names}")
-
                     staff_records_added = 0
 
                     for sheet_name in excel_file.sheet_names:
+                        print("Excel Sheets:", excel_file.sheet_names)
                         try:
                             df = pd.read_excel(
                                 excel_file,
@@ -763,7 +753,10 @@ def admin_manageStaff():
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
-
+                            print(f"\n[Sheet: {sheet_name}] Preview:")
+                            print(df.head())
+                            print("Detected columns:", df.columns.tolist())
+                            
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
@@ -780,15 +773,15 @@ def admin_manageStaff():
 
                             for index, row in df.iterrows():
                                 try:
-                                    id_text = str(row['id']).upper()
-                                    name_text = str(row['name']).upper()
+                                    id_text         = str(row['id']).upper()
+                                    name_text       = str(row['name']).upper()
                                     department_text = str(row['department']).upper()
-                                    email_text = str(row['email'])
-                                    contact_text = str(row['contact'])
-                                    gender_text = str(row['gender']).upper()
-                                    role_text_str = str(row['role']).strip().lower()
-                                    role_text = role_mapping.get(role_text_str)
-                                    hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
+                                    email_text      = str(row['email'])
+                                    contact_text    = str(row['contact'])
+                                    gender_text     = str(row['gender']).upper()
+                                    role_text_str   = str(row['role']).strip().lower()
+                                    role_text       = role_mapping.get(role_text_str)
+                                    hashed_pw       = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
                                     valid, result = check_staff(id_text, email_text, contact_text)
                                     if valid:
