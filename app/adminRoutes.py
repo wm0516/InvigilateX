@@ -353,6 +353,8 @@ def admin_manageCourse():
                             for col in df.columns:
                                 df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
+                            missing_lecturers = set()  # track lecturers not found
+
                             for index, row in df.iterrows():
                                 try:
                                     courseDepartment_text = str(row['department code'])
@@ -360,31 +362,44 @@ def admin_manageCourse():
                                     courseSection_text = str(row['course section'])
                                     courseName_text = str(row['course name'])
                                     courseHour_text = row['credit hour']
-                                    coursePractical_text = str(row['practical lecturer'])
-                                    courseTutorial_text = str(row['tutorial lecturer'])
+                                    coursePractical_text = str(row['practical lecturer']).upper()
+                                    courseTutorial_text = str(row['tutorial lecturer']).upper()
                                     courseStudent_text = row['no of students']
 
-                                    valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
-                                    print(f"check_course({courseCode_text}, {courseSection_text}, {courseHour_text}, {courseStudent_text}) => {valid}, {result}")
-                                    if valid:
-                                        create_course_and_exam(
-                                            department=courseDepartment_text,
-                                            code=courseCode_text,
-                                            section=courseSection_text,
-                                            name=courseName_text,
-                                            hour=int(courseHour_text),
-                                            practical=coursePractical_text,
-                                            tutorial=courseTutorial_text,
-                                            students=int(courseStudent_text)
-                                        )
-                                        course_records_added += 1
+                                    # Look up lecturers
+                                    practical_user = User.query.filter_by(userName=coursePractical_text).first()
+                                    tutorial_user  = User.query.filter_by(userName=courseTutorial_text).first()
+
+                                    # Collect missing lecturers
+                                    if not practical_user:
+                                        missing_lecturers.add(coursePractical_text)
+                                    if not tutorial_user:
+                                        missing_lecturers.add(courseTutorial_text)
+
+                                    # Save course anyway (use None for missing lecturers)
+                                    create_course_and_exam(
+                                        department=courseDepartment_text,
+                                        code=courseCode_text,
+                                        section=courseSection_text,
+                                        name=courseName_text,
+                                        hour=int(courseHour_text),
+                                        practical=practical_user.userId if practical_user else None,
+                                        tutorial=tutorial_user.userId if tutorial_user else None,
+                                        students=int(courseStudent_text)
+                                    )
+                                    course_records_added += 1
+
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
+
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
                     if course_records_added > 0:
-                        flash(f"Successful upload of {course_records_added} record(s)", 'success')
+                        flash(f"Successfully uploaded {course_records_added} record(s)", 'success')
+                        if missing_lecturers:
+                            missing_html = "<span style='color: red;'>Missing lecturers (not in User DB): " + ", ".join(missing_lecturers) + "</span>"
+                            flash(missing_html, 'danger')
                     else:
                         flash("No data uploaded", 'error')
 
