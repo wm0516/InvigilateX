@@ -792,26 +792,24 @@ def get_course_details(program_code, course_code_section):
 
 # Extract Base Name + Timestamp
 def extract_base_name_and_timestamp(file_name):
-    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    # Match base name + optional _DDMMYY
+    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
-    if not match:
-        return None, None
-
-    base_name = match.group(1)
-    timestamp_str = match.group(2)
-
-    timestamp = None
-    if timestamp_str:
+    if match:
+        base_name = match.group(1).strip()
+        timestamp_str = match.group(2)
         try:
             timestamp = datetime.strptime(timestamp_str, "%d%m%y")
         except ValueError:
-            return None, None
+            timestamp = None
     else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
-        base_name = file_name[:-4]
+        # Remove ".pdf" and ignore trailing " extra text"
+        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
+        timestamp = None
 
     return base_name, timestamp
+
 
 
 # Activity Parsing

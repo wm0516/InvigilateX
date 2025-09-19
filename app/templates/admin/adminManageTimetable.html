@@ -53,11 +53,25 @@
 
     <!-- Upload Summary -->
     {% if upload_summary %}
-    <div class="summary-box" style="margin-bottom:15px; border:1px solid #ccc; padding:10px;">
-        <h4>Upload Summary</h4>
-        <p>Total Files Uploaded: {{ upload_summary.total_files_uploaded }}</p>
-        <p>Total Files After Filter: {{ upload_summary.total_files_after_filter }}</p>
-    </div>
+        <div class="summary-box" style="margin-bottom:15px; border:1px solid #ccc; padding:10px;">
+            <h4>Upload Summary</h4>
+            <p>Total Files Uploaded: {{ upload_summary.total_files_uploaded }}</p>
+            <p>Total Files After Filter: {{ upload_summary.total_files_after_filter }}</p>
+        </div>
+
+        <!-- Preview of Parsed Results -->
+        {% if results %}
+        <div class="preview-box" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+            <h4>Preview Parsed Timetables</h4>
+            {% for res in results %}
+                <div style="margin-bottom:1%; padding:6px; border-bottom:1px dashed #999;">
+                    <strong>Filename:</strong> {{ res.filename }} <br>
+                    <strong>Lecturer:</strong> {{ res.lecturer }} <br>
+                    <strong>Title:</strong> {{ res.title }} <br>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
     {% endif %}
 
     <!-- Preview of Parsed Results -->
@@ -73,11 +87,11 @@
         {% endfor %}
     </div>
     {% endif %}
-    
+
         <!-- Lecturer Filter -->
     <div class="profile-frame" style="margin-bottom: 20px;">
         <form method="get" style="display:flex; align-items:center; gap:8px;">
-            <label for="lecturer">Select Lecturer:</label>
+            <label for="lecturer">Select_Lecturer:</label>
             <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                 <option value="">All Lecturers</option>
                 {% for lecturer in lecturers %}
@@ -90,7 +104,7 @@
             {% if selected_lecturer %}
                 <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'"
                         style="margin-left: 10px; padding: 4px 8px;">
-                    Clear Filter
+                    Clear_Filter
                 </button>
             {% endif %}
         </form>
