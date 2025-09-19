@@ -113,7 +113,7 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>List of Course</h2>
+    <h2>List of Course</h2> 
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -137,7 +137,7 @@
                     <td>[{{ row.courseHour }}]</td>
                     <td>
                         {% if row.department %}
-                            Department: {{ row.department.departmentName }} ({{ row.courseDepartment }})
+                            {{ row.department.departmentName }} ({{ row.courseDepartment }})
                         {% else %}
                             <span style="color:red;">[ERROR] Department missing</span>
                         {% endif %}
