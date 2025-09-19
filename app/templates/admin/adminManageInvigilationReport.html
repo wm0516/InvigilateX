@@ -52,9 +52,9 @@
 
                             <!-- Exam Details -->
                             <td rowspan="{{ rowspan }}">
-                                Exam Date   : [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }} - {{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}] <br>      
-                                Exam Day    : [{{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}] <br>
-                                Exam Time   : [{{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}] <br>
+                                Exam Date   : [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }}] - [{{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}] <br>      
+                                Exam Day    : [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
+                                Exam Time   : [{{ att.report.exam.examStartTime.strftime("%H:%M") }}] - [{{ att.report.exam.examEndTime.strftime("%H:%M") }}] <br>
                                 Exam Period : [{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h 
                                               {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 60) // 3600 }}m]<br>
                                 Exam Venue  : [{{ att.report.exam.examVenue }}]
