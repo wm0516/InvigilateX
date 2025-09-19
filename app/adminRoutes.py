@@ -341,6 +341,7 @@ def admin_manageCourse():
 
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
+                            print(expected_cols)
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
