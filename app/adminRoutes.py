@@ -789,17 +789,13 @@ def get_course_details(program_code, course_code_section):
 
 
 
-import re
-from datetime import datetime
-import PyPDF2
-from flask import (
-    Flask, render_template, request, flash, redirect, url_for
-)
-from yourapp import db
-from yourapp.models import Timetable
 
-app = Flask(__name__)
-app.secret_key = "your_secret_key"
+
+
+
+
+
+
 
 
 # -------------------------------
