@@ -790,15 +790,27 @@ def get_course_details(program_code, course_code_section):
 
 
 
+def extract_base_name_and_timestamp(file_name):
+    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
 
+    if not match:
+        return None, None
 
+    base_name = match.group(1)
+    timestamp_str = match.group(2)
 
+    timestamp = None
+    if timestamp_str:
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            return None, None
+    else:
+        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        base_name = file_name[:-4]
 
-
-
-
-
-
+    return base_name, timestamp
 
 
 def parse_activity(line):
@@ -934,12 +946,10 @@ def parse_timetable(raw_text):
     return structured
 
 
-
 def save_timetable_to_db(structured):
     # Collect all new entries first
     new_entries = []
     lecturer = structured.get("lecturer")
-    filename = structured.get("filename", "UNKNOWN")
 
     for day, activities in structured["days"].items():
         for act in activities:
@@ -952,7 +962,6 @@ def save_timetable_to_db(structured):
                         continue
 
                     new_entries.append({
-                        "filename": filename, 
                         "lecturerName": lecturer,
                         "classType": act.get("class_type"),
                         "classDay": day,
@@ -969,7 +978,6 @@ def save_timetable_to_db(structured):
     # Delete only matching existing rows for this lecturer
     for entry in new_entries:
         Timetable.query.filter_by(
-            filename=entry["filename"],
             lecturerName=entry["lecturerName"],
             classType=entry["classType"],
             classDay=entry["classDay"],
@@ -986,75 +994,100 @@ def save_timetable_to_db(structured):
         db.session.add(row)
 
     db.session.commit()
-    return len(new_entries)  # ✅ Return total rows saved
-
-
-# --- Parsing utilities (kept similar to your original logic but centralized) ---
-def extract_base_name_and_timestamp(file_name):
-    pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
-
-    if not match:
-        return None, None
-
-    base_name = match.group(1)
-    timestamp_str = match.group(2)
-
-    timestamp = None
-    if timestamp_str:
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-        except ValueError:
-            return None, None
-    else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
-        base_name = file_name[:-4]
-
-    return base_name, timestamp
 
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    selected_lecturer = request.args.get('lecturer')
-    timetable_data = []  # Timetable.query.all()
-    if selected_lecturer:
-        timetable_data = [row for row in timetable_data if getattr(row, 'lecturerName', None) == selected_lecturer]
+    timetable_data = Timetable.query.all()
 
-    # Get distinct lecturer names for dropdown (already grouped)
-    lecturers = [l[0] for l in db.session.query(Timetable.lecturerName).distinct().all()]
+    # Collect unique lecturers for dropdown
+    lecturers = sorted({row.lecturerName for row in timetable_data})
+    selected_lecturer = request.args.get("lecturer")
 
-    if request.method == 'POST':
-        files = request.files.getlist("timetable_file[]")
+    if request.method == "POST":
+        form_type = request.form.get('form_type')
 
-        for file in files:
-            if not file or not file.filename:
-                continue
+        if form_type == 'upload':
+            files = request.files.getlist("timetable_file[]")
+            all_files = [file.filename for file in files]
+            total_files_read = len(all_files)
 
-            try:
-                # Ensure base name is extracted before parsing
+            latest_files = {}
+
+            for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
+                if not base_name:
+                    continue
 
+                if base_name not in latest_files:
+                    latest_files[base_name] = (timestamp, file)
+                else:
+                    existing_timestamp, existing_file = latest_files[base_name]
+                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
+                        latest_files[base_name] = (timestamp, file)
+
+            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
+            total_files_filtered = len(filtered_filenames)
+
+            results = []
+            total_rows_inserted = 0
+            selected_lecturer_name = None
+
+            for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
-                raw_text = " ".join(page.extract_text() or "" for page in reader.pages)
+                raw_text = ""
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        raw_text += page_text + " "
 
                 structured = parse_timetable(raw_text)
+                structured['filename'] = file.filename
+                results.append(structured)
 
-                # Set filename to base name (used in DB)
-                structured["filename"] = base_name
+                # Save to DB and count rows
+                before_count = Timetable.query.count()
+                save_timetable_to_db(structured)
+                after_count = Timetable.query.count()
+                total_rows_inserted += (after_count - before_count)
 
-                if structured and structured.get("days"):
-                    save_timetable_to_db(structured)
+                # Store last uploaded lecturer (just for display)
+                selected_lecturer_name = structured.get("lecturer")
 
-            except Exception as e:
-                print(f"Error processing file {file.filename}: {e}")
-                continue
+            flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
-    return render_template('admin/adminManageTimetable.html',
+            # Refresh timetable after update
+            timetable_data = Timetable.query.all()
+            lecturers = sorted({row.lecturerName for row in timetable_data})
+
+            return render_template(
+                'admin/adminManageTimetable.html',
+                active_tab='admin_manageTimetabletab',
+                timetable_data=timetable_data,
+                results=results,
+                selected_lecturer=selected_lecturer_name,
+                lecturers=lecturers,
+                upload_summary={
+                    "total_files_uploaded": total_files_read,
+                    "files_uploaded": all_files,
+                    "total_files_after_filter": total_files_filtered,
+                    "files_after_filter": filtered_filenames,
+                }
+            )
+
+    # GET request
+    return render_template(
+        'admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
         timetable_data=timetable_data,
         lecturers=lecturers,
         selected_lecturer=selected_lecturer
     )
+
+
+
+
+
 
 
 
