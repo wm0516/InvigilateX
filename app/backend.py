@@ -201,23 +201,38 @@ def check_course(code, section, hour, students):
 
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+    # Validate practical lecturer
     practical_user = User.query.filter_by(userId=practical.upper() if practical else None).first()
-    tutorial_user = User.query.filter_by(userId=tutorial.upper() if tutorial else None).first()
-
     if not practical_user:
         print(f"[Missing Lecturer] Practical: {practical}")
         practical = None
     else:
         practical = practical.upper()
 
+    # Validate tutorial lecturer
+    tutorial_user = User.query.filter_by(userId=tutorial.upper() if tutorial else None).first()
     if not tutorial_user:
         print(f"[Missing Lecturer] Tutorial: {tutorial}")
         tutorial = None
     else:
         tutorial = tutorial.upper()
 
+    # Only create an Exam if both lecturers are valid
+    exam_id = None
+    if practical_user and tutorial_user:
+        new_exam = Exam(
+            examVenue=None,
+            examStartTime=None,
+            examEndTime=None,
+            examNoInvigilator=None
+        )
+        db.session.add(new_exam)
+        db.session.flush()  # Get the examId before commit
+        exam_id = new_exam.examId
+
+    # Create the Course
     new_course = Course(
-        courseCodeSection=f"{code}/{section}".upper(),
+        courseCodeSection=f"{code}/{section}".upper() if code and section else None,
         courseDepartment=department.upper() if department else None,
         courseCode=code.upper() if code else None,
         courseSection=section.upper() if section else None,
@@ -225,7 +240,8 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         courseHour=hour,
         courseStudent=students,
         coursePractical=practical,
-        courseTutorial=tutorial
+        courseTutorial=tutorial,
+        courseExamId=exam_id  # Assign examId if exists, else None
     )
     db.session.add(new_course)
     db.session.commit()
