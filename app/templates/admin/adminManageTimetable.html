@@ -74,20 +74,6 @@
         {% endif %}
     {% endif %}
 
-    <!-- Preview of Parsed Results -->
-    {% if results %}
-    <div class="preview-box" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
-        <h4>Preview Parsed Timetables</h4>
-        {% for res in results %}
-            <div style="margin-bottom:1%; padding:6px; border-bottom:1px dashed #999;">
-                <strong>Filename:</strong> {{ res.filename }} <br>
-                <strong>Lecturer:</strong> {{ res.lecturer }} <br>
-                <strong>Title:</strong> {{ res.title }} <br>
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
         <!-- Lecturer Filter -->
     <div class="profile-frame" style="margin-bottom: 20px;">
         <form method="get" style="display:flex; align-items:center; gap:8px;">
@@ -129,30 +115,66 @@
                     {% for day in week_days %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
+                        {% set skip_until = None %}
                         {% for time in time_slots %}
-                        <td>
-                            {% set displayed_rows = {} %}
+                            {% if skip_until and loop.index0 < skip_until %}
+                                {# Skip this column because it’s merged #}
+                                {% continue %}
+                            {% endif %}
+
+                            {% set matched = [] %}
                             {% for row in timetable_data %}
-                                {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
-                                    {% set class_day = row.classDay %}
-                                    {% set class_time = row.classTime %}
-                                    {% set start_time = class_time.split('-')[0] %}
-                                    {% set end_time = class_time.split('-')[1] %}
-                                    {% if class_day == day and time >= start_time and time < end_time %}
+                                {% if (not selected_lecturer or row.lecturerName == selected_lecturer) 
+                                    and row.classDay == day %}
+                                    {% set start_time = row.classTime.split('-')[0] %}
+                                    {% set end_time = row.classTime.split('-')[1] %}
+                                    {% if time >= start_time and time < end_time %}
                                         {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                        {% if not displayed_rows.get(key) %}
-                                            {% set _ = displayed_rows.update({key: true}) %}
-                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                                <strong>{{ row.lecturerName }}</strong><br>
-                                                <strong>[{{ row.classType }}]</strong><br>
-                                                {{ row.courseName }}<br>
-                                                Room: {{ row.classRoom }}
-                                            </div>
-                                        {% endif %}
+                                        {% set matched = matched + [row] %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-                        </td>
+
+                            {% if matched %}
+                                {% set row = matched[0] %}
+
+                                {# --- Compute rowspan (how many consecutive slots match) --- #}
+                                {% set span = 1 %}
+                                {% for next_time in time_slots[loop.index0+1:] %}
+                                    {% set found = false %}
+                                    {% for r in timetable_data %}
+                                        {% if (not selected_lecturer or r.lecturerName == selected_lecturer) 
+                                            and r.classDay == day %}
+                                            {% set st = r.classTime.split('-')[0] %}
+                                            {% set et = r.classTime.split('-')[1] %}
+                                            {% if next_time >= st and next_time < et %}
+                                                {% if r.lecturerName == row.lecturerName 
+                                                    and r.classType == row.classType 
+                                                    and r.courseName == row.courseName 
+                                                    and r.classRoom == row.classRoom %}
+                                                    {% set span = span + 1 %}
+                                                    {% set found = true %}
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if not found %}
+                                        {% break %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set skip_until = loop.index0 + span %}
+
+                                <td colspan="{{ span }}">
+                                    <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                        <strong>{{ row.lecturerName }}</strong><br>
+                                        <strong>[{{ row.classType }}]</strong><br>
+                                        {{ row.courseName }}<br>
+                                        Room: {{ row.classRoom }}
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                     {% endfor %}
