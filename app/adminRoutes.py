@@ -325,12 +325,14 @@ def admin_manageCourse():
         if form_type == 'upload':
             file = request.files.get('course_file')
             if file and file.filename:
+                print(f"Uploaded file: {file.filename}")
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     course_records_added = 0
 
                     for sheet_name in excel_file.sheet_names:
+                        print("Excel Sheets:", excel_file.sheet_names)
                         try:
                             df = pd.read_excel(
                                 excel_file,
@@ -341,7 +343,9 @@ def admin_manageCourse():
 
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
-                            print(expected_cols)
+                            print(f"\n[Sheet: {sheet_name}] Preview:")
+                            print(df.head())
+                            print("Detected columns:", df.columns.tolist())
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
@@ -361,6 +365,7 @@ def admin_manageCourse():
                                     courseStudent_text = row['no of students']
 
                                     valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
+                                    print(f"check_course({courseCode_text}, {courseSection_text}, {courseHour_text}, {courseStudent_text}) => {valid}, {result}")
                                     if valid:
                                         create_course_and_exam(
                                             department=courseDepartment_text,
