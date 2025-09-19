@@ -135,7 +135,13 @@
                     <td>{{ row.courseCodeSection }}</td>
                     <td>{{ row.courseName }}</td>
                     <td>[{{ row.courseHour }}]</td>
-                    <td>{{ row.courseDepartment }}</td>
+                    <td>
+                        {% if row.department %}
+                            Department: {{ row.department.departmentName }} ({{ row.courseDepartment }})
+                        {% else %}
+                            <span style="color:red;">[ERROR] Department missing</span>
+                        {% endif %}
+                    </td>
                     <td>[{{ row.courseExamId }}]</td>
                     <td>
                         {% if row.practicalLecturer %}

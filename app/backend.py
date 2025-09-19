@@ -201,10 +201,16 @@ def check_course(code, section, hour, students):
 
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+    # Validate department code
+    department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
+    if not department_name:
+        department = None
+    else:
+        department = department.upper()
+
     # Validate practical lecturer
     practical_user = User.query.filter_by(userId=practical.upper() if practical else None).first()
     if not practical_user:
-        print(f"[Missing Lecturer] Practical: {practical}")
         practical = None
     else:
         practical = practical.upper()
@@ -212,7 +218,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     # Validate tutorial lecturer
     tutorial_user = User.query.filter_by(userId=tutorial.upper() if tutorial else None).first()
     if not tutorial_user:
-        print(f"[Missing Lecturer] Tutorial: {tutorial}")
         tutorial = None
     else:
         tutorial = tutorial.upper()
@@ -233,7 +238,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     # Create the Course
     new_course = Course(
         courseCodeSection=f"{code}/{section}".upper() if code and section else None,
-        courseDepartment=department.upper() if department else None,
+        courseDepartment=department,
         courseCode=code.upper() if code else None,
         courseSection=section.upper() if section else None,
         courseName=name.upper() if name else None,
