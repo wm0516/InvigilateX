@@ -51,29 +51,30 @@
 <div class="menu-section">
     <h2>Timetable</h2>
 
-    <!-- Flash messages -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-                <strong>{{ category.capitalize() }}:</strong> {{ message }}
-            </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
     <!-- Upload Summary -->
     {% if upload_summary %}
     <div class="summary-box" style="margin-bottom:15px; border:1px solid #ccc; padding:10px;">
         <h4>Upload Summary</h4>
         <p>Total Files Uploaded: {{ upload_summary.total_files_uploaded }}</p>
-        <p>Files Uploaded: {{ upload_summary.files_uploaded|join(', ') }}</p>
         <p>Total Files After Filter: {{ upload_summary.total_files_after_filter }}</p>
-        <p>Files After Filter: {{ upload_summary.files_after_filter|join(', ') }}</p>
     </div>
     {% endif %}
 
-    <!-- Lecturer Filter -->
+    <!-- Preview of Parsed Results -->
+    {% if results %}
+    <div class="preview-box" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+        <h4>Preview Parsed Timetables</h4>
+        {% for res in results %}
+            <div style="margin-bottom:1%; padding:6px; border-bottom:1px dashed #999;">
+                <strong>Filename:</strong> {{ res.filename }} <br>
+                <strong>Lecturer:</strong> {{ res.lecturer }} <br>
+                <strong>Title:</strong> {{ res.title }} <br>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+        <!-- Lecturer Filter -->
     <div class="profile-frame" style="margin-bottom: 20px;">
         <form method="get" style="display:flex; align-items:center; gap:8px;">
             <label for="lecturer">Select Lecturer:</label>
@@ -94,20 +95,6 @@
             {% endif %}
         </form>
     </div>
-
-    <!-- Preview of Parsed Results -->
-    {% if results %}
-    <div class="preview-box" style="margin-bottom:15px; border:1px solid #ccc; padding:10px;">
-        <h4>Preview Parsed Timetables</h4>
-        {% for res in results %}
-            <div style="margin-bottom:10px; padding:6px; border-bottom:1px dashed #999;">
-                <strong>Filename:</strong> {{ res.filename }} <br>
-                <strong>Lecturer:</strong> {{ res.lecturer }} <br>
-                <strong>Title:</strong> {{ res.title }} <br>
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
     {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
