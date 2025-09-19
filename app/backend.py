@@ -211,7 +211,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     # Validate practical lecturer
     practical_user = User.query.filter_by(userId=practical.upper() if practical else None).first()
     if not practical_user:
-        print(f"[Missing Lecturer] Practical: {practical}")
         practical = None
     else:
         practical = practical.upper()
@@ -219,7 +218,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     # Validate tutorial lecturer
     tutorial_user = User.query.filter_by(userId=tutorial.upper() if tutorial else None).first()
     if not tutorial_user:
-        print(f"[Missing Lecturer] Tutorial: {tutorial}")
         tutorial = None
     else:
         tutorial = tutorial.upper()

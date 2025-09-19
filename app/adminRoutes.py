@@ -383,6 +383,7 @@ def admin_manageCourse():
                                         students=int(courseStudent_text)
                                     )
                                     course_records_added += 1
+                                    flash(f"coursePractical_text, courseTutorial_text", "success")
 
                                 except Exception as row_err:
                                     db.session.rollback()  # reset failed transaction
