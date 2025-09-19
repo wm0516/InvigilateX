@@ -23,7 +23,7 @@
             <div class="tab-nav">
                 <a href="{{ url_for('admin_homepage') }}" class="tab-link {% if active_tab == 'admin_hometab' %}active{% endif %}">
                     <i class="fas fa-house"></i>
-                    <span>Home</span>
+                    <span>(D)Home</span>
                 </a>
                 <a href="{{ url_for('admin_manageCourse') }}" class="tab-link {% if active_tab == 'admin_manageCoursetab' %}active{% endif %}">
                     <i class="fas fa-book-open"></i>
@@ -47,7 +47,7 @@
                 </a>
                 <a href="{{ url_for('admin_manageTimetable') }}" class="tab-link {% if active_tab == 'admin_manageTimetabletab' %}active{% endif %}">
                     <i class="fas fa-calendar-days"></i>
-                    <span>Manage Timetable</span>
+                    <span>(D)Manage Timetable</span>
                 </a>
                 <a href="{{ url_for('admin_manageInvigilationTimetable') }}" class="tab-link {% if active_tab == 'admin_manageInvigilationTimetabletab' %}active{% endif %}">
                     <i class="fas fa-business-time"></i>

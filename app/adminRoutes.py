@@ -304,7 +304,7 @@ def save_timetable_to_db(structured):
 # Function for Admin ManageCourse Route
 # -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
-def admin_manageCourse():
+def admin_manageCourse():   
     course_data = Course.query.all()
     department_data = Department.query.all()
 
