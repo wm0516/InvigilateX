@@ -573,6 +573,7 @@ def admin_manageExam():
     exam_data = Exam.query.filter(Exam.examId.isnot(None), Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
+            Exam.examId.isnot(None),
             Exam.examStartTime.is_(None),          # Exam start time is NULL
             Exam.examEndTime.is_(None)             # Exam end time is NULL
         )
