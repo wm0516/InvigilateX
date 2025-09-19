@@ -331,7 +331,6 @@ def admin_manageCourse():
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     course_records_added = 0
-                    missing_lecturers = set()  # track lecturers not found
 
                     for sheet_name in excel_file.sheet_names:
                         print("Excel Sheets:", excel_file.sheet_names)
@@ -446,8 +445,6 @@ def admin_manageCourse():
                 students=int(courseStudent_text)
             )
             flash(f"{coursePractical_text}, {courseTutorial_text}", "success")
-
-
             flash("New Course Added Successfully", "success")
             return redirect(url_for('admin_manageCourse'))
 

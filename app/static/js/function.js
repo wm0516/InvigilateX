@@ -377,12 +377,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(data => {
                     data.forEach(lecturer => {
                         const practicalOption = document.createElement('option');
-                        practicalOption.value = lecturer.userId;
+                        practicalOption.value = lecturer.userName;
                         practicalOption.textContent = lecturer.userName;
                         practicalSelect.appendChild(practicalOption);
 
                         const tutorialOption = document.createElement('option');
-                        tutorialOption.value = lecturer.userId;
+                        tutorialOption.value = lecturer.userName;
                         tutorialOption.textContent = lecturer.userName;
                         tutorialSelect.appendChild(tutorialOption);
                     });
