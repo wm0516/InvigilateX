@@ -570,7 +570,7 @@ def admin_manageVenue():
 def admin_manageExam():
     department_data = Department.query.all() # For department code dropdown
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
-    exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
+    exam_data = Exam.query.filter(Exam.examId.isnot(None), Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
             Exam.examStartTime.is_(None),          # Exam start time is NULL
