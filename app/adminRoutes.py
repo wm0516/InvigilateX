@@ -792,19 +792,13 @@ def get_course_details(program_code, course_code_section):
 
 # Extract Base Name + Timestamp
 def extract_base_name_and_timestamp(file_name):
-    """
-    Extract lecturer's base name and optional timestamp from a filename.
-    Example:
-        Mr. Krishnamoorthy.pdf                -> ("Mr. Krishnamoorthy", None)
-        Mr. Krishnamoorthy_140425 onwards.pdf -> ("Mr. Krishnamoorthy", datetime(2025, 4, 14))
-    """
     pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
     if not match:
         return None, None
 
-    base_name = match.group(1).strip()
+    base_name = match.group(1)
     timestamp_str = match.group(2)
 
     timestamp = None
@@ -813,12 +807,11 @@ def extract_base_name_and_timestamp(file_name):
             timestamp = datetime.strptime(timestamp_str, "%d%m%y")
         except ValueError:
             return None, None
-
-    # 🔑 Normalize: remove " onwards", trim spaces
-    base_name = re.sub(r"\s+onwards$", "", base_name, flags=re.IGNORECASE).strip()
+    else:
+        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        base_name = file_name[:-4]
 
     return base_name, timestamp
-
 
 
 # Activity Parsing
