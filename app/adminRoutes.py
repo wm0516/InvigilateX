@@ -352,7 +352,7 @@ def admin_manageCourse():
 
                             for col in df.columns:
                                 df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
-
+                            
                             missing_lecturers = set()  # track lecturers not found
 
                             for index, row in df.iterrows():
@@ -376,7 +376,7 @@ def admin_manageCourse():
                                     if not tutorial_user:
                                         missing_lecturers.add(courseTutorial_text)
 
-                                    # Save course anyway (use None for missing lecturers)
+                                    # Save course anyway
                                     create_course_and_exam(
                                         department=courseDepartment_text,
                                         code=courseCode_text,
@@ -392,19 +392,23 @@ def admin_manageCourse():
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
 
+
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
                     if course_records_added > 0:
                         flash(f"Successfully uploaded {course_records_added} record(s)", 'success')
-                        if missing_lecturers:
-                            missing_html = "<span style='color: red;'>Missing lecturers (not in User DB): " + ", ".join(missing_lecturers) + "</span>"
-                            flash(missing_html, 'danger')
+                        return render_template(
+                            'admin/adminManageCourse.html',
+                            active_tab='admin_manageCoursetab',
+                            course_data=Course.query.all(),
+                            department_data=Department.query.all(),
+                            missing_lecturers=missing_lecturers
+                        )
                     else:
                         flash("No data uploaded", 'error')
-
-                    return redirect(url_for('admin_manageCourse'))
-
+                        return redirect(url_for('admin_manageCourse'))
+                    
                 except Exception as e:
                     print(f"[File Processing Error] {e}")
                     flash('File processing error: File upload in wrong format', 'error')
