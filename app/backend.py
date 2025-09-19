@@ -201,23 +201,27 @@ def check_course(code, section, hour, students):
 
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
-    practical_user = User.query.filter_by(userId=practical).first()
-    tutorial_user = User.query.filter_by(userId=tutorial).first()
+    practical_user = User.query.filter_by(userId=practical.upper() if practical else None).first()
+    tutorial_user = User.query.filter_by(userId=tutorial.upper() if tutorial else None).first()
 
     if not practical_user:
         print(f"[Missing Lecturer] Practical: {practical}")
-        practical = None  # Or handle differently
+        practical = None
+    else:
+        practical = practical.upper()
+
     if not tutorial_user:
         print(f"[Missing Lecturer] Tutorial: {tutorial}")
         tutorial = None
+    else:
+        tutorial = tutorial.upper()
 
-    course_code_section = f"{code}/{section}"   
     new_course = Course(
-        courseCodeSection=course_code_section,
-        courseDepartment=department,
-        courseCode=code,
-        courseSection=section,
-        courseName=name,
+        courseCodeSection=f"{code}/{section}".upper(),
+        courseDepartment=department.upper() if department else None,
+        courseCode=code.upper() if code else None,
+        courseSection=section.upper() if section else None,
+        courseName=name.upper() if name else None,
         courseHour=hour,
         courseStudent=students,
         coursePractical=practical,
@@ -225,6 +229,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     )
     db.session.add(new_course)
     db.session.commit()
+
 
 
 
