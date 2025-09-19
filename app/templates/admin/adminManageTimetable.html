@@ -117,36 +117,33 @@
                     {% set skip_slots = [] %}
 
                     {% for time in time_slots %}
-                        {% if time in skip_slots %}
-                            {# skip this time slot because it's already merged #}
-                            {% continue %}
-                        {% endif %}
+                        {% if time not in skip_slots %}
+                            {% set cell_rendered = false %}
+                            {% for row in timetable_data %}
+                                {% if (not selected_lecturer or row.lecturerName == selected_lecturer) 
+                                    and row.classDay == day 
+                                    and row.classTime %}
+                                    {% set start_time = row.classTime.split('-')[0] %}
+                                    {% set end_time = row.classTime.split('-')[1] %}
 
-                        {% set cell_rendered = false %}
-                        {% for row in timetable_data %}
-                            {% if (not selected_lecturer or row.lecturerName == selected_lecturer) 
-                                and row.classDay == day 
-                                and row.classTime %}
-                                {% set start_time = row.classTime.split('-')[0] %}
-                                {% set end_time = row.classTime.split('-')[1] %}
-
-                                {% if time == start_time %}
-                                    <td colspan="{{ row.span }}">
-                                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                            <strong>{{ row.lecturerName }}</strong><br>
-                                            <strong>[{{ row.classType }}]</strong><br>
-                                            {{ row.courseName }}<br>
-                                            Room: {{ row.classRoom }}
-                                        </div>
-                                    </td>
-                                    {% set skip_slots = time_slots[time_slots.index(time)+1 : time_slots.index(time)+row.span] %}
-                                    {% set cell_rendered = true %}
+                                    {% if time == start_time %}
+                                        <td colspan="{{ row.span }}">
+                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                                <strong>{{ row.lecturerName }}</strong><br>
+                                                <strong>[{{ row.classType }}]</strong><br>
+                                                {{ row.courseName }}<br>
+                                                Room: {{ row.classRoom }}
+                                            </div>
+                                        </td>
+                                        {% set skip_slots = time_slots[time_slots.index(time)+1 : time_slots.index(time)+row.span] %}
+                                        {% set cell_rendered = true %}
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        {% endfor %}
+                            {% endfor %}
 
-                        {% if not cell_rendered %}
-                            <td></td>
+                            {% if not cell_rendered %}
+                                <td></td>
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
                 </tr>
