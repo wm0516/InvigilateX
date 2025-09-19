@@ -147,17 +147,15 @@
                 {% for row in exam_data %}
                     <tr>
                         <td>{{ loop.index }}</td>
-
-                        <!-- Course Details -->
                         <td>
                             Course Name        : {{ row.course.courseName }} <br>
                             Course Code/Section: {{ row.course.courseCodeSection }}<br>
                             Program Code       : {{ row.course.courseDepartment }} <br>
                             Number of Students : {{ row.course.courseStudent }} <br>
-                            Practical Lecturer : {{ row.course.practicalLecturer.userName }} <br>
-                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName }}
-                        </td>
+                            Practical Lecturer : {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }} <br>
+                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}
 
+                        </td>
                         <td>[{{ row.examId }}]</td>
 
                         <!-- Exam Details -->

@@ -573,12 +573,10 @@ def admin_manageExam():
     exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
-            Course.courseExamId.isnot(None),       # Must have an associated exam
             Exam.examStartTime.is_(None),          # Exam start time is NULL
             Exam.examEndTime.is_(None)             # Exam end time is NULL
         )
     ).all()
-
 
     # Default values for manual form
     courseSection_text = ''
