@@ -790,6 +790,9 @@ def get_course_details(program_code, course_code_section):
 
 
 
+# -------------------------------
+# Extract Base Name + Timestamp
+# -------------------------------
 def extract_base_name_and_timestamp(file_name):
     pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
@@ -807,27 +810,25 @@ def extract_base_name_and_timestamp(file_name):
         except ValueError:
             return None, None
     else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name to avoid grouping distinct files
+        # If no timestamp, treat the full filename (minus .pdf) as base_name
         base_name = file_name[:-4]
 
     return base_name, timestamp
 
 
+# -------------------------------
+# Activity Parsing
+# -------------------------------
 def parse_activity(line):
-    """Parse one activity line into structured data."""
     activity = {}
-
-    # Class type (LECTURE/TUTORIAL/PRACTICAL)
     m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
     if m_type:
         activity["class_type"] = m_type.group(1)
 
-    # Time
     m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
     if m_time:
         activity["time"] = m_time.group(1)
 
-    # Weeks and date range
     m_weeks = re.search(r"WEEKS:([^C]+)", line)
     if m_weeks:
         weeks_data = m_weeks.group(1).split(",")
@@ -837,12 +838,10 @@ def parse_activity(line):
         else:
             activity["weeks_range"] = weeks_data
 
-    # Course name
     m_course = re.search(r"COURSES:([^;]+);", line)
     if m_course:
         activity["course"] = m_course.group(1)
 
-    # Sections
     m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
     if m_sections:
         sections = m_sections.group(1).strip(";").split(";")
@@ -856,7 +855,6 @@ def parse_activity(line):
                     "section": sec_name
                 })
 
-    # Room
     m_room = re.search(r"ROOMS:([^;]+);", line)
     if m_room:
         activity["room"] = m_room.group(1)
@@ -864,12 +862,12 @@ def parse_activity(line):
     return activity
 
 
+# -------------------------------
+# Parse Timetable
+# -------------------------------
 def parse_timetable(raw_text):
-    """Extract timetable info from raw PDF text."""
-    # Step 1: Remove all whitespace
     text_no_whitespace = re.sub(r"\s+", "", raw_text)
 
-    # Step 2: Extract name before uppercasing
     lecturer_name = None
     title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
     if title_match:
@@ -879,27 +877,19 @@ def parse_timetable(raw_text):
         title_raw = ""
         timerow = ""
 
-    # Step 3: Extract and format the name
     name_match = re.search(r"-([^-()]+)\(", title_raw)
     if name_match:
         raw_name = name_match.group(1)
         formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-
-        # Fix common Malaysian abbreviations
-        formatted_name = formatted_name.replace("A/ P", "A/P")
-        formatted_name = formatted_name.replace("A/ L", "A/L")
+        formatted_name = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
         lecturer_name = formatted_name
     else:
         lecturer_name = "UNKNOWN"
 
-    # Step 4: Replace name inside the text
     if lecturer_name != "UNKNOWN":
         text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
 
-    # Step 5: Convert to UPPERCASE
     text = text_no_whitespace.upper()
-
-    # Step 6: Extract title and timerow again
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
     if match_title:
         title = match_title.group(1).strip()
@@ -908,23 +898,16 @@ def parse_timetable(raw_text):
     else:
         title = "TIMETABLE"
 
-    # Insert days with blank line
     days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
     for day in days:
         text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
 
-    # Break activities
-    keywords = ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]
-    for kw in keywords:
-        if kw == "PUBLISHED":
-            text = re.sub(kw, f"\n\n{kw}", text, flags=re.IGNORECASE)
-        else:
-            text = re.sub(kw, f"\n{kw}", text, flags=re.IGNORECASE)
+    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
+        sep = "\n\n" if kw == "PUBLISHED" else "\n"
+        text = re.sub(kw, f"{sep}{kw}", text, flags=re.IGNORECASE)
 
-    # Clean blank lines
     text = re.sub(r"\n{3,}", "\n\n", text)
 
-    # Build structured JSON
     structured = {
         "title": title,
         "lecturer": lecturer_name,
@@ -946,8 +929,10 @@ def parse_timetable(raw_text):
     return structured
 
 
+# -------------------------------
+# Save to DB
+# -------------------------------
 def save_timetable_to_db(structured):
-    # Collect all new entries first
     new_entries = []
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
@@ -956,12 +941,10 @@ def save_timetable_to_db(structured):
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
                 continue
-
             if act.get("sections"):
                 for sec in act["sections"]:
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
-
                     new_entries.append({
                         "filename": filename,
                         "lecturerName": lecturer,
@@ -977,33 +960,23 @@ def save_timetable_to_db(structured):
                         "classWeekDate": act.get("weeks_date"),
                     })
 
-    # Delete only matching existing rows for this lecturer
-    for entry in new_entries:
-        Timetable.query.filter_by(
-            filename=entry["filename"],
-            lecturerName=entry["lecturerName"],
-            classType=entry["classType"],
-            classDay=entry["classDay"],
-            classTime=entry["classTime"],
-            classRoom=entry["classRoom"],
-            courseIntake=entry["courseIntake"],
-            courseCode=entry["courseCode"],
-            courseSection=entry["courseSection"]
-        ).delete()
+    # Bulk delete all rows for this lecturer before insert
+    Timetable.query.filter_by(lecturerName=lecturer).delete()
 
-    # Add new rows
     for entry in new_entries:
         row = Timetable(**entry)
         db.session.add(row)
 
     db.session.commit()
+    return len(new_entries)
 
 
+# -------------------------------
+# Admin Route
+# -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    timetable_data = Timetable.query.all()
-
-    # Collect unique lecturers for dropdown
+    timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
@@ -1013,8 +986,10 @@ def admin_manageTimetable():
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
-            total_files_read = len(all_files)   
+            total_files_read = len(all_files)
+
             latest_files = {}
+            skipped_files = []
 
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
@@ -1026,7 +1001,10 @@ def admin_manageTimetable():
                 else:
                     existing_timestamp, existing_file = latest_files[base_name]
                     if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
+                        skipped_files.append(existing_file.filename)
                         latest_files[base_name] = (timestamp, file)
+                    else:
+                        skipped_files.append(file.filename)
 
             filtered_filenames = [file.filename for (_, file) in latest_files.values()]
             total_files_filtered = len(filtered_filenames)
@@ -1037,29 +1015,19 @@ def admin_manageTimetable():
 
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
-                raw_text = ""
-                for page in reader.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        raw_text += page_text + " "
+                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
 
                 structured = parse_timetable(raw_text)
                 structured['filename'] = file.filename
                 results.append(structured)
 
-                # Save to DB and count rows
-                before_count = Timetable.query.count()
-                save_timetable_to_db(structured)
-                after_count = Timetable.query.count()
-                total_rows_inserted += (after_count - before_count)
-
-                # Store last uploaded lecturer (just for display)
+                rows_inserted = save_timetable_to_db(structured)
+                total_rows_inserted += rows_inserted
                 selected_lecturer_name = structured.get("lecturer")
 
             flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
-            # Refresh timetable after update
-            timetable_data = Timetable.query.all()
+            timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
 
             return render_template(
@@ -1074,10 +1042,10 @@ def admin_manageTimetable():
                     "files_uploaded": all_files,
                     "total_files_after_filter": total_files_filtered,
                     "files_after_filter": filtered_filenames,
+                    "files_skipped": skipped_files
                 }
             )
 
-    # GET request
     return render_template(
         'admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
@@ -1085,12 +1053,5 @@ def admin_manageTimetable():
         lecturers=lecturers,
         selected_lecturer=selected_lecturer
     )
-
-
-
-
-
-
-
 
 
