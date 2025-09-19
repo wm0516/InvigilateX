@@ -789,10 +789,24 @@ def get_course_details(program_code, course_code_section):
 
 
 
+import re
+from datetime import datetime
+import PyPDF2
+from flask import (
+    Flask, render_template, request, flash, redirect, url_for
+)
+from yourapp import db
+from yourapp.models import Timetable
 
+app = Flask(__name__)
+app.secret_key = "your_secret_key"
+
+
+# -------------------------------
 # Extract Base Name + Timestamp
+# -------------------------------
 def extract_base_name_and_timestamp(file_name):
-    # Match base name + optional _DDMMYY
+    """Extract base name + optional _DDMMYY"""
     pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
@@ -804,15 +818,18 @@ def extract_base_name_and_timestamp(file_name):
         except ValueError:
             timestamp = None
     else:
-        # Remove ".pdf" and ignore trailing " extra text"
         base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
         timestamp = None
 
     return base_name, timestamp
 
-# Activity Parsing
+
+# -------------------------------
+# Parse Activity Line
+# -------------------------------
 def parse_activity(line):
     activity = {}
+
     m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
     if m_type:
         activity["class_type"] = m_type.group(1)
@@ -853,30 +870,35 @@ def parse_activity(line):
 
     return activity
 
-# Parse Timetable
+
+# -------------------------------
+# Parse Timetable Text
+# -------------------------------
 def parse_timetable(raw_text):
     text_no_whitespace = re.sub(r"\s+", "", raw_text)
 
-    lecturer_name = None
+    lecturer_name = "UNKNOWN"
+    timerow = ""
+
+    # Try extract title/timerow
     title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
     if title_match:
         title_raw = title_match.group(1)
         timerow = title_match.group(2)
     else:
         title_raw = ""
-        timerow = ""
 
-    name_match = re.search(r"-([^-()]+)\(", title_raw)
-    if name_match:
-        raw_name = name_match.group(1)
-        formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-        formatted_name = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
-        lecturer_name = formatted_name
-    else:
-        lecturer_name = "UNKNOWN"
-
-    if lecturer_name != "UNKNOWN":
-        text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
+    # Extract lecturer name
+    try:
+        name_match = re.search(r"-([^-()]+)\(", title_raw)
+        if name_match:
+            raw_name = name_match.group(1)
+            formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
+            formatted_name = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
+            lecturer_name = formatted_name
+            text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
+    except Exception:
+        pass
 
     text = text_no_whitespace.upper()
     match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
@@ -917,7 +939,10 @@ def parse_timetable(raw_text):
 
     return structured
 
-# Save to DB
+
+# -------------------------------
+# Save Parsed Timetable to DB
+# -------------------------------
 def save_timetable_to_db(structured):
     new_entries = []
     lecturer = structured.get("lecturer")
@@ -947,16 +972,19 @@ def save_timetable_to_db(structured):
                     })
 
     # Bulk delete all rows for this lecturer before insert
-    Timetable.query.filter_by(lecturerName=lecturer).delete()
+    if lecturer:
+        Timetable.query.filter_by(lecturerName=lecturer).delete()
 
     for entry in new_entries:
-        row = Timetable(**entry)
-        db.session.add(row)
+        db.session.add(Timetable(**entry))
 
     db.session.commit()
     return len(new_entries)
 
+
+# -------------------------------
 # Admin Route
+# -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
@@ -1027,16 +1055,13 @@ def admin_manageTimetable():
                 }
             )
 
+    # ---- Default GET rendering ----
     return render_template(
         'admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
         timetable_data=timetable_data,
         lecturers=lecturers,
-        selected_lecturer=selected_lecturer
+        selected_lecturer=selected_lecturer,
+        results=[],                  # avoid UndefinedError
+        upload_summary=None          # avoid UndefinedError
     )
-
-
-
-
-
-
