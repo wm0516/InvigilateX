@@ -330,6 +330,7 @@ def admin_manageCourse():
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     course_records_added = 0
+                    missing_lecturers = set()  # track lecturers not found
 
                     for sheet_name in excel_file.sheet_names:
                         print("Excel Sheets:", excel_file.sheet_names)
@@ -338,11 +339,16 @@ def admin_manageCourse():
                                 excel_file,
                                 sheet_name=sheet_name,
                                 usecols="A:H",
-                                skiprows=1  
+                                skiprows=1
                             )
 
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
+                            expected_cols = [
+                                'department code', 'course code', 'course section',
+                                'course name', 'credit hour',
+                                'practical lecturer', 'tutorial lecturer',
+                                'no of students'
+                            ]
                             print(f"\n[Sheet: {sheet_name}] Preview:")
                             print(df.head())
                             print("Detected columns:", df.columns.tolist())
@@ -351,9 +357,7 @@ def admin_manageCourse():
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
                             for col in df.columns:
-                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
-                            
-                            missing_lecturers = set()  # track lecturers not found
+                                df[col] = df[col].apply(lambda x: str(x).strip() if isinstance(x, str) else x)
 
                             for index, row in df.iterrows():
                                 try:
@@ -366,49 +370,38 @@ def admin_manageCourse():
                                     courseTutorial_text = str(row['tutorial lecturer']).upper()
                                     courseStudent_text = row['no of students']
 
-                                    # Look up lecturers
-                                    practical_user = User.query.filter_by(userName=coursePractical_text).first()
-                                    tutorial_user  = User.query.filter_by(userName=courseTutorial_text).first()
-
-                                    # Collect missing lecturers
-                                    if not practical_user:
-                                        missing_lecturers.add(coursePractical_text)
-                                    if not tutorial_user:
-                                        missing_lecturers.add(courseTutorial_text)
-
-                                    # Save course anyway
+                                    # Pass values directly; create_course_and_exam will handle lookups
                                     create_course_and_exam(
                                         department=courseDepartment_text,
                                         code=courseCode_text,
                                         section=courseSection_text,
                                         name=courseName_text,
                                         hour=int(courseHour_text),
-                                        practical=practical_user.userId if practical_user else None,
-                                        tutorial=tutorial_user.userId if tutorial_user else None,
+                                        practical_name=coursePractical_text,
+                                        tutorial_name=courseTutorial_text,
                                         students=int(courseStudent_text)
                                     )
                                     course_records_added += 1
 
                                 except Exception as row_err:
+                                    db.session.rollback()  # reset failed transaction
                                     print(f"[Row Error] {row_err}")
-
 
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
                     if course_records_added > 0:
                         flash(f"Successfully uploaded {course_records_added} record(s)", 'success')
-                        return render_template(
-                            'admin/adminManageCourse.html',
-                            active_tab='admin_manageCoursetab',
-                            course_data=Course.query.all(),
-                            department_data=Department.query.all(),
-                            missing_lecturers=missing_lecturers
-                        )
                     else:
                         flash("No data uploaded", 'error')
-                        return redirect(url_for('admin_manageCourse'))
-                    
+
+                    return render_template(
+                        'admin/adminManageCourse.html',
+                        active_tab='admin_manageCoursetab',
+                        course_data=Course.query.all(),
+                        department_data=Department.query.all()
+                    )
+
                 except Exception as e:
                     print(f"[File Processing Error] {e}")
                     flash('File processing error: File upload in wrong format', 'error')
@@ -416,6 +409,7 @@ def admin_manageCourse():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageCourse'))
+
 
         # --------------------- DASHBOARD FORM ---------------------
         elif form_type == 'dashboard':
@@ -446,8 +440,8 @@ def admin_manageCourse():
                 section=courseSection_text,
                 name=courseName_text,
                 hour=int(courseHour_text),
-                practical=coursePractical_text,
-                tutorial=courseTutorial_text,
+                practical_name=coursePractical_text,
+                tutorial_name=courseTutorial_text,
                 students=int(courseStudent_text)
             )
 

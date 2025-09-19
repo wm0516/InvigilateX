@@ -200,10 +200,14 @@ def check_course(code, section, hour, students):
 
 
 # Creates a new Exam and Course entry in the database.
-def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+def create_course_and_exam(department, code, section, name, hour, practical_name, tutorial_name, students):
     course_code_section = f"{code}/{section}"
 
-    # 1. Create Exam
+    # 1. Try to resolve users
+    practical_user = User.query.filter_by(userName=practical_name.upper()).first() if practical_name else None
+    tutorial_user = User.query.filter_by(userName=tutorial_name.upper()).first() if tutorial_name else None
+
+    # 2. Create Exam
     new_exam = Exam(
         examVenue=None,
         examStartTime=None,
@@ -213,7 +217,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     db.session.add(new_exam)
     db.session.flush()
 
-    # 2. Create and add the Course
+    # 3. Save Course (always keep the original Excel values in coursePracticalName/tutorialName)
     new_course = Course(
         courseDepartment=department.upper(),
         courseCodeSection=course_code_section.upper(),
@@ -221,13 +225,16 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         courseSection=section.upper(),
         courseName=name.upper(),
         courseHour=hour,
-        coursePractical=practical,   # <-- userId or None
-        courseTutorial=tutorial,     # <-- userId or None
+        coursePractical=practical_user.userId if practical_user else None,
+        courseTutorial=tutorial_user.userId if tutorial_user else None,
+        coursePracticalName=practical_name.upper() if practical_name else None,
+        courseTutorialName=tutorial_name.upper() if tutorial_name else None,
         courseStudent=students,
         courseExamId=new_exam.examId
     )
     db.session.add(new_course)
     db.session.commit()
+
 
 
 

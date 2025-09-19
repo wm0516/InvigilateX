@@ -139,18 +139,14 @@
                     <td>[{{ row.courseExamId }}]</td>
                     <td>
                         Practical Lecturer:
-                        <span {% if row.practicalLecturer is none and row.coursePractical in missing_lecturers %}
-                                style="border:2px solid red; padding:2px;"
-                            {% endif %}>
-                            {{ row.practicalLecturer.userName if row.practicalLecturer else row.coursePractical }}
+                        <span {% if row.practicalLecturer is none %} style="border:2px solid red; padding:2px;" {% endif %}>
+                            {{ row.practicalLecturer.userName if row.practicalLecturer else row.coursePracticalName }}
                         </span>
                         <br>
 
                         Tutorial Lecturer:
-                        <span {% if row.tutorialLecturer is none and row.courseTutorial in missing_lecturers %}
-                                style="border:2px solid red; padding:2px;"
-                            {% endif %}>
-                            {{ row.tutorialLecturer.userName if row.tutorialLecturer else row.courseTutorial }}
+                        <span {% if row.tutorialLecturer is none %} style="border:2px solid red; padding:2px;" {% endif %}>
+                            {{ row.tutorialLecturer.userName if row.tutorialLecturer else row.courseTutorialName }}
                         </span>
                     </td>
                     <td>[{{ row.courseStudent }}]</td>

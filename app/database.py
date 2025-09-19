@@ -141,13 +141,17 @@ class VenueAvailability(db.Model):
     );
     '''
 
+
 class Course(db.Model):
     __tablename__ = 'Course'
-    courseCodeSection = db.Column(db.String(20), primary_key=True)                                               # [PK] Refer to CourseCodeSection
+    courseCodeSection = db.Column(db.String(20), primary_key=True)                                              # [PK] Refer to CourseCodeSection
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=True)      # [FK] Refer to CourseDepartment
     coursePractical = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)                     # [FK ]Refer to Course Practical Lecturer
     courseTutorial = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)                      # [FK] Refer to Course Tutorial Lecturer
-    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=True)                            # Refer to courseExamStatus whether have exam or not
+    # Store original text from Excel (can always display this)          
+    coursePracticalName = db.Column(db.String(255), nullable=True)                                               # Temporary store the value read from Excel
+    courseTutorialName = db.Column(db.String(255), nullable=True)                                                # Temporary store the value read from Excel
+    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=True)                           # Refer to courseExamStatus whether have exam or not
     courseCode = db.Column(db.String(10), nullable=True)                                                        # Refer to CourseCode
     courseSection = db.Column(db.String(10), nullable=True)                                                     # Refer to CourseSection
     courseName = db.Column(db.String(50), nullable=True)                                                        # Refer to CourseName
@@ -170,6 +174,8 @@ class Course(db.Model):
         courseDepartment VARCHAR(10) NULL,
         coursePractical VARCHAR(20) NULL,
         courseTutorial VARCHAR(20) NULL,
+        coursePracticalName VARCHAR(255) NULL,
+        courseTutorialName VARCHAR(255) NULL,
         courseExamId INT NULL,
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
