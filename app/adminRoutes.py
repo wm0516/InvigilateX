@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, Response
+from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from app import app
 from .backend import *
 from .database import *
@@ -9,16 +9,8 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 import traceback
 import os
-import io
-import json
-from PyPDF2 import PdfReader
 import re
 import PyPDF2
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-from googleapiclient.http import MediaIoBaseDownload
-
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -28,10 +20,49 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+# -------------------------------
+# Handle Timeline Read From ExcelFile
+# -------------------------------
+def parse_date(val):
+    if isinstance(val, datetime):
+        return val.date()
+    try:
+        # Format from HTML5 input: "YYYY-MM-DD"
+        return datetime.strptime(str(val), "%Y-%m-%d").date()
+    except ValueError:
+        try:
+            return datetime.strptime(str(val), "%m/%d/%Y").date()
+        except Exception:
+            print(f"[Date Parse Error] Could not parse: {val}")
+            return None
 
+# -------------------------------
+# Handle Timeline Read From ExcelFile And Convert To The Correct Format
+# -------------------------------
+def standardize_time_with_seconds(time_value):
+    """
+    Convert input time (string or datetime.time/datetime) to HH:MM:SS string format.
+    """
+    if isinstance(time_value, time):
+        return time_value.strftime("%H:%M:%S")
+    elif isinstance(time_value, datetime):
+        return time_value.strftime("%H:%M:%S")
+    elif isinstance(time_value, str):
+        # Try multiple formats
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):  # Handle 12-hour format with AM/PM
+            try:
+                dt = datetime.strptime(time_value.strip(), fmt)
+                return dt.strftime("%H:%M:%S")  # Convert to 24-hour format (HH:MM:SS)
+            except ValueError:
+                continue
+        print(f"[Time Parse Error] Could not parse: {time_value}")
+        return None
+    else:
+        return None
 
-
-
+# -------------------------------
+# Read All InvigilationAttendance Data From Database
+# -------------------------------
 def get_all_attendances():
     return (
         InvigilatorAttendance.query
@@ -40,21 +71,256 @@ def get_all_attendances():
         .all()
     )
 
+# -------------------------------
+# Read All LecturerName Under The Selected Department For ManageCoursePage
+# -------------------------------
+@app.route('/get_lecturers_by_department/<department_code>')
+def get_lecturers_by_department(department_code):
+    # Ensure case-insensitive match if needed
+    print(f"User Department Code is: {department_code}")
+    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
+    lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
+    return jsonify(lecturers_list)  
 
-# function for admin manage invigilation timetable for all lecturer based on their availability (adding, editing, and removing)
+# -------------------------------
+# Read All Course Under The Selected Department For ManageExamPage
+# -------------------------------
+@app.route('/get_courses_by_department/<department_code>')
+def get_courses_by_department(department_code):
+    courses = (
+        Course.query
+        .join(Exam)
+        .filter(
+            Course.courseDepartment == department_code,
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None)
+        )
+        .all()
+    )
+
+    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
+    return jsonify(course_list)
+
+# -------------------------------
+# Read All CourseDetails Under The Selected Department For ManageExamPage
+# -------------------------------
+@app.route('/get_course_details/<program_code>/<path:course_code_section>')
+def get_course_details(program_code, course_code_section):
+    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
+    selected_course = Course.query.filter_by(
+        courseDepartment=program_code,
+        courseCodeSection=course_code_section
+    ).first()
+    if selected_course:
+        return jsonify({
+            "practicalLecturer": selected_course.coursePractical,
+            "tutorialLecturer": selected_course.courseTutorial,
+            "student": selected_course.courseStudent
+        })
+    return jsonify({"error": "Course not found"})
+
+# -------------------------------
+# Extract Base Name + Timestamp
+# -------------------------------
+def extract_base_name_and_timestamp(file_name):
+    """Extract base name + optional _DDMMYY"""
+    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
+
+    if match:
+        base_name = match.group(1).strip()
+        timestamp_str = match.group(2)
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            timestamp = None
+    else:
+        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
+        timestamp = None
+
+    return base_name, timestamp
+
+# -------------------------------
+# Parse Activity Line
+# -------------------------------
+def parse_activity(line):
+    activity = {}
+
+    m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
+    if m_type:
+        activity["class_type"] = m_type.group(1)
+
+    m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
+    if m_time:
+        activity["time"] = m_time.group(1)
+
+    m_weeks = re.search(r"WEEKS:([^C]+)", line)
+    if m_weeks:
+        weeks_data = m_weeks.group(1).split(",")
+        if len(weeks_data) > 1:
+            activity["weeks_range"] = weeks_data[:-1]
+            activity["weeks_date"] = weeks_data[-1]
+        else:
+            activity["weeks_range"] = weeks_data
+
+    m_course = re.search(r"COURSES:([^;]+);", line)
+    if m_course:
+        activity["course"] = m_course.group(1)
+
+    m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
+    if m_sections:
+        sections = m_sections.group(1).strip(";").split(";")
+        activity["sections"] = []
+        for sec in sections:
+            if "|" in sec:
+                intake, code, sec_name = sec.split("|")
+                activity["sections"].append({
+                    "intake": intake,
+                    "course_code": code,
+                    "section": sec_name
+                })
+
+    m_room = re.search(r"ROOMS:([^;]+);", line)
+    if m_room:
+        activity["room"] = m_room.group(1)
+
+    return activity
+
+# -------------------------------
+# Parse Timetable Text
+# -------------------------------
+def parse_timetable(raw_text):
+    text_no_whitespace = re.sub(r"\s+", "", raw_text)
+
+    lecturer_name = "UNKNOWN"
+    timerow = ""
+
+    # Try extract title/timerow
+    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
+    if title_match:
+        title_raw = title_match.group(1)
+        timerow = title_match.group(2)
+    else:
+        title_raw = ""
+
+    # Extract lecturer name
+    try:
+        name_match = re.search(r"-([^-()]+)\(", title_raw)
+        if name_match:
+            raw_name = name_match.group(1)
+            formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
+            formatted_name = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
+            lecturer_name = formatted_name
+            text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
+    except Exception:
+        pass
+
+    text = text_no_whitespace.upper()
+    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
+    if match_title:
+        title = match_title.group(1).strip()
+        timerow = match_title.group(2).strip()
+        text = text.replace(title, "").replace(timerow, "")
+    else:
+        title = "TIMETABLE"
+
+    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    for day in days:
+        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
+
+    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
+        sep = "\n\n" if kw == "PUBLISHED" else "\n"
+        text = re.sub(kw, f"{sep}{kw}", text, flags=re.IGNORECASE)
+
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    structured = {
+        "title": title,
+        "lecturer": lecturer_name,
+        "timerow": timerow,
+        "days": {}
+    }
+
+    current_day = None
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line in days:
+            current_day = line
+            structured["days"][current_day] = []
+        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
+            structured["days"][current_day].append(parse_activity(line))
+
+    return structured
+
+# -------------------------------
+# Save Parsed Timetable to DB
+# -------------------------------
+def save_timetable_to_db(structured):
+    new_entries = []
+    lecturer = structured.get("lecturer")
+    filename = structured.get("filename")
+
+    for day, activities in structured["days"].items():
+        for act in activities:
+            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
+                continue
+            if act.get("sections"):
+                for sec in act["sections"]:
+                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
+                        continue
+                    new_entries.append({
+                        "filename": filename,
+                        "lecturerName": lecturer,
+                        "classType": act.get("class_type"),
+                        "classDay": day,
+                        "classTime": act.get("time"),
+                        "classRoom": act.get("room"),
+                        "courseName": act.get("course"),
+                        "courseIntake": sec.get("intake"),
+                        "courseCode": sec.get("course_code"),
+                        "courseSection": sec.get("section"),
+                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        "classWeekDate": act.get("weeks_date"),
+                    })
+
+    # Bulk delete all rows for this lecturer before insert
+    if lecturer:
+        Timetable.query.filter_by(lecturerName=lecturer).delete()
+
+    for entry in new_entries:
+        db.session.add(Timetable(**entry))
+
+    db.session.commit()
+    return len(new_entries)
+
+
+
+
+
+
+
+
+# -------------------------------
+# Function for Admin ManageInviglationTimetable Route
+# -------------------------------
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     attendances = get_all_attendances()
     return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
 
-
-# function for admin manage invigilation report for all lecturers after their inviiglation (adding, editing, and removing)
+# -------------------------------
+# Function for Admin ManageInviglationReport Route
+# -------------------------------
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
 
-
+# -------------------------------
+# Function for Admin ManageDepartment Route
+# -------------------------------
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
@@ -115,8 +381,9 @@ def admin_manageDepartment():
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
 
-
-# Can move those validation into a function then call again
+# -------------------------------
+# Function for Admin ManageProfile Route
+# -------------------------------
 @app.route('/admin/profile', methods=['GET', 'POST'])
 def admin_profile():
     adminId = session.get('user_id')
@@ -151,7 +418,9 @@ def admin_profile():
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
                            admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
 
-
+# -------------------------------
+# Function for Admin ManageVenue Route
+# -------------------------------
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     venue_data = Venue.query.all()
@@ -194,71 +463,93 @@ def admin_manageVenue():
 
     return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
 
+# -------------------------------
+# Function for Admin ManageLecturer Route
+# -------------------------------
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+    lecturers = sorted({row.lecturerName for row in timetable_data})
+    selected_lecturer = request.args.get("lecturer")
 
+    if request.method == "POST":
+        form_type = request.form.get('form_type')
 
+        if form_type == 'upload':
+            files = request.files.getlist("timetable_file[]")
+            all_files = [file.filename for file in files]
+            total_files_read = len(all_files)
 
+            latest_files = {}
+            skipped_files = []
 
+            for file in files:
+                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
+                if not base_name:
+                    continue
 
+                if base_name not in latest_files:
+                    latest_files[base_name] = (timestamp, file)
+                else:
+                    existing_timestamp, existing_file = latest_files[base_name]
+                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
+                        skipped_files.append(existing_file.filename)
+                        latest_files[base_name] = (timestamp, file)
+                    else:
+                        skipped_files.append(file.filename)
 
+            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
+            total_files_filtered = len(filtered_filenames)
 
+            results = []
+            total_rows_inserted = 0
+            selected_lecturer_name = None
 
+            for base_name, (timestamp, file) in latest_files.items():
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
 
+                structured = parse_timetable(raw_text)
+                structured['filename'] = file.filename
+                results.append(structured)
 
+                rows_inserted = save_timetable_to_db(structured)
+                total_rows_inserted += rows_inserted
+                selected_lecturer_name = structured.get("lecturer")
 
+            flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
+            timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+            lecturers = sorted({row.lecturerName for row in timetable_data})
 
+            return render_template(
+                'admin/adminManageTimetable.html',
+                active_tab='admin_manageTimetabletab',
+                timetable_data=timetable_data,
+                results=results,
+                selected_lecturer=selected_lecturer_name,
+                lecturers=lecturers,
+                upload_summary={
+                    "total_files_uploaded": total_files_read,
+                    "total_files_after_filter": total_files_filtered,
+                    "files_after_filter": filtered_filenames
+                }
+            )
 
+    # ---- Default GET rendering ----
+    return render_template(
+        'admin/adminManageTimetable.html',
+        active_tab='admin_manageTimetabletab',
+        timetable_data=timetable_data,
+        lecturers=lecturers,
+        selected_lecturer=selected_lecturer,
+        results=[],                  # avoid UndefinedError
+        upload_summary=None          # avoid UndefinedError
+    )
 
-
-
-
-
-# function for handle date from excel file and read it
-def parse_date(val):
-    if isinstance(val, datetime):
-        return val.date()
-    try:
-        # Format from HTML5 input: "YYYY-MM-DD"
-        return datetime.strptime(str(val), "%Y-%m-%d").date()
-    except ValueError:
-        try:
-            return datetime.strptime(str(val), "%m/%d/%Y").date()
-        except Exception:
-            print(f"[Date Parse Error] Could not parse: {val}")
-            return None
-
-
-def standardize_time_with_seconds(time_value):
-    """
-    Convert input time (string or datetime.time/datetime) to HH:MM:SS string format.
-    """
-    if isinstance(time_value, time):
-        return time_value.strftime("%H:%M:%S")
-    elif isinstance(time_value, datetime):
-        return time_value.strftime("%H:%M:%S")
-    elif isinstance(time_value, str):
-        # Try multiple formats
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):  # Handle 12-hour format with AM/PM
-            try:
-                dt = datetime.strptime(time_value.strip(), fmt)
-                return dt.strftime("%H:%M:%S")  # Convert to 24-hour format (HH:MM:SS)
-            except ValueError:
-                continue
-        print(f"[Time Parse Error] Could not parse: {time_value}")
-        return None
-    else:
-        return None
-
-
-
-
-
-
-
-
-
-
-# Function for admin to manage lecturer, dean, and hop information (adding, editing, and removing)
+# -------------------------------
+# Function for Admin ManageStaff Route
+# -------------------------------
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 def admin_manageStaff():
     user_data = User.query.all()
@@ -414,10 +705,9 @@ def admin_manageStaff():
 
     return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
 
-
-
-
-# Main route
+# -------------------------------
+# Function for Admin ManageCourse Route
+# -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     course_data = Course.query.all()
@@ -547,52 +837,9 @@ def admin_manageCourse():
     # GET request fallback
     return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Function for admin to manage exam information (adding, editing, and removing)
+# -------------------------------
+# Function for Admin ManageExam Route
+# -------------------------------
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     department_data = Department.query.all() # For department code dropdown
@@ -740,324 +987,10 @@ def admin_manageExam():
 
 
 
-# ===== to get the all lecturers only that under the department search for the manage course page =====
-@app.route('/get_lecturers_by_department/<department_code>')
-def get_lecturers_by_department(department_code):
-    # Ensure case-insensitive match if needed
-    print(f"User Department Code is: {department_code}")
-    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
-    lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
-    return jsonify(lecturers_list)  
 
 
-# ===== to get all course that under the department for the manage exam page ====
-@app.route('/get_courses_by_department/<department_code>')
-def get_courses_by_department(department_code):
-    courses = (
-        Course.query
-        .join(Exam)
-        .filter(
-            Course.courseDepartment == department_code,
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None)
-        )
-        .all()
-    )
 
-    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
-    return jsonify(course_list)
 
 
 
-# ===== to get all course details that under the department for the manage exam page ====
-@app.route('/get_course_details/<program_code>/<path:course_code_section>')  # ✅ FIXED HERE
-def get_course_details(program_code, course_code_section):
-    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
-    selected_course = Course.query.filter_by(
-        courseDepartment=program_code,
-        courseCodeSection=course_code_section
-    ).first()
-    if selected_course:
-        return jsonify({
-            "practicalLecturer": selected_course.coursePractical,
-            "tutorialLecturer": selected_course.courseTutorial,
-            "student": selected_course.courseStudent
-        })
-    return jsonify({"error": "Course not found"})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-# -------------------------------
-# Extract Base Name + Timestamp
-# -------------------------------
-def extract_base_name_and_timestamp(file_name):
-    """Extract base name + optional _DDMMYY"""
-    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
-
-    if match:
-        base_name = match.group(1).strip()
-        timestamp_str = match.group(2)
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-        except ValueError:
-            timestamp = None
-    else:
-        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
-        timestamp = None
-
-    return base_name, timestamp
-
-
-# -------------------------------
-# Parse Activity Line
-# -------------------------------
-def parse_activity(line):
-    activity = {}
-
-    m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
-    if m_type:
-        activity["class_type"] = m_type.group(1)
-
-    m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
-    if m_time:
-        activity["time"] = m_time.group(1)
-
-    m_weeks = re.search(r"WEEKS:([^C]+)", line)
-    if m_weeks:
-        weeks_data = m_weeks.group(1).split(",")
-        if len(weeks_data) > 1:
-            activity["weeks_range"] = weeks_data[:-1]
-            activity["weeks_date"] = weeks_data[-1]
-        else:
-            activity["weeks_range"] = weeks_data
-
-    m_course = re.search(r"COURSES:([^;]+);", line)
-    if m_course:
-        activity["course"] = m_course.group(1)
-
-    m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
-    if m_sections:
-        sections = m_sections.group(1).strip(";").split(";")
-        activity["sections"] = []
-        for sec in sections:
-            if "|" in sec:
-                intake, code, sec_name = sec.split("|")
-                activity["sections"].append({
-                    "intake": intake,
-                    "course_code": code,
-                    "section": sec_name
-                })
-
-    m_room = re.search(r"ROOMS:([^;]+);", line)
-    if m_room:
-        activity["room"] = m_room.group(1)
-
-    return activity
-
-
-# -------------------------------
-# Parse Timetable Text
-# -------------------------------
-def parse_timetable(raw_text):
-    text_no_whitespace = re.sub(r"\s+", "", raw_text)
-
-    lecturer_name = "UNKNOWN"
-    timerow = ""
-
-    # Try extract title/timerow
-    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
-    if title_match:
-        title_raw = title_match.group(1)
-        timerow = title_match.group(2)
-    else:
-        title_raw = ""
-
-    # Extract lecturer name
-    try:
-        name_match = re.search(r"-([^-()]+)\(", title_raw)
-        if name_match:
-            raw_name = name_match.group(1)
-            formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-            formatted_name = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
-            lecturer_name = formatted_name
-            text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
-    except Exception:
-        pass
-
-    text = text_no_whitespace.upper()
-    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
-    if match_title:
-        title = match_title.group(1).strip()
-        timerow = match_title.group(2).strip()
-        text = text.replace(title, "").replace(timerow, "")
-    else:
-        title = "TIMETABLE"
-
-    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-    for day in days:
-        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
-
-    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
-        sep = "\n\n" if kw == "PUBLISHED" else "\n"
-        text = re.sub(kw, f"{sep}{kw}", text, flags=re.IGNORECASE)
-
-    text = re.sub(r"\n{3,}", "\n\n", text)
-
-    structured = {
-        "title": title,
-        "lecturer": lecturer_name,
-        "timerow": timerow,
-        "days": {}
-    }
-
-    current_day = None
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if line in days:
-            current_day = line
-            structured["days"][current_day] = []
-        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
-            structured["days"][current_day].append(parse_activity(line))
-
-    return structured
-
-
-# -------------------------------
-# Save Parsed Timetable to DB
-# -------------------------------
-def save_timetable_to_db(structured):
-    new_entries = []
-    lecturer = structured.get("lecturer")
-    filename = structured.get("filename")
-
-    for day, activities in structured["days"].items():
-        for act in activities:
-            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
-                continue
-            if act.get("sections"):
-                for sec in act["sections"]:
-                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
-                        continue
-                    new_entries.append({
-                        "filename": filename,
-                        "lecturerName": lecturer,
-                        "classType": act.get("class_type"),
-                        "classDay": day,
-                        "classTime": act.get("time"),
-                        "classRoom": act.get("room"),
-                        "courseName": act.get("course"),
-                        "courseIntake": sec.get("intake"),
-                        "courseCode": sec.get("course_code"),
-                        "courseSection": sec.get("section"),
-                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        "classWeekDate": act.get("weeks_date"),
-                    })
-
-    # Bulk delete all rows for this lecturer before insert
-    if lecturer:
-        Timetable.query.filter_by(lecturerName=lecturer).delete()
-
-    for entry in new_entries:
-        db.session.add(Timetable(**entry))
-
-    db.session.commit()
-    return len(new_entries)
-
-
-# -------------------------------
-# Admin Route
-# -------------------------------
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
-    lecturers = sorted({row.lecturerName for row in timetable_data})
-    selected_lecturer = request.args.get("lecturer")
-
-    if request.method == "POST":
-        form_type = request.form.get('form_type')
-
-        if form_type == 'upload':
-            files = request.files.getlist("timetable_file[]")
-            all_files = [file.filename for file in files]
-            total_files_read = len(all_files)
-
-            latest_files = {}
-            skipped_files = []
-
-            for file in files:
-                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
-                if not base_name:
-                    continue
-
-                if base_name not in latest_files:
-                    latest_files[base_name] = (timestamp, file)
-                else:
-                    existing_timestamp, existing_file = latest_files[base_name]
-                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
-                        skipped_files.append(existing_file.filename)
-                        latest_files[base_name] = (timestamp, file)
-                    else:
-                        skipped_files.append(file.filename)
-
-            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
-            total_files_filtered = len(filtered_filenames)
-
-            results = []
-            total_rows_inserted = 0
-            selected_lecturer_name = None
-
-            for base_name, (timestamp, file) in latest_files.items():
-                reader = PyPDF2.PdfReader(file.stream)
-                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
-
-                structured = parse_timetable(raw_text)
-                structured['filename'] = file.filename
-                results.append(structured)
-
-                rows_inserted = save_timetable_to_db(structured)
-                total_rows_inserted += rows_inserted
-                selected_lecturer_name = structured.get("lecturer")
-
-            flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
-
-            timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
-            lecturers = sorted({row.lecturerName for row in timetable_data})
-
-            return render_template(
-                'admin/adminManageTimetable.html',
-                active_tab='admin_manageTimetabletab',
-                timetable_data=timetable_data,
-                results=results,
-                selected_lecturer=selected_lecturer_name,
-                lecturers=lecturers,
-                upload_summary={
-                    "total_files_uploaded": total_files_read,
-                    "total_files_after_filter": total_files_filtered,
-                    "files_after_filter": filtered_filenames
-                }
-            )
-
-    # ---- Default GET rendering ----
-    return render_template(
-        'admin/adminManageTimetable.html',
-        active_tab='admin_manageTimetabletab',
-        timetable_data=timetable_data,
-        lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        results=[],                  # avoid UndefinedError
-        upload_summary=None          # avoid UndefinedError
-    )
