@@ -790,17 +790,21 @@ def get_course_details(program_code, course_code_section):
 
 
 
-# -------------------------------
 # Extract Base Name + Timestamp
-# -------------------------------
 def extract_base_name_and_timestamp(file_name):
+    """
+    Extract lecturer's base name and optional timestamp from a filename.
+    Example:
+        Mr. Krishnamoorthy.pdf                -> ("Mr. Krishnamoorthy", None)
+        Mr. Krishnamoorthy_140425 onwards.pdf -> ("Mr. Krishnamoorthy", datetime(2025, 4, 14))
+    """
     pattern = r"^(.*?)(?:_([0-9]{6}))?(?:\s.*)?\.pdf$"
     match = re.match(pattern, file_name, re.IGNORECASE)
 
     if not match:
         return None, None
 
-    base_name = match.group(1)
+    base_name = match.group(1).strip()
     timestamp_str = match.group(2)
 
     timestamp = None
@@ -809,16 +813,15 @@ def extract_base_name_and_timestamp(file_name):
             timestamp = datetime.strptime(timestamp_str, "%d%m%y")
         except ValueError:
             return None, None
-    else:
-        # If no timestamp, treat the full filename (minus .pdf) as base_name
-        base_name = file_name[:-4]
+
+    # 🔑 Normalize: remove " onwards", trim spaces
+    base_name = re.sub(r"\s+onwards$", "", base_name, flags=re.IGNORECASE).strip()
 
     return base_name, timestamp
 
 
-# -------------------------------
+
 # Activity Parsing
-# -------------------------------
 def parse_activity(line):
     activity = {}
     m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
@@ -862,9 +865,7 @@ def parse_activity(line):
     return activity
 
 
-# -------------------------------
 # Parse Timetable
-# -------------------------------
 def parse_timetable(raw_text):
     text_no_whitespace = re.sub(r"\s+", "", raw_text)
 
@@ -929,9 +930,7 @@ def parse_timetable(raw_text):
     return structured
 
 
-# -------------------------------
 # Save to DB
-# -------------------------------
 def save_timetable_to_db(structured):
     new_entries = []
     lecturer = structured.get("lecturer")
@@ -971,9 +970,8 @@ def save_timetable_to_db(structured):
     return len(new_entries)
 
 
-# -------------------------------
+
 # Admin Route
-# -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
@@ -1053,5 +1051,9 @@ def admin_manageTimetable():
         lecturers=lecturers,
         selected_lecturer=selected_lecturer
     )
+
+
+
+
 
 
