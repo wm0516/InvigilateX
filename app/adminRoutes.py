@@ -405,6 +405,7 @@ def admin_manageCourse():
         elif form_type == 'dashboard':
             return redirect(url_for('admin_manageCourse'))
 
+
         # --------------------- MANUAL ADD COURSE FORM ---------------------
         else:
             courseDepartment_text   = request.form.get('departmentCode', '').strip()
@@ -462,7 +463,8 @@ def admin_manageDepartment():
     # Exclude those already assigned
     dean_list = User.query.filter(User.userLevel == 2, ~User.userId.in_(assigned_dean_ids)).all()
     hop_list = User.query.filter(User.userLevel == 3, ~User.userId.in_(assigned_hop_ids)).all()
-
+    
+    # --------------------- MANUAL ADD DEPARTMENT FORM ---------------------
     if request.method == 'POST':
         departmentCode = request.form.get('departmentCode', '').strip().upper()
         departmentName = request.form.get('departmentName', '').strip().upper()
@@ -519,6 +521,7 @@ def admin_manageVenue():
     venueCapacity_text = ''
     venueStatus_text = ''
 
+    # --------------------- MANUAL ADD VENUE FORM ---------------------
     if request.method == 'POST':
         venueNumber_text = request.form.get('venueNumber', '').strip().upper()
         venueFloor_text = request.form.get('venueFloor', '').strip()
@@ -578,7 +581,7 @@ def admin_manageExam():
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
-        # ===== File Upload =====
+        # --------------------- UPLOAD ADD EXAM FORM ---------------------
         if form_type == 'upload':
             file = request.files.get('exam_file')
             print(f"Read file: {file}")
@@ -659,11 +662,13 @@ def admin_manageExam():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageExam'))
         
-        # ===== Dashboard Add =====
+
+        # --------------------- DASHBOARD ADD EXAM FORM ---------------------
         if form_type == 'dashboard':
             return redirect(url_for('admin_manageExam'))
 
-        # ===== Manual Add =====
+
+        # --------------------- MANUAL ADD EXAM FORM ---------------------
         elif form_type == 'manual':
             try:
                 # --- Raw input ---
@@ -730,7 +735,8 @@ def admin_manageStaff():
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
-
+        
+        # --------------------- UPLOAD ADD LECTURER FORM ---------------------
         if form_type == 'upload':
             file = request.files.get('staff_file')
             if file and file.filename:
@@ -818,9 +824,13 @@ def admin_manageStaff():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageStaff'))
 
+
+        # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
         elif form_type == 'modify':
             return redirect(url_for('admin_manageStaff'))
         
+
+        # --------------------- MANUAL ADD LECTURER FORM ---------------------
         elif form_type == 'manual':
             id_text = request.form.get('userid', '').strip()
             name_text = request.form.get('username', '').strip()
@@ -877,6 +887,7 @@ def admin_manageTimetable():
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
+        # --------------------- UPLOAD ADD TIMETABLE FORM ---------------------
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
@@ -981,6 +992,7 @@ def admin_profile():
     admin_password1_text = ''
     admin_password2_text = ''
     
+    # --------------------- MANUAL EDIT PROFILE FORM ---------------------
     if request.method == 'POST':
         admin_contact_text = request.form.get('contact', '').strip()
         admin_password1_text = request.form.get('password1', '').strip()
