@@ -209,18 +209,18 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         department = department.upper()
 
     # Validate practical lecturer
-    practical_user = User.query.filter_by(userId=practical.upper() if practical else None).first()
-    if not practical_user:
-        practical = None
+    practical_user = User.query.filter_by(userName=practical.upper() if practical else None).first()
+    if practical_user:
+        practical_id = practical_user.userId   
     else:
-        practical = practical.upper()
+        practical_id = None
 
     # Validate tutorial lecturer
-    tutorial_user = User.query.filter_by(userId=tutorial.upper() if tutorial else None).first()
-    if not tutorial_user:
-        tutorial = None
+    tutorial_user = User.query.filter_by(userName=tutorial.upper() if tutorial else None).first()
+    if tutorial_user:
+        tutorial_id = tutorial_user.userId   
     else:
-        tutorial = tutorial.upper()
+        tutorial_id = None
 
     # Only create an Exam if both lecturers are valid
     exam_id = None
@@ -244,8 +244,8 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         courseName=name.upper() if name else None,
         courseHour=hour,
         courseStudent=students,
-        coursePractical=practical,
-        courseTutorial=tutorial,
+        coursePractical=practical_id,
+        courseTutorial=tutorial_id,
         courseExamId=exam_id  # Assign examId if exists, else None
     )
     db.session.add(new_course)
