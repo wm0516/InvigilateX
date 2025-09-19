@@ -575,11 +575,15 @@ def admin_manageExam():
         and_(
             Exam.examStartTime.is_(None),
             Exam.examEndTime.is_(None),
+            Course.courseName.isnot(None),
+            Course.courseCode.isnot(None),
+            Course.courseSection.isnot(None),
             Course.coursePractical.isnot(None),
-            Course.courseTutorial.isnot(None)
+            Course.courseTutorial.isnot(None),
+            Course.courseStudent.isnot(None)
         )
     ).all()
- 
+    
     # Default values for manual form
     courseSection_text = ''
     practicalLecturer_text = ''
