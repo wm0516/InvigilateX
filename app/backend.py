@@ -255,8 +255,7 @@ def get_available_venues(examDate, startTime, endTime):
                     VenueAvailability.startDateTime >= startTime,
                     VenueAvailability.endDateTime <= endTime
                 )
-            ),
-            VenueAvailability.status.in_(["UNAVAILABLE", "IN SERVICE"])
+            )
         ).first()
 
         if not conflicting:
