@@ -950,6 +950,7 @@ def save_timetable_to_db(structured):
     # Collect all new entries first
     new_entries = []
     lecturer = structured.get("lecturer")
+    filename = structured.get("filename")
 
     for day, activities in structured["days"].items():
         for act in activities:
@@ -962,6 +963,7 @@ def save_timetable_to_db(structured):
                         continue
 
                     new_entries.append({
+                        "filename": filename,
                         "lecturerName": lecturer,
                         "classType": act.get("class_type"),
                         "classDay": day,
@@ -978,6 +980,7 @@ def save_timetable_to_db(structured):
     # Delete only matching existing rows for this lecturer
     for entry in new_entries:
         Timetable.query.filter_by(
+            filename=entry["filename"],
             lecturerName=entry["lecturerName"],
             classType=entry["classType"],
             classDay=entry["classDay"],
@@ -1010,8 +1013,7 @@ def admin_manageTimetable():
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
-            total_files_read = len(all_files)
-
+            total_files_read = len(all_files)   
             latest_files = {}
 
             for file in files:
