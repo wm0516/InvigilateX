@@ -112,42 +112,37 @@
             </thead>
             <tbody>
                 {% for day in week_days %}
-                <tr>
-                    <td><strong>{{ day }}</strong></td>
-                    {% set skip_slots = [] %}
-
-                    {% for time in time_slots %}
-                        {% if time not in skip_slots %}
-                            {% set cell_rendered = false %}
+                    {% if timetable_data %}
+                    <tr>
+                        <td><strong>{{ day }}</strong></td>
+                        {% for time in time_slots %}
+                        <td>
+                            {% set displayed_rows = {} %}
                             {% for row in timetable_data %}
-                                {% if (not selected_lecturer or row.lecturerName == selected_lecturer) 
-                                    and row.classDay == day 
-                                    and row.classTime %}
-                                    {% set start_time = row.classTime.split('-')[0] %}
-                                    {% set end_time = row.classTime.split('-')[1] %}
-
-                                    {% if time == start_time %}
-                                        <td colspan="{{ row.span }}">
+                                {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
+                                    {% set class_day = row.classDay %}
+                                    {% set class_time = row.classTime %}
+                                    {% set start_time = class_time.split('-')[0] %}
+                                    {% set end_time = class_time.split('-')[1] %}
+                                    {% if class_day == day and time >= start_time and time < end_time %}
+                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                        {% if not displayed_rows.get(key) %}
+                                            {% set _ = displayed_rows.update({key: true}) %}
                                             <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
                                                 <strong>{{ row.lecturerName }}</strong><br>
                                                 <strong>[{{ row.classType }}]</strong><br>
                                                 {{ row.courseName }}<br>
                                                 Room: {{ row.classRoom }}
                                             </div>
-                                        </td>
-                                        {% set skip_slots = time_slots[time_slots.index(time)+1 : time_slots.index(time)+row.span] %}
-                                        {% set cell_rendered = true %}
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
-
-                            {% if not cell_rendered %}
-                                <td></td>
-                            {% endif %}
-                        {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
                     {% endfor %}
-                </tr>
-                {% endfor %}
+                {% endif %}
             </tbody>
         </table>
     </div>
