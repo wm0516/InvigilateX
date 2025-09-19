@@ -114,9 +114,9 @@ def get_course_details(program_code, course_code_section):
     ).first()
     if selected_course:
         return jsonify({
-            "practicalLecturer": selected_course.coursePractical,
-            "tutorialLecturer": selected_course.courseTutorial,
-            "student": selected_course.courseStudent
+            "practicalLecturer" : selected_course.coursePractical,
+            "tutorialLecturer"  : selected_course.courseTutorial,
+            "student"           : selected_course.courseStudent
         })
     return jsonify({"error": "Course not found"})
 
@@ -160,7 +160,7 @@ def parse_activity(line):
         weeks_data = m_weeks.group(1).split(",")
         if len(weeks_data) > 1:
             activity["weeks_range"] = weeks_data[:-1]
-            activity["weeks_date"] = weeks_data[-1]
+            activity["weeks_date"]  = weeks_data[-1]
         else:
             activity["weeks_range"] = weeks_data
 
@@ -199,8 +199,8 @@ def parse_timetable(raw_text):
     # Try extract title/timerow
     title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
     if title_match:
-        title_raw = title_match.group(1)
-        timerow = title_match.group(2)
+        title_raw   = title_match.group(1)
+        timerow     = title_match.group(2)
     else:
         title_raw = ""
 
@@ -208,11 +208,11 @@ def parse_timetable(raw_text):
     try:
         name_match = re.search(r"-([^-()]+)\(", title_raw)
         if name_match:
-            raw_name = name_match.group(1)
-            formatted_name = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-            formatted_name = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
-            lecturer_name = formatted_name
-            text_no_whitespace = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
+            raw_name            = name_match.group(1)
+            formatted_name      = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
+            formatted_name      = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
+            lecturer_name       = formatted_name
+            text_no_whitespace  = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
     except Exception:
         pass
 
@@ -236,10 +236,10 @@ def parse_timetable(raw_text):
     text = re.sub(r"\n{3,}", "\n\n", text)
 
     structured = {
-        "title": title,
-        "lecturer": lecturer_name,
-        "timerow": timerow,
-        "days": {}
+        "title"     : title,
+        "lecturer"  : lecturer_name,
+        "timerow"   : timerow,
+        "days"      : {}
     }
 
     current_day = None
@@ -272,18 +272,18 @@ def save_timetable_to_db(structured):
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
                     new_entries.append({
-                        "filename": filename,
-                        "lecturerName": lecturer,
-                        "classType": act.get("class_type"),
-                        "classDay": day,
-                        "classTime": act.get("time"),
-                        "classRoom": act.get("room"),
-                        "courseName": act.get("course"),
-                        "courseIntake": sec.get("intake"),
-                        "courseCode": sec.get("course_code"),
-                        "courseSection": sec.get("section"),
+                        "filename"      : filename,
+                        "lecturerName"  : lecturer,
+                        "classType"     : act.get("class_type"),
+                        "classDay"      : day,
+                        "classTime"     : act.get("time"),
+                        "classRoom"     : act.get("room"),
+                        "courseName"    : act.get("course"),
+                        "courseIntake"  : sec.get("intake"),
+                        "courseCode"    : sec.get("course_code"),
+                        "courseSection" : sec.get("section"),
                         "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        "classWeekDate": act.get("weeks_date"),
+                        "classWeekDate" : act.get("weeks_date"),
                     })
 
     # Bulk delete all rows for this lecturer before insert
@@ -362,14 +362,14 @@ def admin_manageCourse():
 
                             for index, row in df.iterrows():
                                 try:
-                                    courseDepartment_text = str(row['department code'])
-                                    courseCode_text = str(row['course code'])
-                                    courseSection_text = str(row['course section'])
-                                    courseName_text = str(row['course name'])
-                                    courseHour_text = row['credit hour']
-                                    coursePractical_text = str(row['practical lecturer']).upper()
-                                    courseTutorial_text = str(row['tutorial lecturer']).upper()
-                                    courseStudent_text = row['no of students']
+                                    courseDepartment_text = str(row['department code']).strip()
+                                    courseCode_text       = str(row['course code']).strip()
+                                    courseSection_text    = str(row['course section']).strip()
+                                    courseName_text       = str(row['course name']).strip()
+                                    courseHour_text       = row['credit hour']
+                                    coursePractical_text  = str(row['practical lecturer']).strip().upper()
+                                    courseTutorial_text   = str(row['tutorial lecturer']).strip().upper()
+                                    courseStudent_text    = row['no of students']
 
                                     # Pass values directly; create_course_and_exam will handle lookups
                                     create_course_and_exam(
@@ -418,14 +418,14 @@ def admin_manageCourse():
 
         # --------------------- MANUAL ADD COURSE FORM ---------------------
         else:
-            courseDepartment_text = request.form.get('departmentCode', '').strip()
-            courseCode_text = request.form.get('courseCode', '').replace(' ', '')
-            courseSection_text = request.form.get('courseSection', '').replace(' ', '')
-            courseName_text = request.form.get('courseName', '').strip()
-            courseHour_text = request.form.get('courseHour', '').strip()
-            coursePractical_text = request.form.get('practicalLecturerSelect', '').strip()
-            courseTutorial_text = request.form.get('tutorialLecturerSelect', '').strip()
-            courseStudent_text = request.form.get('courseStudent', '').strip()
+            courseDepartment_text   = request.form.get('departmentCode', '').strip()
+            courseCode_text         = request.form.get('courseCode', '').replace(' ', '')
+            courseSection_text      = request.form.get('courseSection', '').replace(' ', '')
+            courseName_text         = request.form.get('courseName', '').strip()
+            courseHour_text         = request.form.get('courseHour', '').strip()
+            coursePractical_text    = request.form.get('practicalLecturerSelect', '').strip()
+            courseTutorial_text     = request.form.get('tutorialLecturerSelect', '').strip()
+            courseStudent_text      = request.form.get('courseStudent', '').strip()
 
             valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
             if not valid:

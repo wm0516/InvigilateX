@@ -197,10 +197,15 @@ def check_course(code, section, hour, students):
     return True, ""
 
 
-
-
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+    department = department.strip().upper() if department else None
+    code       = code.strip().upper() if code else None
+    section    = section.strip().upper() if section else None
+    name       = name.strip().upper() if name else None
+    practical  = practical.strip().upper() if practical else None
+    tutorial   = tutorial.strip().upper() if tutorial else None
+
     # Validate practical lecturer
     practical_user = User.query.filter_by(userId=practical.upper() if practical else None).first()
     if not practical_user:
