@@ -115,67 +115,46 @@
                     {% for day in week_days %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
-                        {% set skip_until = None %}
-                        {% for time in time_slots %}
-                            {% if skip_until and loop.index0 < skip_until %}
-                                {# Skip this column because it’s merged #}
-                                {% continue %}
-                            {% endif %}
-
-                            {% set matched = [] %}
+                        {% set i = 0 %}
+                        {% while i < time_slots|length %}
+                            {% set time = time_slots[i] %}
+                            {% set matched = None %}
                             {% for row in timetable_data %}
-                                {% if (not selected_lecturer or row.lecturerName == selected_lecturer) 
-                                    and row.classDay == day %}
-                                    {% set start_time = row.classTime.split('-')[0] %}
-                                    {% set end_time = row.classTime.split('-')[1] %}
-                                    {% if time >= start_time and time < end_time %}
-                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                        {% set matched = matched + [row] %}
+                                {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
+                                    {% if row.classDay == day %}
+                                        {% set start_time = row.classTime.split('-')[0] %}
+                                        {% set end_time = row.classTime.split('-')[1] %}
+                                        {% if time == start_time %}
+                                            {% set start_index = time_slots.index(start_time) %}
+                                            {% set end_index = time_slots.index(end_time) %}
+                                            {% set span = end_index - start_index %}
+                                            {% set matched = {
+                                                "lecturer": row.lecturerName,
+                                                "type": row.classType,
+                                                "course": row.courseName,
+                                                "room": row.classRoom,
+                                                "span": span
+                                            } %}
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
 
                             {% if matched %}
-                                {% set row = matched[0] %}
-
-                                {# --- Compute rowspan (how many consecutive slots match) --- #}
-                                {% set span = 1 %}
-                                {% for next_time in time_slots[loop.index0+1:] %}
-                                    {% set found = false %}
-                                    {% for r in timetable_data %}
-                                        {% if (not selected_lecturer or r.lecturerName == selected_lecturer) 
-                                            and r.classDay == day %}
-                                            {% set st = r.classTime.split('-')[0] %}
-                                            {% set et = r.classTime.split('-')[1] %}
-                                            {% if next_time >= st and next_time < et %}
-                                                {% if r.lecturerName == row.lecturerName 
-                                                    and r.classType == row.classType 
-                                                    and r.courseName == row.courseName 
-                                                    and r.classRoom == row.classRoom %}
-                                                    {% set span = span + 1 %}
-                                                    {% set found = true %}
-                                                {% endif %}
-                                            {% endif %}
-                                        {% endif %}
-                                    {% endfor %}
-                                    {% if not found %}
-                                        {% break %}
-                                    {% endif %}
-                                {% endfor %}
-                                {% set skip_until = loop.index0 + span %}
-
-                                <td colspan="{{ span }}">
+                                <td colspan="{{ matched.span }}">
                                     <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                        <strong>{{ row.lecturerName }}</strong><br>
-                                        <strong>[{{ row.classType }}]</strong><br>
-                                        {{ row.courseName }}<br>
-                                        Room: {{ row.classRoom }}
+                                        <strong>{{ matched.lecturer }}</strong><br>
+                                        <strong>[{{ matched.type }}]</strong><br>
+                                        {{ matched.course }}<br>
+                                        Room: {{ matched.room }}
                                     </div>
                                 </td>
+                                {% set i = i + matched.span %}
                             {% else %}
                                 <td></td>
+                                {% set i = i + 1 %}
                             {% endif %}
-                        {% endfor %}
+                        {% endwhile %}
                     </tr>
                     {% endfor %}
                 {% endif %}
