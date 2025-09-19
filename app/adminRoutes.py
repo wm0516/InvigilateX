@@ -300,23 +300,138 @@ def save_timetable_to_db(structured):
 
 
 
+# -------------------------------
+# Function for Admin ManageCourse Route
+# -------------------------------
+@app.route('/admin/manageCourse', methods=['GET', 'POST'])
+def admin_manageCourse():
+    course_data = Course.query.all()
+    department_data = Department.query.all()
 
+    # Default form field values
+    courseDepartment_text = ''
+    courseCode_text = ''
+    courseSection_text = ''
+    courseName_text = ''
+    courseHour_text = ''
+    coursePractical_text = ''
+    courseTutorial_text = ''
+    courseStudent_text = ''
 
-# -------------------------------
-# Function for Admin ManageInviglationTimetable Route
-# -------------------------------
-@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
-def admin_manageInvigilationTimetable():
-    attendances = get_all_attendances()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
 
-# -------------------------------
-# Function for Admin ManageInviglationReport Route
-# -------------------------------
-@app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
-def admin_manageInvigilationReport():
-    attendances = get_all_attendances()
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
+        # --------------------- UPLOAD FORM ---------------------
+        if form_type == 'upload':
+            file = request.files.get('course_file')
+            if file and file.filename:
+                try:
+                    file_stream = BytesIO(file.read())
+                    excel_file = pd.ExcelFile(file_stream)
+                    course_records_added = 0
+
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            df = pd.read_excel(
+                                excel_file,
+                                sheet_name=sheet_name,
+                                usecols="A:H",
+                                skiprows=1  
+                            )
+
+                            df.columns = [str(col).strip().lower() for col in df.columns]
+                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
+
+                            if df.columns.tolist() != expected_cols:
+                                raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
+
+                            for col in df.columns:
+                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+
+                            for index, row in df.iterrows():
+                                try:
+                                    courseDepartment_text = str(row['department code'])
+                                    courseCode_text = str(row['course code'])
+                                    courseSection_text = str(row['course section'])
+                                    courseName_text = str(row['course name'])
+                                    courseHour_text = row['credit hour']
+                                    coursePractical_text = str(row['practical lecturer'])
+                                    courseTutorial_text = str(row['tutorial lecturer'])
+                                    courseStudent_text = row['no of students']
+
+                                    valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
+                                    if valid:
+                                        create_course_and_exam(
+                                            department=courseDepartment_text,
+                                            code=courseCode_text,
+                                            section=courseSection_text,
+                                            name=courseName_text,
+                                            hour=int(courseHour_text),
+                                            practical=coursePractical_text,
+                                            tutorial=courseTutorial_text,
+                                            students=int(courseStudent_text)
+                                        )
+                                        course_records_added += 1
+                                except Exception as row_err:
+                                    print(f"[Row Error] {row_err}")
+                        except Exception as sheet_err:
+                            print(f"[Sheet Error] {sheet_err}")
+
+                    if course_records_added > 0:
+                        flash(f"Successful upload of {course_records_added} record(s)", 'success')
+                    else:
+                        flash("No data uploaded", 'error')
+
+                    return redirect(url_for('admin_manageCourse'))
+
+                except Exception as e:
+                    print(f"[File Processing Error] {e}")
+                    flash('File processing error: File upload in wrong format', 'error')
+                    return redirect(url_for('admin_manageCourse'))
+            else:
+                flash("No file uploaded", 'error')
+                return redirect(url_for('admin_manageCourse'))
+
+        # --------------------- DASHBOARD FORM ---------------------
+        elif form_type == 'dashboard':
+            return redirect(url_for('admin_manageCourse'))
+
+        # --------------------- MANUAL ADD COURSE FORM ---------------------
+        else:
+            courseDepartment_text = request.form.get('departmentCode', '').strip()
+            courseCode_text = request.form.get('courseCode', '').replace(' ', '')
+            courseSection_text = request.form.get('courseSection', '').replace(' ', '')
+            courseName_text = request.form.get('courseName', '').strip()
+            courseHour_text = request.form.get('courseHour', '').strip()
+            coursePractical_text = request.form.get('practicalLecturerSelect', '').strip()
+            courseTutorial_text = request.form.get('tutorialLecturerSelect', '').strip()
+            courseStudent_text = request.form.get('courseStudent', '').strip()
+
+            valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
+            if not valid:
+                flash(result, 'error')
+                return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, 
+                                       courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text,courseName_text=courseName_text, 
+                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text,courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
+
+            # All valid, proceed to add course
+            create_course_and_exam(
+                department=courseDepartment_text,
+                code=courseCode_text,
+                section=courseSection_text,
+                name=courseName_text,
+                hour=int(courseHour_text),
+                practical=coursePractical_text,
+                tutorial=courseTutorial_text,
+                students=int(courseStudent_text)
+            )
+
+            flash("New Course Added Successfully", "success")
+            return redirect(url_for('admin_manageCourse'))
+
+    # GET request fallback
+    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
+
 
 # -------------------------------
 # Function for Admin ManageDepartment Route
@@ -381,42 +496,6 @@ def admin_manageDepartment():
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
 
-# -------------------------------
-# Function for Admin ManageProfile Route
-# -------------------------------
-@app.route('/admin/profile', methods=['GET', 'POST'])
-def admin_profile():
-    adminId = session.get('user_id')
-    admin = User.query.filter_by(userId=adminId).first()
-
-    # Default values for GET requests
-    admin_contact_text = admin.userContact if admin else ''
-    admin_password1_text = ''
-    admin_password2_text = ''
-    
-    if request.method == 'POST':
-        admin_contact_text = request.form.get('contact', '').strip()
-        admin_password1_text = request.form.get('password1', '').strip()
-        admin_password2_text = request.form.get('password2', '').strip()
-
-        valid, message = check_profile(adminId, admin_contact_text, admin_password1_text, admin_password2_text)
-        if not valid:
-            flash(message, 'error')
-            return redirect(url_for('admin_profile'))
-
-        if valid and admin:
-            if admin_contact_text:
-                admin.userContact = admin_contact_text
-            if admin_password1_text:
-                hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
-                admin.userPassword = hashed_pw
-
-            db.session.commit()
-            flash("Successfully updated", 'success')
-            return redirect(url_for('admin_profile'))
-
-    return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
-                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
 
 # -------------------------------
 # Function for Admin ManageVenue Route
@@ -463,89 +542,152 @@ def admin_manageVenue():
 
     return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
 
-# -------------------------------
-# Function for Admin ManageLecturer Route
-# -------------------------------
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-def admin_manageTimetable():
-    timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
-    lecturers = sorted({row.lecturerName for row in timetable_data})
-    selected_lecturer = request.args.get("lecturer")
 
-    if request.method == "POST":
+# -------------------------------
+# Function for Admin ManageExam Route
+# -------------------------------
+@app.route('/admin/manageExam', methods=['GET', 'POST'])
+def admin_manageExam():
+    department_data = Department.query.all() # For department code dropdown
+    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
+    exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
+    course_data = Course.query.join(Exam).filter(Exam.examStartTime.is_(None), Exam.examEndTime.is_(None)).all()
+ 
+    # Default values for manual form
+    courseSection_text = ''
+    practicalLecturer_text = ''
+    tutorialLecturer_text = ''
+    venue_text = ''
+    invigilatorNo_text = ''
+
+    if request.method == 'POST':
         form_type = request.form.get('form_type')
 
+        # ===== File Upload =====
+        '''
         if form_type == 'upload':
-            files = request.files.getlist("timetable_file[]")
-            all_files = [file.filename for file in files]
-            total_files_read = len(all_files)
+            file = request.files.get('exam_file')
+            print(f"Read file: {file}")
+            if file and file.filename:
+                try:
+                    file_stream = BytesIO(file.read())
+                    excel_file = pd.ExcelFile(file_stream)
 
-            latest_files = {}
-            skipped_files = []
+                    abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
+                    exam_records_added = 0
+                    for sheet_name in excel_file.sheet_names:
+                        try:
+                            df = pd.read_excel(
+                                excel_file,
+                                sheet_name=sheet_name,
+                                usecols="A:I",
+                                skiprows=1
+                            )
+                            df.columns = [str(col).strip().lower() for col in df.columns]
+                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
+                            print(f"Read file table: {expected_cols}")
 
-            for file in files:
-                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
-                if not base_name:
-                    continue
+                            if df.columns.tolist() != expected_cols:
+                                raise ValueError("Excel columns do not match expected format")
+                            
+                            # Normalize all string columns except 'day' to lowercase
+                            for col in df.columns:
+                                if col != 'day':
+                                    df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
-                if base_name not in latest_files:
-                    latest_files[base_name] = (timestamp, file)
-                else:
-                    existing_timestamp, existing_file = latest_files[base_name]
-                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
-                        skipped_files.append(existing_file.filename)
-                        latest_files[base_name] = (timestamp, file)
-                    else:
-                        skipped_files.append(file.filename)
+                            # Convert 'day' abbreviations to full day names
+                            df['day'] = df['day'].apply(
+                                lambda x: abbr_to_full.get(str(x).strip()[:3].lower(), x) if isinstance(x, str) else x
+                            )
 
-            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
-            total_files_filtered = len(filtered_filenames)
+                            for index, row in df.iterrows():
+                                try:
+                                    # Parse the date, time, and other data
+                                    examDate_text = parse_date(row['date'])  # Parsed date from Excel
+                                    startTime_text = standardize_time_with_seconds(row['start'])  # Parsed time from Excel
+                                    endTime_text = standardize_time_with_seconds(row['end'])  # Parsed time from Excel
 
-            results = []
-            total_rows_inserted = 0
-            selected_lecturer_name = None
+                                    if not examDate_text:
+                                        raise ValueError(f"Invalid date at row {index}")
 
-            for base_name, (timestamp, file) in latest_files.items():
-                reader = PyPDF2.PdfReader(file.stream)
-                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
+                                    if not startTime_text or not endTime_text:
+                                        raise ValueError(f"Invalid time at row {index}")
 
-                structured = parse_timetable(raw_text)
-                structured['filename'] = file.filename
-                results.append(structured)
+                                    # Convert date and time into datetime
+                                    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
+                                    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
 
-                rows_inserted = save_timetable_to_db(structured)
-                total_rows_inserted += rows_inserted
-                selected_lecturer_name = structured.get("lecturer")
+                                    # Additional data parsing
+                                    courseSection_text = str(row['course/sec']).upper()
+                                    practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
+                                    venue_text = str(row['room']).upper()
+                                    invigilatorNo_text = row['no of invigilator']
 
-            flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
+                                    # Now proceed with your existing logic, e.g., create the exam and save it
+                                    create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
+                                    db.session.commit()
+                                    exam_records_added += 1
 
-            timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
-            lecturers = sorted({row.lecturerName for row in timetable_data})
+                                except Exception as row_err:
+                                    print(f"[Row Error] {row_err}")
+                        except Exception as sheet_err:
+                            print(f"[Sheet Error] {sheet_err}")
 
-            return render_template(
-                'admin/adminManageTimetable.html',
-                active_tab='admin_manageTimetabletab',
-                timetable_data=timetable_data,
-                results=results,
-                selected_lecturer=selected_lecturer_name,
-                lecturers=lecturers,
-                upload_summary={
-                    "total_files_uploaded": total_files_read,
-                    "total_files_after_filter": total_files_filtered,
-                    "files_after_filter": filtered_filenames
-                }
-            )
+                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
+                          'success' if exam_records_added > 0 else 'error')
+                    return redirect(url_for('admin_manageExam'))
 
-    # ---- Default GET rendering ----
-    return render_template(
-        'admin/adminManageTimetable.html',
-        active_tab='admin_manageTimetabletab',
-        timetable_data=timetable_data,
-        lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        results=[],                  # avoid UndefinedError
-        upload_summary=None          # avoid UndefinedError
-    )
+                except Exception as e:
+                    print(f"[File Processing Error] {e}")
+                    flash('File processing error: File upload in wrong format', 'error')
+                    return redirect(url_for('admin_manageExam'))
+            else:
+                flash("No file uploaded", 'error')
+                return redirect(url_for('admin_manageExam'))
+        '''
+
+        if form_type == 'dashboard':
+            return redirect(url_for('admin_manageExam'))
+
+        # ===== Manual Add =====
+        elif form_type == 'manual':
+            try:
+                # --- Raw input ---
+                startDate_raw = request.form.get('startDate', '').strip()
+                endDate_raw = request.form.get('endDate', '').strip()
+                startTime_raw = request.form.get('startTime', '').strip()
+                endTime_raw = request.form.get('endTime', '').strip()
+
+                # --- Normalize time strings ---
+                if len(startTime_raw) == 5:   # HH:MM → add :00
+                    startTime_raw += ":00"
+                if len(endTime_raw) == 5:
+                    endTime_raw += ":00"
+
+                # --- Convert to datetime objects ---
+                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
+                end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+
+                # --- Other fields ---
+                courseSection_text = request.form.get('courseSection', '').strip()
+                venue_text = request.form.get('venue', '').strip()
+                practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
+                tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
+                invigilatorNo_text = int(request.form.get('invigilatorNo', '0'))
+
+                # --- Call core function ---
+                create_exam_and_related(start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
+                flash("New Exam Record Added Successfully", "success")
+                return redirect(url_for('admin_manageExam'))
+
+            except Exception as manual_err:
+                print(f"[Manual Form Error] {manual_err}")
+                traceback.print_exc()
+                flash(f"Error processing manual form: {manual_err}", 'error')
+                return redirect(url_for('admin_manageExam'))
+
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
+
 
 # -------------------------------
 # Function for Admin ManageStaff Route
@@ -705,285 +847,146 @@ def admin_manageStaff():
 
     return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
 
-# -------------------------------
-# Function for Admin ManageCourse Route
-# -------------------------------
-@app.route('/admin/manageCourse', methods=['GET', 'POST'])
-def admin_manageCourse():
-    course_data = Course.query.all()
-    department_data = Department.query.all()
-
-    # Default form field values
-    courseDepartment_text = ''
-    courseCode_text = ''
-    courseSection_text = ''
-    courseName_text = ''
-    courseHour_text = ''
-    coursePractical_text = ''
-    courseTutorial_text = ''
-    courseStudent_text = ''
-
-    if request.method == 'POST':
-        form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
-
-        # --------------------- UPLOAD FORM ---------------------
-        if form_type == 'upload':
-            file = request.files.get('course_file')
-            if file and file.filename:
-                try:
-                    file_stream = BytesIO(file.read())
-                    excel_file = pd.ExcelFile(file_stream)
-                    course_records_added = 0
-
-                    for sheet_name in excel_file.sheet_names:
-                        try:
-                            df = pd.read_excel(
-                                excel_file,
-                                sheet_name=sheet_name,
-                                usecols="A:H",
-                                skiprows=1  
-                            )
-
-                            df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
-
-                            if df.columns.tolist() != expected_cols:
-                                raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
-
-                            for col in df.columns:
-                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
-
-                            for index, row in df.iterrows():
-                                try:
-                                    courseDepartment_text = str(row['department code'])
-                                    courseCode_text = str(row['course code'])
-                                    courseSection_text = str(row['course section'])
-                                    courseName_text = str(row['course name'])
-                                    courseHour_text = row['credit hour']
-                                    coursePractical_text = str(row['practical lecturer'])
-                                    courseTutorial_text = str(row['tutorial lecturer'])
-                                    courseStudent_text = row['no of students']
-
-                                    valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
-                                    if valid:
-                                        create_course_and_exam(
-                                            department=courseDepartment_text,
-                                            code=courseCode_text,
-                                            section=courseSection_text,
-                                            name=courseName_text,
-                                            hour=int(courseHour_text),
-                                            practical=coursePractical_text,
-                                            tutorial=courseTutorial_text,
-                                            students=int(courseStudent_text)
-                                        )
-                                        course_records_added += 1
-                                except Exception as row_err:
-                                    print(f"[Row Error] {row_err}")
-                        except Exception as sheet_err:
-                            print(f"[Sheet Error] {sheet_err}")
-
-                    if course_records_added > 0:
-                        flash(f"Successful upload of {course_records_added} record(s)", 'success')
-                    else:
-                        flash("No data uploaded", 'error')
-
-                    return redirect(url_for('admin_manageCourse'))
-
-                except Exception as e:
-                    print(f"[File Processing Error] {e}")
-                    flash('File processing error: File upload in wrong format', 'error')
-                    return redirect(url_for('admin_manageCourse'))
-            else:
-                flash("No file uploaded", 'error')
-                return redirect(url_for('admin_manageCourse'))
-
-        # --------------------- DASHBOARD FORM ---------------------
-        elif form_type == 'dashboard':
-            return redirect(url_for('admin_manageCourse'))
-
-        # --------------------- MANUAL ADD COURSE FORM ---------------------
-        else:
-            courseDepartment_text = request.form.get('departmentCode', '').strip()
-            courseCode_text = request.form.get('courseCode', '').replace(' ', '')
-            courseSection_text = request.form.get('courseSection', '').replace(' ', '')
-            courseName_text = request.form.get('courseName', '').strip()
-            courseHour_text = request.form.get('courseHour', '').strip()
-            coursePractical_text = request.form.get('practicalLecturerSelect', '').strip()
-            courseTutorial_text = request.form.get('tutorialLecturerSelect', '').strip()
-            courseStudent_text = request.form.get('courseStudent', '').strip()
-
-            valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
-            if not valid:
-                flash(result, 'error')
-                return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, 
-                                       courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text,courseName_text=courseName_text, 
-                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text,courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
-
-            # All valid, proceed to add course
-            create_course_and_exam(
-                department=courseDepartment_text,
-                code=courseCode_text,
-                section=courseSection_text,
-                name=courseName_text,
-                hour=int(courseHour_text),
-                practical=coursePractical_text,
-                tutorial=courseTutorial_text,
-                students=int(courseStudent_text)
-            )
-
-            flash("New Course Added Successfully", "success")
-            return redirect(url_for('admin_manageCourse'))
-
-    # GET request fallback
-    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
 # -------------------------------
-# Function for Admin ManageExam Route
+# Function for Admin ManageLecturer Route
 # -------------------------------
-@app.route('/admin/manageExam', methods=['GET', 'POST'])
-def admin_manageExam():
-    department_data = Department.query.all() # For department code dropdown
-    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
-    exam_data = Exam.query.filter(Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
-    course_data = Course.query.join(Exam).filter(Exam.examStartTime.is_(None), Exam.examEndTime.is_(None)).all()
- 
-    # Default values for manual form
-    courseSection_text = ''
-    practicalLecturer_text = ''
-    tutorialLecturer_text = ''
-    venue_text = ''
-    invigilatorNo_text = ''
+@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+def admin_manageTimetable():
+    timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+    lecturers = sorted({row.lecturerName for row in timetable_data})
+    selected_lecturer = request.args.get("lecturer")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form_type = request.form.get('form_type')
 
-        # ===== File Upload =====
-        '''
         if form_type == 'upload':
-            file = request.files.get('exam_file')
-            print(f"Read file: {file}")
-            if file and file.filename:
-                try:
-                    file_stream = BytesIO(file.read())
-                    excel_file = pd.ExcelFile(file_stream)
+            files = request.files.getlist("timetable_file[]")
+            all_files = [file.filename for file in files]
+            total_files_read = len(all_files)
 
-                    abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
-                    exam_records_added = 0
-                    for sheet_name in excel_file.sheet_names:
-                        try:
-                            df = pd.read_excel(
-                                excel_file,
-                                sheet_name=sheet_name,
-                                usecols="A:I",
-                                skiprows=1
-                            )
-                            df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
-                            print(f"Read file table: {expected_cols}")
+            latest_files = {}
+            skipped_files = []
 
-                            if df.columns.tolist() != expected_cols:
-                                raise ValueError("Excel columns do not match expected format")
-                            
-                            # Normalize all string columns except 'day' to lowercase
-                            for col in df.columns:
-                                if col != 'day':
-                                    df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+            for file in files:
+                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
+                if not base_name:
+                    continue
 
-                            # Convert 'day' abbreviations to full day names
-                            df['day'] = df['day'].apply(
-                                lambda x: abbr_to_full.get(str(x).strip()[:3].lower(), x) if isinstance(x, str) else x
-                            )
+                if base_name not in latest_files:
+                    latest_files[base_name] = (timestamp, file)
+                else:
+                    existing_timestamp, existing_file = latest_files[base_name]
+                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
+                        skipped_files.append(existing_file.filename)
+                        latest_files[base_name] = (timestamp, file)
+                    else:
+                        skipped_files.append(file.filename)
 
-                            for index, row in df.iterrows():
-                                try:
-                                    # Parse the date, time, and other data
-                                    examDate_text = parse_date(row['date'])  # Parsed date from Excel
-                                    startTime_text = standardize_time_with_seconds(row['start'])  # Parsed time from Excel
-                                    endTime_text = standardize_time_with_seconds(row['end'])  # Parsed time from Excel
+            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
+            total_files_filtered = len(filtered_filenames)
 
-                                    if not examDate_text:
-                                        raise ValueError(f"Invalid date at row {index}")
+            results = []
+            total_rows_inserted = 0
+            selected_lecturer_name = None
 
-                                    if not startTime_text or not endTime_text:
-                                        raise ValueError(f"Invalid time at row {index}")
+            for base_name, (timestamp, file) in latest_files.items():
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
 
-                                    # Convert date and time into datetime
-                                    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
-                                    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
+                structured = parse_timetable(raw_text)
+                structured['filename'] = file.filename
+                results.append(structured)
 
-                                    # Additional data parsing
-                                    courseSection_text = str(row['course/sec']).upper()
-                                    practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
-                                    venue_text = str(row['room']).upper()
-                                    invigilatorNo_text = row['no of invigilator']
+                rows_inserted = save_timetable_to_db(structured)
+                total_rows_inserted += rows_inserted
+                selected_lecturer_name = structured.get("lecturer")
 
-                                    # Now proceed with your existing logic, e.g., create the exam and save it
-                                    create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
-                                    db.session.commit()
-                                    exam_records_added += 1
+            flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
-                                except Exception as row_err:
-                                    print(f"[Row Error] {row_err}")
-                        except Exception as sheet_err:
-                            print(f"[Sheet Error] {sheet_err}")
+            timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+            lecturers = sorted({row.lecturerName for row in timetable_data})
 
-                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
-                          'success' if exam_records_added > 0 else 'error')
-                    return redirect(url_for('admin_manageExam'))
+            return render_template(
+                'admin/adminManageTimetable.html',
+                active_tab='admin_manageTimetabletab',
+                timetable_data=timetable_data,
+                results=results,
+                selected_lecturer=selected_lecturer_name,
+                lecturers=lecturers,
+                upload_summary={
+                    "total_files_uploaded": total_files_read,
+                    "total_files_after_filter": total_files_filtered,
+                    "files_after_filter": filtered_filenames
+                }
+            )
 
-                except Exception as e:
-                    print(f"[File Processing Error] {e}")
-                    flash('File processing error: File upload in wrong format', 'error')
-                    return redirect(url_for('admin_manageExam'))
-            else:
-                flash("No file uploaded", 'error')
-                return redirect(url_for('admin_manageExam'))
-        '''
-
-        if form_type == 'dashboard':
-            return redirect(url_for('admin_manageExam'))
-
-        # ===== Manual Add =====
-        elif form_type == 'manual':
-            try:
-                # --- Raw input ---
-                startDate_raw = request.form.get('startDate', '').strip()
-                endDate_raw = request.form.get('endDate', '').strip()
-                startTime_raw = request.form.get('startTime', '').strip()
-                endTime_raw = request.form.get('endTime', '').strip()
-
-                # --- Normalize time strings ---
-                if len(startTime_raw) == 5:   # HH:MM → add :00
-                    startTime_raw += ":00"
-                if len(endTime_raw) == 5:
-                    endTime_raw += ":00"
-
-                # --- Convert to datetime objects ---
-                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-                end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
-
-                # --- Other fields ---
-                courseSection_text = request.form.get('courseSection', '').strip()
-                venue_text = request.form.get('venue', '').strip()
-                practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
-                tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                invigilatorNo_text = int(request.form.get('invigilatorNo', '0'))
-
-                # --- Call core function ---
-                create_exam_and_related(start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
-                flash("New Exam Record Added Successfully", "success")
-                return redirect(url_for('admin_manageExam'))
-
-            except Exception as manual_err:
-                print(f"[Manual Form Error] {manual_err}")
-                traceback.print_exc()
-                flash(f"Error processing manual form: {manual_err}", 'error')
-                return redirect(url_for('admin_manageExam'))
-
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
+    # ---- Default GET rendering ----
+    return render_template(
+        'admin/adminManageTimetable.html',
+        active_tab='admin_manageTimetabletab',
+        timetable_data=timetable_data,
+        lecturers=lecturers,
+        selected_lecturer=selected_lecturer,
+        results=[],                  # avoid UndefinedError
+        upload_summary=None          # avoid UndefinedError
+    )
 
 
+# -------------------------------
+# Function for Admin ManageInviglationTimetable Route
+# -------------------------------
+@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+def admin_manageInvigilationTimetable():
+    attendances = get_all_attendances()
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
 
+
+# -------------------------------
+# Function for Admin ManageInviglationReport Route
+# -------------------------------
+@app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
+def admin_manageInvigilationReport():
+    attendances = get_all_attendances()
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
+
+
+# -------------------------------
+# Function for Admin ManageProfile Route
+# -------------------------------
+@app.route('/admin/profile', methods=['GET', 'POST'])
+def admin_profile():
+    adminId = session.get('user_id')
+    admin = User.query.filter_by(userId=adminId).first()
+
+    # Default values for GET requests
+    admin_contact_text = admin.userContact if admin else ''
+    admin_password1_text = ''
+    admin_password2_text = ''
+    
+    if request.method == 'POST':
+        admin_contact_text = request.form.get('contact', '').strip()
+        admin_password1_text = request.form.get('password1', '').strip()
+        admin_password2_text = request.form.get('password2', '').strip()
+
+        valid, message = check_profile(adminId, admin_contact_text, admin_password1_text, admin_password2_text)
+        if not valid:
+            flash(message, 'error')
+            return redirect(url_for('admin_profile'))
+
+        if valid and admin:
+            if admin_contact_text:
+                admin.userContact = admin_contact_text
+            if admin_password1_text:
+                hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
+                admin.userPassword = hashed_pw
+
+            db.session.commit()
+            flash("Successfully updated", 'success')
+            return redirect(url_for('admin_profile'))
+
+    return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
+                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
 
 
 
