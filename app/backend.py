@@ -221,16 +221,13 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         courseSection=section.upper(),
         courseName=name.upper(),
         courseHour=hour,
-        coursePractical=practical.upper(),
-        courseTutorial=tutorial.upper(),
+        coursePractical=practical,   # <-- userId or None
+        courseTutorial=tutorial,     # <-- userId or None
         courseStudent=students,
         courseExamId=new_exam.examId
     )
     db.session.add(new_course)
-    db.session.flush()
     db.session.commit()
-
-
 
 
 
