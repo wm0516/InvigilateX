@@ -111,8 +111,8 @@
                 </tr>
             </thead>
             <tbody>
-                {% for day in week_days %}
-                    {% if timetable_data %}
+                {% if timetable_data %}
+                    {% for day in week_days %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
                         {% for time in time_slots %}
