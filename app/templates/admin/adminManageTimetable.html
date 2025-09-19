@@ -117,6 +117,7 @@
                         <td><strong>{{ day }}</strong></td>
                         {% for time in time_slots %}
                         <td>
+                            {% set ns = namespace(displayed=[]) %}
                             {% for row in timetable_data %}
                                 {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
                                     {% set class_day = row.classDay %}
@@ -125,12 +126,15 @@
                                     {% set end_time = class_time.split('-')[1] %}
                                     {% if class_day == day and time >= start_time and time < end_time %}
                                         {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                            <strong>{{ row.lecturerName }}</strong><br>
-                                            <strong>[{{ row.classType }}]</strong><br>
-                                            {{ row.courseName }}<br>
-                                            Room: {{ row.classRoom }}
-                                        </div>
+                                        {% if key not in ns.displayed %}
+                                            {% set ns.displayed = ns.displayed + [key] %}
+                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                                <strong>{{ row.lecturerName }}</strong><br>
+                                                <strong>[{{ row.classType }}]</strong><br>
+                                                {{ row.courseName }}<br>
+                                                Room: {{ row.classRoom }}
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
