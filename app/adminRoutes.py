@@ -810,8 +810,6 @@ def extract_base_name_and_timestamp(file_name):
 
     return base_name, timestamp
 
-
-
 # Activity Parsing
 def parse_activity(line):
     activity = {}
@@ -854,7 +852,6 @@ def parse_activity(line):
         activity["room"] = m_room.group(1)
 
     return activity
-
 
 # Parse Timetable
 def parse_timetable(raw_text):
@@ -920,7 +917,6 @@ def parse_timetable(raw_text):
 
     return structured
 
-
 # Save to DB
 def save_timetable_to_db(structured):
     new_entries = []
@@ -959,8 +955,6 @@ def save_timetable_to_db(structured):
 
     db.session.commit()
     return len(new_entries)
-
-
 
 # Admin Route
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
