@@ -966,6 +966,27 @@ def save_timetable_to_db(structured):
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+
+    # --- ADD SPAN INFO HERE ---
+    time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00",
+                  "14:00","15:00","16:00","17:00","18:00","19:00","20:00",
+                  "21:00","22:00","23:00"]
+
+    def calculate_span(start_time, end_time, time_slots):
+        try:
+            start_idx = time_slots.index(start_time)
+            end_idx = time_slots.index(end_time)
+            return end_idx - start_idx
+        except ValueError:
+            return 1
+
+    for row in timetable_data:
+        if row.classTime and "-" in row.classTime:
+            start_time, end_time = row.classTime.split("-")
+            row.span = calculate_span(start_time, end_time, time_slots)
+        else:
+            row.span = 1
+
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 

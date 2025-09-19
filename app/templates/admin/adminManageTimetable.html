@@ -111,57 +111,46 @@
                 </tr>
             </thead>
             <tbody>
-                {% if timetable_data %}
-{% for day in week_days %}
-<tr>
-    <td><strong>{{ day }}</strong></td>
-    {% set skip = 0 %}
-    {% for time in time_slots %}
-        {% if skip > 0 %}
-            {% set skip = skip - 1 %}
-            {% continue %}  {# ❌ This will still error #}
-        {% endif %}
+                {% for day in week_days %}
+                <tr>
+                    <td><strong>{{ day }}</strong></td>
+                    {% set skip_slots = [] %}
 
-        {% set matched = None %}
-        {% for row in timetable_data %}
-            {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
-                {% if row.classDay == day %}
-                    {% set start_time = row.classTime.split('-')[0] %}
-                    {% set end_time = row.classTime.split('-')[1] %}
-                    {% if time == start_time %}
-                        {% set start_index = time_slots.index(start_time) %}
-                        {% set end_index = time_slots.index(end_time) %}
-                        {% set span = end_index - start_index %}
-                        {% set matched = {
-                            "lecturer": row.lecturerName,
-                            "type": row.classType,
-                            "course": row.courseName,
-                            "room": row.classRoom,
-                            "span": span
-                        } %}
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-        {% endfor %}
+                    {% for time in time_slots %}
+                        {% if time in skip_slots %}
+                            {# skip this time slot because it's already merged #}
+                            {% continue %}
+                        {% endif %}
 
-        {% if matched %}
-            <td colspan="{{ matched.span }}">
-                <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                    <strong>{{ matched.lecturer }}</strong><br>
-                    <strong>[{{ matched.type }}]</strong><br>
-                    {{ matched.course }}<br>
-                    Room: {{ matched.room }}
-                </div>
-            </td>
-            {% set skip = matched.span - 1 %}
-        {% else %}
-            <td></td>
-        {% endif %}
-    {% endfor %}
-</tr>
-{% endfor %}
+                        {% set cell_rendered = false %}
+                        {% for row in timetable_data %}
+                            {% if (not selected_lecturer or row.lecturerName == selected_lecturer) 
+                                and row.classDay == day 
+                                and row.classTime %}
+                                {% set start_time = row.classTime.split('-')[0] %}
+                                {% set end_time = row.classTime.split('-')[1] %}
 
-                {% endif %}
+                                {% if time == start_time %}
+                                    <td colspan="{{ row.span }}">
+                                        <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                            <strong>{{ row.lecturerName }}</strong><br>
+                                            <strong>[{{ row.classType }}]</strong><br>
+                                            {{ row.courseName }}<br>
+                                            Room: {{ row.classRoom }}
+                                        </div>
+                                    </td>
+                                    {% set skip_slots = time_slots[time_slots.index(time)+1 : time_slots.index(time)+row.span] %}
+                                    {% set cell_rendered = true %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if not cell_rendered %}
+                            <td></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
