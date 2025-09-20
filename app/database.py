@@ -41,7 +41,7 @@ class Department(db.Model):
 class User(db.Model):
     __tablename__ = 'User'
     userId = db.Column(db.String(20), primary_key=True)                                                               # [PK]Refer to Staff ID
-    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'))                             # [FK] Refer to Staff Department
+    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=True)              # [FK] Refer to Staff Department
     userName = db.Column(db.String(255), nullable=False)                                                              # Refer to Staff Name
     userLevel = db.Column(db.Integer, nullable=False)                                                                 # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
     userEmail = db.Column(db.String(255), nullable=False)                                                             # Refer to Staff INTI email
@@ -63,7 +63,7 @@ class User(db.Model):
         userEmail VARCHAR(255) NOT NULL,
         userContact VARCHAR(15) NOT NULL,
         userLevel INT NOT NULL,
-        userDepartment VARCHAR(10) NOT NULL,,
+        userDepartment VARCHAR(10) NULL,,
         userPassword VARCHAR(255) NOT NULL,
         userStatus BOOLEAN DEFAULT FALSE,
         userRegisterDateTime DATETIME NOT NULL,
