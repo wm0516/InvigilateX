@@ -789,7 +789,9 @@ def admin_manageStaff():
                                     role_text       = role_mapping.get(role_text_str)
                                     hashed_pw       = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
+                                    flash(f"{id_text}, {email_text}, {contact_text}", 'success')
                                     valid, result = check_staff(id_text, email_text, contact_text)
+                                    flash(f"check_staff result: valid={valid}, result={result}", 'success')
                                     if valid:
                                         new_staff = User(
                                             userId=id_text,
