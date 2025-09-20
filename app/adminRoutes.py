@@ -746,6 +746,16 @@ def admin_manageStaff():
                     excel_file = pd.ExcelFile(file_stream)
                     staff_records_added = 0
 
+                    # --- helper for contact cleaning ---
+                    def clean_contact(contact):
+                        if not contact:
+                            return ""
+                        contact = str(contact).strip().replace(".0", "")
+                        contact = "".join(filter(str.isdigit, contact))
+                        if contact and not contact.startswith("0"):
+                            contact = "0" + contact
+                        return contact if 10 <= len(contact) <= 11 else ""
+
                     for sheet_name in excel_file.sheet_names:
                         print("Excel Sheets:", excel_file.sheet_names)
                         try:
@@ -754,7 +764,7 @@ def admin_manageStaff():
                                 sheet_name=sheet_name,
                                 usecols="A:G",
                                 skiprows=1,
-                                dtype=str    # <-- force all columns to string
+                                dtype=str
                             )
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
@@ -767,17 +777,15 @@ def admin_manageStaff():
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            # Drop completely blank rows (skip NaN)
+                            # Drop completely blank rows
                             df = df.dropna(subset=['id', 'email'])
 
                             # Normalize all string values to lowercase
                             for col in df.columns:
                                 df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
-                            # Fix contact column: remove .0 from floats, keep strings intact
-                            df['contact'] = df['contact'].apply(
-                                lambda x: str(int(float(x))) if pd.notna(x) and str(x).replace('.', '', 1).isdigit() else str(x).strip()
-                            )
+                            # Apply contact cleaning
+                            df['contact'] = df['contact'].apply(clean_contact)
 
                             role_mapping = {
                                 'lecturer': 1,
@@ -835,6 +843,7 @@ def admin_manageStaff():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageStaff'))
+
             
 
         # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
