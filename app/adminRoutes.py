@@ -630,7 +630,8 @@ def admin_manageExam():
 
                                     # Additional data parsing
                                     courseSection_text = str(row['course/sec']).upper()
-                                    practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
+                                    practicalLecturer_text = str(row['lecturer']).strip().upper()
+                                    tutorialLecturer_text = None   # explicitly ignore
                                     venue_text = str(row['room']).upper()
 
                                     # Now proceed with your existing logic, e.g., create the exam and save it

@@ -353,10 +353,25 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     exam.examVenue = venue_text
     exam.examNoInvigilator = invigilatorNo
 
-    # 4. Update lecturer assignments if needed
-    course.coursePractical = practicalLecturer
-    course.courseTutorial = tutorialLecturer
+    # 4. Assign Practical Lecturer only (must exist in User table)
+    if practicalLecturer:
+        lecturer_user = User.query.filter(
+            or_(
+                User.userId == practicalLecturer,
+                User.userName.ilike(practicalLecturer)   # allow name match
+            )
+        ).first()
 
+        if not lecturer_user:
+            raise ValueError(f"Lecturer '{practicalLecturer}' not found in User table")
+
+        course.coursePractical = lecturer_user.userId
+    else:
+        course.coursePractical = None
+
+    # Ignore tutorial lecturer
+    course.courseTutorial = None
+    
     # 5. Save Venue Availability (handle overnight case)
     adj_end_dt = end_dt
     if end_dt <= start_dt:  # overnight exam
