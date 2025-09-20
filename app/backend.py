@@ -237,8 +237,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     new_course = Course(
         courseCodeSection=f"{code}/{section}".upper() if code and section else None,
         courseDepartment=department,
-        courseCode=code.upper() if code else None,
-        courseSection=section.upper() if section else None,
         courseName=name.upper() if name else None,
         courseHour=hour,
         courseStudent=students,
