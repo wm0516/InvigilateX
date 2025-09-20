@@ -8,13 +8,19 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-# Set the default link into admin_login, because this program have 3 login phase
+
+
+# -------------------------------
+# Function for default route 
+# -------------------------------
 @app.route('/')
 def index():
     return redirect(url_for('login'))
 
 
-# login page (done with checking email address and hash password)
+# -------------------------------
+# Function for Auth Login route
+# -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     login_text = ''
@@ -50,7 +56,9 @@ def login():
     return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
 
-# register page (done with all input validation and userID as Primary Key)
+# -------------------------------
+# Function for Auth Register route
+# -------------------------------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     role_map = {
@@ -110,7 +118,9 @@ def register():
                            department_text=department_text, role_text=role_text, department_data=department_data, error_message=error_message)
 
 
-# forgot password page (done when the email exist in database will send reset email link)
+# -------------------------------
+# Function for Auth ForgotPassword route
+# -------------------------------
 @app.route('/forgotPassword', methods=['GET', 'POST'])
 def forgotPassword():
     forgot_email_text = ''
@@ -131,7 +141,9 @@ def forgotPassword():
     return render_template('auth/forgotPassword.html', forgot_email_text=forgot_email_text, error_message=error_message)
 
 
-# reset password page (done after reset password based on that user password)
+# -------------------------------
+# Function for Auth ResetPassword route
+# -------------------------------
 @app.route('/resetPassword/<token>', methods=['GET', 'POST'])
 def resetPassword(token):
     password_text_1 = ''
@@ -152,7 +164,9 @@ def resetPassword(token):
     return render_template('auth/resetPassword.html', password_text_1=password_text_1, password_text_2=password_text_2, error_message=error_message)
 
 
-# Logout button from homepage to login page
+# -------------------------------
+# Function for Auth Logout route
+# -------------------------------
 @app.route('/logout')
 def logout():
     # Clear the session
@@ -161,7 +175,9 @@ def logout():
     return redirect(url_for('login')) 
 
 
-# Once login sucessful, it will kept all that user data and just use when need
+# -------------------------------
+# Function for Auth SaveLoginCredentials 
+# -------------------------------
 @app.context_processor
 def inject_user_data():
     userId = session.get('user_id')
@@ -189,7 +205,10 @@ def inject_user_data():
         'user_status': ''
     }
 
-# protect all routes by checking if the user is logged in
+
+# -------------------------------
+# Function for Auth RequiredLoginForEachPage
+# -------------------------------
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -200,27 +219,38 @@ def login_required(f):
     return decorated_function
 
 
-# admin homepage
+# -------------------------------
+# Function for Admin Homepage route
+# -------------------------------
 @app.route('/admin/home', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
-# dean homepage
+
+# -------------------------------
+# Function for Dean Homepage route
+# -------------------------------
 @app.route('/dean/home', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def dean_homepage():
     return render_template('dean/deanHomepage.html', active_tab='dean_hometab')
 
-# hop homepage
+
+# -------------------------------
+# Function for HOP Homepage route
+# -------------------------------
 @app.route('/hop/home', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def hop_homepage():
     return render_template('hop/hopHomepage.html', active_tab='hop_hometab')
 
-# lecturer homepage
+
+# -------------------------------
+# Function for Lecturer Homepage route
+# -------------------------------
 @app.route('/lecturer/home', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def lecturer_homepage():
     return render_template('lecturer/lecturerHomepage.html', active_tab='lecturer_hometab')
 
