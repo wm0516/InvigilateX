@@ -167,11 +167,16 @@
                             {% if row.examVenue %}
                                 Exam Venue : [{{ row.examVenue }}]
                             {% else %}
-                                <span style="color:red;">[ERROR]</span>
+                                <span style="color:red;">Exam Venue : [ERROR]</span>
                             {% endif %}
                         </td>
                     
-                        <td>[{{ row.examNoInvigilator }}]</td>
+                        <td>
+                            {% if row.examNoInvigilator == 0 %}
+                                <span style="color:red;">[SELECT INVIGILATOR]</span>
+                            {% else %}
+                                [{{ row.examNoInvigilator }}]
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
