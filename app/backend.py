@@ -319,45 +319,37 @@ def get_available_venues(examDate, startTime, endTime):
     return usable_venues
 
 
+# Creates or updates Exam entry and related details
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
-    """
-    Handles updating exam details, venue availability, creating reports,
-    and assigning invigilators. Expects proper datetime objects for start_dt and end_dt.
-    """
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
     else:
         venue_text = venue_text.upper()
 
-    # 1. Find the course
     course = Course.query.filter_by(courseCodeSection=courseSection).first()
     if not course:
         return False, f"Course with section {courseSection} not found"
 
-    # 2. Find the related exam
     exam = Exam.query.filter_by(examId=course.courseExamId).first()
     if not exam:
         return False, f"Exam for course {courseSection} not found"
-    
+
     try:
-        # Convert to integer
         invigilatorNo = int(invigilatorNo)
     except ValueError:
-        return False, "Number of Invigilatiors must be an integer"
+        return False, "Number of Invigilators must be an integer"
 
-    # 3. Update the exam details
     exam.examStartTime = start_dt
     exam.examEndTime = end_dt
     exam.examVenue = venue_text
     exam.examNoInvigilator = invigilatorNo
 
-    # 4. Assign Practical Lecturer only (must exist in User table)
     if practicalLecturer:
         lecturer_user = User.query.filter(
             or_(
                 User.userId == practicalLecturer,
-                User.userName.ilike(practicalLecturer)   # allow name match
+                User.userName.ilike(practicalLecturer)
             )
         ).first()
 
@@ -368,15 +360,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     else:
         course.coursePractical = None
 
-    # Ignore tutorial lecturer
-    course.courseTutorial = None
+    course.courseTutorial = None  # Tutorial lecturer ignored
 
-    # 5. Save Venue Availability (handle overnight case)
     adj_end_dt = end_dt
-    if end_dt <= start_dt:  # overnight exam
+    if end_dt <= start_dt:
         adj_end_dt = end_dt + timedelta(days=1)
 
-    if venue_text: 
+    if venue_text:
         new_availability = VenueAvailability(
             venueNumber=venue_text,
             startDateTime=start_dt,
@@ -385,15 +375,12 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         )
         db.session.add(new_availability)
 
-    # 6. Create Invigilation Report
     new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
-    db.session.flush()  # ensures invigilationReportId is available
+    db.session.flush()
 
-    # 7. Calculate Exam Duration
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-    # 8. Get Eligible Invigilators (exclude lecturers)
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
     eligible_invigilators = User.query.filter(
         ~User.userId.in_(exclude_ids),
@@ -403,12 +390,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not eligible_invigilators:
         return False, "No eligible invigilators available for assignment"
 
-    # 9. Sort Eligible Invigilators by workload
     eligible_invigilators.sort(
         key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
     )
 
-    # 10. Assign Invigilators
     for _ in range(invigilatorNo):
         if not eligible_invigilators:
             break
@@ -432,12 +417,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
             remark=None
         )
         db.session.add(attendance)
-
         eligible_invigilators.remove(chosen)
 
-    # 11. Final Commit
     db.session.commit()
-    return exam
+    return True, "Exam created/updated successfully"
 
 
 

@@ -550,18 +550,23 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
-    department_data = Department.query.all() # For department code dropdown
-    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all() # For venue selection dropdown
-    exam_data = Exam.query.filter(Exam.examId.isnot(None), Exam.examStartTime.isnot(None), Exam.examEndTime.isnot(None)).all()   # Display out only with value data, null value data will not be displayed out 
+    department_data = Department.query.all()
+    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
+    exam_data = Exam.query.filter(
+        Exam.examId.isnot(None),
+        Exam.examStartTime.isnot(None),
+        Exam.examEndTime.isnot(None)
+    ).all()
+
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
             Exam.examId.isnot(None),
-            Exam.examStartTime.is_(None),          # Exam start time is NULL
-            Exam.examEndTime.is_(None)             # Exam end time is NULL
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None)
         )
     ).all()
 
-    # Default values for manual form
+    # Default manual form values
     courseSection_text = ''
     practicalLecturer_text = ''
     tutorialLecturer_text = ''
@@ -575,15 +580,15 @@ def admin_manageExam():
         if form_type == 'upload':
             file = request.files.get('exam_file')
             if file and file.filename:
-                print(f"Uploaded file: {file.filename}")
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
 
                     abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
                     exam_records_added = 0
+                    exam_records_failed = 0
+
                     for sheet_name in excel_file.sheet_names:
-                        print("Excel Sheets:", excel_file.sheet_names)
                         try:
                             df = pd.read_excel(
                                 excel_file,
@@ -591,112 +596,112 @@ def admin_manageExam():
                                 usecols="A:I",
                                 skiprows=1
                             )
-                            print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
+
                             df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
-                            print(f"\n[Sheet: {sheet_name}] Preview:")
-                            print(df.head())
-                            print("Detected columns:", df.columns.tolist())
+                            expected_cols = ['date', 'day', 'start', 'end', 'program',
+                                             'course/sec', 'lecturer', 'no of', 'room']
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
-                            
-                            # Normalize all string columns except 'day' to lowercase
+
+                            # Normalize
                             for col in df.columns:
                                 if col != 'day':
                                     df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
 
-                            # Convert 'day' abbreviations to full day names
                             df['day'] = df['day'].apply(
                                 lambda x: abbr_to_full.get(str(x).strip()[:3].lower(), x) if isinstance(x, str) else x
                             )
 
-                            for index, row in df.iterrows():
-                                try:
-                                    # Parse the date, time, and other data
-                                    examDate_text = parse_date(row['date'])  # Parsed date from Excel
-                                    startTime_text = standardize_time_with_seconds(row['start'])  # Parsed time from Excel
-                                    endTime_text = standardize_time_with_seconds(row['end'])  # Parsed time from Excel
+                            for _, row in df.iterrows():
+                                examDate_text = parse_date(row['date'])
+                                startTime_text = standardize_time_with_seconds(row['start'])
+                                endTime_text = standardize_time_with_seconds(row['end'])
 
-                                    if not examDate_text:
-                                        raise ValueError(f"Invalid date at row {index}")
+                                if not examDate_text or not startTime_text or not endTime_text:
+                                    exam_records_failed += 1
+                                    continue
 
-                                    if not startTime_text or not endTime_text:
-                                        raise ValueError(f"Invalid time at row {index}")
+                                start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
+                                end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
 
-                                    # Convert date and time into datetime
-                                    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
-                                    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
+                                courseSection_text = str(row['course/sec']).upper()
+                                practicalLecturer_text = str(row['lecturer']).strip().upper()
+                                tutorialLecturer_text = None
+                                venue_text = str(row['room']).upper()
 
-                                    # Additional data parsing
-                                    courseSection_text = str(row['course/sec']).upper()
-                                    practicalLecturer_text = str(row['lecturer']).strip().upper()
-                                    tutorialLecturer_text = None   # explicitly ignore
-                                    venue_text = str(row['room']).upper()
-
-                                    # Now proceed with your existing logic, e.g., create the exam and save it
-                                    create_exam_and_related(start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo=0)
-                                    db.session.commit()
+                                success, message = create_exam_and_related(
+                                    start_dt, end_dt, courseSection_text,
+                                    venue_text, practicalLecturer_text,
+                                    tutorialLecturer_text, invigilatorNo=0
+                                )
+                                if success:
                                     exam_records_added += 1
+                                else:
+                                    exam_records_failed += 1
 
-                                except Exception as row_err:
-                                    print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
-                    flash(f"Successfully uploaded {exam_records_added} record(s)" if exam_records_added > 0 else "No data uploaded", 
-                          'success' if exam_records_added > 0 else 'error')
+                    if exam_records_added > 0:
+                        flash(f"Successfully uploaded {exam_records_added} record(s)", "success")
+                    if exam_records_failed > 0:
+                        flash(f"Failed to upload {exam_records_failed} record(s)", "error")
+                    if exam_records_added == 0 and exam_records_failed == 0:
+                        flash("No data uploaded", "error")
+
                     return redirect(url_for('admin_manageExam'))
 
                 except Exception as e:
                     print(f"[File Processing Error] {e}")
-                    flash('File processing error: File upload in wrong format', 'error')
+                    flash("File processing error: File upload in wrong format", "error")
                     return redirect(url_for('admin_manageExam'))
             else:
-                flash("No file uploaded", 'error')
+                flash("No file uploaded", "error")
                 return redirect(url_for('admin_manageExam'))
-        
 
         # --------------------- DASHBOARD ADD EXAM FORM ---------------------
-        if form_type == 'dashboard':
+        elif form_type == 'dashboard':
             return redirect(url_for('admin_manageExam'))
-
 
         # --------------------- MANUAL ADD EXAM FORM ---------------------
         elif form_type == 'manual':
             try:
-                # --- Raw input ---
                 startDate_raw = request.form.get('startDate', '').strip()
                 endDate_raw = request.form.get('endDate', '').strip()
                 startTime_raw = request.form.get('startTime', '').strip()
                 endTime_raw = request.form.get('endTime', '').strip()
 
-                # --- Normalize time strings ---
-                if len(startTime_raw) == 5:   # HH:MM → add :00
+                if len(startTime_raw) == 5:
                     startTime_raw += ":00"
                 if len(endTime_raw) == 5:
                     endTime_raw += ":00"
 
-                # --- Convert to datetime objects ---
                 start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-                end_dt   = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+                end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
 
-                # --- Other fields ---
                 courseSection_text = request.form.get('courseSection', '').strip()
                 venue_text = request.form.get('venue', '').strip()
                 practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                invigilatorNo_text = int(request.form.get('invigilatorNo', '0'))
+                invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
-                # --- Call core function ---
-                create_exam_and_related(start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
-                flash("New Exam Record Added Successfully", "success")
+                success, message = create_exam_and_related(
+                    start_dt, end_dt, courseSection_text,
+                    venue_text, practicalLecturer_text,
+                    tutorialLecturer_text, invigilatorNo_text
+                )
+
+                if success:
+                    flash(message, "success")
+                else:
+                    flash(message, "error")
                 return redirect(url_for('admin_manageExam'))
 
             except Exception as manual_err:
                 print(f"[Manual Form Error] {manual_err}")
                 traceback.print_exc()
-                flash(f"Error processing manual form: {manual_err}", 'error')
+                flash(f"Error processing manual form: {manual_err}", "error")
                 return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
