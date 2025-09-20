@@ -324,6 +324,12 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     Handles updating exam details, venue availability, creating reports,
     and assigning invigilators. Expects proper datetime objects for start_dt and end_dt.
     """
+    venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
+    if not venue_place:
+        venue_text = None
+    else:
+        venue_text = venue_text.upper()
+
     # 1. Find the course
     course = Course.query.filter_by(courseCodeSection=courseSection).first()
     if not course:
