@@ -763,13 +763,21 @@ def admin_manageStaff():
                             print(f"\n[Sheet: {sheet_name}] Preview:")
                             print(df.head())
                             print("Detected columns:", df.columns.tolist())
-                            
+
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
 
-                            #  Normalize all string values to lowercase
+                            # Drop completely blank rows (skip NaN)
+                            df = df.dropna(subset=['id', 'email'])
+
+                            # Normalize all string values to lowercase
                             for col in df.columns:
                                 df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
+
+                            # Fix contact column: remove .0 from floats, keep strings intact
+                            df['contact'] = df['contact'].apply(
+                                lambda x: str(int(float(x))) if pd.notna(x) and str(x).replace('.', '', 1).isdigit() else str(x).strip()
+                            )
 
                             role_mapping = {
                                 'lecturer': 1,
@@ -793,6 +801,7 @@ def admin_manageStaff():
                                     flash(f"{id_text}, {email_text}, {contact_text}", 'success')
                                     valid, result = check_staff(id_text, email_text, contact_text)
                                     flash(f"check_staff result: valid={valid}, result={result}", 'success')
+
                                     if valid:
                                         new_staff = User(
                                             userId=id_text,
@@ -826,7 +835,7 @@ def admin_manageStaff():
             else:
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageStaff'))
-
+            
 
         # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
         elif form_type == 'modify':
