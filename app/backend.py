@@ -29,24 +29,28 @@ role_map = {
 
 
 
-
-
-# Basic Validation Function 1: Email Format [End with @newinti.edu.my]
+# Basic User Details Function
+# -------------------------------
+# Basic User Details Function 1: Email Format [End with @newinti.edu.my]
+# -------------------------------
 def email_format(email):
     return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
 
-
-# Basic Validation Function 2: Contact Number Format [Start With 01 and Total Length in Between 10-11]
+# -------------------------------
+# Basic User Details Function 2: Contact Number Format [Start With 01 and Total Length in Between 10-11]
+# -------------------------------
 def contact_format(contact):
     return bool(re.match(r"^01\d{8,9}$", contact))
 
-
-# Basic Validation Function 3: Password Format [With Min 8-20 Length and Include Special Character]
+# -------------------------------
+# Basic User Details Function 3: Password Format [With Min 8-20 Length and Include Special Character]
+# -------------------------------
 def password_format(password):
     return bool(re.match(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,20}$", password))
 
-
-# Basic Validation Function 4: Check Unique Contact [Contact Was Unique in Database]
+# -------------------------------
+# Basic User Details Function 4: Check Unique Contact [Contact Was Unique in Database]
+# -------------------------------
 def check_contact(contact):
     existing_contact = User.query.filter(User.userContact == contact).first()
     if existing_contact:
@@ -57,9 +61,10 @@ def check_contact(contact):
 
 
 
-
-
-# FrontPart Validation Function 1: Check Login [Email and Password]
+# Auth Function
+# -------------------------------
+# Auth Function 1: Check Login [Email and Password]
+# -------------------------------
 def check_login(loginEmail, loginPassword):
     user = User.query.filter_by(userEmail=loginEmail).first()
     if not user:
@@ -71,8 +76,9 @@ def check_login(loginEmail, loginPassword):
 
     return True, user.userId, user.userLevel
 
-
-# FrontPart Validation Function 2: Check Access [If Not User Will Show "Unauthorized Access"]
+# -------------------------------
+# Auth Function 2: Check Access [If Not User Will Show "Unauthorized Access"]
+# -------------------------------
 def role_required(required_role):
     def decorator(f):
         @wraps(f)
@@ -88,8 +94,9 @@ def role_required(required_role):
         return decorated_function
     return decorator
 
-
-# FrontPart Validation Function 3: Check Register [ID, Email, and Contact must be unique]
+# -------------------------------
+# Auth Function 3: Check Register [ID, Email, and Contact must be unique]
+# -------------------------------
 def check_register(id, email, contact, password1, password2):
     if not email_format(email):
         return False, "Wrong Email Address Format"
@@ -114,7 +121,9 @@ def check_register(id, email, contact, password1, password2):
 
     return True, ""
 
-# FrontPart Validation Function 4: Check Forgot Password [Email User to Send Reset Password Link]
+# -------------------------------
+# Auth Function 4: Check Forgot Password [Email User to Send Reset Password Link]
+# -------------------------------
 def check_forgotPasswordEmail(forgotEmail):
     user = User.query.filter_by(userEmail=forgotEmail).first()
     if not user:
@@ -143,7 +152,9 @@ The InvigilateX Team'''
     except Exception as e:
         return False, f"Failed to Send Email. Error: {str(e)}"
 
-# FrontPart Validation Function 5: Check Reset Password [Must with Token(userId), and Both Password Must Be Same]
+# -------------------------------
+# Auth Function 5: Check Reset Password [Must with Token(userId), and Both Password Must Be Same]
+# -------------------------------
 def check_resetPassword(token, resetPassword1, resetPassword2):
     try:
         # Decode token to get the email
@@ -174,9 +185,10 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 
 
 
-
-
-# Creates a new Exam and Course entry in the database.
+# Admin Function
+# -------------------------------
+# Admin Function 1: Create Course with Automatically Exam when with all correct data
+# -------------------------------
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
     # Validate department code
     department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
@@ -248,78 +260,9 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     db.session.commit()
     return True, "Course created successfully"
 
-
-def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
-    # Validate department code
-    department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
-    if not department_name:
-        department = None
-    else:
-        department = department.upper()
-
-    # Email and contact format check
-    if not email_format(email):
-        return False, "Wrong Email Address Format"
-    if not contact_format(contact):
-        return False, "Wrong Contact Number Format"
-    
-    # Uniqueness checks
-    if User.query.filter_by(userId=id).first():
-        return False, "Id Already exists"
-    if User.query.filter_by(userEmail=email).first():
-        return False, "Email Already exists"
-    if User.query.filter_by(userContact=contact).first():
-        return False, "Contact Number Already exists"
-    
-    # Insert new staff
-    new_staff = User(
-        userId=id,
-        userDepartment=department,
-        userName=name,
-        userLevel=role,
-        userEmail=email,
-        userContact=contact,
-        userGender=gender,
-        userPassword=hashed_pw
-    )
-    db.session.add(new_staff)
-    db.session.commit()
-    return True, "Staff created successfully"
-
-
-
-
-def get_available_venues(examDate, startTime, endTime):
-    # Return a list of venueNumbers that are AVAILABLE during the given exam slot.
-    available_venues = Venue.query.filter_by(venueStatus="AVAILABLE").all()
-    usable_venues = []
-
-    for venue in available_venues:
-        conflicting = VenueAvailability.query.filter(
-            VenueAvailability.venueNumber == venue.venueNumber,
-            or_(
-                and_(
-                    VenueAvailability.startDateTime <= startTime,
-                    VenueAvailability.endDateTime > startTime
-                ),
-                and_(
-                    VenueAvailability.startDateTime < endTime,
-                    VenueAvailability.endDateTime >= endTime
-                ),
-                and_(
-                    VenueAvailability.startDateTime >= startTime,
-                    VenueAvailability.endDateTime <= endTime
-                )
-            )
-        ).first()
-
-        if not conflicting:
-            usable_venues.append(venue.venueNumber)
-
-    return usable_venues
-
-
-# Creates or updates Exam entry and related details
+# -------------------------------
+# Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
+# -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
@@ -422,12 +365,81 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     db.session.commit()
     return True, "Exam created/updated successfully"
 
+# -------------------------------
+# Admin Function 3: Create Staff when with all correct data
+# -------------------------------
+def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
+    # Validate department code
+    department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
+    if not department_name:
+        department = None
+    else:
+        department = department.upper()
 
+    # Email and contact format check
+    if not email_format(email):
+        return False, "Wrong Email Address Format"
+    if not contact_format(contact):
+        return False, "Wrong Contact Number Format"
+    
+    # Uniqueness checks
+    if User.query.filter_by(userId=id).first():
+        return False, "Id Already exists"
+    if User.query.filter_by(userEmail=email).first():
+        return False, "Email Already exists"
+    if User.query.filter_by(userContact=contact).first():
+        return False, "Contact Number Already exists"
+    
+    # Insert new staff
+    new_staff = User(
+        userId=id,
+        userDepartment=department,
+        userName=name,
+        userLevel=role,
+        userEmail=email,
+        userContact=contact,
+        userGender=gender,
+        userPassword=hashed_pw
+    )
+    db.session.add(new_staff)
+    db.session.commit()
+    return True, "Staff created successfully"
 
+# -------------------------------
+# Admin Function 4
+# -------------------------------
+def get_available_venues(examDate, startTime, endTime):
+    # Return a list of venueNumbers that are AVAILABLE during the given exam slot.
+    available_venues = Venue.query.filter_by(venueStatus="AVAILABLE").all()
+    usable_venues = []
 
+    for venue in available_venues:
+        conflicting = VenueAvailability.query.filter(
+            VenueAvailability.venueNumber == venue.venueNumber,
+            or_(
+                and_(
+                    VenueAvailability.startDateTime <= startTime,
+                    VenueAvailability.endDateTime > startTime
+                ),
+                and_(
+                    VenueAvailability.startDateTime < endTime,
+                    VenueAvailability.endDateTime >= endTime
+                ),
+                and_(
+                    VenueAvailability.startDateTime >= startTime,
+                    VenueAvailability.endDateTime <= endTime
+                )
+            )
+        ).first()
 
+        if not conflicting:
+            usable_venues.append(venue.venueNumber)
 
-# Admin Validation Function 6: Check Profile [Contact Must be Unique in Database, and Both Password Must be Same]
+    return usable_venues
+
+# -------------------------------
+# Admin Function 5: View and Edit Admin Profile
+# -------------------------------
 def check_profile(id, contact, password1, password2):
     # If contact is entered, validate format
     if contact:
@@ -456,18 +468,6 @@ def check_profile(id, contact, password1, password2):
         return True, "No Update"
     
     return True, ""
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
