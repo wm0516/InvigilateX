@@ -164,9 +164,13 @@
                             Exam Day   : [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] <br>
                             Exam Time  : [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}] <br>
                             Exam Period: [{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m] <br>
-                            Exam Venue : [{{ row.examVenue }}]
+                            {% if row.examVenue %}
+                                Exam Venue : [{{ row.examVenue }}]
+                            {% else %}
+                                <span style="color:red;">[ERROR]</span>
+                            {% endif %}
                         </td>
-                        
+                    
                         <td>[{{ row.examNoInvigilator }}]</td>
                     </tr>
                 {% endfor %}
@@ -175,7 +179,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-
-
