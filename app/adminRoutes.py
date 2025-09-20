@@ -584,8 +584,8 @@ def admin_manageExam():
         # --------------------- UPLOAD ADD EXAM FORM ---------------------
         if form_type == 'upload':
             file = request.files.get('exam_file')
-            print(f"Read file: {file}")
             if file and file.filename:
+                print(f"Uploaded file: {file.filename}")
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
@@ -593,6 +593,7 @@ def admin_manageExam():
                     abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
                     exam_records_added = 0
                     for sheet_name in excel_file.sheet_names:
+                        print("Excel Sheets:", excel_file.sheet_names)
                         try:
                             df = pd.read_excel(
                                 excel_file,
@@ -600,9 +601,12 @@ def admin_manageExam():
                                 usecols="A:I",
                                 skiprows=1
                             )
+                            print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
                             df.columns = [str(col).strip().lower() for col in df.columns]
                             expected_cols = ['date', 'day', 'start', 'end', 'program', 'course/sec', 'lecturer', 'no of', 'room']
-                            print(f"Read file table: {expected_cols}")
+                            print(f"\n[Sheet: {sheet_name}] Preview:")
+                            print(df.head())
+                            print("Detected columns:", df.columns.tolist())
 
                             if df.columns.tolist() != expected_cols:
                                 raise ValueError("Excel columns do not match expected format")
@@ -733,7 +737,6 @@ def admin_manageStaff():
         if form_type == 'upload':
             file = request.files.get('staff_file')
             if file and file.filename:
-                print(f"Uploaded file: {file.filename}")
                 try:
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
