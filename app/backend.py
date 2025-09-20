@@ -263,25 +263,25 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
     else:
         department = department.upper()
 
+    # Email and contact format check
     if not email_format(email):
         return False, "Wrong Email Address Format"
     if not contact_format(contact):
         return False, "Wrong Contact Number Format"
     
-    existing_id = User.query.filter(User.userId == id).first()
-    if existing_id:
+    # Uniqueness checks
+    if User.query.filter_by(userId=id).first():
         return False, "Id Already exists"
-    existing_email = User.query.filter(User.userEmail == email).first()
-    if existing_email:
+    if User.query.filter_by(userEmail=email).first():
         return False, "Email Already exists"
-    existing_contact = User.query.filter(User.userContact == contact).first()
-    if existing_contact:
+    if User.query.filter_by(userContact=contact).first():
         return False, "Contact Number Already exists"
     
+    # Insert new staff
     new_staff = User(
-        userId=existing_id,
+        userId=id,
         userDepartment=department,
-        userName= name,
+        userName=name,
         userLevel=role,
         userEmail=email,
         userContact=contact,
@@ -290,6 +290,8 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
     )
     db.session.add(new_staff)
     db.session.commit()
+    return True, "Staff created successfully"
+
 
 
 

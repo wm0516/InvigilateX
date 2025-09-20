@@ -726,13 +726,6 @@ def admin_manageStaff():
     role_text = ''
     error_message = None
 
-    role_map = {
-        'LECTURER': LECTURER,
-        'DEAN': DEAN,
-        'HOP': HOP,
-        'ADMIN': ADMIN
-    }
-
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
         
@@ -745,6 +738,7 @@ def admin_manageStaff():
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     staff_records_added = 0
+                    staff_records_failed = 0
 
                     # --- helper for contact cleaning ---
                     def clean_contact(contact):
@@ -795,36 +789,40 @@ def admin_manageStaff():
                             }
 
                             for index, row in df.iterrows():
-                                try:
-                                    id_text         = str(row['id']).upper()
-                                    name_text       = str(row['name']).upper()
-                                    department_text = str(row['department']).upper()
-                                    email_text      = str(row['email'])
-                                    contact_text    = str(row['contact'])
-                                    gender_text     = str(row['gender']).upper()
-                                    role_text_str   = str(row['role']).strip().lower()
-                                    role_text       = role_mapping.get(role_text_str)
-                                    hashed_pw       = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
+                                id_text         = str(row['id']).upper()
+                                name_text       = str(row['name']).upper()
+                                department_text = str(row['department']).upper()
+                                email_text      = str(row['email'])
+                                contact_text    = str(row['contact'])
+                                gender_text     = str(row['gender']).upper()
+                                role_text_str   = str(row['role']).strip().lower()
+                                role_text       = role_mapping.get(role_text_str)
+                                hashed_pw       = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-                                    create_staff(
-                                        id=id_text, 
-                                        department=department_text, 
-                                        name=name_text, 
-                                        role=role_text, 
-                                        email=email_text,
-                                        contact=contact_text,
-                                        gender=gender_text, 
-                                        hashed_pw=hashed_pw
-                                    )
+                                success, message = create_staff(
+                                    id=id_text, 
+                                    department=department_text, 
+                                    name=name_text, 
+                                    role=role_text, 
+                                    email=email_text,
+                                    contact=contact_text,
+                                    gender=gender_text, 
+                                    hashed_pw=hashed_pw
+                                )
+                                if success:
                                     staff_records_added += 1
-                                except Exception as row_err:
-                                    print(f"[Row Error] {row_err}")
+                                else:
+                                    staff_records_failed += 1
+                                    print(f"[Row Error] {message}")
+
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
                     if staff_records_added > 0:
                         flash(f"Successful upload {staff_records_added} record(s)", 'success')
-                    else:
+                    if staff_records_failed > 0:
+                        flash(f"Failed to upload {staff_records_failed} record(s)", 'error')
+                    if staff_records_added == 0 and staff_records_failed == 0:
                         flash("No data uploaded", 'error')
 
                     return redirect(url_for('admin_manageStaff'))
@@ -837,11 +835,9 @@ def admin_manageStaff():
                 flash("No file uploaded", 'error')
                 return redirect(url_for('admin_manageStaff'))
 
-            
         # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
         elif form_type == 'modify':
             return redirect(url_for('admin_manageStaff'))
-        
 
         # --------------------- MANUAL ADD LECTURER FORM ---------------------
         elif form_type == 'manual':
@@ -851,10 +847,10 @@ def admin_manageStaff():
             contact_text = request.form.get('contact', '').strip()
             gender_text = request.form.get('gender', '').strip()
             department_text = request.form.get('department', '').strip()
-            role_text = request.form.get('role', '').strip()
+            role_text = int(request.form.get('role', '0').strip())  # ensure integer
             hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
             
-            create_staff(
+            success, message = create_staff(
                 id=id_text, 
                 department=department_text, 
                 name=name_text, 
@@ -864,7 +860,11 @@ def admin_manageStaff():
                 gender=gender_text, 
                 hashed_pw=hashed_pw
             )
-            flash("New Staff Added Successfully", "success")
+
+            if success:
+                flash(message, "success")
+            else:
+                flash(message, "error")
             return redirect(url_for('admin_manageStaff'))
 
     return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
