@@ -176,32 +176,6 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 
 
 
-# Admin Validation Function 1: Check Course [Course Code/Section Must be Unique in Database, and Hour Must be Integer]
-def check_course(code, section, hour, students):
-    courseCodeSection_text = (code + '/' + section)
-    existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
-    if existing_courseCodeSection:
-        return False, "Course Already Registered"
-    
-    # Validate 'hour'
-    try:
-        hour = int(hour)
-    except ValueError:
-        return False, "Hour must be an integer"
-    if hour < 0:
-        return False, "Hour cannot be negative"
-    
-    # Validate 'students'
-    try:
-        students = int(students)
-    except ValueError:
-        return False, "Students must be an integer"
-    if students < 0:
-        return False, "Students cannot be negative"
-
-    return True, ""
-
-
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
     # Validate department code
@@ -224,6 +198,27 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         tutorial_id = tutorial_user.userId   
     else:
         tutorial_id = None
+
+    courseCodeSection_text = (code + '/' + section)
+    existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
+    if existing_courseCodeSection:
+        return False, "Course Already Registered"
+    
+    # Validate 'hour'
+    try:
+        hour = int(hour)
+    except ValueError:
+        return False, "Hour must be an integer"
+    if hour < 0:
+        return False, "Hour cannot be negative"
+    
+    # Validate 'students'
+    try:
+        students = int(students)
+    except ValueError:
+        return False, "Students must be an integer"
+    if students < 0:
+        return False, "Students cannot be negative"
 
     # Only create an Exam if both lecturers are valid
     exam_id = None
@@ -253,6 +248,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     )
     db.session.add(new_course)
     db.session.commit()
+    return True, "Course created successfully"
 
 
 def create_staff(id, department, name, role, email, contact, gender, hashed_pw):

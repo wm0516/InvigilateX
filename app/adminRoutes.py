@@ -362,7 +362,7 @@ def admin_manageCourse():
                                 courseStudent_text    = row['no of students']
 
                                 # Pass values directly; create_course_and_exam will handle lookups
-                                success = create_course_and_exam(
+                                success, message = create_course_and_exam(
                                     department=courseDepartment_text,
                                     code=courseCode_text,
                                     section=courseSection_text,
@@ -414,15 +414,7 @@ def admin_manageCourse():
             courseTutorial_text     = request.form.get('tutorialLecturerSelect', '').strip()
             courseStudent_text      = request.form.get('courseStudent', '').strip()
 
-            valid, result = check_course(courseCode_text, courseSection_text, courseHour_text, courseStudent_text)
-            if not valid:
-                flash(result, 'error')
-                return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data, 
-                                       courseDepartment_text=courseDepartment_text, courseCode_text=courseCode_text, courseSection_text=courseSection_text,courseName_text=courseName_text, 
-                                       courseHour_text=courseHour_text, coursePractical=coursePractical_text,courseTutorial=courseTutorial_text, courseStudent_text=courseStudent_text)
-
-            # All valid, proceed to add course
-            create_course_and_exam(
+            success, message = create_course_and_exam(
                 department=courseDepartment_text,
                 code=courseCode_text,
                 section=courseSection_text,
@@ -432,13 +424,14 @@ def admin_manageCourse():
                 tutorial=courseTutorial_text,
                 students=int(courseStudent_text)
             )
-            flash(f"{coursePractical_text}, {courseTutorial_text}", "success")
-            flash("New Course Added Successfully", "success")
+            if success:
+                flash(message, "success")
+            else:
+                flash(message, "error")
             return redirect(url_for('admin_manageCourse'))
 
     # GET request fallback
     return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
-
 
 # -------------------------------
 # Function for Admin ManageDepartment Route
@@ -813,7 +806,6 @@ def admin_manageStaff():
                                     staff_records_added += 1
                                 else:
                                     staff_records_failed += 1
-                                    print(f"[Row Error] {message}")
 
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
