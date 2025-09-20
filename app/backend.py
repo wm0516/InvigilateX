@@ -54,6 +54,11 @@ def check_contact(contact):
     return True, ""
 
 
+
+
+
+
+
 # FrontPart Validation Function 1: Check Login [Email and Password]
 def check_login(loginEmail, loginPassword):
     user = User.query.filter_by(userEmail=loginEmail).first()
@@ -197,8 +202,6 @@ def check_course(code, section, hour, students):
     return True, ""
 
 
-
-
 # Creates a new Exam and Course entry in the database.
 def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
     # Validate department code
@@ -252,6 +255,41 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     db.session.commit()
 
 
+def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
+    # Validate department code
+    department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
+    if not department_name:
+        department = None
+    else:
+        department = department.upper()
+
+    if not email_format(email):
+        return False, "Wrong Email Address Format"
+    if not contact_format(contact):
+        return False, "Wrong Contact Number Format"
+    
+    existing_id = User.query.filter(User.userId == id).first()
+    if existing_id:
+        return False, "Id Already exists"
+    existing_email = User.query.filter(User.userEmail == email).first()
+    if existing_email:
+        return False, "Email Already exists"
+    existing_contact = User.query.filter(User.userContact == contact).first()
+    if existing_contact:
+        return False, "Contact Number Already exists"
+    
+    new_staff = User(
+        userId=existing_id,
+        userDepartment=department,
+        userName= name,
+        userLevel=role,
+        userEmail=email,
+        userContact=contact,
+        userGender=gender,
+        userPassword=hashed_pw
+    )
+    db.session.add(new_staff)
+    db.session.commit()
 
 
 
@@ -404,6 +442,9 @@ def check_staff(id, email, contact):
     
     return True, ""
 
+
+
+
 # Admin Validation Function 6: Check Profile [Contact Must be Unique in Database, and Both Password Must be Same]
 def check_profile(id, contact, password1, password2):
     # If contact is entered, validate format
@@ -433,10 +474,6 @@ def check_profile(id, contact, password1, password2):
         return True, "No Update"
     
     return True, ""
-
-
-
-
 
 
 

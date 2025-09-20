@@ -806,24 +806,17 @@ def admin_manageStaff():
                                     role_text       = role_mapping.get(role_text_str)
                                     hashed_pw       = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
-                                    valid, result = check_staff(id_text, email_text, contact_text)
-                                    if not valid:
-                                        flash(f"result={result}", 'error')
-
-                                    if valid:
-                                        new_staff = User(
-                                            userId=id_text,
-                                            userDepartment=department_text,
-                                            userName=name_text,
-                                            userLevel=role_text,
-                                            userEmail=email_text,
-                                            userContact=contact_text,
-                                            userGender=gender_text,
-                                            userPassword=hashed_pw
-                                        )
-                                        db.session.add(new_staff)
-                                        db.session.commit()
-                                        staff_records_added += 1
+                                    create_staff(
+                                        id=id_text, 
+                                        department=department_text, 
+                                        name=name_text, 
+                                        role=role_text, 
+                                        email=email_text,
+                                        contact=contact_text,
+                                        gender=gender_text, 
+                                        hashed_pw=hashed_pw
+                                    )
+                                    staff_records_added += 1
                                 except Exception as row_err:
                                     print(f"[Row Error] {row_err}")
                         except Exception as sheet_err:
@@ -860,35 +853,17 @@ def admin_manageStaff():
             department_text = request.form.get('department', '').strip()
             role_text = request.form.get('role', '').strip()
             hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
-
-            valid, result = check_staff(id_text, email_text, contact_text)
-            if not valid:
-                flash(result, 'error')
-                return render_template(
-                    'admin/adminManageStaff.html',
-                    user_data=user_data,
-                    department_data=department_data,
-                    id_text=id_text,
-                    name_text=name_text,
-                    email_text=email_text,
-                    contact_text=contact_text,
-                    department_text=department_text,
-                    role_text=role_text,gender_text=gender_text,
-                    active_tab='admin_manageStafftab'
-                )
-
-            new_staff = User(
-                userId=id_text.upper(),
-                userDepartment=department_text.upper(),
-                userName=name_text.upper(),
-                userLevel=role_map[role_text],
-                userEmail=email_text,
-                userContact=contact_text,
-                userGender=gender_text,
-                userPassword=hashed_pw
+            
+            create_staff(
+                id=id_text, 
+                department=department_text, 
+                name=name_text, 
+                role=role_text, 
+                email=email_text,
+                contact=contact_text,
+                gender=gender_text, 
+                hashed_pw=hashed_pw
             )
-            db.session.add(new_staff)
-            db.session.commit()
             flash("New Staff Added Successfully", "success")
             return redirect(url_for('admin_manageStaff'))
 
