@@ -333,6 +333,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # 1. Find the course
     course = Course.query.filter_by(courseCodeSection=courseSection).first()
     if not course:
+        flash (f"Course with section {courseSection} not found", "error")
         raise ValueError(f"Course with section {courseSection} not found")
 
     # 2. Find the related exam
