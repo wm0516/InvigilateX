@@ -642,7 +642,7 @@ def admin_manageExam():
                                     courseSection_text = str(row['course/sec']).upper()
                                     practicalLecturer_text = tutorialLecturer_text = str(row['lecturer']).upper()
                                     venue_text = str(row['room']).upper()
-                                    invigilatorNo_text = row['no of invigilator']
+                                    invigilatorNo_text = row['no of']
 
                                     # Now proceed with your existing logic, e.g., create the exam and save it
                                     create_exam_and_related(examDate_text, start_dt, end_dt, courseSection_text, venue_text, practicalLecturer_text, tutorialLecturer_text, invigilatorNo_text)
