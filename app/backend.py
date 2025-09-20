@@ -425,25 +425,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
 
 
-# Admin Validation Function 5: Check Lecturer [Id, Email, Contact Must be Unique in Database]
-def check_staff(id, email, contact):
-    if not email_format(email):
-        return False, "Wrong Email Address Format"
-    if not contact_format(contact):
-        return False, "Wrong Contact Number Format"
-    
-    existing_id = User.query.filter(User.userId == id).first()
-    if existing_id:
-        return False, "Id Already exists"
-    existing_email = User.query.filter(User.userEmail == email).first()
-    if existing_email:
-        return False, "Email Already exists"
-    existing_contact = User.query.filter(User.userContact == contact).first()
-    if existing_contact:
-        return False, "Contact Number Already exists"
-    
-    return True, ""
-
 
 
 
