@@ -333,13 +333,12 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # 1. Find the course
     course = Course.query.filter_by(courseCodeSection=courseSection).first()
     if not course:
-        flash (f"Course with section {courseSection} not found", "error")
-        raise ValueError(f"Course with section {courseSection} not found")
+        return False, f"Course with section {courseSection} not found"
 
     # 2. Find the related exam
     exam = Exam.query.filter_by(examId=course.courseExamId).first()
     if not exam:
-        raise ValueError(f"Exam for course {courseSection} not found")
+        return False, f"Exam for course {courseSection} not found"
     
     try:
         # Convert to integer
@@ -363,7 +362,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         ).first()
 
         if not lecturer_user:
-            raise ValueError(f"Lecturer '{practicalLecturer}' not found in User table")
+            return False, f"Lecturer '{practicalLecturer}' not found in User table"
 
         course.coursePractical = lecturer_user.userId
     else:
@@ -371,19 +370,20 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     # Ignore tutorial lecturer
     course.courseTutorial = None
-    
+
     # 5. Save Venue Availability (handle overnight case)
     adj_end_dt = end_dt
     if end_dt <= start_dt:  # overnight exam
         adj_end_dt = end_dt + timedelta(days=1)
 
-    new_availability = VenueAvailability(
-        venueNumber=venue_text,
-        startDateTime=start_dt,
-        endDateTime=adj_end_dt,
-        examId=exam.examId
-    )
-    db.session.add(new_availability)
+    if venue_text: 
+        new_availability = VenueAvailability(
+            venueNumber=venue_text,
+            startDateTime=start_dt,
+            endDateTime=adj_end_dt,
+            examId=exam.examId
+        )
+        db.session.add(new_availability)
 
     # 6. Create Invigilation Report
     new_report = InvigilationReport(examId=exam.examId)
@@ -401,7 +401,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     ).all()
 
     if not eligible_invigilators:
-        raise ValueError("No eligible invigilators available for assignment.")
+        return False, "No eligible invigilators available for assignment"
 
     # 9. Sort Eligible Invigilators by workload
     eligible_invigilators.sort(
