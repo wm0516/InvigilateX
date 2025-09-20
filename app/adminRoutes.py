@@ -362,7 +362,7 @@ def admin_manageCourse():
                                 courseStudent_text    = row['no of students']
 
                                 # Pass values directly; create_course_and_exam will handle lookups
-                                success, message = create_course_and_exam(
+                                success = create_course_and_exam(
                                     department=courseDepartment_text,
                                     code=courseCode_text,
                                     section=courseSection_text,
@@ -372,7 +372,6 @@ def admin_manageCourse():
                                     tutorial=courseTutorial_text,
                                     students=int(courseStudent_text)
                                 )
-
                                 if success:
                                     course_records_added += 1
                                 else:

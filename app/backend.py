@@ -253,7 +253,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     )
     db.session.add(new_course)
     db.session.commit()
-    return True, "Course created successfully"
 
 
 def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
