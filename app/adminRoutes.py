@@ -61,6 +61,7 @@ def standardize_time_with_seconds(time_value):
     else:
         return None
 
+
 # -------------------------------
 # Read All InvigilationAttendance Data From Database
 # -------------------------------
@@ -72,6 +73,7 @@ def get_all_attendances():
         .all()
     )
 
+
 # -------------------------------
 # Read All LecturerName Under The Selected Department For ManageCoursePage
 # -------------------------------
@@ -82,6 +84,7 @@ def get_lecturers_by_department(department_code):
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
     return jsonify(lecturers_list)  
+
 
 # -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage
@@ -102,6 +105,7 @@ def get_courses_by_department(department_code):
     course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
     return jsonify(course_list)
 
+
 # -------------------------------
 # Read All CourseDetails Under The Selected Department For ManageExamPage
 # -------------------------------
@@ -119,6 +123,7 @@ def get_course_details(program_code, course_code_section):
             "student"           : selected_course.courseStudent
         })
     return jsonify({"error": "Course not found"})
+
 
 # -------------------------------
 # Extract Base Name + Timestamp
@@ -186,6 +191,7 @@ def parse_activity(line):
         activity["room"] = m_room.group(1)
 
     return activity
+
 
 # -------------------------------
 # Parse Timetable Text
@@ -297,6 +303,135 @@ def save_timetable_to_db(structured):
     return len(new_entries)
 
 
+# -------------------------------
+# Function handle file upload
+# -------------------------------
+def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
+    file = request.files.get(file_key)
+    if file and file.filename:
+        try:
+            file_stream = BytesIO(file.read())
+            excel_file = pd.ExcelFile(file_stream)
+
+            records_added = 0
+            records_failed = 0
+
+            for sheet_name in excel_file.sheet_names:
+                try:
+                    df = pd.read_excel(
+                        excel_file,
+                        sheet_name=sheet_name,
+                        usecols=usecols,
+                        skiprows=skiprows,
+                        dtype=str
+                    )
+                    df.columns = [str(col).strip().lower() for col in df.columns]
+
+                    if df.columns.tolist() != expected_cols:
+                        raise ValueError(f"Excel columns do not match expected format: {df.columns.tolist()}")
+
+                    # normalize all columns
+                    for col in df.columns:
+                        df[col] = df[col].apply(lambda x: str(x).strip() if isinstance(x, str) else x)
+
+                    # process each row using the provided callback
+                    for _, row in df.iterrows():
+                        success, message = process_row_fn(row)
+                        if success:
+                            records_added += 1
+                        else:
+                            records_failed += 1
+
+                except Exception as sheet_err:
+                    print(f"[Sheet Error] {sheet_err}")
+
+            if records_added > 0:
+                flash(f"Successfully uploaded {records_added} record(s)", "success")
+            if records_failed > 0:
+                flash(f"Failed to upload {records_failed} record(s)", "error")
+            if records_added == 0 and records_failed == 0:
+                flash("No data uploaded", "error")
+
+            return redirect(url_for(redirect_endpoint))
+
+        except Exception as e:
+            print(f"[File Processing Error] {e}")
+            flash("File processing error: File upload in wrong format", "error")
+            return redirect(url_for(redirect_endpoint))
+    else:
+        flash("No file uploaded", "error")
+        return redirect(url_for(redirect_endpoint))
+
+
+# -------------------------------
+# Function for Admin ManageCourse Route Upload File
+# -------------------------------
+def process_course_row(row):
+    return create_course_and_exam(
+        department=str(row['department code']).strip(),
+        code=str(row['course code']).strip(),
+        section=str(row['course section']).strip(),
+        name=str(row['course name']).strip(),
+        hour=int(row['credit hour']),
+        practical=str(row['practical lecturer']).strip().upper(),
+        tutorial=str(row['tutorial lecturer']).strip().upper(),
+        students=int(row['no of students'])
+    )
+
+
+# -------------------------------
+# Function for Admin ManageExam Route Upload File
+# -------------------------------
+def process_exam_row(row):
+    examDate_text = parse_date(row['date'])
+    startTime_text = standardize_time_with_seconds(row['start'])
+    endTime_text = standardize_time_with_seconds(row['end'])
+    if not examDate_text or not startTime_text or not endTime_text:
+        return False, "Invalid time/date"
+
+    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
+    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
+
+    return create_exam_and_related(
+        start_dt, end_dt,
+        str(row['course/sec']).upper(),
+        str(row['room']).upper(),
+        str(row['lecturer']).upper(),
+        None,
+        invigilatorNo=0
+    )
+
+
+# -------------------------------
+# Function for Admin ManageStaff Route Upload File, Validate Contact Number
+# -------------------------------
+def clean_contact(contact):
+    if not contact:
+        return ""
+    contact = str(contact).strip().replace(".0", "")
+    contact = "".join(filter(str.isdigit, contact))
+    if contact and not contact.startswith("0"):
+        contact = "0" + contact
+    return contact if 10 <= len(contact) <= 11 else ""
+
+
+# -------------------------------
+# Function for Admin ManageStaff Route Upload File
+# -------------------------------
+def process_staff_row(row):
+    role_mapping = {'lecturer': 1, 'hop': 2, 'dean': 3, 'admin': 4}
+    hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
+    return create_staff(
+        id=str(row['id']).upper(),
+        department=str(row['department']).upper(),
+        name=str(row['name']).upper(),
+        role=role_mapping.get(str(row['role']).strip().lower()),
+        email=str(row['email']),
+        contact=clean_contact(row['contact']),
+        gender=str(row['gender']).upper(),
+        hashed_pw=hashed_pw
+    )
+
 
 
 
@@ -308,8 +443,6 @@ def save_timetable_to_db(structured):
 def admin_manageCourse():   
     course_data = Course.query.all()
     department_data = Department.query.all()
-
-    # Default form field values
     courseDepartment_text = ''
     courseCode_text = ''
     courseSection_text = ''
@@ -324,79 +457,13 @@ def admin_manageCourse():
 
         # --------------------- UPLOAD FORM ---------------------
         if form_type == 'upload':
-            file = request.files.get('course_file')
-            if file and file.filename:
-                try:
-                    file_stream = BytesIO(file.read())
-                    excel_file = pd.ExcelFile(file_stream)
-                    course_records_added = 0
-                    course_records_failed = 0
-
-                    for sheet_name in excel_file.sheet_names:
-                        try:
-                            df = pd.read_excel(
-                                excel_file,
-                                sheet_name=sheet_name,
-                                usecols="A:H",
-                                skiprows=1
-                            )
-
-                            df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students']
-
-                            if df.columns.tolist() != expected_cols:
-                                raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
-
-                            for col in df.columns:
-                                df[col] = df[col].apply(lambda x: str(x).strip() if isinstance(x, str) else x)
-
-                            for index, row in df.iterrows():
-                                
-                                courseDepartment_text = str(row['department code']).strip()
-                                courseCode_text       = str(row['course code']).strip()
-                                courseSection_text    = str(row['course section']).strip()
-                                courseName_text       = str(row['course name']).strip()
-                                courseHour_text       = row['credit hour']
-                                coursePractical_text  = str(row['practical lecturer']).strip().upper()
-                                courseTutorial_text   = str(row['tutorial lecturer']).strip().upper()
-                                courseStudent_text    = row['no of students']
-
-                                # Pass values directly; create_course_and_exam will handle lookups
-                                success, message = create_course_and_exam(
-                                    department=courseDepartment_text,
-                                    code=courseCode_text,
-                                    section=courseSection_text,
-                                    name=courseName_text,
-                                    hour=int(courseHour_text),
-                                    practical=coursePractical_text,
-                                    tutorial=courseTutorial_text,
-                                    students=int(courseStudent_text)
-                                )
-                                if success:
-                                    course_records_added += 1
-                                else:
-                                    course_records_failed += 1
-
-                        except Exception as sheet_err:
-                            print(f"[Sheet Error] {sheet_err}")
-
-                    if course_records_added > 0:
-                        flash(f"Successful upload {course_records_added} record(s)", 'success')
-                    if course_records_failed > 0:
-                        flash(f"Failed to upload {course_records_failed} record(s)", 'error')
-                    if course_records_added == 0 and course_records_failed == 0:
-                        flash("No data uploaded", 'error')
-
-                    return redirect(url_for('admin_manageCourse'))
-
-                except Exception as e:
-                    print(f"[File Processing Error] {e}")
-                    flash('File processing error: File upload in wrong format', 'error')
-                    return redirect(url_for('admin_manageCourse'))
-            else:
-                flash("No file uploaded", 'error')
-                return redirect(url_for('admin_manageCourse'))
-
+            return handle_file_upload(
+                file_key='course_file',
+                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'],
+                process_row_fn=process_course_row,
+                redirect_endpoint='admin_manageCourse',
+                usecols="A:H"
+            )
 
         # --------------------- DASHBOARD FORM ---------------------
         elif form_type == 'dashboard':
@@ -433,6 +500,7 @@ def admin_manageCourse():
     # GET request fallback
     return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
 
+
 # -------------------------------
 # Function for Admin ManageDepartment Route
 # -------------------------------
@@ -443,8 +511,6 @@ def admin_manageDepartment():
     # Get all currently assigned dean and hop IDs
     assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
     assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
-    
-    # Default values for GET requests
     departmentCode = ''
     departmentName = ''
     deanId = ''
@@ -504,8 +570,6 @@ def admin_manageDepartment():
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     venue_data = Venue.query.all()
-
-    # Default values for GET requests
     venueNumber_text = ''
     venueFloor_text = ''
     venueCapacity_text = ''
@@ -578,87 +642,13 @@ def admin_manageExam():
 
         # --------------------- UPLOAD ADD EXAM FORM ---------------------
         if form_type == 'upload':
-            file = request.files.get('exam_file')
-            if file and file.filename:
-                try:
-                    file_stream = BytesIO(file.read())
-                    excel_file = pd.ExcelFile(file_stream)
-
-                    abbr_to_full = {day[:3].lower(): day for day in calendar.day_name}
-                    exam_records_added = 0
-                    exam_records_failed = 0
-
-                    for sheet_name in excel_file.sheet_names:
-                        try:
-                            df = pd.read_excel(
-                                excel_file,
-                                sheet_name=sheet_name,
-                                usecols="A:I",
-                                skiprows=1
-                            )
-
-                            df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['date', 'day', 'start', 'end', 'program',
-                                             'course/sec', 'lecturer', 'no of', 'room']
-
-                            if df.columns.tolist() != expected_cols:
-                                raise ValueError("Excel columns do not match expected format")
-
-                            # Normalize
-                            for col in df.columns:
-                                if col != 'day':
-                                    df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
-
-                            df['day'] = df['day'].apply(
-                                lambda x: abbr_to_full.get(str(x).strip()[:3].lower(), x) if isinstance(x, str) else x
-                            )
-
-                            for _, row in df.iterrows():
-                                examDate_text = parse_date(row['date'])
-                                startTime_text = standardize_time_with_seconds(row['start'])
-                                endTime_text = standardize_time_with_seconds(row['end'])
-
-                                if not examDate_text or not startTime_text or not endTime_text:
-                                    exam_records_failed += 1
-                                    continue
-
-                                start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
-                                end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
-
-                                courseSection_text = str(row['course/sec']).upper()
-                                practicalLecturer_text = str(row['lecturer']).strip().upper()
-                                tutorialLecturer_text = None
-                                venue_text = str(row['room']).upper()
-
-                                success, message = create_exam_and_related(
-                                    start_dt, end_dt, courseSection_text,
-                                    venue_text, practicalLecturer_text,
-                                    tutorialLecturer_text, invigilatorNo=0
-                                )
-                                if success:
-                                    exam_records_added += 1
-                                else:
-                                    exam_records_failed += 1
-
-                        except Exception as sheet_err:
-                            print(f"[Sheet Error] {sheet_err}")
-
-                    if exam_records_added > 0:
-                        flash(f"Successfully uploaded {exam_records_added} record(s)", "success")
-                    if exam_records_failed > 0:
-                        flash(f"Failed to upload {exam_records_failed} record(s)", "error")
-                    if exam_records_added == 0 and exam_records_failed == 0:
-                        flash("No data uploaded", "error")
-
-                    return redirect(url_for('admin_manageExam'))
-
-                except Exception as e:
-                    print(f"[File Processing Error] {e}")
-                    flash("File processing error: File upload in wrong format", "error")
-                    return redirect(url_for('admin_manageExam'))
-            else:
-                flash("No file uploaded", "error")
-                return redirect(url_for('admin_manageExam'))
+            return handle_file_upload(
+                file_key='exam_file',
+                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec', 'lecturer', 'no of', 'room'],
+                process_row_fn=process_exam_row,
+                redirect_endpoint='admin_manageExam',
+                usecols="A:I"
+            )
 
         # --------------------- DASHBOARD ADD EXAM FORM ---------------------
         elif form_type == 'dashboard':
@@ -714,8 +704,6 @@ def admin_manageExam():
 def admin_manageStaff():
     user_data = User.query.all()
     department_data = Department.query.all()
-
-    # Default form field values
     id_text = ''
     name_text = ''
     email_text = ''
@@ -723,114 +711,19 @@ def admin_manageStaff():
     gender_text = ''
     department_text = ''
     role_text = ''
-    error_message = None
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
         
         # --------------------- UPLOAD ADD LECTURER FORM ---------------------
         if form_type == 'upload':
-            file = request.files.get('staff_file')
-            if file and file.filename:
-                try:
-                    file_stream = BytesIO(file.read())
-                    excel_file = pd.ExcelFile(file_stream)
-                    staff_records_added = 0
-                    staff_records_failed = 0
-
-                    # --- helper for contact cleaning ---
-                    def clean_contact(contact):
-                        if not contact:
-                            return ""
-                        contact = str(contact).strip().replace(".0", "")
-                        contact = "".join(filter(str.isdigit, contact))
-                        if contact and not contact.startswith("0"):
-                            contact = "0" + contact
-                        return contact if 10 <= len(contact) <= 11 else ""
-
-                    for sheet_name in excel_file.sheet_names:
-                        print("Excel Sheets:", excel_file.sheet_names)
-                        try:
-                            df = pd.read_excel(
-                                excel_file,
-                                sheet_name=sheet_name,
-                                usecols="A:G",
-                                skiprows=1,
-                                dtype=str
-                            )
-
-                            print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
-                            df.columns = [str(col).strip().lower() for col in df.columns]
-                            expected_cols = ['id', 'name', 'department', 'role', 'email', 'contact', 'gender']
-                            print(f"\n[Sheet: {sheet_name}] Preview:")
-                            print(df.head())
-                            print("Detected columns:", df.columns.tolist())
-
-                            if df.columns.tolist() != expected_cols:
-                                raise ValueError("Excel columns do not match the expected format: " + str(df.columns.tolist()))
-
-                            # Drop completely blank rows
-                            df = df.dropna(subset=['id', 'email'])
-
-                            # Normalize all string values to lowercase
-                            for col in df.columns:
-                                df[col] = df[col].apply(lambda x: str(x).strip().lower() if isinstance(x, str) else x)
-
-                            # Apply contact cleaning
-                            df['contact'] = df['contact'].apply(clean_contact)
-
-                            role_mapping = {
-                                'lecturer': 1,
-                                'hop': 2,
-                                'dean': 3,
-                                'admin': 4
-                            }
-
-                            for index, row in df.iterrows():
-                                id_text         = str(row['id']).upper()
-                                name_text       = str(row['name']).upper()
-                                department_text = str(row['department']).upper()
-                                email_text      = str(row['email'])
-                                contact_text    = str(row['contact'])
-                                gender_text     = str(row['gender']).upper()
-                                role_text_str   = str(row['role']).strip().lower()
-                                role_text       = role_mapping.get(role_text_str)
-                                hashed_pw       = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
-
-                                success, message = create_staff(
-                                    id=id_text, 
-                                    department=department_text, 
-                                    name=name_text, 
-                                    role=role_text, 
-                                    email=email_text,
-                                    contact=contact_text,
-                                    gender=gender_text, 
-                                    hashed_pw=hashed_pw
-                                )
-                                if success:
-                                    staff_records_added += 1
-                                else:
-                                    staff_records_failed += 1
-
-                        except Exception as sheet_err:
-                            print(f"[Sheet Error] {sheet_err}")
-
-                    if staff_records_added > 0:
-                        flash(f"Successful upload {staff_records_added} record(s)", 'success')
-                    if staff_records_failed > 0:
-                        flash(f"Failed to upload {staff_records_failed} record(s)", 'error')
-                    if staff_records_added == 0 and staff_records_failed == 0:
-                        flash("No data uploaded", 'error')
-
-                    return redirect(url_for('admin_manageStaff'))
-
-                except Exception as e:
-                    print(f"[File Processing Error] {e}")
-                    flash('File processing error: File upload in wrong format', 'error')
-                    return redirect(url_for('admin_manageStaff'))
-            else:
-                flash("No file uploaded", 'error')
-                return redirect(url_for('admin_manageStaff'))
+            return handle_file_upload(
+                file_key='staff_file',
+                expected_cols=['id', 'name', 'department', 'role', 'email', 'contact', 'gender'],
+                process_row_fn=process_staff_row,
+                redirect_endpoint='admin_manageStaff',
+                usecols="A:G"
+            )
 
         # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
         elif form_type == 'modify':
