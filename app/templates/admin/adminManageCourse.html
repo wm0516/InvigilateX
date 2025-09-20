@@ -133,7 +133,7 @@
                         {% if row.department %}
                             {{ row.department.departmentName }} ({{ row.courseDepartment }})
                         {% else %}
-                            <span style="color:red;">[ERROR] Department missing</span>
+                            <span style="color:red;">[ERROR]</span>
                         {% endif %}
                     </td>
                     <td>[{{ row.courseExamId }}]</td>
@@ -141,13 +141,13 @@
                         {% if row.practicalLecturer %}
                             Practical Lecturer: {{ row.practicalLecturer.userName }}
                         {% else %}
-                            <span style="color:red;">[ERROR] Practical Lecturer missing</span>
+                            <span style="color:red;">[ERROR]</span>
                         {% endif %}
                         <br>
                         {% if row.tutorialLecturer %}
                             Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
                         {% else %}
-                            <span style="color:red;">[ERROR] Tutorial Lecturer missing</span>
+                            <span style="color:red;">[ERROR]</span>
                         {% endif %}
                     </td>
                     <td>[{{ row.courseStudent }}]</td>

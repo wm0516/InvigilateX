@@ -152,8 +152,13 @@
                             Unknown
                         {% endif %}
                     </td>
-                    <td>{{ row.userDepartment }}</td>
-                    <!-- User status: Activated / Deactivated -->
+                    <td>
+                        {{% if row.userDepartment %}}
+                            {{ row.userDepartment }}
+                        {% else %}
+                            <span style="color:red;">[ERROR]</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if row.userStatus|int == 1 %}
                             Activated
