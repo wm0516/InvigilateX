@@ -330,6 +330,7 @@ def admin_manageCourse():
                     file_stream = BytesIO(file.read())
                     excel_file = pd.ExcelFile(file_stream)
                     course_records_added = 0
+                    course_records_failed = 0
 
                     for sheet_name in excel_file.sheet_names:
                         try:
@@ -350,47 +351,44 @@ def admin_manageCourse():
                                 df[col] = df[col].apply(lambda x: str(x).strip() if isinstance(x, str) else x)
 
                             for index, row in df.iterrows():
-                                try:
-                                    courseDepartment_text = str(row['department code']).strip()
-                                    courseCode_text       = str(row['course code']).strip()
-                                    courseSection_text    = str(row['course section']).strip()
-                                    courseName_text       = str(row['course name']).strip()
-                                    courseHour_text       = row['credit hour']
-                                    coursePractical_text  = str(row['practical lecturer']).strip().upper()
-                                    courseTutorial_text   = str(row['tutorial lecturer']).strip().upper()
-                                    courseStudent_text    = row['no of students']
+                                
+                                courseDepartment_text = str(row['department code']).strip()
+                                courseCode_text       = str(row['course code']).strip()
+                                courseSection_text    = str(row['course section']).strip()
+                                courseName_text       = str(row['course name']).strip()
+                                courseHour_text       = row['credit hour']
+                                coursePractical_text  = str(row['practical lecturer']).strip().upper()
+                                courseTutorial_text   = str(row['tutorial lecturer']).strip().upper()
+                                courseStudent_text    = row['no of students']
 
-                                    # Pass values directly; create_course_and_exam will handle lookups
-                                    create_course_and_exam(
-                                        department=courseDepartment_text,
-                                        code=courseCode_text,
-                                        section=courseSection_text,
-                                        name=courseName_text,
-                                        hour=int(courseHour_text),
-                                        practical=coursePractical_text,
-                                        tutorial=courseTutorial_text,
-                                        students=int(courseStudent_text)
-                                    )
+                                # Pass values directly; create_course_and_exam will handle lookups
+                                success, message = create_course_and_exam(
+                                    department=courseDepartment_text,
+                                    code=courseCode_text,
+                                    section=courseSection_text,
+                                    name=courseName_text,
+                                    hour=int(courseHour_text),
+                                    practical=coursePractical_text,
+                                    tutorial=courseTutorial_text,
+                                    students=int(courseStudent_text)
+                                )
+
+                                if success:
                                     course_records_added += 1
-
-                                except Exception as row_err:
-                                    db.session.rollback()  # reset failed transaction
-                                    print(f"[Row Error] {row_err}")
+                                else:
+                                    course_records_failed += 1
 
                         except Exception as sheet_err:
                             print(f"[Sheet Error] {sheet_err}")
 
                     if course_records_added > 0:
-                        flash(f"Successfully uploaded {course_records_added} record(s)", 'success')
-                    else:
+                        flash(f"Successful upload {course_records_added} record(s)", 'success')
+                    if course_records_failed > 0:
+                        flash(f"Failed to upload {course_records_failed} record(s)", 'error')
+                    if course_records_added == 0 and course_records_failed == 0:
                         flash("No data uploaded", 'error')
 
-                    return render_template(
-                        'admin/adminManageCourse.html',
-                        active_tab='admin_manageCoursetab',
-                        course_data=Course.query.all(),
-                        department_data=Department.query.all()
-                    )
+                    return redirect(url_for('admin_manageCourse'))
 
                 except Exception as e:
                     print(f"[File Processing Error] {e}")
