@@ -753,7 +753,8 @@ def admin_manageStaff():
                                 excel_file,
                                 sheet_name=sheet_name,
                                 usecols="A:G",
-                                skiprows=1
+                                skiprows=1,
+                                dtype={'contact': str}   # <-- force contact column as string
                             )
 
                             print(f"Raw columns from sheet '{sheet_name}': {df.columns.tolist()}")
