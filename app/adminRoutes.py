@@ -75,57 +75,6 @@ def get_all_attendances():
 
 
 # -------------------------------
-# Read All LecturerName Under The Selected Department For ManageCoursePage
-# -------------------------------
-@app.route('/get_lecturers_by_department/<department_code>')
-def get_lecturers_by_department(department_code):
-    # Ensure case-insensitive match if needed
-    print(f"User Department Code is: {department_code}")
-    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
-    lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
-    return jsonify(lecturers_list)  
-
-
-# -------------------------------
-# Read All Course Under The Selected Department For ManageExamPage
-# -------------------------------
-@app.route('/get_courses_by_department/<department_code>')
-def get_courses_by_department(department_code):
-    courses = (
-        Course.query
-        .join(Exam)
-        .filter(
-            Course.courseDepartment == department_code,
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None)
-        )
-        .all()
-    )
-
-    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
-    return jsonify(course_list)
-
-
-# -------------------------------
-# Read All CourseDetails Under The Selected Department For ManageExamPage
-# -------------------------------
-@app.route('/get_course_details/<program_code>/<path:course_code_section>')
-def get_course_details(program_code, course_code_section):
-    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
-    selected_course = Course.query.filter_by(
-        courseDepartment=program_code,
-        courseCodeSection=course_code_section
-    ).first()
-    if selected_course:
-        return jsonify({
-            "practicalLecturer" : selected_course.coursePractical,
-            "tutorialLecturer"  : selected_course.courseTutorial,
-            "student"           : selected_course.courseStudent
-        })
-    return jsonify({"error": "Course not found"})
-
-
-# -------------------------------
 # Extract Base Name + Timestamp
 # -------------------------------
 def extract_base_name_and_timestamp(file_name):
@@ -434,6 +383,58 @@ def process_staff_row(row):
 
 
 
+
+
+
+# -------------------------------
+# Read All LecturerName Under The Selected Department For ManageCoursePage
+# -------------------------------
+@app.route('/get_lecturers_by_department/<department_code>')
+def get_lecturers_by_department(department_code):
+    # Ensure case-insensitive match if needed
+    print(f"User Department Code is: {department_code}")
+    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
+    lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
+    return jsonify(lecturers_list)  
+
+
+# -------------------------------
+# Read All Course Under The Selected Department For ManageExamPage
+# -------------------------------
+@app.route('/get_courses_by_department/<department_code>')
+def get_courses_by_department(department_code):
+    courses = (
+        Course.query
+        .join(Exam)
+        .filter(
+            Course.courseDepartment == department_code,
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None)
+        )
+        .all()
+    )
+
+    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
+    return jsonify(course_list)
+
+
+# -------------------------------
+# Read All CourseDetails Under The Selected Department For ManageExamPage
+# -------------------------------
+@app.route('/get_course_details/<program_code>/<path:course_code_section>')
+def get_course_details(program_code, course_code_section):
+    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
+    selected_course = Course.query.filter_by(
+        courseDepartment=program_code,
+        courseCodeSection=course_code_section
+    ).first()
+    if selected_course:
+        return jsonify({
+            "practicalLecturer" : selected_course.coursePractical,
+            "tutorialLecturer"  : selected_course.courseTutorial,
+            "student"           : selected_course.courseStudent
+        })
+    return jsonify({"error": "Course not found"})
 
 
 # -------------------------------
