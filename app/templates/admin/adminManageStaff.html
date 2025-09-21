@@ -15,15 +15,15 @@
 
             <!-- Overview -->
             <div class="dashboard-row">
-                <div class="dashboard-frame" style="width: 500px;">
+                <div class="dashboard-frame">
                     <h3>Staff Distribution</h3>
                     <canvas id="staffPieChart"></canvas>
                 </div>
-                <div class="dashboard-frame" style="width: 400px;">
+                <div class="dashboard-frame">
                     <h3>Gender Distribution</h3>
                     <canvas id="genderPieChart"></canvas>
                 </div>
-                <div class="dashboard-frame" style="width: 400px;">
+                <div class="dashboard-frame">
                     <h3>Account Status</h3>
                     <canvas id="statusPieChart"></canvas>
                 </div>
@@ -202,75 +202,64 @@
 
 {% block extra_scripts %}
 <script>
-    // Staff Percentage Chart
-    const ctx = document.getElementById('staffPieChart').getContext('2d');
-    const staffPieChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Admin', 'Lecturer', 'Dean', 'HOP'],
-            datasets: [{
-                label: 'Staff Distribution',
-                data: [{{ total_admin }}, {{ total_lecturer }}, {{ total_Dean }}, {{ total_hop }}],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.6)',
-                    'rgba(54, 162, 235, 0.6)',
-                    'rgba(255, 206, 86, 0.6)',
-                    'rgba(75, 192, 192, 0.6)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'right'
-                }
-            }
-        }
-    });
+    // === Reusable color sets ===
+    const defaultColors = [
+        'rgba(255, 99, 132, 0.6)',
+        'rgba(54, 162, 235, 0.6)',
+        'rgba(255, 206, 86, 0.6)',
+        'rgba(75, 192, 192, 0.6)'
+    ];
+    const defaultBorders = [
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)'
+    ];
 
-    // Gender chart
-    document.addEventListener("DOMContentLoaded", function () {
-        new Chart(document.getElementById('genderPieChart'), {
+    // === Reusable function to build pie charts ===
+    function createPieChart(canvasId, labels, data, colors = defaultColors, borders = defaultBorders, chartLabel = '') {
+        return new Chart(document.getElementById(canvasId).getContext('2d'), {
             type: 'pie',
             data: {
-                labels: ['Male', 'Female'],
+                labels: labels,
                 datasets: [{
-                    data: [{{ total_male_staff }}, {{ total_female_staff }}],
-                    backgroundColor: ['#36A2EB', '#FF6384'], // Blue for Male, Pink for Female
-                    borderColor: ['#ffffff', '#ffffff'],     // optional white borders
-                    borderWidth: 2
+                    label: chartLabel,
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: borders,
+                    borderWidth: 1
                 }]
             },
             options: {
                 responsive: true,
                 plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
+                    legend: { position: 'right' }
                 }
             }
         });
-    });
+    }
 
+    // === Create charts ===
+    createPieChart('staffPieChart',
+        ['Admin', 'Lecturer', 'Dean', 'HOP'],
+        [{{ total_admin }}, {{ total_lecturer }}, {{ total_Dean }}, {{ total_hop }}],
+        defaultColors, defaultBorders, 'Staff Distribution'
+    );
 
-    // Account status chart
-    new Chart(document.getElementById('statusPieChart'), {
-        type: 'pie',
-        data: {
-            labels: ['Activated', 'Deactivated'],
-            datasets: [{
-                data: [{{ total_activated }}, {{ total_deactivate }}],
-                backgroundColor: ['#4CAF50', '#F44336']
-            }]
-        }
-    });
+    createPieChart('genderPieChart',
+        ['Male', 'Female'],
+        [{{ total_male_staff }}, {{ total_female_staff }}],
+        ['rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'],   // custom gender colors
+        ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
+        'Gender Distribution'
+    );
+
+    createPieChart('statusPieChart',
+        ['Activated', 'Deactivated'],
+        [{{ total_activated }}, {{ total_deactivate }}],
+        ['rgba(76, 175, 80, 0.6)', 'rgba(244, 67, 54, 0.6)'],     // custom status colors
+        ['rgba(76, 175, 80, 1)', 'rgba(244, 67, 54, 1)'],
+        'Account Status'
+    );
 </script>
 {% endblock %}
