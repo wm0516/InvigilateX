@@ -4,7 +4,7 @@
 {% set show_dashboard = true %}
 {% set show_manual = true %}
 {% block title %}Admin ManageCourse{% endblock %}
-{% block head_title %}<h2>Manage Course</h2>{% endblock %}
+{% block head_title %}<h2>Manage Course</h2>{% endblock %}  
 
 {% block dashboard_section %}
 <!-- Dashboard Form -->
@@ -28,7 +28,7 @@
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Error Rows</h3>
+                    <h3>Incompleted Data Rows</h3>
                     <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
                 <div class="dashboard-frame">

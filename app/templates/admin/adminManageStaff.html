@@ -9,13 +9,35 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageStaff') }}" method="POST">
-    <div id="dashboardSection" class="function-frame">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame" style="width: 500px;">
+                    <h3>Staff Distribution</h3>
+                    <canvas id="staffPieChart"></canvas>
+                </div>
+                <div class="dashboard-frame" style="width: 400px;">
+                    <h3>Gender Distribution</h3>
+                    <canvas id="genderPieChart"></canvas>
+                </div>
+                <div class="dashboard-frame" style="width: 400px;">
+                    <h3>Account Status</h3>
+                    <canvas id="statusPieChart"></canvas>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Incompleted Data Rows</h3>
+                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 {% endblock %}
+
+
 
 {% block upload_section %}
 <!-- Upload Form -->
@@ -177,3 +199,69 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+    // Staff Percentage Chart
+    const ctx = document.getElementById('staffPieChart').getContext('2d');
+    const staffPieChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Admin', 'Lecturer', 'Dean', 'HOP'],
+            datasets: [{
+                label: 'Staff Distribution',
+                data: [
+                    {{ total_admin }},
+                    {{ total_lecturer }},
+                    {{ total_Dean }},
+                    {{ total_hop }}
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(255, 206, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+
+    // Gender chart
+    new Chart(document.getElementById('genderPieChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Male', 'Female'],
+            datasets: [{
+                data: [{{ total_male_staff }}, {{ total_female_staff }}],
+                backgroundColor: ['#36A2EB', '#FF6384']
+            }]
+        }
+    });
+
+    // Account status chart
+    new Chart(document.getElementById('statusPieChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Activated', 'Deactivated'],
+            datasets: [{
+                data: [{{ total_activated }}, {{ total_deactivate }}],
+                backgroundColor: ['#4CAF50', '#F44336']
+            }]
+        }
+    });
+
+</script>

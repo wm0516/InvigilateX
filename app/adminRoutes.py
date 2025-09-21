@@ -775,10 +775,36 @@ def admin_manageStaff():
     user_data = User.query.all()
     department_data = Department.query.all()
 
+    # === Dashboard Counts ===
+    total_staff = User.query.count()
+
+    # based on userLevel
+    total_admin = User.query.filter_by(userLevel=4).count()
+    total_lecturer = User.query.filter_by(userLevel=1).count()
+    total_dean = User.query.filter_by(userLevel=2).count()
+    total_hop = User.query.filter_by(userLevel=3).count()
+
+    # based on gender
+    total_male_staff = User.query.filter_by(userGender="MALE").count()
+    total_female_staff = User.query.filter_by(userGender="FEMALE").count()
+
+    # based on status (assuming: 1=activated, 0=deactivated)
+    total_activated = User.query.filter_by(userStatus=1).count()
+    total_deactivate = User.query.filter_by(userStatus=0).count()
+
+    # incomplete rows check (e.g. NULL or empty important fields)
+    error_rows = User.query.filter(
+        (User.userDepartment.is_(None)) | (User.userDepartment == '') |
+        (User.userName.is_(None)) | (User.userName == '') |
+        (User.userEmail.is_(None)) | (User.userEmail == '') |
+        (User.userContact.is_(None)) | (User.userContact == '') |
+        (User.userGender.is_(None)) | (User.userGender == '') |
+        (User.userLevel.is_(None))
+    ).count()
+
     if request.method == 'POST':
-        form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
+        form_type = request.form.get('form_type')
         
-        # --------------------- UPLOAD ADD LECTURER FORM ---------------------
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='staff_file',
@@ -788,11 +814,9 @@ def admin_manageStaff():
                 usecols="A:G"
             )
 
-        # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
         elif form_type == 'modify':
             return redirect(url_for('admin_manageStaff'))
-        
-        # --------------------- MANUAL ADD LECTURER FORM ---------------------
+
         elif form_type == 'manual':
             form_data = {
                 "id": request.form.get('userid', '').strip(),
@@ -801,7 +825,7 @@ def admin_manageStaff():
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
-                "role": int(request.form.get('role', '0').strip()),  # ensure integer
+                "role": int(request.form.get('role', '0').strip()),
                 "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
             }
 
@@ -809,8 +833,22 @@ def admin_manageStaff():
             flash(message, "success" if success else "error")
             return redirect(url_for('admin_manageStaff'))
 
-    return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
-
+    return render_template(
+        'admin/adminManageStaff.html',
+        active_tab='admin_manageStafftab',
+        user_data=user_data,
+        department_data=department_data,
+        total_staff=total_staff,
+        total_admin=total_admin,
+        total_hop=total_hop,
+        total_Dean=total_dean,
+        total_lecturer=total_lecturer,
+        total_male_staff=total_male_staff,
+        total_female_staff=total_female_staff,
+        total_activated=total_activated,
+        total_deactivate=total_deactivate,
+        error_rows=error_rows
+    )
 
 # -------------------------------
 # Function for Admin ManageLecturer Route
