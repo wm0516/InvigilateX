@@ -16,25 +16,25 @@
             <!-- Overview -->
             <div class="dashboard-row">
                 <div class="dashboard-frame">
-                    <h4>Total Venue</h4>
+                    <h3>Total Venue</h3>
                     <p class="dashboard-text">{{ total_venue }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Venues by Floor</h4>
+                    <h3>Venues by Floor</h3>
                     {% for floor, count in venues_by_floor %}
                         {{ floor }}: {{ count }}<br>
                     {% endfor %}
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Venue Available</h4>
+                    <h3>Venue Available</h3>
                     <p class="dashboard-text" style="color:green;">{{ available }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Venue Unavailable</h4>
+                    <h3>Venue Unavailable</h3>
                     <p class="dashboard-text" style="color:red;">{{ unavailable }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Venue In Service</h4>
+                    <h3>Venue In Service</h3>
                     <p class="dashboard-text" style="color:rgb(99, 22, 114);">{{ in_service }}</p>
                 </div>
             </div>

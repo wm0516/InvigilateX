@@ -16,30 +16,30 @@
             <!-- Overview -->
             <div class="dashboard-row">
                 <div class="dashboard-frame">
-                    <h4>Total Courses</h4>
+                    <h3>Total Courses</h3>
                     <p class="dashboard-text">{{ total_courses }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Courses with Exams</h4>
+                    <h3>Courses with Exams</h3>
                     <p class="dashboard-text" style="color:green;">{{ courses_with_exams }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Courses without Exams</h4>
+                    <h3>Courses without Exams</h3>
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Error Rows</h4>
+                    <h3>Error Rows</h3>
                     <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
-                <div class="dashboard-frame" style="text-align: None;">
-                    <h4>Course by Department</h4>
-                    <div style="float: left;">
+                <div class="dashboard-frame">
+                    <h3>Course by Department</h3>
+                    <div style="float: left; text-align: left;">
                         {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
                             {{ dept.department }}: {{ dept.count }}<br>
                         {% endfor %}
                     </div>
 
-                    <div style="float: right;">
+                    <div style="float: right; text-align: left;">
                         {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
                             {{ dept.department }}: {{ dept.count }}<br>
                         {% endfor %}
