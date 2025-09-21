@@ -20,8 +20,10 @@
                     <p class="dashboard-text">{{ total_courses }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Total Students</h4>
-                    <p class="dashboard-text">{{ total_students }}</p>
+                    <h4>Course by Department</h4>
+                    {% for dept in courses_by_department %}
+                        <p class="dashboard-text">{{ dept.department }}: {{ dept.count }}</p>
+                    {% endfor %}
                 </div>
                 <div class="dashboard-frame">
                     <h4>Courses with Exams</h4>
@@ -30,26 +32,12 @@
                 <div class="dashboard-frame">
                     <h4>Courses without Exams</h4>
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
-                    
-                </div>
-            </div>
-
-            <!-- === CHARTS === -->
-            <div class="dashboard-row" style="display:flex; gap:20px; margin-bottom:20px;">
-                <div class="chart-card" style="flex:1; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                    <h4>Courses by Department</h4>
-                    <canvas id="coursesByDepartment"></canvas>
-                </div>
-                <div class="chart-card" style="flex:1; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-                    <h4>Exams vs No Exams</h4>
-                    <canvas id="examPieChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 </form>
 {% endblock %}
-
 
 {% block upload_section %}
 <!-- Upload Form -->
@@ -192,53 +180,3 @@
     </div>
 </div>
 {% endblock %}
-
-<script>
-// @ts-nocheck
-    // Extract department names and counts from the data
-    const deptData = {{ courses_by_department|tojson|safe }};
-    const deptLabels = deptData.map(item => item.department);
-    const deptCounts = deptData.map(item => item.count);
-
-    // === Bar Chart: Courses by Department ===
-    new Chart(document.getElementById("coursesByDepartment"), {
-        type: 'bar',
-        data: {
-            labels: deptLabels,
-            datasets: [{
-                label: 'Courses per Department',
-                data: deptCounts,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, precision: 0 } }
-        }
-    });
-
-    // === Pie Chart: Exams vs No Exams ===
-    new Chart(document.getElementById("examPieChart"), {
-        type: 'pie',
-        data: {
-            labels: ['Courses with Exams', 'Courses without Exams'],
-            datasets: [{
-                data: [{{ courses_with_exams }}, {{ courses_without_exams }}],
-                backgroundColor: ['rgba(75, 192, 75, 0.6)', 'rgba(255, 99, 132, 0.6)'],
-                borderColor: ['rgba(75, 192, 75, 1)', 'rgba(255, 99, 132, 1)'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom'
-                }
-            }
-        }
-    });
-</script>

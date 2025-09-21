@@ -460,8 +460,6 @@ def admin_manageCourse():
     total_courses = Course.query.count()
     courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count()
     courses_without_exams = Course.query.filter(Course.courseExamId.is_(None)).count()
-    total_students = db.session.query(func.sum(Course.courseStudent)).scalar() or 0
-    total_hours = db.session.query(func.sum(Course.courseHour)).scalar() or 0
     
     # === Courses by department (include Unknown for NULL) ===
     courses_by_department_raw = (
@@ -533,10 +531,10 @@ def admin_manageCourse():
         total_courses=total_courses,
         courses_with_exams=courses_with_exams,
         courses_without_exams=courses_without_exams,
-        total_students=total_students,
         total_hours=total_hours,
         courses_by_department=courses_by_department
     )
+
 
 
 # -------------------------------
