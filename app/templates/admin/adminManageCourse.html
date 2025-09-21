@@ -3,6 +3,7 @@
 {% set show_upload = true %}
 {% set show_dashboard = true %}
 {% set show_manual = true %}
+{% set show_edit = true %}
 {% block title %}Admin ManageCourse{% endblock %}
 {% block head_title %}<h2>Manage Course</h2>{% endblock %}  
 
@@ -130,6 +131,18 @@
 </form>
 {% endblock %}
 
+{% block edit_section %}
+<!-- Edit Form -->
+<form id="editForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
+    <div id="editSection" style="width: 90%; margin:auto;">
+        <input type="hidden" name="form_type" value="edit">
+        <div class="form-left" style="width: 100%">
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
 {% block content %}
 <div class="menu-section">
     <h2>List of Course</h2> 
@@ -183,6 +196,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_scripts %}
 <script>

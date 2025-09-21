@@ -3,6 +3,7 @@
 {% set show_upload = false %}
 {% set show_dashboard = true %}
 {% set show_manual = true %}
+{% set show_edit = true %}
 {% block title %}Admin ManageVenue{% endblock %}
 {% block head_title %}<h2>Manage Venue</h2>{% endblock %}
 
@@ -82,6 +83,18 @@
         <!-- Upload Form Submit -->
         <div class="button-wrapper">
             <button type="submit">Add New Venue</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block edit_section %}
+<!-- Edit Form -->
+<form id="editForm" action="{{ url_for('admin_manageVenue') }}" method="POST">
+    <div id="editSection" style="width: 90%; margin:auto;">
+        <input type="hidden" name="form_type" value="edit">
+        <div class="form-left" style="width: 100%">
         </div>
     </div>
 </form>

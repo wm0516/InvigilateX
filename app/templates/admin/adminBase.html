@@ -94,6 +94,13 @@
                                 <span>Manually Insert</span>
                             </a>
                         {% endif %}
+
+                        {% if show_edit %}
+                            <a href="#edit" class="tab-link" data-section="editSection">
+                                <i class="fas fa-edit"></i>
+                                <span>Editing</span>
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -120,6 +127,9 @@
                 {% endif %}
                 {% if show_manual %}
                     {% block manual_section %}{% endblock %}
+                {% endif %}
+                {% if show_edit %}
+                    {% block edit_section %}{% endblock %}
                 {% endif %}
             {% endif %}
             <br>

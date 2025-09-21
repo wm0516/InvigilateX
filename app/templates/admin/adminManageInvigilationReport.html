@@ -3,6 +3,7 @@
 {% set show_upload = false %}
 {% set show_dashboard = true %}
 {% set show_manual = false %}
+{% set show_edit = true %}
 {% block title %}Admin ManageInvigilationReport{% endblock %}
 {% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
 
@@ -48,6 +49,17 @@
                     <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
                 </div>
             </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block edit_section %}
+<!-- Edit Form -->
+<form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
+    <div id="editSection" style="width: 90%; margin:auto;">
+        <input type="hidden" name="form_type" value="edit">
+        <div class="form-left" style="width: 100%">
         </div>
     </div>
 </form>
