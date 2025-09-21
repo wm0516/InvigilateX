@@ -9,13 +9,42 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
-    <div id="dashboardSection" class="function-frame">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame">
+                    <h3>Total Timetable</h3>
+                    <p class="dashboard-text">{{ total_timetable }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Monday Timetable</h3>
+                    <p class="dashboard-text">{{ monday_timetable }}</p>
+                </div>                
+                <div class="dashboard-frame">
+                    <h3>Tuesday Timetable</h3>
+                    <p class="dashboard-text">{{ tuesday_timetable }}</p>
+                </div>                
+                <div class="dashboard-frame">
+                    <h3>Wednesday Timetable</h3>
+                    <p class="dashboard-text">{{ wednesday_timetable }}</p>
+                </div>                
+                <div class="dashboard-frame">
+                    <h3>Thursday Timetable</h3>
+                    <p class="dashboard-text">{{ thursday_timetable }}</p>
+                </div>                
+                <div class="dashboard-frame">
+                    <h3>Friday Timetable</h3>
+                    <p class="dashboard-text">{{ friday_timetable }}</p>
+                </div>
+            </div>  
         </div>
-    </div>  
+    </div>
 </form>
-{% endblock %}  
+{% endblock %}
+
 
 {% block upload_section %}
 <!-- Upload Form -->

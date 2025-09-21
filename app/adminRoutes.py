@@ -863,6 +863,16 @@ def admin_manageTimetable():
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
+    # === Totals for dashboard ===
+    total_timetable = Timetable.query.count()
+
+    # Map day shortcodes to full keys for Jinja
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    day_counts = {
+        f"{day.lower()}_timetable": Timetable.query.filter_by(classDay=day).count()
+        for day in days
+    }
+
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
@@ -914,6 +924,13 @@ def admin_manageTimetable():
             timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
 
+            # Recalculate totals after upload
+            total_timetable = Timetable.query.count()
+            day_counts = {
+                f"{day.lower()}_timetable": Timetable.query.filter_by(classDay=day).count()
+                for day in days
+            }
+
             return render_template(
                 'admin/adminManageTimetable.html',
                 active_tab='admin_manageTimetabletab',
@@ -925,7 +942,9 @@ def admin_manageTimetable():
                     "total_files_uploaded": total_files_read,
                     "total_files_after_filter": total_files_filtered,
                     "files_after_filter": filtered_filenames
-                }
+                },
+                total_timetable=total_timetable,
+                **day_counts   # unpack dictionary into template variables
             )
 
     # ---- Default GET rendering ----
@@ -935,10 +954,11 @@ def admin_manageTimetable():
         timetable_data=timetable_data,
         lecturers=lecturers,
         selected_lecturer=selected_lecturer,
-        results=[],                  # avoid UndefinedError
-        upload_summary=None          # avoid UndefinedError
+        results=[],
+        upload_summary=None,
+        total_timetable=total_timetable,
+        **day_counts
     )
-
 
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
