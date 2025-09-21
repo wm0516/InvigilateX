@@ -200,6 +200,7 @@
 </div>
 {% endblock %}
 
+{% block extra_scripts %}
 <script>
     // Staff Percentage Chart
     const ctx = document.getElementById('staffPieChart').getContext('2d');
@@ -263,5 +264,5 @@
             }]
         }
     });
-
 </script>
+{% endblock %}
