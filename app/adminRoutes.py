@@ -818,11 +818,14 @@ def admin_manageStaff():
             return redirect(url_for('admin_manageStaff'))
 
         elif form_type == 'manual':
+            role_map = {"LECTURER": 1, "DEAN": 2, "HOP": 3, "ADMIN": 4}
+            role_text = request.form.get('role', '').strip().upper()
+
             form_data = {
                 "id": request.form.get('userid', '').strip(),
                 "department": request.form.get('department', '').strip(),
                 "name": request.form.get('username', '').strip(),
-                "role": int(request.form.get('role', '0').strip()),
+                "role": role_map.get(role_text, 0),  
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
