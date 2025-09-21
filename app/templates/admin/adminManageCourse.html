@@ -41,7 +41,7 @@
 
                     <div style="float: right;">
                         {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
-                            {{ dept.department }}: {{ dept.count }}
+                            <li>{{ dept.department }}: {{ dept.count }}</li>
                         {% endfor %}
                     </div>
                 </div>  
