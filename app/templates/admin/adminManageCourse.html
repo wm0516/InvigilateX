@@ -21,14 +21,14 @@
                 </div>
                 <div class="dashboard-frame">
                     <h4>Course by Department</h4>
-                    <div class="form-left" style="float: left;">
+                    <div style="float: left; margin-left: 15%;">
                         {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
-                            <h5>{{ dept.department }}: {{ dept.count }}</h5>
+                            <h4>{{ dept.department }}: {{ dept.count }}</h4>
                         {% endfor %}
                     </div>
-                    <div class="form-right" style="float: right;">
+                    <div style="float: right; margin-right: 15%;">
                         {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
-                            <h5>{{ dept.department }}: {{ dept.count }}</h5>
+                            <h4>{{ dept.department }}: {{ dept.count }}</h4>
                         {% endfor %}
                     </div>
                 </div>  
