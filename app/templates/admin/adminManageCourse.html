@@ -22,7 +22,7 @@
                 <div class="dashboard-frame">
                     <h4>Course by Department</h4>
                     {% for dept in courses_by_department %}
-                        <li class="dashboard-text">{{ dept.dept_code }}: {{ dept.count }}</li>
+                        <p class="dashboard-text">{{ dept.department }}: {{ dept.count }}</p>
                     {% endfor %}
                 </div>
                 <div class="dashboard-frame">
@@ -38,6 +38,7 @@
     </div>
 </form>
 {% endblock %}
+
 
 {% block upload_section %}
 <!-- Upload Form -->
