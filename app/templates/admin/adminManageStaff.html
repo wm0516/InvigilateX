@@ -210,12 +210,7 @@
             labels: ['Admin', 'Lecturer', 'Dean', 'HOP'],
             datasets: [{
                 label: 'Staff Distribution',
-                data: [
-                    {{ total_admin }},
-                    {{ total_lecturer }},
-                    {{ total_Dean }},
-                    {{ total_hop }}
-                ],
+                data: [{{ total_admin }}, {{ total_lecturer }}, {{ total_Dean }}, {{ total_hop }}],
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.6)',
                     'rgba(54, 162, 235, 0.6)',
@@ -242,16 +237,29 @@
     });
 
     // Gender chart
-    new Chart(document.getElementById('genderPieChart'), {
-        type: 'pie',
-        data: {
-            labels: ['Male', 'Female'],
-            datasets: [{
-                data: [{{ total_male_staff }}, {{ total_female_staff }}],
-                backgroundColor: ['#36A2EB', '#FF6384']
-            }]
-        }
+    document.addEventListener("DOMContentLoaded", function () {
+        new Chart(document.getElementById('genderPieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Male', 'Female'],
+                datasets: [{
+                    data: [{{ total_male_staff }}, {{ total_female_staff }}],
+                    backgroundColor: ['#36A2EB', '#FF6384'], // Blue for Male, Pink for Female
+                    borderColor: ['#ffffff', '#ffffff'],     // optional white borders
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
     });
+
 
     // Account status chart
     new Chart(document.getElementById('statusPieChart'), {
