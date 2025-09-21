@@ -9,7 +9,7 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
-    <div id="dashboardSection" class="function-frame">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
 
@@ -26,6 +26,10 @@
                 <div class="dashboard-frame">
                     <h4>Courses without Exams</h4>
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Error Rows</h4>
+                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h4>Course by Department</h4>
