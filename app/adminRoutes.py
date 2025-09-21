@@ -458,18 +458,21 @@ def admin_manageCourse():
     courses_without_exams = Course.query.filter(Course.courseExamId.is_(None)).count()
     total_students = db.session.query(db.func.sum(Course.courseStudent)).scalar() or 0
     total_hours = db.session.query(db.func.sum(Course.courseHour)).scalar() or 0
-
-    # Department distribution
+    
     courses_by_department_raw = (
-        db.session.query(Course.courseDepartment, db.func.count(Course.courseCodeSection))
-        .group_by(Course.courseDepartment)
+        db.session.query(
+            Department.departmentName, 
+            db.func.count(Course.courseCodeSection)
+        )
+        .join(Course, Department.departmentCode == Course.courseDepartment, isouter=True)
+        .group_by(Department.departmentName)
         .all()
     )
 
-    # Convert to dicts, replace None with "Unknown"
+    # Convert to list of dictionaries
     courses_by_department = [
-        {"department": dept if dept else "Unknown", "count": count}
-        for dept, count in courses_by_department_raw
+        {"department": dept_name if dept_name else "Unknown", "count": count}
+        for dept_name, count in courses_by_department_raw
     ]
 
     if request.method == 'POST':

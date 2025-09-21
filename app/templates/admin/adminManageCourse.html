@@ -194,25 +194,54 @@
 
 <script>
 // @ts-nocheck
-    const deptLabels = {{ courses_by_department|map(attribute="department")|list|tojson }};
-    const deptCounts = {{ courses_by_department|map(attribute="count")|list|tojson }};
+    // Extract department names and counts from the data
+    const deptData = {{ courses_by_department|tojson }};
+    const deptLabels = deptData.map(item => item.department);
+    const deptCounts = deptData.map(item => item.count);
 
-    new Chart(document.getElementById("coursesByDepartment"), {
-        type: 'bar',
+    // Create the chart
+    if (deptLabels.length > 0 && deptCounts.length > 0) {
+        new Chart(document.getElementById("coursesByDepartment"), {
+            type: 'bar',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    label: 'Courses per Department',
+                    data: deptCounts,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    } else {
+        console.error("No department data available for chart");
+    }
+
+    // Add the pie chart for exams vs no exams
+    new Chart(document.getElementById("examPieChart"), {
+        type: 'pie',
         data: {
-            labels: deptLabels,
+            labels: ['Courses with Exams', 'Courses without Exams'],
             datasets: [{
-                label: 'Courses per Department',
-                data: deptCounts,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                data: [{{ courses_with_exams }}, {{ courses_without_exams }}],
+                backgroundColor: ['rgba(75, 192, 75, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                borderColor: ['rgba(75, 192, 75, 1)', 'rgba(255, 99, 132, 1)'],
                 borderWidth: 1
             }]
         },
         options: {
             responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true } }
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
         }
     });
 </script>
