@@ -285,27 +285,29 @@
         }
     });
 
-    const courseData = {{ course_json | tojson }};
-    const editSelect = document.getElementById('editCourseSelect');
+    document.addEventListener("DOMContentLoaded", function () {
+        const courseSelect = document.getElementById("editCourseSelect");
 
-    editSelect.addEventListener('change', function() {
-        const selectedId = parseInt(this.value);
-        const course = courseData.find(c => c.id === selectedId);
+        courseSelect.addEventListener("change", function () {
+            const selectedCode = this.value;
+            const course = courseData.find(c => c.codeSection === selectedCode);
+            if (!course) return;
 
-        if(course){
-            document.getElementById('editCourseCode').value = course.code_section.split('-')[0] || '';
-            document.getElementById('editCourseSection').value = course.code_section.split('-')[1] || '';
-            document.getElementById('editCourseName').value = course.name || '';
-            document.getElementById('editCourseHour').value = course.hour || 0;
-            document.getElementById('editCourseStudents').value = course.students || 0;
-            document.getElementById('editDepartment').value = course.department || '';
+            // Split code/section
+            let [code, section] = course.codeSection.split("/") || ["", ""];
 
-            // Populate lecturers dropdowns
-            const practicalSelect = document.getElementById('editPracticalLecturer');
-            const tutorialSelect = document.getElementById('editTutorialLecturer');
-            practicalSelect.innerHTML = `<option value="${course.practical}" selected>${course.practical}</option>`;
-            tutorialSelect.innerHTML = `<option value="${course.tutorial}" selected>${course.tutorial}</option>`;
-        }
+            // Prefill text inputs
+            document.getElementById("editCourseCode").value = code || "";
+            document.getElementById("editCourseSection").value = section || "";
+            document.getElementById("editCourseName").value = course.name || "";
+            document.getElementById("editCourseHour").value = course.hour || "";
+            document.getElementById("editCourseStudents").value = course.students || "";
+
+            // Prefill dropdowns
+            document.getElementById("editDepartment").value = course.department || "";
+            document.getElementById("editPracticalLecturer").value = course.practical || "";
+            document.getElementById("editTutorialLecturer").value = course.tutorial || "";
+        });
     });
 </script>
 {% endblock %}
