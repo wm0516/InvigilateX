@@ -22,7 +22,7 @@
                 <div class="dashboard-frame">
                     <h4>Venues by Floor</h4>
                     {% for floor, count in venues_by_floor %}
-                        <li>{{ floor }}: {{ count }}</li>
+                        {{ floor }}: {{ count }}<br>
                     {% endfor %}
                 </div>
                 <div class="dashboard-frame">
