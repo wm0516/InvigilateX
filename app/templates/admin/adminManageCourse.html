@@ -35,13 +35,13 @@
                     <h4>Course by Department</h4>
                     <div style="float: left;">
                         {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
-                            <li>{{ dept.department }}: {{ dept.count }}</li>
+                            {{ dept.department }}: {{ dept.count }}<br>
                         {% endfor %}
                     </div>
 
                     <div style="float: right;">
                         {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
-                            <li>{{ dept.department }}: {{ dept.count }}</li>
+                            {{ dept.department }}: {{ dept.count }}<br>
                         {% endfor %}
                     </div>
                 </div>  
