@@ -461,21 +461,21 @@ def admin_manageCourse():
     courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count()
     courses_without_exams = Course.query.filter(Course.courseExamId.is_(None)).count()
     
-    # === Courses by department (include Unknown for NULL) ===
+    # === Courses by department (use departmentCode, include Unknown for NULL) ===
     courses_by_department_raw = (
         db.session.query(
-            func.coalesce(Department.departmentName, "Unknown"), 
+            func.coalesce(Department.departmentCode, "Unknown"), 
             func.count(Course.courseCodeSection)
         )
         .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
-        .group_by(func.coalesce(Department.departmentName, "Unknown"))
+        .group_by(func.coalesce(Department.departmentCode, "Unknown"))
         .all()
     )
 
     # Convert to list of dictionaries for JSON
     courses_by_department = [
-        {"departmentCode": dept_name, "count": count}
-        for dept_name, count in courses_by_department_raw
+        {"department": dept_code, "count": count}
+        for dept_code, count in courses_by_department_raw
     ]
 
     if request.method == 'POST':
