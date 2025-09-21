@@ -9,13 +9,46 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
-    <div id="dashboardSection" class="function-frame">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame">
+                    <h3>Total Invigilation Report</h3>
+                    <p class="dashboard-text">{{ total_report }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Invigilator</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_invigilator }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Invigilator CheckIn onTime</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_checkInOnTime }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Invigilator CheckOut onTime</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_checkOutOnTime }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Invigilator CheckIn Late</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Invigilator CheckOut Early</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Invigilator Haven't CheckInOut</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 {% endblock %}
+
 
 {% block content %}
 <div class="menu-section">

@@ -972,7 +972,51 @@ def admin_manageInvigilationTimetable():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances)
+
+    query = db.session.query(
+            InvigilatorAttendance.attendanceId,
+            InvigilatorAttendance.invigilatorId,
+            InvigilatorAttendance.checkIn,
+            InvigilatorAttendance.checkOut,
+            Exam.examStartTime,
+            Exam.examEndTime
+        ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+
+    total_report = len(set([row.reportId for row in db.session.query(InvigilatorAttendance.reportId).all()]))
+    total_invigilator = len(set([row.invigilatorId for row in query]))
+
+    total_checkInOnTime = 0
+    total_checkInLate = 0
+    total_checkOutOnTime = 0
+    total_checkOutEarly = 0
+    total_checkInOut = 0
+
+    for row in query:
+        # If checkIn/checkOut missing
+        if row.checkIn is None or row.checkOut is None:
+            total_checkInOut += 1
+            continue
+
+        # Check In status
+        if row.checkIn <= row.examStartTime:
+            total_checkInOnTime += 1
+        else:
+            total_checkInLate += 1
+
+        # Check Out status
+        if row.checkOut >= row.examEndTime:
+            total_checkOutOnTime += 1
+        else:
+            total_checkOutEarly += 1
+
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances,
+        total_report=total_report,
+        total_invigilator=total_invigilator,
+        total_checkInOnTime=total_checkInOnTime,
+        total_checkInLate=total_checkInLate,
+        total_checkOutOnTime=total_checkOutOnTime,
+        total_checkOutEarly=total_checkOutEarly,
+        total_checkInOut=total_checkInOut)
 
 
 # -------------------------------
