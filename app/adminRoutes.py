@@ -605,6 +605,12 @@ def admin_manageDepartment():
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     venue_data = Venue.query.all()
+    total_venue = Venue.query.count()
+    counts = dict(
+        db.session.query(Venue.venueStatus, func.count(Venue.venueNumber))
+        .group_by(Venue.venueStatus)
+        .all()
+    )
     venueNumber_text = ''
     venueFloor_text = ''
     venueCapacity_text = ''
@@ -641,7 +647,11 @@ def admin_manageVenue():
 
         return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=venueCapacity_text)
 
-    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data)
+    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data,
+                           total_venue=total_venue,
+                            available=counts.get("AVAILABLE", 0),
+                            unavailable=counts.get("UNAVAILABLE", 0),
+                            in_service=counts.get("IN SERVICE", 0),)
 
 
 # -------------------------------

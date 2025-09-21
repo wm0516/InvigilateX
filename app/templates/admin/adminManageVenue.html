@@ -9,13 +9,35 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageVenue') }}" method="POST">
-    <div id="dashboardSection" class="function-frame">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame">
+                    <h4>Total Venue</h4>
+                    <p class="dashboard-text">{{ total_venue }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Venue Available</h4>
+                    <p class="dashboard-text" style="color:green;">{{ available }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Venue Unavailable</h4>
+                    <p class="dashboard-text" style="color:red;">{{ unavailable }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Venue In Service</h4>
+                    <p class="dashboard-text" style="color:rgb(99, 22, 114);">{{ in_service }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 {% endblock %}
+
+
 
 {% block manual_section %}
 <!-- Manual Form -->
