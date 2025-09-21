@@ -21,11 +21,9 @@
                 </div>
                 <div class="dashboard-frame">
                     <h4>Venues by Floor</h4>
-                    <ul>
-                        {% for floor, count in venues_by_floor %}
-                            <li>{{ floor }}: {{ count }}</li>
-                        {% endfor %}
-                    </ul>                
+                    {% for floor, count in venues_by_floor %}
+                        <li>{{ floor }}: {{ count }}</li>
+                    {% endfor %}
                 </div>
                 <div class="dashboard-frame">
                     <h4>Venue Available</h4>
