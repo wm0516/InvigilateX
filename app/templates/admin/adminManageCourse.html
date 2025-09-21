@@ -199,9 +199,10 @@
 <script>
 // @ts-nocheck
     // Extract department names and counts from the data
-    const deptData = {{ courses_by_department|tojson }};
-    const deptLabels = deptData.map(item => item.department);
-    const deptCounts = deptData.map(item => item.count);
+    const deptData = {{ courses_by_department|tojson|safe }};
+    const filtered = deptData.filter(item => item.count > 0);
+    const deptLabels = filtered.map(item => item.department);
+    const deptCounts = filtered.map(item => item.count);
 
     // Create the chart
     if (deptLabels.length > 0 && deptCounts.length > 0) {
