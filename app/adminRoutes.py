@@ -632,13 +632,12 @@ def admin_manageCourse():
             courses_by_department=courses_by_department,
             error_rows=error_rows,
             course_json=[{
-                "id": c.id,
-                "code_section": c.courseCodeSection or "",
+                "codeSection": c.courseCodeSection or "",
                 "name": c.courseName or "",
                 "hour": c.courseHour or 0,
                 "department": c.courseDepartment or "",
-                "practical": getattr(c.practicalLecturer, 'userName', ""),
-                "tutorial": getattr(c.tutorialLecturer, 'userName', ""),
+                "practical": getattr(c.coursePractical, 'userName', ""),
+                "tutorial": getattr(c.courseTutorial, 'userName', ""),
                 "students": c.courseStudent or 0
             } for c in course_data]
         )
