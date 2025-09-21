@@ -65,7 +65,7 @@ def standardize_time_with_seconds(time_value):
 
 
 # -------------------------------
-# Read All InvigilationAttendance Data From Database
+# Read All InvigilatorAttendance Data From Database
 # -------------------------------
 def get_all_attendances():
     return (
@@ -74,6 +74,59 @@ def get_all_attendances():
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .all()
     )
+
+
+# -------------------------------
+# Calculate All InvigilatorAttendance and InvigilationReport Data From Database
+# -------------------------------
+def calculate_invigilation_stats():
+    query = db.session.query(
+        InvigilatorAttendance.attendanceId,
+        InvigilatorAttendance.invigilatorId,
+        InvigilatorAttendance.checkIn,
+        InvigilatorAttendance.checkOut,
+        Exam.examStartTime,
+        Exam.examEndTime,
+        InvigilatorAttendance.reportId
+    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+
+    total_report = len(set([row.reportId for row in db.session.query(InvigilatorAttendance.reportId).all()]))
+    total_invigilator = len(set([row.invigilatorId for row in query]))
+
+    stats = {
+        "total_report": total_report,
+        "total_invigilator": total_invigilator,
+        "total_checkInOnTime": 0,
+        "total_checkInLate": 0,
+        "total_checkOutOnTime": 0,
+        "total_checkOutEarly": 0,
+        "total_checkInOut": 0,    # missing both
+        "total_inProgress": 0     # checked in but no check out
+    }
+
+    for row in query:
+        # Case 1: No checkIn at all
+        if row.checkIn is None:
+            stats["total_checkInOut"] += 1
+            continue
+
+        # Case 2: CheckIn exists, but no checkOut (in progress)
+        if row.checkOut is None:
+            stats["total_inProgress"] += 1
+            continue
+
+        # ✅ Both checkIn and checkOut exist
+        if row.checkIn <= row.examStartTime:
+            stats["total_checkInOnTime"] += 1
+        else:
+            stats["total_checkInLate"] += 1
+
+        if row.checkOut >= row.examEndTime:
+            stats["total_checkOutOnTime"] += 1
+        else:
+            stats["total_checkOutEarly"] += 1
+
+    return stats
 
 
 # -------------------------------
@@ -963,8 +1016,9 @@ def admin_manageTimetable():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     attendances = get_all_attendances()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances)
+    stats = calculate_invigilation_stats()
 
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances, **stats)
 
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
@@ -972,64 +1026,10 @@ def admin_manageInvigilationTimetable():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
+    stats = calculate_invigilation_stats()
 
-    query = db.session.query(
-        InvigilatorAttendance.attendanceId,
-        InvigilatorAttendance.invigilatorId,
-        InvigilatorAttendance.checkIn,
-        InvigilatorAttendance.checkOut,
-        Exam.examStartTime,
-        Exam.examEndTime,
-        InvigilatorAttendance.reportId
-    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
-
-    total_report = len(set([row.reportId for row in db.session.query(InvigilatorAttendance.reportId).all()]))
-    total_invigilator = len(set([row.invigilatorId for row in query]))
-
-    total_checkInOnTime = 0
-    total_checkInLate = 0
-    total_checkOutOnTime = 0
-    total_checkOutEarly = 0
-    total_checkInOut = 0   # missing both
-    total_inProgress = 0   # checked in but no check out
-
-    for row in query:
-        # Case 1: No checkIn at all
-        if row.checkIn is None:
-            total_checkInOut += 1
-            continue
-
-        # Case 2: CheckIn exists, but no checkOut (in progress)
-        if row.checkOut is None:
-            total_inProgress += 1
-            continue
-
-        # ✅ If both checkIn and checkOut exist:
-        # Check In status
-        if row.checkIn <= row.examStartTime:
-            total_checkInOnTime += 1
-        else:
-            total_checkInLate += 1
-
-        # Check Out status
-        if row.checkOut >= row.examEndTime:
-            total_checkOutOnTime += 1
-        else:
-            total_checkOutEarly += 1
-
-    return render_template('admin/adminManageInvigilationReport.html',
-        active_tab='admin_manageInvigilationReporttab',
-        attendances=attendances,
-        total_report=total_report,
-        total_invigilator=total_invigilator,
-        total_checkInOnTime=total_checkInOnTime,
-        total_checkInLate=total_checkInLate,
-        total_checkOutOnTime=total_checkOutOnTime,
-        total_checkOutEarly=total_checkOutEarly,
-        total_checkInOut=total_checkInOut,
-        total_inProgress=total_inProgress
-    )
-
+    return render_template(
+        'admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 
 # -------------------------------

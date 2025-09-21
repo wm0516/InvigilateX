@@ -24,8 +24,12 @@
                     <p class="dashboard-text" style="color:green;">{{ total_invigilator }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Invigilators Progress</h3>
+                    <h3>Invigilators In Progress</h3>
                     <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Invigilators Pending Check-In/Out</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Invigilators Checked In On Time</h3>
@@ -42,10 +46,6 @@
                 <div class="dashboard-frame">
                     <h3>Invigilators Checked Out Early</h3>
                     <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators Pending Check-In/Out</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
                 </div>
             </div>
         </div>
