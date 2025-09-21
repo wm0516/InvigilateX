@@ -377,13 +377,13 @@ input, select{
 }
 
 .dashboard-row {
-    display: flex; 
-    grid-template-columns: 1fr 1fr 1fr; /* pie | box | box */   
+    display: grid; 
+    grid-template-columns: 1fr 1fr 1fr; /* 3 columns */
     gap: 20px; 
     margin-bottom: 20px;
 }
 
-/* Make the pie chart span two rows */
+/* Pie chart takes first column and spans 2 rows */
 .dashboard-frame.pie {
     grid-row: span 2;
 }
