@@ -466,9 +466,9 @@ def admin_manageCourse():
         .all()
     )
 
-    # Convert to dict for JSON serialization
+    # Convert to dicts, replace None with "Unknown"
     courses_by_department = [
-        {"department": dept, "count": count}
+        {"department": dept if dept else "Unknown", "count": count}
         for dept, count in courses_by_department_raw
     ]
 
