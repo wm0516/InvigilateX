@@ -30,13 +30,11 @@
                 <div class="dashboard-frame">
                     <h4>Courses without Exams</h4>
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
+                    
+                    <p>Courses by Department Data: {{ courses_by_department }}</p>
+                    <p>Courses with Exams: {{ courses_with_exams }}</p>
+                    <p>Courses without Exams: {{ courses_without_exams }}</p>
                 </div>
-            </div>
-            <!-- Add this temporarily to see what data you have -->
-            <div style="display: none;">
-                <p>Courses by Department Data: {{ courses_by_department }}</p>
-                <p>Courses with Exams: {{ courses_with_exams }}</p>
-                <p>Courses without Exams: {{ courses_without_exams }}</p>
             </div>
 
             <!-- === CHARTS === -->
