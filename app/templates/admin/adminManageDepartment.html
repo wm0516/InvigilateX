@@ -9,13 +9,30 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageDepartment') }}" method="POST">
-    <div id="dashboardSection" class="function-frame">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame">
+                    <h4>Total Department</h4>
+                    <p class="dashboard-text">{{ total_department }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Department without HOP</h4>
+                    <p class="dashboard-text" style="color:green;">{{ department_with_hop }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Department without Dean</h4>
+                    <p class="dashboard-text" style="color:red;">{{ department_with_dean }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 {% endblock %}
+
 
 {% block manual_section %}
 <!-- Manual Form -->

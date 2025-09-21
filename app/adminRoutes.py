@@ -537,6 +537,9 @@ def admin_manageCourse():
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     department_data = Department.query.all()
+    total_department = Department.query.count()
+    department_with_dean = Department.query.filter(Department.deanId.isnot(None)).count()
+    department_with_hop = Department.query.filter(Department.hopId.isnot(None)).count()
 
     # Get all currently assigned dean and hop IDs
     assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
@@ -591,7 +594,9 @@ def admin_manageDepartment():
 
         return redirect(url_for('admin_manageDepartment'))
 
-    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, dean_list=dean_list, hop_list=hop_list)
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
+                           department_data=department_data, dean_list=dean_list, hop_list=hop_list, total_department=total_department,
+                           department_with_hop=department_with_hop, department_with_dean=department_with_dean)
 
 
 # -------------------------------
