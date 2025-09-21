@@ -16,14 +16,12 @@
             <!-- Overview -->
             <div class="dashboard-row">
                 <div class="dashboard-frame">
-                    <h3>Total Venue</h3>
-                    <p class="dashboard-text">{{ total_venue }}</p>
+                    <h3>Venues by Floor</h3>
+                    <canvas id="venueFloorPieChart" width="200" height="200"></canvas>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Venues by Floor</h3>
-                    {% for floor, count in venues_by_floor %}
-                        {{ floor }}: {{ count }} Venue(s)<br>
-                    {% endfor %}
+                    <h3>Total Venue</h3>
+                    <p class="dashboard-text">{{ total_venue }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Venue Available</h3>
@@ -118,3 +116,41 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Prepare data from Flask (safe JSON export)
+    const venuesByFloor = {{ venues_by_floor | tojson }};
+    const floorLabels = venuesByFloor.map(item => item[0]);
+    const floorData = venuesByFloor.map(item => item[1]);
+
+    const ctxVenueFloor = document.getElementById('venueFloorPieChart').getContext('2d');
+    new Chart(ctxVenueFloor, {
+        type: 'pie',
+        data: {
+            labels: floorLabels,
+            datasets: [{
+                label: "Venues by Floor",
+                data: floorData,
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+
+
