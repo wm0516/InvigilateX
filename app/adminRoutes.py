@@ -681,6 +681,24 @@ def admin_manageExam():
         )
     ).all()
 
+    total_exam = Exam.query.count()
+
+    # Complete exams: all important columns are NOT NULL
+    exam_with_complete = Exam.query.filter(
+        Exam.examStartTime.isnot(None),
+        Exam.examEndTime.isnot(None),
+        Exam.examVenue.isnot(None),
+        Exam.examNoInvigilator.isnot(None)
+    ).count()
+
+    # Error rows: completely empty or mostly NULL
+    error_rows = Exam.query.filter(
+        Exam.examStartTime.is_(None),
+        Exam.examEndTime.is_(None),
+        Exam.examVenue.is_(None),
+        Exam.examNoInvigilator.is_(None)
+    ).count()
+
     # Default manual form values
     courseSection_text = ''
     practicalLecturer_text = ''
@@ -745,7 +763,8 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", "error")
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data)
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data,
+                           total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows)
 
 
 # -------------------------------

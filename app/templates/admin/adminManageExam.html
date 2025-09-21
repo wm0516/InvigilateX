@@ -7,15 +7,36 @@
 {% block head_title %}<h2>Manage Exam</h2>{% endblock %}
 
 {% block dashboard_section %}
-<!-- Dashboard Form -->
-<form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST" >
-    <div id="dashboardSection" class="function-frame">
+<form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST">
+    <div id="dashboardSection" style="width: 90%; margin:auto;">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame">
+                    <h3>Total Exam</h3>
+                    <p class="dashboard-text">{{ total_exam }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Completed Exam</h3>
+                    <p class="dashboard-text" style="color:green;">{{ exam_with_complete }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Incompleted Exam</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_exam - exam_with_complete - error_rows }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Error Rows</h3>
+                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
+                </div>
+            </div>
         </div>
     </div>
 </form>
 {% endblock %}
+
+
 
 {% block upload_section %}
 <!-- Upload Form -->
