@@ -465,18 +465,21 @@ def admin_manageCourse():
     ).count()
 
     # === Courses by department (use departmentCode, include Unknown for NULL) ===
+    courses_by_department_raw = (
+        db.session.query(
+            func.coalesce(Department.departmentCode, "Unknown"), 
+            func.count(Course.courseCodeSection)
+        )
+        .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
+        .group_by(func.coalesce(Department.departmentCode, "Unknown"))
+        .having(func.count(Course.courseCodeSection) > 0)  # ✅ skip zero counts
+        .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())
+        .all()
+    )
+
     courses_by_department = [
         {"department": dept_code, "count": count}
-        for dept_code, count in (
-            db.session.query(
-                func.coalesce(Department.departmentCode, "Unknown"),
-                func.count(Course.courseCodeSection)
-            )
-            .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
-            .group_by(func.coalesce(Department.departmentCode, "Unknown"))
-            .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())
-            .all()
-        )
+        for dept_code, count in courses_by_department_raw
     ]
 
     if request.method == 'POST':
@@ -731,13 +734,6 @@ def admin_manageExam():
 def admin_manageStaff():
     user_data = User.query.all()
     department_data = Department.query.all()
-    id_text = ''
-    name_text = ''
-    email_text = ''
-    contact_text = ''
-    gender_text = ''
-    department_text = ''
-    role_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
@@ -755,33 +751,22 @@ def admin_manageStaff():
         # --------------------- DASHBOARD ADD LECTURER FORM ---------------------
         elif form_type == 'modify':
             return redirect(url_for('admin_manageStaff'))
-
+        
         # --------------------- MANUAL ADD LECTURER FORM ---------------------
         elif form_type == 'manual':
-            id_text = request.form.get('userid', '').strip()
-            name_text = request.form.get('username', '').strip()
-            email_text = request.form.get('email', '').strip()
-            contact_text = request.form.get('contact', '').strip()
-            gender_text = request.form.get('gender', '').strip()
-            department_text = request.form.get('department', '').strip()
-            role_text = int(request.form.get('role', '0').strip())  # ensure integer
-            hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
-            
-            success, message = create_staff(
-                id=id_text, 
-                department=department_text, 
-                name=name_text, 
-                role=role_text, 
-                email=email_text,
-                contact=contact_text,
-                gender=gender_text, 
-                hashed_pw=hashed_pw
-            )
+            form_data = {
+                "id": request.form.get('userid', '').strip(),
+                "department": request.form.get('department', '').strip(),
+                "name": request.form.get('username', '').strip(),
+                "email": request.form.get('email', '').strip(),
+                "contact": request.form.get('contact', '').strip(),
+                "gender": request.form.get('gender', '').strip(),
+                "role": int(request.form.get('role', '0').strip()),  # ensure integer
+                "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
+            }
 
-            if success:
-                flash(message, "success")
-            else:
-                flash(message, "error")
+            success, message = create_staff(**form_data)
+            flash(message, "success" if success else "error")
             return redirect(url_for('admin_manageStaff'))
 
     return render_template('admin/adminManageStaff.html', active_tab='admin_manageStafftab', user_data=user_data, department_data=department_data)
