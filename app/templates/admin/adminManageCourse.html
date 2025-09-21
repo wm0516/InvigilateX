@@ -14,7 +14,7 @@
         <div class="form-left" style="width: 100%">
 
             <!-- === KPI CARDS === -->
-            <div class="dashboard-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
+            <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h4>Total Courses</h4>
                     <p class="dashboard-text">{{ total_courses }}</p>
@@ -22,7 +22,7 @@
                 <div class="dashboard-frame">
                     <h4>Course by Department</h4>
                     {% for dept in courses_by_department %}
-                        <h3 class="dashboard-text">{{ dept.department }}: {{ dept.count }}</h3>
+                        <h5>{{ dept.department }}: {{ dept.count }}</h5>
                     {% endfor %}
                 </div>
                 <div class="dashboard-frame">

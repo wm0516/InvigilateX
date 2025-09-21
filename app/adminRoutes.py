@@ -469,6 +469,7 @@ def admin_manageCourse():
         )
         .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
         .group_by(func.coalesce(Department.departmentCode, "Unknown"))
+        .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())  # sort ASC
         .all()
     )
 

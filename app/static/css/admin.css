@@ -376,6 +376,12 @@ input, select{
     font-weight:bold;
 }
 
+.dashboard-row {
+    display: flex; 
+    gap: 20px; 
+    margin-bottom: 20px;
+}
+
 
 
 
