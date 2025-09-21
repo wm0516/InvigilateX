@@ -33,18 +33,8 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Course by Department</h3>
-                    <div style="float: left; text-align: left;">
-                        {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
-                            {{ dept.department }}: {{ dept.count }}<br>
-                        {% endfor %}
-                    </div>
-
-                    <div style="float: right; text-align: left;">
-                        {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
-                            {{ dept.department }}: {{ dept.count }}<br>
-                        {% endfor %}
-                    </div>
-                </div>  
+                    <canvas id="courseDeptPieChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -193,3 +183,42 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const deptLabels = [{{ courses_by_department | map(attribute='department') | map('tojson') | join(', ') }}];
+    const deptData = [{{ courses_by_department | map(attribute='count') | join(', ') }}];
+    const ctxDept = document.getElementById('courseDeptPieChart').getContext('2d');
+    new Chart(ctxDept, {
+        type: 'pie',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                data: deptData,
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56',
+                    '#4BC0C0', '#9966FF', '#FF9F40',
+                    '#C9CBCF', '#8BC34A', '#E91E63'
+                ], // 🔄 colors will reuse if more depts
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // allows controlling width/height with CSS
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 15,
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
+
+
+
