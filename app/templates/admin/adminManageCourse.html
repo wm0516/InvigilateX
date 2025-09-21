@@ -33,7 +33,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Course by Department</h3>
-                    <canvas id="courseDeptPieChart"></canvas>
+                    <canvas id="courseDeptPieChart" width="200" height="200"></canvas>
                 </div>
             </div>
         </div>
@@ -205,15 +205,8 @@
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // allows controlling width/height with CSS
             plugins: {
-                legend: {
-                    position: 'right',
-                    labels: {
-                        boxWidth: 15,
-                        padding: 10
-                    }
-                }
+                legend: { position: 'right' }
             }
         }
     });
