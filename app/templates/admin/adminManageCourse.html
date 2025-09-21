@@ -15,21 +15,21 @@
 
             <!-- === KPI CARDS === -->
             <div class="dashboard-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
-                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <div class="dashboard-frame">
                     <h4>Total Courses</h4>
-                    <p style="font-size:1.5em; font-weight:bold;">{{ total_courses }}</p>
+                    <p class="dashboard-text">{{ total_courses }}</p>
                 </div>
-                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <div class="dashboard-frame">
                     <h4>Total Students</h4>
-                    <p style="font-size:1.5em; font-weight:bold;">{{ total_students }}</p>
+                    <p class="dashboard-text">{{ total_students }}</p>
                 </div>
-                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <div class="dashboard-frame">
                     <h4>Courses with Exams</h4>
-                    <p style="font-size:1.5em; font-weight:bold; color:green;">{{ courses_with_exams }}</p>
+                    <p class="dashboard-text" style="color:green;">{{ courses_with_exams }}</p>
                 </div>
-                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <div class="dashboard-frame">
                     <h4>Courses without Exams</h4>
-                    <p style="font-size:1.5em; font-weight:bold; color:red;">{{ courses_without_exams }}</p>
+                    <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
                 </div>
             </div>
 
@@ -194,17 +194,27 @@
 
 <script>
 // @ts-nocheck
-    const deptLabelsJS = {{ courses_by_department|map(attribute=0)|list|tojson }};
-    const deptCountsJS = {{ courses_by_department|map(attribute=1)|list|tojson }};
+    const deptLabels = {{ courses_by_department|map(attribute="department")|list|tojson }};
+    const deptCounts = {{ courses_by_department|map(attribute="count")|list|tojson }};
 
     new Chart(document.getElementById("coursesByDepartment"), {
         type: 'bar',
         data: {
-            labels: deptLabelsJS,
+            labels: deptLabels,
             datasets: [{
                 label: 'Courses per Department',
-                data: deptCountsJS
+                data: deptCounts,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
             }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
     });
 </script>
+

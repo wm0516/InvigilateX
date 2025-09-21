@@ -460,11 +460,17 @@ def admin_manageCourse():
     total_hours = db.session.query(db.func.sum(Course.courseHour)).scalar() or 0
 
     # Department distribution
-    courses_by_department = (
+    courses_by_department_raw = (
         db.session.query(Course.courseDepartment, db.func.count(Course.courseCodeSection))
         .group_by(Course.courseDepartment)
         .all()
     )
+
+    # Convert to dict for JSON serialization
+    courses_by_department = [
+        {"department": dept, "count": count}
+        for dept, count in courses_by_department_raw
+    ]
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
