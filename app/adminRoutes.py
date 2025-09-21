@@ -550,8 +550,54 @@ def admin_manageCourse():
                 usecols="A:H"
             )
 
-        elif form_type == 'dashboard':
+        elif form_type == 'edit':
+            action = request.form.get('action')
+            course_id = request.form.get('editCourseSelect')
+
+            if not course_id:
+                flash("No course selected", "error")
+                return redirect(url_for('admin_manageCourse'))
+
+            course = Course.query.get(course_id)
+            if not course:
+                flash("Course not found", "error")
+                return redirect(url_for('admin_manageCourse'))
+
+            if action == 'update':
+                course.courseDepartment = request.form.get('departmentCode', '').strip()
+
+                # Safely get code and section with defaults
+                courseCode = request.form.get('courseCode', '').strip()
+                courseSection = request.form.get('courseSection', '').strip()
+                course.courseCodeSection = f"{courseCode}/{courseSection}"  
+                course.courseName = request.form.get('courseName', '').strip()
+                course.department = request.form.get('departmentCode', '').strip()
+                course.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
+                course.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
+
+                # Safely convert to int, default to 0 if missing or invalid
+                try:
+                    course.courseHour = int(request.form.get('courseHour', 0))
+                except (ValueError, TypeError):
+                    course.courseHour = 0
+
+                try:
+                    course.courseStudent = int(request.form.get('courseStudent', 0))
+                except (ValueError, TypeError):
+                    course.courseStudent = 0
+
+                # TODO: handle practical/tutorial lecturer assignments here
+                db.session.commit()
+                flash("Course updated successfully", "success")
+
+
+            elif action == 'delete':
+                db.session.delete(course)
+                db.session.commit()
+                flash("Course deleted successfully", "success")
+
             return redirect(url_for('admin_manageCourse'))
+
 
         else:  # manual add course
             # ✅ Use dict unpacking instead of repeating
@@ -580,8 +626,19 @@ def admin_manageCourse():
         courses_with_exams=courses_with_exams,
         courses_without_exams=courses_without_exams,
         courses_by_department=courses_by_department,
-        error_rows=error_rows
+        error_rows=error_rows,
+        course_json=[{
+            "id": c.id,
+            "code_section": c.courseCodeSection,
+            "name": c.courseName,
+            "hour": c.courseHour,
+            "department": c.courseDepartment,
+            "practical": c.practicalLecturer.userName if c.practicalLecturer else "",
+            "tutorial": c.tutorialLecturer.userName if c.tutorialLecturer else "",
+            "students": c.courseStudent
+        } for c in course_data]  # For JS auto-fill
     )
+
 
 
 # -------------------------------
