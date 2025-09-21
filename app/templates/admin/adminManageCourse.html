@@ -22,7 +22,7 @@
                 <div class="dashboard-frame">
                     <h4>Course by Department</h4>
                     {% for dept in courses_by_department %}
-                        <p class="dashboard-text">{{ dept.department }}: {{ dept.count }}</p>
+                        <li class="dashboard-text">{{ dept.dept_code }}: {{ dept.count }}</li>
                     {% endfor %}
                 </div>
                 <div class="dashboard-frame">

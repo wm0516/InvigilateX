@@ -474,8 +474,8 @@ def admin_manageCourse():
 
     # Convert to list of dictionaries for JSON
     courses_by_department = [
-        {"department": dept_name, "count": count}
-        for dept_name, count in courses_by_department_raw
+        {"departmentCode": dept_code, "count": count}
+        for dept_code, count in courses_by_department_raw
     ]
 
     if request.method == 'POST':
