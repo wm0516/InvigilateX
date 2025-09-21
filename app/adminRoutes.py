@@ -79,8 +79,18 @@ def get_all_attendances():
 # -------------------------------
 # Calculate All InvigilatorAttendance and InvigilationReport Data From Database
 # -------------------------------
-def calculate_invigilation_stats(query):
-    total_report = len(set([row.reportId for row in query]))
+def calculate_invigilation_stats():
+    query = db.session.query(
+        InvigilatorAttendance.attendanceId,
+        InvigilatorAttendance.invigilatorId,
+        InvigilatorAttendance.checkIn,
+        InvigilatorAttendance.checkOut,
+        Exam.examStartTime,
+        Exam.examEndTime,
+        InvigilatorAttendance.reportId
+    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+
+    total_report = len(set([row.reportId for row in db.session.query(InvigilatorAttendance.reportId).all()]))
     total_invigilator = len(set([row.invigilatorId for row in query]))
 
     stats = {
@@ -1006,24 +1016,9 @@ def admin_manageTimetable():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 def admin_manageInvigilationTimetable():
     attendances = get_all_attendances()
-    now = datetime.now()
+    stats = calculate_invigilation_stats()
 
-    query = db.session.query(
-        InvigilatorAttendance.attendanceId,
-        InvigilatorAttendance.invigilatorId,
-        InvigilatorAttendance.checkIn,
-        InvigilatorAttendance.checkOut,
-        Exam.examStartTime,
-        Exam.examEndTime,
-        InvigilatorAttendance.reportId
-    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId
-    ).filter(Exam.examEndTime >= now).all()   # 🔹 upcoming or ongoing exams
-
-    stats = calculate_invigilation_stats(query)
-
-    return render_template(
-        'admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances, **stats)
-
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances, **stats)
 
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
@@ -1031,23 +1026,11 @@ def admin_manageInvigilationTimetable():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
-    now = datetime.now()
-
-    query = db.session.query(
-        InvigilatorAttendance.attendanceId,
-        InvigilatorAttendance.invigilatorId,
-        InvigilatorAttendance.checkIn,
-        InvigilatorAttendance.checkOut,
-        Exam.examStartTime,
-        Exam.examEndTime,
-        InvigilatorAttendance.reportId
-    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId
-    ).filter(Exam.examEndTime < now).all()   # 🔹 only past exams
-
-    stats = calculate_invigilation_stats(query)
+    stats = calculate_invigilation_stats()
 
     return render_template(
         'admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+
 
 
 # -------------------------------
