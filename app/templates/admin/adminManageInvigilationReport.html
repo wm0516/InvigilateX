@@ -15,13 +15,17 @@
 
             <!-- Overview -->
             <div class="dashboard-row">
-                <div class="dashboard-frame pie">
+                <div class="dashboard-frame">
                     <h3>Total Invigilation Reports</h3>
                     <p class="dashboard-text">{{ total_report }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Total Assigned Invigilators</h3>
                     <p class="dashboard-text" style="color:green;">{{ total_invigilator }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Invigilators Progress</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Invigilators Checked In On Time</h3>

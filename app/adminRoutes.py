@@ -974,13 +974,14 @@ def admin_manageInvigilationReport():
     attendances = get_all_attendances()
 
     query = db.session.query(
-            InvigilatorAttendance.attendanceId,
-            InvigilatorAttendance.invigilatorId,
-            InvigilatorAttendance.checkIn,
-            InvigilatorAttendance.checkOut,
-            Exam.examStartTime,
-            Exam.examEndTime
-        ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+        InvigilatorAttendance.attendanceId,
+        InvigilatorAttendance.invigilatorId,
+        InvigilatorAttendance.checkIn,
+        InvigilatorAttendance.checkOut,
+        Exam.examStartTime,
+        Exam.examEndTime,
+        InvigilatorAttendance.reportId
+    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
 
     total_report = len(set([row.reportId for row in db.session.query(InvigilatorAttendance.reportId).all()]))
     total_invigilator = len(set([row.invigilatorId for row in query]))
@@ -989,14 +990,21 @@ def admin_manageInvigilationReport():
     total_checkInLate = 0
     total_checkOutOnTime = 0
     total_checkOutEarly = 0
-    total_checkInOut = 0
+    total_checkInOut = 0   # missing both
+    total_inProgress = 0   # checked in but no check out
 
     for row in query:
-        # If checkIn/checkOut missing
-        if row.checkIn is None or row.checkOut is None:
+        # Case 1: No checkIn at all
+        if row.checkIn is None:
             total_checkInOut += 1
             continue
 
+        # Case 2: CheckIn exists, but no checkOut (in progress)
+        if row.checkOut is None:
+            total_inProgress += 1
+            continue
+
+        # ✅ If both checkIn and checkOut exist:
         # Check In status
         if row.checkIn <= row.examStartTime:
             total_checkInOnTime += 1
@@ -1009,14 +1017,19 @@ def admin_manageInvigilationReport():
         else:
             total_checkOutEarly += 1
 
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances,
+    return render_template('admin/adminManageInvigilationReport.html',
+        active_tab='admin_manageInvigilationReporttab',
+        attendances=attendances,
         total_report=total_report,
         total_invigilator=total_invigilator,
         total_checkInOnTime=total_checkInOnTime,
         total_checkInLate=total_checkInLate,
         total_checkOutOnTime=total_checkOutOnTime,
         total_checkOutEarly=total_checkOutEarly,
-        total_checkInOut=total_checkInOut)
+        total_checkInOut=total_checkInOut,
+        total_inProgress=total_inProgress
+    )
+
 
 
 # -------------------------------
