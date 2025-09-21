@@ -531,7 +531,6 @@ def admin_manageCourse():
         total_courses=total_courses,
         courses_with_exams=courses_with_exams,
         courses_without_exams=courses_without_exams,
-        total_hours=total_hours,
         courses_by_department=courses_by_department
     )
 
