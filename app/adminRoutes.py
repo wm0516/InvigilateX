@@ -822,10 +822,10 @@ def admin_manageStaff():
                 "id": request.form.get('userid', '').strip(),
                 "department": request.form.get('department', '').strip(),
                 "name": request.form.get('username', '').strip(),
+                "role": int(request.form.get('role', '0').strip()),
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
-                "role": int(request.form.get('role', '0').strip()),
                 "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
             }
 
