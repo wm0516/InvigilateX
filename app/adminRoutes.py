@@ -495,150 +495,158 @@ def get_course_details(program_code, course_code_section):
 # -------------------------------
 # Function for Admin ManageCourse Route
 # -------------------------------
+from flask import render_template, request, redirect, url_for, flash
+from sqlalchemy import func
+import traceback
+
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
-def admin_manageCourse():   
-    # === Load basic data ===
-    course_data = Course.query.all()
-    department_data = Department.query.all()
+def admin_manageCourse():
+    try:
+        # === Load basic data safely ===
+        course_data = Course.query.all() or []
+        department_data = Department.query.all() or []
 
-    # === Dashboard numbers ===
-    total_courses = Course.query.count()
-    courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count()
-    courses_without_exams = total_courses - courses_with_exams  # simpler
+        # === Dashboard numbers ===
+        total_courses = Course.query.count() or 0
+        courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count() or 0
+        courses_without_exams = max(total_courses - courses_with_exams, 0)
 
-    # ✅ Count rows with missing/empty values
-    error_rows = Course.query.filter(
-        (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
-        (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
-        (Course.courseName.is_(None)) | (Course.courseName == '') |
-        (Course.courseHour.is_(None)) |
-        (Course.courseStudent.is_(None)) |
-        (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
-        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
-    ).count()
+        # Count rows with missing/empty values
+        error_rows = Course.query.filter(
+            (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
+            (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
+            (Course.courseName.is_(None)) | (Course.courseName == '') |
+            (Course.courseHour.is_(None)) |
+            (Course.courseStudent.is_(None)) |
+            (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
+            (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
+        ).count()
 
-    # === Courses by department (use departmentCode, include Unknown for NULL) ===
-    courses_by_department_raw = (
-        db.session.query(
-            func.coalesce(Department.departmentCode, "Unknown"), 
+        # === Courses by department safely ===
+        courses_by_department_raw = db.session.query(
+            func.coalesce(Department.departmentCode, "Unknown"),
             func.count(Course.courseCodeSection)
+        ).outerjoin(Course, Department.departmentCode == Course.courseDepartment
+        ).group_by(func.coalesce(Department.departmentCode, "Unknown")
+        ).having(func.count(Course.courseCodeSection) > 0
+        ).order_by(func.coalesce(Department.departmentCode, "Unknown").asc()
+        ).all() or []
+
+        courses_by_department = [
+            {"department": dept_code, "count": count}
+            for dept_code, count in courses_by_department_raw
+        ]
+
+        # === POST Handling ===
+        if request.method == 'POST':
+            form_type = request.form.get('form_type')
+
+            # --- Upload Section ---
+            if form_type == 'upload':
+                return handle_file_upload(
+                    file_key='course_file',
+                    expected_cols=[
+                        'department code', 'course code', 'course section', 'course name',
+                        'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'
+                    ],
+                    process_row_fn=process_course_row,
+                    redirect_endpoint='admin_manageCourse',
+                    usecols="A:H"
+                )
+
+            # --- Edit Section ---
+            elif form_type == 'edit':
+                action = request.form.get('action')
+                course_id = request.form.get('editCourseSelect')
+                if not course_id:
+                    flash("No course selected", "error")
+                    return redirect(url_for('admin_manageCourse'))
+
+                course = Course.query.get(course_id)
+                if not course:
+                    flash("Course not found", "error")
+                    return redirect(url_for('admin_manageCourse'))
+
+                if action == 'update':
+                    course.courseDepartment = request.form.get('departmentCode', '').strip()
+                    courseCode = request.form.get('courseCode', '').strip()
+                    courseSection = request.form.get('courseSection', '').strip()
+                    course.courseCodeSection = f"{courseCode}/{courseSection}"  
+                    course.courseName = request.form.get('courseName', '').strip()
+                    course.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
+                    course.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
+
+                    # Safe int conversion
+                    try:
+                        course.courseHour = int(request.form.get('courseHour', 0))
+                    except (ValueError, TypeError):
+                        course.courseHour = 0
+
+                    try:
+                        course.courseStudent = int(request.form.get('courseStudent', 0))
+                    except (ValueError, TypeError):
+                        course.courseStudent = 0
+
+                    db.session.commit()
+                    flash("Course updated successfully", "success")
+
+                elif action == 'delete':
+                    db.session.delete(course)
+                    db.session.commit()
+                    flash("Course deleted successfully", "success")
+
+                return redirect(url_for('admin_manageCourse'))
+
+            # --- Manual Add Section ---
+            else:
+                def safe_int(value, default=0):
+                    try:
+                        return int(value)
+                    except (ValueError, TypeError):
+                        return default
+
+                form_data = {
+                    "department": request.form.get('departmentCode', '').strip(),
+                    "code": request.form.get('courseCode', '').replace(' ', ''),
+                    "section": request.form.get('courseSection', '').replace(' ', ''),
+                    "name": request.form.get('courseName', '').strip(),
+                    "hour": safe_int(request.form.get('courseHour')),
+                    "practical": request.form.get('practicalLecturerSelect', '').strip(),
+                    "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
+                    "students": safe_int(request.form.get('courseStudent')),
+                }
+
+                success, message = create_course_and_exam(**form_data)
+                flash(message, "success" if success else "error")
+                return redirect(url_for('admin_manageCourse'))
+
+        # === GET Request ===
+        return render_template(
+            'admin/adminManageCourse.html',
+            active_tab='admin_manageCoursetab',
+            course_data=course_data,
+            department_data=department_data,
+            total_courses=total_courses,
+            courses_with_exams=courses_with_exams,
+            courses_without_exams=courses_without_exams,
+            courses_by_department=courses_by_department,
+            error_rows=error_rows,
+            course_json=[{
+                "id": c.id,
+                "code_section": c.courseCodeSection or "",
+                "name": c.courseName or "",
+                "hour": c.courseHour or 0,
+                "department": c.courseDepartment or "",
+                "practical": getattr(c.practicalLecturer, 'userName', ""),
+                "tutorial": getattr(c.tutorialLecturer, 'userName', ""),
+                "students": c.courseStudent or 0
+            } for c in course_data]
         )
-        .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
-        .group_by(func.coalesce(Department.departmentCode, "Unknown"))
-        .having(func.count(Course.courseCodeSection) > 0)  # ✅ skip zero counts
-        .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())
-        .all()
-    )
 
-    courses_by_department = [
-        {"department": dept_code, "count": count}
-        for dept_code, count in courses_by_department_raw
-    ]
-
-    if request.method == 'POST':
-        form_type = request.form.get('form_type')
-
-        if form_type == 'upload':
-            return handle_file_upload(
-                file_key='course_file',
-                expected_cols=[
-                    'department code', 'course code', 'course section', 'course name',
-                    'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'
-                ],
-                process_row_fn=process_course_row,
-                redirect_endpoint='admin_manageCourse',
-                usecols="A:H"
-            )
-
-        elif form_type == 'edit':
-            action = request.form.get('action')
-            course_id = request.form.get('editCourseSelect')
-
-            if not course_id:
-                flash("No course selected", "error")
-                return redirect(url_for('admin_manageCourse'))
-
-            course = Course.query.get(course_id)
-            if not course:
-                flash("Course not found", "error")
-                return redirect(url_for('admin_manageCourse'))
-
-            if action == 'update':
-                course.courseDepartment = request.form.get('departmentCode', '').strip()
-
-                # Safely get code and section with defaults
-                courseCode = request.form.get('courseCode', '').strip()
-                courseSection = request.form.get('courseSection', '').strip()
-                course.courseCodeSection = f"{courseCode}/{courseSection}"  
-                course.courseName = request.form.get('courseName', '').strip()
-                course.department = request.form.get('departmentCode', '').strip()
-                course.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
-                course.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
-
-                # Safely convert to int, default to 0 if missing or invalid
-                try:
-                    course.courseHour = int(request.form.get('courseHour', 0))
-                except (ValueError, TypeError):
-                    course.courseHour = 0
-
-                try:
-                    course.courseStudent = int(request.form.get('courseStudent', 0))
-                except (ValueError, TypeError):
-                    course.courseStudent = 0
-
-                # TODO: handle practical/tutorial lecturer assignments here
-                db.session.commit()
-                flash("Course updated successfully", "success")
-
-
-            elif action == 'delete':
-                db.session.delete(course)
-                db.session.commit()
-                flash("Course deleted successfully", "success")
-
-            return redirect(url_for('admin_manageCourse'))
-
-
-        else:  # manual add course
-            # ✅ Use dict unpacking instead of repeating
-            form_data = {
-                "department": request.form.get('departmentCode', '').strip(),
-                "code": request.form.get('courseCode', '').replace(' ', ''),
-                "section": request.form.get('courseSection', '').replace(' ', ''),
-                "name": request.form.get('courseName', '').strip(),
-                "hour": int(request.form.get('courseHour', 0)),
-                "practical": request.form.get('practicalLecturerSelect', '').strip(),
-                "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
-                "students": int(request.form.get('courseStudent', 0)),
-            }
-
-            success, message = create_course_and_exam(**form_data)
-            flash(message, "success" if success else "error")
-            return redirect(url_for('admin_manageCourse'))
-
-    # === GET request fallback ===
-    return render_template(
-        'admin/adminManageCourse.html',
-        active_tab='admin_manageCoursetab',
-        course_data=course_data,
-        department_data=department_data,
-        total_courses=total_courses,
-        courses_with_exams=courses_with_exams,
-        courses_without_exams=courses_without_exams,
-        courses_by_department=courses_by_department,
-        error_rows=error_rows,
-        course_json=[{
-            "id": c.id,
-            "code_section": c.courseCodeSection,
-            "name": c.courseName,
-            "hour": c.courseHour,
-            "department": c.courseDepartment,
-            "practical": c.practicalLecturer.userName if c.practicalLecturer else "",
-            "tutorial": c.tutorialLecturer.userName if c.tutorialLecturer else "",
-            "students": c.courseStudent
-        } for c in course_data]  # For JS auto-fill
-    )
-
+    except Exception as e:
+        # Show traceback in browser for debugging
+        print(traceback.format_exc())
+        return f"<pre>{traceback.format_exc()}</pre>", 500
 
 
 # -------------------------------
