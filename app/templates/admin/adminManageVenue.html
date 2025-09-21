@@ -121,9 +121,8 @@
 {% block extra_scripts %}
 <script>
     // Prepare data from Flask (safe JSON export)
-    const venuesByFloor = {{ venues_by_floor | tojson }};
-    const floorLabels = venuesByFloor.map(item => item[0]);
-    const floorData = venuesByFloor.map(item => item[1]);
+    const floorLabels = [{{ venues_by_floor | map(attribute='floor') | map('tojson') | join(', ') }}];
+    const floorData = [{{ venues_by_floor | map(attribute='count') | join(', ') }}];
 
     const ctxVenueFloor = document.getElementById('venueFloorPieChart').getContext('2d');
     new Chart(ctxVenueFloor, {

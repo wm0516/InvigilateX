@@ -641,12 +641,13 @@ def admin_manageVenue():
     )
 
     # Floor counts (no need to map manually, Jinja can unpack tuples)
-    venues_by_floor = (
-        db.session.query(Venue.venueFloor, func.count())
+    venues_by_floor = [
+        {"floor": floor, "count": count}
+        for floor, count in db.session.query(Venue.venueFloor, func.count())
         .group_by(Venue.venueFloor)
         .order_by(Venue.venueFloor)
         .all()
-    )
+    ]
 
     return render_template(
         'admin/adminManageVenue.html',
