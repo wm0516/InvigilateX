@@ -20,6 +20,14 @@
                     <p class="dashboard-text">{{ total_venue }}</p>
                 </div>
                 <div class="dashboard-frame">
+                    <h4>Venues by Floor</h4>
+                    <ul>
+                        {% for floor, count in venues_by_floor %}
+                            <li>{{ floor }}: {{ count }}</li>
+                        {% endfor %}
+                    </ul>                
+                </div>
+                <div class="dashboard-frame">
                     <h4>Venue Available</h4>
                     <p class="dashboard-text" style="color:green;">{{ available }}</p>
                 </div>

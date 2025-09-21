@@ -604,54 +604,60 @@ def admin_manageDepartment():
 # -------------------------------
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
-    venue_data = Venue.query.all()
-    total_venue = Venue.query.count()
-    counts = dict(
-        db.session.query(Venue.venueStatus, func.count(Venue.venueNumber))
-        .group_by(Venue.venueStatus)
-        .all()
-    )
-    venueNumber_text = ''
-    venueFloor_text = ''
-    venueCapacity_text = ''
-    venueStatus_text = ''
-
-    # --------------------- MANUAL ADD VENUE FORM ---------------------
     if request.method == 'POST':
-        venueNumber_text = request.form.get('venueNumber', '').strip().upper()
-        venueFloor_text = request.form.get('venueFloor', '').strip()
-        venueCapacity_text = request.form.get('venueCapacity', '').strip()
-        venueStatus_text = request.form.get('venueStatus', '').strip()
+        venueNumber = request.form.get('venueNumber', '').strip().upper()
+        venueFloor = request.form.get('venueFloor', '').strip()
+        venueCapacity = request.form.get('venueCapacity', '').strip()
+        venueStatus = request.form.get('venueStatus', '').strip()
 
-        if Venue.query.filter_by(venueNumber=venueNumber_text).first():
+        if Venue.query.filter_by(venueNumber=venueNumber).first():
             flash("Venue Room Already Exists", 'error')
         else:
             try:
-                capacity = int(venueCapacity_text)
+                capacity = int(venueCapacity)
                 if capacity < 0:
                     raise ValueError
-                
-                db.session.add(
-                    Venue(
-                        venueNumber=venueNumber_text,
-                        venueFloor=venueFloor_text,
-                        venueCapacity=capacity,
-                        venueStatus=venueStatus_text
-                    )
-                )
+                db.session.add(Venue(
+                    venueNumber=venueNumber,
+                    venueFloor=venueFloor,
+                    venueCapacity=capacity,
+                    venueStatus=venueStatus
+                ))
                 db.session.commit()
                 flash("Venue Added", "success")
                 return redirect(url_for('admin_manageVenue'))
             except ValueError:
                 flash("Capacity must be a non-negative integer", 'error')
 
-        return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venueNumber_text=venueNumber_text, venueCapacity_text=venueCapacity_text)
+    # Always fetch latest data for display
+    venue_data = Venue.query.all()
+    total_venue = Venue.query.count()
 
-    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data,
-                           total_venue=total_venue,
-                            available=counts.get("AVAILABLE", 0),
-                            unavailable=counts.get("UNAVAILABLE", 0),
-                            in_service=counts.get("IN SERVICE", 0),)
+    # Status counts
+    counts = dict(
+        db.session.query(Venue.venueStatus, func.count())
+        .group_by(Venue.venueStatus)
+        .all()
+    )
+
+    # Floor counts (no need to map manually, Jinja can unpack tuples)
+    venues_by_floor = (
+        db.session.query(Venue.venueFloor, func.count())
+        .group_by(Venue.venueFloor)
+        .order_by(Venue.venueFloor)
+        .all()
+    )
+
+    return render_template(
+        'admin/adminManageVenue.html',
+        active_tab='admin_manageVenuetab',
+        venue_data=venue_data,
+        total_venue=total_venue,
+        available=counts.get("AVAILABLE", 0),
+        unavailable=counts.get("UNAVAILABLE", 0),
+        in_service=counts.get("IN SERVICE", 0),
+        venues_by_floor=venues_by_floor
+    )
 
 
 # -------------------------------
