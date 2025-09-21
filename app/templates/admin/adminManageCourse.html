@@ -31,9 +31,6 @@
                     <h4>Courses without Exams</h4>
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
                     
-                    <p>Courses by Department Data: {{ courses_by_department }}</p>
-                    <p>Courses with Exams: {{ courses_with_exams }}</p>
-                    <p>Courses without Exams: {{ courses_without_exams }}</p>
                 </div>
             </div>
 
@@ -200,35 +197,30 @@
 // @ts-nocheck
     // Extract department names and counts from the data
     const deptData = {{ courses_by_department|tojson|safe }};
-    const filtered = deptData.filter(item => item.count > 0);
-    const deptLabels = filtered.map(item => item.department);
-    const deptCounts = filtered.map(item => item.count);
+    const deptLabels = deptData.map(item => item.department);
+    const deptCounts = deptData.map(item => item.count);
 
-    // Create the chart
-    if (deptLabels.length > 0 && deptCounts.length > 0) {
-        new Chart(document.getElementById("coursesByDepartment"), {
-            type: 'bar',
-            data: {
-                labels: deptLabels,
-                datasets: [{
-                    label: 'Courses per Department',
-                    data: deptCounts,
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-    } else {
-        console.error("No department data available for chart");
-    }
+    // === Bar Chart: Courses by Department ===
+    new Chart(document.getElementById("coursesByDepartment"), {
+        type: 'bar',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                label: 'Courses per Department',
+                data: deptCounts,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, precision: 0 } }
+        }
+    });
 
-    // Add the pie chart for exams vs no exams
+    // === Pie Chart: Exams vs No Exams ===
     new Chart(document.getElementById("examPieChart"), {
         type: 'pie',
         data: {

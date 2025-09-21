@@ -12,6 +12,8 @@ import traceback
 import os
 import re
 import PyPDF2
+from sqlalchemy import func
+
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -444,6 +446,7 @@ def get_course_details(program_code, course_code_section):
 def admin_manageCourse():   
     course_data = Course.query.all()
     department_data = Department.query.all()
+
     courseDepartment_text = ''
     courseCode_text = ''
     courseSection_text = ''
@@ -453,30 +456,32 @@ def admin_manageCourse():
     courseTutorial_text = ''
     courseStudent_text = ''
 
+    # === Dashboard numbers ===
     total_courses = Course.query.count()
     courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count()
     courses_without_exams = Course.query.filter(Course.courseExamId.is_(None)).count()
-    total_students = db.session.query(db.func.sum(Course.courseStudent)).scalar() or 0
-    total_hours = db.session.query(db.func.sum(Course.courseHour)).scalar() or 0
+    total_students = db.session.query(func.sum(Course.courseStudent)).scalar() or 0
+    total_hours = db.session.query(func.sum(Course.courseHour)).scalar() or 0
     
+    # === Courses by department (include Unknown for NULL) ===
     courses_by_department_raw = (
         db.session.query(
-            Department.departmentName, 
-            db.func.count(Course.courseCodeSection)
+            func.coalesce(Department.departmentName, "Unknown"), 
+            func.count(Course.courseCodeSection)
         )
-        .join(Course, Department.departmentCode == Course.courseDepartment, isouter=True)
-        .group_by(Department.departmentName)
+        .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
+        .group_by(func.coalesce(Department.departmentName, "Unknown"))
         .all()
     )
 
-    # Convert to list of dictionaries
+    # Convert to list of dictionaries for JSON
     courses_by_department = [
-        {"department": dept_name if dept_name else "Unknown", "count": count}
+        {"department": dept_name, "count": count}
         for dept_name, count in courses_by_department_raw
     ]
 
     if request.method == 'POST':
-        form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
+        form_type = request.form.get('form_type')
 
         # --------------------- UPLOAD FORM ---------------------
         if form_type == 'upload':
@@ -491,7 +496,6 @@ def admin_manageCourse():
         # --------------------- DASHBOARD FORM ---------------------
         elif form_type == 'dashboard':
             return redirect(url_for('admin_manageCourse'))
-
 
         # --------------------- MANUAL ADD COURSE FORM ---------------------
         else:
@@ -521,13 +525,18 @@ def admin_manageCourse():
             return redirect(url_for('admin_manageCourse'))
 
     # GET request fallback
-    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data,
+    return render_template(
+        'admin/adminManageCourse.html',
+        active_tab='admin_manageCoursetab',
+        course_data=course_data,
+        department_data=department_data,
         total_courses=total_courses,
         courses_with_exams=courses_with_exams,
         courses_without_exams=courses_without_exams,
         total_students=total_students,
         total_hours=total_hours,
-        courses_by_department=courses_by_department)
+        courses_by_department=courses_by_department
+    )
 
 
 # -------------------------------
