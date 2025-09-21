@@ -859,12 +859,13 @@ def admin_manageStaff():
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
+    # === Default data load ===
     timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
-    # === Totals for dashboard ===
-    total_timetable = Timetable.query.count()
+    # Total timetable = total lecturers who have timetable saved
+    total_timetable = db.session.query(Timetable.lecturerName).distinct().count()
 
     # Map day shortcodes to full keys for Jinja
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
@@ -873,10 +874,10 @@ def admin_manageTimetable():
         for day in days
     }
 
+    # === Handle POST (upload) ===
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
-        # --------------------- UPLOAD ADD TIMETABLE FORM ---------------------
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
@@ -921,15 +922,10 @@ def admin_manageTimetable():
 
             flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
+            # Refresh after upload
             timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
-
-            # Recalculate totals after upload
-            total_timetable = Timetable.query.count()
-            day_counts = {
-                f"{day.lower()}_timetable": Timetable.query.filter_by(classDay=day).count()
-                for day in days
-            }
+            total_timetable = db.session.query(Timetable.lecturerName).distinct().count()
 
             return render_template(
                 'admin/adminManageTimetable.html',
@@ -944,7 +940,7 @@ def admin_manageTimetable():
                     "files_after_filter": filtered_filenames
                 },
                 total_timetable=total_timetable,
-                **day_counts   # unpack dictionary into template variables
+                **day_counts
             )
 
     # ---- Default GET rendering ----
@@ -959,6 +955,7 @@ def admin_manageTimetable():
         total_timetable=total_timetable,
         **day_counts
     )
+
 
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
