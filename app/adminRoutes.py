@@ -453,6 +453,19 @@ def admin_manageCourse():
     courseTutorial_text = ''
     courseStudent_text = ''
 
+    total_courses = Course.query.count()
+    courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count()
+    courses_without_exams = Course.query.filter(Course.courseExamId.is_(None)).count()
+    total_students = db.session.query(db.func.sum(Course.courseStudent)).scalar() or 0
+    total_hours = db.session.query(db.func.sum(Course.courseHour)).scalar() or 0
+
+    # Department distribution
+    courses_by_department = (
+        db.session.query(Course.courseDepartment, db.func.count(Course.courseCodeSection))
+        .group_by(Course.courseDepartment)
+        .all()
+    )
+
     if request.method == 'POST':
         form_type = request.form.get('form_type')  # <-- Distinguish which form was submitted
 
@@ -499,7 +512,13 @@ def admin_manageCourse():
             return redirect(url_for('admin_manageCourse'))
 
     # GET request fallback
-    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data)
+    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, department_data=department_data,
+        total_courses=total_courses,
+        courses_with_exams=courses_with_exams,
+        courses_without_exams=courses_without_exams,
+        total_students=total_students,
+        total_hours=total_hours,
+        courses_by_department=courses_by_department)
 
 
 # -------------------------------
@@ -902,6 +921,19 @@ def admin_profile():
 
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
                            admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

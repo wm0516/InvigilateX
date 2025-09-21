@@ -12,10 +12,41 @@
     <div id="dashboardSection" class="function-frame">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
+
+            <!-- === KPI CARDS === -->
+            <div class="dashboard-row" style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h4>Total Courses</h4>
+                    <p style="font-size:1.5em; font-weight:bold;">{{ total_courses }}</p>
+                </div>
+                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h4>Total Students</h4>
+                    <p style="font-size:1.5em; font-weight:bold;">{{ total_students }}</p>
+                </div>
+                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h4>Courses with Exams</h4>
+                    <p style="font-size:1.5em; font-weight:bold; color:green;">{{ courses_with_exams }}</p>
+                </div>
+                <div class="kpi-card" style="flex:1; background:#f8f9fa; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h4>Courses without Exams</h4>
+                    <p style="font-size:1.5em; font-weight:bold; color:red;">{{ courses_without_exams }}</p>
+                </div>
+            </div>
+
+            <!-- === CHARTS === -->
+            <div class="dashboard-row" style="display:flex; gap:20px; margin-bottom:20px;">
+                <div class="chart-card" style="flex:1; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h4>Courses by Department</h4>
+                    <canvas id="coursesByDepartment"></canvas>
+                </div>
+                <div class="chart-card" style="flex:1; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                    <h4>Exams vs No Exams</h4>
+                    <canvas id="examPieChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </form>
-{% endblock %}
 
 
 {% block upload_section %}
@@ -159,3 +190,20 @@
     </div>
 </div>
 {% endblock %}
+
+<script>
+// @ts-nocheck
+    const deptLabelsJS = {{ courses_by_department|map(attribute=0)|list|tojson }};
+    const deptCountsJS = {{ courses_by_department|map(attribute=1)|list|tojson }};
+
+    new Chart(document.getElementById("coursesByDepartment"), {
+        type: 'bar',
+        data: {
+            labels: deptLabelsJS,
+            datasets: [{
+                label: 'Courses per Department',
+                data: deptCountsJS
+            }]
+        }
+    });
+</script>
