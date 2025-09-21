@@ -13,30 +13,12 @@
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
 
-            <!-- === KPI CARDS === -->
+            <!-- Overview -->
             <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h4>Total Courses</h4>
                     <p class="dashboard-text">{{ total_courses }}</p>
                 </div>
-                <div class="dashboard-frame">
-                    <h4>Course by Department</h4>
-                    <div style="float: left; width: 45%; margin-left: 5%;">
-                        <ul>
-                            {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
-                                <li><label>{{ dept.department }}: {{ dept.count }}</label></li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-
-                    <div style="float: right; width: 45%; margin-right: 5%;">
-                        <ul>
-                            {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
-                                <li>{{ dept.department }}: {{ dept.count }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>  
                 <div class="dashboard-frame">
                     <h4>Courses with Exams</h4>
                     <p class="dashboard-text" style="color:green;">{{ courses_with_exams }}</p>
@@ -45,6 +27,24 @@
                     <h4>Courses without Exams</h4>
                     <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
                 </div>
+                <div class="dashboard-frame">
+                    <h4>Course by Department</h4>
+                    <div style="float: left;">
+                        <ul>
+                            {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
+                                <li>{{ dept.department }}: {{ dept.count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div style="float: right;">
+                        <ul>
+                            {% for dept in courses_by_department[(courses_by_department|length // 2 + courses_by_department|length % 2):] %}
+                                <li>{{ dept.department }}: {{ dept.count }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>  
             </div>
         </div>
     </div>
