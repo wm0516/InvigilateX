@@ -31,7 +31,7 @@
                     <h4>Error Rows</h4>
                     <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
-                <div class="dashboard-frame">
+                <div class="dashboard-frame" style="text-align: None;">
                     <h4>Course by Department</h4>
                     <div style="float: left;">
                         {% for dept in courses_by_department[:(courses_by_department|length // 2 + courses_by_department|length % 2)] %}
