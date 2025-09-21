@@ -15,19 +15,19 @@
             <!-- Overview -->
             <div class="dashboard-row">
                 <div class="dashboard-frame">
-                    <h3>Total Exam</h3>
+                    <h3>Total Exams</h3>
                     <p class="dashboard-text">{{ total_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Total Completed Exam</h3>
+                    <h3>Completed Exams</h3>
                     <p class="dashboard-text" style="color:green;">{{ exam_with_complete }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Total Incompleted Exam</h3>
+                    <h3>Incomplete Exams</h3>
                     <p class="dashboard-text" style="color:red;">{{ total_exam - exam_with_complete - error_rows }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Haven't Assigned</h3>
+                    <h3>Unassigned Exams</h3>
                     <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
             </div>
