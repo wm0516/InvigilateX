@@ -20,12 +20,20 @@
                     <p class="dashboard-text">{{ total_department }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h4>Department without HOP</h4>
+                    <h4>Department with HOP</h4>
                     <p class="dashboard-text" style="color:green;">{{ department_with_hop }}</p>
                 </div>
                 <div class="dashboard-frame">
+                    <h4>Department without HOP</h4>
+                    <p class="dashboard-text" style="color:red;">{{ total_department - department_with_hop }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h4>Department with Dean</h4>
+                    <p class="dashboard-text" style="color:green;">{{ department_with_dean }}</p>
+                </div>
+                <div class="dashboard-frame">
                     <h4>Department without Dean</h4>
-                    <p class="dashboard-text" style="color:red;">{{ department_with_dean }}</p>
+                    <p class="dashboard-text" style="color:red;">{{ total_department - department_with_dean }}</p>
                 </div>
             </div>
         </div>
