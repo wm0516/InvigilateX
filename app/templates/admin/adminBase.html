@@ -107,8 +107,12 @@
                 <!-- Flash Message Section -->
                 {% if uploadResult %}
                     <div class="result-message">{{ uploadResult }}</div>
+                {% endif %}
+
                 {% if uploadErrors %}
                     <div class="error-message">{{ uploadErrors }}</div>
+                {% endif %}
+
                 {% set flashes = get_flashed_messages(with_categories=true) %}
                 {% if flashes %}
                     {% for category, message in flashes %}
