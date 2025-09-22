@@ -164,18 +164,22 @@
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
                     <td>
-                        Dean ID         : {{ row.dean.userId if row.dean else '' }} <br>
-                        Dean Name       : {{ row.dean.userName if row.dean else '' }} <br>
-                        Dean Email      : {{ row.dean.userEmail if row.dean else '' }} <br>
-                        Dean Contact    : {{ row.dean.userContact if row.dean else '' }} <br>
-                        Dean Department : {{ row.dean.userDepartment if row.dean else ''}}
+                        {% if row.dean %}
+                            Dean ID         : {{ row.dean.userId }} <br>
+                            Dean Name       : {{ row.dean.userName }} <br>
+                            Dean Email      : {{ row.dean.userEmail }} <br>
+                            Dean Contact    : {{ row.dean.userContact }} <br>
+                            Dean Department : {{ row.dean.userDepartment }}
+                        {% endif %}
                     </td>
                     <td>
-                        Hop ID          : {{ row.hop.userId if row.hop else '' }} <br>
-                        Hop Name        : {{ row.hop.userName if row.hop else '' }} <br>
-                        Hop Email       : {{ row.hop.userEmail if row.hop else '' }} <br>
-                        Hop Contact     : {{ row.hop.userContact if row.hop else '' }} <br>
-                        Hop Department  : {{ row.hop.userDepartment if row.hop else ''}}
+                        {% if row.hop %}
+                            Hop ID          : {{ row.hop.userId }} <br>
+                            Hop Name        : {{ row.hop.userName }} <br>
+                            Hop Email       : {{ row.hop.userEmail }} <br>
+                            Hop Contact     : {{ row.hop.userContact }} <br>
+                            Hop Department  : {{ row.hop.userDepartment }}
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
