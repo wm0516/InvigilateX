@@ -833,7 +833,7 @@ def admin_manageVenue():
 def get_courses_by_department(department_code):
     courses = Course.query.filter_by(courseDepartment=department_code).first()
     if not courses:
-        return jsonify({"error", "Courses not found"}), 404
+        return jsonify({"error": "Courses not found"}), 404
     return jsonify({
         "courseCodeSection": courses.courseCodeSection,
         "examId": courses.courseExamId
