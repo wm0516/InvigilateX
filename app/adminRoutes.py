@@ -1052,6 +1052,13 @@ def admin_manageExam():
                            total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select, course_data_full=course_data_full)
 
 
+
+
+
+
+
+
+
 # -------------------------------
 # Function for Admin ManageStaff Route
 # -------------------------------

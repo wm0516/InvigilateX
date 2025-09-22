@@ -260,6 +260,11 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     db.session.commit()
     return True, "Course created successfully"
 
+
+
+
+
+
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------

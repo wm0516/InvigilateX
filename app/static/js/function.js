@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     console.log("API Data:", data);
                     document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
                     document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
-                    document.getElementById('student').value = data.student || "";
+                    document.getElementById('student').value = data.courseStudent || "";
                 })
                 .catch(err => console.error("Error:", err));
         }
