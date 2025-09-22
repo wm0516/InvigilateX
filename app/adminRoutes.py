@@ -461,7 +461,7 @@ def get_courseCodeSection(courseCodeSection_select):
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
-    course_data = {
+    return jsonify({
         "courseCodeSection": course.courseCodeSection,
         "courseDepartment": course.courseDepartment,
         "courseCode": course.courseCodeSection.split('/')[0] if '/' in course.courseCodeSection else course.courseCodeSection,
@@ -471,14 +471,13 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseName": course.courseName,
         "courseHour": course.courseHour,
         "courseStudent": course.courseStudent
-    }
-    return jsonify(course_data)
+    })
 
 
 # -------------------------------
 # Read All Department Under The ManageDepartmentEditPage
 # -------------------------------
-@app.route('/get_department/<department_code>')
+@app.route('/get_department/<path:department_code>')
 def get_department(department_code):
     dept = Department.query.filter_by(departmentCode=department_code).first()
     if not dept:
@@ -737,7 +736,7 @@ def admin_manageDepartment():
             if action == 'update' and department_select:
                 department_select.departmentName = request.form.get('departmentName')
                 department_select.hopId = request.form.get('hopName')
-                department_select.deanId = request.form.get('deanId')
+                department_select.deanId = request.form.get('deanName')
                 db.session.commit()
                 flash("Department updated successfully", "success")
 

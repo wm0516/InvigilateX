@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
-    const departmentNameInput = document.querySelector("#editSection input[name='departmentName']");
+    const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
     const deanSelect = document.getElementById("deanName");
     const hopSelect = document.getElementById("hopName");
 
@@ -491,7 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // When a department is selected
+    // Populate Dean and HOP dropdowns based on department selection
     departmentSelect.addEventListener("change", function () {
         const deptCode = this.value;
         if (!deptCode) return;
@@ -507,15 +507,37 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Prefill department name
                 departmentNameInput.value = dept.departmentName || '';
 
-                // Prefill Dean and HOP dropdowns
-                selectOption(deanSelect, dept.deanId || '');
-                selectOption(hopSelect, dept.hopId || '');
+                // Clear current options except the placeholder
+                deanSelect.innerHTML = '<option value="" disabled>Select a Dean</option>';
+                hopSelect.innerHTML = '<option value="" disabled>Select a Hop</option>';
+
+                // Fetch all eligible users again (optional: you can preload these from template)
+                fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
+                    .then(resp => resp.json())
+                    .then(users => {
+                        users.forEach(user => {
+                            const deanOption = document.createElement('option');
+                            deanOption.value = user.userId;
+                            deanOption.textContent = user.userName;
+                            if (user.userId == dept.deanId) deanOption.selected = true;
+                            deanSelect.appendChild(deanOption);
+
+                            const hopOption = document.createElement('option');
+                            hopOption.value = user.userId;
+                            hopOption.textContent = user.userName;
+                            if (user.userId == dept.hopId) hopOption.selected = true;
+                            hopSelect.appendChild(hopOption);
+                        });
+                    });
             })
             .catch(err => console.error("Error fetching department:", err));
     });
+
+    // Trigger change event if a department is already selected (for page reload/edit)
+    if (departmentSelect.value) {
+        departmentSelect.dispatchEvent(new Event("change"));
+    }
 });
-
-
 
 
 
