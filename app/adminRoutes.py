@@ -842,16 +842,14 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
-    courses = (
-        Course.query
-        .join(Exam, Course.courseExamId == Exam.examId)
-        .filter(
-            Course.courseDepartment == department_code,
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None)
-        )
-        .all()
-    )
+    # Get courses that either don't have an exam or have an exam with NULL start/end times
+    courses = Course.query.filter(
+        Course.courseDepartment == department_code
+    ).outerjoin(Exam, Course.courseExamId == Exam.examId).filter(
+        (Exam.examId.is_(None)) | 
+        (Exam.examStartTime.is_(None)) | 
+        (Exam.examEndTime.is_(None))
+    ).all()
 
     course_list = [{
         "courseCodeSection": c.courseCodeSection,
@@ -859,6 +857,9 @@ def get_courses_by_department(department_code):
     } for c in courses]
 
     print(f"[DEBUG] Returning {len(course_list)} courses for dept {department_code}")
+    for course in course_list:
+        print(f"[DEBUG] Course: {course['courseCodeSection']} - {course['courseName']}")
+    
     return jsonify(course_list)
 
 
@@ -890,13 +891,21 @@ def get_course_details_exam(department_code, course_code_section):
 # -------------------------------
 @app.route('/get_exam_details/<course_code_section>')
 def get_exam_details(course_code_section):
+    print(f"[DEBUG] get_exam_details called with: {course_code_section}")
+    
     course = Course.query.filter_by(courseCodeSection=course_code_section).first()
     if not course:
+        print(f"[DEBUG] Course not found: {course_code_section}")
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
+    print(f"[DEBUG] Found course: {course.courseCodeSection}, Exam ID: {course.courseExamId}")
+    print(f"[DEBUG] Exam found: {exam is not None}")
 
-    return jsonify({
+    if exam:
+        print(f"[DEBUG] Exam details - Start: {exam.examStartTime}, End: {exam.examEndTime}, Venue: {exam.examVenue}")
+
+    response_data = {
         "courseCodeSection": course.courseCodeSection,
         "courseName": course.courseName or "",
         "courseDepartment": course.courseDepartment or "",
@@ -907,7 +916,10 @@ def get_exam_details(course_code_section):
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
         "examVenue": exam.examVenue if exam else "",
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
-    })
+    }
+    
+    print(f"[DEBUG] Response data: {response_data}")
+    return jsonify(response_data)
 
 
 

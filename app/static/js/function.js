@@ -525,43 +525,81 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Edit Exam Section
+    // Edit Exam Section
     const editCourseSelect = document.getElementById('editExamCourseSection');
     if (editCourseSelect) {
         editCourseSelect.addEventListener('change', function () {
             const courseCode = this.value;
-            if (!courseCode) return;
+            console.log(`[DEBUG] Course selection changed to: ${courseCode}`);
+            
+            if (!courseCode) {
+                console.log("[DEBUG] No course code selected");
+                return;
+            }
 
-            console.log(`[Fetch] Getting exam details for: ${courseCode}`);
+            console.log(`[DEBUG] Fetching exam details for: ${courseCode}`);
             fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
-                .then(res => res.json())
+                .then(res => {
+                    console.log(`[DEBUG] Response status: ${res.status}`);
+                    return res.json();
+                })
                 .then(data => {
+                    console.log('[DEBUG] Received data:', data);
+                    
                     if (data.error) {
-                        alert(data.error);
+                        console.error('[DEBUG] Error in response:', data.error);
+                        alert('Error: ' + data.error);
                         return;
                     }
 
-                    document.getElementById('editProgramCode').value = data.courseDepartment || '';
-                    document.getElementById('editStudent').value = data.courseStudent || '';
-                    document.getElementById('editVenue').value = data.examVenue || '';
-                    document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || 0;
+                    // Debug each field assignment
+                    const programCodeField = document.getElementById('editProgramCode');
+                    const studentField = document.getElementById('editStudent');
+                    const venueField = document.getElementById('editVenue');
+                    const invigilatorField = document.getElementById('editInvigilatorNo');
+                    const startTimeField = document.getElementById('editExamStartTime');
+                    const endTimeField = document.getElementById('editExamEndTime');
 
-                    // Split datetime
-                    if (data.examStartTime) {
-                        document.getElementById('editExamStartTime').value = data.examStartTime;
-                    }
-                    if (data.examEndTime) {
-                        document.getElementById('editExamEndTime').value = data.examEndTime;
+                    console.log('[DEBUG] Setting program code:', data.courseDepartment);
+                    if (programCodeField) programCodeField.value = data.courseDepartment || '';
+                    
+                    console.log('[DEBUG] Setting student count:', data.courseStudent);
+                    if (studentField) studentField.value = data.courseStudent || '';
+                    
+                    console.log('[DEBUG] Setting venue:', data.examVenue);
+                    if (venueField) venueField.value = data.examVenue || '';
+                    
+                    console.log('[DEBUG] Setting invigilator count:', data.examNoInvigilator);
+                    if (invigilatorField) invigilatorField.value = data.examNoInvigilator || 0;
+
+                    console.log('[DEBUG] Setting start time:', data.examStartTime);
+                    if (startTimeField && data.examStartTime) {
+                        startTimeField.value = data.examStartTime;
                     }
 
-                    // Set lecturer select
+                    console.log('[DEBUG] Setting end time:', data.examEndTime);
+                    if (endTimeField && data.examEndTime) {
+                        endTimeField.value = data.examEndTime;
+                    }
+
+                    // Set lecturer selects
                     const practicalSelect = document.getElementById('editPracticalLecturer');
                     const tutorialSelect = document.getElementById('editTutorialLecturer');
 
-                    practicalSelect.innerHTML = `<option selected>${data.practicalLecturer || ''}</option>`;
-                    tutorialSelect.innerHTML = `<option selected>${data.tutorialLecturer || ''}</option>`;
+                    console.log('[DEBUG] Setting practical lecturer:', data.practicalLecturer);
+                    if (practicalSelect) {
+                        practicalSelect.innerHTML = `<option value="${data.practicalLecturer}" selected>${data.practicalLecturer || 'N/A'}</option>`;
+                    }
+
+                    console.log('[DEBUG] Setting tutorial lecturer:', data.tutorialLecturer);
+                    if (tutorialSelect) {
+                        tutorialSelect.innerHTML = `<option value="${data.tutorialLecturer}" selected>${data.tutorialLecturer || 'N/A'}</option>`;
+                    }
+
+                    console.log('[DEBUG] All fields should be set now');
                 })
                 .catch(err => {
-                    console.error("Error fetching exam details:", err);
+                    console.error("[DEBUG] Fetch error:", err);
                 });
         });
     }
