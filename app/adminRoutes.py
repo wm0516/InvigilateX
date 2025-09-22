@@ -941,7 +941,8 @@ def admin_manageExam():
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
-    exam_select = Course.query.filter_by(courseCodeSection=exam_selected).first()
+    course = Course.query.filter_by(courseCodeSection=exam_selected).first()
+    exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
     # Debug: print exam data
     flash(f"[DEBUG] Found {len(exam_data)} exams", "error")
@@ -992,7 +993,7 @@ def admin_manageExam():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec', 'lecturer', 'no of', 'room'],
+                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec',   'lecturer', 'no of', 'room'],
                 process_row_fn=process_exam_row,
                 redirect_endpoint='admin_manageExam',
                 usecols="A:I"
