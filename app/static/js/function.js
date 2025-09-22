@@ -428,13 +428,13 @@ document.addEventListener("DOMContentLoaded", function () {
                     const username = lecturer.userName.trim();
 
                     const practicalOption = document.createElement('option');
-                    practicalOption.value = username;
+                    practicalOption.value = userId;
                     practicalOption.textContent = username;
                     if (username.toLowerCase() === (selectedPractical || '').toLowerCase()) practicalOption.selected = true;
                     practicalSelect.appendChild(practicalOption);
 
                     const tutorialOption = document.createElement('option');
-                    tutorialOption.value = username;
+                    tutorialOption.value = userId;
                     tutorialOption.textContent = username;
                     if (username.toLowerCase() === (selectedTutorial || '').toLowerCase()) tutorialOption.selected = true;
                     tutorialSelect.appendChild(tutorialOption);

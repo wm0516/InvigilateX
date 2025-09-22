@@ -579,9 +579,6 @@ def admin_manageCourse():
 
                 if action == 'update' and course_select:
                     course_select.courseDepartment = request.form.get('departmentCode', '').strip()
-                    courseCode = request.form.get('courseCode', '').strip()
-                    courseSection = request.form.get('courseSection', '').strip()
-                    course_select.courseCodeSection = f"{courseCode}/{courseSection}"  
                     course_select.courseName = request.form.get('courseName', '').strip()
                     course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
                     course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
