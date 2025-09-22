@@ -524,6 +524,9 @@ def admin_manageCourse():
         course_data = Course.query.all() or []
         department_data = Department.query.all() or []
 
+        course_id = request.form.get('editCourseSelect')
+        course_select = Course.query.filter_by(courseCodeSection=course_id).first()
+
         # === Dashboard numbers ===
         total_courses = Course.query.count() or 0
         courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count() or 0
@@ -572,37 +575,32 @@ def admin_manageCourse():
             # --- Edit Section ---
             elif form_type == 'edit':
                 action = request.form.get('action')
-                course_id = request.form.get('editCourseSelect')
-                course = Course.query.get(course_id)
-                if not course:
-                    flash("Course not found", "error")
-                    return redirect(url_for('admin_manageCourse'))
 
-                if action == 'update':
-                    course.courseDepartment = request.form.get('departmentCode', '').strip()
+                if action == 'update' and course_select:
+                    course_select.courseDepartment = request.form.get('departmentCode', '').strip()
                     courseCode = request.form.get('courseCode', '').strip()
                     courseSection = request.form.get('courseSection', '').strip()
-                    course.courseCodeSection = f"{courseCode}/{courseSection}"  
-                    course.courseName = request.form.get('courseName', '').strip()
-                    course.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
-                    course.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
+                    course_select.courseCodeSection = f"{courseCode}/{courseSection}"  
+                    course_select.courseName = request.form.get('courseName', '').strip()
+                    course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
+                    course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
 
                     # Safe int conversion
                     try:
-                        course.courseHour = int(request.form.get('courseHour', 0))
+                        course_select.courseHour = int(request.form.get('courseHour', 0))
                     except (ValueError, TypeError):
-                        course.courseHour = 0
+                        course_select.courseHour = 0
 
                     try:
-                        course.courseStudent = int(request.form.get('courseStudent', 0))
+                        course_select.courseStudent = int(request.form.get('courseStudent', 0))
                     except (ValueError, TypeError):
-                        course.courseStudent = 0
+                        course_select.courseStudent = 0
 
                     db.session.commit()
                     flash("Course updated successfully", "success")
 
                 elif action == 'delete':
-                    db.session.delete(course)
+                    db.session.delete(course_select)
                     db.session.commit()
                     flash("Course deleted successfully", "success")
 
@@ -636,6 +634,7 @@ def admin_manageCourse():
             'admin/adminManageCourse.html',
             active_tab='admin_manageCoursetab',
             course_data=course_data,
+            course_select=course_select,
             department_data=department_data,
             total_courses=total_courses,
             courses_with_exams=courses_with_exams,

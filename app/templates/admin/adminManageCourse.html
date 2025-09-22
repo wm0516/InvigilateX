@@ -153,26 +153,26 @@
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">
+                        <option value="{{ course_data.courseDepartment }}">
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
                         </option>
                     {% endfor %}
                 </select><br>
 
                 <label>Course Code</label>
-                <input type="text" id="editCourseCode" name="courseCode" required>
+                <input type="text" id="editCourseCode" name="courseCode" value="{{ course_data.courseCode }}" required>
             </div>
 
             <div class="form-middle">
                 <label>Course Section</label>
-                <input type="text" id="editCourseSection" name="courseSection" required><br>
+                <input type="text" id="editCourseSection" name="courseSection" value="{{ course_data.courseSection }}" required><br>
 
                 <label>Course Name</label>
-                <input type="text" id="editCourseName" name="courseName" required><br>
+                <input type="text" id="editCourseName" name="courseName" value="{{ course_data.courseName }}" required><br>
 
                 <label>Practical Lecturer</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
-                    <option value="" disabled>Select Practical Lecturer</option>
+                    <option value="{{ course_data.coursePractical }}" disabled>Select Practical Lecturer</option>
                 </select>
 
             </div>
@@ -180,14 +180,14 @@
             <div class="form-right">
                 <label>Tutorial Lecturer</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
-                    <option value="" disabled>Select Tutorial Lecturer</option>
+                    <option value="{{ course_data.courseTutorial }}" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
                 <label>Course Credit Hour(s)</label>
-                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" required><br>
+                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_data.courseHour }}" required><br>
 
                 <label>Course Number of Student(s)</label>
-                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" required>
+                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_data.courseStudent }}" required>
             </div>
         </div>
 

@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedCodeSection = this.value;
 
         // Reset all fields
-        departmentSelect.value = "";
+        departmentSelect.value = '<option value="" disabled selected>Select Department</option>';
         practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
         tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
         courseCodeInput.value = "";
