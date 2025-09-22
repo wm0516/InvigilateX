@@ -597,8 +597,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Function to populate the form with data
         function populateEditForm(data) {
             console.log('[DEBUG] Populating form with data:', data);
-            
+
             const fieldMappings = {
+                'editCourseName': data.courseName,  // added
                 'editProgramCode': data.courseDepartment,
                 'editStudent': data.courseStudent,
                 'editVenue': data.examVenue,
@@ -607,14 +608,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 'editExamEndTime': data.examEndTime
             };
 
-            // Set simple field values
             Object.entries(fieldMappings).forEach(([fieldId, value]) => {
                 const field = document.getElementById(fieldId);
                 if (field) {
                     field.value = value || '';
                     console.log(`[DEBUG] Set ${fieldId} to:`, value);
-                } else {
-                    console.error(`[DEBUG] Field not found: ${fieldId}`);
                 }
             });
 

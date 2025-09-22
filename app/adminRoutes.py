@@ -900,11 +900,7 @@ def get_exam_details(course_code_section):
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
-    print(f"[DEBUG] Found course: {course.courseCodeSection}, Exam ID: {course.courseExamId}")
     flash(f"[DEBUG] Exam found: {exam is not None}", "error")
-
-    if exam:
-        flash(f"[DEBUG] Exam details - Start: {exam.examStartTime}, End: {exam.examEndTime}, Venue: {exam.examVenue}", "error")
 
     response_data = {
         "courseCodeSection": course.courseCodeSection,
@@ -918,10 +914,7 @@ def get_exam_details(course_code_section):
         "examVenue": exam.examVenue if exam else "",
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
     }
-    
-    flash(f"[DEBUG] Response data: {response_data}", "error")
     return jsonify(response_data)
-
 
 
 # -------------------------------

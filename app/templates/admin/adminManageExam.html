@@ -176,15 +176,13 @@
                 </select><br>
 
                 <label>Course Name</label>
-                <input type="text" id="editCourseName" name="courseName" value="{{ exam_select.course.courseName }}" readonly><br>
+                <input type="text" id="editCourseName" name="courseName" value="" readonly><br>
 
                 <label>Program Code</label>
                 <select id="editProgramCode" name="programCode" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}" {% if exam_select and exam_select.courseDepartment == dept.departmentCode %}selected{% endif %}>
-                            {{ dept.departmentCode }} - {{ dept.departmentName }}
-                        </option>
+                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -201,7 +199,7 @@
                 </select><br>
 
                 <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" value="{{ exam_select.course.courseStudent }}" readonly>
+                <input type="number" id="editStudent" name="student" value="" readonly>
             </div>
 
             <div class="form-right">
@@ -215,14 +213,12 @@
                 <select name="venue" id="editVenue" required>
                     <option value="" disabled selected>Select Venue</option>
                     {% for venue in venue_data %}
-                        <option value="{{ venue.venueNumber }}">
-                            [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
-                        </option>
+                        <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                     {% endfor %}
                 </select><br>
 
                 <label>Number of Invigilators</label>
-                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="{{ exam_select.examNoInvigilator }}" min="1" step="1" required>
+                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>
             </div>
         </div>
 
