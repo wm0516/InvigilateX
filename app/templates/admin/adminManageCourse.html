@@ -154,10 +154,9 @@
 
                 <label>Department</label>
                 <select id="editDepartment" name="departmentCode" required>
-                    <option value="" disabled>Select Department</option>
+                    <option value="{{ course_select.courseDepartment if course_select else '' }}" disabled selected>Select Department</option>
                     {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}"
-                            {% if course_select and course_select.courseDepartment == dept.departmentCode %}selected{% endif %}>
+                        <option value="{{ dept.departmentCode }}">
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
                         </option>
                     {% endfor %}
