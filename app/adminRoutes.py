@@ -1068,7 +1068,7 @@ def get_staff(id):
         "userEmail": user.userEmail,
         "userContact": user.userContact,
         "userGender": user.userGender,
-        "userLevel": user.userLevel,
+        "userLevel": str(user.userLevel),
         "userDepartment": user.userDepartment
     })
 
@@ -1185,7 +1185,7 @@ def admin_manageStaff():
     )
 
 # -------------------------------
-# Function for Admin ManageLecturer Route
+# Function for Admin ManageTimetable Route
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():

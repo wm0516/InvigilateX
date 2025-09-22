@@ -464,7 +464,6 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 
 
 
-
 // examManual.js
 document.addEventListener("DOMContentLoaded", function () {
     // Manual Section Dropdowns
