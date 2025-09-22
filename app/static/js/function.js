@@ -478,22 +478,17 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-
-
-
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
     const deanSelect = document.getElementById("deanName");
     const hopSelect = document.getElementById("hopName");
-    const manualDeptInput = document.querySelector("input[name='departmentCode']");
 
     function populateDropdown(selectElement, options, selectedValue) {
         selectElement.innerHTML = '';
         const placeholder = document.createElement('option');
         placeholder.value = '';
         placeholder.disabled = true;
-        placeholder.selected = true;
         placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a Hop';
         selectElement.appendChild(placeholder);
 
@@ -501,58 +496,41 @@ document.addEventListener("DOMContentLoaded", function () {
             const opt = document.createElement('option');
             opt.value = user.userId;
             opt.textContent = `[${user.userId}] ${user.userName}`;
-            if (user.userId == selectedValue) opt.selected = true;
+            if (user.userId === selectedValue) opt.selected = true;
             selectElement.appendChild(opt);
         });
+
+        if (!selectedValue) placeholder.selected = true;
     }
 
-    // --- Manual Section: Auto-populate dropdown based on departmentCode input ---
-    if (manualDeptInput) {
-        manualDeptInput.addEventListener("input", function () {
-            const deptCode = this.value.trim().toUpperCase();
-            if (!deptCode) return;
-
-            fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
-                .then(resp => resp.json())
-                .then(users => {
-                    populateDropdown(deanSelect, users.deans, '');
-                    populateDropdown(hopSelect, users.hops, '');
-                })
-                .catch(err => console.error("Error fetching department users:", err));
-        });
-    }
-
-    // --- Edit Section: Auto-fill fields & only same-department staff ---
     if (departmentSelect) {
         departmentSelect.addEventListener("change", function () {
             const deptCode = this.value;
             if (!deptCode) return;
 
-            // Fetch department details
             fetch(`/get_department/${encodeURIComponent(deptCode)}`)
                 .then(resp => resp.json())
                 .then(dept => {
                     if (dept.error) return alert(dept.error);
                     departmentNameInput.value = dept.departmentName || '';
 
-                    // Fetch only staff in this department
                     fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
                         .then(resp => resp.json())
                         .then(users => {
                             populateDropdown(deanSelect, users.deans, dept.deanId);
                             populateDropdown(hopSelect, users.hops, dept.hopId);
-                        })
-                        .catch(err => console.error("Error fetching department users:", err));
+                        });
                 })
                 .catch(err => console.error("Error fetching department:", err));
         });
 
-        // Trigger change on page load if a department is pre-selected
+        // Auto-trigger change event if one is pre-selected
         if (departmentSelect.value) {
             departmentSelect.dispatchEvent(new Event("change"));
         }
     }
 });
+
 
 
 

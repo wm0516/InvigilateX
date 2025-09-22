@@ -104,47 +104,51 @@
 {% block edit_section %}
 <!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageDepartment') }}" method="POST" enctype="multipart/form-data">
-    <div id="editSection" class="function-frame" style="width:100%">
+    <div class="function-frame" style="width:100%">
         <h4 style="text-align: center;">Edit Existing Department</h4>
         <div class="profile-frame">
             <div class="form-left">
                 <label>Select Department</label>
-                <select id="editDepartment" name="departmentCode" required>
+                <select id="editDepartment" name="editDepartment" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
+                        <option value="{{ dept.departmentCode }}"
+                                {% if department_select and dept.departmentCode == department_select.departmentCode %}selected{% endif %}>
+                            {{ dept.departmentCode }} - {{ dept.departmentName }}
+                        </option>
                     {% endfor %}
                 </select><br>
-                
+
                 <label>Department Name</label>
-                <input type="text" name="departmentName" value="{{ department_select.departmentName }}" required>
+                <input type="text" name="departmentName"
+                       value="{{ department_select.departmentName if department_select else '' }}" required>
             </div>
 
             <div class="form-right">
                 <label>Hop Name</label>
-                <select id="hopName" name="hopName" onchange="updateEmail('hopName','hopEmail')">
+                <select id="hopName" name="hopName">
                     <option value="" disabled selected>Select a Hop</option>
                     {% for hop in hop_list %}
-                        <option value="{{ hop.userId }}" data-email="{{ hop.userEmail }}">
+                        <option value="{{ hop.userId }}"
+                            {% if department_select and hop.userId == department_select.hopId %}selected{% endif %}>
                             [{{ hop.userId }}] {{ hop.userName }}
                         </option>
                     {% endfor %}
                 </select><br>
 
-                
                 <label>Dean Name</label>
-                <select id="deanName" name="deanName" onchange="updateEmail('deanName','deanEmail')">
+                <select id="deanName" name="deanName">
                     <option value="" disabled selected>Select a Dean</option>
                     {% for dean in dean_list %}
-                        <option value="{{ dean.userId }}" data-email="{{ dean.userEmail }}">
-                            [{{ dean.userId }}] {{ dean.userName }} 
+                        <option value="{{ dean.userId }}"
+                            {% if department_select and dean.userId == department_select.deanId %}selected{% endif %}>
+                            [{{ dean.userId }}] {{ dean.userName }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
         </div>
 
-        <!-- 🔽 Add this hidden input here -->
         <input type="hidden" name="form_type" value="edit">
         <br><br>
 
@@ -152,7 +156,7 @@
             <button type="submit" name="action" value="update" style="background-color: rgb(44, 238, 70);">
                 <i class="fas fa-check"></i> Update Department
             </button>
-            <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);" 
+            <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);"
                     onclick="return confirm('Are you sure to delete this department?')">
                 <i class="fas fa-trash"></i> Delete Department
             </button>
