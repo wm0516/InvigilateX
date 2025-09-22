@@ -171,7 +171,7 @@
                 <input type="text" id="editCourseName" name="courseName" required><br>
 
                 <label>Practical Lecturer</label>
-                <select id="practicalLecturerSelect" name="practicalLecturerSelect" required>
+                <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select>
 
@@ -179,7 +179,7 @@
 
             <div class="form-right">
                 <label>Tutorial Lecturer</label>
-                <select id="tutorialLecturerSelect" name="tutorialLecturerSelect" required>
+                <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
                     <option value="" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
@@ -286,68 +286,6 @@
             }
         }
     });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const courseSelect = document.getElementById("editCourseSelect");
-        if (!courseSelect) return;
-
-        const populateForm = (selectedCode) => {
-            const course = courseData.find(c => c.codeSection === selectedCode);
-            if (!course) return;
-
-            // Split code/section
-            let [code, section] = course.codeSection.split("/") || ["", ""];
-            document.getElementById("editCourseCode").value = code || "";
-            document.getElementById("editCourseSection").value = section || "";
-            document.getElementById("editCourseName").value = course.name || "";
-            document.getElementById("editCourseHour").value = course.hour || "";
-            document.getElementById("editCourseStudents").value = course.students || "";
-            document.getElementById("editDepartment").value = course.department || "";
-
-            // Prepare lecturer selects
-            const practicalSelect = document.getElementById("practicalLecturerSelect");
-            const tutorialSelect = document.getElementById("tutorialLecturerSelect");
-
-            // Reset options
-            practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
-            tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
-
-            if (course.department) {
-                fetch(`/get_lecturers_by_department/${course.department}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        data.forEach(lecturer => {
-                            const option1 = document.createElement('option');
-                            option1.value = lecturer.userId;    // use userId as value
-                            option1.textContent = lecturer.userName;
-                            practicalSelect.appendChild(option1);
-
-                            const option2 = document.createElement('option');
-                            option2.value = lecturer.userId;    // use userId as value
-                            option2.textContent = lecturer.userName;
-                            tutorialSelect.appendChild(option2);
-                        });
-
-                        // After options are populated, select the correct lecturer
-                        practicalSelect.value = course.practical || "";
-                        tutorialSelect.value = course.tutorial || "";
-                    })
-                    .catch(err => console.error("Error loading lecturers:", err));
-            }
-        };
-
-        // Trigger populate when selection changes
-        courseSelect.addEventListener("change", function () {
-            populateForm(this.value);
-        });
-
-        // Auto-populate first course if exists
-        if (courseSelect.options.length > 1) {
-            populateForm(courseSelect.options[1].value);
-            courseSelect.selectedIndex = 1;
-        }
-    });
-
 </script>
 {% endblock %}
 

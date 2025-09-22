@@ -551,7 +551,6 @@ def admin_manageCourse():
             elif form_type == 'edit':
                 action = request.form.get('action')
                 course_id = request.form.get('editCourseSelect')
-
                 course = Course.query.get(course_id)
                 if not course:
                     flash("Course not found", "error")
