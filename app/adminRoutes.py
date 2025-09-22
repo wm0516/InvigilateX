@@ -658,13 +658,13 @@ def admin_manageDepartment():
         if deanId:
             dean_user = User.query.filter_by(userId=deanId, userLevel=2).first()
             if not dean_user or dean_user.userDepartment != departmentCode:
-                flash("Selected Dean does not belong to this department, ignoring Dean selection.", "warning")
+                flash("Selected Dean does not belong to this department, ignoring Dean selection.", "error")
                 deanId = None
 
         if hopId:
             hop_user = User.query.filter_by(userId=hopId, userLevel=3).first()
             if not hop_user or hop_user.userDepartment != departmentCode:
-                flash("Selected HOP does not belong to this department, ignoring HOP selection.", "warning")
+                flash("Selected HOP does not belong to this department, ignoring HOP selection.", "error")
                 hopId = None
 
         # Manual section
