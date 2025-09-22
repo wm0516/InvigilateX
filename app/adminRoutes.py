@@ -491,6 +491,35 @@ def get_department(department_code):
     })
 
 
+@app.route('/get_department_users/<path:department_code>')
+def get_department_users(department_code):
+    dept = Department.query.filter_by(departmentCode=department_code).first()
+    if not dept:
+        return jsonify({"error": "Department not found"}), 404
+
+    # Exclude users already assigned to other departments
+    assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
+    assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
+
+    # Include currently assigned Dean/HOP even if they are in assigned list
+    dean_list = User.query.filter(
+        (User.userLevel == 2) & 
+        ((~User.userId.in_(assigned_dean_ids)) | (User.userId == (dept.deanId or -1)))
+    ).all()
+
+    hop_list = User.query.filter(
+        (User.userLevel == 3) & 
+        ((~User.userId.in_(assigned_hop_ids)) | (User.userId == (dept.hopId or -1)))
+    ).all()
+
+    users = {
+        "deans": [{"userId": u.userId, "userName": u.userName} for u in dean_list],
+        "hops": [{"userId": u.userId, "userName": u.userName} for u in hop_list]
+    }
+
+    return jsonify(users)
+
+
 
 # -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage

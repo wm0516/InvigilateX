@@ -484,18 +484,29 @@ document.addEventListener("DOMContentLoaded", function () {
     const deanSelect = document.getElementById("deanName");
     const hopSelect = document.getElementById("hopName");
 
-    // Function to select the correct option in a dropdown
-    function selectOption(selectElement, value) {
-        Array.from(selectElement.options).forEach(option => {
-            option.selected = option.value == value;
+    function populateDropdown(selectElement, options, selectedValue) {
+        selectElement.innerHTML = ''; // clear current options
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a Hop';
+        selectElement.appendChild(placeholder);
+
+        options.forEach(user => {
+            const opt = document.createElement('option');
+            opt.value = user.userId;
+            opt.textContent = user.userName;
+            if (user.userId == selectedValue) opt.selected = true;
+            selectElement.appendChild(opt);
         });
     }
 
-    // Populate Dean and HOP dropdowns based on department selection
     departmentSelect.addEventListener("change", function () {
         const deptCode = this.value;
         if (!deptCode) return;
 
+        // Fetch department details
         fetch(`/get_department/${encodeURIComponent(deptCode)}`)
             .then(resp => resp.json())
             .then(dept => {
@@ -504,41 +515,24 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                // Prefill department name
                 departmentNameInput.value = dept.departmentName || '';
 
-                // Clear current options except the placeholder
-                deanSelect.innerHTML = '<option value="" disabled>Select a Dean</option>';
-                hopSelect.innerHTML = '<option value="" disabled>Select a Hop</option>';
-
-                // Fetch all eligible users again (optional: you can preload these from template)
+                // Fetch eligible users dynamically
                 fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
                     .then(resp => resp.json())
                     .then(users => {
-                        users.forEach(user => {
-                            const deanOption = document.createElement('option');
-                            deanOption.value = user.userId;
-                            deanOption.textContent = user.userName;
-                            if (user.userId == dept.deanId) deanOption.selected = true;
-                            deanSelect.appendChild(deanOption);
-
-                            const hopOption = document.createElement('option');
-                            hopOption.value = user.userId;
-                            hopOption.textContent = user.userName;
-                            if (user.userId == dept.hopId) hopOption.selected = true;
-                            hopSelect.appendChild(hopOption);
-                        });
+                        populateDropdown(deanSelect, users.deans, dept.deanId);
+                        populateDropdown(hopSelect, users.hops, dept.hopId);
                     });
             })
             .catch(err => console.error("Error fetching department:", err));
     });
 
-    // Trigger change event if a department is already selected (for page reload/edit)
+    // Trigger change if department already selected on page load
     if (departmentSelect.value) {
         departmentSelect.dispatchEvent(new Event("change"));
     }
 });
-
 
 
 
