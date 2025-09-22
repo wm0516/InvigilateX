@@ -842,27 +842,19 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
-    flash(f"[DEBUG] Getting courses for department: {department_code}", "error")
-    
-    # Get courses that belong to the department AND don't have scheduled exams
-    courses = Course.query.filter(
-        Course.courseDepartment == department_code
-    ).outerjoin(Exam, Course.courseExamId == Exam.examId).filter(
-        (Exam.examId.isnot_(None)) | 
-        (Exam.examStartTime.is_(None)) | 
-        (Exam.examEndTime.is_(None))
-    ).all()
-
-    course_list = [{
-        "courseCodeSection": c.courseCodeSection,
-        "courseName": c.courseName
-    } for c in courses]
-
-    flash(f"[DEBUG] Returning {len(course_list)} courses for dept {department_code}","error")
-    for course in course_list:
-        flash(f"[DEBUG] Course: {course['courseCodeSection']} - {course['courseName']}", "error")
-    
-    return jsonify(course_list)
+    try:
+        courses = Course.query.filter_by(courseDepartment=department_code).all()
+        data = []
+        for course in courses:
+            course_exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
+            data.append({
+                "courseCodeSection": f"{course.courseCodeSection})",
+                "examId": course_exam.examId if course_exam else None
+            })
+        return jsonify({"success": True, "courseSection": data})
+    except Exception as e:
+        print("❌ Error in get_courseSection_byDept:", e)
+        return jsonify({"success": False, "error": str(e)})
 
 
 # -------------------------------
@@ -926,7 +918,7 @@ def admin_manageExam():
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
 
     # Edit section, show all data (complete and incomplete)
-    exam_data = Exam.query.all()
+         = Exam.query.all()
     
     # Show all for Edit section 
     course_data_full = Course.query.all()

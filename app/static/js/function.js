@@ -465,6 +465,33 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 
 
 
+document.getElementById("programCode").addEventListener("change", function () {
+    const programCode = this.value;
+    const courseDropdown = document.getElementById("courseCodeSection");
+
+    courseDropdown.innerHTML = '<option value="">-- Select Course Section --</option>';
+
+    if (programCode) {
+        fetch(`/get_courses_by_department/${programCode}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    data.courseSection.forEach(course => {
+                        let option = document.createElement("option");
+                        option.value = course.examId || "";  
+                        option.textContent = course.courseCodeSection;
+                        courseDropdown.appendChild(option);
+                    });
+                } else {
+                    console.error("Error fetching course sections:", data.error);
+                }
+            })
+            .catch(err => console.error("Fetch error:", err));
+    }
+});
+
+
+
 
 document.addEventListener("DOMContentLoaded", function () {
     // Manual Section Dropdowns
