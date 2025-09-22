@@ -478,7 +478,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
@@ -490,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const placeholder = document.createElement('option');
         placeholder.value = '';
         placeholder.disabled = true;
-        placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a HOP';
+        placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a Hop';
         selectElement.appendChild(placeholder);
 
         options.forEach(user => {
@@ -514,19 +513,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(dept => {
                     if (dept.error) return alert(dept.error);
                     departmentNameInput.value = dept.departmentName || '';
-
-                    // Fetch all users from the same department (like manual section)
-                    fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
-                        .then(resp => resp.json())
-                        .then(users => {
-                            populateDropdown(deanSelect, users.deans, dept.deanId);
-                            populateDropdown(hopSelect, users.hops, dept.hopId);
-                        });
-                });
+                    populateDropdown(deanSelect, users.deans, dept.deanId);
+                    populateDropdown(hopSelect, users.hops, dept.hopId);
+                })
+                .catch(err => console.error("Error fetching department:", err));
         });
 
+        // Auto-trigger change event if one is pre-selected
         if (departmentSelect.value) {
             departmentSelect.dispatchEvent(new Event("change"));
         }
     }
 });
+
+
+
+
+
+
+
+

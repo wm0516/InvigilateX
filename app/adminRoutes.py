@@ -649,23 +649,6 @@ def get_department(department_code):
     })
 
 
-@app.route('/get_department_users/<path:department_code>')
-def get_department_users(department_code):
-    dept = Department.query.filter_by(departmentCode=department_code).first()
-    if not dept:
-        return jsonify({"error": "Department not found"}), 404
-
-    # Only users whose department matches the selected department
-    dean_list = User.query.filter_by(userLevel=2, userDepartment=department_code).all()
-    hop_list = User.query.filter_by(userLevel=3, userDepartment=department_code).all()
-
-    users = {
-        "deans": [{"userId": u.userId, "userName": u.userName, "userEmail": u.userEmail} for u in dean_list],
-        "hops": [{"userId": u.userId, "userName": u.userName, "userEmail": u.userEmail} for u in hop_list]
-    }
-
-    return jsonify(users)
-
 
 # -------------------------------
 # Function for Admin ManageDepartment Route
