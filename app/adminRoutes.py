@@ -614,7 +614,7 @@ def admin_manageCourse():
 
 
 # -------------------------------
-# Get Department Details
+# Get Department Details for ManageDepartmentEditPage
 # -------------------------------
 @app.route('/get_department/<path:department_code>')
 def get_department(department_code):
