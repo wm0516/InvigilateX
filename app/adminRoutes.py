@@ -1069,7 +1069,7 @@ def get_staff(id):
         "userContact": user.userContact,
         "userGender": user.userGender,
         "userLevel": str(user.userLevel),
-        "userDepartment": user.userDepartment
+        "userDepartment": user.userDepartment or ""
     })
 
 
