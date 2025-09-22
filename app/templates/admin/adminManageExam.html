@@ -105,11 +105,6 @@
                 <label>Course/Section</label>
                 <select name="courseSection" id="courseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
-                    {% for course in course_data %}
-                        <option value="{{ course.courseCodeSection }}">
-                            [{{ course.courseCodeSection }}] - {{ course.courseName }}
-                        </option>   
-                    {% endfor %}
                 </select><br>
 
                 <label>Course Practical Lecturer</label>
@@ -159,7 +154,7 @@
 
         <div class="profile-frame">
             <div class="form-left">
-                <label>Select Exam Course/Section</label>
+                <label for="editExamCourseSection">Select Exam Course/Section</label>
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
                     {% for exam in exam_data %}
@@ -170,6 +165,7 @@
                         {% endif %}
                     {% endfor %}
                 </select><br>
+
 
                 <label>Course Name</label>
                 <input type="text" id="editCourseName" name="courseName" value="{{ exam_select.courseName }}" readonly><br>

@@ -844,7 +844,7 @@ def admin_manageVenue():
 def get_courses_by_department(department_code):
     courses = (
         Course.query
-        .join(Exam)
+        .join(Exam, Course.courseExamId == Exam.examId)
         .filter(
             Course.courseDepartment == department_code,
             Exam.examStartTime.is_(None),
@@ -853,8 +853,14 @@ def get_courses_by_department(department_code):
         .all()
     )
 
-    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
+    course_list = [{
+        "courseCodeSection": c.courseCodeSection,
+        "courseName": c.courseName
+    } for c in courses]
+
+    print(f"[DEBUG] Returning {len(course_list)} courses for dept {department_code}")
     return jsonify(course_list)
+
 
 
 # -------------------------------
@@ -862,6 +868,7 @@ def get_courses_by_department(department_code):
 # -------------------------------
 @app.route('/get_course_details/<department_code>/<path:course_code_section>')
 def get_course_details_exam(department_code, course_code_section):
+    print(f"[DEBUG] Request course details for: {department_code} / {course_code_section}")
     selected_course = Course.query.filter_by(
         courseDepartment=department_code,
         courseCodeSection=course_code_section
@@ -875,6 +882,7 @@ def get_course_details_exam(department_code, course_code_section):
             "courseDepartment": selected_course.courseDepartment
         })
     return jsonify({"error": "Course not found"})
+
 
 
 # -------------------------------

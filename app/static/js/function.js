@@ -290,71 +290,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-// Admin Manage Exam Page(Manual): Function to Read Selected "Department Code" and related "Course Code" will be displayed out
-document.addEventListener("DOMContentLoaded", function() {
-    const programCode = document.getElementById('programCode');
-    if (!programCode) return; // Stop here if not on this page
-
-    programCode.addEventListener('change', function() {
-        let deptCode = this.value;
-        let courseSectionSelect = document.getElementById('courseSection');
-        let practicalLecturerSelect = document.getElementById('practicalLecturer');
-        let tutorialLecturerSelect = document.getElementById('tutorialLecturer');
-        let studentSelect = document.getElementById('student');
-
-        courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
-        practicalLecturerSelect.value = "";
-        tutorialLecturerSelect.value = "";
-        studentSelect.value = "";
-
-        if (deptCode) {
-            fetch(`/get_courses_by_department/${deptCode}`)
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(course => {
-                        let option = document.createElement('option');
-                        option.value = course.courseCodeSection;
-                        option.textContent = course.courseCodeSection;
-                        courseSectionSelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Error fetching courses:', error));
-        }
-    });
-});
-
-
-// Admin Manage Exam Page(Manual): Function to Read Selected "Course Code Section" and related "Total of Students, Practical and Tutorial Lecturer" will be displayed out
-document.addEventListener("DOMContentLoaded", function () {
-    const courseSectionEl = document.getElementById('courseSection');
-    if (!courseSectionEl) {
-        console.error("courseSection element not found in DOM.");
-        return;
-    }
-
-    courseSectionEl.addEventListener('change', function() {
-        let deptCode = document.getElementById('programCode')?.value || "";
-        let sectionCode = document.getElementById('courseSection')?.value || "";
-        console.log("Selected:", deptCode, sectionCode);
-
-        if (deptCode && sectionCode) {
-            fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)
-                .then(response => {
-                    if (!response.ok) throw new Error("API failed");
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("API Data:", data);
-                    document.getElementById('practicalLecturer').value = data.practicalLecturer || "";
-                    document.getElementById('tutorialLecturer').value = data.tutorialLecturer || "";
-                    document.getElementById('student').value = data.courseStudent || "";
-                })
-                .catch(err => console.error("Error:", err));
-        }
-    });
-});
-
-
 // Admin Manage Course Page(Manual): Function to Read Selected "Department Code" and related "Lecturer" will be displayed out
 document.addEventListener('DOMContentLoaded', function () {
     const departmentCode = document.getElementById('departmentCode');
@@ -527,55 +462,110 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
         .catch(err => console.error(err));
 });
 
-// Function for edit ManageExam
+
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
+    // Manual Section Dropdowns
+    const programCode = document.getElementById('programCode');
+    const courseSectionSelect = document.getElementById('courseSection');
+    const practicalLecturer = document.getElementById('practicalLecturer');
+    const tutorialLecturer = document.getElementById('tutorialLecturer');
+    const studentField = document.getElementById('student');
+
+    if (programCode) {
+        programCode.addEventListener('change', function () {
+            const deptCode = this.value;
+            courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+            practicalLecturer.value = "";
+            tutorialLecturer.value = "";
+            studentField.value = "";
+
+            if (deptCode) {
+                console.log(`[Fetch] Loading courses for department: ${deptCode}`);
+                fetch(`/get_courses_by_department/${deptCode}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length === 0) {
+                            console.warn("No available courses found.");
+                        }
+                        data.forEach(course => {
+                            const option = document.createElement('option');
+                            option.value = course.courseCodeSection;
+                            option.textContent = `[${course.courseCodeSection}] - ${course.courseName}`;
+                            courseSectionSelect.appendChild(option);
+                        });
+                    })
+                    .catch(err => console.error('Error loading courses:', err));
+            }
+        });
+
+        courseSectionSelect.addEventListener('change', function () {
+            const sectionCode = this.value;
+            const deptCode = programCode.value;
+
+            if (sectionCode && deptCode) {
+                console.log(`[Fetch] Getting details for course: ${sectionCode} under ${deptCode}`);
+                fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error("Error in course details:", data.error);
+                            return;
+                        }
+                        console.log("Loaded course data:", data);
+                        practicalLecturer.value = data.practicalLecturer || "";
+                        tutorialLecturer.value = data.tutorialLecturer || "";
+                        studentField.value = data.courseStudent || "";
+                    })
+                    .catch(err => console.error("Error loading course details:", err));
+            }
+        });
+    }
+
+    // Edit Exam Section
     const editCourseSelect = document.getElementById('editExamCourseSection');
-    const deptSelect = document.getElementById('editProgramCode');
-    const practicalSelect = document.getElementById('editPracticalLecturer');
-    const tutorialSelect = document.getElementById('editTutorialLecturer');
-    const studentInput = document.getElementById('editStudent');
-    const startDateInput = document.getElementById('editStartDate');
-    const startTimeInput = document.getElementById('editStartTime');
-    const endDateInput = document.getElementById('editEndDate');
-    const endTimeInput = document.getElementById('editEndTime');
-    const venueSelect = document.getElementById('editVenue');
-    const invigilatorInput = document.getElementById('editInvigilatorNo');
+    if (editCourseSelect) {
+        editCourseSelect.addEventListener('change', function () {
+            const courseCode = this.value;
+            if (!courseCode) return;
 
-    editCourseSelect.addEventListener('change', function () {
-        const courseCode = this.value;
-        if (!courseCode) return;
+            console.log(`[Fetch] Getting exam details for: ${courseCode}`);
+            fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
 
-        fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
+                    document.getElementById('editProgramCode').value = data.courseDepartment || '';
+                    document.getElementById('editStudent').value = data.courseStudent || '';
+                    document.getElementById('editVenue').value = data.examVenue || '';
+                    document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || 0;
 
-                // Autofill fields
-                deptSelect.value = data.courseDepartment || '';
-                studentInput.value = data.courseStudent || '';
-                venueSelect.value = data.examVenue || '';
-                invigilatorInput.value = data.examNoInvigilator || 0;
+                    // Split datetime
+                    if (data.examStartTime) {
+                        document.getElementById('editExamStartTime').value = data.examStartTime;
+                    }
+                    if (data.examEndTime) {
+                        document.getElementById('editExamEndTime').value = data.examEndTime;
+                    }
 
-                // Split datetime into date + time
-                if (data.examStartTime) {
-                    startDateInput.value = data.examStartTime.slice(0, 10);
-                    startTimeInput.value = data.examStartTime.slice(11, 16);
-                }
-                if (data.examEndTime) {
-                    endDateInput.value = data.examEndTime.slice(0, 10);
-                    endTimeInput.value = data.examEndTime.slice(11, 16);
-                }
+                    // Set lecturer select
+                    const practicalSelect = document.getElementById('editPracticalLecturer');
+                    const tutorialSelect = document.getElementById('editTutorialLecturer');
 
-                // Populate lecturers (they come as names in JSON)
-                practicalSelect.innerHTML = `<option selected>${data.practicalLecturer || ''}</option>`;
-                tutorialSelect.innerHTML = `<option selected>${data.tutorialLecturer || ''}</option>`;
-            });
-    });
+                    practicalSelect.innerHTML = `<option selected>${data.practicalLecturer || ''}</option>`;
+                    tutorialSelect.innerHTML = `<option selected>${data.tutorialLecturer || ''}</option>`;
+                })
+                .catch(err => {
+                    console.error("Error fetching exam details:", err);
+                });
+        });
+    }
 });
-
 
 
 
