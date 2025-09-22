@@ -478,11 +478,16 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
     const deanSelect = document.getElementById("deanName");
     const hopSelect = document.getElementById("hopName");
+
+    let allDeans = [];
+    let allHops = [];
 
     function populateDropdown(selectElement, options, selectedValue) {
         selectElement.innerHTML = '';
@@ -495,18 +500,27 @@ document.addEventListener("DOMContentLoaded", function () {
         options.forEach(user => {
             const opt = document.createElement('option');
             opt.value = user.userId;
-            opt.textContent = `[${user.userId}] ${user.userName}`;
-            if (String(user.userId) === String(selectedValue)) opt.selected = true; // Fix type mismatch
+            opt.textContent = `[${user.userDepartment}] ${user.userName}`;
+            if (String(user.userId) === String(selectedValue)) opt.selected = true;
             selectElement.appendChild(opt);
         });
 
         if (!selectedValue) placeholder.selected = true;
     }
 
+    // Fetch all deans and hops
+    fetch('/get_all_deans_hops')
+        .then(resp => resp.json())
+        .then(data => {
+            allDeans = data.deans;
+            allHops = data.hops;
+
+            if (departmentSelect.value) fetchDepartmentData(departmentSelect.value);
+        });
+
     function fetchDepartmentData(deptCode) {
         if (!deptCode) return;
 
-        // Fetch department details
         fetch(`/get_department/${encodeURIComponent(deptCode)}`)
             .then(resp => resp.json())
             .then(dept => {
@@ -516,28 +530,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 const selectedDean = dept.deanId || '';
                 const selectedHop = dept.hopId || '';
 
-                // Fetch deans/hops for this department
-                fetch(`/get_hop_dean_by_department/${encodeURIComponent(deptCode)}`)
-                    .then(resp => resp.json())
-                    .then(users => {
-                        populateDropdown(deanSelect, users.deans, selectedDean);
-                        populateDropdown(hopSelect, users.hops, selectedHop);
-                    });
+                populateDropdown(deanSelect, allDeans, selectedDean);
+                populateDropdown(hopSelect, allHops, selectedHop);
             });
     }
 
     if (departmentSelect) {
-        // Trigger when selection changes
         departmentSelect.addEventListener("change", function () {
             fetchDepartmentData(this.value);
         });
 
-        // Trigger on page load if a department is already selected
         if (departmentSelect.value) {
             fetchDepartmentData(departmentSelect.value);
         }
     }
 });
+
+
 
 
 
