@@ -439,7 +439,7 @@ def process_staff_row(row):
 
 
 
-
+    
 
 
 # -------------------------------
@@ -831,29 +831,9 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<path:department_code>')
 def get_courses_by_department(department_code):
-    courses = (
-        Course.query
-        .join(Exam, Course.courseExamId == Exam.examId)
-        .filter(
-            Course.courseDepartment == department_code,
-            Course.courseExamId.isnot(None),      # must have examId assigned
-            Exam.examStartTime.is_(None),         # exam not scheduled
-            Exam.examEndTime.is_(None)
-        )
-        .all()
-    )
-
-    if not courses:
-        return jsonify([])
-
-    return jsonify([
-        {
-            "courseCodeSection": c.courseCodeSection,
-            "courseName": c.courseName,
-            "examId": c.courseExamId
-        }
-        for c in courses
-    ])
+    courses = (Course.query.filter(Course.courseDepartment == department_code,Course.courseExamId.isnot(None)).all())
+    courses_list = [{"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}for c in courses]
+    return jsonify(courses_list)
 
 
 

@@ -469,61 +469,63 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 document.addEventListener("DOMContentLoaded", function () {
     // Manual Section Dropdowns
     const programCode = document.getElementById('programCode');
+    if (!programCode) return;
+
     const courseSectionSelect = document.getElementById('courseSection');
     const practicalLecturer = document.getElementById('practicalLecturer');
     const tutorialLecturer = document.getElementById('tutorialLecturer');
     const studentField = document.getElementById('student');
 
-    if (programCode) {
-        programCode.addEventListener('change', function () {
-            const deptCode = this.value;
-            courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
-            practicalLecturer.value = "";
-            tutorialLecturer.value = "";
-            studentField.value = "";
+    // When program/department changes
+    programCode.addEventListener('change', function () {
+        const deptCode = this.value;
+        console.log("Selected Department Code is:", deptCode);
 
-            if (deptCode) {
-                console.log(`[Fetch] Loading courses for department: ${deptCode}`);
-                fetch(`/get_courses_by_department/${deptCode}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.length === 0) {
-                            console.warn("No available courses found.");
-                        }
-                        data.forEach(course => {
-                            const option = document.createElement('option');
-                            option.value = course.courseCodeSection;
-                            option.textContent = `[${course.courseCodeSection}] - ${course.courseName}`;
-                            courseSectionSelect.appendChild(option);
-                        });
-                    })
-                    .catch(err => console.error('Error loading courses:', err));
-            }
-        });
+        // Reset dependent fields
+        courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+        practicalLecturer.value = "";
+        tutorialLecturer.value = "";
+        studentField.value = "";
 
-        courseSectionSelect.addEventListener('change', function () {
-            const sectionCode = this.value;
-            const deptCode = programCode.value;
+        if (deptCode) {
+            fetch(`/get_courses_by_department/${deptCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.courseCodeSection;
+                        option.textContent = `${course.courseCodeSection} - ${course.courseName}`;
+                        courseSectionSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching courses:', error));
+        }
+    });
 
-            if (sectionCode && deptCode) {
-                console.log(`[Fetch] Getting details for course: ${sectionCode} under ${deptCode}`);
-                fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.error) {
-                            console.error("Error in course details:", data.error);
-                            return;
-                        }
-                        console.log("Loaded course data:", data);
-                        practicalLecturer.value = data.practicalLecturer || "";
-                        tutorialLecturer.value = data.tutorialLecturer || "";
-                        studentField.value = data.courseStudent || "";
-                    })
-                    .catch(err => console.error("Error loading course details:", err));
-            }
-        });
-    }
+    // When course/section changes
+    courseSectionSelect.addEventListener('change', function () {
+        const sectionCode = this.value;
+        const deptCode = programCode.value;
+
+        if (sectionCode && deptCode) {
+            console.log(`[Fetch] Getting details for course: ${sectionCode} under ${deptCode}`);
+            fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Error in course details:", data.error);
+                        return;
+                    }
+                    console.log("Loaded course data:", data);
+                    practicalLecturer.value = data.practicalLecturer || "";
+                    tutorialLecturer.value = data.tutorialLecturer || "";
+                    studentField.value = data.courseStudent || "";
+                })
+                .catch(err => console.error("Error loading course details:", err));
+        }
+    });
 });
+
 
 /*
 // examEdit.js
