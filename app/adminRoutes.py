@@ -609,10 +609,6 @@ def admin_manageCourse():
 
 
 
-
-
-
-
 # -------------------------------
 # Get Department Details for ManageDepartmentEditPage
 # -------------------------------
@@ -627,6 +623,7 @@ def get_department(department_code):
         "deanId": dept.deanId,
         "hopId": dept.hopId
     })
+
 
 # -------------------------------
 # Admin Manage Department
@@ -716,6 +713,121 @@ def admin_manageDepartment():
 
 
 # -------------------------------
+# Get Venue Details for ManageVenueEditPage
+# -------------------------------
+@app.route('/get_venue/<venue_number>')
+def get_venue(venue_number):
+    venue = Venue.query.filter_by(venueNumber=venue_number).first()
+    if not venue:
+        return jsonify({"error": "Venue not found"}), 404
+
+    return jsonify({
+        "venueNumber": venue.venueNumber,
+        "venueFloor": venue.venueFloor,
+        "venueCapacity": venue.venueCapacity,
+        "venueStatus": venue.venueStatus
+    })
+
+
+
+
+# -------------------------------
+# Function for Admin ManageVenue Route
+# -------------------------------
+@app.route('/admin/manageVenue', methods=['GET', 'POST'])
+def admin_manageVenue():
+    venue_selected = request.form.get('editVenueNumber')
+    venue_select = Venue.query.filter_by(venueNumber=venue_selected).first() if venue_selected else None
+
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
+
+        # ---------------- Manual Section ----------------
+        if form_type == 'manual':
+            venueNumber = request.form.get('venueNumber', '').strip().upper()
+            venueFloor = request.form.get('venueFloor', '').strip()
+            venueCapacity = request.form.get('venueCapacity', '').strip()
+            venueStatus = request.form.get('venueStatus', '').strip()
+
+            if Venue.query.filter_by(venueNumber=venueNumber).first():
+                flash("Venue Room Already Exists", 'error')
+            else:
+                try:
+                    capacity = int(venueCapacity)
+                    if capacity < 0:
+                        raise ValueError
+                    db.session.add(Venue(
+                        venueNumber=venueNumber,
+                        venueFloor=venueFloor,
+                        venueCapacity=capacity,
+                        venueStatus=venueStatus
+                    ))
+                    db.session.commit()
+                    flash("Venue Added", "success")
+                    return redirect(url_for('admin_manageVenue'))
+                except ValueError:
+                    flash("Capacity must be a non-negative integer", 'error')
+        
+        # ---------------- Edit Section ----------------
+        elif form_type == 'edit':
+            action = request.form.get('action')
+            venueFloor = request.form.get('venueFloor')
+            venueCapacity = request.form.get('venueCapacity')
+            venueStatus = request.form.get('venueStatus')
+
+            if action == 'update':
+                venue_select.venueFloor = venueFloor
+                venue_select.venueCapacity = venueCapacity
+                venue_select.venueStatus = venueStatus
+                db.session.commit()
+                flash("Venue updated successfully", "success")
+            elif action == 'delete':
+                db.session.delete(venue_select)
+                db.session.commit()
+                flash("Venue deleted successfully", "success")
+
+    # Always fetch latest data for display
+    venue_data = Venue.query.all()
+    total_venue = Venue.query.count()
+
+    # Status counts
+    counts = dict(
+        db.session.query(Venue.venueStatus, func.count())
+        .group_by(Venue.venueStatus)
+        .all()
+    )
+
+    # Floor counts (no need to map manually, Jinja can unpack tuples)
+    venues_by_floor = [
+        {"floor": floor, "count": count}
+        for floor, count in db.session.query(Venue.venueFloor, func.count())
+        .group_by(Venue.venueFloor)
+        .order_by(Venue.venueFloor)
+        .all()
+    ]
+
+    return render_template(
+        'admin/adminManageVenue.html',
+        active_tab='admin_manageVenuetab',
+        venue_data=venue_data,
+        total_venue=total_venue,
+        available=counts.get("AVAILABLE", 0),
+        unavailable=counts.get("UNAVAILABLE", 0),
+        in_service=counts.get("IN SERVICE", 0),
+        venues_by_floor=venues_by_floor,
+        venue_select=venue_select
+    )
+
+
+
+
+
+
+
+
+
+
+# -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage
 # -------------------------------
 @app.route('/get_courses_by_department/<department_code>')
@@ -754,69 +866,6 @@ def get_course_details(program_code, course_code_section):
     return jsonify({"error": "Course not found"})
 
 
-
-
-
-# -------------------------------
-# Function for Admin ManageVenue Route
-# -------------------------------
-@app.route('/admin/manageVenue', methods=['GET', 'POST'])
-def admin_manageVenue():
-    if request.method == 'POST':
-        venueNumber = request.form.get('venueNumber', '').strip().upper()
-        venueFloor = request.form.get('venueFloor', '').strip()
-        venueCapacity = request.form.get('venueCapacity', '').strip()
-        venueStatus = request.form.get('venueStatus', '').strip()
-
-        if Venue.query.filter_by(venueNumber=venueNumber).first():
-            flash("Venue Room Already Exists", 'error')
-        else:
-            try:
-                capacity = int(venueCapacity)
-                if capacity < 0:
-                    raise ValueError
-                db.session.add(Venue(
-                    venueNumber=venueNumber,
-                    venueFloor=venueFloor,
-                    venueCapacity=capacity,
-                    venueStatus=venueStatus
-                ))
-                db.session.commit()
-                flash("Venue Added", "success")
-                return redirect(url_for('admin_manageVenue'))
-            except ValueError:
-                flash("Capacity must be a non-negative integer", 'error')
-
-    # Always fetch latest data for display
-    venue_data = Venue.query.all()
-    total_venue = Venue.query.count()
-
-    # Status counts
-    counts = dict(
-        db.session.query(Venue.venueStatus, func.count())
-        .group_by(Venue.venueStatus)
-        .all()
-    )
-
-    # Floor counts (no need to map manually, Jinja can unpack tuples)
-    venues_by_floor = [
-        {"floor": floor, "count": count}
-        for floor, count in db.session.query(Venue.venueFloor, func.count())
-        .group_by(Venue.venueFloor)
-        .order_by(Venue.venueFloor)
-        .all()
-    ]
-
-    return render_template(
-        'admin/adminManageVenue.html',
-        active_tab='admin_manageVenuetab',
-        venue_data=venue_data,
-        total_venue=total_venue,
-        available=counts.get("AVAILABLE", 0),
-        unavailable=counts.get("UNAVAILABLE", 0),
-        in_service=counts.get("IN SERVICE", 0),
-        venues_by_floor=venues_by_floor
-    )
 
 
 # -------------------------------

@@ -91,13 +91,57 @@
 
 {% block edit_section %}
 <!-- Edit Form -->
-<form id="editForm" action="{{ url_for('admin_manageVenue') }}" method="POST">
-    <div id="editSection" style="width: 90%; margin:auto;">
-        <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
+<form id="editForm" action="{{ url_for('admin_manageVenue') }}" method="POST" enctype="multipart/form-data">
+    <div id="editSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Edit Existing Venue</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Venue Number</label>
+                <select name="editVenueNumber" id="editVenueNumber" required>
+                    <option value="" disabled selected>Select Venue</option>
+                    {% for v in venue_data %}
+                        <option value="{{ v.venueNumber }}">{{ v.venueNumber }}</option>
+                    {% endfor %}
+                </select><br>
+
+                <label>Venue Floor</label>
+                <select name="venueFloor" id="editVenueFloor" required>
+                    <option value="" disabled selected>Venue Floor</option>
+                    <option value="FLOOR 2">FLOOR 2</option>
+                    <option value="FLOOR 3">FLOOR 3</option>
+                    <option value="FLOOR 4">FLOOR 4</option>
+                    <option value="FLOOR 5">FLOOR 5</option>
+                    <option value="FLOOR 6">FLOOR 6</option>
+                </select>
+            </div>
+
+            <div class="form-right">
+                <label>Venue Capacity</label>
+                <input type="number" name="venueCapacity" id="editVenueCapacity" min="1" step="1" required><br>
+
+                <label>Venue Status</label>
+                <select name="venueStatus" id="editVenueStatus" required>
+                    <option value="" disabled selected>Venue Current Status</option>
+                    <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="UNAVAILABLE">UNAVAILABLE</option>
+                    <option value="IN SERVICE">IN SERVICE</option>
+                </select>
+            </div>
+        </div>
+        <br><br>
+
+        <div class="button-wrapper" style="gap: 5%;">
+            <button type="submit" name="action" value="update" style="background-color: rgb(44, 238, 70);">
+                <i class="fas fa-check"></i> Update Venue
+            </button>
+            <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);"
+                    onclick="return confirm('Are you sure to delete this venue?')">
+                <i class="fas fa-trash"></i> Delete Venue
+            </button>
         </div>
     </div>
 </form>
+
 {% endblock %}
 
 
