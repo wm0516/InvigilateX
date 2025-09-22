@@ -656,16 +656,10 @@ def admin_manageDepartment():
             departmentName = request.form.get('departmentName')
 
             # Check if department code already exists
-            dept = Department.query.filter_by(departmentCode=departmentCode).first()
-            if dept:
+            if Department.query.filter_by(departmentCode=departmentCode).first():
                 flash("Department code already exists. Please use a unique code.", "error")
             else:
-                # Add new department
-                new_dept = Department(
-                    departmentCode=departmentCode,
-                    departmentName=departmentName
-                )
-                db.session.add(new_dept)
+                db.session.add(Department(departmentCode=departmentCode, departmentName=departmentName))
                 db.session.commit()
                 flash("New Department Added", "success")
 
@@ -676,17 +670,18 @@ def admin_manageDepartment():
             deanId = request.form.get('deanName') or None
             hopId = request.form.get('hopName') or None
 
-            # Server-side validation for Dean/HOP
+            # Validate Dean belongs to this department
             if deanId:
                 dean_user = User.query.filter_by(userId=deanId, userLevel=2).first()
                 if not dean_user or dean_user.userDepartment != department_select.departmentCode:
-                    flash("Selected Dean does not belong to this department, ignoring Dean selection.", "error")
+                    flash("Selected Dean does not belong to this department. Ignoring Dean selection.", "error")
                     deanId = None
 
+            # Validate HOP belongs to this department
             if hopId:
                 hop_user = User.query.filter_by(userId=hopId, userLevel=3).first()
                 if not hop_user or hop_user.userDepartment != department_select.departmentCode:
-                    flash("Selected HOP does not belong to this department, ignoring HOP selection.", "error")
+                    flash("Selected HOP does not belong to this department. Ignoring HOP selection.", "error")
                     hopId = None
 
             if action == 'update':
@@ -702,7 +697,7 @@ def admin_manageDepartment():
             return redirect(url_for('admin_manageDepartment'))
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select,
-                           total_department=total_department, total_dean=total_dean, total_hop=total_hop, deans=deans, hops=hops, department_with_dean=department_with_dean, department_with_hop=department_with_hop)
+        total_department=total_department, total_dean=total_dean, total_hop=total_hop, deans=deans, hops=hops, department_with_dean=department_with_dean, department_with_hop=department_with_hop)
 
 
 
