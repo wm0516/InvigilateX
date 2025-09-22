@@ -441,6 +441,7 @@ def process_staff_row(row):
 
 
 
+
 # -------------------------------
 # Read All LecturerName Under The Selected Department For ManageCoursePage
 # -------------------------------
@@ -451,6 +452,7 @@ def get_lecturers_by_department(department_code):
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
     return jsonify(lecturers_list) 
+
 
 # -------------------------------
 # Read All CourseCodeSection Under The ManageCourseEditPage
@@ -472,92 +474,6 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseHour": course.courseHour,
         "courseStudent": course.courseStudent
     })
-
-
-# -------------------------------
-# Read All Department Under The ManageDepartmentEditPage
-# -------------------------------
-@app.route('/get_department/<path:department_code>')
-def get_department(department_code):
-    dept = Department.query.filter_by(departmentCode=department_code).first()
-    if not dept:
-        return jsonify({"error": "Department not found"}), 404
-
-    return jsonify({
-        "departmentCode": dept.departmentCode,
-        "departmentName": dept.departmentName,
-        "deanId": dept.deanId,
-        "hopId": dept.hopId
-    })
-
-
-@app.route('/get_department_users/<path:department_code>')
-def get_department_users(department_code):
-    dept = Department.query.filter_by(departmentCode=department_code).first()
-    if not dept:
-        return jsonify({"error": "Department not found"}), 404
-
-    # Exclude users already assigned to other departments
-    assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
-    assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
-
-    # Include currently assigned Dean/HOP even if they are in assigned list
-    dean_list = User.query.filter(
-        (User.userLevel == 2) & 
-        ((~User.userId.in_(assigned_dean_ids)) | (User.userId == (dept.deanId or -1)))
-    ).all()
-
-    hop_list = User.query.filter(
-        (User.userLevel == 3) & 
-        ((~User.userId.in_(assigned_hop_ids)) | (User.userId == (dept.hopId or -1)))
-    ).all()
-
-    users = {
-        "deans": [{"userId": u.userId, "userName": u.userName} for u in dean_list],
-        "hops": [{"userId": u.userId, "userName": u.userName} for u in hop_list]
-    }
-
-    return jsonify(users)
-
-
-
-# -------------------------------
-# Read All Course Under The Selected Department For ManageExamPage
-# -------------------------------
-@app.route('/get_courses_by_department/<department_code>')
-def get_courses_by_department(department_code):
-    courses = (
-        Course.query
-        .join(Exam)
-        .filter(
-            Course.courseDepartment == department_code,
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None)
-        )
-        .all()
-    )
-
-    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
-    return jsonify(course_list)
-
-
-# -------------------------------
-# Read All CourseDetails Under The Selected Department For ManageExamPage
-# -------------------------------
-@app.route('/get_course_details/<program_code>/<path:course_code_section>')
-def get_course_details(program_code, course_code_section):
-    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
-    selected_course = Course.query.filter_by(
-        courseDepartment=program_code,
-        courseCodeSection=course_code_section
-    ).first()
-    if selected_course:
-        return jsonify({
-            "practicalLecturer" : selected_course.coursePractical,
-            "tutorialLecturer"  : selected_course.courseTutorial,
-            "student"           : selected_course.courseStudent
-        })
-    return jsonify({"error": "Course not found"})
 
 
 # -------------------------------
@@ -692,6 +608,66 @@ def admin_manageCourse():
         return f"<pre>{traceback.format_exc()}</pre>", 500
 
 
+
+
+
+
+
+
+
+
+# -------------------------------
+# Show Related Department HOP&DEAN Under The ManageDepartmentManualPage
+# -------------------------------
+@app.route('/get_hop_dean_by_department/<department_code>')
+def get_hop_dean_by_department(department_code):
+    # Query dean (userLevel 2) and HOP (userLevel 3)
+    dean = User.query.filter_by(userDepartment=department_code, userLevel=2).first()
+    hop = User.query.filter_by(userDepartment=department_code, userLevel=3).first()
+
+    return jsonify({
+        "departmentCode": department_code,
+        "dean": {"userId": dean.userId, "userName": dean.userName} if dean else None,
+        "hop": {"userId": hop.userId, "userName": hop.userName} if hop else None,
+    })
+
+
+# -------------------------------
+# Read All Department Under The ManageDepartmentEditPage
+# -------------------------------
+@app.route('/get_department/<path:department_code>')
+def get_department(department_code):
+    dept = Department.query.filter_by(departmentCode=department_code).first()
+    if not dept:
+        return jsonify({"error": "Department not found"}), 404
+
+    return jsonify({
+        "departmentCode": dept.departmentCode,
+        "departmentName": dept.departmentName,
+        "deanId": dept.deanId,
+        "hopId": dept.hopId
+    })
+
+
+@app.route('/get_department_users/<path:department_code>')
+def get_department_users(department_code):
+    dept = Department.query.filter_by(departmentCode=department_code).first()
+    if not dept:
+        return jsonify({"error": "Department not found"}), 404
+
+    # Only users whose department matches the selected department
+    dean_list = User.query.filter_by(userLevel=2, userDepartment=department_code).all()
+    hop_list = User.query.filter_by(userLevel=3, userDepartment=department_code).all()
+
+    users = {
+        "deans": [{"userId": u.userId, "userName": u.userName, "userEmail": u.userEmail} for u in dean_list],
+        "hops": [{"userId": u.userId, "userName": u.userName, "userEmail": u.userEmail} for u in hop_list]
+    }
+
+    return jsonify(users)
+
+
+
 # -------------------------------
 # Function for Admin ManageDepartment Route
 # -------------------------------
@@ -785,6 +761,64 @@ def admin_manageDepartment():
                            department_data=department_data, dean_list=dean_list, hop_list=hop_list, total_department=total_department,
                            department_with_hop=department_with_hop, department_with_dean=department_with_dean, department_select=department_select,
                            total_dean=total_dean, total_hop=total_hop)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------
+# Read All Course Under The Selected Department For ManageExamPage
+# -------------------------------
+@app.route('/get_courses_by_department/<department_code>')
+def get_courses_by_department(department_code):
+    courses = (
+        Course.query
+        .join(Exam)
+        .filter(
+            Course.courseDepartment == department_code,
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None)
+        )
+        .all()
+    )
+
+    course_list = [{"courseCodeSection": c.courseCodeSection} for c in courses]
+    return jsonify(course_list)
+
+
+# -------------------------------
+# Read All CourseDetails Under The Selected Department For ManageExamPage
+# -------------------------------
+@app.route('/get_course_details/<program_code>/<path:course_code_section>')
+def get_course_details(program_code, course_code_section):
+    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
+    selected_course = Course.query.filter_by(
+        courseDepartment=program_code,
+        courseCodeSection=course_code_section
+    ).first()
+    if selected_course:
+        return jsonify({
+            "practicalLecturer" : selected_course.coursePractical,
+            "tutorialLecturer"  : selected_course.courseTutorial,
+            "student"           : selected_course.courseStudent
+        })
+    return jsonify({"error": "Course not found"})
+
+
+
 
 
 # -------------------------------

@@ -478,17 +478,18 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+
+
+
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
     const deanSelect = document.getElementById("deanName");
     const hopSelect = document.getElementById("hopName");
+    const manualDeptInput = document.querySelector("input[name='departmentCode']");
 
-    // Function to populate dropdown and select the current value
     function populateDropdown(selectElement, options, selectedValue) {
-        selectElement.innerHTML = ''; // clear current options
-
-        // Placeholder
+        selectElement.innerHTML = '';
         const placeholder = document.createElement('option');
         placeholder.value = '';
         placeholder.disabled = true;
@@ -496,54 +497,60 @@ document.addEventListener("DOMContentLoaded", function () {
         placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a Hop';
         selectElement.appendChild(placeholder);
 
-        // Add users
         options.forEach(user => {
             const opt = document.createElement('option');
             opt.value = user.userId;
             opt.textContent = `[${user.userId}] ${user.userName}`;
-            opt.dataset.email = user.userEmail || '';
             if (user.userId == selectedValue) opt.selected = true;
             selectElement.appendChild(opt);
         });
     }
 
-    // When department changes
-    departmentSelect.addEventListener("change", function () {
-        const deptCode = this.value;
-        if (!deptCode) return;
+    // --- Manual Section: Auto-populate dropdown based on departmentCode input ---
+    if (manualDeptInput) {
+        manualDeptInput.addEventListener("input", function () {
+            const deptCode = this.value.trim().toUpperCase();
+            if (!deptCode) return;
 
-        // Fetch department details
-        fetch(`/get_department/${encodeURIComponent(deptCode)}`)
-            .then(resp => resp.json())
-            .then(dept => {
-                if (dept.error) {
-                    alert(dept.error);
-                    return;
-                }
+            fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
+                .then(resp => resp.json())
+                .then(users => {
+                    populateDropdown(deanSelect, users.deans, '');
+                    populateDropdown(hopSelect, users.hops, '');
+                })
+                .catch(err => console.error("Error fetching department users:", err));
+        });
+    }
 
-                // Populate department name
-                departmentNameInput.value = dept.departmentName || '';
+    // --- Edit Section: Auto-fill fields when department is selected ---
+    if (departmentSelect) {
+        departmentSelect.addEventListener("change", function () {
+            const deptCode = this.value;
+            if (!deptCode) return;
 
-                // Fetch eligible Dean and HOP
-                fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
-                    .then(resp => resp.json())
-                    .then(users => {
-                        populateDropdown(deanSelect, users.deans, dept.deanId);
-                        populateDropdown(hopSelect, users.hops, dept.hopId);
-                    })
-                    .catch(err => console.error("Error fetching department users:", err));
-            })
-            .catch(err => console.error("Error fetching department:", err));
-    });
+            // Get department info
+            fetch(`/get_department/${encodeURIComponent(deptCode)}`)
+                .then(resp => resp.json())
+                .then(dept => {
+                    if (dept.error) return alert(dept.error);
+                    departmentNameInput.value = dept.departmentName || '';
 
-    // Trigger change on page load if a department is pre-selected
-    if (departmentSelect.value) {
-        departmentSelect.dispatchEvent(new Event("change"));
+                    // Fetch eligible Dean/HOP for this department
+                    fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
+                        .then(resp => resp.json())
+                        .then(users => {
+                            populateDropdown(deanSelect, users.deans, dept.deanId);
+                            populateDropdown(hopSelect, users.hops, dept.hopId);
+                        });
+                })
+                .catch(err => console.error("Error fetching department:", err));
+        });
+
+        if (departmentSelect.value) {
+            departmentSelect.dispatchEvent(new Event("change"));
+        }
     }
 });
-
-
-
 
 
 
