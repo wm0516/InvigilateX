@@ -107,15 +107,10 @@
                 <!-- Flash Message Section -->
                 {% if uploadResult %}
                     <div class="result-message">{{ uploadResult }}</div>
-                {% endif %}
-
-                {% if uploadErrors %}
+                {% elif uploadErrors %}
                     <div class="error-message">{{ uploadErrors }}</div>
-                {% endif %}
-
-                {% set flashes = get_flashed_messages(with_categories=true) %}
-                {% if flashes %}
-                    {% for category, message in flashes %}
+                {% elif get_flashed_messages(with_categories=true) %}
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
                         <div class="alert alert-{{ category }}">
                             <strong>{{ category.capitalize() }}:</strong> {{ message }}
                         </div>
