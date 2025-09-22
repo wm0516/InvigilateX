@@ -136,6 +136,9 @@
 <form id="editForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
         <h4 style="text-align:center;">Edit Existing Course</h4>
+        <h3 style="text-align:center;">
+            Editing the Course Code or Course Section is not allowed. If you wish to make changes, it is recommended to delete the existing entry and re-insert it.
+        </h3>
 
         <!-- Prefilled form (like manual section) -->
         <div class="profile-frame">
@@ -152,7 +155,7 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Department</label>
+                <label>Department (Editable)</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
@@ -162,35 +165,35 @@
 
                 <label>Course Code</label>
                 <input type="text" id="editCourseCode" name="courseCode"
-                       value="{{ course_select.courseCodeSection.split('/')[0] if course_select else '' }}" required>
+                       value="{{ course_select.courseCodeSection.split('/')[0] if course_select else '' }}" readonly>
             </div>
 
             <div class="form-middle">
                 <label>Course Section</label>
                 <input type="text" id="editCourseSection" name="courseSection"
-                       value="{{ course_select.courseCodeSection.split('/')[1] if course_select else '' }}" required><br>
+                       value="{{ course_select.courseCodeSection.split('/')[1] if course_select else '' }}" readonly><br>
 
-                <label>Course Name</label>
+                <label>Course Name (Editable)</label>
                 <input type="text" id="editCourseName" name="courseName"
                        value="{{ course_select.courseName if course_select else '' }}" required><br>
 
-                <label>Practical Lecturer</label>
+                <label>Practical Lecturer (Editable)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select>
             </div>
 
             <div class="form-right">
-                <label>Tutorial Lecturer</label>
+                <label>Tutorial Lecturer (Editable)</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
                     <option value="" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
-                <label>Course Credit Hour(s)</label>
+                <label>Course Credit Hour(s) (Editable)</label>
                 <input type="number" id="editCourseHour" name="courseHour" min="1" step="1"
                        value="{{ course_select.courseHour if course_select else '' }}" required><br>
 
-                <label>Course Number of Student(s)</label>
+                <label>Course Number of Student(s) (Editable)</label>
                 <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1"
                        value="{{ course_select.courseStudent if course_select else '' }}" required>
             </div>
