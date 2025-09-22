@@ -145,7 +145,6 @@
 {% endblock %}
 
 
-
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
@@ -170,18 +169,14 @@
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
                     {% for exam in exam_data %}
-                        {% if exam.course and exam.course.courseCodeSection %} 
-                            <option value="{{ exam.course.courseCodeSection }}">
-                                [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
-                            </option>
-                        {% else %}
-                            <option disabled>No course associated with exam {{ exam.examId }}</option>
-                        {% endif %}
+                        <option value="{{ exam.course.courseCodeSection }}">
+                            [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
+                        </option>
                     {% endfor %}
                 </select><br>
 
                 <label>Course Name</label>
-                <input type="text" id="editCourseName" name="courseName" value="{{ exam_select.courseName }}" readonly><br>
+                <input type="text" id="editCourseName" name="courseName" value="{{ exam_select.course.courseName }}" readonly><br>
 
                 <label>Program Code</label>
                 <select id="editProgramCode" name="programCode" required>
@@ -206,7 +201,7 @@
                 </select><br>
 
                 <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" readonly>
+                <input type="number" id="editStudent" name="student" value="{{ exam_select.course.courseStudent }}" readonly>
             </div>
 
             <div class="form-right">
@@ -227,7 +222,7 @@
                 </select><br>
 
                 <label>Number of Invigilators</label>
-                <input type="number" id="editInvigilatorNo" name="invigilatorNo" min="1" step="1" required>
+                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="{{ exam_select.examNoInvigilator }}" min="1" step="1" required>
             </div>
         </div>
 

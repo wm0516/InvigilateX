@@ -842,13 +842,13 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
-    print(f"[DEBUG] Getting courses for department: {department_code}")
+    flash(f"[DEBUG] Getting courses for department: {department_code}", "error")
     
     # Get courses that belong to the department AND don't have scheduled exams
     courses = Course.query.filter(
         Course.courseDepartment == department_code
     ).outerjoin(Exam, Course.courseExamId == Exam.examId).filter(
-        (Exam.examId.is_(None)) | 
+        (Exam.examId.isnot_(None)) | 
         (Exam.examStartTime.is_(None)) | 
         (Exam.examEndTime.is_(None))
     ).all()
@@ -860,7 +860,7 @@ def get_courses_by_department(department_code):
 
     flash(f"[DEBUG] Returning {len(course_list)} courses for dept {department_code}","error")
     for course in course_list:
-        print(f"[DEBUG] Course: {course['courseCodeSection']} - {course['courseName']}")
+        flash(f"[DEBUG] Course: {course['courseCodeSection']} - {course['courseName']}", "error")
     
     return jsonify(course_list)
 
@@ -932,12 +932,16 @@ def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
 
-    # Fix the exam_data query to ensure it includes courses
-    exam_data = Exam.query.options(db.joinedload(Exam.course)).filter(
-        Exam.examId.isnot(None),
-        Exam.examStartTime.isnot(None),
-        Exam.examEndTime.isnot(None)
-    ).all()
+    # Edit section, show all data (complete and incomplete)
+    exam_data = Exam.query.all()
+    
+    # Show all for Edit section 
+    course_data_full = Course.query.all()
+    total_exam = Exam.query.count()
+
+    # For Edit section
+    exam_selected = request.form.get('editExamCourseSection')
+    exam_select = Course.query.filter_by(courseCodeSection=exam_selected).first()
 
     # Debug: print exam data
     flash(f"[DEBUG] Found {len(exam_data)} exams", "error")
@@ -953,10 +957,9 @@ def admin_manageExam():
         )
     ).all()
 
-    # Show all for Edit section 
-    course_data_full = Course.query.all()
-
-    total_exam = Exam.query.count()
+    flash(f"[DEBUG] Found {len(course_data)} exams", "error")
+    for exam in course_data:
+        flash(f"[DEBUG] Exam {exam.examId}: Course = {exam.course.courseCodeSection if exam.course else 'None'}", "error")
 
     # Complete exams: all important columns are NOT NULL
     exam_with_complete = Exam.query.filter(
@@ -974,8 +977,6 @@ def admin_manageExam():
         Exam.examNoInvigilator.is_(None)
     ).count()
 
-    exam_selected = request.form.get('editExamCourseSection')
-    exam_select = Course.query.filter_by(courseCodeSection=exam_selected).first()
 
     # Default manual form values
     courseSection_text = ''
