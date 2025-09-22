@@ -751,6 +751,7 @@ def admin_manageVenue():
 
             if Venue.query.filter_by(venueNumber=venueNumber).first():
                 flash("Venue Room Already Exists", 'error')
+                return redirect(url_for('admin_manageVenue'))
             else:
                 try:
                     capacity = int(venueCapacity)
