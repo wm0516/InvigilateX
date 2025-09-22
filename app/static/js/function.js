@@ -410,7 +410,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedCodeSection = this.value;
 
         // Reset all fields
-        departmentSelect.value = '<option value="" disabled selected>Select Department</option>';
+        departmentSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
         practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
         tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
         courseCodeInput.value = "";
@@ -422,11 +422,15 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!selectedCodeSection) return;
 
         // Fetch course data
-        fetch(`/get_courseCodeSection/${selectedCodeSection}`)
-            .then(response => response.json())
+        fetch(`/get_courseCodeSection/${encodeURIComponent(selectedCodeSection)}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to fetch course data');
+                return response.json();
+            })
             .then(course => {
                 if (course.error) {
                     console.error(course.error);
+                    alert('Error: ' + course.error);
                     return;
                 }
 
@@ -440,8 +444,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Fetch lecturers for this department
                 fetch(`/get_lecturers_by_department/${course.courseDepartment}`)
-                    .then(resp => resp.json())
+                    .then(resp => {
+                        if (!resp.ok) throw new Error('Failed to fetch lecturers');
+                        return resp.json();
+                    })
                     .then(lecturers => {
+                        // Clear existing options
+                        practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
+                        tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
+                        
+                        // Add lecturer options
                         lecturers.forEach(lecturer => {
                             const practicalOption = document.createElement('option');
                             practicalOption.value = lecturer.userName;
@@ -458,10 +470,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     })
                     .catch(err => console.error('Error fetching lecturers:', err));
             })
-            .catch(error => console.error('Error fetching course:', error));
+            .catch(error => {
+                console.error('Error fetching course:', error);
+                alert('Error loading course details');
+            });
     });
 });
-
 
 
 
