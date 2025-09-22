@@ -1049,6 +1049,31 @@ def admin_manageExam():
 
 
 
+
+
+
+
+# -------------------------------
+# Read All StaffDetails Under The ManageLecturerEditPage
+# -------------------------------
+@app.route('/get_staff/<path:id>')
+def get_staff(id):
+    user = User.query.filter_by(userId=id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "userId": user.userId,
+        "userName": user.userName,
+        "userEmail": user.userEmail,
+        "userContact": user.userContact,
+        "userGender": user.userGender,
+        "userLevel": user.userLevel,
+        "userDepartment": user.userDepartment
+    })
+
+
+
 # -------------------------------
 # Function for Admin ManageStaff Route
 # -------------------------------
@@ -1074,6 +1099,12 @@ def admin_manageStaff():
     total_activated = User.query.filter_by(userStatus=1).count()
     total_deactivate = User.query.filter_by(userStatus=0).count()
 
+    staff_id = request.form.get('editStaffId')
+    user_select = None
+
+    if staff_id:
+        user_select = User.query.filter_by(userId=staff_id).first()
+
     # incomplete rows check (e.g. NULL or empty important fields)
     error_rows = User.query.filter(
         (User.userDepartment.is_(None)) | (User.userDepartment == '') |
@@ -1096,7 +1127,25 @@ def admin_manageStaff():
                 usecols="A:G"
             )
 
-        elif form_type == 'modify':
+        elif form_type == 'edit':
+            action = request.form.get('action')
+
+            if action == 'update' and user_select:
+                role_text = request.form.get('role', '0') 
+                user_select.userName = request.form.get('username', '').strip()
+                user_select.userEmail = request.form.get('email', '').strip()
+                user_select.userContact = request.form.get('contact', '').strip()
+                user_select.userGender = request.form.get('gender', '').strip()
+                user_select.userLevel = int(role_text)
+                user_select.userDepartment = request.form.get('department', '').strip()
+                db.session.commit()
+                flash("Staff updated successfully", "success")
+            
+            elif action == 'delete':
+                db.session.delete(user_select)
+                db.session.commit()
+                flash("Staff deleted successfully", "success")
+
             return redirect(url_for('admin_manageStaff'))
 
         elif form_type == 'manual':
@@ -1131,7 +1180,8 @@ def admin_manageStaff():
         total_female_staff=total_female_staff,
         total_activated=total_activated,
         total_deactivate=total_deactivate,
-        error_rows=error_rows
+        error_rows=error_rows,
+        user_select=user_select
     )
 
 # -------------------------------

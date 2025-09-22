@@ -138,15 +138,75 @@
 
 
 {% block edit_section %}
-<!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageStaff') }}" method="POST">
     <div id="editSection" style="width: 90%; margin:auto;">
+        <h4 style="text-align: center;">Edit Existing Staff</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Staff ID</label>
+                <select id="editStaffId" name="editStaffId" required>
+                    <option value="" disabled selected>Select Staff</option>
+                    {% for row in user_data %}
+                        <option value="{{ row.userId }}">
+                            {{ row.userId }} - {{ row.userName }}
+                        </option>
+                    {% endfor %}
+                </select><br>
+
+                <label>Staff Name</label>
+                <input type="text" id="username" name="username" required><br>
+
+                <label>Staff Email Address</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-middle">
+                <label>Staff Contact Number</label>
+                <input type="tel" id="contact" name="contact" required><br>
+                
+                <label>Staff Gender</label>
+                <select id="gender" name="gender" required>
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="MALE">MALE</option>
+                    <option value="FEMALE">FEMALE</option>
+                </select>
+            </div>
+
+            <div class="form-right">
+                <label>Staff Role</label>
+                <select id="roleSelect" name="role" required>
+                    <option value="" disabled selected>Select Role</option>
+                    <option value="1">LECTURER</option>
+                    <option value="2">DEAN</option>
+                    <option value="3">(HOP) HEAD OF PROGRAM</option>
+                    <option value="4">ADMIN</option>
+                </select><br>
+
+                <label id="departmentLabel">Department</label>
+                <select id="department" name="department" required>
+                    <option value="" disabled selected>Select Department</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}">
+                            [{{ dept.departmentCode }}] {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div> 
+
         <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
+        <br><br>
+        <div class="button-wrapper" style="gap: 5%;">
+            <button type="submit" name="action" value="update" style="background-color: rgb(44, 238, 70);">
+                <i class="fas fa-check"></i> Update Staff
+            </button>
+            <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);" 
+                    onclick="return confirm('Are you sure to delete this staff?')">
+                <i class="fas fa-trash"></i> Delete Staff
+            </button>
         </div>
     </div>
 </form>
-{% endblock %}
 
 
 {% block content %}

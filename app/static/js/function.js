@@ -527,6 +527,26 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+document.getElementById("editStaffId").addEventListener("change", function () {
+    const staffId = this.value;
+    if (staffId) {
+        fetch(`/get_staff/${staffId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) {
+                    document.getElementById("username").value = data.userName || "";
+                    document.getElementById("email").value = data.userEmail || "";
+                    document.getElementById("contact").value = data.userContact || "";
+                    document.getElementById("gender").value = data.userGender || "";
+                    document.getElementById("roleSelect").value = data.userLevel || "";
+                    document.getElementById("department").value = data.userDepartment || "";
+                }
+            })
+            .catch(err => console.error("Error fetching staff:", err));
+    }
+});
+
+
 /*
 // examEdit.js
 document.addEventListener("DOMContentLoaded", function () {
