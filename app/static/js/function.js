@@ -515,7 +515,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (dept.error) return alert(dept.error);
                     departmentNameInput.value = dept.departmentName || '';
 
-                    fetch(`/get_hop_dean_by_department/${encodeURIComponent(deptCode)}`)
+                    // Fetch all users from the same department (like manual section)
+                    fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
                         .then(resp => resp.json())
                         .then(users => {
                             populateDropdown(deanSelect, users.deans, dept.deanId);
@@ -529,6 +530,3 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 });
-
-
-

@@ -667,7 +667,6 @@ def get_department_users(department_code):
     return jsonify(users)
 
 
-
 # -------------------------------
 # Function for Admin ManageDepartment Route
 # -------------------------------
