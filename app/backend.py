@@ -369,6 +369,11 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
 def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
+    # Fetch existing user
+    staff = User.query.filter_by(userId=id.upper()).first()
+    if not staff:
+        return False, "Staff not found"
+    
     # Validate department code
     department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
     if not department_name:
@@ -401,6 +406,17 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
         userGender=gender,
         userPassword=hashed_pw
     )
+
+    # Update department dean/hop if applicable
+    if department:
+        dept = Department.query.filter_by(departmentCode=department).first()
+        if dept:
+            if staff.userLevel == 2:
+                dept.deanId = staff.userId
+            elif staff.userLevel == 3:
+                dept.hopId = staff.userId
+            db.session.add(dept)
+
     db.session.add(new_staff)
     db.session.commit()
     return True, "Staff created successfully"
