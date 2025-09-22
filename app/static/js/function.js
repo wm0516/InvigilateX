@@ -529,36 +529,36 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const staffSelect = document.getElementById("editStaffId");
 
-    staffSelect.addEventListener("change", function () {
+    staffSelect.addEventListener("change", function (event) {
+        event.preventDefault(); // stop auto form reload
+
         const staffId = this.value;
+        if (!staffId) return;
 
-        if (staffId) {
-            fetch(`/get_staff/${staffId}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (!data.error) {
-                        console.log("Fetched staff data:", data);
+        fetch(`/get_staff/${staffId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("API Error:", data.error);
+                    return;
+                }
 
-                        // text fields
-                        document.getElementById("username").value = data.userName || "";
-                        document.getElementById("email").value = data.userEmail || "";
-                        document.getElementById("contact").value = data.userContact || "";
+                console.log("Fetched staff data:", data);
 
-                        // selects
-                        document.getElementById("gender").value = data.userGender || "";
-                        document.getElementById("roleSelect").value = String(data.userLevel || "");
+                // text fields
+                document.getElementById("username").value = data.userName || "";
+                document.getElementById("email").value = data.userEmail || "";
+                document.getElementById("contact").value = data.userContact || "";
 
-                        if (data.userDepartment) {
-                            document.getElementById("department").value = data.userDepartment;
-                        } else {
-                            document.getElementById("department").selectedIndex = 0;
-                        }
-                    }
-                })
-                .catch(err => console.error("Error fetching staff:", err));
-        }
+                // selects
+                document.getElementById("gender").value = (data.userGender || "").trim();
+                document.getElementById("roleSelect").value = String(data.userLevel || "").trim();
+                document.getElementById("department").value = (data.userDepartment || "").trim();
+            })
+            .catch(err => console.error("Error fetching staff:", err));
     });
 });
+
 
 
 
