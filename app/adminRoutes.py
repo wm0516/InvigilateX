@@ -649,7 +649,6 @@ def get_department(department_code):
     })
 
 
-
 # -------------------------------
 # Function for Admin ManageDepartment Route
 # -------------------------------
@@ -774,8 +773,6 @@ def admin_manageDepartment():
                            department_select=department_select,
                            total_dean=total_dean,
                            total_hop=total_hop)
-
-
 
 
 

@@ -489,7 +489,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const placeholder = document.createElement('option');
         placeholder.value = '';
         placeholder.disabled = true;
-        placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a Hop';
+        placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a HOP';
         selectElement.appendChild(placeholder);
 
         options.forEach(user => {
@@ -513,20 +513,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(dept => {
                     if (dept.error) return alert(dept.error);
                     departmentNameInput.value = dept.departmentName || '';
-                    populateDropdown(deanSelect, users.deans, dept.deanId);
-                    populateDropdown(hopSelect, users.hops, dept.hopId);
-                })
-                .catch(err => console.error("Error fetching department:", err));
+
+                    fetch(`/get_hop_dean_by_department/${encodeURIComponent(deptCode)}`)
+                        .then(resp => resp.json())
+                        .then(users => {
+                            populateDropdown(deanSelect, users.deans, dept.deanId);
+                            populateDropdown(hopSelect, users.hops, dept.hopId);
+                        });
+                });
         });
 
-        // Auto-trigger change event if one is pre-selected
         if (departmentSelect.value) {
             departmentSelect.dispatchEvent(new Event("change"));
         }
     }
 });
-
-
 
 
 
