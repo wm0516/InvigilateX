@@ -479,44 +479,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
-    const deanSelect = document.getElementById("deanName");
-    const hopSelect = document.getElementById("hopName");
-
-    let allDeans = [];
-    let allHops = [];
-
-    function populateDropdown(selectElement, options, selectedValue) {
-        selectElement.innerHTML = '';
-        const placeholder = document.createElement('option');
-        placeholder.value = '';
-        placeholder.disabled = true;
-        placeholder.textContent = selectElement.id === 'deanName' ? 'Select a Dean' : 'Select a HOP';
-        selectElement.appendChild(placeholder);
-
-        options.forEach(user => {
-            const opt = document.createElement('option');
-            opt.value = user.userId;
-            opt.textContent = `[${user.userDepartment}] ${user.userName}`;
-            if (String(user.userId) === String(selectedValue)) opt.selected = true;
-            selectElement.appendChild(opt);
-        });
-
-        if (!selectedValue) placeholder.selected = true;
-    }
-
-    // Fetch all deans and hops
-    fetch('/get_all_deans_hops')
-        .then(resp => resp.json())
-        .then(data => {
-            allDeans = data.deans;
-            allHops = data.hops;
-
-            if (departmentSelect.value) fetchDepartmentData(departmentSelect.value);
-        });
 
     function fetchDepartmentData(deptCode) {
         if (!deptCode) return;
@@ -525,13 +490,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(resp => resp.json())
             .then(dept => {
                 if (dept.error) return alert(dept.error);
-
                 departmentNameInput.value = dept.departmentName || '';
-                const selectedDean = dept.deanId || '';
-                const selectedHop = dept.hopId || '';
-
-                populateDropdown(deanSelect, allDeans, selectedDean);
-                populateDropdown(hopSelect, allHops, selectedHop);
             });
     }
 
@@ -540,6 +499,7 @@ document.addEventListener("DOMContentLoaded", function () {
             fetchDepartmentData(this.value);
         });
 
+        // Pre-fill on page load if a department is selected
         if (departmentSelect.value) {
             fetchDepartmentData(departmentSelect.value);
         }
