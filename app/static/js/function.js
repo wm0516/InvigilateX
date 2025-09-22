@@ -465,34 +465,7 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 
 
 
-document.getElementById("programCode").addEventListener("change", function () {
-    const programCode = this.value;
-    const courseDropdown = document.getElementById("courseCodeSection");
-
-    courseDropdown.innerHTML = '<option value="">-- Select Course Section --</option>';
-
-    if (programCode) {
-        fetch(`/get_courses_by_department/${programCode}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    data.courseSection.forEach(course => {
-                        let option = document.createElement("option");
-                        option.value = course.examId || "";  
-                        option.textContent = course.courseCodeSection;
-                        courseDropdown.appendChild(option);
-                    });
-                } else {
-                    console.error("Error fetching course sections:", data.error);
-                }
-            })
-            .catch(err => console.error("Fetch error:", err));
-    }
-});
-
-
-
-
+// examManual.js
 document.addEventListener("DOMContentLoaded", function () {
     // Manual Section Dropdowns
     const programCode = document.getElementById('programCode');
@@ -550,125 +523,120 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+});
 
-    // Edit Exam Section - Enhanced with better debugging
+// examEdit.js
+document.addEventListener("DOMContentLoaded", function () {
+    // Edit Exam Section
     const editCourseSelect = document.getElementById('editExamCourseSection');
-    if (editCourseSelect) {
-        console.log('[DEBUG] Edit course select element found');
+    if (!editCourseSelect) return;
+
+    console.log('[DEBUG] Edit course select element found');
+    
+    editCourseSelect.addEventListener('change', function () {
+        const courseCode = this.value;
+        console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
+
+        if (!courseCode || courseCode === '') {
+            console.log("[DEBUG] Empty course code selected, clearing fields");
+            clearEditFields();
+            return;
+        }
+
+        const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
+        console.log(`[DEBUG] Fetching from: ${apiUrl}`);
         
-        editCourseSelect.addEventListener('change', function () {
-            const courseCode = this.value;
-            console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
-            
-            if (!courseCode || courseCode === '') {
-                console.log("[DEBUG] Empty course code selected, clearing fields");
-                clearEditFields();
-                return;
+        fetch(apiUrl)
+            .then(res => {
+                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                console.log('[DEBUG] Raw response data:', data);
+                if (data.error) {
+                    console.error('[DEBUG] API returned error:', data.error);
+                    alert('Error loading exam details: ' + data.error);
+                    return;
+                }
+                if (!data.courseCodeSection) {
+                    console.error('[DEBUG] Missing courseCodeSection in response');
+                    alert('Invalid response from server');
+                    return;
+                }
+                populateEditForm(data);
+            })
+            .catch(err => {
+                console.error("[DEBUG] Fetch failed:", err);
+                alert('Failed to load exam details. Check console for details.');
+            });
+    });
+
+    // Clear edit fields
+    function clearEditFields() {
+        const fieldsToClear = [
+            'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
+            'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
+        ];
+        
+        fieldsToClear.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                if (field.tagName === 'SELECT') {
+                    field.selectedIndex = 0;
+                } else {
+                    field.value = '';
+                }
             }
+        });
+    }
 
-            // Test if the API endpoint is reachable
-            const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
-            console.log(`[DEBUG] Fetching from: ${apiUrl}`);
-            
-            fetch(apiUrl)
-                .then(res => {
-                    console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('[DEBUG] Raw response data:', data);
-                    
-                    if (data.error) {
-                        console.error('[DEBUG] API returned error:', data.error);
-                        alert('Error loading exam details: ' + data.error);
-                        return;
-                    }
+    // Populate edit form
+    function populateEditForm(data) {
+        console.log('[DEBUG] Populating form with data:', data);
 
-                    // Check if we have the expected data
-                    if (!data.courseCodeSection) {
-                        console.error('[DEBUG] Missing courseCodeSection in response');
-                        alert('Invalid response from server');
-                        return;
-                    }
+        const fieldMappings = {
+            'editCourseName': data.courseName,
+            'editProgramCode': data.courseDepartment,
+            'editStudent': data.courseStudent,
+            'editVenue': data.examVenue,
+            'editInvigilatorNo': data.examNoInvigilator,
+            'editExamStartTime': data.examStartTime,
+            'editExamEndTime': data.examEndTime
+        };
 
-                    populateEditForm(data);
-                })
-                .catch(err => {
-                    console.error("[DEBUG] Fetch failed:", err);
-                    alert('Failed to load exam details. Check console for details.');
-                });
+        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = value || '';
+                console.log(`[DEBUG] Set ${fieldId} to:`, value);
+            }
         });
 
-        // Function to clear all edit fields
-        function clearEditFields() {
-            const fieldsToClear = [
-                'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
-                'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
-            ];
-            
-            fieldsToClear.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                if (field) {
-                    if (field.tagName === 'SELECT') {
-                        field.selectedIndex = 0;
-                    } else {
-                        field.value = '';
-                    }
-                }
-            });
+        const practicalSelect = document.getElementById('editPracticalLecturer');
+        const tutorialSelect = document.getElementById('editTutorialLecturer');
+
+        if (practicalSelect) {
+            practicalSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = data.practicalLecturer || '';
+            option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
+            option.selected = true;
+            practicalSelect.appendChild(option);
+            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
         }
 
-        // Function to populate the form with data
-        function populateEditForm(data) {
-            console.log('[DEBUG] Populating form with data:', data);
-
-            const fieldMappings = {
-                'editCourseName': data.courseName,  // added
-                'editProgramCode': data.courseDepartment,
-                'editStudent': data.courseStudent,
-                'editVenue': data.examVenue,
-                'editInvigilatorNo': data.examNoInvigilator,
-                'editExamStartTime': data.examStartTime,
-                'editExamEndTime': data.examEndTime
-            };
-
-            Object.entries(fieldMappings).forEach(([fieldId, value]) => {
-                const field = document.getElementById(fieldId);
-                if (field) {
-                    field.value = value || '';
-                    console.log(`[DEBUG] Set ${fieldId} to:`, value);
-                }
-            });
-
-            // Set lecturer selects (special handling)
-            const practicalSelect = document.getElementById('editPracticalLecturer');
-            const tutorialSelect = document.getElementById('editTutorialLecturer');
-
-            if (practicalSelect) {
-                practicalSelect.innerHTML = '';
-                const option = document.createElement('option');
-                option.value = data.practicalLecturer || '';
-                option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
-                option.selected = true;
-                practicalSelect.appendChild(option);
-                console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
-            }
-
-            if (tutorialSelect) {
-                tutorialSelect.innerHTML = '';
-                const option = document.createElement('option');
-                option.value = data.tutorialLecturer || '';
-                option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
-                option.selected = true;
-                tutorialSelect.appendChild(option);
-                console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
-            }
-
-            console.log('[DEBUG] Form population complete');
+        if (tutorialSelect) {
+            tutorialSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = data.tutorialLecturer || '';
+            option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
+            option.selected = true;
+            tutorialSelect.appendChild(option);
+            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
         }
+
+        console.log('[DEBUG] Form population complete');
     }
 });
 
