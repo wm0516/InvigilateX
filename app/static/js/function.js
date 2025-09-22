@@ -496,35 +496,45 @@ document.addEventListener("DOMContentLoaded", function () {
             const opt = document.createElement('option');
             opt.value = user.userId;
             opt.textContent = `[${user.userId}] ${user.userName}`;
-            if (user.userId === selectedValue) opt.selected = true;
+            if (String(user.userId) === String(selectedValue)) opt.selected = true; // Fix type mismatch
             selectElement.appendChild(opt);
         });
 
         if (!selectedValue) placeholder.selected = true;
     }
 
+    function fetchDepartmentData(deptCode) {
+        if (!deptCode) return;
+
+        // Fetch department details
+        fetch(`/get_department/${encodeURIComponent(deptCode)}`)
+            .then(resp => resp.json())
+            .then(dept => {
+                if (dept.error) return alert(dept.error);
+
+                departmentNameInput.value = dept.departmentName || '';
+                const selectedDean = dept.deanId || '';
+                const selectedHop = dept.hopId || '';
+
+                // Fetch deans/hops for this department
+                fetch(`/get_hop_dean_by_department/${encodeURIComponent(deptCode)}`)
+                    .then(resp => resp.json())
+                    .then(users => {
+                        populateDropdown(deanSelect, users.deans, selectedDean);
+                        populateDropdown(hopSelect, users.hops, selectedHop);
+                    });
+            });
+    }
+
     if (departmentSelect) {
+        // Trigger when selection changes
         departmentSelect.addEventListener("change", function () {
-            const deptCode = this.value;
-            if (!deptCode) return;
-
-            fetch(`/get_department/${encodeURIComponent(deptCode)}`)
-                .then(resp => resp.json())
-                .then(dept => {
-                    if (dept.error) return alert(dept.error);
-                    departmentNameInput.value = dept.departmentName || '';
-
-                    fetch(`/get_hop_dean_by_department/${encodeURIComponent(deptCode)}`)
-                        .then(resp => resp.json())
-                        .then(users => {
-                            populateDropdown(deanSelect, users.deans, dept.deanId);
-                            populateDropdown(hopSelect, users.hops, dept.hopId);
-                        });
-                });
+            fetchDepartmentData(this.value);
         });
 
+        // Trigger on page load if a department is already selected
         if (departmentSelect.value) {
-            departmentSelect.dispatchEvent(new Event("change"));
+            fetchDepartmentData(departmentSelect.value);
         }
     }
 });
