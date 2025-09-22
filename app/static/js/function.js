@@ -392,7 +392,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const courseSelect = document.getElementById("editCourseSelect");
     if (!courseSelect) return;
@@ -408,20 +407,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     courseSelect.addEventListener('change', function () {
         const selectedCodeSection = this.value;
-
-        // Reset all fields
-        departmentSelect.innerHTML = '<option value="" disabled selected>Select Department</option>';
-        practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
-        tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
-        courseCodeInput.value = "";
-        courseSectionInput.value = "";
-        courseNameInput.value = "";
-        courseHourInput.value = "";
-        courseStudentInput.value = "";
-
         if (!selectedCodeSection) return;
 
-        // Fetch course data
         fetch(`/get_courseCodeSection/${encodeURIComponent(selectedCodeSection)}`)
             .then(response => {
                 if (!response.ok) throw new Error('Failed to fetch course data');
@@ -429,12 +416,11 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .then(course => {
                 if (course.error) {
-                    console.error(course.error);
                     alert('Error: ' + course.error);
                     return;
                 }
 
-                // Set course details
+                // Populate form fields
                 departmentSelect.value = course.courseDepartment;
                 courseCodeInput.value = course.courseCode;
                 courseSectionInput.value = course.courseSection;
@@ -449,22 +435,27 @@ document.addEventListener("DOMContentLoaded", function () {
                         return resp.json();
                     })
                     .then(lecturers => {
-                        // Clear existing options
-                        practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
-                        tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
-                        
-                        // Add lecturer options
+                        // Clear and repopulate lecturer dropdowns
+                        practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
+                        tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
+
                         lecturers.forEach(lecturer => {
+                            const username = lecturer.userName.trim();
+
                             const practicalOption = document.createElement('option');
-                            practicalOption.value = lecturer.userName;
-                            practicalOption.textContent = lecturer.userName;
-                            if (lecturer.userName === course.coursePractical) practicalOption.selected = true;
+                            practicalOption.value = username;
+                            practicalOption.textContent = username;
+                            if (username.toLowerCase() === course.coursePractical.trim().toLowerCase()) {
+                                practicalOption.selected = true;
+                            }
                             practicalSelect.appendChild(practicalOption);
 
                             const tutorialOption = document.createElement('option');
-                            tutorialOption.value = lecturer.userName;
-                            tutorialOption.textContent = lecturer.userName;
-                            if (lecturer.userName === course.courseTutorial) tutorialOption.selected = true;
+                            tutorialOption.value = username;
+                            tutorialOption.textContent = username;
+                            if (username.toLowerCase() === course.courseTutorial.trim().toLowerCase()) {
+                                tutorialOption.selected = true;
+                            }
                             tutorialSelect.appendChild(tutorialOption);
                         });
                     })
@@ -476,10 +467,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 });
-
-
-
-
 
 
 
