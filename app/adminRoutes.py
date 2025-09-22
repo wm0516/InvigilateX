@@ -667,17 +667,17 @@ def admin_manageDepartment():
         elif form_type == 'edit' and department_select:
             action = request.form.get('action')
             departmentName = request.form.get('departmentName')
-            deanId = request.form.get('deanName') or None
-            hopId = request.form.get('hopName') or None
+            deanId = request.form.get('deanName')
+            hopId = request.form.get('hopName')
 
-            # Validate Dean belongs to this department
+            # Validate Dean belongs to this department (only if a new selection is made)
             if deanId:
                 dean_user = User.query.filter_by(userId=deanId, userLevel=2).first()
                 if not dean_user or dean_user.userDepartment != department_select.departmentCode:
                     flash("Selected Dean does not belong to this department. Ignoring Dean selection.", "error")
                     deanId = None
 
-            # Validate HOP belongs to this department
+            # Validate HOP belongs to this department (only if a new selection is made)
             if hopId:
                 hop_user = User.query.filter_by(userId=hopId, userLevel=3).first()
                 if not hop_user or hop_user.userDepartment != department_select.departmentCode:
@@ -686,14 +686,22 @@ def admin_manageDepartment():
 
             if action == 'update':
                 department_select.departmentName = departmentName
-                department_select.deanId = deanId
-                department_select.hopId = hopId
+
+                # Update Dean only if a valid selection is made
+                if deanId is not None:
+                    department_select.deanId = deanId
+
+                # Update HOP only if a valid selection is made
+                if hopId is not None:
+                    department_select.hopId = hopId
+
                 db.session.commit()
                 flash("Department updated successfully", "success")
             elif action == 'delete':
                 db.session.delete(department_select)
                 db.session.commit()
                 flash("Department deleted successfully", "success")
+
             return redirect(url_for('admin_manageDepartment'))
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select,
