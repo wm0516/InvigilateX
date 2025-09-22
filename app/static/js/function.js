@@ -527,20 +527,24 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
         .catch(err => console.error(err));
 });
 
-// Function for edit ManageExam
+
+
+
+
+// Function for Edit ManageExam Auto-fill
 document.addEventListener("DOMContentLoaded", function () {
+    // Get all relevant elements
     const editCourseSelect = document.getElementById('editExamCourseSection');
     const deptSelect = document.getElementById('editProgramCode');
     const practicalSelect = document.getElementById('editPracticalLecturer');
     const tutorialSelect = document.getElementById('editTutorialLecturer');
     const studentInput = document.getElementById('editStudent');
-    const startDateInput = document.getElementById('editStartDate');
-    const startTimeInput = document.getElementById('editStartTime');
-    const endDateInput = document.getElementById('editEndDate');
-    const endTimeInput = document.getElementById('editEndTime');
+    const startDateTimeInput = document.getElementById('editExamStartTime');
+    const endDateTimeInput = document.getElementById('editExamEndTime');
     const venueSelect = document.getElementById('editVenue');
     const invigilatorInput = document.getElementById('editInvigilatorNo');
 
+    // Trigger when selecting a course
     editCourseSelect.addEventListener('change', function () {
         const courseCode = this.value;
         if (!courseCode) return;
@@ -553,29 +557,50 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                // Autofill fields
-                deptSelect.value = data.courseDepartment || '';
-                studentInput.value = data.courseStudent || '';
-                venueSelect.value = data.examVenue || '';
+                // Autofill program/department
+                deptSelect.value = data.courseDepartment || "";
+
+                // Autofill number of students
+                studentInput.value = data.courseStudent || 0;
+
+                // Autofill venue
+                venueSelect.value = data.examVenue || "";
+
+                // Autofill number of invigilators
                 invigilatorInput.value = data.examNoInvigilator || 0;
 
-                // Split datetime into date + time
-                if (data.examStartTime) {
-                    startDateInput.value = data.examStartTime.slice(0, 10);
-                    startTimeInput.value = data.examStartTime.slice(11, 16);
-                }
-                if (data.examEndTime) {
-                    endDateInput.value = data.examEndTime.slice(0, 10);
-                    endTimeInput.value = data.examEndTime.slice(11, 16);
+                // Autofill datetime-local inputs
+                startDateTimeInput.value = data.examStartTime || "";
+                endDateTimeInput.value = data.examEndTime || "";
+
+                // Autofill lecturers
+                // Clear current options
+                practicalSelect.innerHTML = '';
+                tutorialSelect.innerHTML = '';
+
+                // Add selected lecturer as option
+                if (data.practicalLecturer) {
+                    const option = document.createElement('option');
+                    option.value = data.practicalLecturer;
+                    option.text = data.practicalLecturer;
+                    option.selected = true;
+                    practicalSelect.add(option);
                 }
 
-                // Populate lecturers (they come as names in JSON)
-                practicalSelect.innerHTML = `<option selected>${data.practicalLecturer || ''}</option>`;
-                tutorialSelect.innerHTML = `<option selected>${data.tutorialLecturer || ''}</option>`;
+                if (data.tutorialLecturer) {
+                    const option = document.createElement('option');
+                    option.value = data.tutorialLecturer;
+                    option.text = data.tutorialLecturer;
+                    option.selected = true;
+                    tutorialSelect.add(option);
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching exam details:", err);
+                alert("Failed to fetch exam details. Check console for more info.");
             });
     });
 });
-
 
 
 
