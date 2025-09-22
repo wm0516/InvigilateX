@@ -608,7 +608,6 @@ def admin_manageCourse():
         return f"<pre>{traceback.format_exc()}</pre>", 500
 
 
-
 # -------------------------------
 # Get Department Details for ManageDepartmentEditPage
 # -------------------------------
@@ -705,13 +704,6 @@ def admin_manageDepartment():
         total_department=total_department, total_dean=total_dean, total_hop=total_hop, deans=deans, hops=hops, department_with_dean=department_with_dean, department_with_hop=department_with_hop)
 
 
-
-
-
-
-
-
-
 # -------------------------------
 # Get Venue Details for ManageVenueEditPage
 # -------------------------------
@@ -727,7 +719,6 @@ def get_venue(venue_number):
         "venueCapacity": venue.venueCapacity,
         "venueStatus": venue.venueStatus
     })
-
 
 
 # -------------------------------
@@ -817,31 +808,26 @@ def admin_manageVenue():
                     VenueAvailability.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
                     
                     db.session.commit()  # Commit the updates first
-
-                    # Delete the venue
-                    db.session.delete(venue_select)
+                    db.session.delete(venue_select)  # Delete the venue
                     db.session.commit()
-
                     flash("Venue Deleted, related references set to NULL", "success")
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Failed to delete venue: {str(e)}", "error")
-
-
             return redirect(url_for('admin_manageVenue'))
 
     # Render template
-    return render_template(
-        'admin/adminManageVenue.html',
-        active_tab='admin_manageVenuetab',
-        venue_data=venue_data,
-        venue_select=venue_select,
-        total_venue=total_venue,
-        available=status_counts.get("AVAILABLE", 0),
-        unavailable=status_counts.get("UNAVAILABLE", 0),
-        in_service=status_counts.get("IN SERVICE", 0),
-        venues_by_floor=venues_by_floor
-    )
+    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venue_select=venue_select, total_venue=total_venue,
+        available=status_counts.get("AVAILABLE", 0), unavailable=status_counts.get("UNAVAILABLE", 0), in_service=status_counts.get("IN SERVICE", 0), venues_by_floor=venues_by_floor)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -889,6 +875,31 @@ def get_course_details(program_code, course_code_section):
         })
     return jsonify({"error": "Course not found"})
 
+# -------------------------------
+# Get ExamDetails for ManageExamEditPage
+# -------------------------------
+@app.route('/get_exam_details/<course_code_section>')
+def get_exam_details(course_code_section):
+    # Get the course first
+    course = Course.query.filter_by(courseCodeSection=course_code_section).first()
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+
+    # Get the associated exam (if exists)
+    exam = Exam.query.filter_by(examId=course.courseExamId).first()
+
+    return jsonify({
+        "courseCodeSection": course.courseCodeSection,
+        "courseName": course.courseName,
+        "courseDepartment": course.courseDepartment,
+        "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
+        "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
+        "courseStudent": course.courseStudent,
+        "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
+        "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
+        "examVenue": exam.examVenue if exam else "",
+        "examNoInvigilator": exam.examNoInvigilator if exam else 0
+    })
 
 
 
@@ -931,6 +942,9 @@ def admin_manageExam():
         Exam.examNoInvigilator.is_(None)
     ).count()
 
+    exam_selected = request.form.get('editCourseSection')
+    exam_select = Course.query.filter_by(courseCodeSection=exam_selected).first()
+
     # Default manual form values
     courseSection_text = ''
     practicalLecturer_text = ''
@@ -954,6 +968,41 @@ def admin_manageExam():
         # --------------------- DASHBOARD ADD EXAM FORM ---------------------
         elif form_type == 'dashboard':
             return redirect(url_for('admin_manageExam'))
+        
+
+        # --------------------- EDIT EXAM FORM ---------------------
+        elif form_type == 'edit' and exam_select:
+            action = request.form.get('action')
+            startDate_raw = request.form.get('startDate', '').strip()
+            endDate_raw = request.form.get('endDate', '').strip()
+            startTime_raw = request.form.get('startTime', '').strip()
+            endTime_raw = request.form.get('endTime', '').strip()
+
+            if len(startTime_raw) == 5:
+                startTime_raw += ":00"
+            if len(endTime_raw) == 5:
+                endTime_raw += ":00"
+
+            start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
+            end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+
+            venue_text = request.form.get('venue', '').strip()
+            invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
+
+            if action == 'update':
+                exam_select.examStartTime = start_dt
+                exam_select.examEndTime = end_dt
+                exam_select.examVenue = venue_text
+                exam_select.examNoInvigilator = invigilatorNo_text
+                db.session.commit()
+                flash("Exam updated successfully", "success")
+            elif action == 'delete':
+                db.session.delete(exam_select)
+                db.session.commit()
+                flash("Exam deleted successfully", "success")
+
+            return redirect(url_for('admin_manageExam'))
+
 
         # --------------------- MANUAL ADD EXAM FORM ---------------------
         elif form_type == 'manual':
@@ -996,7 +1045,7 @@ def admin_manageExam():
                 return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data,
-                           total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows)
+                           total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select)
 
 
 # -------------------------------

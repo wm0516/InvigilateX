@@ -97,13 +97,13 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Department Name</label>
+                <label>Department Name (Editable)</label>
                 <input type="text" name="departmentName"
                        value="{{ department_select.departmentName if department_select else '' }}" required>
             </div>
 
             <div class="form-right">
-                <label>Dean Name</label>
+                <label>Dean Name (Editable)</label>
                 <select id="deanName" name="deanName">
                     <option value="" disabled selected>Select a Dean</option>
                     {% for dean in deans %}
@@ -113,7 +113,7 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Hop Name</label>
+                <label>Hop Name (Editable)</label>
                 <select id="hopName" name="hopName">
                     <option value="" disabled selected>Select a Hop</option>
                     {% for hop in hops %}
