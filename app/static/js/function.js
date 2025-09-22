@@ -479,7 +479,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
@@ -525,16 +524,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
 
-        // Auto-trigger change event if a department is pre-selected
         if (departmentSelect.value) {
             departmentSelect.dispatchEvent(new Event("change"));
         }
     }
 });
-
-
-
-
 
 
 
