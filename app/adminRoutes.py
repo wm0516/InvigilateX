@@ -901,7 +901,7 @@ def admin_manageExam():
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
 
     # Edit section, show all data (complete and incomplete)
-         = Exam.query.all()
+    exam_data = Exam.query.all()
     
     # Show all for Edit section 
     course_data_full = Course.query.all()
