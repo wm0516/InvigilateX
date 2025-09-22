@@ -842,7 +842,9 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
-    # Get courses that either don't have an exam or have an exam with NULL start/end times
+    print(f"[DEBUG] Getting courses for department: {department_code}")
+    
+    # Get courses that belong to the department AND don't have scheduled exams
     courses = Course.query.filter(
         Course.courseDepartment == department_code
     ).outerjoin(Exam, Course.courseExamId == Exam.examId).filter(
@@ -861,7 +863,6 @@ def get_courses_by_department(department_code):
         print(f"[DEBUG] Course: {course['courseCodeSection']} - {course['courseName']}")
     
     return jsonify(course_list)
-
 
 
 # -------------------------------
@@ -930,11 +931,18 @@ def get_exam_details(course_code_section):
 def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    exam_data = Exam.query.filter(
+    
+    # Fix the exam_data query to ensure it includes courses
+    exam_data = Exam.query.options(db.joinedload(Exam.course)).filter(
         Exam.examId.isnot(None),
         Exam.examStartTime.isnot(None),
         Exam.examEndTime.isnot(None)
     ).all()
+
+    # Debug: print exam data
+    print(f"[DEBUG] Found {len(exam_data)} exams")
+    for exam in exam_data:
+        print(f"[DEBUG] Exam {exam.examId}: Course = {exam.course.courseCodeSection if exam.course else 'None'}")
 
     # Filter for manual section, assign a new exam
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
