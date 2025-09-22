@@ -849,22 +849,24 @@ def get_courses_by_department(department_code):
 # -------------------------------
 # Read All CourseDetails Under Selected Department for ManageExamPage
 # -------------------------------
-@app.route('/get_course_details/<department_code>/<path:course_code_section>')
-def get_course_details_exam(department_code, course_code_section):
-    print(f"[DEBUG] Request course details for: {department_code} / {course_code_section}")
-    selected_course = Course.query.filter_by(
+@app.route('/get_course_details/<path:department_code>/<path:course_section>')
+def get_course_details(department_code, course_section):
+    course = Course.query.filter_by(
         courseDepartment=department_code,
-        courseCodeSection=course_code_section
+        courseCodeSection=course_section
     ).first()
-    if selected_course:
-        return jsonify({
-            "practicalLecturer": selected_course.coursePractical,
-            "tutorialLecturer": selected_course.courseTutorial,
-            "courseStudent": selected_course.courseStudent,
-            "courseName": selected_course.courseName,
-            "courseDepartment": selected_course.courseDepartment
-        })
-    return jsonify({"error": "Course not found"})
+
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+
+    return jsonify({
+        "courseCodeSection": course.courseCodeSection,
+        "courseName": course.courseName,
+        "practicalLecturer": course.coursePractical,
+        "tutorialLecturer": course.courseTutorial,
+        "courseStudent": course.courseStudent
+    })
+
 
 
 
