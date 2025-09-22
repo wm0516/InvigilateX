@@ -642,7 +642,7 @@ def admin_manageDepartment():
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
-    department_select = Department.query.filter_by(departmentCode=department_selected_code).first() if department_selected_code else None
+    department_select = Department.query.filter_by(departmentCode=department_selected_code).first()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -757,7 +757,7 @@ def admin_manageVenue():
 
     # For edit section
     venue_selected_number = request.form.get('editVenueNumber')
-    venue_select = Venue.query.filter_by(venueNumber=venue_selected_number).first() if venue_selected_number else None
+    venue_select = Venue.query.filter_by(venueNumber=venue_selected_number).first()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -803,6 +803,7 @@ def admin_manageVenue():
                 venue_select.venueStatus = venueStatus
                 db.session.commit()
                 flash("Venue updated successfully", "success")
+
             elif action == 'delete':
                 db.session.delete(venue_select)
                 db.session.commit()
