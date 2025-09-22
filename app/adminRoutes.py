@@ -788,7 +788,6 @@ def admin_manageVenue():
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
 
-            # Redirect after POST (Option A)
             return redirect(url_for('admin_manageVenue'))
 
         # ---------------- Edit Section ----------------
@@ -809,7 +808,6 @@ def admin_manageVenue():
                 db.session.commit()
                 flash("Venue deleted successfully", "success")
 
-            # Redirect after POST
             return redirect(url_for('admin_manageVenue'))
 
     # Render template
