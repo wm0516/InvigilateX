@@ -537,18 +537,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 .then(res => res.json())
                 .then(data => {
                     if (!data.error) {
+                        console.log("Fetched staff data:", data);
+
+                        // text fields
                         document.getElementById("username").value = data.userName || "";
                         document.getElementById("email").value = data.userEmail || "";
                         document.getElementById("contact").value = data.userContact || "";
+
+                        // selects
                         document.getElementById("gender").value = data.userGender || "";
-                        document.getElementById("roleSelect").value = data.userLevel || "";
-                        document.getElementById("department").value = data.userDepartment || "";
+                        document.getElementById("roleSelect").value = String(data.userLevel || "");
+
+                        if (data.userDepartment) {
+                            document.getElementById("department").value = data.userDepartment;
+                        } else {
+                            document.getElementById("department").selectedIndex = 0;
+                        }
                     }
                 })
                 .catch(err => console.error("Error fetching staff:", err));
         }
     });
 });
+
 
 
 /*
