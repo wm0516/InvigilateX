@@ -529,8 +529,10 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const staffSelect = document.getElementById("editStaffId");
 
-    staffSelect.addEventListener("change", function (event) {
-        event.preventDefault(); // stop auto form reload
+    if (!staffSelect) return;
+
+    staffSelect.addEventListener("change", function (e) {
+        e.preventDefault(); // stop form from auto-submitting on change
 
         const staffId = this.value;
         if (!staffId) return;
@@ -545,12 +547,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 console.log("Fetched staff data:", data);
 
-                // text fields
+                // Fill text fields
                 document.getElementById("username").value = data.userName || "";
                 document.getElementById("email").value = data.userEmail || "";
                 document.getElementById("contact").value = data.userContact || "";
 
-                // selects
+                // Fill selects with trimming for safety
                 document.getElementById("gender").value = (data.userGender || "").trim();
                 document.getElementById("roleSelect").value = String(data.userLevel || "").trim();
                 document.getElementById("department").value = (data.userDepartment || "").trim();
