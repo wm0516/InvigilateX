@@ -259,7 +259,7 @@
                 </tr>
             </thead>    
             <tbody>
-                {% for row in exam_data %}
+                {% for row in course_data %}
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>
@@ -275,10 +275,14 @@
 
                         <!-- Exam Details -->
                         <td>
-                            Exam Date  : [{{ row.examStartTime.strftime("%Y-%m-%d") }}] - [{{ row.examEndTime.strftime("%Y-%m-%d") }}]<br>      
-                            Exam Day   : [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] <br>
-                            Exam Time  : [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}] <br>
-                            Exam Period: [{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m] <br>
+                            {% if row.examStartTime and row.examEndTime %}
+                                Exam Date  : [{{ row.examStartTime.strftime("%Y-%m-%d") }}] - [{{ row.examEndTime.strftime("%Y-%m-%d") }}]<br>      
+                                Exam Day   : [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] <br>
+                                Exam Time  : [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}] <br>
+                                Exam Period: [{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m] <br>
+                            {% else %}
+                                <span style="color:red;">Exam details not yet assigned</span><br>
+                            {% endif %}
                             {% if row.examVenue %}
                                 Exam Venue : [{{ row.examVenue }}]
                             {% else %}
