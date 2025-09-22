@@ -200,8 +200,13 @@
         <br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update">Update Course</button>
-            <button type="submit" name="action" value="delete" onclick="return confirm('Are you sure to delete this course?')">Delete Course</button>
+            <button type="submit" name="action" value="update" style="background-color: green;">
+                <i class="fas fa-check"></i> Update Course
+            </button>
+            <button type="submit" name="action" value="delete" style="background-color: red;" 
+                    onclick="return confirm('Are you sure to delete this course?')">
+                <i class="fas fa-trash"></i> Delete Course
+            </button>
         </div>
     </div>
 </form>
