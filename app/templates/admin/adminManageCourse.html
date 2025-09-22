@@ -151,7 +151,7 @@
 
                 <label>Department</label>
                 <select id="editDepartment" name="departmentCode" required>
-                    <option value="" disabled>Select Department</option>
+                    <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
@@ -261,6 +261,7 @@
 
 {% block extra_scripts %}
 <script>
+    const courseData = {{ course_json | tojson | safe }};
     const deptLabels = [{{ courses_by_department | map(attribute='department') | map('tojson') | join(', ') }}];
     const deptData = [{{ courses_by_department | map(attribute='count') | join(', ') }}];
     const ctxDept = document.getElementById('courseDeptPieChart').getContext('2d');
@@ -305,17 +306,16 @@
             document.getElementById("editTutorialLecturer").value = course.tutorial || "";
         };
 
-        // On change
         courseSelect.addEventListener("change", function () {
             populateForm(this.value);
         });
 
-        // Prefill first course on page load
         if (courseSelect.options.length > 1) {
             populateForm(courseSelect.options[1].value);
             courseSelect.selectedIndex = 1;
         }
     });
+
 </script>
 {% endblock %}
 
