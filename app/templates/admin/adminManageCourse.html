@@ -154,11 +154,9 @@
 
                 <label>Department</label>
                 <select id="editDepartment" name="departmentCode" required>
-                    <option value="{{ course_select.courseDepartment if course_select else '' }}" disabled selected>Select Department</option>
+                    <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">
-                            [{{ dept.departmentCode }}] {{ dept.departmentName }}
-                        </option>
+                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
                     {% endfor %}
                 </select><br>
 
@@ -179,9 +177,6 @@
                 <label>Practical Lecturer</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
                     <option value="" disabled>Select Practical Lecturer</option>
-                    {% if course_select and course_select.coursePractical %}
-                        <option value="{{ course_select.coursePractical }}" selected>{{ course_select.coursePractical }}</option>
-                    {% endif %}
                 </select>
             </div>
 
@@ -189,10 +184,7 @@
                 <label>Tutorial Lecturer</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
                     <option value="" disabled>Select Tutorial Lecturer</option>
-                    {% if course_select and course_select.courseTutorial %}
-                        <option value="{{ course_select.courseTutorial }}" selected>{{ course_select.courseTutorial }}</option>
-                    {% endif %}
-                </select><br>
+                </select>
 
                 <label>Course Credit Hour(s)</label>
                 <input type="number" id="editCourseHour" name="courseHour" min="1" step="1"

@@ -392,10 +392,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+
 document.addEventListener("DOMContentLoaded", function () {
     const courseSelect = document.getElementById("editCourseSelect");
-    if (!courseSelect) return;
-
     const departmentSelect = document.getElementById('editDepartment');
     const courseCodeInput = document.getElementById('editCourseCode');
     const courseSectionInput = document.getElementById('editCourseSection');
@@ -405,68 +404,75 @@ document.addEventListener("DOMContentLoaded", function () {
     const courseHourInput = document.getElementById('editCourseHour');
     const courseStudentInput = document.getElementById('editCourseStudents');
 
+    function populateLecturers(deptCode, selectedPractical, selectedTutorial) {
+        if (!deptCode) {
+            // If department is null/empty, keep existing lecturers
+            practicalSelect.innerHTML = '';
+            tutorialSelect.innerHTML = '';
+            if (selectedPractical) {
+                practicalSelect.innerHTML = `<option value="${selectedPractical}" selected>${selectedPractical}</option>`;
+            }
+            if (selectedTutorial) {
+                tutorialSelect.innerHTML = `<option value="${selectedTutorial}" selected>${selectedTutorial}</option>`;
+            }
+            return;
+        }
+
+        fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
+            .then(resp => resp.json())
+            .then(lecturers => {
+                practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
+                tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
+
+                lecturers.forEach(lecturer => {
+                    const username = lecturer.userName.trim();
+
+                    const practicalOption = document.createElement('option');
+                    practicalOption.value = username;
+                    practicalOption.textContent = username;
+                    if (username.toLowerCase() === (selectedPractical || '').toLowerCase()) practicalOption.selected = true;
+                    practicalSelect.appendChild(practicalOption);
+
+                    const tutorialOption = document.createElement('option');
+                    tutorialOption.value = username;
+                    tutorialOption.textContent = username;
+                    if (username.toLowerCase() === (selectedTutorial || '').toLowerCase()) tutorialOption.selected = true;
+                    tutorialSelect.appendChild(tutorialOption);
+                });
+            })
+            .catch(err => console.error('Error fetching lecturers:', err));
+    }
+
+    // --- When course is selected ---
     courseSelect.addEventListener('change', function () {
         const selectedCodeSection = this.value;
         if (!selectedCodeSection) return;
 
         fetch(`/get_courseCodeSection/${encodeURIComponent(selectedCodeSection)}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch course data');
-                return response.json();
-            })
+            .then(resp => resp.json())
             .then(course => {
                 if (course.error) {
-                    alert('Error: ' + course.error);
+                    alert(course.error);
                     return;
                 }
 
-                // Populate form fields
-                departmentSelect.value = course.courseDepartment;
+                departmentSelect.value = course.courseDepartment || '';
                 courseCodeInput.value = course.courseCode;
                 courseSectionInput.value = course.courseSection;
                 courseNameInput.value = course.courseName;
                 courseHourInput.value = course.courseHour;
                 courseStudentInput.value = course.courseStudent;
-                practicalSelect.value = course.coursePractical;
-                tutorialSelect.value = course.courseTutorial;
 
-                // Fetch lecturers for this department
-                fetch(`/get_lecturers_by_department/${departmentSelect}`)
-                    .then(resp => {
-                        if (!resp.ok) throw new Error('Failed to fetch lecturers');
-                        return resp.json();
-                    })
-                    .then(lecturers => {
-                        // Clear and repopulate lecturer dropdowns
-                        practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
-                        tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
-
-                        lecturers.forEach(lecturer => {
-                            const username = lecturer.userName.trim();
-
-                            const practicalOption = document.createElement('option');
-                            practicalOption.value = username;
-                            practicalOption.textContent = username;
-                            if (username.toLowerCase() === course.coursePractical.trim().toLowerCase()) {
-                                practicalOption.selected = true;
-                            }
-                            practicalSelect.appendChild(practicalOption);
-
-                            const tutorialOption = document.createElement('option');
-                            tutorialOption.value = username;
-                            tutorialOption.textContent = username;
-                            if (username.toLowerCase() === course.courseTutorial.trim().toLowerCase()) {
-                                tutorialOption.selected = true;
-                            }
-                            tutorialSelect.appendChild(tutorialOption);
-                        });
-                    })
-                    .catch(err => console.error('Error fetching lecturers:', err));
+                // Populate lecturers (even if department is null)
+                populateLecturers(course.courseDepartment, course.coursePractical, course.courseTutorial);
             })
-            .catch(error => {
-                console.error('Error fetching course:', error);
-                alert('Error loading course details');
-            });
+            .catch(err => console.error('Error fetching course:', err));
+    });
+
+    // --- When department changes manually ---
+    departmentSelect.addEventListener('change', function () {
+        const deptCode = this.value;
+        populateLecturers(deptCode, null, null); // reset selection when department changes
     });
 });
 
