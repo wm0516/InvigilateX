@@ -655,17 +655,19 @@ def admin_manageDepartment():
             departmentCode = request.form.get('departmentCode')
             departmentName = request.form.get('departmentName')
 
+            # Check if department code already exists
             dept = Department.query.filter_by(departmentCode=departmentCode).first()
             if dept:
-                flash("Department already existed", "error")
+                flash("Department code already exists. Please use a unique code.", "error")
             else:
+                # Add new department
                 new_dept = Department(
                     departmentCode=departmentCode,
                     departmentName=departmentName
                 )
                 db.session.add(new_dept)
+                db.session.commit()
                 flash("New Department Added", "success")
-            db.session.commit()
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
