@@ -798,16 +798,26 @@ def admin_manageVenue():
             venueStatus = request.form.get('venueStatus')
 
             if action == 'update':
-                venue_select.venueFloor = venueFloor
-                venue_select.venueCapacity = venueCapacity
-                venue_select.venueStatus = venueStatus
-                db.session.commit()
-                flash("Venue updated successfully", "success")
+                try:
+                    capacity = int(venueCapacity)
+                    if capacity < 0:
+                        raise ValueError
+                    venue_select.venueFloor = venueFloor
+                    venue_select.venueCapacity = capacity
+                    venue_select.venueStatus = venueStatus
+                    db.session.commit()
+                    flash("Venue Updated", "success")
+                except ValueError:
+                    flash("Capacity must be a non-negative integer", "error")
 
             elif action == 'delete':
-                db.session.delete(venue_select)
-                db.session.commit()
-                flash("Venue deleted successfully", "success")
+                try:
+                    db.session.delete(venue_select)
+                    db.session.commit()
+                    flash("Venue Deleted", "success")
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"Failed to delete venue: {str(e)}", "error")
 
             return redirect(url_for('admin_manageVenue'))
 
