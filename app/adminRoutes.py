@@ -831,9 +831,21 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<path:department_code>')
 def get_courses_by_department(department_code):
-    courses = Course.query.filter_by(courseDepartment=department_code).all()
+    courses = (
+        Course.query
+        .join(Exam, Course.courseExamId == Exam.examId)
+        .filter(
+            Course.courseDepartment == department_code,
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None),
+            Exam.examVenue.is_(None),
+            Exam.examNoInvigilator.is_(None)
+        )
+        .all()
+    )
+
     if not courses:
-        return jsonify([])  # return an empty array if nothing found
+        return jsonify([])
 
     return jsonify([
         {
