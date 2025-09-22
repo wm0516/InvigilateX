@@ -527,37 +527,57 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 });
 
 
-
-// Auto-fill edit form when course is selected
 document.addEventListener("DOMContentLoaded", function () {
-    const editCourseSection = document.getElementById('editExamCourseSection');
-    if (!editCourseSection) return;
+    const courseSelect = document.getElementById('editExamCourseSection');
+    const deptSelect = document.getElementById('editProgramCode');
+    const practicalSelect = document.getElementById('editPracticalLecturer');
+    const tutorialSelect = document.getElementById('editTutorialLecturer');
+    const studentInput = document.getElementById('editStudent');
 
-    editCourseSection.addEventListener('change', function () {
+    function populateLecturers(deptCode, selectedPractical, selectedTutorial) {
+        if (!deptCode) return;
+        fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
+            .then(res => res.json())
+            .then(lecturers => {
+                practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
+                tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
+
+                lecturers.forEach(l => {
+                    const practicalOption = document.createElement('option');
+                    practicalOption.value = l.userId;
+                    practicalOption.textContent = l.userName.trim();
+                    if (l.userId == selectedPractical) practicalOption.selected = true;
+                    practicalSelect.appendChild(practicalOption);
+
+                    const tutorialOption = document.createElement('option');
+                    tutorialOption.value = l.userId;
+                    tutorialOption.textContent = l.userName.trim();
+                    if (l.userId == selectedTutorial) tutorialOption.selected = true;
+                    tutorialSelect.appendChild(tutorialOption);
+                });
+            });
+    }
+
+    courseSelect.addEventListener('change', function () {
         const courseCode = this.value;
+        const deptCode = deptSelect.value;
+
         if (!courseCode) return;
 
-        fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
+        fetch(`/get_course_details/${encodeURIComponent(deptCode)}/${encodeURIComponent(courseCode)}`)
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
                     alert(data.error);
                     return;
                 }
+                studentInput.value = data.courseStudent || '';
+                deptSelect.value = data.courseDepartment || '';
+                populateLecturers(data.courseDepartment, data.practicalLecturer, data.tutorialLecturer);
+            });
+    });
 
-                // Fill read-only fields
-                document.getElementById('editCourseName').value = data.courseName || "";
-                document.getElementById('editProgramCode').value = data.courseDepartment || "";
-                document.getElementById('editPracticalLecturer').value = data.practicalLecturer || "";
-                document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || "";
-                document.getElementById('editStudent').value = data.courseStudent || "";
-
-                // Fill editable fields
-                document.getElementById('editExamStartTime').value = data.examStartTime || "";
-                document.getElementById('editExamEndTime').value = data.examEndTime || "";
-                document.getElementById('editVenue').value = data.examVenue || "";
-                document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || 1;
-            })
-            .catch(err => console.error("Error loading exam details:", err));
+    deptSelect.addEventListener('change', function () {
+        populateLecturers(this.value, null, null);
     });
 });

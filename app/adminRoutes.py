@@ -858,22 +858,24 @@ def get_courses_by_department(department_code):
 
 
 # -------------------------------
-# Read All CourseDetails Under The Selected Department For ManageExamPage
+# Read All CourseDetails Under Selected Department for ManageExamPage
 # -------------------------------
-@app.route('/get_course_details/<program_code>/<path:course_code_section>')
-def get_course_details(program_code, course_code_section):
-    print(f"Requested: program_code={program_code}, course_code_section={course_code_section}")  # Optional debug
+@app.route('/get_course_details/<department_code>/<path:course_code_section>')
+def get_course_details_exam(department_code, course_code_section):
     selected_course = Course.query.filter_by(
-        courseDepartment=program_code,
+        courseDepartment=department_code,
         courseCodeSection=course_code_section
     ).first()
     if selected_course:
         return jsonify({
-            "practicalLecturer" : selected_course.coursePractical,
-            "tutorialLecturer"  : selected_course.courseTutorial,
-            "student"           : selected_course.courseStudent
+            "practicalLecturer": selected_course.coursePractical,
+            "tutorialLecturer": selected_course.courseTutorial,
+            "courseStudent": selected_course.courseStudent,
+            "courseName": selected_course.courseName,
+            "courseDepartment": selected_course.courseDepartment
         })
     return jsonify({"error": "Course not found"})
+
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage

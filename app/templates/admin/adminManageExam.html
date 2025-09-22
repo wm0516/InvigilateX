@@ -150,43 +150,59 @@
 </form>
 {% endblock %}
 
+
+
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
         <h4 style="text-align: center;">Edit Existing Exam</h4>
+        <h5 style="text-align:center;">
+            Editing Course Code/Section is not allowed. Delete and re-add if needed.
+        </h5><br>
+
         <div class="profile-frame">
-            
-            <div class="form-left" style="margin: auto;">
+            <div class="form-left">
                 <label>Course/Section</label>
                 <select name="courseSection" id="editExamCourseSection" required>
-                    <option value="" disabled selected>Select Course Section</option>
+                    <option value="" disabled selected>Select Course</option>
                     {% for course in course_data_full %}
-                        <option value="{{ course.courseCodeSection }}">
+                        <option value="{{ course.courseCodeSection }}"
+                            {% if exam_select and exam_select.courseCodeSection == course.courseCodeSection %}selected{% endif %}>
                             [{{ course.courseCodeSection }}] - {{ course.courseName }}
-                        </option>   
+                        </option>
                     {% endfor %}
                 </select><br>
 
                 <label>Course Name</label>
-                <input type="text" id="editCourseName" name="courseName" readonly><br>
+                <input type="text" id="editCourseName" name="courseName" value="{{ exam_select.courseName }}" readonly><br>
 
                 <label>Program Code</label>
-                <input type="text" id="editProgramCode" name="programCode" readonly><br>
+                <select id="editProgramCode" name="programCode" required>
+                    <option value="" disabled selected>Select Department</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}" {% if exam_select and exam_select.courseDepartment == dept.departmentCode %}selected{% endif %}>
+                            {{ dept.departmentCode }} - {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
             </div>
 
-            <div class="form-middle" style="margin: auto;">
+            <div class="form-middle">
                 <label>Practical Lecturer</label>
-                <input type="text" id="editPracticalLecturer" name="practicalLecturer" readonly><br>
+                <select id="editPracticalLecturer" name="practicalLecturer" required>
+                    <option value="" disabled>Select Practical Lecturer</option>
+                </select><br>
 
                 <label>Tutorial Lecturer</label>
-                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly><br>
+                <select id="editTutorialLecturer" name="tutorialLecturer" required>
+                    <option value="" disabled>Select Tutorial Lecturer</option>
+                </select><br>
 
                 <label>Number of Students</label>
                 <input type="number" id="editStudent" name="student" readonly>
-            </div> 
+            </div>
 
-            <div class="form-right" style="margin: auto;">
-                <!-- Editable fields -->
+            <div class="form-right">
                 <label>Exam Start Date & Time</label>
                 <input type="datetime-local" id="editExamStartTime" name="startDateTime" required><br>
 
@@ -204,12 +220,11 @@
                 </select><br>
 
                 <label>Number of Invigilators</label>
-                <input type="number" id="editInvigilatorNo" name="invigilatorNo" min="1" step="1" required>    
+                <input type="number" id="editInvigilatorNo" name="invigilatorNo" min="1" step="1" required>
             </div>
         </div>
 
-        <input type="hidden" name="form_type" value="edit">
-        <br><br>
+        <input type="hidden" name="form_type" value="edit"><br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
             <button type="submit" name="action" value="update" style="background-color: rgb(44, 238, 70);">
