@@ -475,6 +475,23 @@ def get_courseCodeSection(courseCodeSection_select):
     return jsonify(course_data)
 
 
+# -------------------------------
+# Read All Department Under The ManageDepartmentEditPage
+# -------------------------------
+@app.route('/get_department/<department_code>')
+def get_department(department_code):
+    dept = Department.query.filter_by(departmentCode=department_code).first()
+    if not dept:
+        return jsonify({"error": "Department not found"}), 404
+
+    return jsonify({
+        "departmentCode": dept.departmentCode,
+        "departmentName": dept.departmentName,
+        "deanId": dept.deanId,
+        "hopId": dept.hopId
+    })
+
+
 
 # -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage
@@ -657,6 +674,9 @@ def admin_manageDepartment():
     department_with_dean = Department.query.filter(Department.deanId.isnot(None)).count()
     department_with_hop = Department.query.filter(Department.hopId.isnot(None)).count()
 
+    department_selected = request.form.get('editDepartment')
+    department_select = Department.query.filter_by(departmentCode=department_selected).first()
+
     # Get all currently assigned dean and hop IDs
     assigned_dean_ids = db.session.query(Department.deanId).filter(Department.deanId.isnot(None)).distinct()
     assigned_hop_ids = db.session.query(Department.hopId).filter(Department.hopId.isnot(None)).distinct()
@@ -671,48 +691,66 @@ def admin_manageDepartment():
     
     # --------------------- MANUAL ADD DEPARTMENT FORM ---------------------
     if request.method == 'POST':
-        departmentCode = request.form.get('departmentCode', '').strip().upper()
-        departmentName = request.form.get('departmentName', '').strip().upper()
-        deanId = request.form.get('deanName', '').strip().upper()
-        hopId = request.form.get('hopName', '').strip().upper()
+        form_type = request.form.get('form_type')
+        if form_type == 'manual':
+            departmentCode = request.form.get('departmentCode', '').strip().upper()
+            departmentName = request.form.get('departmentName', '').strip().upper()
+            deanId = request.form.get('deanName', '').strip().upper()
+            hopId = request.form.get('hopName', '').strip().upper()
 
-        dept = Department.query.filter_by(departmentCode=departmentCode, departmentName=departmentName).first()
+            dept = Department.query.filter_by(departmentCode=departmentCode, departmentName=departmentName).first()
 
-        if dept:
-            updated = False
-            if deanId and not dept.deanId:
-                dept.deanId = deanId
-                updated = True
-            if hopId and not dept.hopId:
-                dept.hopId = hopId
-                updated = True
-            if updated:
-                db.session.commit()
-                flash("Department updated with new Dean and HOP", "success")
+            if dept:
+                updated = False
+                if deanId and not dept.deanId:
+                    dept.deanId = deanId
+                    updated = True
+                if hopId and not dept.hopId:
+                    dept.hopId = hopId
+                    updated = True
+                if updated:
+                    db.session.commit()
+                    flash("Department updated with new Dean and HOP", "success")
+                else:
+                    flash("Department Code or Department Name already exists.", "error")
             else:
-                flash("Department Code or Department Name already exists.", "error")
-        else:
-            # Check for conflicts
-            if Department.query.filter_by(departmentCode=departmentCode).first():
-                flash("Department Code already exists.", "error")
-            elif Department.query.filter_by(departmentName=departmentName).first():
-                flash("Department Name already exists.", "error")
-            else:
-                new_dept = Department(
-                    departmentCode=departmentCode, 
-                    departmentName=departmentName,
-                    deanId=deanId if deanId else None,
-                    hopId=hopId if hopId else None
-                    )
-                db.session.add(new_dept)
-                db.session.commit()
-                flash("New Department Added", "success")
+                # Check for conflicts
+                if Department.query.filter_by(departmentCode=departmentCode).first():
+                    flash("Department Code already exists.", "error")
+                elif Department.query.filter_by(departmentName=departmentName).first():
+                    flash("Department Name already exists.", "error")
+                else:
+                    new_dept = Department(
+                        departmentCode=departmentCode, 
+                        departmentName=departmentName,
+                        deanId=deanId if deanId else None,
+                        hopId=hopId if hopId else None
+                        )
+                    db.session.add(new_dept)
+                    db.session.commit()
+                    flash("New Department Added", "success")
+            return redirect(url_for('admin_manageDepartment'))
+        
+        elif form_type == "edit":
+            action = request.form.get('action')
 
-        return redirect(url_for('admin_manageDepartment'))
+            if action == 'update' and department_select:
+                department_select.departmentName = request.form.get('departmentName')
+                department_select.hopId = request.form.get('hopName')
+                department_select.deanId = request.form.get('deanId')
+                db.session.commit()
+                flash("Department updated successfully", "success")
+
+            elif action == 'delete':
+                db.session.delete(department_select)
+                db.session.commit()
+                flash("Department deleted successfully", "success")
+
+            return redirect(url_for('admin_manageDepartment'))
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
                            department_data=department_data, dean_list=dean_list, hop_list=hop_list, total_department=total_department,
-                           department_with_hop=department_with_hop, department_with_dean=department_with_dean)
+                           department_with_hop=department_with_hop, department_with_dean=department_with_dean, department_select=department_select)
 
 
 # -------------------------------

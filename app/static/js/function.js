@@ -478,6 +478,42 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const departmentSelect = document.getElementById("editDepartment");
+    const departmentNameInput = document.querySelector("#editSection input[name='departmentName']");
+    const deanSelect = document.getElementById("deanName");
+    const hopSelect = document.getElementById("hopName");
+
+    // Function to select the correct option in a dropdown
+    function selectOption(selectElement, value) {
+        Array.from(selectElement.options).forEach(option => {
+            option.selected = option.value == value;
+        });
+    }
+
+    // When a department is selected
+    departmentSelect.addEventListener("change", function () {
+        const deptCode = this.value;
+        if (!deptCode) return;
+
+        fetch(`/get_department/${encodeURIComponent(deptCode)}`)
+            .then(resp => resp.json())
+            .then(dept => {
+                if (dept.error) {
+                    alert(dept.error);
+                    return;
+                }
+
+                // Prefill department name
+                departmentNameInput.value = dept.departmentName || '';
+
+                // Prefill Dean and HOP dropdowns
+                selectOption(deanSelect, dept.deanId || '');
+                selectOption(hopSelect, dept.hopId || '');
+            })
+            .catch(err => console.error("Error fetching department:", err));
+    });
+});
 
 
 
