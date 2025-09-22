@@ -716,7 +716,7 @@ def admin_manageDepartment():
     deanId = ''
     hopId = ''
 
-    # Exclude those already assigned
+    # Exclude those already assigned, and unable to assign to others 
     dean_list = User.query.filter(User.userLevel == 2, ~User.userId.in_(assigned_dean_ids)).all()
     hop_list = User.query.filter(User.userLevel == 3, ~User.userId.in_(assigned_hop_ids)).all()
     
