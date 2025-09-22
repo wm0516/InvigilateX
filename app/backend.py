@@ -405,6 +405,8 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
         userGender=gender,
         userPassword=hashed_pw
     )
+    db.session.add(new_staff)
+    db.session.flush()  # Push to DB so userId is available for FK relations
 
     # Assign Dean or HOP if applicable
     if dept:
@@ -414,7 +416,6 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
             dept.hopId = new_staff.userId
         db.session.add(dept)
 
-    db.session.add(new_staff)
     db.session.commit()
 
     return True, "Staff created successfully"

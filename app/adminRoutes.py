@@ -566,7 +566,7 @@ def admin_manageCourse():
                 return redirect(url_for('admin_manageCourse'))
 
             # --- Manual Add Section ---
-            else:
+            elif form_type == 'manual':
                 def safe_int(value, default=0):
                     try:
                         return int(value)
