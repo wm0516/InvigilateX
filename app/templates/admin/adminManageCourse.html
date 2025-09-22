@@ -261,7 +261,6 @@
 
 {% block extra_scripts %}
 <script>
-    const courseData = {{ course_json | tojson | safe }};
     const deptLabels = [{{ courses_by_department | map(attribute='department') | map('tojson') | join(', ') }}];
     const deptData = [{{ courses_by_department | map(attribute='count') | join(', ') }}];
     const ctxDept = document.getElementById('courseDeptPieChart').getContext('2d');
