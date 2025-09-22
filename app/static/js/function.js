@@ -530,7 +530,7 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 
 // Auto-fill edit form when course is selected
 document.addEventListener("DOMContentLoaded", function () {
-    const editCourseSection = document.getElementById('editCourseSection');
+    const editCourseSection = document.getElementById('editExamCourseSection');
     if (!editCourseSection) return;
 
     editCourseSection.addEventListener('change', function () {
@@ -561,3 +561,4 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(err => console.error("Error loading exam details:", err));
     });
 });
+

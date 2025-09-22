@@ -880,21 +880,21 @@ def get_course_details(program_code, course_code_section):
 # -------------------------------
 @app.route('/get_exam_details/<course_code_section>')
 def get_exam_details(course_code_section):
-    # Get the course first
     course = Course.query.filter_by(courseCodeSection=course_code_section).first()
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
-    # Get the associated exam (if exists)
-    exam = Exam.query.filter_by(examId=course.courseExamId).first()
+    exam = None
+    if course.courseExamId:
+        exam = Exam.query.filter_by(examId=course.courseExamId).first()
 
     return jsonify({
         "courseCodeSection": course.courseCodeSection,
         "courseName": course.courseName,
-        "courseDepartment": course.courseDepartment,
-        "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
-        "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
-        "courseStudent": course.courseStudent,
+        "courseDepartment": course.courseDepartment or "",
+        "practicalLecturer": course.practicalLecturer.userName if getattr(course, "practicalLecturer", None) else "",
+        "tutorialLecturer": course.tutorialLecturer.userName if getattr(course, "tutorialLecturer", None) else "",
+        "courseStudent": course.courseStudent or 0,
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
         "examVenue": exam.examVenue if exam else "",
@@ -916,6 +916,7 @@ def admin_manageExam():
         Exam.examEndTime.isnot(None)
     ).all()
 
+    # Filter for manual section, assign a new exam
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
             Exam.examId.isnot(None),
@@ -923,6 +924,9 @@ def admin_manageExam():
             Exam.examEndTime.is_(None)
         )
     ).all()
+
+    # Show all for Edit section 
+    course_data_full = Course.query.all()
 
     total_exam = Exam.query.count()
 
@@ -942,7 +946,7 @@ def admin_manageExam():
         Exam.examNoInvigilator.is_(None)
     ).count()
 
-    exam_selected = request.form.get('editCourseSection')
+    exam_selected = request.form.get('editExamCourseSection')
     exam_select = Course.query.filter_by(courseCodeSection=exam_selected).first()
 
     # Default manual form values
@@ -1045,7 +1049,7 @@ def admin_manageExam():
                 return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data,
-                           total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select)
+                           total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select, course_data_full=course_data_full)
 
 
 # -------------------------------

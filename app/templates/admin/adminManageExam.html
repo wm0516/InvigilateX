@@ -158,9 +158,9 @@
             
             <div class="form-left" style="margin: auto;">
                 <label>Course/Section</label>
-                <select name="courseSection" id="editCourseSection" required>
+                <select name="courseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
-                    {% for course in course_data %}
+                    {% for course in course_data_full %}
                         <option value="{{ course.courseCodeSection }}">
                             [{{ course.courseCodeSection }}] - {{ course.courseName }}
                         </option>   
