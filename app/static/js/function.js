@@ -425,18 +425,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
 
                 lecturers.forEach(lecturer => {
+                    const userId = lecturer.userId;
                     const username = lecturer.userName.trim();
 
                     const practicalOption = document.createElement('option');
-                    practicalOption.value = username;
-                    practicalOption.textContent = username;
-                    if (username.toLowerCase() === (selectedPractical || '').toLowerCase()) practicalOption.selected = true;
+                    practicalOption.value = userId; // store ID in form
+                    practicalOption.textContent = username; // show username
+                    if (userId == selectedPractical) practicalOption.selected = true;
                     practicalSelect.appendChild(practicalOption);
 
                     const tutorialOption = document.createElement('option');
-                    tutorialOption.value = username;
+                    tutorialOption.value = userId;
                     tutorialOption.textContent = username;
-                    if (username.toLowerCase() === (selectedTutorial || '').toLowerCase()) tutorialOption.selected = true;
+                    if (userId == selectedTutorial) tutorialOption.selected = true;
                     tutorialSelect.appendChild(tutorialOption);
                 });
             })
