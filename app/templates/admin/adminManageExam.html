@@ -104,7 +104,12 @@
             <div class="form-middle" style="margin: auto;">
                 <label>Course/Section</label>
                 <select name="courseSection" id="courseSection" required>
-                    <option value="" disabled selected>Select Course Section</option>
+                    <option value="" disabled selected>Select Venue</option>
+                    {% for course in course_data %}
+                        <option value="{{ course.courseCodeSection }}">
+                            {{ course.courseCodeSection }} - {{ course.courseName }}
+                        </option>
+                    {% endfor %}
                 </select><br>
 
                 <label>Course Practical Lecturer</label>
