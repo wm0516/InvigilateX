@@ -145,7 +145,7 @@
                 <select id="editCourseSelect" name="editCourseSelect" required>
                     <option value="" disabled selected>Select Course</option>
                     {% for row in course_data %}
-                        <option value="{{ row.codeSection }}">{{ row.courseCodeSection }} - {{ row.courseName }}</option>
+                        <option value="{{ row.courseCodeSection }}">{{ row.courseCodeSection }} - {{ row.courseName }}</option>
                     {% endfor %}
                 </select><br>
 

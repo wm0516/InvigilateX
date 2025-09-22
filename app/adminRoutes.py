@@ -450,7 +450,29 @@ def get_lecturers_by_department(department_code):
     print(f"User Department Code is: {department_code}")
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
-    return jsonify(lecturers_list)  
+    return jsonify(lecturers_list) 
+
+# -------------------------------
+# Read All CourseCodeSection Under The ManageCourseEditPage
+# -------------------------------
+@app.route('/get_courseCodeSection/<courseCodeSection_select>')
+def get_courseCodeSection(courseCodeSection_select):
+    course = Course.query.filter_by(courseCodeSection=courseCodeSection_select).first()
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+
+    course_data = {
+        "courseCodeSection": course.courseCodeSection,
+        "courseDepartment": course.courseDepartment,
+        "courseCode": course.courseCodeSection.split('/')[0] if '/' in course.courseCodeSection else course.courseCodeSection,
+        "courseSection": course.courseCodeSection.split('/')[1] if '/' in course.courseCodeSection else "",
+        "coursePractical": course.coursePractical,
+        "courseTutorial": course.courseTutorial,
+        "courseName": course.courseName,
+        "courseHour": course.courseHour,
+        "courseStudent": course.courseStudent
+    }
+    return jsonify(course_data)
 
 
 # -------------------------------
@@ -619,16 +641,7 @@ def admin_manageCourse():
             courses_with_exams=courses_with_exams,
             courses_without_exams=courses_without_exams,
             courses_by_department=courses_by_department,
-            error_rows=error_rows,
-            course_json=[{
-                "codeSection": c.courseCodeSection or "",
-                "name": c.courseName or "",
-                "hour": c.courseHour or 0,
-                "department": c.courseDepartment or "",
-                "practical": c.coursePractical or "",
-                "tutorial": c.courseTutorial or "",
-                "students": c.courseStudent or 0
-            } for c in course_data]
+            error_rows=error_rows
         )
 
     except Exception as e:

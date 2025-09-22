@@ -392,6 +392,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+
 document.addEventListener("DOMContentLoaded", function () {
     const courseSelect = document.getElementById("editCourseSelect");
     if (!courseSelect) return;
@@ -402,88 +403,67 @@ document.addEventListener("DOMContentLoaded", function () {
     const courseNameInput = document.getElementById('editCourseName');
     const practicalSelect = document.getElementById('editPracticalLecturer');
     const tutorialSelect = document.getElementById('editTutorialLecturer');
-    const courseHourInput = document.getElementById('editCourseHour'); // fixed typo
+    const courseHourInput = document.getElementById('editCourseHour');
     const courseStudentInput = document.getElementById('editCourseStudents');
-
-    const courses = {{ course_json | tojson | safe }}; // JS object of all courses
 
     courseSelect.addEventListener('change', function () {
         const selectedCodeSection = this.value;
-        const course = courses.find(c => c.codeSection === selectedCodeSection);
-        if (!course) return;
 
-        // Prefill fields
-        departmentSelect.value = course.department || "";
-        courseCodeInput.value = course.codeSection.split('/')[0] || "";
-        courseSectionInput.value = course.codeSection.split('/')[1] || "";
-        courseNameInput.value = course.name || "";
-        courseHourInput.value = course.hour || 0;
-        courseStudentInput.value = course.students || 0;
-
-        // Reset lecturer selects
+        // Reset all fields
+        departmentSelect.value = "";
         practicalSelect.innerHTML = '<option value="" disabled selected>Select Practical Lecturer</option>';
         tutorialSelect.innerHTML = '<option value="" disabled selected>Select Tutorial Lecturer</option>';
+        courseCodeInput.value = "";
+        courseSectionInput.value = "";
+        courseNameInput.value = "";
+        courseHourInput.value = "";
+        courseStudentInput.value = "";
 
-        if (course.department) {
-            fetch(`/get_lecturers_by_department/${course.department}`)
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(lecturer => {
-                        const practicalOption = document.createElement('option');
-                        practicalOption.value = lecturer.userName;
-                        practicalOption.textContent = lecturer.userName;
-                        if (lecturer.userName === course.practical) practicalOption.selected = true;
-                        practicalSelect.appendChild(practicalOption);
+        if (!selectedCodeSection) return;
 
-                        const tutorialOption = document.createElement('option');
-                        tutorialOption.value = lecturer.userName;
-                        tutorialOption.textContent = lecturer.userName;
-                        if (lecturer.userName === course.tutorial) tutorialOption.selected = true;
-                        tutorialSelect.appendChild(tutorialOption);
-                    });
-                })
-                .catch(error => console.error('Error fetching lecturers:', error));
-        }
+        // Fetch course data
+        fetch(`/get_courseCodeSection/${selectedCodeSection}`)
+            .then(response => response.json())
+            .then(course => {
+                if (course.error) {
+                    console.error(course.error);
+                    return;
+                }
+
+                // Set course details
+                departmentSelect.value = course.courseDepartment;
+                courseCodeInput.value = course.courseCode;
+                courseSectionInput.value = course.courseSection;
+                courseNameInput.value = course.courseName;
+                courseHourInput.value = course.courseHour;
+                courseStudentInput.value = course.courseStudent;
+
+                // Fetch lecturers for this department
+                fetch(`/get_lecturers_by_department/${course.courseDepartment}`)
+                    .then(resp => resp.json())
+                    .then(lecturers => {
+                        lecturers.forEach(lecturer => {
+                            const practicalOption = document.createElement('option');
+                            practicalOption.value = lecturer.userName;
+                            practicalOption.textContent = lecturer.userName;
+                            if (lecturer.userName === course.coursePractical) practicalOption.selected = true;
+                            practicalSelect.appendChild(practicalOption);
+
+                            const tutorialOption = document.createElement('option');
+                            tutorialOption.value = lecturer.userName;
+                            tutorialOption.textContent = lecturer.userName;
+                            if (lecturer.userName === course.courseTutorial) tutorialOption.selected = true;
+                            tutorialSelect.appendChild(tutorialOption);
+                        });
+                    })
+                    .catch(err => console.error('Error fetching lecturers:', err));
+            })
+            .catch(error => console.error('Error fetching course:', error));
     });
 });
 
 
 
-
-// Refresh Google Drive link in every 10 seconds
-document.addEventListener("DOMContentLoaded", function () {
-    const iframe = document.getElementById("gdrive-folder");
-    const flashContainer = document.getElementById("flash-message");
-    const refreshBtn = document.getElementById("refresh-btn");
-
-    function showFlash(message) {
-        if (flashContainer) {
-            flashContainer.innerText = message;
-            flashContainer.style.display = 'block';
-            flashContainer.style.opacity = 1;
-
-            // fade out smoothly after 3s
-            setTimeout(() => {
-                flashContainer.style.transition = "opacity 1s ease";
-                flashContainer.style.opacity = 0;
-                setTimeout(() => {
-                    flashContainer.style.display = 'none';
-                    flashContainer.style.transition = ""; // reset
-                }, 1000);
-            }, 2500);
-        }
-    }
-
-    if (refreshBtn && iframe) {
-        refreshBtn.addEventListener("click", () => {
-            // refresh iframe (avoid full reload flicker)
-            iframe.src = iframe.src.split("&t=")[0] + "&t=" + Date.now();
-
-            // show success message
-            showFlash("✅ Refresh done!");
-        });
-    }
-});
 
 
 
