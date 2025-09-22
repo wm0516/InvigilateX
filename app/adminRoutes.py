@@ -952,8 +952,8 @@ def admin_manageExam():
     ).all()
 
     flash(f"[DEBUG] Found {len(course_data)} exams", "error")
-    for exam in course_data:
-        flash(f"[DEBUG] Exam {exam.examId}: Course = {exam.course.courseCodeSection if exam.course else 'None'}", "error")
+    for course in course_data:
+        flash(f"[DEBUG] Exam {course.courseExamId}: Course = {course.courseCodeSection if course else 'None'}", "error")
 
     # Complete exams: all important columns are NOT NULL
     exam_with_complete = Exam.query.filter(
