@@ -101,7 +101,7 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label>Select Department</label>
-                <select id="editDepartment" name="departmentCode" readonly>
+                <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>

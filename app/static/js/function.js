@@ -480,7 +480,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
-    const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
+    const departmentNameInput = document.getElementById("departmentName");
     const deanSelect = document.getElementById("deanName");
     const hopSelect = document.getElementById("hopName");
 
