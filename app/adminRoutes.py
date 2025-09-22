@@ -455,7 +455,7 @@ def get_lecturers_by_department(department_code):
 # -------------------------------
 # Read All CourseCodeSection Under The ManageCourseEditPage
 # -------------------------------
-@app.route('/get_courseCodeSection/<courseCodeSection_select>')
+@app.route('/get_courseCodeSection/<path:courseCodeSection_select>')
 def get_courseCodeSection(courseCodeSection_select):
     course = Course.query.filter_by(courseCodeSection=courseCodeSection_select).first()
     if not course:
@@ -473,6 +473,7 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseStudent": course.courseStudent
     }
     return jsonify(course_data)
+
 
 
 # -------------------------------
