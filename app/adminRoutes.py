@@ -703,6 +703,8 @@ def admin_manageDepartment():
     # Total numbers of with Assigned
     department_with_dean = Department.query.filter(Department.deanId.isnot(None)).count()
     department_with_hop = Department.query.filter(Department.hopId.isnot(None)).count()
+    total_dean = User.query.filter_by(userLevel=2).count()
+    total_hop = User.query.filter_by(userLevel=3).count()
 
     # For Edit part to get the edit id
     department_selected = request.form.get('editDepartment')
@@ -781,7 +783,8 @@ def admin_manageDepartment():
 
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', 
                            department_data=department_data, dean_list=dean_list, hop_list=hop_list, total_department=total_department,
-                           department_with_hop=department_with_hop, department_with_dean=department_with_dean, department_select=department_select)
+                           department_with_hop=department_with_hop, department_with_dean=department_with_dean, department_select=department_select,
+                           total_dean=total_dean, total_hop=total_hop)
 
 
 # -------------------------------

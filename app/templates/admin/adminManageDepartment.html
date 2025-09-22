@@ -15,10 +15,14 @@
         <div class="form-left" style="width: 100%">
 
             <!-- Overview -->
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="dashboard-row">
                 <div class="dashboard-frame pie">
                     <h3>Total Departments</h3>
                     <p class="dashboard-text">{{ total_department }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total of HOP</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_hop }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Departments with HOP</h3>
@@ -27,6 +31,10 @@
                 <div class="dashboard-frame">
                     <h3>Departments without HOP</h3>
                     <p class="dashboard-text" style="color:red;">{{ total_department - department_with_hop }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total of Dean</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_dean }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Departments with Dean</h3>
