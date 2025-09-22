@@ -522,30 +522,32 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- Edit Section: Auto-fill fields when department is selected ---
+    // --- Edit Section: Auto-fill fields & only same-department staff ---
     if (departmentSelect) {
         departmentSelect.addEventListener("change", function () {
             const deptCode = this.value;
             if (!deptCode) return;
 
-            // Get department info
+            // Fetch department details
             fetch(`/get_department/${encodeURIComponent(deptCode)}`)
                 .then(resp => resp.json())
                 .then(dept => {
                     if (dept.error) return alert(dept.error);
                     departmentNameInput.value = dept.departmentName || '';
 
-                    // Fetch eligible Dean/HOP for this department
+                    // Fetch only staff in this department
                     fetch(`/get_department_users/${encodeURIComponent(deptCode)}`)
                         .then(resp => resp.json())
                         .then(users => {
                             populateDropdown(deanSelect, users.deans, dept.deanId);
                             populateDropdown(hopSelect, users.hops, dept.hopId);
-                        });
+                        })
+                        .catch(err => console.error("Error fetching department users:", err));
                 })
                 .catch(err => console.error("Error fetching department:", err));
         });
 
+        // Trigger change on page load if a department is pre-selected
         if (departmentSelect.value) {
             departmentSelect.dispatchEvent(new Event("change"));
         }
