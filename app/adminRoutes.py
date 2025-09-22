@@ -858,7 +858,7 @@ def get_courses_by_department(department_code):
         "courseName": c.courseName
     } for c in courses]
 
-    print(f"[DEBUG] Returning {len(course_list)} courses for dept {department_code}")
+    flash(f"[DEBUG] Returning {len(course_list)} courses for dept {department_code}","error")
     for course in course_list:
         print(f"[DEBUG] Course: {course['courseCodeSection']} - {course['courseName']}")
     
@@ -892,19 +892,19 @@ def get_course_details_exam(department_code, course_code_section):
 # -------------------------------
 @app.route('/get_exam_details/<course_code_section>')
 def get_exam_details(course_code_section):
-    print(f"[DEBUG] get_exam_details called with: {course_code_section}")
+    flash(f"[DEBUG] get_exam_details called with: {course_code_section}", "error")
     
     course = Course.query.filter_by(courseCodeSection=course_code_section).first()
     if not course:
-        print(f"[DEBUG] Course not found: {course_code_section}")
+        flash(f"[DEBUG] Course not found: {course_code_section}", "error")
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
     print(f"[DEBUG] Found course: {course.courseCodeSection}, Exam ID: {course.courseExamId}")
-    print(f"[DEBUG] Exam found: {exam is not None}")
+    flash(f"[DEBUG] Exam found: {exam is not None}", "error")
 
     if exam:
-        print(f"[DEBUG] Exam details - Start: {exam.examStartTime}, End: {exam.examEndTime}, Venue: {exam.examVenue}")
+        flash(f"[DEBUG] Exam details - Start: {exam.examStartTime}, End: {exam.examEndTime}, Venue: {exam.examVenue}", "error")
 
     response_data = {
         "courseCodeSection": course.courseCodeSection,
@@ -919,7 +919,7 @@ def get_exam_details(course_code_section):
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
     }
     
-    print(f"[DEBUG] Response data: {response_data}")
+    flash(f"[DEBUG] Response data: {response_data}", "error")
     return jsonify(response_data)
 
 
@@ -931,7 +931,7 @@ def get_exam_details(course_code_section):
 def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    
+
     # Fix the exam_data query to ensure it includes courses
     exam_data = Exam.query.options(db.joinedload(Exam.course)).filter(
         Exam.examId.isnot(None),
@@ -940,9 +940,9 @@ def admin_manageExam():
     ).all()
 
     # Debug: print exam data
-    print(f"[DEBUG] Found {len(exam_data)} exams")
+    flash(f"[DEBUG] Found {len(exam_data)} exams", "error")
     for exam in exam_data:
-        print(f"[DEBUG] Exam {exam.examId}: Course = {exam.course.courseCodeSection if exam.course else 'None'}")
+        flash(f"[DEBUG] Exam {exam.examId}: Course = {exam.course.courseCodeSection if exam.course else 'None'}", "error")
 
     # Filter for manual section, assign a new exam
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
