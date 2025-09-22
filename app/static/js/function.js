@@ -427,6 +427,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 courseNameInput.value = course.courseName;
                 courseHourInput.value = course.courseHour;
                 courseStudentInput.value = course.courseStudent;
+                practicalSelect.value = course.coursePractical;
+                tutorialSelect.value = course.courseTutorial;
 
                 // Fetch lecturers for this department
                 fetch(`/get_lecturers_by_department/${course.courseDepartment}`)
