@@ -950,10 +950,7 @@ def admin_manageExam():
             Exam.examEndTime.is_(None)
         )
     ).all()
-
-    flash(f"[DEBUG] Found {len(course_data)} exams", "error")
-    for course in course_data:
-        flash(f"[DEBUG] Exam {course.courseExamId}: Course = {course.courseCodeSection if course else 'None'}", "error")
+    flash(f"[DEBUG] Found {len(course_data)} courses", "error")
 
     # Complete exams: all important columns are NOT NULL
     exam_with_complete = Exam.query.filter(
