@@ -393,10 +393,171 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const courseSelect = document.getElementById("editCourseSelect");
+    const departmentSelect = document.getElementById('editDepartment');
+    const courseCodeInput = document.getElementById('editCourseCode');
+    const courseSectionInput = document.getElementById('editCourseSection');
+    const courseNameInput = document.getElementById('editCourseName');
+    const practicalSelect = document.getElementById('editPracticalLecturer');
+    const tutorialSelect = document.getElementById('editTutorialLecturer');
+    const courseHourInput = document.getElementById('editCourseHour');
+    const courseStudentInput = document.getElementById('editCourseStudents');
+
+    function populateLecturers(deptCode, selectedPractical, selectedTutorial) {
+        if (!deptCode) {
+            // If department is null/empty, keep existing lecturers
+            practicalSelect.innerHTML = '';
+            tutorialSelect.innerHTML = '';
+            if (selectedPractical) {
+                practicalSelect.innerHTML = `<option value="${selectedPractical}" selected>${selectedPractical}</option>`;
+            }
+            if (selectedTutorial) {
+                tutorialSelect.innerHTML = `<option value="${selectedTutorial}" selected>${selectedTutorial}</option>`;
+            }
+            return;
+        }
+
+        fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
+            .then(resp => resp.json())
+            .then(lecturers => {
+                practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
+                tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
+
+                lecturers.forEach(lecturer => {
+                    const userId = lecturer.userId;
+                    const username = lecturer.userName.trim();
+
+                    const practicalOption = document.createElement('option');
+                    practicalOption.value = userId; // store ID in form
+                    practicalOption.textContent = username; // show username
+                    if (userId == selectedPractical) practicalOption.selected = true;
+                    practicalSelect.appendChild(practicalOption);
+
+                    const tutorialOption = document.createElement('option');
+                    tutorialOption.value = userId;
+                    tutorialOption.textContent = username;
+                    if (userId == selectedTutorial) tutorialOption.selected = true;
+                    tutorialSelect.appendChild(tutorialOption);
+                });
+            })
+            .catch(err => console.error('Error fetching lecturers:', err));
+    }
+
+    // --- When course is selected ---
+    courseSelect.addEventListener('change', function () {
+        const selectedCodeSection = this.value;
+        if (!selectedCodeSection) return;
+
+        fetch(`/get_courseCodeSection/${encodeURIComponent(selectedCodeSection)}`)
+            .then(resp => resp.json())
+            .then(course => {
+                if (course.error) {
+                    alert(course.error);
+                    return;
+                }
+
+                departmentSelect.value = course.courseDepartment || '';
+                courseCodeInput.value = course.courseCode;
+                courseSectionInput.value = course.courseSection;
+                courseNameInput.value = course.courseName;
+                courseHourInput.value = course.courseHour;
+                courseStudentInput.value = course.courseStudent;
+
+                // Populate lecturers (even if department is null)
+                populateLecturers(course.courseDepartment, course.coursePractical, course.courseTutorial);
+            })
+            .catch(err => console.error('Error fetching course:', err));
+    });
+
+    // --- When department changes manually ---
+    departmentSelect.addEventListener('change', function () {
+        const deptCode = this.value;
+        populateLecturers(deptCode, null, null); // reset selection when department changes
+    });
+});
 
 
 
+document.addEventListener("DOMContentLoaded", function () {
+    const departmentSelect = document.getElementById("editDepartment");
+    const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
+
+    function fetchDepartmentData(deptCode) {
+        if (!deptCode) return;
+
+        fetch(`/get_department/${encodeURIComponent(deptCode)}`)
+            .then(resp => resp.json())
+            .then(dept => {
+                if (dept.error) return alert(dept.error);
+                departmentNameInput.value = dept.departmentName || '';
+            });
+    }
+
+    if (departmentSelect) {
+        departmentSelect.addEventListener("change", function () {
+            fetchDepartmentData(this.value);
+        });
+
+        // Pre-fill on page load if a department is selected
+        if (departmentSelect.value) {
+            fetchDepartmentData(departmentSelect.value);
+        }
+    }
+});
+
+
+document.getElementById('editVenueNumber').addEventListener('change', function() {
+    const venueNumber = this.value;
+    if (!venueNumber) return;
+
+    fetch(`/get_venue/${venueNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            // Populate fields
+            document.getElementById('editVenueFloor').value = data.venueFloor;
+            document.getElementById('editVenueCapacity').value = data.venueCapacity;
+            document.getElementById('editVenueStatus').value = data.venueStatus;
+        })
+        .catch(err => console.error(err));
+});
 
 
 
+// Auto-fill edit form when course is selected
+document.addEventListener("DOMContentLoaded", function () {
+    const editCourseSection = document.getElementById('editExamCourseSection');
+    if (!editCourseSection) return;
 
+    editCourseSection.addEventListener('change', function () {
+        const courseCode = this.value;
+        if (!courseCode) return;
+
+        fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Fill read-only fields
+                document.getElementById('editCourseName').value = data.courseName || "";
+                document.getElementById('editProgramCode').value = data.courseDepartment || "";
+                document.getElementById('editPracticalLecturer').value = data.practicalLecturer || "";
+                document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || "";
+                document.getElementById('editStudent').value = data.courseStudent || "";
+
+                // Fill editable fields
+                document.getElementById('editExamStartTime').value = data.examStartTime || "";
+                document.getElementById('editExamEndTime').value = data.examEndTime || "";
+                document.getElementById('editVenue').value = data.examVenue || "";
+                document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || 1;
+            })
+            .catch(err => console.error("Error loading exam details:", err));
+    });
+});

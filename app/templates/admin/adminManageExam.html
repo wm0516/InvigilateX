@@ -283,39 +283,3 @@
 </div>
 {% endblock %}
 
-<script>
-// Auto-fill edit form when course is selected
-document.addEventListener("DOMContentLoaded", function () {
-    const editCourseSection = document.getElementById('editExamCourseSection');
-    if (!editCourseSection) return;
-
-    editCourseSection.addEventListener('change', function () {
-        const courseCode = this.value;
-        if (!courseCode) return;
-
-        fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
-
-                // Fill read-only fields
-                document.getElementById('editCourseName').value = data.courseName || "";
-                document.getElementById('editProgramCode').value = data.courseDepartment || "";
-                document.getElementById('editPracticalLecturer').value = data.practicalLecturer || "";
-                document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || "";
-                document.getElementById('editStudent').value = data.courseStudent || "";
-
-                // Fill editable fields
-                document.getElementById('editExamStartTime').value = data.examStartTime || "";
-                document.getElementById('editExamEndTime').value = data.examEndTime || "";
-                document.getElementById('editVenue').value = data.examVenue || "";
-                document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || 1;
-            })
-            .catch(err => console.error("Error loading exam details:", err));
-    });
-});
-</script>
-
