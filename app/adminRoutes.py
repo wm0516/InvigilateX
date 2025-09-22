@@ -621,15 +621,15 @@ def admin_manageCourse():
 # -------------------------------
 @app.route('/get_hop_dean_by_department/<department_code>')
 def get_hop_dean_by_department(department_code):
-    # Query dean (userLevel 2) and HOP (userLevel 3)
-    dean = User.query.filter_by(userDepartment=department_code, userLevel=2).first()
-    hop = User.query.filter_by(userDepartment=department_code, userLevel=3).first()
+    deans = User.query.filter_by(userLevel=2, userDepartment=department_code).all()
+    hops = User.query.filter_by(userLevel=3, userDepartment=department_code).all()
 
     return jsonify({
         "departmentCode": department_code,
-        "dean": {"userId": dean.userId, "userName": dean.userName} if dean else None,
-        "hop": {"userId": hop.userId, "userName": hop.userName} if hop else None,
+        "deans": [{"userId": d.userId, "userName": d.userName, "userEmail": d.userEmail} for d in deans],
+        "hops": [{"userId": h.userId, "userName": h.userName, "userEmail": h.userEmail} for h in hops],
     })
+
 
 
 # -------------------------------
@@ -709,50 +709,28 @@ def admin_manageDepartment():
             deanId = request.form.get('deanName') or None
             hopId = request.form.get('hopName') or None
 
-            dept = Department.query.filter_by(departmentCode=departmentCode, departmentName=departmentName).first()
-            dean = User.query.filter_by(userId=deanId).first() if deanId else None
-            hop = User.query.filter_by(userId=hopId).first() if hopId else None
-
+            dept = Department.query.filter_by(departmentCode=departmentCode).first()
             if dept:
-                updated = False
-
-                # Validate Dean
-                if dean:
-                    if dean.userDepartment != dept.departmentCode:
-                        flash(f"Selected Dean belongs to a different department ({dean.userDepartment})", "error")
-                    elif not dept.deanId:
-                        dept.deanId = dean.userId  # Save userId, not the whole object
-                        updated = True
-
-                # Validate HOP
-                if hop:
-                    if hop.userDepartment != dept.departmentCode:
-                        flash(f"Selected HOP belongs to a different department ({hop.userDepartment})", "error")
-                    elif not dept.hopId:
-                        dept.hopId = hop.userId
-                        updated = True
-
-                if updated:
-                    db.session.commit()
-                    flash("Department updated with new Dean and HOP", "success")
-                elif not dean and not hop:
-                    flash("No Dean or HOP selected.", "error")
+                # Assign dean/hop only if selected
+                if deanId:
+                    dept.deanId = deanId
+                if hopId:
+                    dept.hopId = hopId
+                db.session.commit()
+                flash("Department updated successfully", "success")
             else:
-                if Department.query.filter_by(departmentCode=departmentCode).first():
-                    flash("Department Code already exists.", "error")
-                elif Department.query.filter_by(departmentName=departmentName).first():
-                    flash("Department Name already exists.", "error")
-                else:
-                    new_dept = Department(
-                        departmentCode=departmentCode,
-                        departmentName=departmentName,
-                        deanId=deanId,
-                        hopId=hopId
-                    )
-                    db.session.add(new_dept)
-                    db.session.commit()
-                    flash("New Department Added", "success")
+                # Add new department
+                new_dept = Department(
+                    departmentCode=departmentCode,
+                    departmentName=departmentName,
+                    deanId=deanId,
+                    hopId=hopId
+                )
+                db.session.add(new_dept)
+                db.session.commit()
+                flash("New Department Added", "success")
             return redirect(url_for('admin_manageDepartment'))
+
 
         elif form_type == "edit":
             action = request.form.get('action')
