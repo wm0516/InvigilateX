@@ -431,7 +431,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 tutorialSelect.value = course.courseTutorial;
 
                 // Fetch lecturers for this department
-                fetch(`/get_lecturers_by_department/${course.courseDepartment}`)
+                fetch(`/get_lecturers_by_department/${departmentSelect}`)
                     .then(resp => {
                         if (!resp.ok) throw new Error('Failed to fetch lecturers');
                         return resp.json();
