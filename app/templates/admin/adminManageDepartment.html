@@ -189,3 +189,34 @@
 </div>
 {% endblock %}
 
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const departmentSelect = document.getElementById("editDepartment");
+    const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
+
+    function fetchDepartmentData(deptCode) {
+        if (!deptCode) return;
+
+        fetch(`/get_department/${encodeURIComponent(deptCode)}`)
+            .then(resp => resp.json())
+            .then(dept => {
+                if (dept.error) return alert(dept.error);
+                departmentNameInput.value = dept.departmentName || '';
+            });
+    }
+
+    if (departmentSelect) {
+        departmentSelect.addEventListener("change", function () {
+            fetchDepartmentData(this.value);
+        });
+
+        // Pre-fill on page load if a department is selected
+        if (departmentSelect.value) {
+            fetchDepartmentData(departmentSelect.value);
+        }
+    }
+});
+</script>
+

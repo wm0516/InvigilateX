@@ -212,6 +212,25 @@
 {% endblock %}
 
 
+<script>
+document.getElementById('editVenueNumber').addEventListener('change', function() {
+    const venueNumber = this.value;
+    if (!venueNumber) return;
 
+    fetch(`/get_venue/${venueNumber}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            // Populate fields
+            document.getElementById('editVenueFloor').value = data.venueFloor;
+            document.getElementById('editVenueCapacity').value = data.venueCapacity;
+            document.getElementById('editVenueStatus').value = data.venueStatus;
+        })
+        .catch(err => console.error(err));
+});
+</script>
 
 

@@ -884,16 +884,14 @@ def get_exam_details(course_code_section):
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
-    exam = None
-    if course.courseExamId:
-        exam = Exam.query.filter_by(examId=course.courseExamId).first()
+    exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
 
     return jsonify({
         "courseCodeSection": course.courseCodeSection,
-        "courseName": course.courseName,
+        "courseName": course.courseName or "",
         "courseDepartment": course.courseDepartment or "",
-        "practicalLecturer": course.practicalLecturer.userName if getattr(course, "practicalLecturer", None) else "",
-        "tutorialLecturer": course.tutorialLecturer.userName if getattr(course, "tutorialLecturer", None) else "",
+        "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
+        "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
         "courseStudent": course.courseStudent or 0,
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
