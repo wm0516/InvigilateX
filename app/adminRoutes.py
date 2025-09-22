@@ -657,8 +657,7 @@ def admin_manageDepartment():
 
             dept = Department.query.filter_by(departmentCode=departmentCode).first()
             if dept:
-                dept.departmentName = departmentName
-                flash("Department updated successfully", "success")
+                flash("Department already existed", "error")
             else:
                 new_dept = Department(
                     departmentCode=departmentCode,
