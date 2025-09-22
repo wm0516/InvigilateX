@@ -785,6 +785,7 @@ def admin_manageVenue():
                 db.session.delete(venue_select)
                 db.session.commit()
                 flash("Venue deleted successfully", "success")
+            return redirect(url_for('admin_manageVenue'))
 
     # Always fetch latest data for display
     venue_data = Venue.query.all()
