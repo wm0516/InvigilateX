@@ -495,10 +495,6 @@ def get_course_details(program_code, course_code_section):
 # -------------------------------
 # Function for Admin ManageCourse Route
 # -------------------------------
-from flask import render_template, request, redirect, url_for, flash
-from sqlalchemy import func
-import traceback
-
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     try:
@@ -545,10 +541,7 @@ def admin_manageCourse():
             if form_type == 'upload':
                 return handle_file_upload(
                     file_key='course_file',
-                    expected_cols=[
-                        'department code', 'course code', 'course section', 'course name',
-                        'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'
-                    ],
+                    expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'],
                     process_row_fn=process_course_row,
                     redirect_endpoint='admin_manageCourse',
                     usecols="A:H"
@@ -558,9 +551,6 @@ def admin_manageCourse():
             elif form_type == 'edit':
                 action = request.form.get('action')
                 course_id = request.form.get('editCourseSelect')
-                if not course_id:
-                    flash("No course selected", "error")
-                    return redirect(url_for('admin_manageCourse'))
 
                 course = Course.query.get(course_id)
                 if not course:
