@@ -710,20 +710,33 @@ def admin_manageDepartment():
             hopId = request.form.get('hopName') or None
 
             dept = Department.query.filter_by(departmentCode=departmentCode, departmentName=departmentName).first()
+            dean = User.query.filter_by(userId=deanId).first() if deanId else None
+            hop = User.query.filter_by(userId=hopId).first() if hopId else None
 
             if dept:
                 updated = False
-                if deanId and not dept.deanId:
-                    dept.deanId = deanId
-                    updated = True
-                if hopId and not dept.hopId:
-                    dept.hopId = hopId
-                    updated = True
+
+                # Validate Dean
+                if dean:
+                    if dean.userDepartment != dept.departmentCode:
+                        flash(f"Selected Dean belongs to a different department ({dean.userDepartment})", "error")
+                    elif not dept.deanId:
+                        dept.deanId = dean.userId  # Save userId, not the whole object
+                        updated = True
+
+                # Validate HOP
+                if hop:
+                    if hop.userDepartment != dept.departmentCode:
+                        flash(f"Selected HOP belongs to a different department ({hop.userDepartment})", "error")
+                    elif not dept.hopId:
+                        dept.hopId = hop.userId
+                        updated = True
+
                 if updated:
                     db.session.commit()
                     flash("Department updated with new Dean and HOP", "success")
-                else:
-                    flash("Department Code or Department Name already exists.", "error")
+                elif not dean and not hop:
+                    flash("No Dean or HOP selected.", "error")
             else:
                 if Department.query.filter_by(departmentCode=departmentCode).first():
                     flash("Department Code already exists.", "error")
