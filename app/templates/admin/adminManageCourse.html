@@ -154,7 +154,7 @@
 
                 <label>Department</label>
                 <select id="editDepartment" name="departmentCode" required>
-                    <option value="" disabled>Select Department</option>
+                    <option value="{{ course_select.courseDepartment }}" disabled>Select Department</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}"
                             {% if course_select and course_select.courseDepartment == dept.departmentCode %}selected{% endif %}>
@@ -179,7 +179,7 @@
 
                 <label>Practical Lecturer</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
-                    <option value="" disabled>Select Practical Lecturer</option>
+                    <option value="{{ course_select.coursePractical }}" disabled>Select Practical Lecturer</option>
                     {% if course_select and course_select.coursePractical %}
                         <option value="{{ course_select.coursePractical }}" selected>{{ course_select.coursePractical }}</option>
                     {% endif %}
@@ -189,7 +189,7 @@
             <div class="form-right">
                 <label>Tutorial Lecturer</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
-                    <option value="" disabled>Select Tutorial Lecturer</option>
+                    <option value="{{ course_select.courseTutorial }}" disabled>Select Tutorial Lecturer</option>
                     {% if course_select and course_select.courseTutorial %}
                         <option value="{{ course_select.courseTutorial }}" selected>{{ course_select.courseTutorial }}</option>
                     {% endif %}
