@@ -1056,7 +1056,7 @@ def admin_manageExam():
 # -------------------------------
 # Read All StaffDetails Under The ManageLecturerEditPage
 # -------------------------------
-@app.route('/get_staff/<path:id>')
+@app.route('/get_staff/<id>')
 def get_staff(id):
     user = User.query.filter_by(userId=id).first()
     if not user:
