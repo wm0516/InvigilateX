@@ -392,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-
+/*
 document.addEventListener("DOMContentLoaded", function () {
     const courseSelect = document.getElementById("editCourseSelect");
     if (!courseSelect) return;
@@ -461,7 +461,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error('Error fetching course:', error));
     });
 });
-
+*/
 
 
 
