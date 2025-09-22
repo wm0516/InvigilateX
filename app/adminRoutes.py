@@ -812,19 +812,21 @@ def admin_manageVenue():
 
             elif action == 'delete':
                 try:
-                    # Set Exam.examVenue to NULL
+                    # Set related foreign keys to NULL
                     Exam.query.filter_by(examVenue=venue_select.venueNumber).update({"examVenue": None})
-                    
-                    # Set VenueAvailability.venueNumber to NULL
                     VenueAvailability.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
                     
                     db.session.commit()  # Commit the updates first
-                    db.session.delete(venue_select) # Now delete the venue
+
+                    # Delete the venue
+                    db.session.delete(venue_select)
                     db.session.commit()
+
                     flash("Venue Deleted, related references set to NULL", "success")
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Failed to delete venue: {str(e)}", "error")
+
 
             return redirect(url_for('admin_manageVenue'))
 
