@@ -525,6 +525,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+/*
 // examEdit.js
 document.addEventListener("DOMContentLoaded", function () {
     // Edit Exam Section
@@ -639,6 +640,6 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('[DEBUG] Form population complete');
     }
 });
-
+*/
 
 

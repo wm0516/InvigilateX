@@ -836,10 +836,9 @@ def get_courses_by_department(department_code):
         .join(Exam, Course.courseExamId == Exam.examId)
         .filter(
             Course.courseDepartment == department_code,
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None),
-            Exam.examVenue.is_(None),
-            Exam.examNoInvigilator.is_(None)
+            Course.courseExamId.isnot(None),      # must have examId assigned
+            Exam.examStartTime.is_(None),         # exam not scheduled
+            Exam.examEndTime.is_(None)
         )
         .all()
     )
@@ -855,6 +854,7 @@ def get_courses_by_department(department_code):
         }
         for c in courses
     ])
+
 
 
 
