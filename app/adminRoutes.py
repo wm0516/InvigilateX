@@ -699,9 +699,12 @@ def admin_manageCourse():
 def admin_manageDepartment():
     department_data = Department.query.all()
     total_department = Department.query.count()
+
+    # Total numbers of with Assigned
     department_with_dean = Department.query.filter(Department.deanId.isnot(None)).count()
     department_with_hop = Department.query.filter(Department.hopId.isnot(None)).count()
 
+    # For Edit part to get the edit id
     department_selected = request.form.get('editDepartment')
     department_select = Department.query.filter_by(departmentCode=department_selected).first()
 
