@@ -169,9 +169,14 @@
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
                     {% for exam in exam_data %}
-                        <option value="{{ exam.course.courseCodeSection }}">
-                            [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
-                        </option>
+                        {% if exam.course %}
+                            <option value="{{ exam.course.courseCodeSection }}">
+                                [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
+                            </option>
+                        {% else %}
+                            {# optional: show a disabled placeholder for exams without a linked course #}
+                            <option value="" disabled>Unlinked exam (ID: {{ exam.examId }})</option>
+                        {% endif %}
                     {% endfor %}
                 </select><br>
 
