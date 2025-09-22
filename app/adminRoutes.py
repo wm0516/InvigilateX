@@ -1054,11 +1054,6 @@ def admin_manageExam():
 
 
 
-
-
-
-
-
 # -------------------------------
 # Function for Admin ManageStaff Route
 # -------------------------------
