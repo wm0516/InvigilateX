@@ -626,8 +626,8 @@ def admin_manageCourse():
                 "name": c.courseName or "",
                 "hour": c.courseHour or 0,
                 "department": c.courseDepartment or "",
-                "practical": getattr(c.coursePractical, 'userName', ""),
-                "tutorial": getattr(c.courseTutorial, 'userName', ""),
+                "practical": c.coursePractical or "",
+                "tutorial": c.courseTutorial or "",
                 "students": c.courseStudent or 0
             } for c in course_data]
         )
