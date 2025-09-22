@@ -653,6 +653,8 @@ def admin_manageDepartment():
     department_with_hop = Department.query.filter(Department.hopId.isnot(None)).count()
     total_dean = User.query.filter_by(userLevel=2).count()
     total_hop = User.query.filter_by(userLevel=3).count()
+    deans = User.query.filter_by(userLevel=2).all()
+    hops = User.query.filter_by(userLevel=3).all()
 
     department_selected_code = request.form.get('editDepartment')
     department_select = Department.query.filter_by(departmentCode=department_selected_code).first() if department_selected_code else None
@@ -720,6 +722,8 @@ def admin_manageDepartment():
                            total_department=total_department,
                            total_dean=total_dean,
                            total_hop=total_hop,
+                           deans=deans,
+                           hops=hops,
                            department_with_dean=department_with_dean,
                            department_with_hop=department_with_hop)
 

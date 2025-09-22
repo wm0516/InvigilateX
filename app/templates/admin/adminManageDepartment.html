@@ -114,13 +114,22 @@
 
             <div class="form-right">
                 <label>Dean Name</label>
-                <select id="deanName" name="deanName">
+                <select id="deanName" name="deanName" required>
                     <option value="" disabled selected>Select a Dean</option>
+                    {% for dean in deans %}
+                        <option value="{{ dean.userId }}">
+                            [{{ dean.userDepartment }}] {{ dean.userName }}
+                        </option>
+                    {% endfor %}
                 </select><br>
 
-                <label>HOP Name</label>
-                <select id="hopName" name="hopName">
-                    <option value="" disabled selected>Select a HOP</option>
+                <select id="hopName" name="hopName" required>
+                    <option value="" disabled selected>Select a Hop</option>
+                    {% for hop in hops %}
+                        <option value="{{ hop.userId }}">
+                            [{{ hop.userDepartment }}] {{ hop.userName }}
+                        </option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
