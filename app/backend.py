@@ -392,9 +392,9 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
     
     # Insert new staff
     new_staff = User(
-        userId=id,
+        userId=id.upper(),
         userDepartment=department,
-        userName=name,
+        userName=name.upper(),
         userLevel=role,
         userEmail=email,
         userContact=contact,
