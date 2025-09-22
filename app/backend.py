@@ -368,54 +368,51 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
-def create_staff(id, department, name, role, email, contact, gender, hashed_pw=None):
-    # Fetch existing user
-    staff = User.query.filter_by(userId=id.upper()).first()
-    if not staff:
-        return False, "Staff not found"
+def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
+    # Normalize department code
+    department_code = department.upper() if department else None
+    dept = Department.query.filter_by(departmentCode=department_code).first()
+    if not dept:
+        department_code = None  # If department doesn't exist, set to None
 
-    # Validate department code
-    department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
-    if not department_name:
-        department = None
-    else:
-        department = department.upper()
-
-    # Email and contact format check
+    # Validate email and contact
     if not email_format(email):
         return False, "Wrong Email Address Format"
     if not contact_format(contact):
         return False, "Wrong Contact Number Format"
 
-    # Uniqueness checks (excluding current user)
-    if User.query.filter(User.userEmail==email, User.userId!=id.upper()).first():
+    # Check uniqueness
+    if User.query.filter_by(userId=id.upper()).first():
+        return False, "Id Already exists"
+    if User.query.filter_by(userEmail=email).first():
         return False, "Email Already exists"
-    if User.query.filter(User.userContact==contact, User.userId!=id.upper()).first():
+    if User.query.filter_by(userContact=contact).first():
         return False, "Contact Number Already exists"
 
-    # Update staff details
-    staff.userDepartment = department
-    staff.userName = name.upper()
-    staff.userLevel = role
-    staff.userEmail = email
-    staff.userContact = contact
-    staff.userGender = gender
-    if hashed_pw:
-        staff.userPassword = hashed_pw
+    # Create staff object
+    new_staff = User(
+        userId=id.upper(),
+        userDepartment=department_code,
+        userName=name.upper(),
+        userLevel=role,
+        userEmail=email,
+        userContact=contact,
+        userGender=gender,
+        userPassword=hashed_pw
+    )
 
-    # Update department dean/hop if applicable
-    if department:
-        dept = Department.query.filter_by(departmentCode=department).first()
-        if dept:
-            if staff.userLevel == 2:
-                dept.deanId = staff.userId
-            elif staff.userLevel == 3:
-                dept.hopId = staff.userId
-            db.session.add(dept)
+    # Assign Dean or HOP if applicable
+    if dept:
+        if role == 2:  # Dean
+            dept.deanId = new_staff.userId
+        elif role == 3:  # HOP
+            dept.hopId = new_staff.userId
+        db.session.add(dept)
 
-    db.session.add(staff)
+    db.session.add(new_staff)
     db.session.commit()
-    return True, "Staff updated successfully"
+
+    return True, "Staff created successfully"
 
 
 # -------------------------------
