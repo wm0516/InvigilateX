@@ -159,14 +159,15 @@
 
         <div class="profile-frame">
             <div class="form-left">
-                <label>Course/Section</label>
-                <select name="courseSection" id="editExamCourseSection" required>
-                    <option value="" disabled selected>Select Course</option>
-                    {% for course in course_data_full %}
-                        <option value="{{ course.courseCodeSection }}"
-                            {% if exam_select and exam_select.courseCodeSection == course.courseCodeSection %}selected{% endif %}>
-                            [{{ course.courseCodeSection }}] - {{ course.courseName }}
-                        </option>
+                <label>Select Exam Course/Section</label>
+                <select name="editExamCourseSection" id="editExamCourseSection" required>
+                    <option value="" disabled selected>Select Course Section</option>
+                    {% for exam in exam_data %}
+                        {% if exam.course %} 
+                            <option value="{{ exam.course.courseCodeSection }}">
+                                [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
+                            </option>
+                        {% endif %}
                     {% endfor %}
                 </select><br>
 

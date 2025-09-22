@@ -393,6 +393,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Function for edit ManageCourse
 document.addEventListener("DOMContentLoaded", function () {
     const courseSelect = document.getElementById("editCourseSelect");
     const departmentSelect = document.getElementById('editDepartment');
@@ -478,7 +479,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-
+// Function for edit ManageDepartment
 document.addEventListener("DOMContentLoaded", function () {
     const departmentSelect = document.getElementById("editDepartment");
     const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
@@ -506,7 +507,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-
+// Function for edit ManageVenue
 document.getElementById('editVenueNumber').addEventListener('change', function() {
     const venueNumber = this.value;
     if (!venueNumber) return;
@@ -526,58 +527,55 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
         .catch(err => console.error(err));
 });
 
-
+// Function for edit ManageExam
 document.addEventListener("DOMContentLoaded", function () {
-    const courseSelect = document.getElementById('editExamCourseSection');
+    const editCourseSelect = document.getElementById('editExamCourseSection');
     const deptSelect = document.getElementById('editProgramCode');
     const practicalSelect = document.getElementById('editPracticalLecturer');
     const tutorialSelect = document.getElementById('editTutorialLecturer');
     const studentInput = document.getElementById('editStudent');
+    const startDateInput = document.getElementById('editStartDate');
+    const startTimeInput = document.getElementById('editStartTime');
+    const endDateInput = document.getElementById('editEndDate');
+    const endTimeInput = document.getElementById('editEndTime');
+    const venueSelect = document.getElementById('editVenue');
+    const invigilatorInput = document.getElementById('editInvigilatorNo');
 
-    function populateLecturers(deptCode, selectedPractical, selectedTutorial) {
-        if (!deptCode) return;
-        fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
-            .then(res => res.json())
-            .then(lecturers => {
-                practicalSelect.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
-                tutorialSelect.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
-
-                lecturers.forEach(l => {
-                    const practicalOption = document.createElement('option');
-                    practicalOption.value = l.userId;
-                    practicalOption.textContent = l.userName.trim();
-                    if (l.userId == selectedPractical) practicalOption.selected = true;
-                    practicalSelect.appendChild(practicalOption);
-
-                    const tutorialOption = document.createElement('option');
-                    tutorialOption.value = l.userId;
-                    tutorialOption.textContent = l.userName.trim();
-                    if (l.userId == selectedTutorial) tutorialOption.selected = true;
-                    tutorialSelect.appendChild(tutorialOption);
-                });
-            });
-    }
-
-    courseSelect.addEventListener('change', function () {
+    editCourseSelect.addEventListener('change', function () {
         const courseCode = this.value;
-        const deptCode = deptSelect.value;
-
         if (!courseCode) return;
 
-        fetch(`/get_course_details/${encodeURIComponent(deptCode)}/${encodeURIComponent(courseCode)}`)
+        fetch(`/get_exam_details/${encodeURIComponent(courseCode)}`)
             .then(res => res.json())
             .then(data => {
                 if (data.error) {
                     alert(data.error);
                     return;
                 }
-                studentInput.value = data.courseStudent || '';
+
+                // Autofill fields
                 deptSelect.value = data.courseDepartment || '';
-                populateLecturers(data.courseDepartment, data.practicalLecturer, data.tutorialLecturer);
+                studentInput.value = data.courseStudent || '';
+                venueSelect.value = data.examVenue || '';
+                invigilatorInput.value = data.examNoInvigilator || 0;
+
+                // Split datetime into date + time
+                if (data.examStartTime) {
+                    startDateInput.value = data.examStartTime.slice(0, 10);
+                    startTimeInput.value = data.examStartTime.slice(11, 16);
+                }
+                if (data.examEndTime) {
+                    endDateInput.value = data.examEndTime.slice(0, 10);
+                    endTimeInput.value = data.examEndTime.slice(11, 16);
+                }
+
+                // Populate lecturers (they come as names in JSON)
+                practicalSelect.innerHTML = `<option selected>${data.practicalLecturer || ''}</option>`;
+                tutorialSelect.innerHTML = `<option selected>${data.tutorialLecturer || ''}</option>`;
             });
     });
-
-    deptSelect.addEventListener('change', function () {
-        populateLecturers(this.value, null, null);
-    });
 });
+
+
+
+
