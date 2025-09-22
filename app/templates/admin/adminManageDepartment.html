@@ -66,39 +66,27 @@
             </div>
 
             <div class="form-right">
-                <label>Hop Name</label>
-                <select id="hopName" name="hopName" onchange="updateEmail('hopName','hopEmail')">
-                    <option value="" disabled selected>Select a Hop</option>
-                    {% for hop in hop_list %}
-                        <option value="{{ hop.userId }}" data-email="{{ hop.userEmail }}">
-                            [{{ hop.userId }}] {{ hop.userName }}
-                        </option>
-                    {% endfor %}
+                <label>Dean Name</label>
+                <select id="deanName" name="deanName">
+                    <option value="" disabled selected>Select a Dean</option>
                 </select><br>
 
-                
-                <label>Dean Name</label>
-                <select id="deanName" name="deanName" onchange="updateEmail('deanName','deanEmail')">
-                    <option value="" disabled selected>Select a Dean</option>
-                    {% for dean in dean_list %}
-                        <option value="{{ dean.userId }}" data-email="{{ dean.userEmail }}">
-                            [{{ dean.userId }}] {{ dean.userName }} 
-                        </option>
-                    {% endfor %}
+                <label>HOP Name</label>
+                <select id="hopName" name="hopName">
+                    <option value="" disabled selected>Select a HOP</option>
                 </select>
             </div>
         </div>
 
-        <!-- 🔽 Add this hidden input here -->
         <input type="hidden" name="form_type" value="manual">
         <br><br>
 
-        <!-- Upload Form Submit -->
         <div class="button-wrapper">
             <button type="submit">Add New Department</button>
         </div>
     </div>
 </form>
+
 {% endblock %}
 
 {% block edit_section %}
@@ -125,26 +113,14 @@
             </div>
 
             <div class="form-right">
-                <label>Hop Name</label>
-                <select id="hopName" name="hopName">
-                    <option value="" disabled selected>Select a Hop</option>
-                    {% for hop in hop_list %}
-                        <option value="{{ hop.userId }}"
-                            {% if department_select and hop.userId == department_select.hopId %}selected{% endif %}>
-                            [{{ hop.userId }}] {{ hop.userName }}
-                        </option>
-                    {% endfor %}
-                </select><br>
-
                 <label>Dean Name</label>
                 <select id="deanName" name="deanName">
                     <option value="" disabled selected>Select a Dean</option>
-                    {% for dean in dean_list %}
-                        <option value="{{ dean.userId }}"
-                            {% if department_select and dean.userId == department_select.deanId %}selected{% endif %}>
-                            [{{ dean.userId }}] {{ dean.userName }}
-                        </option>
-                    {% endfor %}
+                </select><br>
+
+                <label>HOP Name</label>
+                <select id="hopName" name="hopName">
+                    <option value="" disabled selected>Select a HOP</option>
                 </select>
             </div>
         </div>
@@ -188,16 +164,18 @@
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
                     <td>
-                        Dean ID     : {{ row.dean.userId if row.dean else '' }} <br>
-                        Dean Name   : {{ row.dean.userName if row.dean else '' }} <br>
-                        Dean Email  : {{ row.dean.userEmail if row.dean else '' }} <br>
-                        Dean Contact: {{ row.dean.userContact if row.dean else '' }}
+                        Dean ID         : {{ row.dean.userId if row.dean else '' }} <br>
+                        Dean Name       : {{ row.dean.userName if row.dean else '' }} <br>
+                        Dean Email      : {{ row.dean.userEmail if row.dean else '' }} <br>
+                        Dean Contact    : {{ row.dean.userContact if row.dean else '' }} <br>
+                        Dean Department : {{ row.dean.userDepartment if row.dean else ''}}
                     </td>
                     <td>
-                        Hop ID     : {{ row.hop.userId if row.hop else '' }} <br>
-                        Hop Name   : {{ row.hop.userName if row.hop else '' }} <br>
-                        Hop Email  : {{ row.hop.userEmail if row.hop else '' }} <br>
-                        Hop Contact: {{ row.hop.userContact if row.hop else '' }}
+                        Hop ID          : {{ row.hop.userId if row.hop else '' }} <br>
+                        Hop Name        : {{ row.hop.userName if row.hop else '' }} <br>
+                        Hop Email       : {{ row.hop.userEmail if row.hop else '' }} <br>
+                        Hop Contact     : {{ row.hop.userContact if row.hop else '' }} <br>
+                        Hop Department  : {{ row.hop.userDepartment if row.hop else ''}}
                     </td>
                 </tr>
                 {% endfor %}
