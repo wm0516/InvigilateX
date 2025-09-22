@@ -155,6 +155,14 @@
                     {% endfor %}
                 </select><br>
 
+                <label>Course Code</label>
+                <input type="text" id="editCourseCode" name="courseCode" value="{{ course_select.courseCodeSection.split('/')[0] if course_select else '' }}" readonly><br>
+
+                <label>Course Section</label>
+                <input type="text" id="editCourseSection" name="courseSection" value="{{ course_select.courseCodeSection.split('/')[1] if course_select else '' }}" readonly>
+            </div>
+
+            <div class="form-middle">
                 <label>Department (Editable)</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>Select Department</option>
@@ -163,19 +171,8 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Course Code</label>
-                <input type="text" id="editCourseCode" name="courseCode"
-                       value="{{ course_select.courseCodeSection.split('/')[0] if course_select else '' }}" readonly>
-            </div>
-
-            <div class="form-middle">
-                <label>Course Section</label>
-                <input type="text" id="editCourseSection" name="courseSection"
-                       value="{{ course_select.courseCodeSection.split('/')[1] if course_select else '' }}" readonly><br>
-
                 <label>Course Name (Editable)</label>
-                <input type="text" id="editCourseName" name="courseName"
-                       value="{{ course_select.courseName if course_select else '' }}" required><br>
+                <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required><br>
 
                 <label>Practical Lecturer (Editable)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
@@ -190,12 +187,10 @@
                 </select><br>
 
                 <label>Course Credit Hour(s) (Editable)</label>
-                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1"
-                       value="{{ course_select.courseHour if course_select else '' }}" required><br>
+                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required><br>
 
                 <label>Course Number of Student(s) (Editable)</label>
-                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1"
-                       value="{{ course_select.courseStudent if course_select else '' }}" required>
+                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required>
             </div>
         </div>
 
