@@ -826,35 +826,18 @@ def admin_manageVenue():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage
 # -------------------------------
-@app.route('/get_courses_by_department/<department_code>')
+@app.route('/get_courses_by_department/<path:department_code>')
 def get_courses_by_department(department_code):
-    try:
-        courses = Course.query.filter_by(courseDepartment=department_code).all()
-        data = []
-        for course in courses:
-            course_exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
-            data.append({
-                "courseCodeSection": f"{course.courseCodeSection})",
-                "examId": course_exam.examId if course_exam else None
-            })
-        return jsonify({"success": True, "courseSection": data})
-    except Exception as e:
-        print("❌ Error in get_courseSection_byDept:", e)
-        return jsonify({"success": False, "error": str(e)})
+    courses = Course.query.filter_by(courseDepartment=department_code).first()
+    if not courses:
+        return jsonify({"error", "Courses not found"}), 404
+    return jsonify({
+        "courseCodeSection": courses.courseCodeSection,
+        "examId": courses.courseExamId
+    })
 
 
 # -------------------------------
