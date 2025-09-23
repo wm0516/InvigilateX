@@ -509,7 +509,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (sectionCode && deptCode) {
             console.log(`[Fetch] Getting details for course: ${sectionCode} under ${deptCode}`);
-            fetch(`/get_course_details/${deptCode}/${encodeURIComponent(sectionCode)}`)
+            fetch(`/get_course_details/${encodeURIComponent(deptCode)}/${encodeURIComponent(sectionCode)}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
