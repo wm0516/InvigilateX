@@ -1154,6 +1154,21 @@ def admin_manageTimetable():
 
             flash(f"✅ Files read: {len(files)}, Files processed: {len(latest_files)}, Rows inserted: {total_rows_inserted}", "success")
             return redirect(url_for('admin_manageTimetable'))
+        
+        elif form_type == 'edit':
+            user_id = request.form['staffList']
+            row_id = request.form['timetableList']
+
+            # Fetch the timetable row
+            timetable_row = TimetableRow.query.get(row_id)
+            if timetable_row:
+                timetable_row.timetable_id = user_id  # Link the staff to the timetable row
+                db.session.commit()
+                flash(f"✅ {timetable_row.lecturerName} has been linked to staff ID {user_id}", "success")
+            else:
+                flash("❌ Timetable row not found", "error")
+
+            return redirect(url_for('admin_manageTimetable'))
 
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()

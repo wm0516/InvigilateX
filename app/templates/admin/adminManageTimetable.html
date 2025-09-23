@@ -82,16 +82,46 @@
 </form>
 {% endblock %}
 
+
+
 {% block edit_section %}
-<!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
     <div id="editSection" style="width: 90%; margin:auto;">
+        <h4 style="text-align: center;">Link Timetable With Staff</h4>
+        <div class="profile-frame" style="display: flex; justify-content: space-between; gap: 20px;">
+            <div class="form-left" style="flex:1;">
+                <label>Timetable Unassigned</label>
+                <select name="timetableList" id="timetableList" required>
+                    <option value="" disabled selected>Select Timetable</option>
+                    {% for row in timetable_data %}
+                        {% if row.timetable_id is none %}
+                            <option value="{{ row.rowId }}">{{ row.lecturerName }} [{{ unassigned_count[row.lecturerName] }}]</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-right" style="flex:1;">
+                <label>Staff Linked</label>
+                <select name="staffList" id="staffList" required>
+                    <option value="" disabled selected>Select Staff</option>
+                    {% for staff in staff_list %}
+                        <option value="{{ staff.userId }}">{{ staff.userName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
         <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
+        <br><br>
+
+        <div class="button-wrapper">
+            <button type="submit" id="uploadButton">Linked Timetable</button>
         </div>
     </div>
 </form>
 {% endblock %}
+
+
 
 
 {% block content %}
