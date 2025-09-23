@@ -330,6 +330,7 @@ def save_timetable_to_db(structured):
     return len(new_rows)
 
 
+
 # -------------------------------
 # Function handle file upload
 # -------------------------------
@@ -1217,17 +1218,17 @@ def admin_manageStaff():
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
     # === Default data load ===
-    timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
     # Total timetable = total lecturers who have timetable saved
-    total_timetable = db.session.query(Timetable.lecturerName).distinct().count()
+    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
     # Map day shortcodes to full keys for Jinja
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
-        f"{day.lower()}_timetable": db.session.query(Timetable.courseCode).filter_by(classDay=day).distinct().count()
+        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode).filter_by(classDay=day).distinct().count()
         for day in days
     }
 
@@ -1282,7 +1283,7 @@ def admin_manageTimetable():
             # Refresh after upload
             timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
-            total_timetable = db.session.query(Timetable.lecturerName).distinct().count()
+            total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
             return render_template(
                 'admin/adminManageTimetable.html',
