@@ -16,11 +16,13 @@
             <div class="dashboard-row">
                 <div class="dashboard-frame pie">
                     <h4>Lecturers without Assigned Timetable</h4>
-                    {% for lecturer, count in unassigned_count.items() %}
-                        {{ loop.index }} {{ lecturer }} [{{ count }}]<br>
-                    {% endfor %}
+                    <div style="text-align: left;">
+                        {% for lecturer, count in unassigned_count.items() %}
+                            {{ loop.index }}. {{ lecturer }} [{{ count }}]<br>
+                        {% endfor %}
+                    </div>
                 </div>
-                
+
                 <div class="dashboard-frame">
                     <h3>Total TimetableSets</h3>
                     <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>

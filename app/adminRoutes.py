@@ -1262,9 +1262,12 @@ def admin_manageTimetable():
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
-        f"{day.lower()}_timetable": TimetableRow.query.filter(TimetableRow.classDay == day).count()
+        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
+            .filter(TimetableRow.classDay == day)
+            .distinct().count()
         for day in days
     }
+
 
     # Count unassigned rows per lecturer
     unassigned_count = {
@@ -1272,16 +1275,8 @@ def admin_manageTimetable():
         for lecturer in lecturers
     }
 
-    return render_template('admin/adminManageTimetable.html',
-     active_tab='admin_manageTimetabletab',
-        timetable_data=timetable_data,
-        lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        total_timetable=total_timetable,
-        **day_counts,
-        unassigned_count=unassigned_count
-    )
-
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers,
+        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count)
 
 
 
