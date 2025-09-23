@@ -1183,7 +1183,7 @@ def admin_manageTimetable():
             flash(f"✅ Files read: {len(files)}, Files processed: {len(latest_files)}, Rows inserted: {total_rows_inserted}", "success")
             return redirect(url_for('admin_manageTimetable'))
         
-        elif form_type == 'edit':
+        elif form_type == 'manual':
             user_id = request.form.get("staffList")      # <-- this is User.userId
             lecturer = request.form.get("lecturerName")
 

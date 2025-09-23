@@ -2,7 +2,7 @@
 {% set show_tabs = true %}
 {% set show_upload = true %}
 {% set show_dashboard = true %}
-{% set show_manual = false %}
+{% set show_manual = true %}
 {% set show_edit = true %}
 {% block title %}Admin ManageTimetable{% endblock %}
 {% block head_title %}<h2>Manage Timetable</h2>{% endblock %}
@@ -72,6 +72,43 @@
 </form>
 {% endblock %}
 
+
+{% block manual_section %}
+<form id="manualForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
+    <div id="manualSection" style="width: 90%; margin:auto;">
+        <h4 style="text-align: center;">Link Timetable With Staff</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Unassigned Lecturers</label>
+                <select name="lecturerName" id="lecturerName" required>
+                    <option value="" disabled selected>Select Lecturer</option>
+                    {% for item in unassigned_summary %}
+                        <option value="{{ item.lecturer }}">
+                            [{{ item.count }}row(s)] {{ item.lecturer }} 
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-right">
+                <label>Staff Linked</label>
+                <select name="staffList" id="staffList" required>
+                    <option value="" disabled selected>Select Staff</option>
+                    {% for staff in staff_list %}
+                        <option value="{{ staff.userId }}">[{{ staff.userId }}] {{ staff.userName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="edit">
+        <br><br>
+
+        <div class="button-wrapper">
+            <button type="submit" id="linkButton">Link Timetable</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
 
 
 {% block edit_section %}
