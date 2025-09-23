@@ -1140,7 +1140,18 @@ def admin_manageTimetable():
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
+
     staff_list = User.query.filter(User.userLevel != 4).all()
+    # Subquery: all user_ids already in Timetable
+    assigned_users = db.session.query(Timetable.user_id)
+
+    # Main query: users not level 4 AND not already in Timetable
+    staff_list = User.query.filter(
+        User.userLevel != 4,
+        ~User.user_id.in_(assigned_users)
+    ).all()
+
+    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
 
     timetable_selected = request.form.get('editTimetableList')
     timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
@@ -1149,7 +1160,7 @@ def admin_manageTimetable():
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
         f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-            .filter(TimetableRow.classDay == day)
+            .filter(TimetableRow.classDay == day)   
             .distinct().count()
         for day in days
     }
@@ -1245,7 +1256,8 @@ def admin_manageTimetable():
         total_timetable=total_timetable,
         unassigned_summary=unassigned_summary,   # <-- use this
         staff_list=staff_list,
-        **day_counts
+        **day_counts,
+        timetable_list=timetable_list
     )
 
 
