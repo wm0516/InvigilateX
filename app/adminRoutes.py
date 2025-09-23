@@ -13,6 +13,8 @@ import os
 import re
 import PyPDF2
 from sqlalchemy import func
+from collections import defaultdict
+
 
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -1136,23 +1138,20 @@ def admin_manageTimetable():
         for day in days
     }
 
-    # Get all lecturers with unassigned rows
-    unassigned_data = []
-    for lecturer in lecturers:
-        unassigned_rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
-        count = len(unassigned_rows)
+    # Group all lecturers with unassigned rows
+    from collections import defaultdict
+    grouped_unassigned = defaultdict(int)
+    for row in TimetableRow.query.filter_by(timetable_id=None).all():
+        grouped_unassigned[row.lecturerName] += 1
 
-        for row in unassigned_rows:
-            unassigned_data.append({
-                "rowId": row.rowId,              # rowId
-                "lecturer": lecturer,         # lecturer name
-                "count": count                # total rows for this lecturer
-            })
+    # Convert for Jinja
+    unassigned_summary = [{"lecturer": name, "count": count} for name, count in grouped_unassigned.items()]
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
+            # ---- File Upload Handling ----
             files = request.files.getlist("timetable_file[]")
             latest_files = {}
             skipped_files = []
@@ -1186,22 +1185,31 @@ def admin_manageTimetable():
         
         elif form_type == 'edit':
             user_id = request.form.get("staffList")
-            row_id = request.form.get("timetableList")
+            lecturer = request.form.get("lecturerName")  # <-- selected lecturer
 
-            # Fetch the timetable row
-            row  = TimetableRow.query.get(row_id)
-            if row :
-                row.timetable_id = user_id  # Link the staff to the timetable row
+            if user_id and lecturer:
+                # Update all rows of this lecturer
+                rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
+                for row in rows:
+                    row.timetable_id = user_id
                 db.session.commit()
-                flash(f"✅ {row.lecturerName} has been linked to staff ID {user_id}", "success")
+                flash(f"✅ {lecturer} ({len(rows)} row(s)) linked to staff ID {user_id}", "success")
             else:
-                flash("❌ Timetable row not found", "error")
+                flash("❌ Missing lecturer or staff", "error")
 
             return redirect(url_for('admin_manageTimetable'))
 
-
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers,
-        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_data=unassigned_data, staff_list=staff_list)
+    return render_template(
+        'admin/adminManageTimetable.html',
+        active_tab='admin_manageTimetabletab',
+        timetable_data=timetable_data,
+        lecturers=lecturers,
+        selected_lecturer=selected_lecturer,
+        total_timetable=total_timetable,
+        unassigned_summary=unassigned_summary,   # <-- use this
+        staff_list=staff_list,
+        **day_counts
+    )
 
 
 
