@@ -243,9 +243,9 @@
                         {% if row.userLevel == 1 %}
                             LECTURER
                         {% elif row.userLevel == 2 %}
-                            HOP
-                        {% elif row.userLevel == 3 %}
                             DEAN
+                        {% elif row.userLevel == 3 %}
+                            HOP
                         {% elif row.userLevel == 4 %}
                             ADMIN
                         {% else %}
@@ -277,6 +277,44 @@
 
 {% block extra_scripts %}
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const staffSelect = document.getElementById("editStaffId");
+
+        staffSelect.addEventListener("change", function () {
+            const staffId = this.value;
+            if (!staffId) return;
+
+            fetch(`/get_staff/${staffId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    // Fill input fields
+                    document.getElementById("editUsername").value = data.userName || "";
+                    document.getElementById("editEmail").value = data.userEmail || "";
+                    document.getElementById("editContact").value = data.userContact || "";
+
+                    // Set Gender
+                    const genderSelect = document.getElementById("editGender");
+                    genderSelect.value = data.userGender || "";
+
+                    // Set Role
+                    const roleSelect = document.getElementById("editRoleSelect");
+                    roleSelect.value = data.userLevel || "";
+
+                    // Set Department
+                    const deptSelect = document.getElementById("editDepartment");
+                    deptSelect.value = data.userDepartment || "";
+                })
+                .catch(err => {
+                    console.error("Error fetching staff:", err);
+                });
+        });
+    });
+
     const defaultColors = [
         'rgba(255, 99, 132, 0.6)',
         'rgba(54, 162, 235, 0.6)',

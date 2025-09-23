@@ -463,27 +463,6 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 });
 
 
-document.getElementById('editStaffId').addEventListener('change', function() {
-    const staffId = this.value;
-    if (!staffId) return;
-
-    fetch(`/get_staff/${staffId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-            // Populate fields
-            document.getElementById('editUsername').value = data.userName;
-            document.getElementById('editEmail').value = data.userEmail;
-            document.getElementById('editContact').value = data.userContact;
-            document.getElementById('editGender').value = data.userGender;
-            document.getElementById('editDepartment').value = data.userDepartment;
-            document.getElementById('editRoleSelect').value = data.userLevel;
-        })
-        .catch(err => console.error(err));
-});
 
 
 // examManual.js
