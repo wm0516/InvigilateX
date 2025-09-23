@@ -80,6 +80,7 @@ def get_all_attendances():
 # Calculate All InvigilatorAttendance and InvigilationReport Data From Database
 # -------------------------------
 def calculate_invigilation_stats():
+    # Use LEFT OUTER JOIN to keep all InvigilatorAttendance rows
     query = db.session.query(
         InvigilatorAttendance.attendanceId,
         InvigilatorAttendance.invigilatorId,    
@@ -88,10 +89,11 @@ def calculate_invigilation_stats():
         Exam.examStartTime,
         Exam.examEndTime,
         InvigilatorAttendance.reportId
-    ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+    ).outerjoin(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
 
+    # Total reports and total assigned invigilators
     total_report = InvigilationReport.query.count()
-    total_invigilator =InvigilatorAttendance.query.count()
+    total_invigilator = InvigilatorAttendance.query.count()
 
     stats = {
         "total_report": total_report,
@@ -115,16 +117,19 @@ def calculate_invigilation_stats():
             stats["total_inProgress"] += 1
             continue
 
-        # ✅ Both checkIn and checkOut exist
-        if row.checkIn <= row.examStartTime:
-            stats["total_checkInOnTime"] += 1
-        else:
-            stats["total_checkInLate"] += 1
+        # Case 3: Both checkIn and checkOut exist
+        # If Exam times are missing, skip time comparison
+        if row.examStartTime is not None:
+            if row.checkIn <= row.examStartTime:
+                stats["total_checkInOnTime"] += 1
+            else:
+                stats["total_checkInLate"] += 1
 
-        if row.checkOut >= row.examEndTime:
-            stats["total_checkOutOnTime"] += 1
-        else:
-            stats["total_checkOutEarly"] += 1
+        if row.examEndTime is not None:
+            if row.checkOut >= row.examEndTime:
+                stats["total_checkOutOnTime"] += 1
+            else:
+                stats["total_checkOutEarly"] += 1
 
     return stats
 
