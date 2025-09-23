@@ -901,14 +901,9 @@ def get_exam_details(course_code_section):
 def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-
-    # Edit section, show all data (complete and incomplete)
     exam_data = Exam.query.all()
-    
-    # Show all for Edit section 
-    course_data_full = Course.query.all()
     total_exam = Exam.query.count()
-
+    
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
     course = Course.query.filter_by(courseCodeSection=exam_selected).first()
@@ -943,7 +938,6 @@ def admin_manageExam():
         Exam.examNoInvigilator.is_(None)
     ).count()
 
-
     # Default manual form values
     courseSection_text = ''
     practicalLecturer_text = ''
@@ -963,11 +957,6 @@ def admin_manageExam():
                 redirect_endpoint='admin_manageExam',
                 usecols="A:I"
             )
-
-        # --------------------- DASHBOARD ADD EXAM FORM ---------------------
-        elif form_type == 'dashboard':
-            return redirect(url_for('admin_manageExam'))
-        
 
         # --------------------- EDIT EXAM FORM ---------------------
         elif form_type == 'edit' and exam_select:
@@ -1043,8 +1032,8 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", "error")
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, department_data=department_data,
-                           total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select, course_data_full=course_data_full)
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, 
+                           department_data=department_data, total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select)
 
 
 

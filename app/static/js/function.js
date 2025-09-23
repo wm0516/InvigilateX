@@ -472,8 +472,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!programCode) return;
 
     const courseSectionSelect = document.getElementById('examManualCourseSection');
-    const practicalLecturer = document.getElementById('practicalLecturer');
-    const tutorialLecturer = document.getElementById('tutorialLecturer');
+    const practicalLecturer = document.getElementById('examPracticalLecturer');
+    const tutorialLecturer = document.getElementById('examTutorialLecturer');
     const studentField = document.getElementById('student');
 
     // When program/department changes
