@@ -1219,18 +1219,22 @@ def admin_manageStaff():
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # === Default data load ===
+    # --- Fetch all timetable rows ---
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
+
+    # --- Get all lecturers from the database ---
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
-    # Total timetable = total lecturers who have timetable saved
+    # --- Total timetable = total distinct lecturers in the database ---
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
-    # Map day shortcodes to full keys for Jinja
+    # --- Day counts (all rows) ---
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
-        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode).filter_by(classDay=day).distinct().count()
+        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
+            .filter(TimetableRow.classDay==day)
+            .distinct().count()
         for day in days
     }
 
@@ -1276,16 +1280,27 @@ def admin_manageTimetable():
                 structured['filename'] = file.filename
                 results.append(structured)
 
-                rows_inserted = save_timetable_to_db(structured)
+                rows_inserted = save_timetable_to_db(structured)  # handles Timetable + TimetableRow
                 total_rows_inserted += rows_inserted
                 selected_lecturer_name = structured.get("lecturer")
 
             flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
             # Refresh after upload
-            timetable_data = TimetableRow.query.order_by(TimetableRow.timetableId.asc()).all()
+            timetable_data = TimetableRow.query.filter(TimetableRow.timetable_id.isnot(None))\
+                                .order_by(TimetableRow.rowId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
-            total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
+            total_timetable = db.session.query(TimetableRow.lecturerName)\
+                                .filter(TimetableRow.timetable_id.isnot(None))\
+                                .distinct().count()
+
+            # Refresh day counts
+            day_counts = {
+                f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
+                    .filter(TimetableRow.classDay==day, TimetableRow.timetable_id.isnot(None))
+                    .distinct().count()
+                for day in days
+            }
 
             return render_template(
                 'admin/adminManageTimetable.html',
@@ -1297,7 +1312,8 @@ def admin_manageTimetable():
                 upload_summary={
                     "total_files_uploaded": total_files_read,
                     "total_files_after_filter": total_files_filtered,
-                    "files_after_filter": filtered_filenames
+                    "files_after_filter": filtered_filenames,
+                    "skipped_files": skipped_files
                 },
                 total_timetable=total_timetable,
                 **day_counts
@@ -1315,6 +1331,7 @@ def admin_manageTimetable():
         total_timetable=total_timetable,
         **day_counts
     )
+
 
 
 # -------------------------------
