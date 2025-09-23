@@ -546,8 +546,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 emailSelect.value = staff.userEmail || '';
                 contactSelect.value = staff.userContact || '';
                 genderSelect.value = staff.userGender || '';
-                departmentSelect = staff.userDepartment || '';
-                roleSelect = staff.userLevel || '';
+                departmentSelect.value = staff.userDepartment || '';
+                roleSelect.value = staff.userLevel || '';
             });
     }
 
