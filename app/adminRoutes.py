@@ -1139,6 +1139,7 @@ def admin_manageStaff():
 
             elif action == 'delete' and user_select:
                 user_select.userStatus = 2
+                user_select.useruserRegisterDateTime = datetime.now(timezone.utc)
                 db.session.commit()
                 flash("Staff deleted successfully", "success")
 

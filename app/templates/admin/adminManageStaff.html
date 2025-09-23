@@ -265,7 +265,7 @@
                         {% elif row.userStatus|int == 1 %}
                             Activated
                         {% elif row.userStatus|int == 2 %}
-                            Deleted
+                            <span style="color:red;">[DELETED]</span>
                         {% endif %}
                     </td>
                     <td>{{ row.userRegisterDateTime }}</td>
