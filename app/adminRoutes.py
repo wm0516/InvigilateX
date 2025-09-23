@@ -915,9 +915,7 @@ def admin_manageExam():
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
     # Debug: print exam data
-    flash(f"[DEBUG] Found {len(exam_data)} exams", "error")
-    for exam in exam_data:
-        flash(f"[DEBUG] Exam {exam.examId}: Course = {exam.course.courseCodeSection if exam.course else 'None'}", "error")
+    flash(f"[DEBUG] Found all exams {len(exam_data)} exams", "error")
 
     # Filter for manual section, assign a new exam
     course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
@@ -927,7 +925,7 @@ def admin_manageExam():
             Exam.examEndTime.is_(None)
         )
     ).all()
-    flash(f"[DEBUG] Found {len(course_data)} courses", "error")
+    flash(f"[DEBUG] Found exams without assigned{len(course_data)} courses", "error")
 
     # Complete exams: all important columns are NOT NULL
     exam_with_complete = Exam.query.filter(
