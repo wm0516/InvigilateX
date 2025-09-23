@@ -122,7 +122,7 @@
                     <option value="" disabled selected>Select Timetable</option>
                     {% for t in timetable_list %}
                         <option value="{{ t.timetableId }}">
-                            [{{ t.timetableId }}] {{ t.lecturerName }} → {{ t.staffName }}
+                            [{{ t.timetableId }}] {{ t.timetableRow.lecturerName }}
                         </option>
                     {% endfor %}
                 </select>
