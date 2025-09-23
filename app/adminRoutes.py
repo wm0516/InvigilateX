@@ -1105,10 +1105,8 @@ def admin_manageStaff():
     total_deactivate = User.query.filter_by(userStatus=0).count()
 
     staff_id = request.form.get('editStaffId')
-    user_select = None
-
-    if staff_id:
-        user_select = User.query.filter_by(userId=staff_id).first()
+    user_select = User.query.filter_by(userId=staff_id).first()
+    flash(f"User selected {user_select}", "success")
 
     # incomplete rows check (e.g. NULL or empty important fields)
     error_rows = User.query.filter(
