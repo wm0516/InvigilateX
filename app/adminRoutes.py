@@ -1089,26 +1089,16 @@ def admin_manageStaff():
 
     # === Dashboard Counts ===
     total_staff = User.query.count()
-
-    # based on userLevel
     total_admin = User.query.filter_by(userLevel=4).count()
     total_lecturer = User.query.filter_by(userLevel=1).count()
     total_dean = User.query.filter_by(userLevel=2).count()
     total_hop = User.query.filter_by(userLevel=3).count()
-
-    # based on gender
     total_male_staff = User.query.filter_by(userGender="MALE").count()
     total_female_staff = User.query.filter_by(userGender="FEMALE").count()
-
-    # based on status (assuming: 1=activated, 0=deactivated)
     total_activated = User.query.filter_by(userStatus=1).count()
     total_deactivate = User.query.filter_by(userStatus=0).count()
 
-    staff_id = request.form.get('editStaffId')
-    user_select = User.query.filter_by(userId=staff_id).first()
-    flash(f"User selected {user_select}", "success")
-
-    # incomplete rows check (e.g. NULL or empty important fields)
+    # Incomplete rows check
     error_rows = User.query.filter(
         (User.userDepartment.is_(None)) | (User.userDepartment == '') |
         (User.userName.is_(None)) | (User.userName == '') |
@@ -1118,9 +1108,12 @@ def admin_manageStaff():
         (User.userLevel.is_(None))
     ).count()
 
+    # ✅ Define default so template won’t break
+    user_select = None
+
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-        
+
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='staff_file',
@@ -1131,10 +1124,13 @@ def admin_manageStaff():
             )
 
         elif form_type == 'edit':
-            action = request.form.get('action')
+            staff_id = request.form.get('editStaffId')
+            user_select = User.query.filter_by(userId=staff_id).first()
+            flash(f"User selected {user_select}", "success")
 
+            action = request.form.get('action')
             if action == 'update' and user_select:
-                role_text = request.form.get('editRole', '0') 
+                role_text = request.form.get('editRole', '0')
                 user_select.userName = request.form.get('editUsername', '').strip()
                 user_select.userEmail = request.form.get('editEmail', '').strip()
                 user_select.userContact = request.form.get('editContact', '').strip()
@@ -1143,8 +1139,8 @@ def admin_manageStaff():
                 user_select.userDepartment = request.form.get('editDepartment', '').strip()
                 db.session.commit()
                 flash("Staff updated successfully", "success")
-            
-            elif action == 'delete':
+
+            elif action == 'delete' and user_select:
                 db.session.delete(user_select)
                 db.session.commit()
                 flash("Staff deleted successfully", "success")
@@ -1152,23 +1148,22 @@ def admin_manageStaff():
             return redirect(url_for('admin_manageStaff'))
 
         elif form_type == 'manual':
-            role_text = request.form.get('role', '0')  # "1", "2", etc.
-
+            role_text = request.form.get('role', '0')
             form_data = {
                 "id": request.form.get('userid', '').strip(),
                 "department": request.form.get('department', '').strip(),
                 "name": request.form.get('username', '').strip(),
-                "role": int(role_text),  
+                "role": int(role_text),
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
                 "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
             }
-
             success, message = create_staff(**form_data)
             flash(message, "success" if success else "error")
             return redirect(url_for('admin_manageStaff'))
 
+    # ✅ Always safe because user_select defaults to None
     return render_template(
         'admin/adminManageStaff.html',
         active_tab='admin_manageStafftab',
