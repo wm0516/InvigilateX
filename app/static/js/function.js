@@ -536,7 +536,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const staffId = this.value;
         if (!staffId) return;
-
         fetch(`/get_staff/${staffId}`)
             .then(res => res.json())
             .then(data => {
@@ -552,10 +551,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("editEmail").value = data.userEmail || "";
                 document.getElementById("editContact").value = data.userContact || "";
 
-                // Fill selects with trimming for safety
-                document.getElementById("editGender").value = (data.userGender || "").trim();
-                document.getElementById("editRoleSelect").value = String(data.userLevel || "").trim();
-                document.getElementById("editDepartment").value = (data.userDepartment || "").trim();
+                // Gender
+                const genderEl = document.getElementById("editGender");
+                genderEl.value = (data.userGender || "").toUpperCase().trim();
+                if (genderEl.value !== (data.userGender || "").toUpperCase().trim()) {
+                    console.warn("Gender mismatch:", data.userGender);
+                }
+
+                // Role
+                const roleEl = document.getElementById("editRoleSelect");
+                roleEl.value = String(data.userLevel).trim();
+                if (roleEl.value !== String(data.userLevel).trim()) {
+                    console.warn("Role mismatch:", data.userLevel);
+                }
+
+                // Department
+                const deptEl = document.getElementById("editDepartment");
+                deptEl.value = (data.userDepartment || "").trim();
+                if (deptEl.value !== (data.userDepartment || "").trim()) {
+                    console.warn("Department mismatch:", data.userDepartment);
+                }
             })
             .catch(err => console.error("Error fetching staff:", err));
     });
