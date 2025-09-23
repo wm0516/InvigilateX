@@ -84,7 +84,7 @@
                     <option value="" disabled selected>Select Lecturer</option>
                     {% for item in unassigned_summary %}
                         <option value="{{ item.lecturer }}">
-                            [{{ item.count }}row(s)] {{ item.lecturer }} 
+                            [{{ item.count }} row(s)] {{ item.lecturer }} 
                         </option>
                     {% endfor %}
                 </select>
@@ -100,7 +100,7 @@
                 </select>
             </div>
         </div>
-        <input type="hidden" name="form_type" value="edit">
+        <input type="hidden" name="form_type" value="manual">
         <br><br>
 
         <div class="button-wrapper">
@@ -114,15 +114,15 @@
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
     <div id="editSection" style="width: 90%; margin:auto;">
-        <h4 style="text-align: center;">Link Timetable With Staff</h4>
+        <h4 style="text-align: center;">Edit or Delete Timetable Link</h4>
         <div class="profile-frame">
             <div class="form-left">
-                <label>Unassigned Lecturers</label>
-                <select name="lecturerName" id="lecturerName" required>
-                    <option value="" disabled selected>Select Lecturer</option>
-                    {% for item in unassigned_summary %}
-                        <option value="{{ item.lecturer }}">
-                            [{{ item.count }}row(s)] {{ item.lecturer }} 
+                <label>Existing Timetable List</label>
+                <select name="timetableId" id="editTimetableList" required>
+                    <option value="" disabled selected>Select Timetable</option>
+                    {% for t in timetable_list %}
+                        <option value="{{ t.timetableId }}">
+                            [{{ t.timetableId }}] {{ t.lecturerName }} → {{ t.staffName }}
                         </option>
                     {% endfor %}
                 </select>
@@ -130,7 +130,7 @@
 
             <div class="form-right">
                 <label>Staff Linked</label>
-                <select name="staffList" id="staffList" required>
+                <select name="staffList" id="editStaffList" required>
                     <option value="" disabled selected>Select Staff</option>
                     {% for staff in staff_list %}
                         <option value="{{ staff.userId }}">[{{ staff.userId }}] {{ staff.userName }}</option>
@@ -141,15 +141,18 @@
         <input type="hidden" name="form_type" value="edit">
         <br><br>
 
-        <div class="button-wrapper">
-            <button type="submit" id="linkButton">Link Timetable</button>
+        <div class="button-wrapper" style="gap: 5%;">
+            <button type="submit" name="action" value="update" style="background-color: rgb(44, 238, 70);">
+                <i class="fas fa-check"></i> Update Timetable Relationship
+            </button> 
+            <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);" 
+                    onclick="return confirm('Are you sure to delete this timetable relationship?')">
+                <i class="fas fa-trash"></i> Delete Timetable Relationship
+            </button>
         </div>
     </div>
 </form>
 {% endblock %}
-
-
-
 
 
 {% block content %}
@@ -237,6 +240,37 @@
             placeholder: "Type to search...",
             allowClear: true
         });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const timetableSelect = document.getElementById("editTimetableList");
+        const editStaffSelect = document.getElementById("editStaffList");
+
+        if (timetableSelect && editStaffSelect) {
+            timetableSelect.addEventListener("change", function () {
+                const timetableId = timetableSelect.value;
+                if (!timetableId) return;
+
+                fetch(`/get_linkTimetable/${timetableId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            console.error(data.error);
+                            return;
+                        }
+                        const userId = data.user_id;
+
+                        // Prefill staff select
+                        for (let opt of editStaffSelect.options) {
+                            if (opt.value === String(userId)) {
+                                opt.selected = true;
+                                break;
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Error fetching timetable link:", err));
+            });
+        }
     });
 </script>
 {% endblock %}

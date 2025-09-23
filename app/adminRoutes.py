@@ -905,7 +905,7 @@ def admin_manageStaff():
         total_staff=total_staff,
         total_admin=total_admin,
         total_hop=total_hop,
-        total_Dean=total_dean,
+        total_dean=total_dean,
         total_lecturer=total_lecturer,
         total_male_staff=total_male_staff,
         total_female_staff=total_female_staff,
@@ -919,6 +919,19 @@ def admin_manageStaff():
 
 
 
+
+# -------------------------------
+# Get TimetableLink Details for ManageTimetableEditPage
+# -------------------------------
+@app.route('/get_linkTimetable/<timetableID>')
+def get_linkTimetable(timetableID):
+    timetable = Timetable.query.filter_by(timetableId=timetableID).first()
+    if not timetable:
+        return jsonify({"error": "Timetable not found"}), 404
+    return jsonify({
+        "timetableId": timetable.timetableId,
+        "user_id": timetable.user_id
+    })
 
 # -------------------------------
 # Extract Base Name + Timestamp
@@ -1129,6 +1142,9 @@ def admin_manageTimetable():
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
     staff_list = User.query.filter(User.userLevel != 4).all()
 
+    timetable_selected = request.form.get('editTimetableList')
+    timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
+
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
@@ -1206,7 +1222,20 @@ def admin_manageTimetable():
                 flash("❌ Missing lecturer or staff", "error")
 
             return redirect(url_for('admin_manageTimetable'))
+        
+        elif form_type == 'edit':
+            action = request.form.get('action')
+            if action == 'update' and timetable_select:
+                timetable_select.staffId = request.form['editStaffList']
+                db.session.commit()
+                flash("Timetable updated successfully.", "success")
 
+            elif action == 'delete' and timetable_select:
+                db.session.delete(timetable_select)
+                db.session.commit()
+                flash("Timetable deleted successfully.", "success")
+        return redirect(url_for('admin_manageTimetable'))
+            
     return render_template(
         'admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
