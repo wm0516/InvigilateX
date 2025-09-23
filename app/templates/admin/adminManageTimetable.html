@@ -9,16 +9,6 @@
 
 {% block dashboard_section %}
 <!-- Dashboard Form -->
-<!-- 
-<div class="dashboard-frame pie">
-    <h3>Lecturers without Assigned Timetable</h3>
-    <div style="text-align: left;">
-        {% for lecturer, count in unassigned_count.items() %}
-            {{ loop.index }}. [{{ count }} line(s)]{{ lecturer }}<br>
-        {% endfor %}
-    </div>
-</div>
--->
 <form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
     <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">    
