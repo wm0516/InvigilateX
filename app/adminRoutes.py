@@ -1184,14 +1184,22 @@ def admin_manageTimetable():
             return redirect(url_for('admin_manageTimetable'))
         
         elif form_type == 'edit':
-            user_id = request.form.get("staffList")
-            lecturer = request.form.get("lecturerName")  # <-- selected lecturer
+            user_id = request.form.get("staffList")      # <-- this is User.userId
+            lecturer = request.form.get("lecturerName")
 
             if user_id and lecturer:
-                # Update all rows of this lecturer
+                # Ensure this user has a Timetable entry
+                timetable = Timetable.query.filter_by(user_id=user_id).first()
+                if not timetable:
+                    timetable = Timetable(user_id=user_id)
+                    db.session.add(timetable)
+                    db.session.commit()  # commit so timetableId is generated
+
+                # Now update all rows for that lecturer
                 rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
                 for row in rows:
-                    row.timetable_id = user_id
+                    row.timetable_id = timetable.timetableId   # <-- valid FK
+
                 db.session.commit()
                 flash(f"✅ {lecturer} ({len(rows)} row(s)) linked to staff ID {user_id}", "success")
             else:

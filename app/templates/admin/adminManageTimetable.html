@@ -85,7 +85,7 @@
                     <option value="" disabled selected>Select Lecturer</option>
                     {% for item in unassigned_summary %}
                         <option value="{{ item.lecturer }}">
-                            {{ item.lecturer }} [{{ item.count }} row(s)]
+                            [{{ item.count }}row(s)] {{ item.lecturer }} 
                         </option>
                     {% endfor %}
                 </select>
