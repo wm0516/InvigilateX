@@ -14,11 +14,11 @@
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                <div class="dashboard-frame">
+                <div class="dashboard-frame pie">
                     <h3>Lecturers without Assigned Timetable</h3>
                     <div style="text-align: left;">
                         {% for lecturer, count in unassigned_count.items() %}
-                            {{ loop.index }}. {{ lecturer }} [{{ count }} line(s)]<br>
+                            {{ loop.index }}. [{{ count }} line(s)]{{ lecturer }}<br>
                         {% endfor %}
                     </div>
                 </div>
@@ -28,17 +28,20 @@
                     <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
                 </div>
 
+                {% set days = [
+                    {'name':'Monday','value':mon_timetable,'color':'#007bff'},
+                    {'name':'Tuesday','value':tue_timetable,'color':'#28a745'},
+                    {'name':'Wednesday','value':wed_timetable,'color':'#fd7e14'},
+                    {'name':'Thursday','value':thu_timetable,'color':'#dc3545'},
+                    {'name':'Friday','value':fri_timetable,'color':'#6f42c1'}
+                ] %}
+
+                {% for day in days %}
                 <div class="dashboard-frame">
-                    <h3>Weekday Scheduled Classes</h3>
-                    <ul style="list-style-type:none; padding:0;">
-                        {% for day in days %}
-                        <li>
-                            <strong style="color:{{ day.color }}">{{ day.name }}:</strong>
-                            <span>{{ day.value }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
+                    <h3>{{ day.name }} Scheduled Classes</h3>
+                    <p class="dashboard-text" style="color:{{ day.color }}">{{ day.value }}</p>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>
