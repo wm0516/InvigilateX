@@ -1287,17 +1287,13 @@ def admin_manageTimetable():
             flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
             # Refresh after upload
-            timetable_data = TimetableRow.query.filter(TimetableRow.timetable_id.isnot(None))\
-                                .order_by(TimetableRow.rowId.asc()).all()
+            timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
-            total_timetable = db.session.query(TimetableRow.lecturerName)\
-                                .filter(TimetableRow.timetable_id.isnot(None))\
-                                .distinct().count()
+            total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
-            # Refresh day counts
             day_counts = {
                 f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-                    .filter(TimetableRow.classDay==day, TimetableRow.timetable_id.isnot(None))
+                    .filter(TimetableRow.classDay == day)
                     .distinct().count()
                 for day in days
             }
