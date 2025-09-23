@@ -1175,6 +1175,7 @@ def admin_manageTimetable():
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
+    staff_list = User.query.filter(User.userLevel != 4).all()
 
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
@@ -1193,7 +1194,7 @@ def admin_manageTimetable():
     }
 
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers,
-        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count)
+        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count, staff_list=staff_list)
 
 
 

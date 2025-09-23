@@ -88,20 +88,18 @@
 <form id="editForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
     <div id="editSection" style="width: 90%; margin:auto;">
         <h4 style="text-align: center;">Link Timetable With Staff</h4>
-        <div class="profile-frame" style="display: flex; justify-content: space-between; gap: 20px;">
-            <div class="form-left" style="flex:1;">
+        <div class="profile-frame">
+            <div class="form-left">
                 <label>Timetable Unassigned</label>
                 <select name="timetableList" id="timetableList" required>
                     <option value="" disabled selected>Select Timetable</option>
-                    {% for row in timetable_data %}
-                        {% if row.timetable_id is none %}
-                            <option value="{{ row.rowId }}">{{ row.lecturerName }} [{{ unassigned_count[row.lecturerName] }}]</option>
-                        {% endif %}
+                    {% for lecturer, count in unassigned_count.items() %}
+                        <option value="{{ row.rowId }}">{{ lecturer }} [{{ count }}]</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div class="form-right" style="flex:1;">
+            <div class="form-right">
                 <label>Staff Linked</label>
                 <select name="staffList" id="staffList" required>
                     <option value="" disabled selected>Select Staff</option>
