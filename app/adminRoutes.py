@@ -307,28 +307,30 @@ def save_timetable_to_db(structured):
                 for sec in act["sections"]:
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
-                    row = TimetableRow(
-                        timetable_id=timetable.timetableId if timetable else None,
-                        filename=filename,
-                        lecturerName=lecturer,
-                        classType=act.get("class_type"),
-                        classDay=day,
-                        classTime=act.get("time"),
-                        classRoom=act.get("room"),
-                        courseName=act.get("course"),
-                        courseIntake=sec.get("intake"),
-                        courseCode=sec.get("course_code"),
-                        courseSection=sec.get("section"),
-                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        classWeekDate=act.get("weeks_date")
-                    )
-                    new_rows.append(row)
+                    new_rows.append({
+                        "timetable_id"  : timetable.timetableId if timetable else None,
+                        "filename"      : filename,
+                        "lecturerName"  : lecturer,
+                        "classType"     : act.get("class_type"),
+                        "classDay"      : day,
+                        "classTime"     : act.get("time"),
+                        "classRoom"     : act.get("room"),
+                        "courseName"    : act.get("course"),
+                        "courseIntake"  : sec.get("intake"),
+                        "courseCode"    : sec.get("course_code"),
+                        "courseSection" : sec.get("section"),
+                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        "classWeekDate" : act.get("weeks_date"),
+                    })
+    # Bulk delete all rows for this lecturer before insert
+    if lecturer:
+        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
 
-    db.session.bulk_save_objects(new_rows)
+    for entry in new_rows:
+        db.session.add(TimetableRow(**entry))
+
     db.session.commit()
-
     return len(new_rows)
-
 
 
 # -------------------------------
@@ -1375,26 +1377,5 @@ def admin_profile():
 
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
                            admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
