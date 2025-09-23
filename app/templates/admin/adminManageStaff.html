@@ -154,18 +154,18 @@
                 </select><br>
 
                 <label>Staff Name</label>
-                <input type="text" id="username" name="username" required><br>
+                <input type="text" id="editUsername" name="editUsername" required><br>
 
                 <label>Staff Email Address</label>
-                <input type="email" id="email" name="email" required>
+                <input type="email" id="editEmail" name="editEmail" required>
             </div>
 
             <div class="form-middle">
                 <label>Staff Contact Number</label>
-                <input type="tel" id="contact" name="contact" required><br>
+                <input type="tel" id="editContact" name="editContact" required><br>
                 
                 <label>Staff Gender</label>
-                <select id="gender" name="gender" required>
+                <select id="editGender" name="editGender" required>
                     <option value="" disabled selected>Select Gender</option>
                     <option value="MALE">MALE</option>
                     <option value="FEMALE">FEMALE</option>
@@ -174,7 +174,7 @@
 
             <div class="form-right">
                 <label>Staff Role</label>
-                <select id="roleSelect" name="role" required>
+                <select id="editRoleSelect" name="editRole" required>
                     <option value="" disabled selected>Select Role</option>
                     <option value="1">LECTURER</option>
                     <option value="2">DEAN</option>
@@ -183,7 +183,7 @@
                 </select><br>
 
                 <label id="departmentLabel">Department</label>
-                <select id="department" name="department" required>
+                <select id="editDepartment" name="editDepartment" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">

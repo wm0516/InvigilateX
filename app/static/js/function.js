@@ -548,14 +548,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log("Fetched staff data:", data);
 
                 // Fill text fields
-                document.getElementById("username").value = data.userName || "";
-                document.getElementById("email").value = data.userEmail || "";
-                document.getElementById("contact").value = data.userContact || "";
+                document.getElementById("editUsername").value = data.userName || "";
+                document.getElementById("editEmail").value = data.userEmail || "";
+                document.getElementById("editContact").value = data.userContact || "";
 
                 // Fill selects with trimming for safety
-                document.getElementById("gender").value = (data.userGender || "").trim();
-                document.getElementById("roleSelect").value = String(data.userLevel || "").trim();
-                document.getElementById("department").value = (data.userDepartment || "").trim();
+                document.getElementById("editGender").value = (data.userGender || "").trim();
+                document.getElementById("editRoleSelect").value = String(data.userLevel || "").trim();
+                document.getElementById("editDepartment").value = (data.userDepartment || "").trim();
             })
             .catch(err => console.error("Error fetching staff:", err));
     });
