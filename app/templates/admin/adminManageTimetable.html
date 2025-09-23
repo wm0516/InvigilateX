@@ -19,10 +19,12 @@
                     <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Total Timetables Not Linked to Lecturers</h3>
-                    <p class="dashboard-text" style="color:#1E90FF">
-                        {{ unassigned_count.values()|sum }}
-                    </p>
+                    <h4>Lecturers without Assigned Timetable</h4>
+                    <ul>
+                        {% for lecturer, count in unassigned_count.items() %}
+                            <li><strong>{{ lecturer }}</strong> [{{ count }}]</li>
+                        {% endfor %}
+                    </ul>
                 </div>
 
                 {% set days = [
