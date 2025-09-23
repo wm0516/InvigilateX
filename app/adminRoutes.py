@@ -23,6 +23,8 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
+
 # -------------------------------
 # Handle Timeline Read From ExcelFile
 # -------------------------------
@@ -62,276 +64,6 @@ def standardize_time_with_seconds(time_value):
         return None
     else:
         return None
-
-
-# -------------------------------
-# Read All InvigilatorAttendance Data From Database
-# -------------------------------
-def get_all_attendances():
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .all()
-    )
-
-
-# -------------------------------
-# Calculate All InvigilatorAttendance and InvigilationReport Data From Database
-# -------------------------------
-def calculate_invigilation_stats():
-    # Use LEFT OUTER JOIN to keep all InvigilatorAttendance rows
-    query = db.session.query(
-        InvigilatorAttendance.attendanceId,
-        InvigilatorAttendance.invigilatorId,    
-        InvigilatorAttendance.checkIn,
-        InvigilatorAttendance.checkOut,
-        Exam.examStartTime,
-        Exam.examEndTime,
-        InvigilatorAttendance.reportId
-    ).outerjoin(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
-
-    # Total reports and total assigned invigilators
-    total_report = InvigilationReport.query.count()
-    total_invigilator = InvigilatorAttendance.query.count()
-
-    stats = {
-        "total_report": total_report,
-        "total_invigilator": total_invigilator,
-        "total_checkInOnTime": 0,
-        "total_checkInLate": 0,
-        "total_checkOutOnTime": 0,
-        "total_checkOutEarly": 0,
-        "total_checkInOut": 0,    # missing both
-        "total_inProgress": 0     # checked in but no check out
-    }
-
-    for row in query:
-        # Case 1: No checkIn at all
-        if row.checkIn is None:
-            stats["total_checkInOut"] += 1
-            continue
-
-        # Case 2: CheckIn exists, but no checkOut (in progress)
-        if row.checkOut is None:
-            stats["total_inProgress"] += 1
-            continue
-
-        # Case 3: Both checkIn and checkOut exist
-        # If Exam times are missing, skip time comparison
-        if row.examStartTime is not None:
-            if row.checkIn <= row.examStartTime:
-                stats["total_checkInOnTime"] += 1
-            else:
-                stats["total_checkInLate"] += 1
-
-        if row.examEndTime is not None:
-            if row.checkOut >= row.examEndTime:
-                stats["total_checkOutOnTime"] += 1
-            else:
-                stats["total_checkOutEarly"] += 1
-
-    return stats
-
-
-# -------------------------------
-# Extract Base Name + Timestamp
-# -------------------------------
-def extract_base_name_and_timestamp(file_name):
-    """Extract base name + optional _DDMMYY"""
-    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
-
-    if match:
-        base_name = match.group(1).strip()
-        timestamp_str = match.group(2)
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-        except ValueError:
-            timestamp = None
-    else:
-        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
-        timestamp = None
-
-    return base_name, timestamp
-
-# -------------------------------
-# Parse Activity Line
-# -------------------------------
-def parse_activity(line):
-    activity = {}
-
-    m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
-    if m_type:
-        activity["class_type"] = m_type.group(1)
-
-    m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
-    if m_time:
-        activity["time"] = m_time.group(1)
-
-    m_weeks = re.search(r"WEEKS:([^C]+)", line)
-    if m_weeks:
-        weeks_data = m_weeks.group(1).split(",")
-        if len(weeks_data) > 1:
-            activity["weeks_range"] = weeks_data[:-1]
-            activity["weeks_date"]  = weeks_data[-1]
-        else:
-            activity["weeks_range"] = weeks_data
-
-    m_course = re.search(r"COURSES:([^;]+);", line)
-    if m_course:
-        activity["course"] = m_course.group(1)
-
-    m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
-    if m_sections:
-        sections = m_sections.group(1).strip(";").split(";")
-        activity["sections"] = []
-        for sec in sections:
-            if "|" in sec:
-                intake, code, sec_name = sec.split("|")
-                activity["sections"].append({
-                    "intake": intake,
-                    "course_code": code,
-                    "section": sec_name
-                })
-
-    m_room = re.search(r"ROOMS:([^;]+);", line)
-    if m_room:
-        activity["room"] = m_room.group(1)
-
-    return activity
-
-
-# -------------------------------
-# Parse Timetable Text
-# -------------------------------
-def parse_timetable(raw_text):
-    text_no_whitespace = re.sub(r"\s+", "", raw_text)
-
-    lecturer_name = "UNKNOWN"
-    timerow = ""
-
-    # Try extract title/timerow
-    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
-    if title_match:
-        title_raw   = title_match.group(1)
-        timerow     = title_match.group(2)
-    else:
-        title_raw = ""
-
-    # Extract lecturer name
-    try:
-        name_match = re.search(r"-([^-()]+)\(", title_raw)
-        if name_match:
-            raw_name            = name_match.group(1)
-            formatted_name      = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-            formatted_name      = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
-            lecturer_name       = formatted_name
-            text_no_whitespace  = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
-    except Exception:
-        pass
-
-    text = text_no_whitespace.upper()
-    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
-    if match_title:
-        title = match_title.group(1).strip()
-        timerow = match_title.group(2).strip()
-        text = text.replace(title, "").replace(timerow, "")
-    else:
-        title = "TIMETABLE"
-
-    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-    for day in days:
-        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
-
-    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
-        sep = "\n\n" if kw == "PUBLISHED" else "\n"
-        text = re.sub(kw, f"{sep}{kw}", text, flags=re.IGNORECASE)
-
-    text = re.sub(r"\n{3,}", "\n\n", text)
-
-    structured = {
-        "title"     : title,
-        "lecturer"  : lecturer_name,
-        "timerow"   : timerow,
-        "days"      : {}
-    }
-
-    current_day = None
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if line in days:
-            current_day = line
-            structured["days"][current_day] = []
-        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
-            structured["days"][current_day].append(parse_activity(line))
-
-    return structured
-
-# -------------------------------
-# Save Parsed Timetable to DB
-# -------------------------------
-def save_timetable_to_db(structured):
-    lecturer = structured.get("lecturer")
-    filename = structured.get("filename")
-
-    if not lecturer:
-        return 0
-
-    # Try to get the user
-    user = User.query.filter_by(userName=lecturer).first()
-
-    if user:
-        # Check if a timetable exists for this user
-        timetable = Timetable.query.filter_by(user_id=user.userId).first()
-        if timetable:
-            # Delete old rows first
-            TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
-        else:
-            # Create a new timetable
-            timetable = Timetable(user_id=user.userId)
-            db.session.add(timetable)
-            db.session.commit()  # commit to get timetableId
-    else:
-        # User not found, use temporary placeholder timetableId = None
-        timetable = None
-
-    new_rows = []
-    for day, activities in structured["days"].items():
-        for act in activities:
-            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
-                continue
-            if act.get("sections"):
-                for sec in act["sections"]:
-                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
-                        continue
-                    new_rows.append({
-                        "timetable_id"  : timetable.timetableId if timetable else None,
-                        "filename"      : filename,
-                        "lecturerName"  : lecturer,
-                        "classType"     : act.get("class_type"),
-                        "classDay"      : day,
-                        "classTime"     : act.get("time"),
-                        "classRoom"     : act.get("room"),
-                        "courseName"    : act.get("course"),
-                        "courseIntake"  : sec.get("intake"),
-                        "courseCode"    : sec.get("course_code"),
-                        "courseSection" : sec.get("section"),
-                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        "classWeekDate" : act.get("weeks_date"),
-                    })
-    # Bulk delete all rows for this lecturer before insert
-    if lecturer:
-        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
-
-    for entry in new_rows:
-        db.session.add(TimetableRow(**entry))
-
-    db.session.commit()
-    return len(new_rows)
-
 
 # -------------------------------
 # Function handle file upload
@@ -393,6 +125,9 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
         return redirect(url_for(redirect_endpoint))
 
 
+
+
+
 # -------------------------------
 # Function for Admin ManageCourse Route Upload File
 # -------------------------------
@@ -408,66 +143,6 @@ def process_course_row(row):
         students=int(row['no of students'])
     )
 
-
-# -------------------------------
-# Function for Admin ManageExam Route Upload File
-# -------------------------------
-def process_exam_row(row):
-    examDate_text = parse_date(row['date'])
-    startTime_text = standardize_time_with_seconds(row['start'])
-    endTime_text = standardize_time_with_seconds(row['end'])
-    if not examDate_text or not startTime_text or not endTime_text:
-        return False, "Invalid time/date"
-
-    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
-    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
-
-    return create_exam_and_related(
-        start_dt, end_dt,
-        str(row['course/sec']).upper(),
-        str(row['room']).upper(),
-        str(row['lecturer']).upper(),
-        None,
-        invigilatorNo=0
-    )
-
-
-# -------------------------------
-# Function for Admin ManageStaff Route Upload File, Validate Contact Number
-# -------------------------------
-def clean_contact(contact):
-    if not contact:
-        return ""
-    contact = str(contact).strip().replace(".0", "")
-    contact = "".join(filter(str.isdigit, contact))
-    if contact and not contact.startswith("0"):
-        contact = "0" + contact
-    return contact if 10 <= len(contact) <= 11 else ""
-
-
-# -------------------------------
-# Function for Admin ManageStaff Route Upload File
-# -------------------------------
-def process_staff_row(row):
-    role_mapping = {'lecturer': 1, 'hop': 2, 'dean': 3, 'admin': 4}
-    hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
-    return create_staff(
-        id=str(row['id']).upper(),
-        department=str(row['department']).upper(),
-        name=str(row['name']).upper(),
-        role=role_mapping.get(str(row['role']).strip().lower()),
-        email=str(row['email']),
-        contact=clean_contact(row['contact']),
-        gender=str(row['gender']).upper(),
-        hashed_pw=hashed_pw
-    )
-
-
-
-
-    
-
-
 # -------------------------------
 # Read All LecturerName Under The Selected Department For ManageCoursePage
 # -------------------------------
@@ -478,7 +153,6 @@ def get_lecturers_by_department(department_code):
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
     return jsonify(lecturers_list) 
-
 
 # -------------------------------
 # Read All CourseCodeSection Under The ManageCourseEditPage
@@ -500,7 +174,6 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseHour": course.courseHour,
         "courseStudent": course.courseStudent
     })
-
 
 # -------------------------------
 # Function for Admin ManageCourse Route
@@ -634,6 +307,9 @@ def admin_manageCourse():
         return f"<pre>{traceback.format_exc()}</pre>", 500
 
 
+
+
+
 # -------------------------------
 # Get Department Details for ManageDepartmentEditPage
 # -------------------------------
@@ -648,7 +324,6 @@ def get_department(department_code):
         "deanId": dept.deanId,
         "hopId": dept.hopId
     })
-
 
 # -------------------------------
 # Admin Manage Department
@@ -729,12 +404,6 @@ def admin_manageDepartment():
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select,
         total_department=total_department, total_dean=total_dean, total_hop=total_hop, deans=deans, hops=hops, department_with_dean=department_with_dean, department_with_hop=department_with_hop)
 
-
-
-
-
-
-
 # -------------------------------
 # Get Venue Details for ManageVenueEditPage
 # -------------------------------
@@ -750,7 +419,6 @@ def get_venue(venue_number):
         "venueCapacity": venue.venueCapacity,
         "venueStatus": venue.venueStatus
     })
-
 
 # -------------------------------
 # Function for Admin ManageVenue Route
@@ -855,11 +523,27 @@ def admin_manageVenue():
 
 
 
+# -------------------------------
+# Function for Admin ManageExam Route Upload File
+# -------------------------------
+def process_exam_row(row):
+    examDate_text = parse_date(row['date'])
+    startTime_text = standardize_time_with_seconds(row['start'])
+    endTime_text = standardize_time_with_seconds(row['end'])
+    if not examDate_text or not startTime_text or not endTime_text:
+        return False, "Invalid time/date"
 
+    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
+    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
 
-
-
-
+    return create_exam_and_related(
+        start_dt, end_dt,
+        str(row['course/sec']).upper(),
+        str(row['room']).upper(),
+        str(row['lecturer']).upper(),
+        None,
+        invigilatorNo=0
+    )
 
 # -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage
@@ -886,8 +570,6 @@ def get_courses_by_department(department_code):
     ]
     return jsonify(courses_list)
 
-
-
 # -------------------------------
 # Read All CourseDetails Under Selected Department for ManageExamPage
 # -------------------------------
@@ -908,7 +590,6 @@ def get_course_details(department_code, course_section):
         "tutorialLecturer": course.courseTutorial,
         "courseStudent": course.courseStudent
     })
-
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
@@ -938,7 +619,6 @@ def get_exam_details(course_code_section):
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
     }
     return jsonify(response_data)
-
 
 # -------------------------------
 # Function for Admin ManageExam Route
@@ -1079,8 +759,34 @@ def admin_manageExam():
 
 
 
+# -------------------------------
+# Function for Admin ManageStaff Route Upload File, Validate Contact Number
+# -------------------------------
+def clean_contact(contact):
+    if not contact:
+        return ""
+    contact = str(contact).strip().replace(".0", "")
+    contact = "".join(filter(str.isdigit, contact))
+    if contact and not contact.startswith("0"):
+        contact = "0" + contact
+    return contact if 10 <= len(contact) <= 11 else ""
 
-
+# -------------------------------
+# Function for Admin ManageStaff Route Upload File
+# -------------------------------
+def process_staff_row(row):
+    role_mapping = {'lecturer': 1, 'hop': 2, 'dean': 3, 'admin': 4}
+    hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
+    return create_staff(
+        id=str(row['id']).upper(),
+        department=str(row['department']).upper(),
+        name=str(row['name']).upper(),
+        role=role_mapping.get(str(row['role']).strip().lower()),
+        email=str(row['email']),
+        contact=clean_contact(row['contact']),
+        gender=str(row['gender']).upper(),
+        hashed_pw=hashed_pw
+    )
 
 # -------------------------------
 # Read All StaffDetails Under The ManageLecturerEditPage
@@ -1101,8 +807,6 @@ def get_staff(id):
         "userDepartment": user.userDepartment or "",
         "userStatus": str(user.userStatus)
     })
-
-
 
 # -------------------------------
 # Function for Admin ManageStaff Route
@@ -1213,6 +917,204 @@ def admin_manageStaff():
 
 
 
+
+# -------------------------------
+# Extract Base Name + Timestamp
+# -------------------------------
+def extract_base_name_and_timestamp(file_name):
+    """Extract base name + optional _DDMMYY"""
+    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
+
+    if match:
+        base_name = match.group(1).strip()
+        timestamp_str = match.group(2)
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            timestamp = None
+    else:
+        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
+        timestamp = None
+
+    return base_name, timestamp
+
+# -------------------------------
+# Parse Activity Line
+# -------------------------------
+def parse_activity(line):
+    activity = {}
+
+    m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
+    if m_type:
+        activity["class_type"] = m_type.group(1)
+
+    m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
+    if m_time:
+        activity["time"] = m_time.group(1)
+
+    m_weeks = re.search(r"WEEKS:([^C]+)", line)
+    if m_weeks:
+        weeks_data = m_weeks.group(1).split(",")
+        if len(weeks_data) > 1:
+            activity["weeks_range"] = weeks_data[:-1]
+            activity["weeks_date"]  = weeks_data[-1]
+        else:
+            activity["weeks_range"] = weeks_data
+
+    m_course = re.search(r"COURSES:([^;]+);", line)
+    if m_course:
+        activity["course"] = m_course.group(1)
+
+    m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
+    if m_sections:
+        sections = m_sections.group(1).strip(";").split(";")
+        activity["sections"] = []
+        for sec in sections:
+            if "|" in sec:
+                intake, code, sec_name = sec.split("|")
+                activity["sections"].append({
+                    "intake": intake,
+                    "course_code": code,
+                    "section": sec_name
+                })
+
+    m_room = re.search(r"ROOMS:([^;]+);", line)
+    if m_room:
+        activity["room"] = m_room.group(1)
+
+    return activity
+
+# -------------------------------
+# Parse Timetable Text
+# -------------------------------
+def parse_timetable(raw_text):
+    text_no_whitespace = re.sub(r"\s+", "", raw_text)
+
+    lecturer_name = "UNKNOWN"
+    timerow = ""
+
+    # Try extract title/timerow
+    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
+    if title_match:
+        title_raw   = title_match.group(1)
+        timerow     = title_match.group(2)
+    else:
+        title_raw = ""
+
+    # Extract lecturer name
+    try:
+        name_match = re.search(r"-([^-()]+)\(", title_raw)
+        if name_match:
+            raw_name            = name_match.group(1)
+            formatted_name      = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
+            formatted_name      = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
+            lecturer_name       = formatted_name
+            text_no_whitespace  = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
+    except Exception:
+        pass
+
+    text = text_no_whitespace.upper()
+    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
+    if match_title:
+        title = match_title.group(1).strip()
+        timerow = match_title.group(2).strip()
+        text = text.replace(title, "").replace(timerow, "")
+    else:
+        title = "TIMETABLE"
+
+    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+    for day in days:
+        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
+
+    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
+        sep = "\n\n" if kw == "PUBLISHED" else "\n"
+        text = re.sub(kw, f"{sep}{kw}", text, flags=re.IGNORECASE)
+
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
+    structured = {
+        "title"     : title,
+        "lecturer"  : lecturer_name,
+        "timerow"   : timerow,
+        "days"      : {}
+    }
+
+    current_day = None
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if line in days:
+            current_day = line
+            structured["days"][current_day] = []
+        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
+            structured["days"][current_day].append(parse_activity(line))
+
+    return structured
+
+# -------------------------------
+# Save Parsed Timetable to DB
+# -------------------------------
+def save_timetable_to_db(structured):
+    lecturer = structured.get("lecturer")
+    filename = structured.get("filename")
+
+    if not lecturer:
+        return 0
+
+    # Try to get the user
+    user = User.query.filter_by(userName=lecturer).first()
+
+    if user:
+        # Check if a timetable exists for this user
+        timetable = Timetable.query.filter_by(user_id=user.userId).first()
+        if timetable:
+            # Delete old rows first
+            TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
+        else:
+            # Create a new timetable
+            timetable = Timetable(user_id=user.userId)
+            db.session.add(timetable)
+            db.session.commit()  # commit to get timetableId
+    else:
+        # User not found, use temporary placeholder timetableId = None
+        timetable = None
+
+    new_rows = []
+    for day, activities in structured["days"].items():
+        for act in activities:
+            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
+                continue
+            if act.get("sections"):
+                for sec in act["sections"]:
+                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
+                        continue
+                    new_rows.append({
+                        "timetable_id"  : timetable.timetableId if timetable else None,
+                        "filename"      : filename,
+                        "lecturerName"  : lecturer,
+                        "classType"     : act.get("class_type"),
+                        "classDay"      : day,
+                        "classTime"     : act.get("time"),
+                        "classRoom"     : act.get("room"),
+                        "courseName"    : act.get("course"),
+                        "courseIntake"  : sec.get("intake"),
+                        "courseCode"    : sec.get("course_code"),
+                        "courseSection" : sec.get("section"),
+                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        "classWeekDate" : act.get("weeks_date"),
+                    })
+    # Bulk delete all rows for this lecturer before insert
+    if lecturer:
+        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
+
+    for entry in new_rows:
+        db.session.add(TimetableRow(**entry))
+
+    db.session.commit()
+    return len(new_rows)
+
 # -------------------------------
 # Function for Admin ManageTimetable Route
 # -------------------------------
@@ -1283,6 +1185,74 @@ def admin_manageTimetable():
 
 
 # -------------------------------
+# Read All InvigilatorAttendance Data From Database
+# -------------------------------
+def get_all_attendances():
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .all()
+    )
+
+# -------------------------------
+# Calculate All InvigilatorAttendance and InvigilationReport Data From Database
+# -------------------------------
+def calculate_invigilation_stats():
+    # Use LEFT OUTER JOIN to keep all InvigilatorAttendance rows
+    query = db.session.query(
+        InvigilatorAttendance.attendanceId,
+        InvigilatorAttendance.invigilatorId,    
+        InvigilatorAttendance.checkIn,
+        InvigilatorAttendance.checkOut,
+        Exam.examStartTime,
+        Exam.examEndTime,
+        InvigilatorAttendance.reportId
+    ).outerjoin(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+
+    # Total reports and total assigned invigilators
+    total_report = InvigilationReport.query.count()
+    total_invigilator = InvigilatorAttendance.query.count()
+
+    stats = {
+        "total_report": total_report,
+        "total_invigilator": total_invigilator,
+        "total_checkInOnTime": 0,
+        "total_checkInLate": 0,
+        "total_checkOutOnTime": 0,
+        "total_checkOutEarly": 0,
+        "total_checkInOut": 0,    # missing both
+        "total_inProgress": 0     # checked in but no check out
+    }
+
+    for row in query:
+        # Case 1: No checkIn at all
+        if row.checkIn is None:
+            stats["total_checkInOut"] += 1
+            continue
+
+        # Case 2: CheckIn exists, but no checkOut (in progress)
+        if row.checkOut is None:
+            stats["total_inProgress"] += 1
+            continue
+
+        # Case 3: Both checkIn and checkOut exist
+        # If Exam times are missing, skip time comparison
+        if row.examStartTime is not None:
+            if row.checkIn <= row.examStartTime:
+                stats["total_checkInOnTime"] += 1
+            else:
+                stats["total_checkInLate"] += 1
+
+        if row.examEndTime is not None:
+            if row.checkOut >= row.examEndTime:
+                stats["total_checkOutOnTime"] += 1
+            else:
+                stats["total_checkOutEarly"] += 1
+
+    return stats
+
+# -------------------------------
 # Function for Admin ManageInviglationTimetable Route
 # -------------------------------
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
@@ -1302,6 +1272,8 @@ def admin_manageInvigilationReport():
 
     return render_template(
         'admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+
+
 
 
 
