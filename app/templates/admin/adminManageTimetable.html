@@ -101,7 +101,7 @@
     <div class="profile-frame" style="margin-bottom: 20px;">
         <form method="get" style="display:flex; align-items:center; gap:8px;">
             <label for="lecturer">Select_Lecturer:</label>
-            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+            <select name="lecturer" id="lecturer" class="select2-dropdown" style="width: 250px;" onchange="this.form.submit()">
                 <option value="">All Lecturers</option>
                 {% for lecturer in lecturers %}
                     <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
@@ -170,4 +170,15 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        $('#lecturer').select2({
+            placeholder: "Type to search...",
+            allowClear: true
+        });
+    });
+</script>
 {% endblock %}
