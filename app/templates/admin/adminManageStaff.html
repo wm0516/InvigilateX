@@ -360,18 +360,19 @@
                 responsive: true,
                 plugins: {
                     legend: { position: 'right' },
-                    datalabels: {
-                        formatter: (value, context) => {
-                            let sum = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
-                            return percentage;
-                        },
-                        color: '#fff',
-                        font: { weight: 'bold' }
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let data = context.dataset.data;
+                                let sum = data.reduce((a, b) => a + b, 0);
+                                let value = context.parsed;
+                                let percentage = ((value / sum) * 100).toFixed(1) + "%";
+                                return context.label + ": " + value + " (" + percentage + ")";
+                            }
+                        }
                     }
                 }
-            },
-            plugins: [ChartDataLabels]  // enable plugin
+            }
         });
     }
 
