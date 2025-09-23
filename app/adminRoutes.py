@@ -1266,8 +1266,19 @@ def admin_manageTimetable():
         for day in days
     }
 
+    # Get all lecturers
+    lecturers = db.session.query(TimetableRow.lecturerName).distinct().all()
+    lecturers = [l[0] for l in lecturers]
+
+    # Count rows without timetable_id for each lecturer
+    unassigned_count = {}
+    for lecturer in lecturers:
+        count = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).count()
+        unassigned_count[lecturer] = count
+
+
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, 
-                           selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts)
+                           selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count)
 
 
 
