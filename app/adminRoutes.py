@@ -1148,7 +1148,7 @@ def admin_manageTimetable():
     # Main query: users not level 4 AND not already in Timetable
     staff_list = User.query.filter(
         User.userLevel != 4,
-        ~User.user_id.in_(assigned_users)
+        ~User.userId.in_(assigned_users)
     ).all()
 
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
