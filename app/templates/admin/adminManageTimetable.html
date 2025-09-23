@@ -260,11 +260,11 @@
                         alert(data.error);
                         return;
                     }
-                    // Set the staff dropdown to the linked user_id
-                    staffSelect.value = data.user_id;
+                    staffSelect.value = data.user_id;   // auto-select linked staff
                 })
                 .catch(err => console.error(err));
         });
     });
+
 </script>
 {% endblock %}
