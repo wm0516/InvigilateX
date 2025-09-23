@@ -1108,8 +1108,9 @@ def admin_manageStaff():
         (User.userLevel.is_(None))
     ).count()
 
-    # ✅ Define default so template won’t break
-    user_select = None
+    staff_id = request.form.get('editStaffId')
+    user_select = User.query.filter_by(userId=staff_id).first()
+    flash(f"User selected {user_select}", "success")
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -1124,10 +1125,6 @@ def admin_manageStaff():
             )
 
         elif form_type == 'edit':
-            staff_id = request.form.get('editStaffId')
-            user_select = User.query.filter_by(userId=staff_id).first()
-            flash(f"User selected {user_select}", "success")
-
             action = request.form.get('action')
             if action == 'update' and user_select:
                 role_text = request.form.get('editRole', '0')
@@ -1163,7 +1160,6 @@ def admin_manageStaff():
             flash(message, "success" if success else "error")
             return redirect(url_for('admin_manageStaff'))
 
-    # ✅ Always safe because user_select defaults to None
     return render_template(
         'admin/adminManageStaff.html',
         active_tab='admin_manageStafftab',
