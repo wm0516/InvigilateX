@@ -99,7 +99,7 @@
 
         <!-- Preview of Parsed Results -->
         {% if results %}
-        <div class="preview-box" style="max-height: 400px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
+        <div class="preview-box" style="max-height: 300px; overflow-y: auto; border:1px solid #ccc; padding:1%;">
             <h4>Preview Parsed Timetables</h4>
             {% for res in results %}
                 <div style="margin-bottom:1%; padding:6px; border-bottom:1px dashed #999;">
@@ -109,6 +109,7 @@
                 </div>
             {% endfor %}
         </div>
+        <br>
         {% endif %}
     {% endif %}
 
