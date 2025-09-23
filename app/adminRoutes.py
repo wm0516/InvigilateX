@@ -845,7 +845,7 @@ def get_courses_by_department(department_code):
 # -------------------------------
 # Read All CourseDetails Under Selected Department for ManageExamPage
 # -------------------------------
-@app.route('/get_course_details/<department_code>/<course_section>')
+@app.route('/get_course_details/department_code/<path:course_section>')
 def get_course_details(department_code, course_section):
     course = Course.query.filter_by(
         courseDepartment=department_code,
@@ -867,7 +867,7 @@ def get_course_details(department_code, course_section):
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
-@app.route('/get_exam_details/<course_code_section>')
+@app.route('/get_exam_details/<path:course_code_section>')
 def get_exam_details(course_code_section):
     flash(f"[DEBUG] get_exam_details called with: {course_code_section}", "error")
     
