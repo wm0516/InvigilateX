@@ -145,7 +145,7 @@
         <br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update" style="background-color: rgb(44, 238, 70);">
+            <button type="submit" name="action" value="update" style="background-color: rgb(35, 190, 56);">
                 <i class="fas fa-check"></i> Update Timetable Relationship
             </button> 
             <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);" 
@@ -246,34 +246,19 @@
     });
 
     document.addEventListener("DOMContentLoaded", function () {
-        const timetableSelect = document.getElementById("editTimetableList");
-        const editStaffSelect = document.getElementById("editStaffList");
+        const timetable = this.value;
+        if (!timetable) return;
 
-        if (timetableSelect && editStaffSelect) {
-            timetableSelect.addEventListener("change", function () {
-                const timetableId = timetableSelect.value;
-                if (!timetableId) return;
-
-                fetch(`/get_linkTimetable/${timetableId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.error) {
-                            console.error(data.error);
-                            return;
-                        }
-                        const userId = data.user_id;
-
-                        // Prefill staff select
-                        for (let opt of editStaffSelect.options) {
-                            if (opt.value === String(userId)) {
-                                opt.selected = true;
-                                break;
-                            }
-                        }
-                    })
-                    .catch(err => console.error("Error fetching timetable link:", err));
-            });
-        }
+        fetch(`/get_linkTimetable/${timetableId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                document.getElementById('editStaffList').value = data.user_id;
+            })
+            .catch(err => console.error(err));
     });
 </script>
 {% endblock %}
