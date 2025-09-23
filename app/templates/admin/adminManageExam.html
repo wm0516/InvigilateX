@@ -91,7 +91,7 @@
                 </div><br>
 
                 <label>Program Code</label>
-                <select name="programCode" id="programCode" required>
+                <select name="programCode" id="examManualProgramCode" required>
                     <option value="" disabled selected>Select Program Code</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">
@@ -103,7 +103,7 @@
 
             <div class="form-middle" style="margin: auto;">
                 <label>Course/Section</label>
-                <select name="courseSection" id="courseSection" required>
+                <select name="courseSection" id="examManualCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
                 </select><br>
 

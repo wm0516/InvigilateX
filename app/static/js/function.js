@@ -468,10 +468,10 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 // examManual.js
 document.addEventListener("DOMContentLoaded", function () {
     // Manual Section Dropdowns
-    const programCode = document.getElementById('programCode');
+    const programCode = document.getElementById('examManualProgramCode');
     if (!programCode) return;
 
-    const courseSectionSelect = document.getElementById('courseSection');
+    const courseSectionSelect = document.getElementById('examManualCourseSection');
     const practicalLecturer = document.getElementById('practicalLecturer');
     const tutorialLecturer = document.getElementById('tutorialLecturer');
     const studentField = document.getElementById('student');
