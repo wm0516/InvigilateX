@@ -528,59 +528,38 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const staffSelect = document.getElementById("editStaffId");
+    const usernameSelect = document.getElementById("editUsername");
+    const emailSelect = document.getElementById("editEmail");
+    const contactSelect = document.getElementById("editContact");
+    const genderSelect = document.getElementById("editGender");
+    const departmentSelect = document.getElementById("editDepartment");
+    const roleSelect = document.getElementById("editRoleSelect");
 
-    if (!staffSelect) return;
-
-    staffSelect.addEventListener("change", function (e) {
-        e.preventDefault(); // stop form from auto-submitting on change
-
-        const staffId = this.value;
+    function fetchStaff(staffId) {
         if (!staffId) return;
+        
         fetch(`/get_staff/${staffId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.error) {
-                    console.error("API Error:", data.error);
-                    return;
-                }
+            .then(resp => resp.json())
+            .then(staff => {
+                if (staff.error) return alert (staff.error);
+                usernameSelect.value = staff.userName || '';
+                emailSelect.value = staff.userEmail || '';
+                contactSelect.value = staff.userContact || '';
+                genderSelect.value = staff.userGender || '';
+                departmentSelect = staff.userDepartment || '';
+                roleSelect = staff.userLevel || '';
+            });
+    }
 
-                console.log("Fetched staff data:", data);
+    if (staffSelect) {
+        staffSelect.addEventListener("change", function () {
+            fetchStaff(this.value)
+        });
 
-                // Fill text fields
-                document.getElementById("editUsername").value = data.userName || "";
-                document.getElementById("editEmail").value = data.userEmail || "";
-                document.getElementById("editContact").value = data.userContact || "";
-
-                // Gender
-                const genderEl = document.getElementById("editGender");
-                const genderVal = (data.userGender || "").toUpperCase().trim();
-                if ([...genderEl.options].some(opt => opt.value === genderVal)) {
-                    genderEl.value = genderVal;
-                } else {
-                    console.warn("Gender mismatch:", genderVal, [...genderEl.options].map(o => o.value));
-                }
-
-                // Role
-                const roleEl = document.getElementById("editRoleSelect");
-                const roleVal = String(data.userLevel).trim();
-                if ([...roleEl.options].some(opt => opt.value === roleVal)) {
-                    roleEl.value = roleVal;
-                } else {
-                    console.warn("Role mismatch:", roleVal, [...roleEl.options].map(o => o.value));
-                }
-
-                // Department
-                const deptEl = document.getElementById("editDepartment");
-                const deptVal = (data.userDepartment || "").trim();
-                if ([...deptEl.options].some(opt => opt.value === deptVal)) {
-                    deptEl.value = deptVal;
-                } else {
-                    console.warn("Department mismatch:", deptVal, [...deptEl.options].map(o => o.value));
-                }
-
-            })
-            .catch(err => console.error("Error fetching staff:", err));
-    });
+        // Pre-fill on page load if a staff is selected
+        if (staffSelect.value)
+            fetchStaff(staffSelect.value);
+    }
 });
 
 
