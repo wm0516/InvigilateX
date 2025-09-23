@@ -169,6 +169,14 @@
                     <option value="" disabled selected>Select Gender</option>
                     <option value="MALE">MALE</option>
                     <option value="FEMALE">FEMALE</option>
+                </select><br>
+
+                <label>Staff Status</label>
+                <select id="editStatus" name="editStatus" required>
+                    <option value="" disabled selected>Select Status</option>
+                    <option value="1">Activated</option>
+                    <option value="0">Deactivated</option>
+                    <option value="2">Deleted</option>
                 </select>
             </div>
 
@@ -190,14 +198,6 @@
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
                         </option>
                     {% endfor %}
-                </select><br>
-
-                <label>Staff Status</label>
-                <select id="editStatus" name="editStatus" required>
-                    <option value="" disabled selected>Select Status</option>
-                    <option value="1">Activated</option>
-                    <option value="0">Deactivated</option>
-                    <option value="2">Deleted</option>
                 </select>
             </div>
         </div> 
@@ -306,7 +306,10 @@
                     document.getElementById("editUsername").value = data.userName || "";
                     document.getElementById("editEmail").value = data.userEmail || "";
                     document.getElementById("editContact").value = data.userContact || "";
-                    document.getElementById("editStatus").value = data.userStatus || "";
+
+                    // Set Status
+                    const statusSelect = document.getElementById("editStatus");
+                    statusSelect.value = data.userStatus || "";
 
                     // Set Gender
                     const genderSelect = document.getElementById("editGender");

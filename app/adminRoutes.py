@@ -1111,7 +1111,6 @@ def admin_manageStaff():
 
     staff_id = request.form.get('editStaffId')
     user_select = User.query.filter_by(userId=staff_id).first()
-    flash(f"User selected {user_select}", "success")
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
