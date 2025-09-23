@@ -1250,35 +1250,32 @@ def admin_manageTimetable():
                 structured['filename'] = file.filename
                 total_rows_inserted += save_timetable_to_db(structured)
 
-            flash(f"✅ Files read: {len(files)}, Files processed: {len(latest_files)}, Rows inserted: {total_rows_inserted}","success")
+            flash(f"✅ Files read: {len(files)}, Files processed: {len(latest_files)}, Rows inserted: {total_rows_inserted}", "success")
             return redirect(url_for('admin_manageTimetable'))
 
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
-    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
+
+    # Total timetable sets (all rows)
+    total_timetable = TimetableRow.query.count()
+
+    # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
-        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-            .filter(TimetableRow.classDay == day)
-            .distinct().count()
+        f"{day.lower()}_timetable": TimetableRow.query.filter(TimetableRow.classDay == day).count()
         for day in days
     }
 
-    # Get all lecturers
-    lecturers = db.session.query(TimetableRow.lecturerName).distinct().all()
-    lecturers = [l[0] for l in lecturers]
+    # Count unassigned rows per lecturer
+    unassigned_count = {
+        lecturer: TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).count()
+        for lecturer in lecturers
+    }
 
-    # Count rows without timetable_id for each lecturer
-    unassigned_count = {}
-    for lecturer in lecturers:
-        count = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).count()
-        unassigned_count[lecturer] = count
-
-
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, 
-                           selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count)
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers,
+        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count)
 
 
 
