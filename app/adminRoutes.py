@@ -1144,7 +1144,7 @@ def admin_manageTimetable():
 
         for row in unassigned_rows:
             unassigned_data.append({
-                "rowId": row.id,              # rowId
+                "rowId": row.rowId,              # rowId
                 "lecturer": lecturer,         # lecturer name
                 "count": count                # total rows for this lecturer
             })
