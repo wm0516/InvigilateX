@@ -1075,7 +1075,7 @@ def get_staff(id):
         "userGender": user.userGender,
         "userLevel": str(user.userLevel),
         "userDepartment": user.userDepartment or "",
-        "userStatus": user.userStatus
+        "userStatus": str(user.userStatus)
     })
 
 
