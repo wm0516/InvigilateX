@@ -1204,7 +1204,7 @@ def admin_manageTimetable():
     # Map day shortcodes to full keys for Jinja
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
-        f"{day.lower()}_timetable": Timetable.query.filter_by(classDay=day).count()
+        f"{day.lower()}_timetable": db.session.query(Timetable.courseCode).filter_by(classDay=day).distinct().count()
         for day in days
     }
 
