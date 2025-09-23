@@ -1219,37 +1219,18 @@ def admin_manageStaff():
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # --- Fetch all timetable rows ---
-    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
-
-    # --- Get all lecturers from the database ---
-    lecturers = sorted({row.lecturerName for row in timetable_data})
-    selected_lecturer = request.args.get("lecturer")
-
-    # --- Total timetable = total distinct lecturers in the database ---
-    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
-
-    # --- Day counts (all rows) ---
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
-    day_counts = {
-        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-            .filter(TimetableRow.classDay==day)
-            .distinct().count()
-        for day in days
-    }
-
-    # === Handle POST (upload) ===
+    # --- Handle POST (upload) ---
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
             all_files = [file.filename for file in files]
-            total_files_read = len(all_files)
 
             latest_files = {}
             skipped_files = []
 
+            # Filter to keep only the latest timestamp for each base_name
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
                 if not base_name:
@@ -1265,69 +1246,53 @@ def admin_manageTimetable():
                     else:
                         skipped_files.append(file.filename)
 
-            filtered_filenames = [file.filename for (_, file) in latest_files.values()]
-            total_files_filtered = len(filtered_filenames)
-
-            results = []
+            # Process each latest file
             total_rows_inserted = 0
-            selected_lecturer_name = None
-
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
-
                 structured = parse_timetable(raw_text)
                 structured['filename'] = file.filename
-                results.append(structured)
 
-                rows_inserted = save_timetable_to_db(structured)  # handles Timetable + TimetableRow
-                total_rows_inserted += rows_inserted
-                selected_lecturer_name = structured.get("lecturer")
+                # Save timetable to DB
+                total_rows_inserted += save_timetable_to_db(structured)
 
             flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
-            # Refresh after upload
-            timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
-            lecturers = sorted({row.lecturerName for row in timetable_data})
-            total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
-
-            day_counts = {
-                f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-                    .filter(TimetableRow.classDay == day)
-                    .distinct().count()
-                for day in days
-            }
-
-            return render_template(
-                'admin/adminManageTimetable.html',
-                active_tab='admin_manageTimetabletab',
-                timetable_data=timetable_data,
-                results=results,
-                selected_lecturer=selected_lecturer_name,
-                lecturers=lecturers,
-                upload_summary={
-                    "total_files_uploaded": total_files_read,
-                    "total_files_after_filter": total_files_filtered,
-                    "files_after_filter": filtered_filenames,
-                    "skipped_files": skipped_files
-                },
-                total_timetable=total_timetable,
-                **day_counts
-            )
+            # POST-Redirect-GET to avoid duplicates on refresh
+            return redirect(url_for('admin_manageTimetable'))
 
     # ---- Default GET rendering ----
+    # --- Fetch all timetable rows ---
+    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
+
+    # --- Get all lecturers from the database ---
+    lecturers = sorted({row.lecturerName for row in timetable_data})
+    selected_lecturer = request.args.get("lecturer")
+
+    # --- Total timetable = total distinct lecturers in the database ---
+    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
+
+    # --- Day counts (all rows) ---
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    day_counts = {
+        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
+            .filter(TimetableRow.classDay == day)
+            .distinct().count()
+        for day in days
+    }
+
     return render_template(
         'admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
         timetable_data=timetable_data,
         lecturers=lecturers,
         selected_lecturer=selected_lecturer,
-        results=[],
+        results=[],  # no preview in GET
         upload_summary=None,
         total_timetable=total_timetable,
         **day_counts
     )
-
 
 
 # -------------------------------
