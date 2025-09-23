@@ -553,24 +553,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 // Gender
                 const genderEl = document.getElementById("editGender");
-                genderEl.value = (data.userGender || "").toUpperCase().trim();
-                if (genderEl.value !== (data.userGender || "").toUpperCase().trim()) {
-                    console.warn("Gender mismatch:", data.userGender);
+                const genderVal = (data.userGender || "").toUpperCase().trim();
+                if ([...genderEl.options].some(opt => opt.value === genderVal)) {
+                    genderEl.value = genderVal;
+                } else {
+                    console.warn("Gender mismatch:", genderVal, [...genderEl.options].map(o => o.value));
                 }
 
                 // Role
                 const roleEl = document.getElementById("editRoleSelect");
-                roleEl.value = String(data.userLevel).trim();
-                if (roleEl.value !== String(data.userLevel).trim()) {
-                    console.warn("Role mismatch:", data.userLevel);
+                const roleVal = String(data.userLevel).trim();
+                if ([...roleEl.options].some(opt => opt.value === roleVal)) {
+                    roleEl.value = roleVal;
+                } else {
+                    console.warn("Role mismatch:", roleVal, [...roleEl.options].map(o => o.value));
                 }
 
                 // Department
                 const deptEl = document.getElementById("editDepartment");
-                deptEl.value = (data.userDepartment || "").trim();
-                if (deptEl.value !== (data.userDepartment || "").trim()) {
-                    console.warn("Department mismatch:", data.userDepartment);
+                const deptVal = (data.userDepartment || "").trim();
+                if ([...deptEl.options].some(opt => opt.value === deptVal)) {
+                    deptEl.value = deptVal;
+                } else {
+                    console.warn("Department mismatch:", deptVal, [...deptEl.options].map(o => o.value));
                 }
+
             })
             .catch(err => console.error("Error fetching staff:", err));
     });
