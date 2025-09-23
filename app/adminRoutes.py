@@ -838,9 +838,57 @@ def admin_manageVenue():
 def get_courses_by_department(department_code):
     courses = Course.query.filter(Course.courseDepartment == department_code,Course.courseExamId.isnot(None)).all()    
     courses_list = [{"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}for c in courses]
+    return jsonify(courses_list)    
+
+
+# -------------------------------
+# 2. Courses WITH examId but exam details NULL (incomplete exams)
+# -------------------------------
+@app.route('/get_courses_with_incomplete_exam/<path:department_code>')
+def get_courses_with_incomplete_exam(department_code):
+    courses = (
+        db.session.query(Course)
+        .join(Exam, Course.courseExamId == Exam.examId)
+        .filter(
+            Course.courseDepartment == department_code,
+            or_(
+                Exam.examDate.is_(None),
+                Exam.examTime.is_(None),
+                Exam.examVenue.is_(None)
+            )
+        )
+        .all()
+    )
+
+    courses_list = [
+        {"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}
+        for c in courses
+    ]
     return jsonify(courses_list)
 
 
+# -------------------------------
+# 3. Courses WITH examId and full exam data (completed exams)
+# -------------------------------
+@app.route('/get_courses_with_exam/<path:department_code>')
+def get_courses_with_exam(department_code):
+    courses = (
+        db.session.query(Course)
+        .join(Exam, Course.courseExamId == Exam.examId)
+        .filter(
+            Course.courseDepartment == department_code,
+            Exam.examDate.isnot(None),
+            Exam.examTime.isnot(None),
+            Exam.examVenue.isnot(None)
+        )
+        .all()
+    )
+
+    courses_list = [
+        {"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}
+        for c in courses
+    ]
+    return jsonify(courses_list)
 
 
 # -------------------------------
