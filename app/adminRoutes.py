@@ -831,21 +831,27 @@ def admin_manageVenue():
 
 
 
+
+
+
+
 # -------------------------------
 # Read All Course Under The Selected Department For ManageExamPage
 # -------------------------------
 @app.route('/get_courses_by_department/<department_code>')
 def get_courses_by_department(department_code):
-    courses = Course.query.filter(Course.courseDepartment == department_code,Course.courseExamId.isnot(None)).all()    
+    courses = Course.query.filter(
+        Course.courseDepartment == department_code,
+        Course.courseExamId.isnot(None)
+    ).all()    
     courses_list = [{"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}for c in courses]
     return jsonify(courses_list)    
-
 
 
 # -------------------------------
 # Read All CourseDetails Under Selected Department for ManageExamPage
 # -------------------------------
-@app.route('/get_course_details/department_code/<path:course_section>')
+@app.route('/get_course_details/<department_code>/<path:course_section>')
 def get_course_details(department_code, course_section):
     course = Course.query.filter_by(
         courseDepartment=department_code,
