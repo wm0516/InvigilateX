@@ -21,15 +21,15 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Completed Exams</h3>
-                    <p class="dashboard-text" style="color:green;">{{ exam_with_complete }}</p>
+                    <p class="dashboard-text" style="color:green;">{{ complete_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Incomplete Exams</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_exam - exam_with_complete - error_rows }}</p>
+                    <p class="dashboard-text" style="color:red;">{{ incomplete_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Unassigned Exams</h3>
-                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
+                    <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
                 </div>
             </div>
         </div>

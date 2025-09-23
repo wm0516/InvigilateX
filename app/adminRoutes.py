@@ -902,36 +902,35 @@ def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
     exam_data = Exam.query.all()
-    total_exam = Exam.query.count()
+    total_exam = Exam.query.count()   
+    # Debug: print exam data
+    flash(f"[DEBUG] Found all exams {len(exam_data)} exams", "error")
     
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
     course = Course.query.filter_by(courseCodeSection=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
-    # Debug: print exam data
-    flash(f"[DEBUG] Found all exams {len(exam_data)} exams", "error")
-
-    # Filter for manual section, assign a new exam
-    course_data = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
+    # Unassigned Exam (With ExamId and others with NULL)
+    unassigned_exam = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
         and_(
             Exam.examId.isnot(None),
             Exam.examStartTime.is_(None),
             Exam.examEndTime.is_(None)
         )
     ).all()
-    flash(f"[DEBUG] Found exams without assigned{len(course_data)} courses", "error")
+    flash(f"[DEBUG] Found exams without assigned{len(unassigned_exam)} courses", "error")
 
-    # Complete exams: all important columns are NOT NULL
-    exam_with_complete = Exam.query.filter(
+    # Completed Exam
+    complete_exam = Exam.query.filter(
         Exam.examStartTime.isnot(None),
         Exam.examEndTime.isnot(None),
         Exam.examVenue.isnot(None),
         Exam.examNoInvigilator.isnot(None)
     ).count()
 
-    # Error rows: completely empty or mostly NULL
-    error_rows = Exam.query.filter(
+    # Incompleted Exam
+    incomplete_exam = Exam.query.filter(
         Exam.examStartTime.is_(None),
         Exam.examEndTime.is_(None),
         Exam.examVenue.is_(None),
@@ -1032,8 +1031,8 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", "error")
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, course_data=course_data, venue_data=venue_data, 
-                           department_data=department_data, total_exam=total_exam, exam_with_complete=exam_with_complete, error_rows=error_rows, exam_select=exam_select)
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, venue_data=venue_data, 
+                           department_data=department_data, total_exam=total_exam, complete_exam=complete_exam, incomplete_exam=incomplete_exam, exam_select=exam_select)
 
 
 
