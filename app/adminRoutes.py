@@ -1213,20 +1213,16 @@ def admin_manageStaff():
 
 
 
-
 # -------------------------------
 # Function for Admin ManageTimetable Route
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
-    # --- Handle POST (upload) ---
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
-            all_files = [file.filename for file in files]
-
             latest_files = {}
             skipped_files = []
 
@@ -1235,7 +1231,6 @@ def admin_manageTimetable():
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
                 if not base_name:
                     continue
-
                 if base_name not in latest_files:
                     latest_files[base_name] = (timestamp, file)
                 else:
@@ -1253,27 +1248,16 @@ def admin_manageTimetable():
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
                 structured = parse_timetable(raw_text)
                 structured['filename'] = file.filename
-
-                # Save timetable to DB
                 total_rows_inserted += save_timetable_to_db(structured)
 
-            flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
-
-            # POST-Redirect-GET to avoid duplicates on refresh
+            flash(f"✅ Files read: {len(files)}, Files processed: {len(latest_files)}, Rows inserted: {total_rows_inserted}","success")
             return redirect(url_for('admin_manageTimetable'))
 
     # ---- Default GET rendering ----
-    # --- Fetch all timetable rows ---
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
-
-    # --- Get all lecturers from the database ---
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
-
-    # --- Total timetable = total distinct lecturers in the database ---
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
-
-    # --- Day counts (all rows) ---
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
         f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
@@ -1282,17 +1266,12 @@ def admin_manageTimetable():
         for day in days
     }
 
-    return render_template(
-        'admin/adminManageTimetable.html',
-        active_tab='admin_manageTimetabletab',
-        timetable_data=timetable_data,
-        lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        results=[],  # no preview in GET
-        upload_summary=None,
-        total_timetable=total_timetable,
-        **day_counts
-    )
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, 
+                           selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts)
+
+
+
+
 
 
 # -------------------------------
