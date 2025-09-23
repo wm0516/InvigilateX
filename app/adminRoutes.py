@@ -82,7 +82,7 @@ def get_all_attendances():
 def calculate_invigilation_stats():
     query = db.session.query(
         InvigilatorAttendance.attendanceId,
-        InvigilatorAttendance.invigilatorId,
+        InvigilatorAttendance.invigilatorId,    
         InvigilatorAttendance.checkIn,
         InvigilatorAttendance.checkOut,
         Exam.examStartTime,
@@ -90,8 +90,8 @@ def calculate_invigilation_stats():
         InvigilatorAttendance.reportId
     ).join(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
 
-    total_report = len(set([row.reportId for row in db.session.query(InvigilatorAttendance.reportId).all()]))
-    total_invigilator = len(set([row.invigilatorId for row in query]))
+    total_report = InvigilationReport.query.count()
+    total_invigilator =InvigilatorAttendance.query.count()
 
     stats = {
         "total_report": total_report,
