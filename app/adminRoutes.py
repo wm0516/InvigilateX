@@ -1074,7 +1074,8 @@ def get_staff(id):
         "userContact": user.userContact,
         "userGender": user.userGender,
         "userLevel": str(user.userLevel),
-        "userDepartment": user.userDepartment or ""
+        "userDepartment": user.userDepartment or "",
+        "userStatus": user.userStatus
     })
 
 
@@ -1134,7 +1135,7 @@ def admin_manageStaff():
                 user_select.userGender = request.form.get('editGender', '').strip()
                 user_select.userLevel = int(role_text)
                 user_select.userDepartment = request.form.get('editDepartment', '').strip()
-                user_select.userStatus = 0
+                user_select.userStatus = request.form.get('editStatus', '').strip
                 db.session.commit()
                 flash("Staff updated successfully", "success")
 
