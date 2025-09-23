@@ -271,6 +271,7 @@
 <script>
     const deptLabels = [{{ courses_by_department | map(attribute='department') | map('tojson') | join(', ') }}];
     const deptData = [{{ courses_by_department | map(attribute='count') | join(', ') }}];
+
     const ctxDept = document.getElementById('courseDeptPieChart').getContext('2d');
     new Chart(ctxDept, {
         type: 'pie',
@@ -289,7 +290,18 @@
         options: {
             responsive: true,
             plugins: {
-                legend: { position: 'right' }
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let data = context.dataset.data;
+                            let sum = data.reduce((a, b) => a + b, 0);
+                            let value = context.parsed;
+                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
+                            return context.label + ": " + value + " (" + percentage + ")";
+                        }
+                    }
+                }
             }
         }
     });
