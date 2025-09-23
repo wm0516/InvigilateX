@@ -192,28 +192,51 @@
 
 {% block extra_scripts %}
 <script>
-    // Function for edit ManageDepartment
-    document.addEventListener("DOMContentLoaded", function () {
-        const departmentSelect = document.getElementById("editDepartment");
+    document.addEventListener("DOMContentLoaded", () => {
+        const departmentSelect   = document.getElementById("editDepartment");
         const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
+        const deanSelect          = document.getElementById("deanName");
+        const hopSelect           = document.getElementById("hopName");
 
-        function fetchDepartmentData(deptCode) {
+        async function fetchDepartmentData(deptCode) {
             if (!deptCode) return;
 
-            fetch(`/get_department/${encodeURIComponent(deptCode)}`)
-                .then(resp => resp.json())
-                .then(dept => {
-                    if (dept.error) return alert(dept.error);
-                    departmentNameInput.value = dept.departmentName || '';
-                });
+            try {
+                const resp = await fetch(`/get_department/${encodeURIComponent(deptCode)}`);
+                const dept = await resp.json();
+
+                if (dept.error) {
+                    alert(dept.error);
+                    return;
+                }
+
+                // Fill department name
+                departmentNameInput.value = dept.departmentName || "";
+
+                // Preselect dean & hop if IDs are provided
+                if (dept.deanId && deanSelect) {
+                    deanSelect.value = dept.deanId;
+                } else if (deanSelect) {
+                    deanSelect.value = ""; // reset if none
+                }
+
+                if (dept.hopId && hopSelect) {
+                    hopSelect.value = dept.hopId;
+                } else if (hopSelect) {
+                    hopSelect.value = "";
+                }
+
+            } catch (err) {
+                console.error("Error fetching department:", err);
+            }
         }
 
         if (departmentSelect) {
-            departmentSelect.addEventListener("change", function () {
-                fetchDepartmentData(this.value);
+            departmentSelect.addEventListener("change", () => {
+                fetchDepartmentData(departmentSelect.value);
             });
 
-            // Pre-fill on page load if a department is selected
+            // Auto-fill on page load if already selected
             if (departmentSelect.value) {
                 fetchDepartmentData(departmentSelect.value);
             }
