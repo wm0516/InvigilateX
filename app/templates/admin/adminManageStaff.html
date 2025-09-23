@@ -375,17 +375,13 @@
     createPieChart('genderPieChart',
         ['Male', 'Female'],
         [{{ total_male_staff }}, {{ total_female_staff }}],
-        ['rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'],   // custom gender colors
-        ['rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
-        'Gender Distribution'
+        defaultColors, defaultBorders, 'Gender Distribution'
     );
 
     createPieChart('statusPieChart',
         ['Activated', 'Deactivated'],
-        [{{ total_activated }}, {{ total_deactivate }}],
-        ['rgba(76, 175, 80, 0.6)', 'rgba(244, 67, 54, 0.6)'],     // custom status colors
-        ['rgba(76, 175, 80, 1)', 'rgba(244, 67, 54, 1)'],
-        'Account Status'
+        [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
+         defaultColors, defaultBorders,'Account Status'
     );
 </script>
 {% endblock %}

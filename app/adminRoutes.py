@@ -1098,6 +1098,7 @@ def admin_manageStaff():
     total_female_staff = User.query.filter_by(userGender="FEMALE").count()
     total_activated = User.query.filter_by(userStatus=1).count()
     total_deactivate = User.query.filter_by(userStatus=0).count()
+    total_deleted = User.query.filter_by(userStatus=2).count()
 
     # Incomplete rows check
     error_rows = User.query.filter(
@@ -1134,6 +1135,11 @@ def admin_manageStaff():
                 user_select.userLevel = int(request.form['editRole'])
                 user_select.userDepartment = request.form['editDepartment']
                 user_select.userStatus = int(request.form['editStatus']) 
+
+                # In case user delete by updated    
+                if user_select.userStatus == 2:
+                    user_select.userRegisterDateTime = datetime.now(timezone.utc)
+
                 db.session.commit()
                 flash("Staff updated successfully", "success")
 
@@ -1175,6 +1181,7 @@ def admin_manageStaff():
         total_female_staff=total_female_staff,
         total_activated=total_activated,
         total_deactivate=total_deactivate,
+        total_deleted=total_deleted,
         error_rows=error_rows,
         user_select=user_select
     )
