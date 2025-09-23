@@ -13,32 +13,30 @@
     <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;">
+            <div class="dashboard-row" style="grid-template-columns: repeat(7, 1fr);">
                 <div class="dashboard-frame">
-                    <h3>Total Timetable<br>Sets</h3>
+                    <h3>Total TimetableSets</h3>
                     <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Monday<br>Scheduled Classes</h3>
-                    <p class="dashboard-text" style="color:#007bff">{{ mon_timetable }}</p>
-                </div>                
-                <div class="dashboard-frame">
-                    <h3>Tuesday<br>Scheduled Classes</h3>
-                    <p class="dashboard-text" style="color:#28a745">{{ tue_timetable }}</p>
-                </div>                
-                <div class="dashboard-frame">
-                    <h3>Wednesday<br>Scheduled Classes</h3>
-                    <p class="dashboard-text" style="color:#fd7e14">{{ wed_timetable }}</p>
-                </div>                
-                <div class="dashboard-frame">
-                    <h3>Thursday<br>Scheduled Classes</h3>
-                    <p class="dashboard-text" style="color:#dc3545">{{ thu_timetable }}</p>
-                </div>                
-                <div class="dashboard-frame">
-                    <h3>Friday<br>Scheduled Classes</h3>
-                    <p class="dashboard-text" style="color:#6f42c1">{{ fri_timetable }}</p>
+                    <h3>Total Timetables Not Linked to Lecturers</h3>
+                    <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable_not_linked }}</p>
                 </div>
+
+                {% set days = [
+                    {'name':'Monday','value':mon_timetable,'color':'#007bff'},
+                    {'name':'Tuesday','value':tue_timetable,'color':'#28a745'},
+                    {'name':'Wednesday','value':wed_timetable,'color':'#fd7e14'},
+                    {'name':'Thursday','value':thu_timetable,'color':'#dc3545'},
+                    {'name':'Friday','value':fri_timetable,'color':'#6f42c1'}
+                ] %}
+
+                {% for day in days %}
+                <div class="dashboard-frame">
+                    <h3>{{ day.name }} Scheduled Classes</h3>
+                    <p class="dashboard-text" style="color:{{ day.color }}">{{ day.value }}</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
