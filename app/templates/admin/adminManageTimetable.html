@@ -92,9 +92,9 @@
             <div class="form-left">
                 <label>Timetable Unassigned</label>
                 <select name="timetableList" id="timetableList" required>
-                    <option value="" disabled selected>Select Timetable</option>
-                    {% for lecturer, count in unassigned_count.items() %}
-                        <option value="{{ lecturer }}">{{ lecturer }} [{{ count }}]</option>
+                    <option value="" disabled selected>Select Timetable by Staff Name</option>
+                    {% for rowId, lecturer, count in unassigned_count.items() %}
+                        <option value="{{ rowId }}">{{ lecturer }} [{{ count }} line(s)] {{ rowId }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -104,7 +104,7 @@
                 <select name="staffList" id="staffList" required>
                     <option value="" disabled selected>Select Staff</option>
                     {% for staff in staff_list %}
-                        <option value="{{ staff.userId }}">{{ staff.userName }}</option>
+                        <option value="{{ staff.userId }}">[{{ staff.userId }}] {{ staff.userName }}</option>
                     {% endfor %}
                 </select>
             </div>

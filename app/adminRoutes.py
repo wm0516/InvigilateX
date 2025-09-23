@@ -1120,6 +1120,28 @@ def save_timetable_to_db(structured):
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 def admin_manageTimetable():
+    # ---- Default GET rendering ----
+    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
+    lecturers = sorted({row.lecturerName for row in timetable_data})
+    selected_lecturer = request.args.get("lecturer")
+    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
+    staff_list = User.query.filter(User.userLevel != 4).all()
+
+    # Count timetable per day
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    day_counts = {
+        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
+            .filter(TimetableRow.classDay == day)
+            .distinct().count()
+        for day in days
+    }
+
+    # Count unassigned rows per lecturer
+    unassigned_count = {
+        lecturer: TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).count()
+        for lecturer in lecturers
+    }
+
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
@@ -1170,28 +1192,6 @@ def admin_manageTimetable():
 
             return redirect(url_for('admin_manageTimetable'))
 
-    # ---- Default GET rendering ----
-    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
-    lecturers = sorted({row.lecturerName for row in timetable_data})
-    selected_lecturer = request.args.get("lecturer")
-    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
-    staff_list = User.query.filter(User.userLevel != 4).all()
-
-    # Count timetable per day
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
-    day_counts = {
-        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-            .filter(TimetableRow.classDay == day)
-            .distinct().count()
-        for day in days
-    }
-
-
-    # Count unassigned rows per lecturer
-    unassigned_count = {
-        lecturer: TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).count()
-        for lecturer in lecturers
-    }
 
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers,
         selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count, staff_list=staff_list)
