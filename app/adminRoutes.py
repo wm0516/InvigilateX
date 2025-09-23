@@ -754,6 +754,8 @@ def admin_manageVenue():
     # For edit section
     venue_selected_number = request.form.get('editVenueNumber')
     venue_select = Venue.query.filter_by(venueNumber=venue_selected_number).first()
+    flash(f"Venue selected {venue_select}", "success")
+
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
