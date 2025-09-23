@@ -48,27 +48,28 @@ class User(db.Model):
     userContact = db.Column(db.String(15), nullable=False)                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
-    userStatus = db.Column(db.Integer, default=0)                                                                      # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
-    userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+    userStatus = db.Column(db.Integer, default=0)                                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
+    userRegisterDateTime = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
+    timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
     
     # Relationship
     department = db.relationship("Department", backref="users", foreign_keys=[userDepartment])
     '''
     CREATE TABLE User (
         userId VARCHAR(20) PRIMARY KEY,
+        userDepartment VARCHAR(10) NULL,
         userName VARCHAR(255) NOT NULL,
-        userGender VARCHAR(10) NOT NULL,
+        userLevel INT NOT NULL,
         userEmail VARCHAR(255) NOT NULL,
         userContact VARCHAR(15) NOT NULL,
-        userLevel INT NOT NULL,
-        userDepartment VARCHAR(10) NULL,,
+        userGender VARCHAR(10) NOT NULL,
         userPassword VARCHAR(255) NOT NULL,
         userStatus INT DEFAULT 0,
-        userRegisterDateTime DATETIME NOT NULL,
-        userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
-        userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
+        userRegisterDateTime DATETIME DEFAULT CURRENT_TIMESTAMP,
+        userCumulativeHours FLOAT DEFAULT 0.0,
+        userPendingCumulativeHours FLOAT DEFAULT 0.0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
@@ -216,14 +217,31 @@ class InvigilatorAttendance(db.Model):
     );
     '''
 
-# Need Double Check, Record In Database
+# Timetable model
 class Timetable(db.Model):
     __tablename__ = 'Timetable'
-    timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    timetableId = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.userId'), unique=True)
+    user = db.relationship('User', back_populates='timetable')
+    rows = db.relationship('TimetableRow', back_populates='timetable')  # 1-to-many
+    '''
+    CREATE TABLE Timetable (
+        timetableId INT AUTO_INCREMENT PRIMARY KEY,
+        user_id VARCHAR(20) UNIQUE,
+        FOREIGN KEY (user_id) REFERENCES User(userId)
+    );
+    '''
+
+# Need Double Check, Record In Database
+class TimetableRow(db.Model):
+    __tablename__ = 'TimetableRow'
+    rowId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    timetable_id = db.Column(db.Integer, db.ForeignKey('Timetable.timetableId')) 
+    timetable = db.relationship('Timetable', back_populates='rows')               
     filename = db.Column(db.Text, nullable=False)
     lecturerName = db.Column(db.String(255), nullable=False)
     classType = db.Column(db.String(10), nullable=False)
-    classDay = db.Column(db.String(3), nullable=True)
+    classDay = db.Column(db.String(3), nullable=False)
     classTime = db.Column(db.String(20), nullable=False)
     classRoom = db.Column(db.String(20), nullable=False)
     courseName = db.Column(db.String(255), nullable=False)
@@ -232,21 +250,30 @@ class Timetable(db.Model):
     courseSection = db.Column(db.String(20), nullable=False)
     classWeekRange = db.Column(db.Text, nullable=False)
     classWeekDate = db.Column(db.Text, nullable=False)
-
     '''
-    CREATE TABLE Timetable (
-        timetableId INT AUTO_INCREMENT PRIMARY KEY,
-        filename TEXT,
-        lecturerName VARCHAR(255),
-        classType VARCHAR(10),
-        classDay VARCHAR(3),
-        classTime VARCHAR(20),
-        classRoom VARCHAR(20),
-        courseName VARCHAR(255),
-        courseIntake VARCHAR(50),
-        courseCode VARCHAR(20),
-        courseSection VARCHAR(20),
-        classWeekRange TEXT,
-        classWeekDate TEXT
+    CREATE TABLE TimetableRow (
+        rowId INT AUTO_INCREMENT PRIMARY KEY,
+        timetable_id INT,
+        filename TEXT NOT NULL,
+        lecturerName VARCHAR(255) NOT NULL,
+        classType VARCHAR(10) NOT NULL,
+        classDay VARCHAR(3) NOT NULL,
+        classTime VARCHAR(20) NOT NULL,
+        classRoom VARCHAR(20) NOT NULL,
+        courseName VARCHAR(255) NOT NULL,
+        courseIntake VARCHAR(50) NOT NULL,
+        courseCode VARCHAR(20) NOT NULL,
+        courseSection VARCHAR(20) NOT NULL,
+        classWeekRange TEXT NOT NULL,
+        classWeekDate TEXT NOT NULL,
+        FOREIGN KEY (timetable_id) REFERENCES Timetable(timetableId)
     );
     '''
+
+
+
+
+
+
+
+

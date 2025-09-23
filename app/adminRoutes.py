@@ -274,10 +274,31 @@ def parse_timetable(raw_text):
 # Save Parsed Timetable to DB
 # -------------------------------
 def save_timetable_to_db(structured):
-    new_entries = []
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
 
+    if not lecturer:
+        return 0
+
+    # Try to get the user
+    user = User.query.filter_by(userName=lecturer).first()
+
+    if user:
+        # Check if a timetable exists for this user
+        timetable = Timetable.query.filter_by(user_id=user.userId).first()
+        if timetable:
+            # Delete old rows first
+            TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
+        else:
+            # Create a new timetable
+            timetable = Timetable(user_id=user.userId)
+            db.session.add(timetable)
+            db.session.commit()  # commit to get timetableId
+    else:
+        # User not found, use temporary placeholder timetableId = None
+        timetable = None
+
+    new_rows = []
     for day, activities in structured["days"].items():
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
@@ -286,30 +307,27 @@ def save_timetable_to_db(structured):
                 for sec in act["sections"]:
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
-                    new_entries.append({
-                        "filename"      : filename,
-                        "lecturerName"  : lecturer,
-                        "classType"     : act.get("class_type"),
-                        "classDay"      : day,
-                        "classTime"     : act.get("time"),
-                        "classRoom"     : act.get("room"),
-                        "courseName"    : act.get("course"),
-                        "courseIntake"  : sec.get("intake"),
-                        "courseCode"    : sec.get("course_code"),
-                        "courseSection" : sec.get("section"),
-                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        "classWeekDate" : act.get("weeks_date"),
-                    })
+                    row = TimetableRow(
+                        timetable_id=timetable.timetableId if timetable else None,
+                        filename=filename,
+                        lecturerName=lecturer,
+                        classType=act.get("class_type"),
+                        classDay=day,
+                        classTime=act.get("time"),
+                        classRoom=act.get("room"),
+                        courseName=act.get("course"),
+                        courseIntake=sec.get("intake"),
+                        courseCode=sec.get("course_code"),
+                        courseSection=sec.get("section"),
+                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        classWeekDate=act.get("weeks_date")
+                    )
+                    new_rows.append(row)
 
-    # Bulk delete all rows for this lecturer before insert
-    if lecturer:
-        Timetable.query.filter_by(lecturerName=lecturer).delete()
-
-    for entry in new_entries:
-        db.session.add(Timetable(**entry))
-
+    db.session.bulk_save_objects(new_rows)
     db.session.commit()
-    return len(new_entries)
+
+    return len(new_rows)
 
 
 # -------------------------------
