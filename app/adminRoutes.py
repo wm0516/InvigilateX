@@ -1228,9 +1228,9 @@ def admin_manageTimetable():
                     row.timetable_id = timetable.timetableId   # <-- valid FK
 
                 db.session.commit()
-                flash(f"✅ {lecturer} ({len(rows)} row(s)) linked to staff ID {user_id}", "success")
+                flash(f"{lecturer} ({len(rows)} row(s)) linked to staff ID {user_id}", "success")
             else:
-                flash("❌ Missing lecturer or staff", "error")
+                flash("Missing lecturer or staff", "error")
 
             return redirect(url_for('admin_manageTimetable'))
         

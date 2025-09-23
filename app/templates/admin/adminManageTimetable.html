@@ -145,7 +145,7 @@
         <br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update" style="background-color: rgb(35, 190, 56);">
+            <button type="submit" name="action" value="update" style="background-color: rgb(38, 218, 62);">
                 <i class="fas fa-check"></i> Update Timetable Relationship
             </button> 
             <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);" 
@@ -246,19 +246,25 @@
     });
 
     document.addEventListener("DOMContentLoaded", function () {
-        const timetable = this.value;
-        if (!timetable) return;
+        const timetableSelect = document.getElementById('editTimetableList');
+        const staffSelect = document.getElementById('editStaffList');
 
-        fetch(`/get_linkTimetable/${timetableId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                    return;
-                }
-                document.getElementById('editStaffList').value = data.user_id;
-            })
-            .catch(err => console.error(err));
+        timetableSelect.addEventListener('change', function () {
+            const timetableId = this.value;
+            if (!timetableId) return;
+
+            fetch(`/get_linkTimetable/${timetableId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+                    // Set the staff dropdown to the linked user_id
+                    staffSelect.value = data.user_id;
+                })
+                .catch(err => console.error(err));
+        });
     });
 </script>
 {% endblock %}
