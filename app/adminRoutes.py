@@ -836,7 +836,7 @@ def admin_manageVenue():
 # -------------------------------
 @app.route('/get_courses_by_department/<path:department_code>')
 def get_courses_by_department(department_code):
-    courses = Course.query.filter(Course.courseDepartment == department_code, Course.courseExamId == None).all()
+    courses = Course.query.filter(Course.courseDepartment == department_code,Course.courseExamId.isnot(None)).all()    
     courses_list = [{"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}for c in courses]
     return jsonify(courses_list)
 
