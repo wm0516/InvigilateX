@@ -1136,11 +1136,18 @@ def admin_manageTimetable():
         for day in days
     }
 
-    # Count unassigned rows per lecturer
-    unassigned_count = {
-        lecturer: TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).count()
-        for lecturer in lecturers
-    }
+    # Get all lecturers with unassigned rows
+    unassigned_data = []
+    for lecturer in lecturers:
+        unassigned_rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
+        count = len(unassigned_rows)
+
+        for row in unassigned_rows:
+            unassigned_data.append({
+                "rowId": row.id,              # rowId
+                "lecturer": lecturer,         # lecturer name
+                "count": count                # total rows for this lecturer
+            })
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
@@ -1178,15 +1185,15 @@ def admin_manageTimetable():
             return redirect(url_for('admin_manageTimetable'))
         
         elif form_type == 'edit':
-            user_id = request.form['staffList']
-            row_id = request.form['timetableList']
+            user_id = request.form.get("staffList")
+            row_id = request.form.get("timetableList")
 
             # Fetch the timetable row
-            timetable_row = TimetableRow.query.get(row_id)
-            if timetable_row:
-                timetable_row.timetable_id = user_id  # Link the staff to the timetable row
+            row  = TimetableRow.query.get(row_id)
+            if row :
+                row.timetable_id = user_id  # Link the staff to the timetable row
                 db.session.commit()
-                flash(f"✅ {timetable_row.lecturerName} has been linked to staff ID {user_id}", "success")
+                flash(f"✅ {row.lecturerName} has been linked to staff ID {user_id}", "success")
             else:
                 flash("❌ Timetable row not found", "error")
 

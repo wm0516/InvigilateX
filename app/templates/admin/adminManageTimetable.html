@@ -93,8 +93,10 @@
                 <label>Timetable Unassigned</label>
                 <select name="timetableList" id="timetableList" required>
                     <option value="" disabled selected>Select Timetable by Staff Name</option>
-                    {% for rowId, lecturer, count in unassigned_count.items() %}
-                        <option value="{{ rowId }}">{{ lecturer }} [{{ count }} line(s)] {{ rowId }}</option>
+                    {% for item in unassigned_data %}
+                        <option value="{{ item.rowId }}">
+                            {{ item.lecturer }} [{{ item.count }} line(s)] - RowID: {{ item.rowId }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>
