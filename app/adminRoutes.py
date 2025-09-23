@@ -1138,7 +1138,7 @@ def admin_manageStaff():
                 flash("Staff updated successfully", "success")
 
             elif action == 'delete' and user_select:
-                db.session.delete(user_select)
+                user_select.userStatus = 2
                 db.session.commit()
                 flash("Staff deleted successfully", "success")
 

@@ -48,7 +48,7 @@ class User(db.Model):
     userContact = db.Column(db.String(15), nullable=False)                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
-    userStatus = db.Column(db.Boolean, default=False)                                                                 # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived"
+    userStatus = db.Column(db.Integer, default=0)                                                                      # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
     userRegisterDateTime = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
@@ -65,7 +65,7 @@ class User(db.Model):
         userLevel INT NOT NULL,
         userDepartment VARCHAR(10) NULL,,
         userPassword VARCHAR(255) NOT NULL,
-        userStatus BOOLEAN DEFAULT FALSE,
+        userStatus INT DEFAULT 0,
         userRegisterDateTime DATETIME NOT NULL,
         userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,

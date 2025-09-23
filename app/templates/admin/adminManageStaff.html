@@ -260,10 +260,12 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if row.userStatus|int == 1 %}
-                            Activated
-                        {% else %}
+                        {% if row.userStatus|int == 0 %}
                             Deactivated
+                        {% elif row.userStatus|int == 1 %}
+                            Activated
+                        {% elif row.userStatus|int == 2 %}
+                            Deleted
                         {% endif %}
                     </td>
                     <td>{{ row.userRegisterDateTime }}</td>
