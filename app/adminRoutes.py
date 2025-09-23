@@ -902,9 +902,7 @@ def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
     exam_data = Exam.query.all()
-    total_exam = Exam.query.count()   
-    # Debug: print exam data
-    flash(f"[DEBUG] Found all exams {len(exam_data)} exams", "error")
+    total_exam = Exam.query.count()
     
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
@@ -912,14 +910,11 @@ def admin_manageExam():
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
     # Unassigned Exam (With ExamId and others with NULL)
-    unassigned_exam = Course.query.join(Exam, Course.courseExamId == Exam.examId).filter(
-        and_(
-            Exam.examId.isnot(None),
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None)
-        )
-    ).all()
-    flash(f"[DEBUG] Found exams without assigned{len(unassigned_exam)} courses", "error")
+    unassigned_exam = Exam.query.filter(
+        Exam.examId.isnot(None),
+        Exam.examStartTime.is_(None),
+        Exam.examEndTime.is_(None)
+    ).count()
 
     # Completed Exam
     complete_exam = Exam.query.filter(
