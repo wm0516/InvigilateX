@@ -704,6 +704,11 @@ def admin_manageDepartment():
         total_department=total_department, total_dean=total_dean, total_hop=total_hop, deans=deans, hops=hops, department_with_dean=department_with_dean, department_with_hop=department_with_hop)
 
 
+
+
+
+
+
 # -------------------------------
 # Get Venue Details for ManageVenueEditPage
 # -------------------------------

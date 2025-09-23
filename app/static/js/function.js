@@ -463,6 +463,28 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
 });
 
 
+document.getElementById('editStaffId').addEventListener('change', function() {
+    const staffId = this.value;
+    if (!staffId) return;
+
+    fetch(`/get_staff/${staffId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+            // Populate fields
+            document.getElementById('editUsername').value = data.userName;
+            document.getElementById('editEmail').value = data.userEmail;
+            document.getElementById('editContact').value = data.userContact;
+            document.getElementById('editGender').value = data.userGender;
+            document.getElementById('editDepartment').value = data.userDepartment;
+            document.getElementById('editRoleSelect').value = data.userLevel;
+        })
+        .catch(err => console.error(err));
+});
+
 
 // examManual.js
 document.addEventListener("DOMContentLoaded", function () {
@@ -524,162 +546,3 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 });
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    const staffSelect = document.getElementById("editStaffId");
-    const usernameSelect = document.getElementById("editUsername");
-    const emailSelect = document.getElementById("editEmail");
-    const contactSelect = document.getElementById("editContact");
-    const genderSelect = document.getElementById("editGender");
-    const departmentSelect = document.getElementById("editDepartment");
-    const roleSelect = document.getElementById("editRoleSelect");
-
-    function fetchStaff(staffId) {
-        if (!staffId) return;
-        
-        fetch(`/get_staff/${staffId}`)
-            .then(resp => resp.json())
-            .then(staff => {
-                if (staff.error) return alert (staff.error);
-                usernameSelect.value = staff.userName || '';
-                emailSelect.value = staff.userEmail || '';
-                contactSelect.value = staff.userContact || '';
-                genderSelect.value = staff.userGender || '';
-                departmentSelect.value = staff.userDepartment || '';
-                roleSelect.value = staff.userLevel || '';
-            });
-    }
-
-    if (staffSelect) {
-        staffSelect.addEventListener("change", function () {
-            fetchStaff(this.value)
-        });
-
-        // Pre-fill on page load if a staff is selected
-        if (staffSelect.value)
-            fetchStaff(staffSelect.value);
-    }
-});
-
-
-
-
-/*
-// examEdit.js
-document.addEventListener("DOMContentLoaded", function () {
-    // Edit Exam Section
-    const editCourseSelect = document.getElementById('editExamCourseSection');
-    if (!editCourseSelect) return;
-
-    console.log('[DEBUG] Edit course select element found');
-    
-    editCourseSelect.addEventListener('change', function () {
-        const courseCode = this.value;
-        console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
-
-        if (!courseCode || courseCode === '') {
-            console.log("[DEBUG] Empty course code selected, clearing fields");
-            clearEditFields();
-            return;
-        }
-
-        const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
-        console.log(`[DEBUG] Fetching from: ${apiUrl}`);
-        
-        fetch(apiUrl)
-            .then(res => {
-                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                return res.json();
-            })
-            .then(data => {
-                console.log('[DEBUG] Raw response data:', data);
-                if (data.error) {
-                    console.error('[DEBUG] API returned error:', data.error);
-                    alert('Error loading exam details: ' + data.error);
-                    return;
-                }
-                if (!data.courseCodeSection) {
-                    console.error('[DEBUG] Missing courseCodeSection in response');
-                    alert('Invalid response from server');
-                    return;
-                }
-                populateEditForm(data);
-            })
-            .catch(err => {
-                console.error("[DEBUG] Fetch failed:", err);
-                alert('Failed to load exam details. Check console for details.');
-            });
-    });
-
-    // Clear edit fields
-    function clearEditFields() {
-        const fieldsToClear = [
-            'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
-            'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
-        ];
-        
-        fieldsToClear.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                if (field.tagName === 'SELECT') {
-                    field.selectedIndex = 0;
-                } else {
-                    field.value = '';
-                }
-            }
-        });
-    }
-
-    // Populate edit form
-    function populateEditForm(data) {
-        console.log('[DEBUG] Populating form with data:', data);
-
-        const fieldMappings = {
-            'editCourseName': data.courseName,
-            'editProgramCode': data.courseDepartment,
-            'editStudent': data.courseStudent,
-            'editVenue': data.examVenue,
-            'editInvigilatorNo': data.examNoInvigilator,
-            'editExamStartTime': data.examStartTime,
-            'editExamEndTime': data.examEndTime
-        };
-
-        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.value = value || '';
-                console.log(`[DEBUG] Set ${fieldId} to:`, value);
-            }
-        });
-
-        const practicalSelect = document.getElementById('editPracticalLecturer');
-        const tutorialSelect = document.getElementById('editTutorialLecturer');
-
-        if (practicalSelect) {
-            practicalSelect.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = data.practicalLecturer || '';
-            option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
-            option.selected = true;
-            practicalSelect.appendChild(option);
-            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
-        }
-
-        if (tutorialSelect) {
-            tutorialSelect.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = data.tutorialLecturer || '';
-            option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
-            option.selected = true;
-            tutorialSelect.appendChild(option);
-            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
-        }
-
-        console.log('[DEBUG] Form population complete');
-    }
-});
-*/
-
-
