@@ -1127,14 +1127,13 @@ def admin_manageStaff():
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and user_select:
-                role_text = request.form.get('editRole', '0')
-                user_select.userName = request.form.get('editUsername', '').strip()
-                user_select.userEmail = request.form.get('editEmail', '').strip()
-                user_select.userContact = request.form.get('editContact', '').strip()
-                user_select.userGender = request.form.get('editGender', '').strip()
-                user_select.userLevel = int(role_text)
-                user_select.userDepartment = request.form.get('editDepartment', '').strip()
-                user_select.userStatus = request.form.get('editStatus', '').strip
+                user_select.userName = request.form['editUsername']
+                user_select.userEmail = request.form['editEmail']
+                user_select.userContact = request.form['editContact']
+                user_select.userGender = request.form['editGender']
+                user_select.userLevel = int(request.form['editRole'])
+                user_select.userDepartment = request.form['editDepartment']
+                user_select.userStatus = int(request.form['editStatus']) 
                 db.session.commit()
                 flash("Staff updated successfully", "success")
 
