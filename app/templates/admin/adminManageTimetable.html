@@ -17,7 +17,7 @@
                 <div class="dashboard-frame pie">
                     <h4>Lecturers without Assigned Timetable</h4>
                     {% for lecturer, count in unassigned_count.items() %}
-                        {{ lecturer }} [{{ count }}]
+                        {{ loop.index }} {{ lecturer }} [{{ count }}]<br>
                     {% endfor %}
                 </div>
                 
