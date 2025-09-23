@@ -9,23 +9,29 @@
 
 {% block dashboard_section %}
 <!-- Dashboard Form -->
+<!-- 
+<div class="dashboard-frame pie">
+    <h3>Lecturers without Assigned Timetable</h3>
+    <div style="text-align: left;">
+        {% for lecturer, count in unassigned_count.items() %}
+            {{ loop.index }}. [{{ count }} line(s)]{{ lecturer }}<br>
+        {% endfor %}
+    </div>
+</div>
+-->
 <form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
     <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="dashboard-row">
                 <div class="dashboard-frame pie">
-                    <h3>Lecturers without Assigned Timetable</h3>
-                    <div style="text-align: left;">
-                        {% for lecturer, count in unassigned_count.items() %}
-                            {{ loop.index }}. [{{ count }} line(s)]{{ lecturer }}<br>
-                        {% endfor %}
-                    </div>
+                    <h3>Total TimetableSets</h3>
+                    <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
                 </div>
 
                 <div class="dashboard-frame">
-                    <h3>Total TimetableSets</h3>
-                    <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
+                    <h3>Lecturers without Assigned Timetable</h3>
+                    <p class="dashboard-text" style="color:#e63e3e">{{ unassigned_count }}</p>
                 </div>
 
                 {% set days = [
