@@ -133,7 +133,7 @@
                 <select name="staffList" id="editStaffList" required>
                     <option value="" disabled>Select Staff</option>
                     {% for staff in staff_list %}
-                        <option value="{{ staff.userId }}"
+                        <option value="" disabled selected>Select Staff</option>
                             {% if timetable_select and staff.userId == timetable_select.user_id %}selected{% endif %}>
                             [{{ staff.userId }}] {{ staff.userName }}
                         </option>
