@@ -53,7 +53,7 @@ class User(db.Model):
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
-    
+
     # Relationship
     department = db.relationship("Department", backref="users", foreign_keys=[userDepartment])
     '''
@@ -220,10 +220,10 @@ class InvigilatorAttendance(db.Model):
 # Timetable model
 class Timetable(db.Model):
     __tablename__ = 'Timetable'
-    timetableId = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.userId'), unique=True)
+    timetableId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(20), db.ForeignKey('User.userId'), unique=True)
     user = db.relationship('User', back_populates='timetable')
-    rows = db.relationship('TimetableRow', back_populates='timetable')  # 1-to-many
+    rows = db.relationship('TimetableRow', back_populates='timetable')
     '''
     CREATE TABLE Timetable (
         timetableId INT AUTO_INCREMENT PRIMARY KEY,
