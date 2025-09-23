@@ -1201,7 +1201,7 @@ def admin_manageTimetable():
 
 
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers,
-        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_count=unassigned_count, staff_list=staff_list)
+        selected_lecturer=selected_lecturer, total_timetable=total_timetable, **day_counts, unassigned_data=unassigned_data, staff_list=staff_list)
 
 
 
