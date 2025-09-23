@@ -10,11 +10,10 @@
 {% block dashboard_section %}
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
-    <div id="dashboardSection" style="width: 90%; margin:auto;">
+    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
 
-            <!-- Overview -->
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame">
                     <h3>Total Timetable Sets</h3>
@@ -46,7 +45,6 @@
 </form>
 {% endblock %}
 
-
 {% block upload_section %}
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
@@ -60,7 +58,6 @@
                         Click to upload or drag and drop with below file format
                     </div>
                     <div class="file-types">PDF ONLY</div><br>
-                    <!-- Selected file display -->
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
@@ -68,7 +65,6 @@
             <input type="hidden" name="form_type" value="upload">
             <br>
 
-            <!-- Upload Form Submit -->
             <div class="button-wrapper">
                 <button type="submit" id="uploadButton">Upload Lecturer Timetable</button>
             </div>
