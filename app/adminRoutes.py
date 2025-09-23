@@ -1283,7 +1283,7 @@ def admin_manageTimetable():
             flash(f"✅ {total_rows_inserted} timetable rows updated successfully!", "success")
 
             # Refresh after upload
-            timetable_data = Timetable.query.order_by(Timetable.timetableId.asc()).all()
+            timetable_data = TimetableRow.query.order_by(TimetableRow.timetableId.asc()).all()
             lecturers = sorted({row.lecturerName for row in timetable_data})
             total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
