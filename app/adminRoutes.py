@@ -1134,13 +1134,14 @@ def admin_manageStaff():
                 user_select.userGender = request.form.get('editGender', '').strip()
                 user_select.userLevel = int(role_text)
                 user_select.userDepartment = request.form.get('editDepartment', '').strip()
+                user_select.userStatus = 0
                 db.session.commit()
                 flash("Staff updated successfully", "success")
 
             elif action == 'delete' and user_select:
                 user_select.userStatus = 2
                 user_select.userRegisterDateTime = datetime.now(timezone.utc)
-                db.session.commit()
+                db.session.commit() 
                 flash("Staff deleted successfully", "success")
 
             return redirect(url_for('admin_manageStaff'))
