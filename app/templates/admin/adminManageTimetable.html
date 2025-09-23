@@ -94,7 +94,7 @@
                 <select name="timetableList" id="timetableList" required>
                     <option value="" disabled selected>Select Timetable</option>
                     {% for lecturer, count in unassigned_count.items() %}
-                        <option value="{{ row.rowId }}">{{ lecturer }} [{{ count }}]</option>
+                        <option value="{{ lecturer }}">{{ lecturer }} [{{ count }}]</option>
                     {% endfor %}
                 </select>
             </div>
