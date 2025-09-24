@@ -1193,8 +1193,16 @@ def admin_manageTimetable():
     timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
     # Build staff_list differently depending on context
-    staff_list = User.query.filter(User.userLevel != 4, User.userId.notin_(assigned_users)).all()
-
+    staff_list = User.query.filter(
+        User.userLevel != 4,
+        User.userStatus != 2
+    ).filter(
+        or_(
+            User.userId.notin_(assigned_users),
+            User.userId == timetable_select.user_id
+        )
+    ).all()
+    
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
@@ -1271,7 +1279,7 @@ def admin_manageTimetable():
                     row.timetable_id = timetable.timetableId   # <-- valid FK
 
                 db.session.commit()
-                flash(f"{lecturer} ({len(rows)} row(s)) linked to staff ID {user_id}", "success")
+                flash(f"{lecturer} Timetable  linked to staff ID {user_id}", "success")
             else:
                 flash("Missing lecturer or staff", "error")
 
