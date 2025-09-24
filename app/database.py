@@ -158,8 +158,9 @@ class Course(db.Model):
     # Relationship
     department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
-    tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
-    exam = db.relationship("Exam", back_populates="course")  # One Course ↔ One Exam
+    tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])   
+    exam = db.relationship("Exam", back_populates="course", uselist=False)  # One Course ↔ One Exam
+
     '''
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
