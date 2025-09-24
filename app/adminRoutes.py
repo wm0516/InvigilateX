@@ -1184,21 +1184,29 @@ def admin_manageTimetable():
     selected_lecturer = request.args.get("lecturer")
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
-    staff_list = User.query.filter(User.userLevel != 4).all()
     # Subquery: all user_ids already in Timetable
     assigned_users = db.session.query(Timetable.user_id)
-    
-    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
-    timetable_selected = request.form.get('editTimetableList')
-    timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
-    # Main query: users not level 4 AND not already in Timetable
-    staff_list = User.query.filter(
-        User.userLevel != 4
-    ).filter(
-        (User.userId.notin_(assigned_users)) | 
-        (User.userId == timetable_select.user_id)   # ✅ always include the linked staff
-    ).all()
+    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
+
+    # Check if user selected a timetable (from edit form)
+    timetable_selected = request.form.get('editTimetableList')
+    timetable_select = None
+    if timetable_selected:
+        timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
+
+    # Build staff_list differently depending on context
+    staff_query = User.query.filter(User.userLevel != 4)
+
+    if timetable_select:
+        # In edit mode → include own linked staff back
+        staff_list = staff_query.filter(
+            (User.userId.notin_(assigned_users)) |
+            (User.userId == timetable_select.user_id)
+        ).all()
+    else:
+        # In GET/manual mode → only unassigned staff
+        staff_list = staff_query.filter(User.userId.notin_(assigned_users)).all()
 
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
@@ -1305,7 +1313,8 @@ def admin_manageTimetable():
         unassigned_summary=unassigned_summary,   # <-- use this
         staff_list=staff_list,
         **day_counts,
-        timetable_list=timetable_list
+        timetable_list=timetable_list,
+        timetable_select=timetable_select   # <-- pass to Jinja for pre-select
     )
 
 
