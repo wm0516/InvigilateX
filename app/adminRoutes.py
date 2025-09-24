@@ -1187,17 +1187,18 @@ def admin_manageTimetable():
     staff_list = User.query.filter(User.userLevel != 4).all()
     # Subquery: all user_ids already in Timetable
     assigned_users = db.session.query(Timetable.user_id)
+    
+    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
+    timetable_selected = request.form.get('editTimetableList')
+    timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
     # Main query: users not level 4 AND not already in Timetable
     staff_list = User.query.filter(
-        User.userLevel != 4,
-        ~User.userId.in_(assigned_users)
+        User.userLevel != 4
+    ).filter(
+        (User.userId.notin_(assigned_users)) | 
+        (User.userId == timetable_select.user_id)   # ✅ always include the linked staff
     ).all()
-
-    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
-
-    timetable_selected = request.form.get('editTimetableList')
-    timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
