@@ -264,7 +264,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 
 
 
-
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
@@ -338,23 +337,46 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not eligible_invigilators:
         return False, "No eligible invigilators available for assignment"
 
-    eligible_invigilators.sort(
-        key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
-    )
+    male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
+    female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
 
-    for _ in range(invigilatorNo):
-        if not eligible_invigilators:
-            break
+    chosen_invigilators = []
 
-        lowest_hours = (eligible_invigilators[0].userCumulativeHours or 0) + \
-                       (eligible_invigilators[0].userPendingCumulativeHours or 0)
+    # -------------------------------
+    # Gender Selection Logic
+    # -------------------------------
+    if invigilatorNo == 1:
+        pool = male_invigilators + female_invigilators
+        pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
+        if not pool:
+            return False, "No available invigilators"
+        chosen_invigilators.append(random.choice(pool))
 
-        lowest_candidates = [
-            inv for inv in eligible_invigilators
-            if ((inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)) == lowest_hours
-        ]
+    elif invigilatorNo == 2:
+        if not male_invigilators or not female_invigilators:
+            return False, "Need at least 1 male and 1 female for 2 invigilators"
+        chosen_invigilators.append(random.choice(male_invigilators))
+        chosen_invigilators.append(random.choice(female_invigilators))
 
-        chosen = random.choice(lowest_candidates)
+    else:  # invigilatorNo >= 3
+        pool = male_invigilators + female_invigilators
+        pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
+
+        while len(chosen_invigilators) < invigilatorNo and pool:
+            candidate = pool.pop(0)
+            chosen_invigilators.append(candidate)
+
+            males = sum(1 for inv in chosen_invigilators if inv.userGender == "MALE")
+            females = sum(1 for inv in chosen_invigilators if inv.userGender == "FEMALE")
+
+            if len(chosen_invigilators) == invigilatorNo:
+                if males == 0 or females == 0:  # all same gender
+                    return False, "Invigilators cannot all be the same gender"
+
+    # -------------------------------
+    # Add Attendance + Pending Hours
+    # -------------------------------
+    for chosen in chosen_invigilators:
         chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
 
         attendance = InvigilatorAttendance(
@@ -365,14 +387,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
             remark=None
         )
         db.session.add(attendance)
-        eligible_invigilators.remove(chosen)
 
     db.session.commit()
     return True, "Exam created/updated successfully"
 
 
 # -------------------------------
-# Delete All Related Exam after get modify
+# Delete All Related Exam after modification
 # -------------------------------
 def delete_exam_related(exam_id):
     exam = Exam.query.get(exam_id)
@@ -397,9 +418,6 @@ def delete_exam_related(exam_id):
 
     db.session.commit()
     return True, f"Related data for exam {exam_id} deleted successfully"
-
-
-
 
 
 
