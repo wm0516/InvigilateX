@@ -1138,6 +1138,7 @@ def admin_manageTimetable():
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
+    # Filtering lecturer
     selected_lecturer = request.args.get("lecturer")
     total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
@@ -1166,7 +1167,6 @@ def admin_manageTimetable():
     }
 
     # Group all lecturers with unassigned rows
-    from collections import defaultdict
     grouped_unassigned = defaultdict(int)
     for row in TimetableRow.query.filter_by(timetable_id=None).all():
         grouped_unassigned[row.lecturerName] += 1
