@@ -688,6 +688,53 @@ def get_available_venues():
         return jsonify([])
 
 
+def adjust_invigilators(report, new_count, start_dt, end_dt):
+    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+
+    current_attendances = list(report.attendances)
+    current_count = len(current_attendances)
+
+    if new_count == current_count:
+        return  # nothing to change
+
+    if new_count > current_count:
+        # Need to ADD more invigilators
+        extra_needed = new_count - current_count
+        already_assigned_ids = [att.invigilatorId for att in current_attendances]
+
+        eligible_invigilators = User.query.filter(
+            User.userLevel == 1,
+            ~User.userId.in_(already_assigned_ids)
+        ).all()
+
+        if not eligible_invigilators:
+            raise ValueError("No extra eligible invigilators available")
+
+        random.shuffle(eligible_invigilators)
+        for inv in eligible_invigilators[:extra_needed]:
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
+            db.session.add(InvigilatorAttendance(
+                reportId=report.invigilationReportId,
+                invigilatorId=inv.userId
+            ))
+
+    else:  
+        # Need to REMOVE invigilators
+        remove_count = current_count - new_count
+        to_remove = random.sample(current_attendances, remove_count)
+        for att in to_remove:
+            inv = att.invigilator
+            if inv:
+                inv.userPendingCumulativeHours = max(
+                    0.0,
+                    (inv.userPendingCumulativeHours or 0.0) - pending_hours
+                )
+            db.session.delete(att)
+
+    db.session.commit()
+
+
+
 # -------------------------------
 # Function for Admin ManageExam Route
 # -------------------------------
@@ -783,22 +830,12 @@ def admin_manageExam():
                             exam_select.course.courseTutorial,
                             invigilatorNo_text
                         )
-                    elif exam_select.examNoInvigilator != invigilatorNo_text:
-                        # Delete old report & attendances (cascade works here)
-                        reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
-                        for report in reports:
-                            db.session.delete(report)
-                        db.session.flush()  # ensure deletion before re-create
-
-                        # Re-create new report + attendances
-                        create_exam_and_related(
-                            start_dt, end_dt,
-                            exam_select.course.courseCodeSection,
-                            venue_text,
-                            exam_select.course.coursePractical,
-                            exam_select.course.courseTutorial,
-                            invigilatorNo_text
-                        )
+                    elif exam_select.examNoInvigilator != int(invigilatorNo_text):
+                        report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                        if report:
+                            adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
+                        else:
+                            create_exam_and_related(start_dt, end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
                     db.session.commit()
                     flash("Exam updated successfully", "success")
