@@ -1186,14 +1186,11 @@ def admin_manageTimetable():
 
     # Subquery: all user_ids already in Timetable
     assigned_users = db.session.query(Timetable.user_id)
-
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
 
     # Check if user selected a timetable (from edit form)
     timetable_selected = request.form.get('editTimetableList')
-    timetable_select = None
-    if timetable_selected:
-        timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
+    timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
     # Build staff_list differently depending on context
     staff_query = User.query.filter(User.userLevel != 4)
@@ -1201,7 +1198,7 @@ def admin_manageTimetable():
     if timetable_select:
         # In edit mode → include own linked staff back
         staff_list = staff_query.filter(
-            (User.userId.notin_(assigned_users)) |
+            (User.userId.notin_(assigned_users)) &
             (User.userId == timetable_select.user_id)
         ).all()
     else:
