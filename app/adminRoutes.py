@@ -246,7 +246,7 @@ def admin_manageCourse():
                     course_select.courseName = request.form.get('courseName', '').strip()
                     course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
                     course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
-                    course_select.courseStatus = request.form.get('editStatus', '').strip()
+                    course_select.courseStatus = True if request.form.get('editStatus') == '1' else False
 
                     # Safe int conversion
                     try:
