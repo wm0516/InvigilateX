@@ -1236,6 +1236,8 @@ def admin_manageTimetable():
         
         elif form_type == 'edit':
             action = request.form.get('action')
+            select_userId = request.form.get('editStafflist', '').strip()
+            select_timetableIs = request.form.get('editTimetableList', '')
             if action == 'update' and timetable_select:
                 timetable_select.user_id = request.form['ediStaffList']
                 db.session.commit()

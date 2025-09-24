@@ -118,7 +118,7 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label>Existing Timetable List</label>
-                <select name="editTimetableList" id="editTimetableList" required>
+                <select name="editTimetableList" id="editTimetableList" required>uhtb
                     <option value="" disabled selected>Select Timetable</option>
                     {% for t in timetable_list %}
                         <option value="{{ t.timetableId }}">
@@ -145,10 +145,10 @@
         <br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update" style="background-color: rgb(38, 218, 62);">
+            <button type="submit" name="action" value="update" style="background-color: #b0f0a5;">
                 <i class="fas fa-check"></i> Update Timetable Relationship
             </button> 
-            <button type="submit" name="action" value="delete" style="background-color: rgb(235, 120, 120);" 
+            <button type="submit" name="action" value="delete" style="background-color: #f0a5a0;" 
                     onclick="return confirm('Are you sure to delete this timetable relationship?')">
                 <i class="fas fa-trash"></i> Delete Timetable Relationship
             </button>
