@@ -133,10 +133,14 @@
                 <select name="editStaffList" id="editStaffList" required>
                     <option value="" disabled selected>Select Staff</option>
                     {% for staff in staff_list %}
+                        {% set tid = timetable_map.get(staff.userId) %}
                         <option value="{{ staff.userId }}"
                             {% if timetable_select and staff.userId == timetable_select.user_id %}
                                 selected
                             {% endif %}>
+                            {% if tid %}
+                                [Already With {{ tid }}]
+                            {% endif %}
                             [{{ staff.userId }}] {{ staff.userName }}
                         </option>
                     {% endfor %}

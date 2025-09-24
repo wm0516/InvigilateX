@@ -1214,6 +1214,7 @@ def admin_manageTimetable():
 
     # Convert for Jinja
     unassigned_summary = [{"lecturer": name, "count": count} for name, count in grouped_unassigned.items()]
+    timetable_map = {t.user_id: t.timetableId for t in timetable_data}
 
     if request.method == "POST":
         form_type = request.form.get('form_type')
@@ -1323,6 +1324,7 @@ def admin_manageTimetable():
         staff_list=staff_list,
         **day_counts,
         timetable_list=timetable_list,
+        timetable_map=timetable_map,
         timetable_select=timetable_select   # <-- pass to Jinja for pre-select
     )
 
