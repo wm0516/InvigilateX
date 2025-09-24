@@ -158,8 +158,11 @@ class Course(db.Model):
     department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])
-    exam = db.relationship("Exam", back_populates="course")  # One Course ↔ One Exam
-    '''
+    exam = db.relationship("Exam", back_populates="course", uselist=False, 
+                           cascade="all, delete-orphan"# ✅ ensures Exam is deleted when Course is deleted  
+    )# One Course ↔ One Exam
+    
+    '''                     
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
         courseName VARCHAR(50) NULL,
@@ -175,6 +178,13 @@ class Course(db.Model):
         FOREIGN KEY (courseExamId) REFERENCES Exam(examId)
     );
     '''
+    exam = db.relationship(
+        "Exam",
+        back_populates="course",
+        uselist=False,
+        cascade="all, delete-orphan"  # ✅ ensures Exam is deleted when Course is deleted
+    )
+
 
 class InvigilationReport(db.Model):
     __tablename__ = 'InvigilationReport'
