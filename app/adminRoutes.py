@@ -687,6 +687,7 @@ def get_available_venues():
         print(f"[Error fetching available venues] {e}")
         return jsonify([])
 
+
 # -------------------------------
 # Function for Admin ManageExam Route
 # -------------------------------
@@ -786,6 +787,7 @@ def admin_manageExam():
                     flash("Exam updated successfully", "success")
 
             elif action == 'delete':
+                delete_exam_related(exam_select.examId)
                 db.session.delete(exam_select)
                 db.session.commit()
                 flash("Exam deleted successfully", "success")

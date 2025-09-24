@@ -370,6 +370,42 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     db.session.commit()
     return True, "Exam created/updated successfully"
 
+
+# -------------------------------
+# Delete All Related Exam after get modify
+# -------------------------------
+def delete_exam_related(exam_id):
+    exam = Exam.query.get(exam_id)
+    if not exam:
+        return False, f"Exam {exam_id} not found"   
+
+    pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+
+    reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
+    for report in reports:
+        for att in report.attendances:
+            invigilator = att.invigilator
+            if invigilator:
+                invigilator.userPendingCumulativeHours = max(
+                    0.0,
+                    (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
+                )
+
+    # Delete reports (attendance is cascade-deleted)
+    InvigilationReport.query.filter_by(examId=exam.examId).delete()
+    VenueAvailability.query.filter_by(examId=exam.examId).delete()
+
+    db.session.commit()
+    return True, f"Related data for exam {exam_id} deleted successfully"
+
+
+
+
+
+
+
+
+
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
