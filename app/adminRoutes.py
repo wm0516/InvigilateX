@@ -757,9 +757,8 @@ def admin_manageExam():
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
-                # Get the selected venue object
                 venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
-                
+
                 if not venue_obj:
                     flash(f"Selected venue {venue_text} does not exist", "error")
                 elif venue_obj.venueCapacity < exam_select.course.courseStudent:
@@ -771,23 +770,45 @@ def admin_manageExam():
                     exam_select.examVenue = venue_text
                     exam_select.examNoInvigilator = invigilatorNo_text
 
-                    # Only create related records if none exist
+                    # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
-                    if not existing_report:
-                        # Case 1: No report exists → create new
-                        create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
+                    if not existing_report:
+                        # No report exists → create new
+                        create_exam_and_related(
+                            start_dt, end_dt,
+                            exam_select.course.courseCodeSection,
+                            venue_text,
+                            exam_select.course.coursePractical,
+                            exam_select.course.courseTutorial,
+                            invigilatorNo_text
+                        )
                     elif exam_select.examNoInvigilator != invigilatorNo_text:
-                        # Roll back old invigilators & delete report properly
-                        delete_exam_related(exam_select.examId)
-                        # Now create new report + attendances
-                        create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
+                        # Delete old report & attendances (cascade works here)
+                        reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
+                        for report in reports:
+                            db.session.delete(report)
+                        db.session.flush()  # ensure deletion before re-create
+
+                        # Re-create new report + attendances
+                        create_exam_and_related(
+                            start_dt, end_dt,
+                            exam_select.course.courseCodeSection,
+                            venue_text,
+                            exam_select.course.coursePractical,
+                            exam_select.course.courseTutorial,
+                            invigilatorNo_text
+                        )
 
                     db.session.commit()
                     flash("Exam updated successfully", "success")
 
             elif action == 'delete':
-                delete_exam_related(exam_select.examId)
+                # Delete all related reports (cascade removes attendances too)
+                reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
+                for report in reports:
+                    db.session.delete(report)
+
                 db.session.delete(exam_select)
                 db.session.commit()
                 flash("Exam deleted successfully", "success")
@@ -843,7 +864,6 @@ def admin_manageExam():
         incomplete_exam=incomplete_exam,
         exam_select=exam_select
     )
-
 
 
 
