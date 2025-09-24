@@ -776,13 +776,13 @@ def admin_manageExam():
                     if not existing_report:
                         # Case 1: No report exists → create new
                         create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
-                    
+
                     elif exam_select.examNoInvigilator != invigilatorNo_text:
-                        # Case 2: Report exists but invigilator number changed → refresh
-                        InvigilationReport.query.filter_by(examId=exam_select.examId).delete()
-                        db.session.commit()  # commit deletion first
+                        # Roll back old invigilators & delete report properly
+                        delete_exam_related(exam_select.examId)
+                        # Now create new report + attendances
                         create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
-                    
+
                     db.session.commit()
                     flash("Exam updated successfully", "success")
 

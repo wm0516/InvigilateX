@@ -198,6 +198,8 @@ class InvigilationReport(db.Model):
     );
     '''
 
+
+
 class InvigilatorAttendance(db.Model):
     __tablename__ = 'InvigilatorAttendance'
     attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
@@ -236,6 +238,7 @@ class Timetable(db.Model):
         FOREIGN KEY (user_id) REFERENCES User(userId)
     );
     '''
+    
 
 # Need Double Check, Record In Database
 class TimetableRow(db.Model):
