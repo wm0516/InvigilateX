@@ -1300,7 +1300,7 @@ def admin_manageTimetable():
 
                     if existing:
                         # Case 2: Found in another timetable → error
-                        flash(f"Staff ID {new_user_id} is already linked to another timetable (ID {existing.timetableId}).", "error")
+                        flash(f"Staff ID:{new_user_id} is already linked to another timetable(ID:{existing.timetableId}).", "error")
                     else:
                         # Case 3: Not found → update
                         timetable_select.user_id = new_user_id
