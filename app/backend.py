@@ -262,10 +262,9 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 
 
 
-
-
 # -------------------------------
-# Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
+# Admin Function 2: Fill in Exam details and Automatically 
+# VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
@@ -287,11 +286,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     except ValueError:
         return False, "Number of Invigilators must be an integer"
 
+    # Update exam details
     exam.examStartTime = start_dt
     exam.examEndTime = end_dt
     exam.examVenue = venue_text
     exam.examNoInvigilator = invigilatorNo
 
+    # Assign lecturers
     if practicalLecturer:
         lecturer_user = User.query.filter(
             or_(
@@ -299,7 +300,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
                 User.userName.ilike(practicalLecturer)
             )
         ).first()
-
         if not lecturer_user:
             return False, f"Lecturer '{practicalLecturer}' not found in User table"
 
@@ -309,10 +309,12 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         course.coursePractical = None
         course.courseTutorial = None  
 
+    # Adjust end time if necessary
     adj_end_dt = end_dt
     if end_dt <= start_dt:
         adj_end_dt = end_dt + timedelta(days=1)
 
+    # Create venue availability
     if venue_text:
         new_availability = VenueAvailability(
             venueNumber=venue_text,
@@ -322,6 +324,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         )
         db.session.add(new_availability)
 
+    # Remove old report & attendances if they exist (important for updates)
+    delete_exam_related(exam.examId, commit=False)
+
+    # Create new report
     new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
     db.session.flush()
@@ -393,15 +399,19 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
 
 # -------------------------------
-# Delete All Related Exam after modification
+# Delete All Related Exam after get modify
 # -------------------------------
-def delete_exam_related(exam_id):
+def delete_exam_related(exam_id, commit=True):
     exam = Exam.query.get(exam_id)
     if not exam:
         return False, f"Exam {exam_id} not found"   
 
-    pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+    if exam.examStartTime and exam.examEndTime:
+        pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+    else:
+        pending_hours = 0
 
+    # Roll back pending hours from invigilators
     reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
     for report in reports:
         for att in report.attendances:
@@ -412,12 +422,15 @@ def delete_exam_related(exam_id):
                     (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
                 )
 
-    # Delete reports (attendance is cascade-deleted)
+    # Delete reports and venue availability
     InvigilationReport.query.filter_by(examId=exam.examId).delete()
     VenueAvailability.query.filter_by(examId=exam.examId).delete()
 
-    db.session.commit()
+    if commit:
+        db.session.commit()
+
     return True, f"Related data for exam {exam_id} deleted successfully"
+
 
 
 
