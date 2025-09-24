@@ -626,15 +626,11 @@ def get_course_details(department_code, course_section):
 # -------------------------------
 @app.route('/get_exam_details/<path:course_code_section>')
 def get_exam_details(course_code_section):
-    flash(f"[DEBUG] get_exam_details called with: {course_code_section}", "error")
-    
     course = Course.query.filter_by(courseCodeSection=course_code_section).first()
     if not course:
-        flash(f"[DEBUG] Course not found: {course_code_section}", "error")
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
-    flash(f"[DEBUG] Exam found: {exam is not None}", "error")
 
     response_data = {
         "courseCodeSection": course.courseCodeSection,
@@ -747,18 +743,15 @@ def admin_manageExam():
         # --------------------- EDIT EXAM FORM ---------------------
         elif form_type == 'edit' and exam_select:
             action = request.form.get('action')
-            startDate_raw = request.form.get('startDate', '').strip()
-            endDate_raw = request.form.get('endDate', '').strip()
-            startTime_raw = request.form.get('startTime', '').strip()
-            endTime_raw = request.form.get('endTime', '').strip()
+            start_dt_raw = request.form.get('startDateTime', '').strip()
+            end_dt_raw = request.form.get('endDateTime', '').strip()
 
-            if len(startTime_raw) == 5:
-                startTime_raw += ":00"
-            if len(endTime_raw) == 5:
-                endTime_raw += ":00"
+            if not start_dt_raw or not end_dt_raw:
+                flash("Start or end date/time is missing", "error")
+                return redirect(url_for('admin_manageExam'))
 
-            start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-            end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+            start_dt = datetime.strptime(start_dt_raw, "%Y-%m-%dT%H:%M")
+            end_dt = datetime.strptime(end_dt_raw, "%Y-%m-%dT%H:%M")
 
             venue_text = request.form.get('venue', '').strip()
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
