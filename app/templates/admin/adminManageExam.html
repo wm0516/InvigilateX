@@ -474,9 +474,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'editProgramCode': data.courseDepartment,
             'editStudent': data.courseStudent,
             'editVenue': data.examVenue,
-            'editInvigilatorNo': data.examNoInvigilator,
-            'editExamStartTime': data.examStartTime,
-            'editExamEndTime': data.examEndTime
+            'editInvigilatorNo': data.examNoInvigilator
         };
 
         Object.entries(fieldMappings).forEach(([fieldId, value]) => {
@@ -497,7 +495,6 @@ document.addEventListener("DOMContentLoaded", function () {
             option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
             option.selected = true;
             practicalSelect.appendChild(option);
-            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
         }
 
         if (tutorialSelect) {
@@ -507,9 +504,7 @@ document.addEventListener("DOMContentLoaded", function () {
             option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
             option.selected = true;
             tutorialSelect.appendChild(option);
-            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
         }
-
         console.log('[DEBUG] Form population complete');
     }
 });
