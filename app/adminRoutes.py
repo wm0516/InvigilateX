@@ -1069,6 +1069,22 @@ def parse_timetable(raw_text):
     return structured
 
 # -------------------------------
+# Extract time from the database
+# -------------------------------
+def parse_date_range(date_range):
+    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime."""
+    if not date_range:
+        return None, None
+    try:
+        start_str, end_str = date_range.split("-")
+        start = datetime.strptime(start_str.strip(), "%m/%d/%Y")
+        end = datetime.strptime(end_str.strip(), "%m/%d/%Y")
+        return start, end
+    except Exception:
+        return None, None
+
+
+# -------------------------------
 # Save Parsed Timetable to DB
 # -------------------------------
 def save_timetable_to_db(structured):
@@ -1078,22 +1094,17 @@ def save_timetable_to_db(structured):
     if not lecturer:
         return 0
 
-    # Try to get the user
     user = User.query.filter_by(userName=lecturer).first()
 
     if user:
-        # Check if a timetable exists for this user
         timetable = Timetable.query.filter_by(user_id=user.userId).first()
         if timetable:
-            # Delete old rows first
             TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
         else:
-            # Create a new timetable
             timetable = Timetable(user_id=user.userId)
             db.session.add(timetable)
-            db.session.commit()  # commit to get timetableId
+            db.session.commit()
     else:
-        # User not found, use temporary placeholder timetableId = None
         timetable = None
 
     new_rows = []
@@ -1105,7 +1116,8 @@ def save_timetable_to_db(structured):
                 for sec in act["sections"]:
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
-                    new_rows.append({
+
+                    new_entry = {
                         "timetable_id"  : timetable.timetableId if timetable else None,
                         "filename"      : filename,
                         "lecturerName"  : lecturer,
@@ -1119,16 +1131,46 @@ def save_timetable_to_db(structured):
                         "courseSection" : sec.get("section"),
                         "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
                         "classWeekDate" : act.get("weeks_date"),
-                    })
-    # Bulk delete all rows for this lecturer before insert
-    if lecturer:
-        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
+                    }
 
-    for entry in new_rows:
-        db.session.add(TimetableRow(**entry))
+                    # --- Compare against existing ---
+                    existing = TimetableRow.query.filter_by(
+                        lecturerName=lecturer,
+                        classType=new_entry["classType"],
+                        classDay=new_entry["classDay"],
+                        classTime=new_entry["classTime"],
+                        classRoom=new_entry["classRoom"],
+                        courseName=new_entry["courseName"],
+                        courseIntake=new_entry["courseIntake"],
+                        courseCode=new_entry["courseCode"],
+                        courseSection=new_entry["courseSection"],
+                    ).first()
+
+                    if existing and existing.classWeekDate and new_entry["classWeekDate"]:
+                        old_start, _ = parse_date_range(existing.classWeekDate)
+                        new_start, _ = parse_date_range(new_entry["classWeekDate"])
+
+                        if old_start and new_start:
+                            if new_start > old_start:  
+                                # Uploaded has later start → replace
+                                db.session.delete(existing)
+                                db.session.add(TimetableRow(**new_entry))
+                            elif new_start < old_start:  
+                                # Uploaded is older → skip
+                                continue
+                            else:
+                                # Same → skip
+                                continue
+                        else:
+                            # If parsing failed, just replace
+                            db.session.delete(existing)
+                            db.session.add(TimetableRow(**new_entry))
+                    else:
+                        # No existing row → insert new
+                        db.session.add(TimetableRow(**new_entry))
 
     db.session.commit()
-    return len(new_rows)
+    return True
 
 # -------------------------------
 # Function for Admin ManageTimetable Route
