@@ -698,44 +698,38 @@ def get_available_venues():
 def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    # Only get exams whose related course has courseStatus=True
-    exam_data = Exam.query.join(Exam.course).filter(Course.courseStatus == True).all()
-    total_exam = Exam.query.count()
-    
+
+    # Base query: only exams whose course is active
+    exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
+
+    # Fetch all exam_data as list
+    exam_data_list = exam_data_query.all()
+    total_exam = len(exam_data_list)
+
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
     course = Course.query.filter_by(courseCodeSection=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
-    # Unassigned Exam (With ExamId and others with NULL)
-    unassigned_exam = Exam.query.filter(
-        Exam.examId.isnot(None),
-        Exam.examStartTime.is_(None),
-        Exam.examEndTime.is_(None)
-    ).count()
-
-    # Completed Exam
-    complete_exam = Exam.query.filter(
-        Exam.examStartTime.isnot(None),
-        Exam.examEndTime.isnot(None),
-        Exam.examVenue.isnot(None),
-        Exam.examNoInvigilator.isnot(None)
-    ).count()
-
-    # Incompleted Exam
-    incomplete_exam = Exam.query.filter(
-        Exam.examStartTime.is_(None),
-        Exam.examEndTime.is_(None),
-        Exam.examVenue.is_(None),
-        Exam.examNoInvigilator.is_(None)
-    ).count()
+    # Filtered counts from exam_data_list
+    unassigned_exam = len([
+        e for e in exam_data_list
+        if e.examId is not None and e.examStartTime is None and e.examEndTime is None
+    ])
+    complete_exam = len([
+        e for e in exam_data_list
+        if e.examStartTime is not None and e.examEndTime is not None
+        and e.examVenue is not None and e.examNoInvigilator is not None
+    ])
+    incomplete_exam = len([
+        e for e in exam_data_list
+        if e.examStartTime is None and e.examEndTime is None
+        and e.examVenue is None and e.examNoInvigilator is None
+    ])
 
     # Default manual form values
-    courseSection_text = ''
-    practicalLecturer_text = ''
-    tutorialLecturer_text = ''
-    venue_text = ''
-    invigilatorNo_text = ''
+    courseSection_text = practicalLecturer_text = tutorialLecturer_text = ''
+    venue_text = invigilatorNo_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -744,7 +738,7 @@ def admin_manageExam():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec',   'lecturer', 'no of', 'room'],
+                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec','lecturer','no of','room'],
                 process_row_fn=process_exam_row,
                 redirect_endpoint='admin_manageExam',
                 usecols="A:I"
@@ -783,7 +777,6 @@ def admin_manageExam():
 
             return redirect(url_for('admin_manageExam'))
 
-
         # --------------------- MANUAL ADD EXAM FORM ---------------------
         elif form_type == 'manual':
             try:
@@ -812,10 +805,7 @@ def admin_manageExam():
                     tutorialLecturer_text, invigilatorNo_text
                 )
 
-                if success:
-                    flash(message, "success")
-                else:
-                    flash(message, "error")
+                flash(message, "success" if success else "error")
                 return redirect(url_for('admin_manageExam'))
 
             except Exception as manual_err:
@@ -824,8 +814,18 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", "error")
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, venue_data=venue_data, 
-                           department_data=department_data, total_exam=total_exam, complete_exam=complete_exam, incomplete_exam=incomplete_exam, exam_select=exam_select)
+    return render_template(
+        'admin/adminManageExam.html',
+        active_tab='admin_manageExamtab',
+        exam_data=exam_data_list,
+        unassigned_exam=unassigned_exam,
+        venue_data=venue_data,
+        department_data=department_data,
+        total_exam=total_exam,
+        complete_exam=complete_exam,
+        incomplete_exam=incomplete_exam,
+        exam_select=exam_select
+    )
 
 
 
