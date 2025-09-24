@@ -1180,19 +1180,19 @@ def admin_manageTimetable():
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
-    # Filtering lecturer
     selected_lecturer = request.args.get("lecturer")
-    total_timetable = db.session.query(TimetableRow.lecturerName).distinct().count()
 
-    # Subquery: all user_ids already in Timetable
-    assigned_users = db.session.query(Timetable.user_id)
+    # Use Timetable directly (not TimetableRow)
+    total_timetable = Timetable.query.count()
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
 
-    # Check if user selected a timetable (from edit form)
+    # Predefine timetable_select to avoid UnboundLocalError
+    timetable_select = None
     timetable_selected = request.form.get('editTimetableList')
-    timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
+    if timetable_selected:
+        timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
-    # Build staff_list differently depending on context
+    # Staff list (exclude certain levels/status)
     staff_list = User.query.filter(
         User.userLevel != 4,
         User.userStatus != 2
@@ -1202,8 +1202,7 @@ def admin_manageTimetable():
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
         f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-            .filter(TimetableRow.classDay == day)   
-            .distinct().count()
+            .filter(TimetableRow.classDay == day).distinct().count()
         for day in days
     }
 
@@ -1212,10 +1211,12 @@ def admin_manageTimetable():
     for row in TimetableRow.query.filter_by(timetable_id=None).all():
         grouped_unassigned[row.lecturerName] += 1
 
-    # Convert for Jinja
     unassigned_summary = [{"lecturer": name, "count": count} for name, count in grouped_unassigned.items()]
-    timetable_map = {t.user_id: t.timetableId for t in timetable_data}
 
+    # Build mapping: user_id -> timetableId
+    timetable_map = {t.user_id: t.timetableId for t in timetable_list}
+
+    # ---- POST Handling ----
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
@@ -1312,7 +1313,7 @@ def admin_manageTimetable():
                 flash("Timetable deleted successfully.", "success")
 
                 return redirect(url_for('admin_manageTimetable'))
-            
+
     return render_template(
         'admin/adminManageTimetable.html',
         active_tab='admin_manageTimetabletab',
@@ -1320,12 +1321,12 @@ def admin_manageTimetable():
         lecturers=lecturers,
         selected_lecturer=selected_lecturer,
         total_timetable=total_timetable,
-        unassigned_summary=unassigned_summary,   # <-- use this
+        unassigned_summary=unassigned_summary,
         staff_list=staff_list,
         **day_counts,
         timetable_list=timetable_list,
         timetable_map=timetable_map,
-        timetable_select=timetable_select   # <-- pass to Jinja for pre-select
+        timetable_select=timetable_select
     )
 
 
