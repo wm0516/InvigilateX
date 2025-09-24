@@ -222,6 +222,7 @@
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Course Status</th>
                     <th>Course Code/Section</th>
                     <th>Course Name</th>
                     <th>Credit Hour(s)</th>
@@ -235,6 +236,14 @@
                 {% for row in course_data %}
                 <tr>
                     <td>{{ loop.index }}</td>
+                    <td>
+                        {% if row.courseStatus == 0 %}
+                            Deactivated
+                        {% elif row.courseStatus == 1 %}
+                            Activated
+                            Unknown
+                        {% endif %}
+                    </td>
                     <td>{{ row.courseCodeSection }}</td>
                     <td>{{ row.courseName }}</td>
                     <td>[{{ row.courseHour }}]</td>
