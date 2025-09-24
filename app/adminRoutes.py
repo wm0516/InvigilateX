@@ -724,8 +724,7 @@ def admin_manageExam():
     ])
 
     # Default manual form values
-    courseSection_text = practicalLecturer_text = tutorialLecturer_text = ''
-    venue_text = invigilatorNo_text = ''
+    courseSection_text = practicalLecturer_text = tutorialLecturer_text = venue_text = invigilatorNo_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -757,18 +756,27 @@ def admin_manageExam():
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
-                exam_select.examStartTime = start_dt
-                exam_select.examEndTime = end_dt
-                exam_select.examVenue = venue_text
-                exam_select.examNoInvigilator = invigilatorNo_text
-                db.session.commit()
-                flash("Exam updated successfully", "success")
+                # Get the selected venue object
+                venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
+                
+                if not venue_obj:
+                    flash(f"Selected venue {venue_text} does not exist", "error")
+                elif venue_obj.venueCapacity < exam_select.Course.courseStudent:
+                    flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.Course.courseStudent} student(s)", "error")
+                else:
+                    exam_select.examStartTime = start_dt
+                    exam_select.examEndTime = end_dt
+                    exam_select.examVenue = venue_text
+                    exam_select.examNoInvigilator = invigilatorNo_text
+                    db.session.commit()
+                    flash("Exam updated successfully", "success")
             elif action == 'delete':
                 db.session.delete(exam_select)
                 db.session.commit()
                 flash("Exam deleted successfully", "success")
 
             return redirect(url_for('admin_manageExam'))
+
 
         # --------------------- MANUAL ADD EXAM FORM ---------------------
         elif form_type == 'manual':

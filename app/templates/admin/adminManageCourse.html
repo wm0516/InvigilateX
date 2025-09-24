@@ -201,15 +201,15 @@
                 </select>
             </div>
         </div>
-
+    background-color: #d4edda; color: #155724;
         <input type="hidden" name="form_type" value="edit">
         <br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update" style="background-color: #7DF090;">
+            <button type="submit" name="action" value="update" class="alert alert-success">
                 <i class="fas fa-check"></i> Update Course
             </button>
-            <button type="submit" name="action" value="delete" style="background-color: #f0a5a0;" 
+            <button type="submit" name="action" value="delete" class="alert alert-error">
                     onclick="return confirm('Are you sure to deactivated this course?')">
                 <i class="fas fa-trash"></i> Deactivated Course
             </button>
