@@ -238,10 +238,9 @@
                     <td>{{ loop.index }}</td>
                     <td>
                         {% if row.courseStatus == 0 %}
-                            Deactivated
+                            <span style="color:red;">[Deactivated]</span>
                         {% elif row.courseStatus == 1 %}
                             Activated
-                            Unknown
                         {% endif %}
                     </td>
                     <td>{{ row.courseCodeSection }}</td>
