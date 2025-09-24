@@ -768,6 +768,7 @@ def admin_manageExam():
                     exam_select.examEndTime = end_dt
                     exam_select.examVenue = venue_text
                     exam_select.examNoInvigilator = invigilatorNo_text
+                    create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSection, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
                     db.session.commit()
                     flash("Exam updated successfully", "success")
             elif action == 'delete':
