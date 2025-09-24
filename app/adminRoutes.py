@@ -761,7 +761,7 @@ def admin_manageExam():
                 
                 if not venue_obj:
                     flash(f"Selected venue {venue_text} does not exist", "error")
-                elif venue_obj.venueCapacity < exam_select.Course.courseStudent:
+                elif venue_obj.venueCapacity < exam_select.course.courseStudent:
                     flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.Course.courseStudent} student(s)", "error")
                 else:
                     exam_select.examStartTime = start_dt
