@@ -1183,7 +1183,7 @@ def admin_manageTimetable():
     selected_lecturer = request.args.get("lecturer")
 
     # Use Timetable directly (not TimetableRow)
-    total_timetable = Timetable.query.count()
+    total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
 
     # Predefine timetable_select to avoid UnboundLocalError
