@@ -191,7 +191,14 @@
                 <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required><br>
 
                 <label>Course Number of Student(s) (Editable)</label>
-                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required>
+                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
+
+                <label>Course Status</label>
+                <select id="editStatus" name="editStatus" required>
+                    <option value="" disabled selected>Select Status</option>
+                    <option value="1">Activated</option>   <!-- True -->
+                    <option value="0">Deactivated</option> <!-- False -->
+                </select>
             </div>
         </div>
 
@@ -293,6 +300,7 @@
             editCourseStudents: document.getElementById("editCourseStudents"),
             editPractical: document.getElementById("editPracticalLecturer"),
             editTutorial: document.getElementById("editTutorialLecturer"),
+            editStatus: document.getElementById("editStatus"),
         };
 
         // --- Helper: Populate lecturers ---
@@ -339,6 +347,7 @@
                     els.editCourseName.value = c.courseName;
                     els.editCourseHour.value = c.courseHour;
                     els.editCourseStudents.value = c.courseStudent;
+                    els.editStatus.value = c.courseStatus;
 
                     populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, c.coursePractical, c.courseTutorial);
                 })

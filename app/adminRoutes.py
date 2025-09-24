@@ -174,7 +174,8 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseTutorial": course.courseTutorial,
         "courseName": course.courseName,
         "courseHour": course.courseHour,
-        "courseStudent": course.courseStudent
+        "courseStudent": course.courseStudent,
+        "courseStatus": course.courseStatus,
     })
 
 # -------------------------------
@@ -245,6 +246,7 @@ def admin_manageCourse():
                     course_select.courseName = request.form.get('courseName', '').strip()
                     course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
                     course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
+                    course_select.courseStatus = request.form.get('editStatus', '').strip()
 
                     # Safe int conversion
                     try:
