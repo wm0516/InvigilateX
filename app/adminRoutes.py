@@ -240,6 +240,7 @@ def admin_manageCourse():
                 action = request.form.get('action')
 
                 if action == 'update' and course_select:
+                    # Update course values
                     course_select.courseDepartment = request.form.get('departmentCode', '').strip()
                     course_select.courseName = request.form.get('courseName', '').strip()
                     course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
@@ -255,6 +256,31 @@ def admin_manageCourse():
                         course_select.courseStudent = int(request.form.get('courseStudent', 0))
                     except (ValueError, TypeError):
                         course_select.courseStudent = 0
+
+                    # -------------------------
+                    # Validate required fields
+                    # -------------------------
+                    required_fields = [
+                        course_select.courseDepartment,
+                        course_select.courseName,
+                        course_select.coursePractical,
+                        course_select.courseTutorial,
+                        course_select.courseHour,
+                        course_select.courseStudent
+                    ]
+
+                    if all(f is not None and f != '' for f in required_fields):
+                        # Create Exam if none exists
+                        if not course_select.courseExamId:
+                            new_exam = Exam(
+                                examVenue=None,
+                                examStartTime=None,
+                                examEndTime=None,
+                                examNoInvigilator=None
+                            )
+                            db.session.add(new_exam)
+                            db.session.flush()  # assign examId before commit
+                            course_select.courseExamId = new_exam.examId
 
                     db.session.commit()
                     flash("Course updated successfully", "success")
