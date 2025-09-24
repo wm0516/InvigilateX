@@ -1283,18 +1283,34 @@ def admin_manageTimetable():
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and timetable_select:
-                if timetable_select.user_id == assigned_users:
-                    flash("That Staff Id already Linked with a Timetable.", "error")
+                new_user_id = request.form['editStaffList']
+
+                # Case 1: Same staff already linked → success
+                if str(timetable_select.user_id) == new_user_id:
+                    flash("No changes made. Timetable already linked to this staff.", "success")
+
                 else:
-                    timetable_select.user_id = request.form['editStaffList']
-                    db.session.commit()
-                    flash("Timetable updated successfully.", "success")
+                    # Check if this staff is already linked to another timetable
+                    existing = Timetable.query.filter(
+                        Timetable.user_id == new_user_id,
+                        Timetable.timetableId != timetable_select.timetableId
+                    ).first()
+
+                    if existing:
+                        # Case 2: Found in another timetable → error
+                        flash(f"Staff ID {new_user_id} is already linked to another timetable (ID {existing.timetableId}).", "error")
+                    else:
+                        # Case 3: Not found → update
+                        timetable_select.user_id = new_user_id
+                        db.session.commit()
+                        flash("Timetable updated successfully.", "success")
 
             elif action == 'delete' and timetable_select:
                 db.session.delete(timetable_select)
                 db.session.commit()
                 flash("Timetable deleted successfully.", "success")
-        return redirect(url_for('admin_manageTimetable'))
+
+                return redirect(url_for('admin_manageTimetable'))
             
     return render_template(
         'admin/adminManageTimetable.html',
