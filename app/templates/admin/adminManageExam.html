@@ -194,16 +194,10 @@
 
             <div class="form-right">
                 <label>Exam Start Date & Time</label>
-                <div style="display: flex; gap: 2%;">
-                    <input type="date" id="editStartDate" name="startDate" required>
-                    <input type="time" id="editStartTime" name="startTime" required>
-                </div><br>
+                <input type="datetime-local" id="editExamStartTime" name="startDateTime" required><br>
 
                 <label>Exam End Date & Time</label>
-                <div style="display: flex; gap: 2%;">
-                    <input type="date" id="editEndDate" name="endDate" required>
-                    <input type="time" id="editEndTime" name="endTime" required>
-                </div><br>
+                <input type="datetime-local" id="editExamEndTime" name="endDateTime" required><br>
 
                 <label>Venue</label>
                 <select name="venue" id="editVenue" required>
@@ -474,7 +468,9 @@ document.addEventListener("DOMContentLoaded", function () {
             'editProgramCode': data.courseDepartment,
             'editStudent': data.courseStudent,
             'editVenue': data.examVenue,
-            'editInvigilatorNo': data.examNoInvigilator
+            'editInvigilatorNo': data.examNoInvigilator,
+            'editExamStartTime': data.examStartTime,
+            'editExamEndTime': data.examEndTime
         };
 
         Object.entries(fieldMappings).forEach(([fieldId, value]) => {
@@ -495,6 +491,7 @@ document.addEventListener("DOMContentLoaded", function () {
             option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
             option.selected = true;
             practicalSelect.appendChild(option);
+            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
         }
 
         if (tutorialSelect) {
@@ -504,7 +501,9 @@ document.addEventListener("DOMContentLoaded", function () {
             option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
             option.selected = true;
             tutorialSelect.appendChild(option);
+            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
         }
+
         console.log('[DEBUG] Form population complete');
     }
 });
