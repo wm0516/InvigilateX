@@ -161,7 +161,7 @@ class Course(db.Model):
     exam = db.relationship("Exam", back_populates="course", uselist=False, 
                            cascade="all, delete-orphan"# ✅ ensures Exam is deleted when Course is deleted  
     )# One Course ↔ One Exam
-    
+
     '''                     
     CREATE TABLE Course (
         courseCodeSection VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -178,12 +178,6 @@ class Course(db.Model):
         FOREIGN KEY (courseExamId) REFERENCES Exam(examId)
     );
     '''
-    exam = db.relationship(
-        "Exam",
-        back_populates="course",
-        uselist=False,
-        cascade="all, delete-orphan"  # ✅ ensures Exam is deleted when Course is deleted
-    )
 
 
 class InvigilationReport(db.Model):
