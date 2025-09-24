@@ -623,6 +623,47 @@ def get_exam_details(course_code_section):
     return jsonify(response_data)
 
 # -------------------------------
+# Get VenueDetails for ManageExamEditPage
+# -------------------------------
+@app.route('/get_available_venues')
+def get_available_venues():
+    try:
+        student_count = int(request.args.get('students', 0))
+        start_dt_str = request.args.get('start')
+        end_dt_str = request.args.get('end')
+
+        if not start_dt_str or not end_dt_str:
+            return jsonify([])
+
+        start_dt = datetime.strptime(start_dt_str, "%Y-%m-%dT%H:%M")
+        end_dt = datetime.strptime(end_dt_str, "%Y-%m-%dT%H:%M")
+
+        # Query venues with enough capacity
+        venues = Venue.query.filter(Venue.venueCapacity >= student_count, Venue.venueStatus == 'AVAILABLE').all()
+
+        available_venues = []
+
+        for v in venues:
+            # Check if venue has overlapping exam in VenueAvailability
+            overlap = VenueAvailability.query.filter(
+                VenueAvailability.venueNumber == v.venueNumber,
+                VenueAvailability.startDateTime < end_dt,
+                VenueAvailability.endDateTime > start_dt
+            ).first()
+
+            if not overlap:
+                available_venues.append({
+                    "venueNumber": v.venueNumber,
+                    "venueCapacity": v.venueCapacity
+                })
+
+        return jsonify(available_venues)
+    
+    except Exception as e:
+        print(f"[Error fetching available venues] {e}")
+        return jsonify([])
+
+# -------------------------------
 # Function for Admin ManageExam Route
 # -------------------------------
 @app.route('/admin/manageExam', methods=['GET', 'POST'])

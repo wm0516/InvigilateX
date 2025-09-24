@@ -148,20 +148,6 @@
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
         <h4 style="text-align: center;">Edit Existing Exam</h4>
-
-        <!-- DEBUG: Show what's in exam_data -->
-        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0;">
-            <strong>DEBUG: exam_data contents</strong>
-            {% for exam in exam_data %}
-                <div>Exam {{ loop.index }}: 
-                    ID: {{ exam.examId }}, 
-                    Course: {% if exam.course %}{{ exam.course.courseCodeSection }}{% else %}NO COURSE{% endif %},
-                    Start: {{ exam.examStartTime }},
-                    End: {{ exam.examEndTime }}
-                </div>
-            {% endfor %}
-        </div>
-
         <div class="profile-frame">
             <div class="form-left">
                 <label for="editExamCourseSection">Select Exam Course/Section</label>
@@ -366,40 +352,44 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const staffSelect = document.getElementById("editStaffId");
-    const usernameSelect = document.getElementById("editUsername");
-    const emailSelect = document.getElementById("editEmail");
-    const contactSelect = document.getElementById("editContact");
-    const genderSelect = document.getElementById("editGender");
-    const departmentSelect = document.getElementById("editDepartment");
-    const roleSelect = document.getElementById("editRoleSelect");
+document.addEventListener("DOMContentLoaded", function() {
+    const studentInput = document.getElementById('student');
+    const startDateInput = document.getElementById('startDate');
+    const startTimeInput = document.getElementById('startTime');
+    const endDateInput = document.getElementById('endDate');
+    const endTimeInput = document.getElementById('endTime');
+    const venueSelect = document.getElementById('venueSection');
 
-    function fetchStaff(staffId) {
-        if (!staffId) return;
-        
-        fetch(`/get_staff/${staffId}`)
-            .then(resp => resp.json())
-            .then(staff => {
-                if (staff.error) return alert (staff.error);
-                usernameSelect.value = staff.userName || '';
-                emailSelect.value = staff.userEmail || '';
-                contactSelect.value = staff.userContact || '';
-                genderSelect.value = staff.userGender || '';
-                departmentSelect.value = staff.userDepartment || '';
-                roleSelect.value = staff.userLevel || '';
+    function updateAvailableVenues() {
+        const studentCount = parseInt(studentInput.value);
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput.value;
+        const endDate = endDateInput.value;
+        const endTime = endTimeInput.value;
+
+        if (!studentCount || !startDate || !startTime || !endDate || !endTime) return;
+
+        const start_dt = `${startDate}T${startTime}`;
+        const end_dt = `${endDate}T${endTime}`;
+
+        fetch(`/get_available_venues?students=${studentCount}&start=${start_dt}&end=${end_dt}`)
+            .then(res => res.json())
+            .then(data => {
+                venueSelect.innerHTML = '<option value="" disabled selected>Select Venue</option>';
+                data.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v.venueNumber;
+                    option.textContent = `[Capacity: ${v.venueCapacity}] - ${v.venueNumber}`;
+                    venueSelect.appendChild(option);
+                });
             });
     }
 
-    if (staffSelect) {
-        staffSelect.addEventListener("change", function () {
-            fetchStaff(this.value)
-        });
-
-        // Pre-fill on page load if a staff is selected
-        if (staffSelect.value)
-            fetchStaff(staffSelect.value);
-    }
+    studentInput.addEventListener('input', updateAvailableVenues);
+    startDateInput.addEventListener('change', updateAvailableVenues);
+    startTimeInput.addEventListener('change', updateAvailableVenues);
+    endDateInput.addEventListener('change', updateAvailableVenues);
+    endTimeInput.addEventListener('change', updateAvailableVenues);
 });
 
 
