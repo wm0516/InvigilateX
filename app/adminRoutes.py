@@ -920,18 +920,6 @@ def admin_manageStaff():
 
 
 
-# -------------------------------
-# Get TimetableLink Details for ManageTimetableEditPage
-# -------------------------------
-@app.route('/get_linkTimetable/<timetableID>')
-def get_linkTimetable(timetableID):
-    timetable = Timetable.query.filter_by(timetableId=timetableID).first()
-    if not timetable:
-        return jsonify({"error": "Timetable not found"}), 404
-    return jsonify({
-        "timetableId": timetable.timetableId,
-        "user_id": timetable.user_id
-    })
 
 # -------------------------------
 # Extract Base Name + Timestamp
@@ -1083,6 +1071,18 @@ def parse_date_range(date_range):
     except Exception:
         return None, None
 
+# -------------------------------
+# Get TimetableLink Details for ManageTimetableEditPage
+# -------------------------------
+@app.route('/get_linkTimetable/<timetableID>')
+def get_linkTimetable(timetableID):
+    timetable = Timetable.query.filter_by(timetableId=timetableID).first()
+    if not timetable:
+        return jsonify({"error": "Timetable not found"}), 404
+    return jsonify({
+        "timetableId": timetable.timetableId,
+        "user_id": timetable.user_id
+    })
 
 # -------------------------------
 # Save Parsed Timetable to DB
@@ -1283,10 +1283,8 @@ def admin_manageTimetable():
         
         elif form_type == 'edit':
             action = request.form.get('action')
-            select_userId = request.form.get('editStafflist', '').strip()
-            select_timetableIs = request.form.get('editTimetableList', '')
             if action == 'update' and timetable_select:
-                timetable_select.user_id = request.form['ediStaffList']
+                timetable_select.user_id = request.form['editStaffList']
                 db.session.commit()
                 flash("Timetable updated successfully.", "success")
 
