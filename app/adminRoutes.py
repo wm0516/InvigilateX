@@ -1195,7 +1195,8 @@ def admin_manageTimetable():
     # Build staff_list differently depending on context
     staff_list = User.query.filter(
         User.userLevel != 4,
-        User.userStatus != 2
+        User.userStatus != 2,
+        User.userId.notin_(assigned_users)
     ).all()
 
     # Count timetable per day
