@@ -1108,6 +1108,8 @@ def save_timetable_to_db(structured):
         timetable = None
 
     new_rows = []
+    rows_inserted = 0   # <--- track how many inserted
+
     for day, activities in structured["days"].items():
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
@@ -1133,7 +1135,6 @@ def save_timetable_to_db(structured):
                         "classWeekDate" : act.get("weeks_date"),
                     }
 
-                    # --- Compare against existing ---
                     existing = TimetableRow.query.filter_by(
                         lecturerName=lecturer,
                         classType=new_entry["classType"],
@@ -1151,26 +1152,25 @@ def save_timetable_to_db(structured):
                         new_start, _ = parse_date_range(new_entry["classWeekDate"])
 
                         if old_start and new_start:
-                            if new_start > old_start:  
-                                # Uploaded has later start → replace
+                            if new_start > old_start:
                                 db.session.delete(existing)
                                 db.session.add(TimetableRow(**new_entry))
-                            elif new_start < old_start:  
-                                # Uploaded is older → skip
+                                rows_inserted += 1
+                            elif new_start < old_start:
                                 continue
                             else:
-                                # Same → skip
                                 continue
                         else:
-                            # If parsing failed, just replace
                             db.session.delete(existing)
                             db.session.add(TimetableRow(**new_entry))
+                            rows_inserted += 1
                     else:
-                        # No existing row → insert new
                         db.session.add(TimetableRow(**new_entry))
+                        rows_inserted += 1
 
     db.session.commit()
-    return True
+    return rows_inserted   # <--- return actual count
+
 
 # -------------------------------
 # Function for Admin ManageTimetable Route
