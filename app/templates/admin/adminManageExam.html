@@ -194,10 +194,16 @@
 
             <div class="form-right">
                 <label>Exam Start Date & Time</label>
-                <input type="datetime-local" id="editExamStartTime" name="startDateTime" required><br>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="editStartDate" name="startDate" required>
+                    <input type="time" id="editStartTime" name="startTime" required>
+                </div><br>
 
                 <label>Exam End Date & Time</label>
-                <input type="datetime-local" id="editExamEndTime" name="endDateTime" required><br>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="editEndDate" name="endDate" required>
+                    <input type="time" id="editEndTime" name="endTime" required>
+                </div><br>
 
                 <label>Venue</label>
                 <select name="venue" id="editVenue" required>
