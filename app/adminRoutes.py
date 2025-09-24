@@ -1314,20 +1314,8 @@ def admin_manageTimetable():
 
                 return redirect(url_for('admin_manageTimetable'))
 
-    return render_template(
-        'admin/adminManageTimetable.html',
-        active_tab='admin_manageTimetabletab',
-        timetable_data=timetable_data,
-        lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        total_timetable=total_timetable,
-        unassigned_summary=unassigned_summary,
-        staff_list=staff_list,
-        **day_counts,
-        timetable_list=timetable_list,
-        timetable_map=timetable_map,
-        timetable_select=timetable_select
-    )
+    return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,total_timetable=total_timetable,
+        unassigned_summary=unassigned_summary,staff_list=staff_list,**day_counts,timetable_list=timetable_list,timetable_map=timetable_map,timetable_select=timetable_select)
 
 
 
