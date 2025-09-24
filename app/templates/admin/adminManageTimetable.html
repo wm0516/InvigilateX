@@ -118,7 +118,7 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label>Existing Timetable List</label>
-                <select name="editTimetableId" id="editTimetableList" required>
+                <select name="editTimetableList" id="editTimetableList" required>
                     <option value="" disabled selected>Select Timetable</option>
                     {% for t in timetable_list %}
                         <option value="{{ t.timetableId }}">
