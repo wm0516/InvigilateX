@@ -764,20 +764,26 @@ def admin_manageExam():
                 elif venue_obj.venueCapacity < exam_select.course.courseStudent:
                     flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
                 else:
+                    # Update exam fields
                     exam_select.examStartTime = start_dt
                     exam_select.examEndTime = end_dt
                     exam_select.examVenue = venue_text
                     exam_select.examNoInvigilator = invigilatorNo_text
-                    create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSection, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
+
+                    # Only create related records if none exist
+                    existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                    if not existing_report:
+                        create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
+                        
                     db.session.commit()
                     flash("Exam updated successfully", "success")
+
             elif action == 'delete':
                 db.session.delete(exam_select)
                 db.session.commit()
                 flash("Exam deleted successfully", "success")
 
             return redirect(url_for('admin_manageExam'))
-
 
         # --------------------- MANUAL ADD EXAM FORM ---------------------
         elif form_type == 'manual':
@@ -828,6 +834,7 @@ def admin_manageExam():
         incomplete_exam=incomplete_exam,
         exam_select=exam_select
     )
+
 
 
 
