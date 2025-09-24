@@ -1074,7 +1074,7 @@ def parse_date_range(date_range):
 # -------------------------------
 # Get TimetableLink Details for ManageTimetableEditPage
 # -------------------------------
-@app.route('/get_linkTimetable/<timetableID>')
+@app.route('/get_linkTimetable/<path:timetableID>')
 def get_linkTimetable(timetableID):
     timetable = Timetable.query.filter_by(timetableId=timetableID).first()
     if not timetable:
@@ -1202,7 +1202,7 @@ def admin_manageTimetable():
             User.userId == timetable_select.user_id
         )
     ).all()
-    
+
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
