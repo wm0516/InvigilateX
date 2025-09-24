@@ -1283,7 +1283,7 @@ def admin_manageTimetable():
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and timetable_select:
-                if timetable_select.user_id == unassigned_summary:
+                if timetable_select.user_id == assigned_users:
                     flash("That Staff Id already Linked with a Timetable.", "error")
                 else:
                     timetable_select.user_id = request.form['editStaffList']
