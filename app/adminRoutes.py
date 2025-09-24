@@ -285,8 +285,8 @@ def admin_manageCourse():
                     db.session.commit()
                     flash("Course updated successfully", "success")
 
-                elif action == 'delete':
-                    db.session.delete(course_select)
+                elif action == 'delete' and course_select:
+                    course_select.courseStatus = False
                     db.session.commit()
                     flash("Course deleted successfully", "success")
 
@@ -696,7 +696,8 @@ def get_available_venues():
 def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
-    exam_data = Exam.query.all()
+    # Only get exams whose related course has courseStatus=True
+    exam_data = Exam.query.join(Exam.course).filter(Course.courseStatus == True).all()
     total_exam = Exam.query.count()
     
     # For Edit section

@@ -153,6 +153,7 @@ class Course(db.Model):
     courseName = db.Column(db.String(50), nullable=True)                                                        # Refer to CourseName
     courseHour = db.Column(db.Integer, nullable=True)                                                           # Refer to CourseHour
     courseStudent = db.Column(db.Integer, nullable=True)                                                        # Refer to Course Total Number of Students
+    courseStatus = db.Column(db.Boolean, default=True, nullable=False)                                          # Refer to Course Status, when course deleted, it will show False
     
     # Relationship
     department = db.relationship("Department", backref="course")
@@ -169,6 +170,7 @@ class Course(db.Model):
         coursePractical VARCHAR(20) NULL,
         courseTutorial VARCHAR(20) NULL,
         courseExamId INT NULL,
+        courseStatus TINYINT(1) NOT NULL DEFAULT 1,
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
         FOREIGN KEY (courseTutorial) REFERENCES User(userId),
