@@ -1249,6 +1249,21 @@ def admin_manageTimetable():
                 structured['filename'] = file.filename
                 total_rows_inserted += save_timetable_to_db(structured)
 
+                # Process each latest file
+            total_rows_inserted = 0
+            total_files_processed = 0
+            for base_name, (timestamp, file) in latest_files.items():
+                reader = PyPDF2.PdfReader(file.stream)
+                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
+                structured = parse_timetable(raw_text)
+                structured['filename'] = file.filename
+                rows_inserted = save_timetable_to_db(structured)
+
+                total_rows_inserted += rows_inserted
+                if rows_inserted > 0:
+                    total_files_processed += 1   # count only if rows were actually inserted
+
+
             flash(f"✅ Files read: {len(files)}, Files processed: {len(latest_files)}, Rows inserted: {total_rows_inserted}", "success")
             return redirect(url_for('admin_manageTimetable'))
         
