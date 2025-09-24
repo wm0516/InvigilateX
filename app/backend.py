@@ -305,10 +305,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
             return False, f"Lecturer '{practicalLecturer}' not found in User table"
 
         course.coursePractical = lecturer_user.userId
+        course.courseTutorial = lecturer_user.userId
     else:
         course.coursePractical = None
-
-    course.courseTutorial = None  # Tutorial lecturer ignored
+        course.courseTutorial = None  
 
     adj_end_dt = end_dt
     if end_dt <= start_dt:
