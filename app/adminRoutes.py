@@ -765,11 +765,6 @@ def admin_manageExam():
         if e.examStartTime is not None and e.examEndTime is not None
         and e.examVenue is not None and e.examNoInvigilator is not None
     ])
-    incomplete_exam = len([
-        e for e in exam_data_list
-        if e.examStartTime is None and e.examEndTime is None
-        and e.examVenue is None and e.examNoInvigilator is None
-    ])
 
     # Default manual form values
     courseSection_text = practicalLecturer_text = tutorialLecturer_text = venue_text = invigilatorNo_text = ''
@@ -898,7 +893,6 @@ def admin_manageExam():
         department_data=department_data,
         total_exam=total_exam,
         complete_exam=complete_exam,
-        incomplete_exam=incomplete_exam,
         exam_select=exam_select
     )
 
