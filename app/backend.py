@@ -355,28 +355,27 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
         if not pool:
             return False, "No available invigilators"
-        chosen_invigilators.append(random.choice(pool))
+        chosen_invigilators.append(pool[0])  # lowest load, any gender
 
-    elif invigilatorNo == 2:
+    elif invigilatorNo >= 2:
         if not male_invigilators or not female_invigilators:
-            return False, "Need at least 1 male and 1 female for 2 invigilators"
-        chosen_invigilators.append(random.choice(male_invigilators))
-        chosen_invigilators.append(random.choice(female_invigilators))
+            return False, "Need both male and female when 2 or more invigilators"
 
-    else:  # invigilatorNo >= 3
-        pool = male_invigilators + female_invigilators
+        # Always start with 1 male + 1 female (lowest load each)
+        male_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
+        female_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
+
+        chosen_invigilators.append(male_invigilators[0])
+        chosen_invigilators.append(female_invigilators[0])
+
+        # Fill the rest fairly from combined pool
+        pool = male_invigilators[1:] + female_invigilators[1:]
         pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
 
-        while len(chosen_invigilators) < invigilatorNo and pool:
-            candidate = pool.pop(0)
+        for candidate in pool:
+            if len(chosen_invigilators) >= invigilatorNo:
+                break
             chosen_invigilators.append(candidate)
-
-            males = sum(1 for inv in chosen_invigilators if inv.userGender == "MALE")
-            females = sum(1 for inv in chosen_invigilators if inv.userGender == "FEMALE")
-
-            if len(chosen_invigilators) == invigilatorNo:
-                if males == 0 or females == 0:  # all same gender
-                    return False, "Invigilators cannot all be the same gender"
 
     # -------------------------------
     # Add Attendance + Pending Hours
