@@ -274,7 +274,7 @@
                         </td>
                     
                         <td>
-                            {% if row.examNoInvigilator == 0 %}
+                            {% if row.examNoInvigilator is none %}
                                 <span style="color:red;">Error: No Invigilator Assigned!</span>
                             {% else %}
                                 [{{ row.examNoInvigilator }}]
