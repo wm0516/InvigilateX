@@ -358,17 +358,19 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         chosen_invigilators.append(pool[0])  # lowest load, any gender
 
     elif invigilatorNo >= 2:
-        if not male_invigilators or not female_invigilators:
+        male_invigilators = [inv for inv in eligible_invigilators if inv.userGender.strip().upper() == "MALE"]
+        female_invigilators = [inv for inv in eligible_invigilators if inv.userGender.strip().upper() == "FEMALE"]
+
+        if len(male_invigilators) < 1 or len(female_invigilators) < 1:
             return False, "Need both male and female when 2 or more invigilators"
 
-        # Always start with 1 male + 1 female (lowest load each)
+        # Always 1 male + 1 female
         male_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
         female_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
 
-        chosen_invigilators.append(male_invigilators[0])
-        chosen_invigilators.append(female_invigilators[0])
+        chosen_invigilators = [male_invigilators[0], female_invigilators[0]]
 
-        # Fill the rest fairly from combined pool
+        # Fill rest fairly
         pool = male_invigilators[1:] + female_invigilators[1:]
         pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
 
