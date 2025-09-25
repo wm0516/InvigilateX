@@ -768,7 +768,7 @@ def admin_manageExam():
     incomplete_exam = len([
         e for e in exam_data_list
         if e.examStartTime is None and e.examEndTime is None
-        and e.examVenue is None and e.examNoInvigilator is 0
+        and e.examVenue is None and e.examNoInvigilator == 0
     ])
 
     # Default manual form values
