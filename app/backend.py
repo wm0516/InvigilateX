@@ -364,20 +364,21 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         if len(male_invigilators) < 1 or len(female_invigilators) < 1:
             return False, "Need both male and female when 2 or more invigilators"
 
-        # Always 1 male + 1 female
         male_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
         female_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
 
-        chosen_invigilators = [male_invigilators[0], female_invigilators[0]]
+        # Always start with 1 male + 1 female
+        chosen_invigilators = [male_invigilators.pop(0), female_invigilators.pop(0)]
 
-        # Fill rest fairly
-        pool = male_invigilators[1:] + female_invigilators[1:]
-        pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
+        # Alternate picking genders if possible
+        while len(chosen_invigilators) < invigilatorNo and (male_invigilators or female_invigilators):
+            if len(chosen_invigilators) % 2 == 0 and male_invigilators:
+                chosen_invigilators.append(male_invigilators.pop(0))
+            elif female_invigilators:
+                chosen_invigilators.append(female_invigilators.pop(0))
+            elif male_invigilators:  # fallback if one gender runs out
+                chosen_invigilators.append(male_invigilators.pop(0))
 
-        for candidate in pool:
-            if len(chosen_invigilators) >= invigilatorNo:
-                break
-            chosen_invigilators.append(candidate)
 
     # -------------------------------
     # Add Attendance + Pending Hours
