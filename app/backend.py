@@ -265,6 +265,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
+# -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
@@ -326,7 +327,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         )
         db.session.add(new_availability)
 
-    # Remove old report & attendances if they exist (important for updates)
+    # Remove old report & attendances if they exist
     delete_exam_related(exam.examId, commit=False)
 
     # Create new report
@@ -336,6 +337,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
+    # Exclude lecturers
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
     eligible_invigilators = User.query.filter(
         ~User.userId.in_(exclude_ids),
@@ -345,62 +347,41 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not eligible_invigilators:
         return False, "No eligible invigilators available for assignment"
 
-    male_invigilators = [inv for inv in eligible_invigilators if inv.userGender and inv.userGender.strip().upper() == "MALE"]
-    female_invigilators = [inv for inv in eligible_invigilators if inv.userGender and inv.userGender.strip().upper() == "FEMALE"]
+    # Split by gender (exact match, stored as "MALE" / "FEMALE")
+    male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
+    female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
+
+    # Sort by workload (cumulative + pending hours)
+    def workload(inv):
+        return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+
+    male_invigilators.sort(key=workload)
+    female_invigilators.sort(key=workload)
 
     chosen_invigilators = []
 
     # -------------------------------
-    # Improved Gender Selection Logic
+    # Simplified Gender Selection
     # -------------------------------
     if invigilatorNo == 1:
-        # For 1 invigilator: any gender, pick lowest load
-        pool = male_invigilators + female_invigilators
-        pool.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
+        # Any gender, pick lowest workload
+        pool = sorted(male_invigilators + female_invigilators, key=workload)
         if not pool:
             return False, "No available invigilators"
-        chosen_invigilators.append(pool[0])
+        chosen_invigilators = [pool[0]]
 
     else:  # invigilatorNo >= 2
-        # Sort by cumulative hours for fairness
-        male_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
-        female_invigilators.sort(key=lambda inv: (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0))
-        
-        # Check if we can achieve mixed gender
-        can_have_mixed = len(male_invigilators) >= 1 and len(female_invigilators) >= 1
-        
-        if can_have_mixed:
-            # Try to achieve as balanced gender distribution as possible
-            male_count = 0
-            female_count = 0
-            
-            while len(chosen_invigilators) < invigilatorNo:
-                # Alternate genders to achieve balance
-                if male_count <= female_count and male_invigilators:
-                    chosen_invigilators.append(male_invigilators.pop(0))
-                    male_count += 1
-                elif female_invigilators:
-                    chosen_invigilators.append(female_invigilators.pop(0))
-                    female_count += 1
-                elif male_invigilators:
-                    chosen_invigilators.append(male_invigilators.pop(0))
-                    male_count += 1
-                else:
-                    break  # No more invigilators available
-        else:
-            # Cannot have mixed gender - use whatever is available
-            if not male_invigilators and not female_invigilators:
-                return False, "No invigilators available for assignment"
-            
-            # Use the gender that has available invigilators
-            available_pool = male_invigilators if male_invigilators else female_invigilators
-            chosen_invigilators = available_pool[:invigilatorNo]
-            
-            # If we don't have enough invigilators of the available gender
-            if len(chosen_invigilators) < invigilatorNo:
-                return False, f"Not enough invigilators available. Need {invigilatorNo}, but only {len(chosen_invigilators)} available"
+        if not male_invigilators or not female_invigilators:
+            return False, "Need both male and female invigilators when assigning 2 or more"
 
-    # Check if we have the required number of invigilators
+        # Always start with 1 male + 1 female
+        chosen_invigilators = [male_invigilators.pop(0), female_invigilators.pop(0)]
+
+        # Fill the rest with lowest workload regardless of gender
+        pool = sorted(male_invigilators + female_invigilators, key=workload)
+        chosen_invigilators += pool[:invigilatorNo - 2]
+
+    # Final check
     if len(chosen_invigilators) < invigilatorNo:
         return False, f"Not enough invigilators available. Required: {invigilatorNo}, Available: {len(chosen_invigilators)}"
 
