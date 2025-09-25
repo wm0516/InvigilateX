@@ -755,21 +755,23 @@ def admin_manageExam():
     course = Course.query.filter_by(courseCodeSection=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
-    # Filtered counts from exam_data_list
     unassigned_exam = len([
         e for e in exam_data_list
-        if e.examId is not None and e.examStartTime is None and e.examEndTime is None
+        if e.examStartTime is None
+        and e.examEndTime is None
+        and e.examVenue is None
+        and (e.examNoInvigilator is None or e.examNoInvigilator == 0)
     ])
+
     complete_exam = len([
         e for e in exam_data_list
-        if e.examStartTime is not None and e.examEndTime is not None
-        and e.examVenue is not None and e.examNoInvigilator is not None
+        if e.examStartTime is not None
+        and e.examEndTime is not None
+        and e.examVenue is not None
+        and e.examNoInvigilator not in (None, 0)
     ])
-    incomplete_exam = len([
-        e for e in exam_data_list
-        if e.examStartTime is None and e.examEndTime is None
-        and e.examVenue is None and e.examNoInvigilator == 0
-    ])
+
+    incomplete_exam = len(exam_data_list) - unassigned_exam - complete_exam
 
     # Default manual form values
     courseSection_text = practicalLecturer_text = tutorialLecturer_text = venue_text = invigilatorNo_text = ''
