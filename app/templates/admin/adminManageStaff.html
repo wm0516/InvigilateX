@@ -274,12 +274,12 @@
                     <!-- Account Status + Time -->
                     <td>
                         {% if row.userStatus|int == 0 %}
-                            [Deactivated] — {{ row.userRegisterDateTime }}
+                            [Deactivated]<br>{{ row.userRegisterDateTime }}
                         {% elif row.userStatus|int == 1 %}
-                            [Activated] — {{ row.userRegisterDateTime }}
+                            [Activated]<br>{{ row.userRegisterDateTime }}
                         {% elif row.userStatus|int == 2 %}
                             <span style="color:red;">
-                                [DELETED] — {{ row.userRegisterDateTime }}
+                                [DELETED]<br>{{ row.userRegisterDateTime }}
                             </span>
                         {% endif %}
                     </td>
