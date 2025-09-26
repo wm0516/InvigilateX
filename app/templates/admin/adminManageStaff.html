@@ -413,7 +413,7 @@
          defaultColors, defaultBorders,'Account Status'
     );
 
-    function paginateTable(tableId, rowsPerPage = 20) {
+    function paginateTable(tableId, rowsPerPage = 15) {
         const table = document.getElementById(tableId);
         const tbody = table.querySelector("tbody");
         const rows = Array.from(tbody.querySelectorAll("tr"));
