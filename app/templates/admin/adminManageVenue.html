@@ -54,14 +54,14 @@
                 <label>Venue Number</label>
                 <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
 
-                <label>Venue Floor</label>
+                <label>Venue Level</label>
                 <select name="venueFloor" required>
-                    <option value="" disabled selected>Venue Floor</option>
-                    <option value="FLOOR 2">FLOOR 2</option>
-                    <option value="FLOOR 3">FLOOR 3</option>
-                    <option value="FLOOR 4">FLOOR 4</option>
-                    <option value="FLOOR 5">FLOOR 5</option>
-                    <option value="FLOOR 6">FLOOR 6</option>
+                    <option value="" disabled selected>Venue Level</option>
+                    <option value="LEVEL 2">FLOOR 2</option>
+                    <option value="LEVEL 3">FLOOR 3</option>
+                    <option value="LEVEL 4">FLOOR 4</option>
+                    <option value="LEVEL 5">FLOOR 5</option>
+                    <option value="LEVEL 6">FLOOR 6</option>
                 </select>
             </div>
 
@@ -97,7 +97,7 @@
         <h4 style="text-align: center;">Edit Existing Venue</h4>
         <div class="profile-frame">
             <div class="form-left">
-                <label>Venue Number</label>
+                <label>Venue</label>
                 <select name="editVenueNumber" id="editVenueNumber" required>
                     <option value="" disabled selected>Select Venue</option>
                     {% for v in venue_data %}
@@ -105,14 +105,14 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Venue Floor (Editable)</label>
+                <label>Venue Level (Editable)</label>
                 <select name="venueFloor" id="editVenueFloor" required>
-                    <option value="" disabled selected>Venue Floor</option>
-                    <option value="FLOOR 2">FLOOR 2</option>
-                    <option value="FLOOR 3">FLOOR 3</option>
-                    <option value="FLOOR 4">FLOOR 4</option>
-                    <option value="FLOOR 5">FLOOR 5</option>
-                    <option value="FLOOR 6">FLOOR 6</option>
+                    <option value="" disabled selected>Venue LEVEL</option>
+                    <option value="LEVEL 2">FLOOR 2</option>
+                    <option value="LEVEL 3">FLOOR 3</option>
+                    <option value="LEVEL 4">FLOOR 4</option>
+                    <option value="LEVEL 5">FLOOR 5</option>
+                    <option value="LEVEL 6">FLOOR 6</option>
                 </select>
             </div>
 
