@@ -240,13 +240,14 @@
             <tbody>
                 {% for row in user_data %}
                 <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ loop.index }}</td>
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userGender }}</td>
                     <td>{{ row.userEmail }}</td>
                     <td>{{ row.userContact }}</td>
-                    <!-- Role Name based on userLevel -->
+
+                    <!-- Role Position -->
                     <td>
                         {% if row.userLevel == 1 %}
                             LECTURER
@@ -260,6 +261,8 @@
                             Unknown
                         {% endif %}
                     </td>
+
+                    <!-- Department -->
                     <td>
                         {% if row.userDepartment %}
                             {{ row.userDepartment }}
@@ -267,27 +270,27 @@
                             <span style="color:red;">[ERROR]</span>
                         {% endif %}
                     </td>
-                    
-                    <td rowspan="{{ rowspan }}">
+
+                    <!-- Account Status + Time -->
+                    <td>
                         {% if row.userStatus|int == 0 %}
-                            [Deactivated]<br>
-                            {{ row.userRegisterDateTime }}
+                            [Deactivated] — {{ row.userRegisterDateTime }}
                         {% elif row.userStatus|int == 1 %}
-                            [Activated]<br>
-                            {{ row.userRegisterDateTime }}
+                            [Activated] — {{ row.userRegisterDateTime }}
                         {% elif row.userStatus|int == 2 %}
                             <span style="color:red;">
-                                [DELETED]<br>
-                                {{ row.userRegisterDateTime }}
+                                [DELETED] — {{ row.userRegisterDateTime }}
                             </span>
                         {% endif %}
                     </td>
 
-                    <td rowspan="{{ rowspan }}">
-                        Cummulative Invigilation Hours  : {{ att.userCumulativeHours }} <br>
-                        Pending Invigilation Hours      : {{ att.userPendingCumulativeHours }}
+                    <!-- Invigilation -->
+                    <td>
+                        Cumulative: {{ att.userCumulativeHours }} hrs <br>
+                        Pending: {{ att.userPendingCumulativeHours }} hrs
                     </td>
                 </tr>
+
                 {% endfor %}
             </tbody>
         </table>
