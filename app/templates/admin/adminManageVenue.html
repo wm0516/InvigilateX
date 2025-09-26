@@ -51,10 +51,10 @@
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
             <div class="form-left">
-                <label>Venue Number</label>
+                <label>Venue</label>
                 <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
 
-                <label>Venue Level</label>
+                <label>Level</label>
                 <select name="venueFloor" required>
                     <option value="" disabled selected>Venue Level</option>
                     <option value="LEVEL 2">FLOOR 2</option>
@@ -105,7 +105,7 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Venue Level (Editable)</label>
+                <label>Level (Editable)</label>
                 <select name="venueFloor" id="editVenueFloor" required>
                     <option value="" disabled selected>Venue LEVEL</option>
                     <option value="LEVEL 2">FLOOR 2</option>
