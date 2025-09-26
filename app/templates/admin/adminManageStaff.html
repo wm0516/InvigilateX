@@ -221,6 +221,11 @@
 {% block content %}
 <div class="menu-section">
     <h2>List of Staff</h2>
+    <div style="margin-top: 15px; text-align: center;">
+        <button id="prevBtn">Previous</button>
+        <span id="pageInfo"></span>
+        <button id="nextBtn">Next</button>
+    </div>
     <div class="user-table-container">
         <table id="userTable" class="user-data-table">
             <thead>
@@ -294,11 +299,6 @@
                 {% endfor %}
             </tbody>
         </table>
-        <div style="margin-top: 15px; text-align: center;">
-            <button id="prevBtn">Previous</button>
-            <span id="pageInfo"></span>
-            <button id="nextBtn">Next</button>
-        </div>
     </div>
 </div>
 {% endblock %}
