@@ -294,6 +294,11 @@
                 {% endfor %}
             </tbody>
         </table>
+        <div style="margin-top: 15px; text-align: center;">
+            <button id="prevBtn">Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextBtn">Next</button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -407,5 +412,48 @@
         [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
          defaultColors, defaultBorders,'Account Status'
     );
+
+    function paginateTable(tableId, rowsPerPage = 20) {
+        const table = document.getElementById(tableId);
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        let currentPage = 1;
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        function renderPage(page) {
+            // Hide all rows first
+            rows.forEach(row => row.style.display = "none");
+
+            // Calculate start and end
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            // Show only the rows for this page
+            rows.slice(start, end).forEach(row => row.style.display = "");
+
+            // Update page info
+            document.getElementById("pageInfo").textContent =
+                `Page ${page} of ${totalPages}`;
+        }
+
+        // Navigation buttons
+        document.getElementById("prevBtn").onclick = function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        };
+
+        document.getElementById("nextBtn").onclick = function() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        };
+
+        // Initialize first page
+        renderPage(currentPage);
+    }
 </script>
 {% endblock %}
