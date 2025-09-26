@@ -234,7 +234,7 @@
                     <th>Role Position</th>
                     <th>Department</th>
                     <th>Account Status</th> 
-                    <th>Registration Date&Time</th>
+                    <th>Invigilation Time</th>
                 </tr>
             </thead>
             <tbody>
@@ -267,16 +267,26 @@
                             <span style="color:red;">[ERROR]</span>
                         {% endif %}
                     </td>
-                    <td>
+                    
+                    <td rowspan="{{ rowspan }}">
                         {% if row.userStatus|int == 0 %}
-                            Deactivated
+                            [Deactivated]<br>
+                            {{ row.userRegisterDateTime }}
                         {% elif row.userStatus|int == 1 %}
-                            Activated
+                            [Activated]<br>
+                            {{ row.userRegisterDateTime }}
                         {% elif row.userStatus|int == 2 %}
-                            <span style="color:red;">[DELETED]</span>
+                            <span style="color:red;">
+                                [DELETED]<br>
+                                {{ row.userRegisterDateTime }}
+                            </span>
                         {% endif %}
                     </td>
-                    <td>{{ row.userRegisterDateTime }}</td>
+
+                    <td rowspan="{{ rowspan }}">
+                        Cummulative Invigilation Hours  : {{ att.userCumulativeHours }} <br>
+                        Pending Invigilation Hours      : {{ att.userPendingCumulativeHours }}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
