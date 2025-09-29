@@ -447,7 +447,7 @@ def get_venue(venue_number):
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 def admin_manageVenue():
     # Load all venues and stats
-    venue_data = Venue.query.all()
+    venue_data = Venue.query.order_by(Venue.venueLevel.asc()).all()
 
     # Floor counts
     venues_by_floor = [
