@@ -814,7 +814,7 @@ def admin_manageExam():
                 venue_text = request.form.get('venue', '').strip()
                 practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
+                invigilatorNo_text = 0
 
                 success, message = create_exam_and_related(start_dt, end_dt, courseSection_text,venue_text, practicalLecturer_text,tutorialLecturer_text, invigilatorNo_text)
                 flash(message, "success" if success else "error")

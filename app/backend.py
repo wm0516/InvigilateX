@@ -267,7 +267,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 # -------------------------------
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo=None):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
@@ -281,6 +281,15 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     exam = Exam.query.filter_by(examId=course.courseExamId).first()
     if not exam:
         return False, f"Exam for course {courseSection} not found"
+
+    # -------------------------------
+    # Auto-set invigilator count if not provided
+    # -------------------------------
+    if invigilatorNo is None:
+        if course.courseStudent > 32:
+            invigilatorNo = 3
+        else:
+            invigilatorNo = 2
 
     try:
         invigilatorNo = int(invigilatorNo)
@@ -348,11 +357,11 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not eligible_invigilators:
         return False, "No eligible invigilators available for assignment"
 
-    # Split by gender (exact match, stored as "MALE" / "FEMALE")
+    # Split by gender
     male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
     female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
 
-    # Sort by workload (cumulative + pending hours)
+    # Sort by workload
     def workload(inv):
         return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
 
@@ -361,48 +370,33 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     chosen_invigilators = []
 
-    # -------------------------------
-    # Simplified Gender Selection
-    # -------------------------------
     if invigilatorNo == 1:
-        # Any gender, pick lowest workload
         pool = sorted(male_invigilators + female_invigilators, key=workload)
         if not pool:
             return False, "No available invigilators"
         chosen_invigilators = [pool[0]]
-
-    else:  # invigilatorNo >= 2
+    else:
         if not male_invigilators or not female_invigilators:
             return False, "Need both male and female invigilators when assigning 2 or more"
 
-        # Always start with 1 male + 1 female
         chosen_invigilators = [male_invigilators.pop(0), female_invigilators.pop(0)]
-
-        # Fill the rest with lowest workload regardless of gender
         pool = sorted(male_invigilators + female_invigilators, key=workload)
         chosen_invigilators += pool[:invigilatorNo - 2]
 
-    # Final check
     if len(chosen_invigilators) < invigilatorNo:
         return False, f"Not enough invigilators available. Required: {invigilatorNo}, Available: {len(chosen_invigilators)}"
 
-    # -------------------------------
-    # Add Attendance + Pending Hours
-    # -------------------------------
     for chosen in chosen_invigilators:
         chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
-
         attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
-            invigilatorId=chosen.userId,
-            checkIn=None,
-            checkOut=None,
-            remark=None
+            invigilatorId=chosen.userId
         )
         db.session.add(attendance)
 
     db.session.commit()
     return True, "Exam created/updated successfully"
+
 
 
 # -------------------------------
