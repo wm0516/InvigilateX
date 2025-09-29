@@ -189,7 +189,7 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 # -------------------------------
 # Admin Function 1: Create Course with Automatically Exam when with all correct data
 # -------------------------------
-def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students, course):
     # Validate department code
     department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
     if not department_name:
