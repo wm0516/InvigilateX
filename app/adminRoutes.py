@@ -182,144 +182,135 @@ def get_courseCodeSection(courseCodeSection_select):
 # -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
-    try:
-        # === Load basic data safely ===
-        course_data = Course.query.order_by(Course.courseDepartment.asc()).all()
-        department_data = Department.query.all()
+    # === Load basic data safely ===
+    course_data = Course.query.order_by(Course.courseDepartment.asc()).all()
+    department_data = Department.query.all()
 
-        course_id = request.form.get('editCourseSelect')
-        course_select = Course.query.filter_by(courseCodeSection=course_id).first()
+    course_id = request.form.get('editCourseSelect')
+    course_select = Course.query.filter_by(courseCodeSection=course_id).first()
 
-        # === Dashboard numbers ===
-        total_courses = Course.query.count()
+    # Count rows with missing/empty values
+    error_rows = Course.query.filter(
+        (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
+        (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
+        (Course.courseName.is_(None)) | (Course.courseName == '') |
+        (Course.courseHour.is_(None)) |
+        (Course.courseStudent.is_(None)) |
+        (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
+        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
+    ).count()
 
-        # Count rows with missing/empty values
-        error_rows = Course.query.filter(
-            (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
-            (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
-            (Course.courseName.is_(None)) | (Course.courseName == '') |
-            (Course.courseHour.is_(None)) |
-            (Course.courseStudent.is_(None)) |
-            (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
-            (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
-        ).count()
+    # === Courses by department safely ===
+    courses_by_department_raw = db.session.query(
+        func.coalesce(Department.departmentCode, "Unknown"),
+        func.count(Course.courseCodeSection)
+    ).outerjoin(Course, Department.departmentCode == Course.courseDepartment
+    ).group_by(func.coalesce(Department.departmentCode, "Unknown")
+    ).having(func.count(Course.courseCodeSection) > 0
+    ).order_by(func.coalesce(Department.departmentCode, "Unknown").asc()
+    ).all() or []
 
-        # === Courses by department safely ===
-        courses_by_department_raw = db.session.query(
-            func.coalesce(Department.departmentCode, "Unknown"),
-            func.count(Course.courseCodeSection)
-        ).outerjoin(Course, Department.departmentCode == Course.courseDepartment
-        ).group_by(func.coalesce(Department.departmentCode, "Unknown")
-        ).having(func.count(Course.courseCodeSection) > 0
-        ).order_by(func.coalesce(Department.departmentCode, "Unknown").asc()
-        ).all() or []
+    courses_by_department = [
+        {"department": dept_code, "count": count}
+        for dept_code, count in courses_by_department_raw
+    ]
 
-        courses_by_department = [
-            {"department": dept_code, "count": count}
-            for dept_code, count in courses_by_department_raw
-        ]
+    # === POST Handling ===
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
 
-        # === POST Handling ===
-        if request.method == 'POST':
-            form_type = request.form.get('form_type')
+        # --- Upload Section ---
+        if form_type == 'upload':
+            return handle_file_upload(
+                file_key='course_file',
+                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'],
+                process_row_fn=process_course_row,
+                redirect_endpoint='admin_manageCourse',
+                usecols="A:H"
+            )
 
-            # --- Upload Section ---
-            if form_type == 'upload':
-                return handle_file_upload(
-                    file_key='course_file',
-                    expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'],
-                    process_row_fn=process_course_row,
-                    redirect_endpoint='admin_manageCourse',
-                    usecols="A:H"
-                )
+        # --- Edit Section ---
+        elif form_type == 'edit':
+            action = request.form.get('action')
+            if action == 'update' and course_select:
+                # Update course values
+                course_select.courseDepartment = request.form.get('departmentCode', '').strip()
+                course_select.courseName = request.form.get('courseName', '').strip()
+                course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
+                course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
+                course_select.courseStatus = True if request.form.get('courseStatus') == '1' else False
 
-            # --- Edit Section ---
-            elif form_type == 'edit':
-                action = request.form.get('action')
-                if action == 'update' and course_select:
-                    # Update course values
-                    course_select.courseDepartment = request.form.get('departmentCode', '').strip()
-                    course_select.courseName = request.form.get('courseName', '').strip()
-                    course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
-                    course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
-                    course_select.courseStatus = True if request.form.get('courseStatus') == '1' else False
+                # Safe int conversion
+                try:
+                    course_select.courseHour = int(request.form.get('courseHour', 0))
+                except (ValueError, TypeError):
+                    course_select.courseHour = 0
 
-                    # Safe int conversion
-                    try:
-                        course_select.courseHour = int(request.form.get('courseHour', 0))
-                    except (ValueError, TypeError):
-                        course_select.courseHour = 0
+                try:
+                    course_select.courseStudent = int(request.form.get('courseStudent', 0))
+                except (ValueError, TypeError):
+                    course_select.courseStudent = 0
 
-                    try:
-                        course_select.courseStudent = int(request.form.get('courseStudent', 0))
-                    except (ValueError, TypeError):
-                        course_select.courseStudent = 0
+                # -------------------------
+                # Validate required fields
+                # -------------------------
+                required_fields = [
+                    course_select.courseDepartment,
+                    course_select.courseName,
+                    course_select.coursePractical,
+                    course_select.courseTutorial,
+                    course_select.courseHour,
+                    course_select.courseStudent
+                ]
 
-                    # -------------------------
-                    # Validate required fields
-                    # -------------------------
-                    required_fields = [
-                        course_select.courseDepartment,
-                        course_select.courseName,
-                        course_select.coursePractical,
-                        course_select.courseTutorial,
-                        course_select.courseHour,
-                        course_select.courseStudent
-                    ]
+                if all(f is not None and f != '' for f in required_fields):
+                    # Create Exam if none exists
+                    if not course_select.courseExamId:
+                        new_exam = Exam(
+                            examVenue=None,
+                            examStartTime=None,
+                            examEndTime=None,
+                            examNoInvigilator=None
+                        )
+                        db.session.add(new_exam)
+                        db.session.flush()  # assign examId before commit
+                        course_select.courseExamId = new_exam.examId
 
-                    if all(f is not None and f != '' for f in required_fields):
-                        # Create Exam if none exists
-                        if not course_select.courseExamId:
-                            new_exam = Exam(
-                                examVenue=None,
-                                examStartTime=None,
-                                examEndTime=None,
-                                examNoInvigilator=None
-                            )
-                            db.session.add(new_exam)
-                            db.session.flush()  # assign examId before commit
-                            course_select.courseExamId = new_exam.examId
+                db.session.commit()
+                flash("Course updated successfully", "success")
 
-                    db.session.commit()
-                    flash("Course updated successfully", "success")
+            elif action == 'delete' and course_select:
+                course_select.courseStatus = False
+                db.session.commit()
+                flash("Course deleted successfully", "success")
+            return redirect(url_for('admin_manageCourse'))
 
-                elif action == 'delete' and course_select:
-                    course_select.courseStatus = False
-                    db.session.commit()
-                    flash("Course deleted successfully", "success")
-                return redirect(url_for('admin_manageCourse'))
+        # --- Manual Add Section ---
+        elif form_type == 'manual':
+            def safe_int(value, default=0):
+                try:
+                    return int(value)
+                except (ValueError, TypeError):
+                    return default
 
-            # --- Manual Add Section ---
-            elif form_type == 'manual':
-                def safe_int(value, default=0):
-                    try:
-                        return int(value)
-                    except (ValueError, TypeError):
-                        return default
+            form_data = {
+                "department": request.form.get('departmentCode', '').strip(),
+                "code": request.form.get('courseCode', '').replace(' ', ''),
+                "section": request.form.get('courseSection', '').replace(' ', ''),
+                "name": request.form.get('courseName', '').strip(),
+                "hour": safe_int(request.form.get('courseHour')),
+                "practical": request.form.get('practicalLecturerSelect', '').strip(),
+                "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
+                "students": safe_int(request.form.get('courseStudent')),
+                "status": True
+            }
+            success, message = create_course_and_exam(**form_data)
+            flash(message, "success" if success else "error")
+            return redirect(url_for('admin_manageCourse'))
 
-                form_data = {
-                    "department": request.form.get('departmentCode', '').strip(),
-                    "code": request.form.get('courseCode', '').replace(' ', ''),
-                    "section": request.form.get('courseSection', '').replace(' ', ''),
-                    "name": request.form.get('courseName', '').strip(),
-                    "hour": safe_int(request.form.get('courseHour')),
-                    "practical": request.form.get('practicalLecturerSelect', '').strip(),
-                    "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
-                    "students": safe_int(request.form.get('courseStudent')),
-                    "status": True
-                }
-                success, message = create_course_and_exam(**form_data)
-                flash(message, "success" if success else "error")
-                return redirect(url_for('admin_manageCourse'))
-
-        # === GET Request ===
-        return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, course_select=course_select,
-                               department_data=department_data, total_courses=total_courses, courses_by_department=courses_by_department, error_rows=error_rows)
-
-    except Exception as e:
-        # Show traceback in browser for debugging
-        print(traceback.format_exc())
-        return f"<pre>{traceback.format_exc()}</pre>", 500
+    # === GET Request ===
+    return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, course_select=course_select,
+                            department_data=department_data, courses_by_department=courses_by_department, error_rows=error_rows)
 
 
 

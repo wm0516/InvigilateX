@@ -22,7 +22,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Total Courses</h3>
-                    <p class="dashboard-text">{{ total_courses }}</p>
+                    <p class="dashboard-text">{{ course_data|length }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Courses With Missing Data/Erros</h3>
@@ -251,6 +251,7 @@
                     </tr>
                     {% endfor %}
                 </tbody>
+
         </table>
     </div>
 </div>
@@ -353,12 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
                         }
                     }
-                },
-                // plugin-3d settings
-                chartJs3d: {
-                    enabled: true,
-                    depth: 20, // thickness
-                    angle: 45  // tilt angle
                 }
             }
         }
