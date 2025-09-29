@@ -697,10 +697,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-
-    # Fetch all exam_data as list
-    exam_data_list = exam_data_query.all()
-    total_exam = len(exam_data_list)
+    exam_data = exam_data_query.all()
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
@@ -708,7 +705,7 @@ def admin_manageExam():
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
     unassigned_exam = len([
-        e for e in exam_data_list
+        e for e in exam_data
         if e.examStartTime is None
         and e.examEndTime is None
         and e.examVenue is None
@@ -716,14 +713,12 @@ def admin_manageExam():
     ])
 
     complete_exam = len([
-        e for e in exam_data_list
+        e for e in exam_data
         if e.examStartTime is not None
         and e.examEndTime is not None
         and e.examVenue is not None
         and e.examNoInvigilator not in (None, 0)
     ])
-
-    incomplete_exam = len(exam_data_list) - unassigned_exam - complete_exam
 
     # Default manual form values
     courseSection_text = practicalLecturer_text = tutorialLecturer_text = venue_text = invigilatorNo_text = ''
@@ -776,14 +771,7 @@ def admin_manageExam():
 
                     if not existing_report:
                         # No report exists → create new
-                        create_exam_and_related(
-                            start_dt, end_dt,
-                            exam_select.course.courseCodeSection,
-                            venue_text,
-                            exam_select.course.coursePractical,
-                            exam_select.course.courseTutorial,
-                            invigilatorNo_text
-                        )
+                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSection, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
                     elif exam_select.examNoInvigilator != int(invigilatorNo_text):
                         report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                         if report:
@@ -828,12 +816,7 @@ def admin_manageExam():
                 tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
                 invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
-                success, message = create_exam_and_related(
-                    start_dt, end_dt, courseSection_text,
-                    venue_text, practicalLecturer_text,
-                    tutorialLecturer_text, invigilatorNo_text
-                )
-
+                success, message = create_exam_and_related(start_dt, end_dt, courseSection_text,venue_text, practicalLecturer_text,tutorialLecturer_text, invigilatorNo_text)
                 flash(message, "success" if success else "error")
                 return redirect(url_for('admin_manageExam'))
 
@@ -843,18 +826,8 @@ def admin_manageExam():
                 flash(f"Error processing manual form: {manual_err}", "error")
                 return redirect(url_for('admin_manageExam'))
 
-    return render_template(
-        'admin/adminManageExam.html',
-        active_tab='admin_manageExamtab',
-        exam_data=exam_data_list,
-        unassigned_exam=unassigned_exam,
-        venue_data=venue_data,
-        department_data=department_data,
-        total_exam=total_exam,
-        complete_exam=complete_exam,
-        incomplete_exam=incomplete_exam,
-        exam_select=exam_select
-    )
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, 
+                           venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select)
 
 
 

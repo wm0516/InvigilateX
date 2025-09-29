@@ -17,7 +17,7 @@
             <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h3>Total Exams</h3>
-                    <p class="dashboard-text">{{ total_exam }}</p>
+                    <p class="dashboard-text">{{ exam_data|length }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Completed Exams</h3>
@@ -25,7 +25,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Erros in Timetable</h3>
-                    <p class="dashboard-text" style="color:red;">{{ incomplete_exam }}</p>
+                    <p class="dashboard-text" style="color:red;">{{ exam_data|length - complete_exam - unassigned_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Unassigned Exams</h3>
@@ -118,9 +118,9 @@
                 <label>Number of Students</label>
                 <input type="number" id="student" name="student" readonly><br>
 
-                <label>Venue</label>
+                <label>Exam Venue</label>
                 <select name="venue" id="venueSection" required>
-                    <option value="" disabled selected>Select Venue</option>
+                    <option value="" disabled selected>Select Exam Venue</option>
                     {% for venue in venue_data %}
                         <option value="{{ venue.venueNumber }}">
                             [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
@@ -178,18 +178,18 @@
 
             <div class="form-middle">
                 <label>Practical Lecturer</label>
-                <select id="editPracticalLecturer" name="practicalLecturer" required>
+                <select id="editPracticalLecturer" name="practicalLecturer" readonly>
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select><br>
 
                 <label>Tutorial Lecturer</label>
-                <select id="editTutorialLecturer" name="tutorialLecturer" required>
+                <select id="editTutorialLecturer" name="tutorialLecturer" readonly>
                     <option value="" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
-                <label>Venue</label>
+                <label>Exam Venue (Editable)</label>
                 <select name="venue" id="editVenue" required>
-                    <option value="" disabled selected>Select Venue</option>
+                    <option value="" disabled selected>Select Exam Venue</option>
                     {% for venue in venue_data %}
                         <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                     {% endfor %}
@@ -197,13 +197,13 @@
             </div>
 
             <div class="form-right">
-                <label>Exam Start Date & Time</label>
+                <label>Exam Start Date & Time (Editable)</label>
                 <input type="datetime-local" id="editExamStartTime" name="startDateTime" required><br>
 
-                <label>Exam End Date & Time</label>
+                <label>Exam End Date & Time (Editable)</label>
                 <input type="datetime-local" id="editExamEndTime" name="endDateTime" required><br>
 
-                <label>Number of Invigilators</label>
+                <label>Number of Invigilators (Editable)</label>
                 <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>
             </div>
         </div>
