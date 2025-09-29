@@ -218,45 +218,43 @@
         }
     });
 
-    // Extract capacities from venue_data (already available via Jinja)
+    // Extract capacities directly from venue_data
     const capacities = [{{ venue_data | map(attribute='venueCapacity') | join(', ') }}];
 
-    // Find min & max capacity
-    const minCap = Math.min(...capacities);
-    const maxCap = Math.max(...capacities);
+    // Count frequency of each capacity
+    const capacityCountsMap = {};
+    capacities.forEach(c => {
+        capacityCountsMap[c] = (capacityCountsMap[c] || 0) + 1;
+    });
 
-    // Bucket step size (example: 10)
-    const step = 10;
+    // Sort capacities numerically
+    const capacityLabels = Object.keys(capacityCountsMap)
+        .map(Number)
+        .sort((a, b) => a - b);
 
-    // Build labels & counts
-    let capacityLabels = [];
-    let capacityCounts = [];
+    const capacityCounts = capacityLabels.map(c => capacityCountsMap[c]);
 
-    for (let start = minCap; start <= maxCap; start += step) {
-        let end = start + step - 1;
-        capacityLabels.push(`${start}-${end}`);
-        let count = capacities.filter(c => c >= start && c <= end).length;
-        capacityCounts.push(count);
-    }
-
-    // Render capacity chart
+    // Render as line chart
     const ctxCapacity = document.getElementById('venueCapacityChart').getContext('2d');
     new Chart(ctxCapacity, {
-        type: 'line', // change to 'line' if you prefer
+        type: 'line',
         data: {
             labels: capacityLabels,
             datasets: [{
                 label: "Venues by Capacity",
                 data: capacityCounts,
-                backgroundColor: '#36A2EB',
-                borderColor: '#1E88E5',
-                borderWidth: 1
+                fill: false,
+                borderColor: '#36A2EB',
+                backgroundColor: '#1E88E5',
+                tension: 0.2, // curve smoothness
+                pointRadius: 5,
+                pointBackgroundColor: '#FF6384'
             }]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false }
+                legend: { position: 'top' }
             },
             scales: {
                 y: {
@@ -266,6 +264,7 @@
             }
         }
     });
+
 
 
 </script>
