@@ -286,7 +286,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # Auto-set invigilator count if not provided
     # -------------------------------
     invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
-    flash(f"Invigilator Need for this exam was: {invigilatorNo}", "success")
 
     # Validate the value
     try:
@@ -296,7 +295,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     if invigilatorNo < 1:
         return False, "Number of Invigilators must be at least 1"
-
 
     # Update exam details
     exam.examStartTime = start_dt

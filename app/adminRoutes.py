@@ -697,7 +697,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-    exam_data = exam_data_query.all()
+    exam_data = exam_data_query.order_by(Exam.examId.asc()).all()
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
@@ -887,15 +887,15 @@ def get_staff(id):
 # -------------------------------
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 def admin_manageStaff():
-    user_data = User.query.all()
+    user_data = User.query.order_by(User.userLevel.asc()).all()
     department_data = Department.query.all()
 
     # === Dashboard Counts ===
     total_staff = User.query.count()
     total_admin = User.query.filter_by(userLevel=4).count()
-    total_lecturer = User.query.filter_by(userLevel=1).count()
-    total_dean = User.query.filter_by(userLevel=2).count()
     total_hop = User.query.filter_by(userLevel=3).count()
+    total_dean = User.query.filter_by(userLevel=2).count()
+    total_lecturer = User.query.filter_by(userLevel=1).count()
     total_male_staff = User.query.filter_by(userGender="MALE").count()
     total_female_staff = User.query.filter_by(userGender="FEMALE").count()
     total_activated = User.query.filter_by(userStatus=1).count()
