@@ -42,7 +42,7 @@
                 <label>Venue</label>
                 <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required>
             </div>
-            <div>
+            <div class="form-middle">
                 <label>Level</label>
                 <select name="venueFloor" required>
                     <option value="" disabled selected>Venue Level</option>
@@ -53,7 +53,6 @@
                     <option value="LEVEL 6">LEVEL 6</option>
                 </select>
             </div>
-
             <div class="form-right">
                 <label>Venue Capacity</label>
                 <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" min="1" step="1" required>
@@ -86,9 +85,9 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-middle">
+            <div class="form-middle">   
                 <label>Level (Editable)</label>
-                <select name="venueFloor" id="editVenueFloor" required>
+                <select name="venueLevel" id="editVenueLevel" required>
                     <option value="" disabled selected>Venue LEVEL</option>
                     <option value="LEVEL 2">LEVEL 2</option>
                     <option value="LEVEL 3">LEVEL 3</option>
@@ -97,13 +96,11 @@
                     <option value="LEVEL 6">LEVEL 6</option>
                 </select>
             </div>
-
             <div class="form-right">
                 <label>Venue Capacity (Editable)</label>
                 <input type="number" name="venueCapacity" id="editVenueCapacity" min="1" step="1" required>
             </div>
         </div>
-
         <input type="hidden" name="form_type" value="edit">
         <br><br>
 
@@ -165,7 +162,7 @@
                     return;
                 }
                 // Populate fields
-                document.getElementById('editVenueFloor').value = data.venueLevel;
+                document.getElementById('editVenueLevel').value = data.venueLevel;
                 document.getElementById('editVenueCapacity').value = data.venueCapacity;
             })
             .catch(err => console.error(err));
