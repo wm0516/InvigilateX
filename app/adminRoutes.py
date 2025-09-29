@@ -184,7 +184,7 @@ def get_courseCodeSection(courseCodeSection_select):
 def admin_manageCourse():
     try:
         # === Load basic data safely ===
-        course_data = Course.query.all() or []
+        course_data = Course.query.order_by(Course.courseDepartment.asc()).all()
         department_data = Department.query.all() or []
 
         course_id = request.form.get('editCourseSelect')
