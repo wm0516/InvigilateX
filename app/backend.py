@@ -267,7 +267,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 # -------------------------------
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo=None):
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
@@ -285,19 +285,17 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # -------------------------------
     # Auto-set invigilator count if not provided
     # -------------------------------
-    if invigilatorNo is None:
-        if course.courseStudent > 32:
-            invigilatorNo = 3
-        else:
-            invigilatorNo = 2
+    invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
 
-    if invigilatorNo:
-        try:
-            invigilatorNo = int(invigilatorNo)
-        except ValueError:
-            return False, "Number of Invigilators must be an integer"
-        if invigilatorNo < 1:
-            return False, "Number of Invigilators must be at least 1"
+    # Validate the value
+    try:
+        invigilatorNo = int(invigilatorNo)
+    except ValueError:
+        return False, "Number of Invigilators must be an integer"
+
+    if invigilatorNo < 1:
+        return False, "Number of Invigilators must be at least 1"
+
 
     # Update exam details
     exam.examStartTime = start_dt
