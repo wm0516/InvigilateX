@@ -363,12 +363,8 @@ def admin_manageDepartment():
     # Load all departments and stats
     department_data = Department.query.all()
     total_department = len(department_data)
-    department_with_dean = Department.query.filter(Department.deanId.isnot(None)).count()
-    department_with_hop = Department.query.filter(Department.hopId.isnot(None)).count()
     total_dean = User.query.filter_by(userLevel=2).count()
     total_hop = User.query.filter_by(userLevel=3).count()
-    deans = User.query.filter_by(userLevel=2).all()
-    hops = User.query.filter_by(userLevel=3).all()
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
@@ -401,27 +397,23 @@ def admin_manageDepartment():
             if deanId:
                 dean_user = User.query.filter_by(userId=deanId, userLevel=2).first()
                 if not dean_user or dean_user.userDepartment != department_select.departmentCode:
-                    flash("Selected Dean does not belong to this department. Ignoring Dean selection.", "error")
+                    flash("Selected Dean/Hos does not belong to this department. Ignoring Dean/Hos selection.", "error")
                     deanId = None
-
             # Validate HOP belongs to this department (only if a new selection is made)
             if hopId:
                 hop_user = User.query.filter_by(userId=hopId, userLevel=3).first()
                 if not hop_user or hop_user.userDepartment != department_select.departmentCode:
-                    flash("Selected HOP does not belong to this department. Ignoring HOP selection.", "error")
+                    flash("Selected Hop does not belong to this department. Ignoring Hop selection.", "error")
                     hopId = None
 
             if action == 'update':
                 department_select.departmentName = departmentName
-
                 # Update Dean only if a valid selection is made
                 if deanId is not None:
                     department_select.deanId = deanId
-
                 # Update HOP only if a valid selection is made
                 if hopId is not None:
                     department_select.hopId = hopId
-
                 db.session.commit()
                 flash("Department updated successfully", "success")
             elif action == 'delete':
@@ -430,9 +422,9 @@ def admin_manageDepartment():
                 flash("Department deleted successfully", "success")
 
             return redirect(url_for('admin_manageDepartment'))
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, total_dean=total_dean, total_hop=total_hop)
 
-    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select,
-        total_department=total_department, total_dean=total_dean, total_hop=total_hop, deans=deans, hops=hops, department_with_dean=department_with_dean, department_with_hop=department_with_hop)
+
 
 # -------------------------------
 # Get Venue Details for ManageVenueEditPage
@@ -445,9 +437,8 @@ def get_venue(venue_number):
 
     return jsonify({
         "venueNumber": venue.venueNumber,
-        "venueFloor": venue.venueFloor,
-        "venueCapacity": venue.venueCapacity,
-        "venueStatus": venue.venueStatus
+        "venueLevel": venue.venueLevel,
+        "venueCapacity": venue.venueCapacity
     })
 
 # -------------------------------
@@ -457,21 +448,13 @@ def get_venue(venue_number):
 def admin_manageVenue():
     # Load all venues and stats
     venue_data = Venue.query.all()
-    total_venue = Venue.query.count()
-
-    # Status counts
-    status_counts = dict(
-        db.session.query(Venue.venueStatus, func.count())
-        .group_by(Venue.venueStatus)
-        .all()
-    )
 
     # Floor counts
     venues_by_floor = [
         {"floor": floor, "count": count}
-        for floor, count in db.session.query(Venue.venueFloor, func.count())
-        .group_by(Venue.venueFloor)
-        .order_by(Venue.venueFloor)
+        for floor, count in db.session.query(Venue.venueLevel, func.count())
+        .group_by(Venue.venueLevel)
+        .order_by(Venue.venueLevel)
         .all()
     ]
 
@@ -485,46 +468,41 @@ def admin_manageVenue():
         # ---------------- Manual Section ----------------
         if form_type == 'manual':
             venueNumber = request.form.get('venueNumber', '').strip().upper()
-            venueFloor = request.form.get('venueFloor', '').strip()
+            venueLevel = request.form.get('venueLevel', '').strip()
             venueCapacity = request.form.get('venueCapacity', '').strip()
-            venueStatus = request.form.get('venueStatus', '').strip()
 
             # Check if venue already exists
             if Venue.query.filter_by(venueNumber=venueNumber).first():
                 flash("Venue Room Already Exists", "error")
             else:
-                try:
+                try: 
                     capacity = int(venueCapacity)
                     if capacity < 0:
                         raise ValueError
                     db.session.add(Venue(
                         venueNumber=venueNumber,
-                        venueFloor=venueFloor,
-                        venueCapacity=capacity,
-                        venueStatus=venueStatus
+                        venueLevel=venueLevel,
+                        venueCapacity=capacity
                     ))
                     db.session.commit()
                     flash("Venue Added", "success")
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
-
             return redirect(url_for('admin_manageVenue'))
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and venue_select:
             action = request.form.get('action')
-            venueFloor = request.form.get('venueFloor')
+            venueLevel = request.form.get('venueLevel')
             venueCapacity = request.form.get('venueCapacity')
-            venueStatus = request.form.get('venueStatus')
 
             if action == 'update':
                 try:
                     capacity = int(venueCapacity)
                     if capacity < 0:
                         raise ValueError
-                    venue_select.venueFloor = venueFloor
+                    venue_select.venueLevel = venueLevel
                     venue_select.venueCapacity = capacity
-                    venue_select.venueStatus = venueStatus
                     db.session.commit()
                     flash("Venue Updated", "success")
                 except ValueError:
@@ -544,10 +522,8 @@ def admin_manageVenue():
                     db.session.rollback()
                     flash(f"Failed to delete venue: {str(e)}", "error")
             return redirect(url_for('admin_manageVenue'))
-
     # Render template
-    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venue_select=venue_select, total_venue=total_venue,
-        available=status_counts.get("AVAILABLE", 0), unavailable=status_counts.get("UNAVAILABLE", 0), in_service=status_counts.get("IN SERVICE", 0), venues_by_floor=venues_by_floor)
+    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venue_select=venue_select, venues_by_floor=venues_by_floor)
 
 
 
@@ -663,7 +639,7 @@ def get_available_venues():
         end_dt = datetime.strptime(end_dt_str, "%Y-%m-%dT%H:%M")
 
         # Query venues with enough capacity
-        venues = Venue.query.filter(Venue.venueCapacity >= student_count, Venue.venueStatus == 'AVAILABLE').all()
+        venues = Venue.query.filter(Venue.venueCapacity >= student_count).all()
 
         available_venues = []
 
@@ -741,7 +717,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 def admin_manageExam():
     department_data = Department.query.all()
-    venue_data = Venue.query.filter(Venue.venueStatus == 'AVAILABLE').all()
+    venue_data = Venue.query.all()
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)

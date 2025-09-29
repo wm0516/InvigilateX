@@ -26,26 +26,8 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Total Dean/HOS</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_dean }}</p>
+                    <p class="dashboard-text" style="color:#cf8223;">{{ total_dean }}</p>
                 </div>
-                <!--
-                <div class="dashboard-frame">
-                    <h3>Departments without HOP</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_department - department_with_hop }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Departments with HOP</h3>
-                    <p class="dashboard-text" style="color:green;">{{ department_with_hop }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Departments with Dean</h3>
-                    <p class="dashboard-text" style="color:green;">{{ department_with_dean }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Departments without Dean</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_department - department_with_dean }}</p>
-                </div>
-                -->
             </div>
         </div>
     </div>
@@ -74,7 +56,7 @@
         <br><br>
 
         <div class="button-wrapper">
-            <button type="submit">Add / Update Department</button>
+            <button type="submit">Add A New Department</button>
         </div>
     </div>
 </form>
@@ -105,7 +87,7 @@
             </div>
 
             <div class="form-right">
-                <label>Dean Name (Editable)</label>
+                <label>Dean/Hos Name (Editable)</label>
                 <select id="deanName" name="deanName">
                     <option value="" disabled selected>Select a Dean</option>
                     {% for dean in deans %}
@@ -155,7 +137,7 @@
                     <th>No</th>
                     <th>Department Code</th>
                     <th>Department Name</th>
-                    <th>Dean Details</th>
+                    <th>Dean/Hos Details</th>
                     <th>Hop Details</th>
                 </tr>
             </thead>
@@ -167,11 +149,11 @@
                     <td>{{ row.departmentName }}</td>
                     <td>
                         {% if row.dean %}
-                            Dean ID         : {{ row.dean.userId }} <br>
-                            Dean Name       : {{ row.dean.userName }} <br>
-                            Dean Email      : {{ row.dean.userEmail }} <br>
-                            Dean Contact    : {{ row.dean.userContact }} <br>
-                            Dean Department : {{ row.dean.userDepartment }}
+                            Dean/Hos ID         : {{ row.dean.userId }} <br>
+                            Dean/Hos Name       : {{ row.dean.userName }} <br>
+                            Dean/Hos Email      : {{ row.dean.userEmail }} <br>
+                            Dean/Hos Contact    : {{ row.dean.userContact }} <br>
+                            Dean/Hos Department : {{ row.dean.userDepartment }}
                         {% endif %}
                     </td>
                     <td>

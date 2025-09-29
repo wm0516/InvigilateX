@@ -499,7 +499,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
 # -------------------------------
 def get_available_venues(examDate, startTime, endTime):
     # Return a list of venueNumbers that are AVAILABLE during the given exam slot.
-    available_venues = Venue.query.filter_by(venueStatus="AVAILABLE").all()
+    available_venues = Venue.query.all()
     usable_venues = []
 
     for venue in available_venues:

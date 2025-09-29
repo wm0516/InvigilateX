@@ -43,7 +43,7 @@ class User(db.Model):
     userId = db.Column(db.String(20), primary_key=True)                                                               # [PK]Refer to Staff ID
     userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=True)              # [FK] Refer to Staff Department
     userName = db.Column(db.String(255), nullable=False)                                                              # Refer to Staff Name
-    userLevel = db.Column(db.Integer, nullable=False)                                                                 # Lecturer = 1, Dean = 2, HOP = 3, Admin = 4
+    userLevel = db.Column(db.Integer, nullable=False)                                                                 # Lecturer = 1, Dean/HOS = 2, HOP = 3, Admin = 4
     userEmail = db.Column(db.String(255), nullable=False)                                                             # Refer to Staff INTI email
     userContact = db.Column(db.String(15), nullable=False)                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
@@ -77,9 +77,8 @@ class User(db.Model):
 class Venue(db.Model):
     __tablename__ = 'Venue'
     venueNumber = db.Column(db.String(20), primary_key=True)                                     # [PK] Venue identifier
-    venueFloor = db.Column(db.String(10), nullable=False)                                        # Floor of venue
+    venueLevel = db.Column(db.String(10), nullable=False)                                        # Floor of venue
     venueCapacity = db.Column(db.Integer, nullable=False)                                        # Capacity of venue
-    venueStatus = db.Column(db.Enum('AVAILABLE', 'UNAVAILABLE', 'IN SERVICE'), nullable=False)   # Venue overall status
 
     # Relationships
     availabilities = db.relationship("VenueAvailability", back_populates="venue")               # One Venue ↔ Many VenueAvailability
@@ -87,11 +86,11 @@ class Venue(db.Model):
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
-        venueFloor VARCHAR(10) NOT NULL,
-        venueCapacity INT NOT NULL,
-        venueStatus ENUM('AVAILABLE','UNAVAILABLE','IN SERVICE') NOT NULL
+        venueLevel VARCHAR(10) NOT NULL,
+        venueCapacity INT NOT NULL
     );
     '''
+    courseStatus = db.Column(db.Boolean, default=True, nullable=False)                                          # Refer to Course Status, when course deleted, it will show False
 
 class Exam(db.Model):
     __tablename__ = 'Exam'

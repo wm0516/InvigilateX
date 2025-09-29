@@ -22,19 +22,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Total Venues</h3>
-                    <p class="dashboard-text">{{ total_venue }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Available Venues</h3>
-                    <p class="dashboard-text" style="color:green;">{{ available }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Unavailable Venues</h3>
-                    <p class="dashboard-text" style="color:red;">{{ unavailable }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Venues Under Service</h3>
-                    <p class="dashboard-text" style="color:rgb(99, 22, 114);">{{ in_service }}</p>
+                    <p class="dashboard-text">{{ venue_data|length }}</p>
                 </div>
             </div>
         </div>
@@ -52,30 +40,23 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label>Venue</label>
-                <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required><br>
-
+                <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required>
+            </div>
+            <div>
                 <label>Level</label>
                 <select name="venueFloor" required>
                     <option value="" disabled selected>Venue Level</option>
-                    <option value="LEVEL 2">FLOOR 2</option>
-                    <option value="LEVEL 3">FLOOR 3</option>
-                    <option value="LEVEL 4">FLOOR 4</option>
-                    <option value="LEVEL 5">FLOOR 5</option>
-                    <option value="LEVEL 6">FLOOR 6</option>
+                    <option value="LEVEL 2">LEVEL 2</option>
+                    <option value="LEVEL 3">LEVEL 3</option>
+                    <option value="LEVEL 4">LEVEL 4</option>
+                    <option value="LEVEL 5">LEVEL 5</option>
+                    <option value="LEVEL 6">LEVEL 6</option>
                 </select>
             </div>
 
             <div class="form-right">
                 <label>Venue Capacity</label>
-                <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" min="1" step="1" required><br>
-
-                <label>Venue Status</label>
-                <select name="venueStatus" required>
-                    <option value="" disabled selected>Venue Current Status</option>
-                    <option value="AVAILABLE">AVAILABLE</option>
-                    <option value="UNAVAILABLE">UNAVAILABLE</option>
-                    <option value="IN SERVICE">IN SERVICE</option>
-                </select>
+                <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" min="1" step="1" required>
             </div>
         </div>
         <input type="hidden" name="form_type" value="manual">
@@ -83,7 +64,7 @@
 
         <!-- Upload Form Submit -->
         <div class="button-wrapper">
-            <button type="submit">Add New Venue</button>
+            <button type="submit">Add A New Venue</button>
         </div>
     </div>
 </form>
@@ -103,30 +84,23 @@
                     {% for v in venue_data %}
                         <option value="{{ v.venueNumber }}">{{ v.venueNumber }}</option>
                     {% endfor %}
-                </select><br>
-
+                </select>
+            </div>
+            <div class="form-middle">
                 <label>Level (Editable)</label>
                 <select name="venueFloor" id="editVenueFloor" required>
                     <option value="" disabled selected>Venue LEVEL</option>
-                    <option value="LEVEL 2">FLOOR 2</option>
-                    <option value="LEVEL 3">FLOOR 3</option>
-                    <option value="LEVEL 4">FLOOR 4</option>
-                    <option value="LEVEL 5">FLOOR 5</option>
-                    <option value="LEVEL 6">FLOOR 6</option>
+                    <option value="LEVEL 2">LEVEL 2</option>
+                    <option value="LEVEL 3">LEVEL 3</option>
+                    <option value="LEVEL 4">LEVEL 4</option>
+                    <option value="LEVEL 5">LEVEL 5</option>
+                    <option value="LEVEL 6">LEVEL 6</option>
                 </select>
             </div>
 
             <div class="form-right">
                 <label>Venue Capacity (Editable)</label>
-                <input type="number" name="venueCapacity" id="editVenueCapacity" min="1" step="1" required><br>
-
-                <label>Venue Status (Editable)</label>
-                <select name="venueStatus" id="editVenueStatus" required>
-                    <option value="" disabled selected>Venue Current Status</option>
-                    <option value="AVAILABLE">AVAILABLE</option>
-                    <option value="UNAVAILABLE">UNAVAILABLE</option>
-                    <option value="IN SERVICE">IN SERVICE</option>
-                </select>
+                <input type="number" name="venueCapacity" id="editVenueCapacity" min="1" step="1" required>
             </div>
         </div>
 
@@ -158,7 +132,6 @@
                     <th>Venue</th>
                     <th>Level</th>
                     <th>Venue Capacity</th>
-                    <th>Venue Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -168,7 +141,6 @@
                     <td>{{ row.venueNumber }}</td>
                     <td>{{ row.venueFloor }}</td>
                     <td>[{{ row.venueCapacity }}]</td>
-                    <td>{{ row.venueStatus }}</td>
                 {% endfor %}  
                 </tr>
             </tbody>
@@ -195,7 +167,6 @@
                 // Populate fields
                 document.getElementById('editVenueFloor').value = data.venueFloor;
                 document.getElementById('editVenueCapacity').value = data.venueCapacity;
-                document.getElementById('editVenueStatus').value = data.venueStatus;
             })
             .catch(err => console.error(err));
     });
@@ -212,10 +183,7 @@
             datasets: [{
                 label: "Venues by Floor",
                 data: floorData,
-                backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                    '#9966FF', '#FF9F40'
-                ]
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0','#9966FF', '#FF9F40']
             }]
         },
         options: {
