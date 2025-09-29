@@ -15,7 +15,7 @@
         <div class="form-left" style="width: 100%">
 
             <!-- Overview -->
-            <div class="dashboard-row">
+            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame pie">
                     <h3>Courses by Department</h3>
                     <canvas id="courseDeptPieChart" width="300" height="300"></canvas>
@@ -24,16 +24,9 @@
                     <h3>Total Courses</h3>
                     <p class="dashboard-text">{{ total_courses }}</p>
                 </div>
-                <div class="dashboard-frame">
-                    <h3>Courses with Exams</h3>
-                    <p class="dashboard-text" style="color:green;">{{ courses_with_exams }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Courses without Exams</h3>
-                    <p class="dashboard-text" style="color:red;">{{ courses_without_exams }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Incomplete Data Rows</h3>
+                    <h3>Courses With Missing Data/Erros</h3>
                     <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
             </div>
