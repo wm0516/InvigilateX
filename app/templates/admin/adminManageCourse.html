@@ -350,36 +350,46 @@
             populateLecturers(e.target.value, els.editPractical, els.editTutorial);
         });
 
-        // --- Pie Chart: Courses by Department ---
-        new Chart(document.getElementById('courseDeptPieChart'), {
-            type: 'bar',
-            data: {
-                labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
-                datasets: [{
-                    data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
-                    backgroundColor: [
-                        '#FF6384','#36A2EB','#FFCE56',
-                        '#4BC0C0','#9966FF','#FF9F40',
-                        '#C9CBCF','#8BC34A','#E91E63'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'right' },
-                    tooltip: {
-                        callbacks: {
-                            label: ({ dataset, parsed, label }) => {
-                                const sum = dataset.data.reduce((a, b) => a + b, 0);
-                                return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
-                            }
+    // --- Line Chart: Courses by Department ---
+    new Chart(document.getElementById('courseDeptPieChart'), {
+        type: 'line',
+        data: {
+            labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
+            datasets: [{
+                label: "Courses by Department",
+                data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
+                borderColor: '#36A2EB',     // line color
+                backgroundColor: '#36A2EB', // point color
+                tension: 0.3,               // smooth curve (0 = straight lines)
+                fill: false,                // no area fill
+                borderWidth: 2,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: ({ dataset, parsed, label }) => {
+                            const sum = dataset.data.reduce((a, b) => a + b, 0);
+                            return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
                         }
                     }
                 }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
             }
-        });
+        }
+    });
+
     });
 </script>
 {% endblock %}
