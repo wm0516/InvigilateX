@@ -291,13 +291,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         else:
             invigilatorNo = 2
 
-    try:
-        invigilatorNo = int(invigilatorNo)
-    except ValueError:
-        return False, "Number of Invigilators must be an integer"
-
-    if invigilatorNo < 1:
-        return False, "Number of Invigilators must be at least 1"
+    if invigilatorNo:
+        try:
+            invigilatorNo = int(invigilatorNo)
+        except ValueError:
+            return False, "Number of Invigilators must be an integer"
+        if invigilatorNo < 1:
+            return False, "Number of Invigilators must be at least 1"
 
     # Update exam details
     exam.examStartTime = start_dt
