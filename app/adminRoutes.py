@@ -168,8 +168,6 @@ def get_courseCodeSection(courseCodeSection_select):
     return jsonify({
         "courseCodeSection": course.courseCodeSection,
         "courseDepartment": course.courseDepartment,
-        "courseCode": course.courseCodeSection.split('/')[0] if '/' in course.courseCodeSection else course.courseCodeSection,
-        "courseSection": course.courseCodeSection.split('/')[1] if '/' in course.courseCodeSection else "",
         "coursePractical": course.coursePractical,
         "courseTutorial": course.courseTutorial,
         "courseName": course.courseName,

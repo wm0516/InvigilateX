@@ -127,13 +127,17 @@
 <!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
-        <h4 style="text-align:center;">Edit Existing Course</h4><br>
+        <h4 style="text-align:center;">Edit Existing Course</h4>
+        <h5 style="text-align:center;">
+            Editing the Course Code or Course Section is not allowed.<br>
+            If you wish to make changes, it is recommended to delete the existing entry and re-insert it.
+        </h5><br>
 
         <!-- Prefilled form (like manual section) -->
         <div class="profile-frame">
             <div class="form-left">
                 <!-- Select Existing Course -->
-                <label>Select Course Code/Section</label>
+                <label>Select Course Code/Section - Course Name</label>
                 <select id="editCourseSelect" name="editCourseSelect" required>
                     <option value="" disabled selected>Select Course</option>
                     {% for row in course_data %}
@@ -143,10 +147,10 @@
                         </option>
                     {% endfor %}
                 </select><br>
-                
+
                 <label>Course Name (Editable)</label>
                 <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required><br>
-                
+
                 <label>Department (Editable)</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>Select Department</option>
@@ -161,7 +165,7 @@
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select><br>
-                
+
                 <label>Tutorial Lecturer (Editable)</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
                     <option value="" disabled>Select Tutorial Lecturer</option>
@@ -175,7 +179,7 @@
                 <label>Course Number of Student(s) (Editable)</label>
                 <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
 
-                <label>Course Status (Editable)</label>
+                <label>Course Status</label>
                 <select id="editStatus" name="editStatus" required>
                     <option value="" disabled selected>Select Status</option>
                     <option value="1">Activated</option>   <!-- True -->
@@ -274,8 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tutorial: document.getElementById('tutorialLecturerSelect'),
         editCourseSelect: document.getElementById("editCourseSelect"),
         editDept: document.getElementById("editDepartment"),
-        editCourseCode: document.getElementById("editCourseCode"),
-        editCourseSection: document.getElementById("editCourseSection"),
         editCourseName: document.getElementById("editCourseName"),
         editCourseHour: document.getElementById("editCourseHour"),
         editCourseStudents: document.getElementById("editCourseStudents"),
@@ -323,8 +325,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(c => {
                 if (c.error) return alert(c.error);
                 els.editDept.value = c.courseDepartment || '';
-                els.editCourseCode.value = c.courseCode;
-                els.editCourseSection.value = c.courseSection;
                 els.editCourseName.value = c.courseName;
                 els.editCourseHour.value = c.courseHour;
                 els.editCourseStudents.value = c.courseStudent;
