@@ -233,9 +233,10 @@
                     <th>Course Name</th>
                     <th>Credit Hour(s)</th>
                     <th>Course Department</th>
+                    <th>Number of Students</th>
                     <th>Exam ID</th>
                     <th>Lecturer Details</th>
-                    <th>Number of Students</th>
+                    <th>Exam ID</th>
                 </tr>   
             </thead>
             <tbody>
@@ -259,7 +260,7 @@
                             <span style="color:red;">[ERROR]</span>
                         {% endif %}
                     </td>
-                    <td>[{{ row.courseExamId }}]</td>
+                    <td>[{{ row.courseStudent }}]</td>
                     <td>
                         {% if row.practicalLecturer %}
                             Practical Lecturer: {{ row.practicalLecturer.userName }}
@@ -273,7 +274,7 @@
                             <span style="color:red;">[ERROR]</span>
                         {% endif %}
                     </td>
-                    <td>[{{ row.courseStudent }}]</td>
+                    <td>[{{ row.courseExamId }}]</td>
                 </tr>
                 {% endfor %}
             </tbody>
