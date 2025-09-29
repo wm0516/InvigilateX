@@ -174,29 +174,33 @@
 
     const ctxVenueFloor = document.getElementById('venueFloorPieChart').getContext('2d');
     new Chart(ctxVenueFloor, {
-        type: 'pie',
+        type: 'line',  // ✅ change pie → line
         data: {
-            labels: floorLabels,
+            labels: floorLabels,   // floors will be on the X-axis
             datasets: [{
                 label: "Venues by Floor",
-                data: floorData,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0','#9966FF', '#FF9F40']
+                data: floorData,   // counts will be on the Y-axis
+                borderColor: '#36A2EB',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,   // fills area under the line (optional)
+                tension: 0.3 // smooth curve (0 = straight lines)
             }]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { position: 'bottom' },
+                legend: { position: 'top' },
                 tooltip: {
                     callbacks: {
                         label: function (context) {
-                            let data = context.dataset.data;
-                            let sum = data.reduce((a, b) => a + b, 0);
-                            let value = context.parsed;
-                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
-                            return context.label + ": " + value + " (" + percentage + ")";
+                            return context.dataset.label + ": " + context.parsed.y;
                         }
                     }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
         }
