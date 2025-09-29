@@ -354,9 +354,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                 }
+            },
+            // 🔥 This is the 3D plugin config
+            plugins3d: {
+                pie: {
+                    tilt: 0.5,   // tilt for depth
+                    depth: 30,   // thickness of the slices
+                    viewAngle: 30 // rotation angle
+                }
             }
         }
     });
+
 });
 </script>
 {% endblock %}
