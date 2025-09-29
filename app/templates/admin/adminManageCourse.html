@@ -352,7 +352,7 @@
 
         // --- Pie Chart: Courses by Department ---
         new Chart(document.getElementById('courseDeptPieChart'), {
-            type: 'pie',
+            type: 'bar',
             data: {
                 labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
                 datasets: [{
