@@ -21,6 +21,10 @@
                     <canvas id="venueFloorPieChart"></canvas>
                 </div>
                 <div class="dashboard-frame">
+                    <h3>Venues by Capacity</h3>
+                    <canvas id="venueCapacityChart"></canvas>
+                </div>
+                <div class="dashboard-frame">
                     <h3>Total Venues</h3>
                     <p class="dashboard-text">{{ venue_data|length }}</p>
                 </div>
@@ -213,6 +217,56 @@
             }
         }
     });
+
+    // Extract capacities from venue_data (already available via Jinja)
+    const capacities = [{{ venue_data | map(attribute='venueCapacity') | join(', ') }}];
+
+    // Find min & max capacity
+    const minCap = Math.min(...capacities);
+    const maxCap = Math.max(...capacities);
+
+    // Bucket step size (example: 10)
+    const step = 10;
+
+    // Build labels & counts
+    let capacityLabels = [];
+    let capacityCounts = [];
+
+    for (let start = minCap; start <= maxCap; start += step) {
+        let end = start + step - 1;
+        capacityLabels.push(`${start}-${end}`);
+        let count = capacities.filter(c => c >= start && c <= end).length;
+        capacityCounts.push(count);
+    }
+
+    // Render capacity chart
+    const ctxCapacity = document.getElementById('venueCapacityChart').getContext('2d');
+    new Chart(ctxCapacity, {
+        type: 'bar', // change to 'line' if you prefer
+        data: {
+            labels: capacityLabels,
+            datasets: [{
+                label: "Venues by Capacity",
+                data: capacityCounts,
+                backgroundColor: '#36A2EB',
+                borderColor: '#1E88E5',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+
 
 </script>
 {% endblock %}
