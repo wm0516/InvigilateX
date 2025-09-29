@@ -220,45 +220,37 @@
                     <th>Exam ID</th>
                 </tr>   
             </thead>
-            <tbody>
-                {% for row in course_data %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>
-                        {% if row.courseStatus == 0 %}
-                            <span style="color:red;">[Deactivated]</span>
-                        {% elif row.courseStatus == 1 %}
-                            Activated
-                        {% endif %}
-                    </td>
-                    <td>{{ row.courseCodeSection }}</td>
-                    <td>{{ row.courseName }}</td>
-                    <td>[{{ row.courseHour }}]</td>
-                    <td>
-                        {% if row.department %}
-                            [{{ row.courseDepartment }}]
-                        {% else %}
-                            <span style="color:red;">[ERROR]</span>
-                        {% endif %}
-                    </td>
-                    <td>[{{ row.courseStudent }}]</td>
-                    <td>
-                        {% if row.practicalLecturer %}
-                            Practical Lecturer: {{ row.practicalLecturer.userName }}
-                        {% else %}
-                            <span style="color:red;">[ERROR]</span>
-                        {% endif %}
-                        <br>
-                        {% if row.tutorialLecturer %}
-                            Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
-                        {% else %}
-                            <span style="color:red;">[ERROR]</span>
-                        {% endif %}
-                    </td>
-                    <td>[{{ row.courseExamId }}]</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+                <tbody>
+                    {% for row in course_data %}
+                    <tr>
+                        <td><span>{{ loop.index }}</span></td>
+                        <td>
+                            <span style="{{ '' if row.courseStatus else 'color:red;' }}">
+                                {{ 'Activated' if row.courseStatus else '[Inactivated]' }}
+                            </span>
+                        </td>
+                        <td><span>{{ row.courseCodeSection | default('[ERROR]') }}</span></td>
+                        <td><span>{{ row.courseName | default('[ERROR]') }}</span></td>
+                        <td><span>[{{ row.courseHour | default('ERROR') }}]</span></td>
+                        <td>
+                            <span>
+                                {{ '[' ~ row.courseDepartment ~ ']' if row.courseDepartment else '[ERROR]' }}
+                            </span>
+                        </td>
+                        <td><span>[{{ row.courseStudent | default('ERROR') }}]</span></td>
+                        <td>
+                            <span>
+                                {{ 'Practical Lecturer: ' ~ row.practicalLecturer.userName if row.practicalLecturer else '[ERROR]' }}
+                            </span>
+                            <br>
+                            <span>
+                                {{ 'Tutorial Lecturer: ' ~ row.tutorialLecturer.userName if row.tutorialLecturer else '[ERROR]' }}
+                            </span>
+                        </td>
+                        <td><span>[{{ row.courseExamId | default('ERROR') }}]</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
         </table>
     </div>
 </div>
