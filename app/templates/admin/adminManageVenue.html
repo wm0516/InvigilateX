@@ -139,7 +139,7 @@
                 <tr>
                     <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
                     <td>{{ row.venueNumber }}</td>
-                    <td>{{ row.venueFloor }}</td>
+                    <td>{{ row.venueLevel }}</td>
                     <td>[{{ row.venueCapacity }}]</td>
                 {% endfor %}  
                 </tr>
@@ -165,7 +165,7 @@
                     return;
                 }
                 // Populate fields
-                document.getElementById('editVenueFloor').value = data.venueFloor;
+                document.getElementById('editVenueFloor').value = data.venueLevel;
                 document.getElementById('editVenueCapacity').value = data.venueCapacity;
             })
             .catch(err => console.error(err));
