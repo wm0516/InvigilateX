@@ -185,15 +185,13 @@ def admin_manageCourse():
     try:
         # === Load basic data safely ===
         course_data = Course.query.order_by(Course.courseDepartment.asc()).all()
-        department_data = Department.query.all() or []
+        department_data = Department.query.all()
 
         course_id = request.form.get('editCourseSelect')
         course_select = Course.query.filter_by(courseCodeSection=course_id).first()
 
         # === Dashboard numbers ===
-        total_courses = Course.query.count() or 0
-        courses_with_exams = Course.query.filter(Course.courseExamId.isnot(None)).count() or 0
-        courses_without_exams = max(total_courses - courses_with_exams, 0)
+        total_courses = Course.query.count()
 
         # Count rows with missing/empty values
         error_rows = Course.query.filter(
@@ -238,7 +236,6 @@ def admin_manageCourse():
             # --- Edit Section ---
             elif form_type == 'edit':
                 action = request.form.get('action')
-
                 if action == 'update' and course_select:
                     # Update course values
                     course_select.courseDepartment = request.form.get('departmentCode', '').strip()
@@ -290,7 +287,6 @@ def admin_manageCourse():
                     course_select.courseStatus = False
                     db.session.commit()
                     flash("Course deleted successfully", "success")
-
                 return redirect(url_for('admin_manageCourse'))
 
             # --- Manual Add Section ---
@@ -312,24 +308,13 @@ def admin_manageCourse():
                     "students": safe_int(request.form.get('courseStudent')),
                     "status": True
                 }
-
                 success, message = create_course_and_exam(**form_data)
                 flash(message, "success" if success else "error")
                 return redirect(url_for('admin_manageCourse'))
 
         # === GET Request ===
-        return render_template(
-            'admin/adminManageCourse.html',
-            active_tab='admin_manageCoursetab',
-            course_data=course_data,
-            course_select=course_select,
-            department_data=department_data,
-            total_courses=total_courses,
-            courses_with_exams=courses_with_exams,
-            courses_without_exams=courses_without_exams,
-            courses_by_department=courses_by_department,
-            error_rows=error_rows
-        )
+        return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, course_select=course_select,
+                               department_data=department_data, total_courses=total_courses, courses_by_department=courses_by_department, error_rows=error_rows)
 
     except Exception as e:
         # Show traceback in browser for debugging
