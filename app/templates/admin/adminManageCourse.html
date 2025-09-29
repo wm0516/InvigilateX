@@ -18,7 +18,7 @@
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame pie">
                     <h3>Courses by Department</h3>
-                    <canvas id="courseDeptPieChart" width="150" height="150"></canvas>
+                    <canvas id="courseDeptLineChart"></canvas>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Total Courses</h3>
@@ -276,120 +276,124 @@
 
 {% block extra_scripts %}
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // --- Cache DOM Elements ---
-        const els = {
-            deptCode: document.getElementById('departmentCode'),
-            practical: document.getElementById('practicalLecturerSelect'),
-            tutorial: document.getElementById('tutorialLecturerSelect'),
-            editCourseSelect: document.getElementById("editCourseSelect"),
-            editDept: document.getElementById("editDepartment"),
-            editCourseCode: document.getElementById("editCourseCode"),
-            editCourseSection: document.getElementById("editCourseSection"),
-            editCourseName: document.getElementById("editCourseName"),
-            editCourseHour: document.getElementById("editCourseHour"),
-            editCourseStudents: document.getElementById("editCourseStudents"),
-            editPractical: document.getElementById("editPracticalLecturer"),
-            editTutorial: document.getElementById("editTutorialLecturer"),
-            editStatus: document.getElementById("editStatus"),
-        };
+document.addEventListener("DOMContentLoaded", () => {
+    // --- Cache DOM Elements ---
+    const els = {
+        deptCode: document.getElementById('departmentCode'),
+        practical: document.getElementById('practicalLecturerSelect'),
+        tutorial: document.getElementById('tutorialLecturerSelect'),
+        editCourseSelect: document.getElementById("editCourseSelect"),
+        editDept: document.getElementById("editDepartment"),
+        editCourseCode: document.getElementById("editCourseCode"),
+        editCourseSection: document.getElementById("editCourseSection"),
+        editCourseName: document.getElementById("editCourseName"),
+        editCourseHour: document.getElementById("editCourseHour"),
+        editCourseStudents: document.getElementById("editCourseStudents"),
+        editPractical: document.getElementById("editPracticalLecturer"),
+        editTutorial: document.getElementById("editTutorialLecturer"),
+        editStatus: document.getElementById("editStatus"),
+    };
 
-        // --- Helper: Populate lecturers ---
-        function populateLecturers(deptCode, practicalSel, tutorialSel, selectedPractical=null, selectedTutorial=null) {
-            practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
-            tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
-            if (!deptCode) return;
+    // --- Helper: Populate lecturers ---
+    function populateLecturers(deptCode, practicalSel, tutorialSel, selectedPractical = null, selectedTutorial = null) {
+        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
+        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
+        if (!deptCode) return;
 
-            fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
-                .then(r => r.json())
-                .then(lecturers => {
-                    lecturers.forEach(l => {
-                        [practicalSel, tutorialSel].forEach((sel, i) => {
-                            const opt = document.createElement("option");
-                            opt.value = l.userId;
-                            opt.textContent = l.userName.trim();
-                            if ((i === 0 && l.userId == selectedPractical) || (i === 1 && l.userId == selectedTutorial)) {
-                                opt.selected = true;
-                            }
-                            sel.appendChild(opt);
-                        });
+        fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
+            .then(r => r.json())
+            .then(lecturers => {
+                lecturers.forEach(l => {
+                    [practicalSel, tutorialSel].forEach((sel, i) => {
+                        const opt = document.createElement("option");
+                        opt.value = l.userId;
+                        opt.textContent = l.userName.trim();
+                        if ((i === 0 && l.userId == selectedPractical) || (i === 1 && l.userId == selectedTutorial)) {
+                            opt.selected = true;
+                        }
+                        sel.appendChild(opt);
                     });
-                })
-                .catch(err => console.error("Error fetching lecturers:", err));
-        }
+                });
+            })
+            .catch(err => console.error("Error fetching lecturers:", err));
+    }
 
-        // --- Manual form: department change ---
-        els.deptCode?.addEventListener("change", e => {
-            populateLecturers(e.target.value, els.practical, els.tutorial);
-        });
+    // --- Manual form: department change ---
+    els.deptCode?.addEventListener("change", e => {
+        populateLecturers(e.target.value, els.practical, els.tutorial);
+    });
 
-        // --- Edit form: course select change ---
-        els.editCourseSelect?.addEventListener("change", e => {
-            const codeSection = e.target.value;
-            if (!codeSection) return;
+    // --- Edit form: course select change ---
+    els.editCourseSelect?.addEventListener("change", e => {
+        const codeSection = e.target.value;
+        if (!codeSection) return;
 
-            fetch(`/get_courseCodeSection/${encodeURIComponent(codeSection)}`)
-                .then(r => r.json())
-                .then(c => {
-                    if (c.error) return alert(c.error);
-                    els.editDept.value = c.courseDepartment || '';
-                    els.editCourseCode.value = c.courseCode;
-                    els.editCourseSection.value = c.courseSection;
-                    els.editCourseName.value = c.courseName;
-                    els.editCourseHour.value = c.courseHour;
-                    els.editCourseStudents.value = c.courseStudent;
-                    els.editStatus.value = c.courseStatus;
+        fetch(`/get_courseCodeSection/${encodeURIComponent(codeSection)}`)
+            .then(r => r.json())
+            .then(c => {
+                if (c.error) return alert(c.error);
+                els.editDept.value = c.courseDepartment || '';
+                els.editCourseCode.value = c.courseCode;
+                els.editCourseSection.value = c.courseSection;
+                els.editCourseName.value = c.courseName;
+                els.editCourseHour.value = c.courseHour;
+                els.editCourseStudents.value = c.courseStudent;
+                els.editStatus.value = c.courseStatus;
 
-                    populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, c.coursePractical, c.courseTutorial);
-                })
-                .catch(err => console.error("Error fetching course:", err));
-        });
+                populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, c.coursePractical, c.courseTutorial);
+            })
+            .catch(err => console.error("Error fetching course:", err));
+    });
 
-        // --- Edit form: department change ---
-        els.editDept?.addEventListener("change", e => {
-            populateLecturers(e.target.value, els.editPractical, els.editTutorial);
-        });
+    // --- Edit form: department change ---
+    els.editDept?.addEventListener("change", e => {
+        populateLecturers(e.target.value, els.editPractical, els.editTutorial);
+    });
 
     // --- Line Chart: Courses by Department ---
-    new Chart(document.getElementById('courseDeptPieChart'), {
-        type: 'line',
-        data: {
-            labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
-            datasets: [{
-                label: "Courses by Department",
-                data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
-                borderColor: '#36A2EB',     // line color
-                backgroundColor: '#36A2EB', // point color
-                tension: 0.3,               // smooth curve (0 = straight lines)
-                fill: false,                // no area fill
-                borderWidth: 2,
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: {
-                    callbacks: {
-                        label: ({ dataset, parsed, label }) => {
-                            const sum = dataset.data.reduce((a, b) => a + b, 0);
-                            return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
+    const ctx = document.getElementById('courseDeptLineChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
+                datasets: [{
+                    label: "Courses by Department",
+                    data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
+                    borderColor: '#36A2EB',
+                    backgroundColor: '#36A2EB',
+                    tension: 0.3,
+                    fill: false,
+                    borderWidth: 2,
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: ({ dataset, parsed, label }) => {
+                                const sum = dataset.data.reduce((a, b) => a + Number(b), 0);
+                                const val = Number(parsed);
+                                return `${label}: ${val} (${(val / sum * 100).toFixed(1)}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
                         }
                     }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1
-                    }
-                }
             }
-        }
-    });
-
-    });
+        });
+    }
+});
 </script>
 {% endblock %}
+

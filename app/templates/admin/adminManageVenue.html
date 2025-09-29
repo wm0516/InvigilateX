@@ -18,7 +18,7 @@
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame pie">
                     <h3>Venues by Floor</h3>    
-                    <canvas id="venueFloorPieChart"></canvas>
+                    <canvas id="venueFloorLineChart"></canvas>
                 </div>
                 <div class="dashboard-frame pie">
                     <h3>Venues by Capacity</h3>
@@ -175,7 +175,7 @@
     const floorLabels = [{{ venues_by_floor | map(attribute='floor') | map('tojson') | join(', ') }}];
     const floorData = [{{ venues_by_floor | map(attribute='count') | join(', ') }}];
 
-    const ctxVenueFloor = document.getElementById('venueFloorPieChart').getContext('2d');
+    const ctxVenueFloor = document.getElementById('venueFloorLineChart').getContext('2d');
     new Chart(ctxVenueFloor, {
         type: 'bar',  // ✅ change to bar chart
         data: {
