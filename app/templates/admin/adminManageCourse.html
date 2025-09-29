@@ -336,22 +336,19 @@ document.addEventListener("DOMContentLoaded", () => {
         populateLecturers(e.target.value, els.editPractical, els.editTutorial);
     });
 
-    // --- Line Chart: Courses by Department ---
+    // --- Bar Chart: Courses by Department ---
     const ctx = document.getElementById('courseDeptLineChart');
     if (ctx) {
         new Chart(ctx, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
                 datasets: [{
                     label: "Courses by Department",
                     data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
-                    borderColor: '#36A2EB',
-                    backgroundColor: '#36A2EB',
-                    tension: 0.3,
-                    fill: false,
-                    borderWidth: 2,
-                    pointRadius: 4
+                    backgroundColor: '#36A2EB', // bar fill color
+                    borderColor: '#1E88E5',     // bar border color
+                    borderWidth: 1
                 }]
             },
             options: {
@@ -362,7 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         callbacks: {
                             label: ({ dataset, parsed, label }) => {
                                 const sum = dataset.data.reduce((a, b) => a + Number(b), 0);
-                                const val = Number(parsed);
+                                const val = Number(parsed.y ?? parsed); // support bar data
                                 return `${label}: ${val} (${(val / sum * 100).toFixed(1)}%)`;
                             }
                         }
@@ -371,9 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
-                        }
+                        ticks: { stepSize: 1 }
                     }
                 }
             }

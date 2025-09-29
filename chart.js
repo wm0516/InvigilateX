@@ -76,3 +76,47 @@ new Chart(document.getElementById('courseDeptPieChart'), {
         }
     }
 });
+
+// --- Line Chart: Courses by Department ---
+const ctx = document.getElementById('courseDeptLineChart');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
+            datasets: [{
+                label: "Courses by Department",
+                data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
+                borderColor: '#36A2EB',
+                backgroundColor: '#36A2EB',
+                tension: 0.3,
+                fill: false,
+                borderWidth: 2,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: ({ dataset, parsed, label }) => {
+                            const sum = dataset.data.reduce((a, b) => a + Number(b), 0);
+                            const val = Number(parsed);
+                            return `${label}: ${val} (${(val / sum * 100).toFixed(1)}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}

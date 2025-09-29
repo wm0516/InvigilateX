@@ -143,7 +143,7 @@ def process_course_row(row):
         practical=str(row['practical lecturer']).strip().upper(),
         tutorial=str(row['tutorial lecturer']).strip().upper(),
         students=int(row['no of students']),
-        status=1,
+        status=True;
     )
 
 # -------------------------------
@@ -310,7 +310,7 @@ def admin_manageCourse():
                     "practical": request.form.get('practicalLecturerSelect', '').strip(),
                     "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
                     "students": safe_int(request.form.get('courseStudent')),
-                    "status": request.form.get('courseStatus', '').strip(),
+                    "status": True
                 }
 
                 success, message = create_course_and_exam(**form_data)
