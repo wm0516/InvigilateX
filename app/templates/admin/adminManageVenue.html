@@ -172,50 +172,43 @@
             .catch(err => console.error(err));
     });
 
+    // --- Pie Chart: Venue by Floow
     const floorLabels = [{{ venues_by_floor | map(attribute='floor') | map('tojson') | join(', ') }}];
     const floorData = [{{ venues_by_floor | map(attribute='count') | join(', ') }}];
 
-    const ctxVenueFloor = document.getElementById('venueFloorLineChart').getContext('2d');
+    const ctxVenueFloor = document.getElementById('venueFloorPieChart').getContext('2d');
     new Chart(ctxVenueFloor, {
-        type: 'bar',  // ✅ change to bar chart
+        type: 'pie',
         data: {
-            labels: floorLabels,   // X-axis
+            labels: floorLabels,
             datasets: [{
                 label: "Venues by Floor",
-                data: floorData,   // Y-axis values
+                data: floorData,
                 backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40'
-                ],
-                borderWidth: 1
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                    '#9966FF', '#FF9F40'
+                ]
             }]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false }, // hide legend since we only have 1 dataset
+                legend: { position: 'bottom' },
                 tooltip: {
                     callbacks: {
                         label: function (context) {
-                            let value = context.parsed.y;
-                            return context.label + ": " + value;
+                            let data = context.dataset.data;
+                            let sum = data.reduce((a, b) => a + b, 0);
+                            let value = context.parsed;
+                            let percentage = ((value / sum) * 100).toFixed(1) + "%";
+                            return context.label + ": " + value + " (" + percentage + ")";
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {stepSize: 2}
                 }
             }
         }
     });
-
+    
     // Extract capacities directly from venue_data
     const capacities = [{{ venue_data | map(attribute='venueCapacity') | join(', ') }}];
 

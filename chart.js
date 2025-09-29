@@ -44,6 +44,36 @@ new Chart(ctxVenueFloor, {
     }
 });
 
+    // Render as line chart
+    const ctxCapacity = document.getElementById('venueCapacityChart').getContext('2d');
+    new Chart(ctxCapacity, {
+        type: 'line',
+        data: {
+            labels: capacityLabels,
+            datasets: [{
+                label: "Venues by Capacity",
+                data: capacityCounts,
+                fill: false,
+                borderColor: '#ac36eb',
+                tension: 0.2, // curve smoothness
+                pointRadius: 5,
+                pointBackgroundColor: '#FF6384'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+
 
 
 // --- Pie Chart: Courses by Department ---
