@@ -143,7 +143,7 @@ def process_course_row(row):
         practical=str(row['practical lecturer']).strip().upper(),
         tutorial=str(row['tutorial lecturer']).strip().upper(),
         students=int(row['no of students']),
-        status=True;
+        status=True
     )
 
 # -------------------------------
