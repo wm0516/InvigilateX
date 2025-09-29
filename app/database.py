@@ -90,8 +90,7 @@ class Venue(db.Model):
         venueCapacity INT NOT NULL
     );
     '''
-    courseStatus = db.Column(db.Boolean, default=True, nullable=False)                                          # Refer to Course Status, when course deleted, it will show False
-
+    
 class Exam(db.Model):
     __tablename__ = 'Exam'
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                         # [PK] Refer to Exam ID
