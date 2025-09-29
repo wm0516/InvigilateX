@@ -127,11 +127,7 @@
 <!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
-        <h4 style="text-align:center;">Edit Existing Course</h4>
-        <h5 style="text-align:center;">
-            Editing the Course Code or Course Section is not allowed.<br>
-            If you wish to make changes, it is recommended to delete the existing entry and re-insert it.
-        </h5><br>
+        <h4 style="text-align:center;">Edit Existing Course</h4><br>
 
         <!-- Prefilled form (like manual section) -->
         <div class="profile-frame">
@@ -180,7 +176,7 @@
                 <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
 
                 <label>Course Status</label>
-                <select id="editStatus" name="editStatus" required>
+                <select id="editcourseStatus" name="courseStatus" required>
                     <option value="" disabled selected>Select Status</option>
                     <option value="1">Activated</option>   <!-- True -->
                     <option value="0">Deactivated</option> <!-- False -->
@@ -283,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editCourseStudents: document.getElementById("editCourseStudents"),
         editPractical: document.getElementById("editPracticalLecturer"),
         editTutorial: document.getElementById("editTutorialLecturer"),
-        editStatus: document.getElementById("editStatus"),
+        editStatus: document.getElementById("editCourseStatus"),
     };
 
     // --- Helper: Populate lecturers ---

@@ -244,7 +244,7 @@ def admin_manageCourse():
                     course_select.courseName = request.form.get('courseName', '').strip()
                     course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
                     course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
-                    course_select.courseStatus = True if request.form.get('editStatus') == '1' else False
+                    course_select.courseStatus = True if request.form.get('courseStatus') == '1' else False
 
                     # Safe int conversion
                     try:
@@ -309,6 +309,7 @@ def admin_manageCourse():
                     "practical": request.form.get('practicalLecturerSelect', '').strip(),
                     "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
                     "students": safe_int(request.form.get('courseStudent')),
+                    "status": request.form.get('courseStatus', '').strip(),
                 }
 
                 success, message = create_course_and_exam(**form_data)
