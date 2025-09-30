@@ -228,7 +228,7 @@
                             {% if row.courseStatus == 1 %}
                                 Activated
                             {% else %}
-                                Inactivated
+                                <span style="color:red;">Inactivated</span>
                             {% endif %}
                         </td>
                         <td>{{ row.courseCodeSection }}</td>
@@ -237,8 +237,17 @@
                         <td>{{ row.courseDepartment }}</td>
                         <td>{{ row.courseStudent }}</td>
                         <td>
-                            Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else "ERROR" }}<br>
-                            Tutorial Lecturer: {{ row.tutorialLecturer.userName if row.tutorialLecturer else "ERROR" }}
+                            {% if row.practicalLecturer %}
+                                Practical Lecturer: {{ row.practicalLecturer.userName }}
+                            {% else %}
+                                <span style="color:red;">ERROR</span>
+                            {% endif %}
+                            <br>
+                            {% if row.tutorialLecturer %}
+                                Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
+                            {% else %}
+                                <span style="color:red;">ERROR</span>
+                            {% endif %}
                         </td>
                         <td>{{ row.courseExamId }}</td>
                     </tr>
