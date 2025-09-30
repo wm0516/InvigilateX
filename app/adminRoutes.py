@@ -897,7 +897,13 @@ def get_staff(id):
 # -------------------------------
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 def admin_manageStaff():
-    user_data = User.query.order_by(User.userStatus.desc(), User.userDepartment.asc()).all()
+    user_data = User.query.order_by(
+        # Case expression: assign priority
+        case((User.userDepartment == "ERROR", 0), else_=1),
+        # Within same priority group, sort by status
+        User.userStatus.desc()
+    ).all()
+
     department_data = Department.query.all()
 
     # === Dashboard Counts ===
