@@ -237,8 +237,8 @@
                         <td>{{ row.courseDepartment }}</td>
                         <td>{{ row.courseStudent }}</td>
                         <td>
-                            Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else "error" }}<br>
-                            Tutorial Lecturer: {{ row.tutorialLecturer.userName if row.tutorialLecturer else "error" }}
+                            Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else "ERROR" }}<br>
+                            Tutorial Lecturer: {{ row.tutorialLecturer.userName if row.tutorialLecturer else "ERROR" }}
                         </td>
                         <td>{{ row.courseExamId }}</td>
                     </tr>

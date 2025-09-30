@@ -270,7 +270,7 @@
 
                     <!-- Department -->
                     <td>
-                        Tutorial Lecturer: {{ row.userDepartment if row.userDepartment else "error" }}
+                        Tutorial Lecturer: {{ row.userDepartment if row.userDepartment else <span style="color:red;">ERROR</span> }}
                     </td>
 
                     <!-- Account Status + Time -->
