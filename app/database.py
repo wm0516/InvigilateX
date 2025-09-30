@@ -208,7 +208,7 @@ class InvigilatorAttendance(db.Model):
     checkOut = db.Column(db.DateTime, nullable=True)                                                               # Check-out time
     remark = db.Column(db.Text, nullable=True)                                                                     # Notes
     timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    timeAction = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    timeAction = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))
     invigilationStatus = db.Column(db.Boolean, default=True)
 
     # Relationships
@@ -222,7 +222,7 @@ class InvigilatorAttendance(db.Model):
         checkOut DATETIME NULL,
         remark TEXT NULL,
         timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        timeAction DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        timeAction DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
         invigilationStatus BOOLEAN DEFAULT TRUE,
         FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
