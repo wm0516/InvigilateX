@@ -231,6 +231,12 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         return False, "Students must be an integer"
     if students < 0:
         return False, "Students cannot be negative"
+        
+    invigilatorNo = None
+    if students > 32:
+        invigilatorNo = 3
+    else: 
+        invigilatorNo = 2
 
     # Only create an Exam if both lecturers are valid
     exam_id = None
@@ -239,7 +245,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
             examVenue=None,
             examStartTime=None,
             examEndTime=None,
-            examNoInvigilator=None
+            examNoInvigilator=invigilatorNo
         )
         db.session.add(new_exam)
         db.session.flush()  # Get the examId before commit
