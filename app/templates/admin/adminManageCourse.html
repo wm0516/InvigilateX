@@ -220,38 +220,28 @@
                     <th>Exam ID</th>
                 </tr>   
             </thead>
-                <tbody>
-                    {% for row in course_data %}
-                    <tr>
-                        <td><span>{{ loop.index }}</span></td>
+            <tbody>
+                {% for row in course_data %}
+                    <tr class="{% if row.courseStatus == 0 or row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none %}error-row-show{% endif %}">
+                        <td>{{ loop.index }}</td>
                         <td>
-                            <span style="{{ '' if row.courseStatus else 'color:red;' }}">
-                                {{ 'Activated' if row.courseStatus else '[Inactivated]' }}
-                            </span>
+                            {% if row.courseStatus == 1 %}
+                                Activated
+                            {% else %}
+                                Inactivated
+                            {% endif %}
                         </td>
-                        <td><span>{{ row.courseCodeSection | default('[ERROR]') }}</span></td>
-                        <td><span>{{ row.courseName | default('[ERROR]') }}</span></td>
-                        <td><span>[{{ row.courseHour | default('ERROR') }}]</span></td>
-                        <td>
-                            <span>
-                                {{ '[' ~ row.courseDepartment ~ ']' if row.courseDepartment else '[ERROR]' }}
-                            </span>
-                        </td>
-                        <td><span>[{{ row.courseStudent | default('ERROR') }}]</span></td>
-                        <td>
-                            <span>
-                                {{ 'Practical Lecturer: ' ~ row.practicalLecturer.userName if row.practicalLecturer else '[ERROR]' }}
-                            </span>
-                            <br>
-                            <span>
-                                {{ 'Tutorial Lecturer: ' ~ row.tutorialLecturer.userName if row.tutorialLecturer else '[ERROR]' }}
-                            </span>
-                        </td>
-                        <td><span>[{{ row.courseExamId | default('ERROR') }}]</span></td>
+                        <td>{{ row.courseCodeSection }}</td>
+                        <td>{{ row.courseName }}</td>
+                        <td>{{ row.courseHour }}</td>
+                        <td>{{ row.courseDepartment }}</td>
+                        <td>{{ row.courseStudent }}</td>
+                        <td>{{ row.practicalLecturer.userName }}</td>
+                        <td>{{ row.tutorialLecturer.userName }}</td>
+                        <td>{{ row.courseExamId }}</td>
                     </tr>
-                    {% endfor %}
-                </tbody>
-
+                {% endfor %}
+            </tbody>
         </table>
     </div>
 </div>
