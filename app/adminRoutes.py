@@ -669,7 +669,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
-                InvigilationStatus=datetime.now(timezone.utc)
+                timeCreate=datetime.now(timezone.utc)
             ))
 
     else:  
