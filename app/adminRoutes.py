@@ -1,6 +1,7 @@
 from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from app import app
 from .backend import *
+from sqlalchemy import case
 from .database import *
 import calendar
 from datetime import  datetime, time
@@ -183,7 +184,7 @@ def get_courseCodeSection(courseCodeSection_select):
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     # === Load basic data safely ===
-    course_data = Course.query.order_by(Course.courseStatus.desc()).all()
+    course_data = Course.query.order_by(Course.courseStatus.asc()).all()
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')
@@ -697,7 +698,16 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-    exam_data = exam_data_query.order_by(Exam.examStartTime.nullsfirst()).all()
+
+    exam_data = (
+        exam_data_query
+        .order_by(
+            case((Exam.examStartTime == None, 0), else_=1),  # put NULL first
+            Exam.examStartTime                               # then sort by actual date
+        )
+        .all()
+    )
+
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
