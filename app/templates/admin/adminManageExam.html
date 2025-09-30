@@ -240,7 +240,7 @@
             </thead>    
             <tbody>
                 {% for row in exam_data %}
-                    <tr>
+                    <tr class="{% if row.examNoInvigilator == 0 %}error-row-color{% endif %}">
                         <td>{{ loop.index }}</td>
                         <td>
                             Course Name        : {{ row.course.courseName }} <br>

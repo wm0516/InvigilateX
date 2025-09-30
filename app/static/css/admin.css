@@ -291,6 +291,10 @@ html, body {
 }
 
 
+.error-row-show {
+    border: 2px solid red;
+    background-color: #ffe5e5; /* optional light red background */
+}
 
 
 
