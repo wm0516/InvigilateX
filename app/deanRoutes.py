@@ -48,7 +48,7 @@ def dean_mergeTimetable():
     
     # Get all timetables for users in the same department
     timetables = Timetable.query.join(User, Timetable.user_id == User.userId).filter(User.userDepartment == dean_user.userDepartment).all()
-    
+        
     # Flatten all rows into a single list
     timetable_rows = []
     for t in timetables:
