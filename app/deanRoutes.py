@@ -18,9 +18,9 @@ bcrypt = Bcrypt()
 @app.route('/dean/timetable', methods=['GET', 'POST'])
 def dean_timetable():
     deanId = session.get('user_id')
-    timetable_data = Timetable.query.filter(user_id=deanId).all()
-    # timetable = Invigilation.query.all()
-    return render_template('dean/deanTimetable.html', active_tab='dean_timetabletab', timetable_data=timetable_data) #, timetable=timetable)
+    timetable = Timetable.query.filter_by(user_id=deanId).first()
+    timetable_rows = timetable.rows if timetable else []
+    return render_template('dean/deanTimetable.html', active_tab='dean_timetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
 
 @app.route('/dean/invigilationReport', methods=['GET', 'POST'])
 def dean_invigilationReport():
