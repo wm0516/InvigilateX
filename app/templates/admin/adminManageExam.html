@@ -240,7 +240,7 @@
             </thead>    
             <tbody>
                 {% for row in exam_data %}
-                    <tr class="{% if row.examNoInvigilator == 0 %}error-row-show{% endif %}">
+                    <tr class="{% if row.examNoInvigilator == 0 and row.examStartTime and row.examEndTime and row.examVenue is NULL }error-row-show{% endif %}">
                         <td>{{ loop.index }}</td>
                         <td>
                             Course Name        : {{ row.course.courseName }} <br>
