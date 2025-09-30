@@ -236,8 +236,10 @@
                         <td>{{ row.courseHour }}</td>
                         <td>{{ row.courseDepartment }}</td>
                         <td>{{ row.courseStudent }}</td>
-                        <td>{{ row.practicalLecturer.userName }}</td>
-                        <td>{{ row.tutorialLecturer.userName }}</td>
+                        <td>
+                            Practical Lecturer: {{ row.practicalLecturer.userName if row.practicalLecturer else "error" }}<br>
+                            Tutorial Lecturer: {{ row.tutorialLecturer.userName if row.tutorialLecturer else "error" }}
+                        </td>
                         <td>{{ row.courseExamId }}</td>
                     </tr>
                 {% endfor %}
