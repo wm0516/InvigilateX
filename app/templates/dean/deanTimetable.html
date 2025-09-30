@@ -18,42 +18,22 @@
                 </tr>
             </thead>
             <tbody>
-            {% for day in week_days %}
-                <tr>
-                    <td><strong>{{ day }}</strong></td>
-                    {% set i = 0 %}
-                    {% while i < time_slots|length %}
-                        {% set time = time_slots[i] %}
-                        {% set cell_rendered = False %}
-                        {% for row in timetable_rows %}
-                            {% set class_day = row.classDay %}
-                            {% set class_time = row.classTime %}
-                            {% set start_time = class_time.split('-')[0] %}
-                            {% set end_time = class_time.split('-')[1] %}
-                            {% if class_day == day and time == start_time %}
-                                {% set start_index = time_slots.index(start_time) %}
-                                {% set end_index = time_slots.index(end_time) %}
-                                {% set colspan = end_index - start_index %}
-                                <td colspan="{{ colspan }}">
-                                    <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                        <strong>{{ row.lecturerName }}</strong><br>
-                                        <strong>[{{ row.classType }}]</strong><br>
-                                        {{ row.courseName }}<br>
-                                        Room: {{ row.classRoom }}
-                                    </div>
-                                </td>
-                                {% set i = i + colspan %}
-                                {% set cell_rendered = True %}
-                                {% break %}
-                            {% endif %}
+                {% for day in week_days %}
+                    <tr>
+                        <td><strong>{{ day }}</strong></td>
+                        {% set ns = namespace(displayed=[]) %} {# Move ns outside the time loop #}
+                        {% for time in time_slots %}
+                            <td>
+                                {% for row in timetable_rows %}
+                                    <strong>{{ row.lecturerName }}</strong><br>
+                                    <strong>[{{ row.classType }}]</strong><br>
+                                    {{ row.courseName }}<br>
+                                    Room: {{ row.classRoom }}
+                                {% endfor %}
+                            </td>
                         {% endfor %}
-                        {% if not cell_rendered %}
-                            <td></td>
-                            {% set i = i + 1 %}
-                        {% endif %}
-                    {% endwhile %}
-                </tr>
-            {% endfor %}
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
