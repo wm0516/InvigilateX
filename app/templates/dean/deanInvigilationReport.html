@@ -15,7 +15,7 @@
                     <th>Invigilator Details</th>
                     <th>Check-in Time</th>
                     <th>Check-out Time</th>
-                    <th>Attendance Status</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -64,7 +64,10 @@
                             <td>{{ att.checkOut }}</td>
 
                             <!-- Attendance Status -->
-                            <td>{{ att.remark }}</td>
+                            <td>
+                                Attendance Status: {{ att.remark }}<br>
+                                Invigilator Status: {{ att.invigilatorStatus }}
+                            </td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
