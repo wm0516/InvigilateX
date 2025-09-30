@@ -44,14 +44,6 @@ def dean_timetable():
 @app.route('/dean/mergeTimetable', methods=['GET', 'POST'])
 def dean_mergeTimetable():
     deanId = session.get('user_id')
-    timetable = Timetable.query.filter_by(user_id.userDepartment=deanId.userDepartment).first()
-    timetable_rows = timetable.rows if timetable else []
-    return render_template('dean/deanMergeTimetable.html', active_tab='dean_mergeTimetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
-
-
-@app.route('/dean/mergeTimetable', methods=['GET', 'POST'])
-def dean_mergeTimetable():
-    deanId = session.get('user_id')
     timetable = Timetable.query.join(User).filter(User.userDepartment == deanId.userDepartment).all()
     
     # Flatten rows from all matching timetables
