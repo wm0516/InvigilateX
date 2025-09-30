@@ -49,7 +49,7 @@ class User(db.Model):
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
     userStatus = db.Column(db.Integer, default=0)                                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
-    userRegisterDateTime = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+    userRegisterDateTime = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))         # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
@@ -184,6 +184,9 @@ class InvigilationReport(db.Model):
     invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)           # [PK] Refer to Invigilation Report ID
     examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Refer to Which Exam, and with the details of
     remarks = db.Column(db.Text, nullable=True)                                                  # Remarks on session
+    timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    timeAction = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    invigilationStatus = db.Column(db.Boolean, default=True)
 
     # Relationships
     attendances = db.relationship("InvigilatorAttendance", backref="report", cascade="all, delete-orphan")
@@ -192,6 +195,9 @@ class InvigilationReport(db.Model):
         invigilationReportId INT AUTO_INCREMENT PRIMARY KEY,
         examId INT NOT NULL,
         remarks TEXT NULL,
+        timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        timeAction DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        invigilationStatus BOOLEAN DEFAULT TRUE,
         FOREIGN KEY (examId) REFERENCES Exam(examId)
     );
     '''
