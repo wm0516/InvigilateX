@@ -344,7 +344,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     delete_exam_related(exam.examId, commit=False)
 
     # Create new report
-    new_report = InvigilationReport(examId=exam.examId,timeCreate=datetime.now(timezone.utc))
+    new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
     db.session.flush()
 
@@ -393,7 +393,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
         attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
-            invigilatorId=chosen.userId
+            invigilatorId=chosen.userId,
+            timeCreate=datetime.now(timezone.utc)
         )
         db.session.add(attendance)
 

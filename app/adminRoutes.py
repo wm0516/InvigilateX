@@ -668,7 +668,8 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
-                invigilatorId=inv.userId
+                invigilatorId=inv.userId,
+                InvigilationStatus=datetime.now(timezone.utc)
             ))
 
     else:  
@@ -1411,7 +1412,7 @@ def get_all_attendances():
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .filter(InvigilationReport.invigilationStatus == True)
+        .filter(InvigilatorAttendance.invigilationStatus==True)
         .all()
     )
 
@@ -1420,18 +1421,23 @@ def get_all_attendances():
 # -------------------------------
 def calculate_invigilation_stats():
     # Use LEFT OUTER JOIN to keep all InvigilatorAttendance rows
-    query = db.session.query(
-        InvigilatorAttendance.attendanceId,
-        InvigilatorAttendance.invigilatorId,    
-        InvigilatorAttendance.checkIn,
-        InvigilatorAttendance.checkOut,
-        Exam.examStartTime,
-        Exam.examEndTime,
-        InvigilatorAttendance.reportId
-    ).outerjoin(Exam, Exam.examId == InvigilatorAttendance.reportId).all()
+    query = (
+        db.session.query(
+            InvigilatorAttendance.attendanceId,
+            InvigilatorAttendance.invigilatorId,
+            InvigilatorAttendance.checkIn,
+            InvigilatorAttendance.checkOut,
+            Exam.examStartTime,
+            Exam.examEndTime,
+            InvigilatorAttendance.reportId
+        )
+        .outerjoin(Exam, Exam.examId == InvigilatorAttendance.reportId)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .all()
+    )
 
     # Total reports and total assigned invigilators
-    total_report = InvigilationReport.query.filter(InvigilationReport.invigilationStatus == True).count()
+    total_report = InvigilationReport.query.count()
     total_invigilator = InvigilatorAttendance.query.count()
 
     stats = {

@@ -184,9 +184,7 @@ class InvigilationReport(db.Model):
     invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)           # [PK] Refer to Invigilation Report ID
     examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Refer to Which Exam, and with the details of
     remarks = db.Column(db.Text, nullable=True)                                                  # Remarks on session
-    timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    timeAction = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    invigilationStatus = db.Column(db.Boolean, default=True)
+
 
     # Relationships
     attendances = db.relationship("InvigilatorAttendance", backref="report", cascade="all, delete-orphan")
@@ -195,9 +193,6 @@ class InvigilationReport(db.Model):
         invigilationReportId INT AUTO_INCREMENT PRIMARY KEY,
         examId INT NOT NULL,
         remarks TEXT NULL,
-        timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        timeAction DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        invigilationStatus BOOLEAN DEFAULT TRUE,
         FOREIGN KEY (examId) REFERENCES Exam(examId)
     );
     '''
@@ -212,6 +207,9 @@ class InvigilatorAttendance(db.Model):
     checkIn = db.Column(db.DateTime, nullable=True)                                                                # Check-in time
     checkOut = db.Column(db.DateTime, nullable=True)                                                               # Check-out time
     remark = db.Column(db.Text, nullable=True)                                                                     # Notes
+    timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    timeAction = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    invigilationStatus = db.Column(db.Boolean, default=True)
 
     # Relationships
     invigilator = db.relationship("User")
@@ -223,6 +221,9 @@ class InvigilatorAttendance(db.Model):
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
         remark TEXT NULL,
+        timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        timeAction DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        invigilationStatus BOOLEAN DEFAULT TRUE,
         FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
     );
