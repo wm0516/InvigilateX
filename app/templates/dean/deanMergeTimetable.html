@@ -19,13 +19,13 @@
             </thead>
             <tbody>
                 {% for day in week_days %}
-                    {% if timetable_data %}
+                    {% if timetable_rows %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
                         {% for time in time_slots %}
                         <td>
                             {% set ns = namespace(displayed=[]) %}
-                            {% for row in timetable_data %}
+                            {% for row in timetable_rows %}
                                 {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
                                     {% set class_day = row.classDay %}
                                     {% set class_time = row.classTime %}
