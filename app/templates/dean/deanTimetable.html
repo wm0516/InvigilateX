@@ -25,10 +25,18 @@
                         {% for time in time_slots %}
                             <td>
                                 {% for row in timetable_rows %}
-                                    <strong>{{ row.lecturerName }}</strong><br>
-                                    <strong>[{{ row.classType }}]</strong><br>
-                                    {{ row.courseName }}<br>
-                                    Room: {{ row.classRoom }}
+                                    {% if class_day == day and time == start_time %}
+                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                        {% if key not in ns.displayed %}
+                                            {% set ns.displayed = ns.displayed + [key] %}
+                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                                <strong>{{ row.lecturerName }}</strong><br>
+                                                <strong>[{{ row.classType }}]</strong><br>
+                                                {{ row.courseName }}<br>
+                                                Room: {{ row.classRoom }}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
                                 {% endfor %}
                             </td>
                         {% endfor %}
