@@ -44,7 +44,8 @@ def dean_timetable():
 @app.route('/dean/mergeTimetable', methods=['GET', 'POST'])
 def dean_mergeTimetable():
     deanId = session.get('user_id')
-    timetable = Timetable.query.join(User).filter(User.userDepartment == deanId.userDepartment).all()
+    dean_user = User.query.get(deanId)
+    timetable = Timetable.query.join(User).filter(User.userDepartment == dean_user.userDepartment).all()
     
     # Flatten rows from all matching timetables
     timetable_rows = []
