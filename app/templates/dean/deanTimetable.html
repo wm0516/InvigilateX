@@ -25,6 +25,10 @@
                         {% for time in time_slots %}
                             <td>
                                 {% for row in timetable_rows %}
+                                    {% set class_day = row.classDay %}
+                                    {% set class_time = row.classTime %}
+                                    {% set start_time = class_time.split('-')[0] %}
+                                    {% set end_time = class_time.split('-')[1] %}   
                                     {% if class_day == day and time == start_time %}
                                         {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                         {% if key not in ns.displayed %}
