@@ -282,7 +282,7 @@
                         {% elif row.userStatus|int == 2 %}
                             <span style="color:red;">[DELETED]</span>
                         {% endif %}
-                        <br>Date Effective: {{ row.userRegisterDateTime.split(" ")[0] }}
+                        <br>Date Effective: {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
                     </td>
 
                     <!-- Invigilation -->
