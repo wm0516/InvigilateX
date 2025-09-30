@@ -699,16 +699,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-
-    exam_data = (
-        exam_data_query
-        .order_by(
-            case((Exam.examStartTime == None, 0), else_=1),  # put NULL first
-            Exam.examStartTime                               # then sort by actual date
-        )
-        .all()
-    )
-
+    exam_data = exam_data_query.order_by(Exam.examId.asc()).all()
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
