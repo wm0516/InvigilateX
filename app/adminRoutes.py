@@ -887,7 +887,7 @@ def get_staff(id):
 # -------------------------------
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 def admin_manageStaff():
-    user_data = User.query.order_by(User.userLevel.desc()).all()
+    user_data = User.query.order_by(User.userStatus.desc()).all()
     department_data = Department.query.all()
 
     # === Dashboard Counts ===
