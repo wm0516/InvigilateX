@@ -9,13 +9,13 @@
             <thead>
                 <tr>
                     <th>Exam ID</th>
-                    <th>Course Details</th>
-                    <th>Exam Details</th>
+                    <th>Course & Exam Details</th>
                     <th>Number of Invigilators</th>
                     <th>Invigilator Details</th>
                     <th>Check-in Time</th>
                     <th>Check-out Time</th>
-                    <th>Status</th>
+                    <th>Attendance Status</th>
+                    <th>Invigilator Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,15 +27,11 @@
                                 <!-- Exam ID -->
                                 <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
                             
-                                <!-- Course Details -->
+                                <!-- Course & Exam Details -->
                                 <td rowspan="{{ rowspan }}">
                                     Course Name        : {{ att.report.exam.course.courseName }} <br>
                                     Course Code/Section: {{ att.report.exam.course.courseCodeSection }}<br>
-                                    Number of Students : {{ att.report.exam.course.courseStudent }}
-                                </td>
-
-                                <!-- Exam Details -->
-                                <td rowspan="{{ rowspan }}">
+                                    Number of Students : {{ att.report.exam.course.courseStudent }}<br>
                                     Exam Date   : [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }}] - [{{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}] <br>      
                                     Exam Day    : [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
                                     Exam Time   : [{{ att.report.exam.examStartTime.strftime("%H:%M") }}] - [{{ att.report.exam.examEndTime.strftime("%H:%M") }}] <br>
@@ -64,9 +60,14 @@
                             <td>{{ att.checkOut }}</td>
 
                             <!-- Attendance Status -->
+                            <td>{{ att.remark }}</td>
+                            <td>{{ att.invigilationStatus }}</td>
                             <td>
-                                Attendance Status: {{ att.remark }}<br>
-                                Invigilator Status: {{ att.invigilationStatus }}
+                                {% if att.invigilationStatus == 1 %}
+                                    Accepted
+                                {% else %}
+                                    Declined
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
