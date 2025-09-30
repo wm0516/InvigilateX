@@ -183,7 +183,7 @@ def get_courseCodeSection(courseCodeSection_select):
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     # === Load basic data safely ===
-    course_data = Course.query.order_by(Course.courseDepartment.asc()).all()
+    course_data = Course.query.order_by(Course.courseStatus.desc()).all()
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')
@@ -697,7 +697,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-    exam_data = exam_data_query.order_by(Exam.examId.asc()).all()
+    exam_data = exam_data_query.order_by(Exam.examStartTime.nullsfirst()).all()
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
