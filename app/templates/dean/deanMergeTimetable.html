@@ -22,7 +22,7 @@
                     {% if timetable_rows %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
-                        {% for time in time_slots %}
+                        {% for time in time_slots %}    
                         <td>
                             {% set ns = namespace(displayed=[]) %}
                             {% for row in timetable_rows %}
