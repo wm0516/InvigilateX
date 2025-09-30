@@ -14,18 +14,30 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
+def get_all_attendances():
+    deanId = session.get('user_id')
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(InvigilatorAttendance.invigilatorId.userDepartment == deanId.userDepartment)
+        .filter(InvigilatorAttendance.invigilationStatus==True)
+        .all()
+    )
 
 @app.route('/dean/timetable', methods=['GET', 'POST'])
 def dean_timetable():
     deanId = session.get('user_id')
     timetable = Timetable.query.filter_by(user_id=deanId).first()
     timetable_rows = timetable.rows if timetable else []
-    flash(f'{timetable_rows}','success')
     return render_template('dean/deanTimetable.html', active_tab='dean_timetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
 
 @app.route('/dean/invigilationReport', methods=['GET', 'POST'])
 def dean_invigilationReport():
-    return render_template('dean/deanInvigilationReport.html', active_tab='dean_invigilationReporttab')
+    attendances = get_all_attendances()
+    return render_template('dean/deanInvigilationReport.html', active_tab='dean_invigilationReporttab', attendances=attendances)
+
+
 
 @app.route('/dean/profile', methods=['GET', 'POST'])
 def dean_profile():

@@ -3,65 +3,74 @@
 {% block title %}Dean Invigilation Report{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <h2>Timetables</h2>
-
+    <h3>List of Lecturer Invigilation Report</h3>
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
                 <tr>
-                    <th>Date / Time</th>
-                    <th>08:00 AM</th>
-                    <th>09:00 AM</th>
-                    <th>10:00 AM</th>
-                    <th>11:00 AM</th>
-                    <th>12:00 PM</th>
-                    <th>13:00 PM</th>
-                    <th>14:00 PM</th>
-                    <th>15:00 PM</th>
-                    <th>16:00 PM</th>
-                    <th>17:00 PM</th>
-                    <th>18:00 PM</th>
+                    <th>Exam ID</th>
+                    <th>Course Details</th>
+                    <th>Exam Details</th>
+                    <th>Number of Invigilators</th>
+                    <th>Invigilator Details</th>
+                    <th>Check-in Time</th>
+                    <th>Check-out Time</th>
+                    <th>Attendance Status</th>
                 </tr>
             </thead>
             <tbody>
-                {% for row in user_data %}
-                <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
-                    <td>{{ row.userId }}</td>
-                    <td>{{ row.userName }}</td>
-                    <td>{{ row.userDepartment }}</td>
+                {% for exam, grouped in attendances|groupby("report.exam.examId") %}
+                    {% set rowspan = grouped|length %}
+                    {% for att in grouped %}
+                        <tr>
+                            {% if loop.first %}
+                                <!-- Exam ID -->
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
+                            
+                                <!-- Course Details -->
+                                <td rowspan="{{ rowspan }}">
+                                    Course Name        : {{ att.report.exam.course.courseName }} <br>
+                                    Course Code/Section: {{ att.report.exam.course.courseCodeSection }}<br>
+                                    Number of Students : {{ att.report.exam.course.courseStudent }}
+                                </td>
 
-                    <!-- Role Name based on userLevel -->
-                    <td>
-                        {% if row.userLevel == 1 %}
-                            Lecturer
-                        {% elif row.userLevel == 2 %}
-                            Dean
-                        {% elif row.userLevel == 3 %}
-                            Admin
-                        {% else %}
-                            Unknown
-                        {% endif %}
-                    </td>
+                                <!-- Exam Details -->
+                                <td rowspan="{{ rowspan }}">
+                                    Exam Date   : [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }}] - [{{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}] <br>      
+                                    Exam Day    : [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
+                                    Exam Time   : [{{ att.report.exam.examStartTime.strftime("%H:%M") }}] - [{{ att.report.exam.examEndTime.strftime("%H:%M") }}] <br>
+                                    Exam Period : [{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h 
+                                                {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 60) // 3600 }}m]<br>
+                                    Exam Venue  : [{{ att.report.exam.examVenue }}]
+                                </td>
 
-                    <td>{{ row.userEmail }}</td>
-                    <td>{{ row.userContact }}</td>
+                                <!-- Number of Invigilators -->
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
+                            {% endif %}
 
-                    <!-- User status: Activated / Deactivated -->
-                    <td>
-                        {% if row.userStatus|int == 1 %}
-                            Activated
-                        {% else %}
-                            Deactivated
-                        {% endif %}
-                    </td>
-                </tr>
+                            <!-- Invigilator Details -->
+                            <td>
+                                ID     : {{ att.invigilator.userId }} <br>
+                                Name   : {{ att.invigilator.userName }} <br>
+                                Contact: {{ att.invigilator.userContact }} <br>
+                                Gender : {{ att.invigilator.userGender }}
+                            </td>
+                            
+                            <!-- Check-in Time -->
+                            <td>{{ att.checkIn }}</td>
+
+                            <!-- Check-out Time -->
+                            <td>{{ att.checkOut }}</td>
+
+                            <!-- Attendance Status -->
+                            <td>{{ att.remark }}</td>
+                        </tr>
+                    {% endfor %}
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
 <script src="{{ url_for('static', filename='js/function.js') }}"></script>
-
-
 {% endblock %}
