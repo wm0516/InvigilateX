@@ -43,13 +43,15 @@ def dean_timetable():
 
 @app.route('/dean/mergeTimetable', methods=['GET', 'POST'])
 def dean_mergeTimetable():
-    deanId = session.get('user_id')
-    dean_user = User.query.get(deanId)
-    timetable = Timetable.query.join(User).filter(User.userDepartment == dean_user.userDepartment).all()
+    dean_id = session.get('user_id')
+    dean_user = User.query.get(dean_id)
     
-    # Flatten rows from all matching timetables
+    # Get all timetables for users in the same department
+    timetables = Timetable.query.join(User, Timetable.user_id == User.userId).filter(User.userDepartment == dean_user.userDepartment).all()
+    
+    # Flatten all rows into a single list
     timetable_rows = []
-    for t in timetable:
+    for t in timetables:
         timetable_rows.extend(t.rows)
     
     return render_template('dean/deanMergeTimetable.html', active_tab='dean_mergeTimetabletab', timetable_rows=timetable_rows)
