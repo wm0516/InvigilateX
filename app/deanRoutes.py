@@ -41,6 +41,14 @@ def dean_timetable():
     return render_template('dean/deanTimetable.html', active_tab='dean_timetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
 
 
+@app.route('/dean/mergeTimetable', methods=['GET', 'POST'])
+def dean_mergeTimetable():
+    deanId = session.get('user_id')
+    timetable = Timetable.query.filter_by(user_id=deanId).first()
+    timetable_rows = timetable.rows if timetable else []
+    return render_template('dean/deanMergeTimetable.html', active_tab='dean_mergeTimetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
+
+
 @app.route('/dean/profile', methods=['GET', 'POST'])
 def dean_profile():
     deanId = session.get('user_id')

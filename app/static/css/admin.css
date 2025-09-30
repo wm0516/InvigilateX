@@ -263,6 +263,7 @@ html, body {
     border-bottom: 1px solid #e0e0e0;
     color: #333;
     font-size: 0.95em;
+    line-height: 1.1;
 }
 
 .user-data-table tr:last-child td {

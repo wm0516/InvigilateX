@@ -62,7 +62,7 @@
                             <td>{{ att.remark }}</td>
                             <td>
                                 {% if att.invigilationStatus == 1 %}
-                                    <span style="color: white; background-color: green; padding: 2px 6px; border-radius: 3px;">
+                                    <span style="color: white; background-color: #16bf42; padding: 2px 6px; border-radius: 3px;">
                                         Accepted
                                     </span>
                                 {% else %}
@@ -76,6 +76,4 @@
         </table>
     </div>
 </div>
-
-<script src="{{ url_for('static', filename='js/function.js') }}"></script>
 {% endblock %}

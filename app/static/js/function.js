@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/dean/timetable': 'dean_timetabletab',
     '/dean/invigilationReport': 'dean_invigilationReporttab',
     '/dean/profile': 'dean_profiletab',
+    '/dean/mergeTimetable': 'dean_mergeTimetabletab',
 
     '/hop/home': 'hop_hometab',
     '/hop/timetable': 'hop_timetabletab',
