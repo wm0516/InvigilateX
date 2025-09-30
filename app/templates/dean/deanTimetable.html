@@ -21,15 +21,15 @@
                 {% for day in week_days %}
                     <tr>
                         <td><strong>{{ day }}</strong></td>
-                        {% set ns = namespace(displayed=[]) %} {# Move ns outside the time loop #}
                         {% for time in time_slots %}
                             <td>
+                                {% set ns = namespace(displayed=[]) %}
                                 {% for row in timetable_rows %}
                                     {% set class_day = row.classDay %}
                                     {% set class_time = row.classTime %}
                                     {% set start_time = class_time.split('-')[0] %}
-                                    {% set end_time = class_time.split('-')[1] %}   
-                                    {% if class_day == day and time == start_time %}
+                                    {% set end_time = class_time.split('-')[1] %}
+                                    {% if class_day == day and time >= start_time and time < end_time %}
                                         {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                         {% if key not in ns.displayed %}
                                             {% set ns.displayed = ns.displayed + [key] %}
