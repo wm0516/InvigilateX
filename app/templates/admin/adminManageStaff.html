@@ -110,7 +110,7 @@
                     <option value="" disabled selected>Select Role</option>
                     <option value="1">LECTURER</option>
                     <option value="2">DEAN</option>
-                    <option value="3">(HOP) HEAD OF PROGRAM</option>
+                    <option value="3">(HOP) HEAD OF PROGRAMME</option>
                     <option value="4">ADMIN</option>
                 </select><br>
 
@@ -186,7 +186,7 @@
                     <option value="" disabled selected>Select Role</option>
                     <option value="1">LECTURER</option>
                     <option value="2">DEAN</option>
-                    <option value="3">(HOP) HEAD OF PROGRAM</option>
+                    <option value="3">(HOP) HEAD OF PROGRAMME</option>
                     <option value="4">ADMIN</option>
                 </select><br>
 
@@ -244,9 +244,14 @@
             </thead>
             <tbody>
                 {% for row in user_data %}
-                <tr>
-                <tr class="{% if row.userStatus == 2 or row.userDepartment is none %}error-row-show{% endif %}">
-                    <td>{{ loop.index }}</td>
+                <tr class="
+                    {% if row.userStatus == 2 %}
+                        inactive-row-show
+                    {% elif row.userStatus == 1 or row.userDepartment is none %}
+                        error-row-show
+                    {% endif %}
+                ">                    
+                    <td>{{ loop.index }}</td>   
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userGender }}</td>
@@ -258,7 +263,7 @@
                         {% if row.userLevel == 1 %}
                             LECTURER
                         {% elif row.userLevel == 2 %}
-                            DEAN
+                            DEAN/HOS
                         {% elif row.userLevel == 3 %}
                             HOP
                         {% elif row.userLevel == 4 %}
@@ -280,9 +285,9 @@
                         {% elif row.userStatus|int == 1 %}
                             [Activated]
                         {% elif row.userStatus|int == 2 %}
-                            <span style="color:red;">[DELETED]</span>
+                            [DELETED]
                         {% endif %}
-                        <br>Date Effective: {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
+                        <br>Date {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
                     </td>
 
                     <!-- Invigilation -->

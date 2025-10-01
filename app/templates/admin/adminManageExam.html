@@ -4,8 +4,8 @@
 {% set show_dashboard = true %}
 {% set show_manual = true %}
 {% set show_edit = true %}
-{% block title %}Admin ManageExam{% endblock %}
-{% block head_title %}<h2>Manage Exam</h2>{% endblock %}
+{% block title %}Admin ManageExams{% endblock %}
+{% block head_title %}<h2>Manage Exams</h2>{% endblock %}
 
 {% block dashboard_section %}
 <form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST">
@@ -146,7 +146,7 @@
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
-        <h4 style="text-align: center;">Edit Existing Exam</h4>
+        <h4 style="text-align: center;">Edit Existing Exams</h4>
         <div class="profile-frame">
             <div class="form-left">
                 <label for="editExamCourseSection">Select Exam Course/Section - Course Name</label>
@@ -226,7 +226,7 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>List of Exam</h2>
+    <h2>List of Exams</h2>
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>

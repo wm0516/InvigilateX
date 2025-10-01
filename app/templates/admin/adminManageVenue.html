@@ -16,6 +16,10 @@
 
             <!-- Overview -->
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="dashboard-frame">
+                    <h3>Total Venues</h3>
+                    <p class="dashboard-text">{{ venue_data|length }}</p>
+                </div>
                 <div class="dashboard-frame pie">
                     <h3>Venues by Floor</h3>    
                     <canvas id="venueFloorPieChart"></canvas>
@@ -23,10 +27,6 @@
                 <div class="dashboard-frame pie">
                     <h3>Venues by Capacity</h3>
                     <canvas id="venueCapacityChart"></canvas>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Total Venues</h3>
-                    <p class="dashboard-text">{{ venue_data|length }}</p>
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
         options: {
             responsive: true,
             plugins: {
-                legend: { position: 'right' }
+                legend: { position: 'top' }
             },
             scales: {
                 y: {
