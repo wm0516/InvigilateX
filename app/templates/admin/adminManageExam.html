@@ -243,35 +243,35 @@
                     <tr class="{% if row.examNoInvigilator == 0 or row.examStartTime is none or row.examEndTime is none or row.examVenue is none %}error-row-show{% endif %}">
                         <td>{{ loop.index }}</td>
                         <td>
-                            Course Name        : {{ row.course.courseName }} <br>
-                            Course Code/Section: {{ row.course.courseCodeSection }}<br>
-                            Program Code       : {{ row.course.courseDepartment }} <br>
-                            Number of Students : {{ row.course.courseStudent }} <br>
-                            Practical Lecturer : {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }} <br>
-                            Tutorial Lecturer  : {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}
+                            Course Name        : <strong>{{ row.course.courseName }}</strong><br>
+                            Course Code/Section: <strong>{{ row.course.courseCodeSection }}</strong><br>
+                            Program Code       : <strong>{{ row.course.courseDepartment }}</strong><br>
+                            Number of Students : <strong>{{ row.course.courseStudent }}</strong><br>
+                            Practical Lecturer : <strong>{{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }}</strong><br>
+                            Tutorial Lecturer  : <strong>{{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}</strong>
                         </td>
                         <td>[{{ row.examId }}]</td>
 
                         <!-- Exam Details -->
                         <td>
                             {% if row.examStartTime and row.examEndTime %}
-                                Exam Date  : [{{ row.examStartTime.strftime("%Y-%m-%d") }}] - [{{ row.examEndTime.strftime("%Y-%m-%d") }}]<br>      
-                                Exam Day   : [{{ row.examStartTime.strftime("%A") }}] - [{{ row.examEndTime.strftime("%A") }}] <br>
-                                Exam Time  : [{{ row.examStartTime.strftime("%H:%M") }}] - [{{ row.examEndTime.strftime("%H:%M") }}] <br>
-                                Exam Period: [{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m] <br>
+                                Exam Date  : <strong>{{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong><br>      
+                                Exam Day   : <strong>{{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong><br>
+                                Exam Time  : <strong>{{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong><br>
+                                Exam Period: <strong>{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m </strong><br>
                             {% else %}
-                                <span style="color:red;">Exam details not yet assigned</span><br>
+                                <span class="frame-red">Exam details not yet assigned</span><br>
                             {% endif %}
                             {% if row.examVenue %}
-                                Exam Venue : [{{ row.examVenue }}]
+                                Exam Venue : <strong>{{ row.examVenue }}</strong>
                             {% else %}
-                                <span style="color:red;">Exam Venue : [ERROR]</span>
+                                <span class="frame-red">Exam Venue : [ERROR]</span>
                             {% endif %}
                         </td>
                     
                         <td>
                             {% if row.examNoInvigilator == 0 %}
-                                <span style="color:red;">Error: No Invigilator Assigned!</span>
+                                <span class="frame-red">Error: No Invigilator Assigned!</span>
                             {% else %}
                                 [{{ row.examNoInvigilator }}]
                             {% endif %}

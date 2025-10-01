@@ -231,6 +231,7 @@
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Account Status</th> 
                     <th>User ID</th>
                     <th>Full Name</th>
                     <th>Gender</th>
@@ -238,7 +239,6 @@
                     <th>Contact Number</th>
                     <th>Role Position</th>
                     <th>Department</th>
-                    <th>Account Status</th> 
                     <th>Invigilation Time</th>
                 </tr>
             </thead>
@@ -247,11 +247,24 @@
                 <tr class="
                     {% if row.userStatus == 2 %}
                         inactive-row-show
-                    {% elif row.userStatus == 1 or row.userDepartment is none %}
+                    {% elif row.userStatus == 0 or row.userDepartment is none %}
                         error-row-show
                     {% endif %}
                 ">                    
-                    <td>{{ loop.index }}</td>   
+                    <td>{{ loop.index }}</td> 
+                    
+                    <!-- Account Status + Time -->
+                    <td>
+                        {% if row.userStatus|int == 0 %}
+                            [Deactivated]
+                        {% elif row.userStatus|int == 1 %}
+                            [Activated]
+                        {% elif row.userStatus|int == 2 %}
+                            <span class="frame-red">[DELETED]</span>
+                        {% endif %}
+                        <br>Date {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
+                    </td>
+                    
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userGender }}</td>
@@ -276,18 +289,6 @@
                     <!-- Department -->
                     <td>
                         {{ row.userDepartment if row.userDepartment else '<span style="color:red;">ERROR</span>' | safe }}
-                    </td>
-
-                    <!-- Account Status + Time -->
-                    <td>
-                        {% if row.userStatus|int == 0 %}
-                            [Deactivated]
-                        {% elif row.userStatus|int == 1 %}
-                            [Activated]
-                        {% elif row.userStatus|int == 2 %}
-                            [DELETED]
-                        {% endif %}
-                        <br>Date {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
                     </td>
 
                     <!-- Invigilation -->

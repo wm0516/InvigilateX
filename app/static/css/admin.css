@@ -295,7 +295,7 @@ html, body {
 
 
 .error-row-show {
-    background-color: #ffcbcb; /* light red for errors */
+    background-color: #fddcdc; /* light red for errors */
 }
 .inactive-row-show {
     background-color: lightgrey; /* light gray for inactive */
