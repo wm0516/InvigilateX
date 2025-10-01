@@ -226,14 +226,16 @@ html, body {
 
 .user-table-container {
     margin: 20px 0;
-    overflow-x: auto;
+    max-height: 400px;     /* 👈 set your preferred height */
+    overflow-y: auto;      /* enable vertical scrolling */
+    overflow-x: auto;      /* keep your horizontal scrolling too */
 }
 
 .user-data-table {
     width: 100%;
     border-collapse: collapse;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    table-layout: auto;  /* Prevent layout shift */
+    table-layout: auto;
 }
 
 .user-data-table th {
@@ -244,7 +246,13 @@ html, body {
     font-weight: 600;
     font-size: 0.85em;
     letter-spacing: 0.5px;
+
+    /* 👇 make header sticky */
+    position: sticky;
+    top: 0;
+    z-index: 2;  /* keep header above body rows */
 }
+
 
 .user-data-table td {
     padding: 10px 20px;
