@@ -232,11 +232,11 @@
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.courseStatus %}
-                                <span class="frame-green">
+                                <span class="status frame-green">
                                     Activated
                                 </span>
                             {% else %}
-                                <span class="frame-red">Inactivated</span>
+                                <span class="status frame-red">Inactivated</span>
                             {% endif %}
                         </td>
                         <td>{{ row.courseCodeSection }}</td>
@@ -248,18 +248,18 @@
                             {% if row.practicalLecturer %}
                                 Practical Lecturer: <strong>{{ row.practicalLecturer.userName }}</strong>
                             {% else %}
-                                <span class="frame-red">Practical Lecturer: ERROR</span>
+                                <span class="status frame-red">Practical Lecturer: ERROR</span>
                             {% endif %}
                             <br>
                             {% if row.tutorialLecturer %}
                                 Tutorial Lecturer: <strong>{{ row.tutorialLecturer.userName }}</strong>
                             {% else %}
-                                <span class="frame-red">Tutorial Lecturer: ERROR</span>
+                                <span class="status frame-red">Tutorial Lecturer: ERROR</span>
                             {% endif %}
                         </td>
                         <td>
                             {% if row.courseExamId is none %}
-                                <span class="frame-red">{{ row.courseExamId }}</span>
+                                <span class="status frame-red">{{ row.courseExamId }}</span>
                             {% else %}
                                 {{ row.courseExamId }}
                             {% endif %}
