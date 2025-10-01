@@ -184,17 +184,7 @@ def get_courseCodeSection(courseCodeSection_select):
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     # === Load basic data safely ===
-    error_rows = [
-        c.courseCodeSection for c in Course.query.filter(
-            (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
-            (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
-            (Course.courseName.is_(None)) | (Course.courseName == '') |
-            (Course.courseHour.is_(None)) |
-            (Course.courseStudent.is_(None)) |
-            (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
-            (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
-        ).all()
-    ]
+    course_data = Course.query.order_by(Course.courseStatus.asc()).all()
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')
