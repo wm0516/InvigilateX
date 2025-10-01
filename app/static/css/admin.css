@@ -414,6 +414,11 @@ input, select{
     grid-row: span 2;
 }
 
+.dashboard-frame canvas {
+    width: 100% !important;  /* let chart.js scale */
+    height: auto !important;
+}
+
 
 
 
