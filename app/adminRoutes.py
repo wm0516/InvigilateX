@@ -202,14 +202,19 @@ def admin_manageCourse():
     ).count()
 
     # === Courses by department safely ===
-    courses_by_department_raw = db.session.query(
-        func.coalesce(Department.departmentCode, "Unknown"),
-        func.count(Course.courseCodeSection)
-    ).outerjoin(Course, Department.departmentCode == Course.courseDepartment
-    ).group_by(func.coalesce(Department.departmentCode, "Unknown")
-    ).having(func.count(Course.courseCodeSection) > 0
-    ).order_by(func.coalesce(Department.departmentCode, "Unknown").asc()
-    ).all() or []
+    courses_by_department_raw = (
+        db.session.query(
+            func.coalesce(Department.departmentCode, "Unknown").label("department"),
+            func.count(Course.courseCodeSection).label("course_count")
+        )
+        .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
+        .filter(Course.courseStatus == True)   # ✅ filter BEFORE group_by
+        .group_by(func.coalesce(Department.departmentCode, "Unknown"))
+        .having(func.count(Course.courseCodeSection) > 0)
+        .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())
+        .all()
+        or []
+    )
 
     courses_by_department = [
         {"department": dept_code, "count": count}
