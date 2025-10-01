@@ -260,7 +260,7 @@
                                 Exam Time  : <strong>{{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong><br>
                                 Exam Period: <strong>{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m </strong><br>
                             {% else %}
-                                <span class="frame-red">Exam details not yet assigned</span><br><br>
+                                <span class="frame-red">Exam details not yet assigned</span><br>
                             {% endif %}
                             {% if row.examVenue %}
                                 Exam Venue : <strong>{{ row.examVenue }}</strong>

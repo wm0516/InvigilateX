@@ -260,7 +260,7 @@
                         {% elif row.userStatus|int == 2 %}
                             <span class="frame-red">[DELETED]</span>
                         {% endif %}
-                        <br>Date {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
+                        <br>Date: {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
                     </td>
                     
                     <td>{{ row.userId }}</td>
