@@ -301,9 +301,19 @@ html, body {
     background-color: #f9f9f9; /* light gray for inactive */
 }
 
+.frame-green {
+    color: white; 
+    background-color: #16bf42; 
+    padding: 2px 6px; 
+    border-radius: 3px;
+}
 
-
-
+.frame-red {
+    color: white; 
+    background-color: #e93838; 
+    padding: 2px 6px; 
+    border-radius: 3px;
+}
 
 
 

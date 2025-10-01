@@ -227,10 +227,12 @@
                         {% endif %}">
                         <td>{{ loop.index }}</td>
                         <td>
-                            {% if row.courseStatus == 1 %}
-                                Activated
+                            {% if row.courseStatus %}
+                                <span class="frame-green">
+                                    Activated
+                                </span>
                             {% else %}
-                                <span style="color:red;">Inactivated</span>
+                                <span class="frame-red">Inactivated</span>
                             {% endif %}
                         </td>
                         <td>{{ row.courseCodeSection }}</td>
@@ -242,13 +244,13 @@
                             {% if row.practicalLecturer %}
                                 Practical Lecturer: {{ row.practicalLecturer.userName }}
                             {% else %}
-                                <span style="color:red;">ERROR</span>
+                                <span class="frame-red">ERROR</span>
                             {% endif %}
                             <br>
                             {% if row.tutorialLecturer %}
                                 Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
                             {% else %}
-                                <span style="color:red;">ERROR</span>
+                                <span class="frame-red">ERROR</span>
                             {% endif %}
                         </td>
                         <td>{{ row.courseExamId }}</td>
