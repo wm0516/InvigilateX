@@ -340,8 +340,8 @@ def admin_manageDepartment():
     # Load all departments and stats
     department_data = Department.query.all()
     total_department = len(department_data)
-    total_dean = User.query.filter_by(userLevel=2).count()
-    total_hop = User.query.filter_by(userLevel=3).count()
+    deans = User.query.filter_by(userLevel=2).all()
+    hops = User.query.filter_by(userLevel=3).all()
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
@@ -399,7 +399,7 @@ def admin_manageDepartment():
                 flash("Department deleted successfully", "success")
 
             return redirect(url_for('admin_manageDepartment'))
-    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, total_dean=total_dean, total_hop=total_hop)
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hops=hops)
 
 
 
