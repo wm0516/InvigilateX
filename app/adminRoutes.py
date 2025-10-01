@@ -199,7 +199,7 @@ def admin_manageCourse():
         (Course.courseStudent.is_(None)) |
         (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
         (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
-    ).all()
+    ).count()
 
     # === Courses by department safely ===
     courses_by_department_raw = db.session.query(
