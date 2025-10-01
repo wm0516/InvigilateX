@@ -232,7 +232,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     if students < 0:
         return False, "Students cannot be negative"
         
-    invigilatorNo = None
     if students > 32:
         invigilatorNo = 3
     else: 
