@@ -229,14 +229,14 @@ html, body {
     overflow-x: auto;
 }
 
-.user-data-table, .enter-data-table {
+.user-data-table {
     width: 100%;
     border-collapse: collapse;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     table-layout: auto;  /* Prevent layout shift */
 }
 
-.user-data-table th, .enter-data-table th {
+.user-data-table th {
     background-color: #2c3e50;
     color: white;
     padding: 12px 15px;
@@ -244,18 +244,6 @@ html, body {
     font-weight: 600;
     font-size: 0.85em;
     letter-spacing: 0.5px;
-}
-
-.enter-data-table td {
-    color: #333;
-}
-
-.enter-data-table tr:last-child td {
-    border-bottom: none;
-}
-
-.enter-data-table tr:hover {
-    background-color: #f5f7fa;
 }
 
 .user-data-table td {
@@ -273,6 +261,8 @@ html, body {
 .user-data-table tr:hover {
     background-color: #f5f7fa;
 }
+
+
 
 .filter-container {
     margin-bottom: 20px;
