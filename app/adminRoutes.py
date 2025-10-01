@@ -198,7 +198,7 @@ def admin_manageCourse():
         (Course.courseHour.is_(None)) |
         (Course.courseStudent.is_(None)) |
         (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
-        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '') |
+        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
     ).count()
 
     # === Courses by department safely ===
