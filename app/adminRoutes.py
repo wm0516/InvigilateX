@@ -183,24 +183,8 @@ def get_courseCodeSection(courseCodeSection_select):
 # -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
-    course_data = (
-        Course.query
-        .order_by(
-            case(
-                (
-                    (Course.courseDepartment == None) &
-                    (Course.practicalLecturer == None) &
-                    (Course.tutorialLecturer == None) &
-                    (Course.courseExamId == None) &
-                    (Course.courseStatus == False), 0
-                ),
-                else_=1
-            ),
-            Course.courseDepartment.asc()
-        )
-        .all()
-    )
-
+    # === Load basic data safely ===
+    course_data = Course.query.order_by(Course.courseStatus.asc()).all()
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')
