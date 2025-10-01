@@ -226,7 +226,7 @@ html, body {
 
 .user-table-container {
     margin: 20px 0;
-    max-height: 400px;     /* 👈 set your preferred height */
+    max-height: 1000px;     /* 👈 set your preferred height */
     overflow-y: auto;      /* enable vertical scrolling */
     overflow-x: auto;      /* keep your horizontal scrolling too */
 }
