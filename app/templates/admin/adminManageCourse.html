@@ -222,9 +222,13 @@
             </thead>
             <tbody>
                 {% for row in course_data %}
-                    <tr class="{% if row.courseStatus == 0 %}inactive-row-show
-                        {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none %}error-row-show
-                        {% endif %}">
+                    <tr class="
+                        {% if row.courseStatus == 0 %}
+                            inactive-row-show
+                        {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none or row.courseExamId == 0 %}
+                            error-row-show
+                        {% endif %}
+                    ">
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.courseStatus %}
@@ -254,7 +258,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if row.courseExamId == 0 %}
+                            {% if row.courseExamId is none %}
                                 <span class="frame-red">{{ row.courseExamId }}</span>
                             {% else %}
                                 {{ row.courseExamId }}
