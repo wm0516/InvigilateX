@@ -26,7 +26,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Courses With Missing Data/Erros</h3>
-                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
+                    <p class="dashboard-text" style="color:red;">{{ error_rows|length }}</p>
                 </div>
             </div>
         </div>
@@ -222,7 +222,7 @@
             </thead>
             <tbody>
                 {% for row in course_data %}
-                    <tr class="{% if row.courseStatus == 0 or row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none %}error-row-show{% endif %}">
+                    <tr class="{{ 'error-row-show' if row in error_rows }}">
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.courseStatus == 1 %}
