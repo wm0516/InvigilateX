@@ -183,29 +183,35 @@ def get_courseCodeSection(courseCodeSection_select):
 # -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
-    incomplete_condition = or_(
-        Course.courseDepartment.is_(None), Course.courseDepartment == '',
-        Course.courseCodeSection.is_(None), Course.courseCodeSection == '',
-        Course.courseName.is_(None), Course.courseName == '',
-        Course.courseHour.is_(None),
-        Course.courseStudent.is_(None),
-        Course.coursePractical.is_(None), Course.coursePractical == '',
-        Course.courseTutorial.is_(None), Course.courseTutorial == ''
-    )
-
-    # Count only incomplete rows
-    error_rows = Course.query.filter(incomplete_condition).count()
-
-    # Get all rows, but incomplete on top
+    # === Load basic data safely ===
     course_data = Course.query.order_by(
-        case((incomplete_condition, 0), else_=1),
+        case(
+            ( (Course.courseDepartment == None) | (Course.courseDepartment == '') |
+            (Course.courseCodeSection == None) | (Course.courseCodeSection == '') |
+            (Course.courseName == None) | (Course.courseName == '') |
+            (Course.courseHour == None) |
+            (Course.courseStudent == None) |
+            (Course.coursePractical == None) | (Course.coursePractical == '') |
+            (Course.courseTutorial == None) | (Course.courseTutorial == ''), 0),
+            else_=1
+        ),
         Course.courseDepartment.asc()
     ).all()
-
-
     department_data = Department.query.all()
+
     course_id = request.form.get('editCourseSelect')
     course_select = Course.query.filter_by(courseCodeSection=course_id).first()
+
+    # Count rows with missing/empty values
+    error_rows = Course.query.filter(
+        (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
+        (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
+        (Course.courseName.is_(None)) | (Course.courseName == '') |
+        (Course.courseHour.is_(None)) |
+        (Course.courseStudent.is_(None)) |
+        (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
+        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
+    ).count()
 
     # === Courses by department safely ===
     courses_by_department_raw = db.session.query(

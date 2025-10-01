@@ -293,13 +293,13 @@ html, body {
 }
 
 
+
 .error-row-show {
-    border: 2px solid rgba(218, 82, 82, 0.719);
-    background-color: #ffe5e5; /* optional light red background */
+    background-color: #ffe6e6; /* light red for errors */
 }
-
-
-
+.inactive-row-show {
+    background-color: #f9f9f9; /* light gray for inactive */
+}
 
 
 
