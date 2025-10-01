@@ -97,7 +97,7 @@ class Exam(db.Model):
     examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)      # Refer to Exam Venue
     examStartTime = db.Column(db.DateTime, nullable=True)                                        # Refer to Exam StartTime
     examEndTime = db.Column(db.DateTime, nullable=True)                                          # Refer to Exam EndTime
-    examNoInvigilator = db.Column(db.Integer, nullable=True)                                     # Number of invigilators needed
+    examNoInvigilator = db.Column(db.Integer, nullable=False)                                     # Number of invigilators needed
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
@@ -111,7 +111,7 @@ class Exam(db.Model):
         examStartTime DATETIME NULL,
         examEndTime DATETIME NULL,
         examVenue VARCHAR(10) NULL,
-        examNoInvigilator INT NULL,
+        examNoInvigilator INT NOT NULL,
         FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
     );
     '''
