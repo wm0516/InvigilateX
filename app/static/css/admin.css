@@ -253,7 +253,6 @@ html, body {
     z-index: 2;  /* keep header above body rows */
 }
 
-
 .user-data-table td {
     padding: 10px 20px;
     border-bottom: 1px solid #e0e0e0;
