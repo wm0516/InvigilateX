@@ -242,13 +242,13 @@
                         <td>{{ row.courseStudent }}</td>
                         <td>
                             {% if row.practicalLecturer %}
-                                Practical Lecturer: {{ row.practicalLecturer.userName }}
+                                Practical Lecturer: <strong>{{ row.practicalLecturer.userName }}</strong>
                             {% else %}
                                 <span class="frame-red">ERROR</span>
                             {% endif %}
                             <br>
                             {% if row.tutorialLecturer %}
-                                Tutorial Lecturer: {{ row.tutorialLecturer.userName }}
+                                Tutorial Lecturer: <strong>{{ row.tutorialLecturer.userName }}</strong>
                             {% else %}
                                 <span class="frame-red">ERROR</span>
                             {% endif %}
