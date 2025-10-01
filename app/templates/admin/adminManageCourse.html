@@ -28,12 +28,19 @@
                     <h3>Courses by Department</h3>
                     <canvas id="courseDeptPieChart"></canvas>
                 </div>
+                <div class="dashboard-frame">
+                    <h3>Total Activated Courses</h3>
+                    <p class="dashboard-text" style="color:green;">{{ courses_by_department|length }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Total Inactivated Courses</h3>
+                    <p class="dashboard-text" style="color:red;">{{ course_data|length - courses_by_department|length }}</p>
+                </div>
             </div>
         </div>
     </div>
 </form>
 {% endblock %}
-
 
 {% block upload_section %}
 <!-- Upload Form -->
