@@ -245,7 +245,7 @@
                         <td>
                             Course Name        : <strong>{{ row.course.courseName }}</strong><br>
                             Course Code/Section: <strong>{{ row.course.courseCodeSection }}</strong><br>
-                            Program Code       : <strong>{{ row.course.courseDepartment }}</strong><br>
+                            Program Code       : <strong>{{     row.course.courseDepartment }}</strong><br>
                             Number of Students : <strong>{{ row.course.courseStudent }}</strong><br>
                             Practical Lecturer : <strong>{{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }}</strong><br>
                             Tutorial Lecturer  : <strong>{{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}</strong>

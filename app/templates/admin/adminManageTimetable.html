@@ -14,16 +14,16 @@
         <input type="hidden" name="form_type" value="dashboard">    
         <div class="form-left" style="width: 100%">
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr;">
-                <div class="dashboard-frame pie">
+                <div class="dashboard-frame">
                     <h3>Total TimetableSets</h3>
                     <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
                 </div>
-
                 <div class="dashboard-frame">
                     <h3>Lecturers without Assigned Timetable</h3>
                     <p class="dashboard-text" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
                 </div>
             </div>
+            
             <div class="dashboard-row" style="grid-template-columns: repeat(5, 1fr);">
                 {% set days = [
                     {'name':'Monday','value':mon_timetable,'color':'#007bff'},
