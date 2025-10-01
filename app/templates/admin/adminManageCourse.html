@@ -222,10 +222,7 @@
             </thead>
             <tbody>
                 {% for row in course_data %}
-                    <tr class="
-                        {% if row in error_rows %}error-row-show{% endif %}
-                        {% if row.courseStatus == 0 %} inactive-row-show{% endif %}
-                    ">
+                    <tr class="{% if row.courseCodeSection in error_rows %}error-row-show{% elif row.courseStatus == 0 %}inactive-row-show{% endif %}">
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.courseStatus == 1 %}

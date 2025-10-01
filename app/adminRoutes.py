@@ -184,19 +184,17 @@ def get_courseCodeSection(courseCodeSection_select):
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
     # === Load basic data safely ===
-    course_data = Course.query.order_by(
-        case(
-            ( (Course.courseDepartment == None) | (Course.courseDepartment == '') |
-            (Course.courseCodeSection == None) | (Course.courseCodeSection == '') |
-            (Course.courseName == None) | (Course.courseName == '') |
-            (Course.courseHour == None) |
-            (Course.courseStudent == None) |
-            (Course.coursePractical == None) | (Course.coursePractical == '') |
-            (Course.courseTutorial == None) | (Course.courseTutorial == ''), 0),
-            else_=1
-        ),
-        Course.courseDepartment.asc()
-    ).all()
+    error_rows = [
+        c.courseCodeSection for c in Course.query.filter(
+            (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
+            (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
+            (Course.courseName.is_(None)) | (Course.courseName == '') |
+            (Course.courseHour.is_(None)) |
+            (Course.courseStudent.is_(None)) |
+            (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
+            (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
+        ).all()
+    ]
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')
