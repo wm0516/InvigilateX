@@ -219,11 +219,6 @@
 {% block content %}
 <div class="menu-section">
     <h2>List of Staff</h2>
-    <div style="text-align: center;">
-        <button id="prevBtn">Previous</button>
-        <span id="pageInfo"></span>
-        <button id="nextBtn">Next</button>
-    </div>
     <div class="user-table-container">
         <table id="userTable" class="user-data-table">
             <thead>
@@ -306,150 +301,129 @@
 {% block extra_scripts %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // === Staff select listener ===
         const staffSelect = document.getElementById("editStaffId");
+        if (staffSelect) {
+            staffSelect.addEventListener("change", function () {
+                const staffId = this.value;
+                if (!staffId) return;
 
-        staffSelect.addEventListener("change", function () {
-            const staffId = this.value;
-            if (!staffId) return;
+                fetch(`/get_staff/${staffId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
 
-            fetch(`/get_staff/${staffId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                        return;
-                    }
+                        // Fill input fields safely
+                        document.getElementById("editUsername").value = data.userName ?? "";
+                        document.getElementById("editEmail").value = data.userEmail ?? "";
+                        document.getElementById("editContact").value = data.userContact ?? "";
 
-                    // Fill input fields
-                    document.getElementById("editUsername").value = data.userName || "";
-                    document.getElementById("editEmail").value = data.userEmail || "";
-                    document.getElementById("editContact").value = data.userContact || "";
+                        // Set dropdowns
+                        document.getElementById("editStatus").value = data.userStatus ?? "";
+                        document.getElementById("editGender").value = data.userGender ?? "";
+                        document.getElementById("editRoleSelect").value = data.userLevel ?? "";
+                        document.getElementById("editDepartment").value = data.userDepartment ?? "";
+                    })
+                    .catch(err => {
+                        console.error("Error fetching staff:", err);
+                    });
+            });
+        }
 
-                    // Set Status
-                    const statusSelect = document.getElementById("editStatus");
-                    statusSelect.value = data.userStatus || "";
+        // === Default chart colors ===
+        const defaultColors = [
+            'rgba(255, 99, 132, 0.6)',
+            'rgba(54, 162, 235, 0.6)',
+            'rgba(255, 206, 86, 0.6)',
+            'rgba(75, 192, 192, 0.6)'
+        ];
+        const defaultBorders = [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)'
+        ];
 
-                    // Set Gender
-                    const genderSelect = document.getElementById("editGender");
-                    genderSelect.value = data.userGender || "";
+        // === Auto-generate colors if dataset exceeds defaults ===
+        function generateColors(count) {
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                const hue = Math.floor((360 / count) * i);
+                colors.push(`hsl(${hue}, 70%, 60%)`);
+            }
+            return colors;
+        }
 
-                    // Set Role
-                    const roleSelect = document.getElementById("editRoleSelect");
-                    roleSelect.value = data.userLevel || "";
+        // === Reusable function to build pie charts ===
+        function createPieChart(canvasId, labels, data, colors = defaultColors, borders = defaultBorders, chartLabel = '') {
+            // Auto-extend colors if needed
+            if (labels.length > colors.length) {
+                colors = generateColors(labels.length);
+                borders = colors.map(c => c.replace("60%", "40%")); // darker borders
+            }
 
-                    // Set Department
-                    const deptSelect = document.getElementById("editDepartment");
-                    deptSelect.value = data.userDepartment || "";
-                })
-                .catch(err => {
-                    console.error("Error fetching staff:", err);
-                });
-        });
-    });
-
-    const defaultColors = [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)'
-    ];
-    const defaultBorders = [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)'
-    ];
-
-    // === Reusable function to build pie charts ===
-    function createPieChart(canvasId, labels, data, colors = defaultColors, borders = defaultBorders, chartLabel = '') {
-        return new Chart(document.getElementById(canvasId).getContext('2d'), {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: chartLabel,
-                    data: data,
-                    backgroundColor: colors,
-                    borderColor: borders,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'right' },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                let data = context.dataset.data;
-                                let sum = data.reduce((a, b) => a + b, 0);
-                                let value = context.parsed;
-                                let percentage = ((value / sum) * 100).toFixed(1) + "%";
-                                return context.label + ": " + value + " (" + percentage + ")";
+            return new Chart(document.getElementById(canvasId).getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: chartLabel,
+                        data: data,
+                        backgroundColor: colors,
+                        borderColor: borders,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let dataArr = context.dataset.data;
+                                    let sum = dataArr.reduce((a, b) => a + b, 0);
+                                    let value = context.parsed;
+                                    let percentage = ((value / sum) * 100).toFixed(1) + "%";
+                                    return context.label + ": " + value + " (" + percentage + ")";
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
-    }
-
-    // === Create charts ===
-    createPieChart('staffPieChart',
-        ['Admin', 'Lecturer', 'Dean', 'HOP'],
-        [{{ total_admin }}, {{ total_lecturer }}, {{ total_dean }}, {{ total_hop }}],
-        defaultColors, defaultBorders, 'Staff Distribution'
-    );
-
-    createPieChart('genderPieChart',
-        ['Male', 'Female'],
-        [{{ total_male_staff }}, {{ total_female_staff }}],
-        defaultColors, defaultBorders, 'Gender Distribution'
-    );
-
-    createPieChart('statusPieChart',
-        ['Activated', 'Deactivated', 'Deleted'],
-        [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
-         defaultColors, defaultBorders,'Account Status'
-    );
-
-    function paginateTable(tableId, rowsPerPage = 15) {
-        const table = document.getElementById(tableId);
-        if (!table) return; // prevent errors if id not found
-        const tbody = table.querySelector("tbody");
-        const rows = Array.from(tbody.querySelectorAll("tr"));
-
-        let currentPage = 1;
-        const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-        function renderPage(page) {
-            rows.forEach(row => row.style.display = "none");
-            const start = (page - 1) * rowsPerPage;
-            const end = start + rowsPerPage;
-            rows.slice(start, end).forEach(row => row.style.display = "");
-            document.getElementById("pageInfo").textContent =
-                `Page ${page} of ${totalPages}`;
+            });
         }
 
-        document.getElementById("prevBtn").onclick = function() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderPage(currentPage);
+        // === Chart configurations ===
+        const charts = [
+            {
+                id: 'staffPieChart',
+                labels: ['Admin', 'Lecturer', 'Dean', 'HOP'],
+                data: [{{ total_admin }}, {{ total_lecturer }}, {{ total_dean }}, {{ total_hop }}],
+                label: 'Staff Distribution'
+            },
+            {
+                id: 'genderPieChart',
+                labels: ['Male', 'Female'],
+                data: [{{ total_male_staff }}, {{ total_female_staff }}],
+                label: 'Gender Distribution'
+            },
+            {
+                id: 'statusPieChart',
+                labels: ['Activated', 'Deactivated', 'Deleted'],
+                data: [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
+                label: 'Account Status'
             }
-        };
-        document.getElementById("nextBtn").onclick = function() {
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderPage(currentPage);
-            }
-        };
+        ];
 
-        renderPage(currentPage);
-    }
-
-    // 🔽 activate pagination when page loads
-    document.addEventListener("DOMContentLoaded", function () {
-        paginateTable("userTable", 30);
+        // === Render all charts ===
+        charts.forEach(c => {
+            createPieChart(c.id, c.labels, c.data, defaultColors, defaultBorders, c.label);
+        });
     });
 </script>
 {% endblock %}
+
