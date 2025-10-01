@@ -309,16 +309,16 @@ html, body {
 }
 
 .frame-green {
-    background-color: #28a745; /* green */
+    background-color: #00cb2e; /* green */
 }
 
 .frame-oren {
-    background-color: #ffc107; /* amber/orange */
+    background-color: #f3e792; /* amber/orange */
     color: black; /* better contrast */
 }
 
 .frame-red {
-    background-color: #dc3545; /* red */
+    background-color: #ff7280; /* red */
 }
 
 
