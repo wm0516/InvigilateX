@@ -197,11 +197,17 @@
             </div>
 
             <div class="form-right">
-                <label>Exam Start Date & Time (Editable)</label>
-                <input type="datetime-local" id="editExamStartTime" name="startDateTime" required><br>
+                <label>Exam Start Date & Time</label>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="startDate" name="startDate" required>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div><br>
 
-                <label>Exam End Date & Time (Editable)</label>
-                <input type="datetime-local" id="editExamEndTime" name="endDateTime" required><br>
+                <label>Exam End Date & Time</label>     
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="endDate" name="endDate" required>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div><br>
 
                 <label>Number of Invigilators (Editable)</label>
                 <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>

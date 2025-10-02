@@ -150,3 +150,34 @@ if (ctx) {
         }
     });
 }
+
+
+
+
+
+<label>Exam Start Date & Time (Editable)</label>
+<input type="datetime-local" id="editExamStartTime" name="startDateTime" required><br>
+
+<label>Exam End Date & Time (Editable)</label>
+<input type="datetime-local" id="editExamEndTime" name="endDateTime" required><br></br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
