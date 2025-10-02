@@ -151,10 +151,10 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Course Name (Editable)</label>
+                <label>Course Name</label>
                 <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required><br>
 
-                <label>Department (Editable)</label>
+                <label>Department</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}
@@ -164,22 +164,22 @@
             </div>
 
             <div class="form-middle">
-                <label>Practical Lecturer (Editable)</label>
+                <label>Practical Lecturer</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select><br>
 
-                <label>Tutorial Lecturer (Editable)</label>
+                <label>Tutorial Lecturer</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
                     <option value="" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
-                <label>Course Credit Hour(s) (Editable)</label>
+                <label>Course Credit Hour(s)</label>
                 <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required>
             </div>
 
             <div class="form-right">
-                <label>Course Number of Student(s) (Editable)</label>
+                <label>Course Number of Student(s)</label>
                 <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
 
                 <label>Course Status</label>
