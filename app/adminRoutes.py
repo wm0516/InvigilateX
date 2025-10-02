@@ -174,7 +174,7 @@ def download_course_template():
     return send_file(
         output,
         as_attachment=True,
-        attachment_filename="ManageCourse.xlsx",
+        download_name="ManageCourse.xlsx",  # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
