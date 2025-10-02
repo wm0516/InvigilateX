@@ -42,26 +42,27 @@
 </form>
 {% endblock %}
 
+
 {% block upload_section %}
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" class="function-frame" style="width:80%;">
-        <div class="form-left" style="width: 100%">
+        <div class="form-left" style="width: 100%;">
             <h4 style="text-align: center;">File Upload Section</h4>
-
             <h5 style="text-align: center;">Download Course Templates by Department</h5>
             <div style="text-align: center; margin-bottom: 20px;">
                 {% for dept in department_data %}
-                    <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}" style="margin: 0 10px;">{{ dept.departmentCode }}</a>
+                    <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}" style="margin: 0 10px;">
+                        {{ dept.departmentCode }}
+                    </a>
                 {% endfor %}
             </div>
-
-
             <label for="course_list">
                 <div class="upload-container" id="courseUploadContainer">
                     <div class="upload-text">
                         Please upload a file with an empty first row. Data should begin from columns A to H,<br>
-                        labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students'].<br><br><br>
+                        labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students'].<br><br>
+                        You may also download an Excel template from the above link, generated based on your department with all the required table headers.<br><br>
                         Click to upload or drag and drop a file below (accepted file formats).
                     </div>
                     <div class="file-types">XLSX, XLS, or XLSM</div><br>
@@ -71,11 +72,9 @@
             <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
             <br>
-
             <div class="button-wrapper">
                 <button type="submit">Upload Course</button>
             </div>
-            </a>
         </div>
     </div>
 </form>
