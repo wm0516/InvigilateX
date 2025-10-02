@@ -702,6 +702,8 @@ def process_exam_row(row):
     startTime_text = row['start']
     endTime_text = row['end']
 
+    flash(f"date:{examDate_text}, start:{startTime_text}, end:{endTime_text}","error")
+
     if not examDate_text or not startTime_text or not endTime_text:
         return False, "Invalid time/date"
 
@@ -714,6 +716,7 @@ def process_exam_row(row):
         examDate_text,
         datetime.strptime(endTime_text, "%I:%M:%S %p").time()
     )
+    flash(f"start combine:{start_dt}, end combine:{end_dt}","error")
 
     flash(f"DEBUG Row: {row}", "error")
     flash(f"DEBUG Date: {row['date']} ({type(row['date'])})", "error")
