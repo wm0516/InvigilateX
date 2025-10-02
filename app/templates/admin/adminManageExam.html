@@ -386,53 +386,38 @@ document.addEventListener("DOMContentLoaded", function () {
     const editCourseSelect = document.getElementById('editExamCourseSection');
     if (!editCourseSelect) return;
 
-    console.log('[DEBUG] Edit course select element found');
-
     editCourseSelect.addEventListener('change', function () {
         const courseCode = this.value;
-        console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
 
         if (!courseCode || courseCode === '') {
-            console.log("[DEBUG] Empty course code selected, clearing fields");
             clearEditFields();
             return;
         }
-
         const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
-        console.log(`[DEBUG] Fetching from: ${apiUrl}`);
-
         fetch(apiUrl)
             .then(res => {
-                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 return res.json();
             })
             .then(data => {
-                console.log('[DEBUG] Raw response data:', data);
                 if (data.error) {
-                    console.error('[DEBUG] API returned error:', data.error);
                     alert('Error loading exam details: ' + data.error);
                     return;
                 }
                 if (!data.courseCodeSection) {
-                    console.error('[DEBUG] Missing courseCodeSection in response');
                     alert('Invalid response from server');
                     return;
                 }
                 populateEditForm(data);
             })
             .catch(err => {
-                console.error("[DEBUG] Fetch failed:", err);
                 alert('Failed to load exam details. Check console for details.');
             });
     });
 
     // Clear edit fields
     function clearEditFields() {
-        const fieldsToClear = [
-            'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
-            'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
-        ];
+        const fieldsToClear = ['editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo','editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'];
 
         fieldsToClear.forEach(fieldId => {
             const field = document.getElementById(fieldId);
