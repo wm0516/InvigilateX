@@ -697,8 +697,6 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File
 # -------------------------------
 def process_exam_row(row):
-    flash(f"DEBUG Row: {row}", "error")
-    
     # Parse date
     examDate = row['date']
     if isinstance(examDate, str):
@@ -707,17 +705,13 @@ def process_exam_row(row):
     
     startTime_text = row['start']
     endTime_text   = row['end']
-    
-    flash(f"date:{examDate_text}, start:{startTime_text}, end:{endTime_text}", "error")
-    
+
     if not examDate_text or not startTime_text or not endTime_text:
         return False, "Invalid time/date"
     
     # Combine date and time correctly
     start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
     end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
-    
-    flash(f"start combine:{start_dt}, end combine:{end_dt}", "error")
     
     create_exam_and_related(
         start_dt, end_dt,
@@ -727,7 +721,6 @@ def process_exam_row(row):
         None,
         invigilatorNo=None
     )
-    
     return True, f"Exam for {row['course/sec']} uploaded"
 
 
