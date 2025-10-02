@@ -596,6 +596,8 @@ def admin_manageVenue():
 
 
 
+
+
 def generate_manageexam_template():
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
@@ -603,24 +605,34 @@ def generate_manageexam_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Exams"
 
+
     # Header row
-    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec',
-               'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
+    headers = [
+        'Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec',
+        'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room'
+    ]
     ws.append(headers)
 
     # --- Create Excel number formats ---
-    date_style = NamedStyle(name="date_style", number_format="M/D/YYYY")
-    time_style = NamedStyle(name="time_style", number_format="h:mm AM/PM")
-    day_style = NamedStyle(name="day_style", number_format="DDD")  # e.g. MON, TUE, FRI
+    # Date format: M/D/YYYY
+    if "date_style" not in wb.named_styles:
+        date_style = NamedStyle(name="date_style", number_format="M/D/YYYY")
+        wb.add_named_style(date_style)
 
-    # Apply formats for first 1000 rows
+    # Time format: h:mm AM/PM
+    if "time_style" not in wb.named_styles:
+        time_style = NamedStyle(name="time_style", number_format="h:mm AM/PM")
+        wb.add_named_style(time_style)
+
+    # Apply formats + formulas for first 1000 rows
     for row in range(2, 1001):
-        ws[f"A{row}"].style = date_style   # Date
-        ws[f"B{row}"].style = day_style    # Day
-        ws[f"C{row}"].style = time_style   # Start
-        ws[f"D{row}"].style = time_style   # End
+        ws[f"A{row}"].style = "date_style"   # Date
+        ws[f"C{row}"].style = "time_style"   # Start
+        ws[f"D{row}"].style = "time_style"   # End
+        ws[f"B{row}"].value = f"=IF(A{row}<>\"\",TEXT(A{row},\"DDD\"),\"\")"  
+        # Auto day (MON, TUE, etc.)
 
-    # Hidden sheet for lists + lookup table
+    # === Hidden sheet for lookup lists ===
     ws_lists = wb.create_sheet(title="Lists")
 
     courses = Course.query.filter_by(courseStatus=True).all()
@@ -638,13 +650,13 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_course)
-        dv_course.add("F2:F1000")  # Course/Sec column
+        dv_course.add("F2:F1000")  # Course/Sec column dropdown
 
-    for row in range(2, 1001):
-        ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
-        ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
-        ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
-        ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
+        for row in range(2, 1001):
+            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
+            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
+            ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
+            ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
 
     ws_lists.sheet_state = 'hidden'
 
