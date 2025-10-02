@@ -114,7 +114,7 @@
 
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
-    <div id="editSection" style="width: 90%; margin:auto;">
+    <div id="editSection" style="width: 100%; margin:auto;">
         <h4 style="text-align: center;">Edit or Delete Timetable Link</h4>
         <div class="profile-frame">
             <div class="form-left">
@@ -140,7 +140,7 @@
                                 selected
                             {% endif %}>
                             {% if tid %}
-                                [Already With Timetable ID[{{ tid }}]]
+                                <strong>[Already With Timetable ID[{{ tid }}]]</strong>
                             {% endif %}
                             [{{ staff.userId }}] {{ staff.userName }}
                         </option>
