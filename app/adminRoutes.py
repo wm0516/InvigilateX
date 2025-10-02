@@ -85,7 +85,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
                 except Exception as sheet_err:
                     pass
-                    flash(f"[Sheet Error] {sheet_err}", "error")
+                    
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
