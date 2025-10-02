@@ -579,15 +579,22 @@ def admin_manageVenue():
 def parse_date(val):
     if isinstance(val, datetime):
         return val.date()
+    if isinstance(val, (int, float)):  # Excel numeric serial date
+        try:
+            # Excel's day 0 = 1899-12-30 (openpyxl convention)
+            return (datetime(1899, 12, 30) + timedelta(days=int(val))).date()
+        except Exception as e:
+            flash(f"[Date Float Parse Error] Could not parse: {val!r} -> {e}", "error")
+            return None
     try:
         return datetime.strptime(str(val).strip(), "%Y-%m-%d").date()
     except ValueError:
-        for fmt in ("%m/%d/%Y", "%m/%d/%y"):  # allow 2-digit year also
+        for fmt in ("%m/%d/%Y", "%m/%d/%y"):
             try:
                 return datetime.strptime(str(val).strip(), fmt).date()
             except ValueError:
                 continue
-        print(f"[Date Parse Error] Could not parse: {val!r}")
+        flash(f"[Date Parse Error] Could not parse string: {val!r}", "error")
         return None
 
 
@@ -595,22 +602,34 @@ def parse_date(val):
 # Handle Timeline Read From ExcelFile And Convert To The Correct Format
 # -------------------------------
 def standardize_time_with_seconds(time_value):
-    if isinstance(time_value, time):
+    if isinstance(time_value, time):  # already a time object
         return time_value.strftime("%H:%M:%S")
-    elif isinstance(time_value, datetime):
+    elif isinstance(time_value, datetime):  # datetime → take time part
         return time_value.strftime("%H:%M:%S")
-    elif isinstance(time_value, str):
-        time_str = str(time_value).replace("\xa0", " ").strip()  # clean Excel weird spaces
+    elif isinstance(time_value, (int, float)):  # Excel serial time
+        try:
+            total_seconds = int(round(time_value * 24 * 3600))
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        except Exception as e:
+            flash(f"[Time Float Parse Error] Could not parse: {time_value!r} -> {e}", "error")
+            return None
+    elif isinstance(time_value, str):  # user-typed string
+        time_str = time_value.replace("\xa0", " ").strip()
         for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
             try:
                 dt = datetime.strptime(time_str, fmt)
                 return dt.strftime("%H:%M:%S")
             except ValueError:
                 continue
-        print(f"[Time Parse Error] Could not parse: {time_value!r}")
+        flash(f"[Time Parse Error] Could not parse string: {time_value!r}", "error")
         return None
     else:
+        flash(f"[Time Parse Error] Unsupported type: {type(time_value).__name__} ({time_value!r})", "error")
         return None
+
+
 
 
 # -------------------------------
