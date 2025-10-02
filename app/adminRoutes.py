@@ -570,51 +570,6 @@ def admin_manageVenue():
 
 
 
-
-
-# -------------------------------
-# Handle Timeline Read From ExcelFile
-# -------------------------------
-def parse_date(val):
-    # Excel often gives a datetime, even if it's just a date
-    if isinstance(val, datetime):
-        return val.date()
-    try:
-        return datetime.strptime(str(val).strip(), "%Y-%m-%d").date()
-    except ValueError:
-        try:
-            return datetime.strptime(str(val).strip(), "%m/%d/%Y").date()
-        except Exception:
-            flash(f"❌ Date Parse Error: Could not parse '{val}'", "error")
-            return None
-
-# -------------------------------
-# Handle Timeline Read From ExcelFile And Convert To The Correct Format
-# -------------------------------
-def standardize_time_with_seconds(time_value):
-    flash(f"{time_value}","error")
-    # If Excel gave a time object
-    if isinstance(time_value, time):
-        return time_value.strftime("%I:%M:%S %p")  # keep AM/PM format
-    # If Excel gave a datetime (e.g., 1900-01-01 09:00:00)
-    elif isinstance(time_value, datetime):
-        return time_value.strftime("%I:%M:%S %p")
-    # If string, try parsing
-    elif isinstance(time_value, str):
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
-            try:
-                dt = datetime.strptime(time_value.strip(), fmt)
-                return dt.strftime("%I:%M:%S %p")  # Always return with seconds + AM/PM
-            except ValueError:
-                continue
-        flash(f"❌ Time Parse Error: Could not parse '{time_value}'", "error")
-        return None
-    else:
-        flash(f"❌ Invalid Time Value: {time_value}", "error")
-        return None
-
-
-
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Format
 # -------------------------------
@@ -635,7 +590,19 @@ def generate_manageexam_template():
     ws_lists = wb.create_sheet(title="Lists")
 
     # --- Courses ---
-    courses = Course.query.filter_by(courseStatus=True).all()
+    courses = (
+        db.session.query(Course)
+        .outerjoin(Exam, Course.courseExamId == Exam.examId)
+        .filter(
+            or_(
+                Course.courseStatus == True,
+                Exam.examStartTime.is_(None),
+                Exam.examEndTime.is_(None),
+                Exam.examVenue.is_(None)
+            )
+        )
+        .all()
+    )
     for i, c in enumerate(courses, start=1):
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
         ws_lists[f"B{i}"] = c.courseDepartment          # Program
