@@ -322,6 +322,30 @@ html, body {
 }
 
 
+.info-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 12px;
+}
+.info-grid div:first-child {
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 form {
