@@ -198,8 +198,8 @@ def download_course_template(department_code):
     output = generate_managecourse_template(department_code)
     return send_file(
         output,
-        as_attachment=True,
-        download_name=f"ManageCourse_{department_code}.xlsx",
+        as_attachment=True, 
+        download_name=f"ManageCourse_{department_code}.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
