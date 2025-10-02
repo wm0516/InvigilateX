@@ -210,8 +210,8 @@ def download_course_template(department_code):
 def process_course_row(row):
     return create_course_and_exam(
         department=str(row['department code']).strip(),
-        code=str(row['course code']).strip(),
-        section=str(row['course section']).strip(),
+        code=str(row['course code']).strip().replace(" ", ""),
+        section=str(row['course section']).strip().replace(" ", ""),
         name=str(row['course name']).strip(),
         hour=int(row['credit hour']),
         practical=str(row['practical lecturer']).strip().upper(),
@@ -589,6 +589,83 @@ def admin_manageVenue():
 
 
 
+
+
+
+def generate_manageexam_template():
+
+    warnings.simplefilter("ignore", UserWarning)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    assert ws is not None, "Workbook has no active worksheet"
+    ws.title = "Exams"
+
+    # Header row
+    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec',
+               'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
+    ws.append(headers)
+
+    # Hidden sheet for lists + lookup table
+    ws_lists = wb.create_sheet(title="Lists")
+
+    # Collect all courses
+    courses = Course.query.filter_by(courseStatus=True).all()
+
+    # Write lookup table in hidden sheet
+    # Col A: Course/Sec, Col B: Program, Col C: Practical Lecturer, Col D: Tutorial Lecturer, Col E: No of Students
+    for i, c in enumerate(courses, start=1):
+        ws_lists[f"A{i}"] = c.courseCodeSectionIntake
+        ws_lists[f"B{i}"] = c.courseDepartment
+        ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""
+        ws_lists[f"D{i}"] = c.tutorialLecturer.userName if c.tutorialLecturer else ""
+        ws_lists[f"E{i}"] = c.courseStudent or 0
+
+    # Define dropdown for Course/Sec
+    if courses:
+        dv_course = DataValidation(
+            type="list",
+            formula1=f"=Lists!$A$1:$A${len(courses)}",
+            allow_blank=False
+        )
+        ws.add_data_validation(dv_course)
+        dv_course.add("F2:F1000")  # Course/Sec column
+
+    # Auto-fill formulas with VLOOKUP
+    for row in range(2, 1001):  # Pre-fill 1000 rows
+        # Program
+        ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
+        # Practical Lecturer
+        ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
+        # Tutorial Lecturer
+        ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
+        # No of students
+        ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
+
+    # Hide the lookup sheet
+    ws_lists.sheet_state = 'hidden'
+
+    # Return BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+
+@app.route('/download_exam_template')
+def download_exam_template():
+    output = generate_manageexam_template()
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="ManageExam.xlsx", # type: ignore[arg-type]
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+
+
+
+
 # -------------------------------
 # Function for Admin ManageExam Route Upload File
 # -------------------------------
@@ -610,7 +687,6 @@ def process_exam_row(row):
         None,
         invigilatorNo=0
     )
-
 
 
 # -------------------------------
