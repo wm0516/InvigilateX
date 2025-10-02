@@ -605,11 +605,10 @@ input[readonly] {
 }  
 
 .messages-container {
-    max-height: 300px;      /* limit height */
+    max-height: 100px;      /* limit height */
     overflow-y: auto;       /* scroll if too many lines */
     padding: 8px;
-    border: 1px solid #ddd;
-    background: #f9f9f9;
+    border: 2px solid #ddd;
 }
 
 

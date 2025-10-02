@@ -707,13 +707,18 @@ def process_exam_row(row):
     start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
     end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
 
+    flash(f"DEBUG Row: {row}", "error")
+    flash(f"DEBUG Date: {row['date']} ({type(row['date'])})", "error")
+    flash(f"DEBUG Start: {row['start']} ({type(row['start'])})", "error")
+    flash(f"DEBUG End: {row['end']} ({type(row['end'])})", "error")
+
     return create_exam_and_related(
         start_dt, end_dt,
         str(row['course/sec']).upper(),
         str(row['room']).upper(),
         str(row['lecturer']).upper(),
         None,
-        invigilatorNo=0
+        invigilatorNo=None
     )
 
 
