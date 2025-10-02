@@ -84,7 +84,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                             flash(f'{message}',"error")
 
                 except Exception as sheet_err:
-                    print(f"[Sheet Error] {sheet_err}")
+                    flash(f"[Sheet Error] {sheet_err}", "error")
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
@@ -96,7 +96,6 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
             return redirect(url_for(redirect_endpoint))
 
         except Exception as e:
-            print(f"[File Processing Error] {e}")
             flash("File processing error: File upload in wrong format", "error")
             return redirect(url_for(redirect_endpoint))
     else:
@@ -201,7 +200,7 @@ def process_course_row(row):
 @app.route('/get_lecturers_by_department/<department_code>')
 def get_lecturers_by_department(department_code):
     # Ensure case-insensitive match if needed
-    print(f"User Department Code is: {department_code}")
+    flash(f"User Department Code is: {department_code}", "success")
     lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
     return jsonify(lecturers_list) 
@@ -798,7 +797,7 @@ def get_available_venues():
         return jsonify(available_venues)
     
     except Exception as e:
-        print(f"[Error fetching available venues] {e}")
+        flash(f"[Error fetching available venues] {e}", "error")
         return jsonify([])
 
 
