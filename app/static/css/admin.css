@@ -394,7 +394,9 @@ input, select{
 }
 
 input[readonly] {
-    background: #dedede;
+    background: #dedede;       /* Gray background */
+    cursor: not-allowed;       /* Show not-allowed cursor */
+    pointer-events: none;      /* Disable mouse interactions */
 }
 
 .toggle-password-btn {

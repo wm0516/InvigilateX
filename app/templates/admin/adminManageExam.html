@@ -150,7 +150,7 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label for="editExamCourseSection">Select Exam Course/Section - Course Name</label>
-                <select name="editExamCourseSection" id="editExamCourseSection" required>
+                <select name="editExamCourseSection" id="editExamCourseSection" readonly>
                     <option value="" disabled selected>Select Course Section</option>
                     {% for exam in exam_data %}
                         {% if exam.course %}
