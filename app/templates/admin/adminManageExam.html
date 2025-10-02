@@ -150,7 +150,7 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label for="editExamCourseSection">Select Exam Course/Section - Course Name</label>
-                <select name="editExamCourseSection" id="editExamCourseSection" readonly>
+                <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
                     {% for exam in exam_data %}
                         {% if exam.course %}
@@ -165,18 +165,27 @@
                 </select><br>
 
                 <label>Program Code</label>
-                <input type="text" id="editProgramCode" name="programCode" readonly><br>
-
+                <select id="editProgramCode" name="programCode" readonly>
+                    <option value="" disabled selected>Select Department</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
+                    {% endfor %}
+                </select><br>
+                
                 <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" readonly>
+                <input type="number" id="editStudent" name="student" value="" readonly>
             </div>
 
             <div class="form-middle">
                 <label>Practical Lecturer</label>
-                <input type="text" id="editPracticalLecturer" name="practicalLecturer" readonly><br>
+                <select id="editPracticalLecturer" name="practicalLecturer" readonly>
+                    <option value="" disabled>Select Practical Lecturer</option>
+                </select><br>
 
                 <label>Tutorial Lecturer</label>
-                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly><br>
+                <select id="editTutorialLecturer" name="tutorialLecturer" readonly>
+                    <option value="" disabled>Select Tutorial Lecturer</option>
+                </select><br>
 
                 <label>Exam Venue (Editable)</label>
                 <select name="venue" id="editVenue" required>
@@ -285,8 +294,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!programCode) return;
 
     const courseSectionSelect = document.getElementById('examManualCourseSection');
-    const practicalSelect = document.getElementById('editPracticalLecturer');
-    const tutorialSelect = document.getElementById('editTutorialLecturer');
+    const practicalLecturer = document.getElementById('examPracticalLecturer');
+    const tutorialLecturer = document.getElementById('examTutorialLecturer');
     const studentField = document.getElementById('student');
 
     // When program/department changes
@@ -386,39 +395,54 @@ document.addEventListener("DOMContentLoaded", function () {
     const editCourseSelect = document.getElementById('editExamCourseSection');
     if (!editCourseSelect) return;
 
+    console.log('[DEBUG] Edit course select element found');
+    
     editCourseSelect.addEventListener('change', function () {
         const courseCode = this.value;
+        console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
 
         if (!courseCode || courseCode === '') {
+            console.log("[DEBUG] Empty course code selected, clearing fields");
             clearEditFields();
             return;
         }
+
         const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
+        console.log(`[DEBUG] Fetching from: ${apiUrl}`);
+        
         fetch(apiUrl)
             .then(res => {
+                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 return res.json();
             })
             .then(data => {
+                console.log('[DEBUG] Raw response data:', data);
                 if (data.error) {
+                    console.error('[DEBUG] API returned error:', data.error);
                     alert('Error loading exam details: ' + data.error);
                     return;
                 }
                 if (!data.courseCodeSection) {
+                    console.error('[DEBUG] Missing courseCodeSection in response');
                     alert('Invalid response from server');
                     return;
                 }
                 populateEditForm(data);
             })
             .catch(err => {
+                console.error("[DEBUG] Fetch failed:", err);
                 alert('Failed to load exam details. Check console for details.');
             });
     });
 
     // Clear edit fields
     function clearEditFields() {
-        const fieldsToClear = ['editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo','editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'];
-
+        const fieldsToClear = [
+            'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
+            'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
+        ];
+        
         fieldsToClear.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             if (field) {
@@ -431,7 +455,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Populate edit form (read-only for department and lecturers)
+    // Populate edit form
     function populateEditForm(data) {
         console.log('[DEBUG] Populating form with data:', data);
 
@@ -441,9 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'editVenue': data.examVenue,
             'editInvigilatorNo': data.examNoInvigilator,
             'editExamStartTime': data.examStartTime,
-            'editExamEndTime': data.examEndTime,
-            'editPracticalLecturer': data.practicalLecturer,
-            'editTutorialLecturer': data.tutorialLecturer
+            'editExamEndTime': data.examEndTime
         };
 
         Object.entries(fieldMappings).forEach(([fieldId, value]) => {
@@ -453,6 +475,29 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log(`[DEBUG] Set ${fieldId} to:`, value);
             }
         });
+
+        const practicalSelect = document.getElementById('editPracticalLecturer');
+        const tutorialSelect = document.getElementById('editTutorialLecturer');
+
+        if (practicalSelect) {
+            practicalSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = data.practicalLecturer || '';
+            option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
+            option.selected = true;
+            practicalSelect.appendChild(option);
+            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
+        }
+
+        if (tutorialSelect) {
+            tutorialSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = data.tutorialLecturer || '';
+            option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
+            option.selected = true;
+            tutorialSelect.appendChild(option);
+            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
+        }
 
         console.log('[DEBUG] Form population complete');
     }
