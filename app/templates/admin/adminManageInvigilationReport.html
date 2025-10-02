@@ -74,7 +74,6 @@
             <thead>
                 <tr>
                     <th>Exam ID</th>
-                    <th>Course Details</th>
                     <th>Exam Details</th>
                     <th>Number of Invigilators</th>
                     <th>Invigilator Details</th>
@@ -93,23 +92,17 @@
                                 <!-- Exam ID -->
                                 <td rowspan="{{ rowspan }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
 
-                            <!-- Course Details -->
+                            <!-- Course & Exam Details -->
                             <td rowspan="{{ rowspan }}">
                                 <div class="info-grid">
                                     <div>Course Name</div><div><strong>: {{ att.report.exam.course.courseName }}</strong></div>
                                     <div>Course Code/Section</div><div><strong>: {{ att.report.exam.course.courseCodeSection }}</strong></div>
                                     <div>Number of Students</div><div><strong>: {{ att.report.exam.course.courseStudent }}</strong></div>
-                                </div>
-                            </td>
-
-                            <!-- Exam Details -->
-                            <td rowspan="{{ rowspan }}">
-                                <div class="info-grid">
                                     <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                                    <div>Exam Day</div><div><strong>{{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
-                                    <div>Exam Time</div><div><strong>{{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
-                                    <div>Exam Period</div><div><strong>{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                    <div>Exam Venue</div><div><strong>{{ att.report.exam.examVenue }}</strong></div>
+                                    <div>Exam Day</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
+                                    <div>Exam Time</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
+                                    <div>Exam Period</div><div><strong>: {{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                    <div>Exam Venue</div><div><strong>: {{ att.report.exam.examVenue }}</strong></div>
                                 </div>
                             </td>
 

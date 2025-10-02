@@ -165,18 +165,18 @@
                 </select><br>
 
                 <label>Program Code</label>
-                <input type="text" id="editProgramCode" name="programCode" value="" readonly><br>
-                
+                <input type="text" id="editProgramCode" name="programCode" readonly><br>
+
                 <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" value="" readonly>
+                <input type="number" id="editStudent" name="student" readonly>
             </div>
 
             <div class="form-middle">
                 <label>Practical Lecturer</label>
-                <input type="text" id="editPracticalLecturer" name="practicalLecturer" value="" readonly><br>
+                <input type="text" id="editPracticalLecturer" name="practicalLecturer" readonly><br>
 
                 <label>Tutorial Lecturer</label>
-                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" value="" readonly><br>
+                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly><br>
 
                 <label>Exam Venue (Editable)</label>
                 <select name="venue" id="editVenue" required>
@@ -285,8 +285,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!programCode) return;
 
     const courseSectionSelect = document.getElementById('examManualCourseSection');
-    const practicalLecturer = document.getElementById('examPracticalLecturer');
-    const tutorialLecturer = document.getElementById('examTutorialLecturer');
+    const practicalSelect = document.getElementById('editPracticalLecturer');
+    const tutorialSelect = document.getElementById('editTutorialLecturer');
     const studentField = document.getElementById('student');
 
     // When program/department changes
@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!editCourseSelect) return;
 
     console.log('[DEBUG] Edit course select element found');
-    
+
     editCourseSelect.addEventListener('change', function () {
         const courseCode = this.value;
         console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
@@ -400,7 +400,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
         console.log(`[DEBUG] Fetching from: ${apiUrl}`);
-        
+
         fetch(apiUrl)
             .then(res => {
                 console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
             'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
         ];
-        
+
         fieldsToClear.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             if (field) {
@@ -446,7 +446,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Populate edit form
+    // Populate edit form (read-only for department and lecturers)
     function populateEditForm(data) {
         console.log('[DEBUG] Populating form with data:', data);
 
@@ -456,7 +456,9 @@ document.addEventListener("DOMContentLoaded", function () {
             'editVenue': data.examVenue,
             'editInvigilatorNo': data.examNoInvigilator,
             'editExamStartTime': data.examStartTime,
-            'editExamEndTime': data.examEndTime
+            'editExamEndTime': data.examEndTime,
+            'editPracticalLecturer': data.practicalLecturer,
+            'editTutorialLecturer': data.tutorialLecturer
         };
 
         Object.entries(fieldMappings).forEach(([fieldId, value]) => {
@@ -466,29 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log(`[DEBUG] Set ${fieldId} to:`, value);
             }
         });
-
-        const practicalSelect = document.getElementById('editPracticalLecturer');
-        const tutorialSelect = document.getElementById('editTutorialLecturer');
-
-        if (practicalSelect) {
-            practicalSelect.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = data.practicalLecturer || '';
-            option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
-            option.selected = true;
-            practicalSelect.appendChild(option);
-            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
-        }
-
-        if (tutorialSelect) {
-            tutorialSelect.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = data.tutorialLecturer || '';
-            option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
-            option.selected = true;
-            tutorialSelect.appendChild(option);
-            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
-        }
 
         console.log('[DEBUG] Form population complete');
     }
