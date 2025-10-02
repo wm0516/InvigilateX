@@ -249,6 +249,34 @@ function populateEditForm(data) {
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    const courseSelect = document.getElementById("editExamCourseSection");
+
+    if (courseSelect) {
+        courseSelect.addEventListener("change", function() {
+            const selectedValue = this.value;
+            clearEditFields();
+
+            if (!selectedValue) return;
+
+            // Fetch exam details from backend
+            fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        populateEditForm(data);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching exam details:", err);
+                });
+        });
+    }
+});
+
+
 // ==============================
 // Admin Manage Exam Page: Date/Time Restrictions
 // ==============================
