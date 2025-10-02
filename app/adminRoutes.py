@@ -132,36 +132,50 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
 
 
-def generate_managecourse_template():
-    # Get departments and lecturers
-    departments = [f"[{d.departmentCode}] {d.departmentName}" for d in Department.query.all()]
-    lecturers = [f"[{u.userId}] {u.userName}" for u in User.query.filter_by(userLevel=1).all()]
 
+from openpyxl.worksheet.datavalidation import DataValidation
+from io import BytesIO
+import openpyxl
+
+def generate_managecourse_template():
     wb = openpyxl.Workbook()
     ws = wb.active
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Courses"
-
-    # Header row
-    ws.append([])
+    
+    # Header row (start from row 2)
+    ws.append([])  # skip first row
     headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
     ws.append(headers)
-
-    # --- Only add dropdown if list is not empty ---
+    
+    # --- Hidden sheet for dropdown lists ---
+    ws_lists = wb.create_sheet(title="Lists")
+    
+    # Departments
+    departments = [f"[{d.departmentCode}] {d.departmentName}" for d in Department.query.all()]
+    for i, dept in enumerate(departments, start=1):
+        ws_lists[f"A{i}"] = dept
+    
+    # Lecturers
+    lecturers = [f"[{u.userId}] {u.userName}" for u in User.query.filter_by(userLevel=1).all()]
+    for i, lec in enumerate(lecturers, start=1):
+        ws_lists[f"B{i}"] = lec
+    
+    ws_lists.sheet_state = 'hidden'  # hide the sheet
+    
+    # Dropdowns using list references
     if departments:
-        dept_str = ",".join(departments).replace('"', '""')  # Escape quotes
-        dv_dept = DataValidation(type="list", formula1=f'"{dept_str}"', allow_blank=False)
+        dv_dept = DataValidation(type="list", formula1="=Lists!$A$1:$A${}".format(len(departments)), allow_blank=False)
         ws.add_data_validation(dv_dept)
-        dv_dept.add("A2:A1000")  # limit to 1000 rows for safety
-
+        dv_dept.add("A3:A1000")
+    
     if lecturers:
-        lecturer_str = ",".join(lecturers).replace('"', '""')
-        dv_lecturer = DataValidation(type="list", formula1=f'"{lecturer_str}"', allow_blank=True)
+        dv_lecturer = DataValidation(type="list", formula1="=Lists!$B$1:$B${}".format(len(lecturers)), allow_blank=True)
         ws.add_data_validation(dv_lecturer)
-        dv_lecturer.add("F2:F1000")  # Practical Lecturer
-        dv_lecturer.add("G2:G1000")  # Tutorial Lecturer
-
-    # Return as BytesIO for sending to user
+        dv_lecturer.add("F3:F1000")
+        dv_lecturer.add("G3:G1000")
+    
+    # Return BytesIO
     output = BytesIO()
     wb.save(output)
     output.seek(0)
