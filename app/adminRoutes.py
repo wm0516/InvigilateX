@@ -19,6 +19,9 @@ from flask import render_template, request, redirect, url_for, flash, session, j
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func
+from openpyxl.styles import NamedStyle
+from openpyxl.styles import numbers
+
 
 # -------------------------------
 # Local application imports
@@ -592,6 +595,7 @@ def admin_manageVenue():
 
 
 
+
 def generate_manageexam_template():
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
@@ -604,14 +608,22 @@ def generate_manageexam_template():
                'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
     ws.append(headers)
 
+    # --- Create Excel number formats ---
+    date_style = NamedStyle(name="date_style", number_format="M/D/YYYY")
+    time_style = NamedStyle(name="time_style", number_format="h:mm AM/PM")
+    day_style = NamedStyle(name="day_style", number_format="DDD")  # e.g. MON, TUE, FRI
+
+    # Apply formats for first 1000 rows
+    for row in range(2, 1001):
+        ws[f"A{row}"].style = date_style   # Date
+        ws[f"B{row}"].style = day_style    # Day
+        ws[f"C{row}"].style = time_style   # Start
+        ws[f"D{row}"].style = time_style   # End
+
     # Hidden sheet for lists + lookup table
     ws_lists = wb.create_sheet(title="Lists")
 
-    # Collect all courses
     courses = Course.query.filter_by(courseStatus=True).all()
-
-    # Write lookup table in hidden sheet
-    # Col A: Course/Sec, Col B: Program, Col C: Practical Lecturer, Col D: Tutorial Lecturer, Col E: No of Students
     for i, c in enumerate(courses, start=1):
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake
         ws_lists[f"B{i}"] = c.courseDepartment
@@ -619,7 +631,6 @@ def generate_manageexam_template():
         ws_lists[f"D{i}"] = c.tutorialLecturer.userName if c.tutorialLecturer else ""
         ws_lists[f"E{i}"] = c.courseStudent or 0
 
-    # Define dropdown for Course/Sec
     if courses:
         dv_course = DataValidation(
             type="list",
@@ -629,21 +640,14 @@ def generate_manageexam_template():
         ws.add_data_validation(dv_course)
         dv_course.add("F2:F1000")  # Course/Sec column
 
-    # Auto-fill formulas with VLOOKUP
-    for row in range(2, 1001):  # Pre-fill 1000 rows
-        # Program
+    for row in range(2, 1001):
         ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
-        # Practical Lecturer
         ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
-        # Tutorial Lecturer
         ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
-        # No of students
         ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
 
-    # Hide the lookup sheet
     ws_lists.sheet_state = 'hidden'
 
-    # Return BytesIO
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -659,6 +663,7 @@ def download_exam_template():
         download_name="ManageExam.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
 
 
 
