@@ -48,10 +48,10 @@
     <div id="uploadSection" class="function-frame" style="width:80%;">
         <div class="form-left" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
-            
+
             <h4>Download Course Templates by Department</h4>
             <div style="text-align: center; margin-bottom: 20px;">
-                {% for dept in departments %}
+                {% for dept in department_data %}
                     <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}">
                         <button type="button">{{ dept.departmentCode }}</button>
                     </a>
