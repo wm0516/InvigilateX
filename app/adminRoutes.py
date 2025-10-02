@@ -66,7 +66,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                     df.columns = [str(col).strip().lower() for col in df.columns]
 
                     if not set(expected_cols).issubset(df.columns):
-                        flash(f"{df.columns}")
+                        flash(f"{df.columns}","error")
                         raise ValueError(f"Excel columns do not match expected format: {df.columns.tolist()}")
 
                     # normalize all columns
@@ -573,7 +573,6 @@ def admin_manageVenue():
 
 
 
-
 # -------------------------------
 # Handle Timeline Read From ExcelFile
 # -------------------------------
@@ -587,7 +586,7 @@ def parse_date(val):
         try:
             return datetime.strptime(str(val), "%m/%d/%Y").date()
         except Exception:
-            print(f"[Date Parse Error] Could not parse: {val}")
+            flash(f"❌ Date Parse Error: Could not parse '{val}'", "error")
             return None
 
 # -------------------------------
@@ -600,16 +599,18 @@ def standardize_time_with_seconds(time_value):
         return time_value.strftime("%H:%M:%S")
     elif isinstance(time_value, str):
         # Try multiple formats
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):  # Handle 12-hour format with AM/PM
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):  
             try:
                 dt = datetime.strptime(time_value.strip(), fmt)
                 return dt.strftime("%H:%M:%S")  # Convert to 24-hour format (HH:MM:SS)
             except ValueError:
                 continue
-        print(f"[Time Parse Error] Could not parse: {time_value}")
+        flash(f"❌ Time Parse Error: Could not parse '{time_value}'", "error")
         return None
     else:
+        flash(f"❌ Invalid Time Value: {time_value}", "error")
         return None
+
 
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Format
