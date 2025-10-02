@@ -114,8 +114,10 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         success, message = process_row_fn(row)
                         if success:
                             records_added += 1
+                            flash(f'{message}',"success")
                         else:
                             records_failed += 1
+                            flash(f'{message}',"error")
 
                 except Exception as sheet_err:
                     print(f"[Sheet Error] {sheet_err}")
@@ -665,7 +667,7 @@ def generate_manageexam_template():
         )
         ws.add_data_validation(dv_venue)
         dv_venue.add("I3:I1002")  # Room dropdown now in col I
-        
+
     ws_lists.sheet_state = 'hidden'
 
     output = BytesIO()
