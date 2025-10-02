@@ -49,10 +49,10 @@
         <div class="form-left" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
 
-            <h3 style="text-align: center;">Download Course Templates by Department</h3>
+            <h5 style="text-align: center;">Download Course Templates by Department</h5>
             <div style="text-align: center; margin-bottom: 20px;">
                 {% for dept in department_data %}
-                    <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}">{{ dept.departmentCode }}</a>
+                    <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}" style="margin: 0 10px;">{{ dept.departmentCode }}</a>
                 {% endfor %}
             </div>
 
