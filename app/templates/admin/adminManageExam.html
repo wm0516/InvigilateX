@@ -244,12 +244,12 @@
                         <td>{{ loop.index }}</td>
                         <td>
                             <div class="info-grid">
-                                <div>Course Name</div><div><strong>{{ row.course.courseName }}</strong></div>
-                                <div>Course Code/Section</div><div><strong>{{ row.course.courseCodeSection }}</strong></div>
-                                <div>Program Code</div><div><strong>{{ row.course.courseDepartment }}</strong></div>
-                                <div>Number of Students</div><div><strong>{{ row.course.courseStudent }}</strong></div>
-                                <div>Practical Lecturer</div><div><strong>{{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }}</strong></div>
-                                <div>Tutorial Lecturer</div><div><strong>{{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}</strong></div>
+                                <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
+                                <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSection }}</strong></div>
+                                <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
+                                <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
+                                <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else 'N/A' }}</strong></div>
+                                <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else 'N/A' }}</strong></div>
                             </div>
                         </td>
                         <td>[{{ row.examId }}]</td>
@@ -257,20 +257,18 @@
                         <!-- Exam Details -->
                         <td>
                             {% if row.examStartTime and row.examEndTime %}
-                                Exam Date  : <strong>{{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong><br>      
-                                Exam Day   : <strong>{{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong><br>
-                                Exam Time  : <strong>{{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong><br>
-                                Exam Period: <strong>{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m </strong><br>
+                                <div class="info-grid">
+                                    <div>Exam Date</div><div><strong>{{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Exam Day</div><div><strong>{{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
+                                    <div>Exam Time</div><div><strong>{{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
+                                    <div>Exam Period</div><div><strong>{{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                    <div>Exam Venue</div><div><strong>{{ row.examVenue }}</strong></div>
+                                </div>
                             {% else %}
-                                <span class="status frame-red">Exam details not yet assigned</span><br>
-                            {% endif %}
-                            {% if row.examVenue %}
-                                Exam Venue : <strong>{{ row.examVenue }}</strong>
-                            {% else %}
-                                <span class="status frame-red">Exam Venue : [ERROR]</span>
+                                <span class="status frame-red">Exam details not yet assigned</span>
                             {% endif %}
                         </td>
-                    
+
                         <td>
                             {% if row.examNoInvigilator == 0 %}
                                 <span class="status frame-red">Error: No Invigilator Assigned!</span>

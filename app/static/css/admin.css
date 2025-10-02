@@ -293,9 +293,11 @@ html, body {
 
 .error-row-show {
     background-color: #fddcdc; /* light red for errors */
+    border-bottom: 1px solid #e0e0e0;
 }
 .inactive-row-show {
     background-color: lightgrey; /* light gray for inactive */
+    border-bottom: 1px solid #e0e0e0;
 }
 
 

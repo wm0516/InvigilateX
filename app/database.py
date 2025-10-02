@@ -94,10 +94,10 @@ class Venue(db.Model):
 class Exam(db.Model):
     __tablename__ = 'Exam'
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                         # [PK] Refer to Exam ID
-    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)      # Refer to Exam Venue
+    examVenue = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=False)     # Refer to Exam Venue
     examStartTime = db.Column(db.DateTime, nullable=True)                                        # Refer to Exam StartTime
     examEndTime = db.Column(db.DateTime, nullable=True)                                          # Refer to Exam EndTime
-    examNoInvigilator = db.Column(db.Integer, nullable=False)                                     # Number of invigilators needed
+    examNoInvigilator = db.Column(db.Integer, nullable=False)                                    # Number of invigilators needed
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
@@ -110,7 +110,7 @@ class Exam(db.Model):
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         examStartTime DATETIME NULL,
         examEndTime DATETIME NULL,
-        examVenue VARCHAR(10) NULL,
+        examVenue VARCHAR(10) NOT NULL,
         examNoInvigilator INT NOT NULL,
         FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
     );
