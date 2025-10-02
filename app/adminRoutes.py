@@ -631,10 +631,10 @@ def generate_manageexam_template():
     # --- Courses ---
     courses = Course.query.filter_by(courseStatus=True).all()
     for i, c in enumerate(courses, start=1):
-        ws_lists[f"A{i}"] = c.courseCodeSectionIntake
-        ws_lists[f"B{i}"] = c.courseDepartment
-        ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""
-        ws_lists[f"D{i}"] = c.courseStudent or 0
+        ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
+        ws_lists[f"B{i}"] = c.courseDepartment          # Program
+        ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""  # Lecturer
+        ws_lists[f"D{i}"] = c.courseStudent or 0        # No of students
 
     # --- Venues ---
     venues = Venue.query.all()
@@ -653,10 +653,9 @@ def generate_manageexam_template():
 
         # Auto-fill program, lecturers, no of students
         for row in range(3, 1003):
-            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
-            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
-            ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
-            ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
+            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))'  # Program
+            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))'  # Lecturer
+            ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))'  # No of Students
 
     if venues:
         dv_venue = DataValidation(
@@ -665,8 +664,8 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        dv_venue.add("J3:J1002")  # Venue dropdown (start at row 3 now)
-
+        dv_venue.add("I3:I1002")  # Room dropdown now in col I
+        
     ws_lists.sheet_state = 'hidden'
 
     output = BytesIO()
