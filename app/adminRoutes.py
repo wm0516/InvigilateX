@@ -606,7 +606,7 @@ def generate_manageexam_template():
     # First row empty
     ws.append([])
     # Second row = headers
-    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
+    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No of', 'Room']
     ws.append(headers)
 
     # --- Create Excel number formats ---
@@ -634,7 +634,6 @@ def generate_manageexam_template():
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake
         ws_lists[f"B{i}"] = c.courseDepartment
         ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""
-        ws_lists[f"D{i}"] = c.tutorialLecturer.userName if c.tutorialLecturer else ""
         ws_lists[f"E{i}"] = c.courseStudent or 0
 
     # --- Venues ---
@@ -863,7 +862,7 @@ def admin_manageExam():
     ])
 
     # Default manual form values
-    courseSection_text = practicalLecturer_text = tutorialLecturer_text = venue_text = invigilatorNo_text = ''
+    venue_text = invigilatorNo_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
