@@ -698,9 +698,9 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File
 # -------------------------------
 def process_exam_row(row):
-    examDate_text = row['date']
-    startTime_text = row['start']
-    endTime_text = row['end']
+    examDate_text = row['date'].strftime("%Y-%m-%d")   # "2025-12-12"
+    startTime_text = row['start'].strftime("%H:%M:%S")  # "09:00:00"
+    endTime_text = row['end'].strftime("%H:%M:%S")  # "09:00:00"
 
     flash(f"date:{examDate_text}, start:{startTime_text}, end:{endTime_text}","error")
 
