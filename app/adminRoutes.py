@@ -698,7 +698,7 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File
 # -------------------------------
 def process_exam_row(row):
-    examDate_text = parse_date(row['date'])
+    examDate_text = row['date']
     startTime_text = row['start']
     endTime_text = row['end']
 
