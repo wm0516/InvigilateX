@@ -94,6 +94,8 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         excel_file,
                         sheet_name=sheet_name,
                         usecols=usecols,
+                        skiprows=1,      # skip the first row
+                        header=0,        # take the next row as header
                         dtype=str
                     )
                     df.columns = [str(col).strip().lower() for col in df.columns]
@@ -299,7 +301,8 @@ def admin_manageCourse():
                 expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'],
                 process_row_fn=process_course_row,
                 redirect_endpoint='admin_manageCourse',
-                usecols="A:H"
+                usecols="A:H",
+                skiprows=1 
             )
 
         # --- Edit Section ---
@@ -763,7 +766,8 @@ def admin_manageExam():
                 expected_cols=['date', 'day', 'start', 'end', 'program','course/sec','lecturer','no of','room'],
                 process_row_fn=process_exam_row,
                 redirect_endpoint='admin_manageExam',
-                usecols="A:I"
+                usecols="A:I",
+                skiprows=1 
             )
 
         # --------------------- EDIT EXAM FORM ---------------------
@@ -926,7 +930,8 @@ def admin_manageStaff():
                 expected_cols=['id', 'name', 'department', 'role', 'email', 'contact', 'gender'],
                 process_row_fn=process_staff_row,
                 redirect_endpoint='admin_manageStaff',
-                usecols="A:G"
+                usecols="A:G",
+                skiprows=1 
             )
 
         elif form_type == 'edit':
