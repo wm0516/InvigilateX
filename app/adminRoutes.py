@@ -605,7 +605,6 @@ def generate_manageexam_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Exams"
 
-
     # Header row
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec','Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
     ws.append(headers)
