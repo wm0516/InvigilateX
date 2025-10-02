@@ -394,7 +394,7 @@ input, select{
 }
 
 input[readonly] {
-    background: #dedede;       /* Gray background */
+    background: #eeeeee;       /* Gray background */
     cursor: not-allowed;       /* Show not-allowed cursor */
     pointer-events: none;      /* Disable mouse interactions */
 }
