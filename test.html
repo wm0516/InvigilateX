@@ -701,3 +701,59 @@ def get_course_details(department_code, course_section):
     })
 
 
+
+
+# -------------------------------
+# Admin Function 4
+# -------------------------------
+'''
+def get_available_venues(examDate, startTime, endTime):
+    # Return a list of venueNumbers that are AVAILABLE during the given exam slot.
+    available_venues = Venue.query.all()
+    usable_venues = []
+
+    for venue in available_venues:
+        conflicting = VenueAvailability.query.filter(
+            VenueAvailability.venueNumber == venue.venueNumber,
+            or_(
+                and_(
+                    VenueAvailability.startDateTime <= startTime,
+                    VenueAvailability.endDateTime > startTime
+                ),
+                and_(
+                    VenueAvailability.startDateTime < endTime,
+                    VenueAvailability.endDateTime >= endTime
+                ),
+                and_(
+                    VenueAvailability.startDateTime >= startTime,
+                    VenueAvailability.endDateTime <= endTime
+                )
+            )
+        ).first()
+
+        if not conflicting:
+            usable_venues.append(venue.venueNumber)
+
+    return usable_venues
+'''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
