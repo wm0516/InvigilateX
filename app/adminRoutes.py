@@ -627,22 +627,6 @@ def generate_manageexam_template():
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No of', 'Room']
     ws.append(headers)
 
-    # --- Create Excel number formats ---
-    if "date_style" not in wb.named_styles:
-        date_style = NamedStyle(name="date_style", number_format="M/D/YYYY")
-        wb.add_named_style(date_style)
-
-    if "time_style" not in wb.named_styles:
-        time_style = NamedStyle(name="time_style", number_format="h:mm AM/PM")
-        wb.add_named_style(time_style)
-
-    # Apply formats + formulas for rows 3 to 1002 (since we shifted down)
-    for row in range(3, 1003):
-        ws[f"A{row}"].style = "date_style"   # Date column
-        ws[f"C{row}"].style = "time_style"   # Start Time
-        ws[f"D{row}"].style = "time_style"   # End Time
-        ws[f"B{row}"].value = f"=IF(A{row}<>\"\",TEXT(A{row},\"DDD\"),\"\")"
-
     # === Hidden sheet for lookup lists ===
     ws_lists = wb.create_sheet(title="Lists")
 
@@ -667,7 +651,7 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_course)
-        dv_course.add("F3:F1002")  # Course/Sec dropdown (start at row 3 now)
+        dv_course.add("F3:F1002")  # Course/Sec dropdown
 
         # Auto-fill program, lecturers, no of students
         for row in range(3, 1003):
@@ -682,7 +666,7 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        dv_venue.add("I3:I1002")  # Room dropdown now in col I
+        dv_venue.add("I3:I1002")  # Room dropdown
 
     ws_lists.sheet_state = 'hidden'
 
@@ -690,6 +674,7 @@ def generate_manageexam_template():
     wb.save(output)
     output.seek(0)
     return output
+
 
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Template
