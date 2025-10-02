@@ -603,7 +603,9 @@ def generate_manageexam_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Exams"
 
-    # Header row
+    # First row empty
+    ws.append([])
+    # Second row = headers
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
     ws.append(headers)
 
@@ -616,12 +618,11 @@ def generate_manageexam_template():
         time_style = NamedStyle(name="time_style", number_format="h:mm AM/PM")
         wb.add_named_style(time_style)
 
-    # Apply formats + formulas for first 1000 rows
-    for row in range(2, 1001):
+    # Apply formats + formulas for rows 3 to 1002 (since we shifted down)
+    for row in range(3, 1003):
         ws[f"A{row}"].style = "date_style"   # Date column
         ws[f"C{row}"].style = "time_style"   # Start Time
         ws[f"D{row}"].style = "time_style"   # End Time
-        # Auto day from date (first 3 letters of weekday)
         ws[f"B{row}"].value = f"=IF(A{row}<>\"\",TEXT(A{row},\"DDD\"),\"\")"
 
     # === Hidden sheet for lookup lists ===
@@ -649,10 +650,10 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_course)
-        dv_course.add("F2:F1000")  # Course/Sec dropdown
+        dv_course.add("F3:F1002")  # Course/Sec dropdown (start at row 3 now)
 
         # Auto-fill program, lecturers, no of students
-        for row in range(2, 1001):
+        for row in range(3, 1003):
             ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
             ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
             ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
@@ -665,7 +666,7 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        dv_venue.add("J2:J1000")  # Venue dropdown
+        dv_venue.add("J3:J1002")  # Venue dropdown (start at row 3 now)
 
     ws_lists.sheet_state = 'hidden'
 
@@ -673,6 +674,7 @@ def generate_manageexam_template():
     wb.save(output)
     output.seek(0)
     return output
+
 
 
 
