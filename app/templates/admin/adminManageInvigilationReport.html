@@ -86,53 +86,51 @@
             <tbody>
                 {% for exam, grouped in attendances|groupby("report.exam.examId") %}
                     {% set rowspan = grouped|length %}
+                    
                     {% for att in grouped %}
                         <tr>
                             {% if loop.first %}
                                 <!-- Exam ID -->
-                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examId }}]</td>
-                            
-                                <!-- Course Details -->
-                                <td rowspan="{{ rowspan }}">
-                                    Course Name        : {{ att.report.exam.course.courseName }} <br>
-                                    Course Code/Section: {{ att.report.exam.course.courseCodeSection }}<br>
-                                    Number of Students : {{ att.report.exam.course.courseStudent }}
-                                </td>
+                                <td rowspan="{{ rowspan }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
 
-                                <!-- Exam Details -->
-                                <td rowspan="{{ rowspan }}">
-                                    Exam Date   : [{{ att.report.exam.examStartTime.strftime("%Y-%m-%d") }}] - [{{ att.report.exam.examEndTime.strftime("%Y-%m-%d") }}] <br>      
-                                    Exam Day    : [{{ att.report.exam.examStartTime.strftime("%A") }}] - [{{ att.report.exam.examEndTime.strftime("%A") }}] <br>
-                                    Exam Time   : [{{ att.report.exam.examStartTime.strftime("%H:%M") }}] - [{{ att.report.exam.examEndTime.strftime("%H:%M") }}] <br>
-                                    Exam Period : [{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h 
-                                                {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 60) // 3600 }}m]<br>
-                                    Exam Venue  : [{{ att.report.exam.examVenue }}]
-                                </td>
+                            <!-- Course Details -->
+                            <td rowspan="{{ rowspan }}">
+                                <div class="info-grid">
+                                    <div>Course Name</div><div><strong>: {{ att.report.exam.course.courseName }}</strong></div>
+                                    <div>Course Code/Section</div><div><strong>: {{ att.report.exam.course.courseCodeSection }}</strong></div>
+                                    <div>Number of Students</div><div><strong>: {{ att.report.exam.course.courseStudent }}</strong></div>
+                                </div>
+                            </td>
 
-                                <!-- Number of Invigilators -->
-                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
+                            <!-- Exam Details -->
+                            <td rowspan="{{ rowspan }}">
+                                <div class="info-grid">
+                                    <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftimestrftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftimestrftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Exam Day</div><div><strong>{{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
+                                    <div>Exam Time</div><div><strong>{{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
+                                    <div>Exam Period</div><div><strong>{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                    <div>Exam Venue</div><div><strong>{{ att.report.exam.examVenue }}</strong></div>
+                                </div>
+                            </td>
+
+                            <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                             {% endif %}
 
-                            <!-- Invigilator Details -->
+                            <!-- Invigilator Details (one per row) -->
                             <td>
-                                ID     : {{ att.invigilator.userId }} <br>
-                                Name   : {{ att.invigilator.userName }} <br>
-                                Contact: {{ att.invigilator.userContact }} <br>
-                                Gender : {{ att.invigilator.userGender }}
+                                <div class="info-grid">
+                                    <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                    <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                    <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
+                                </div>
                             </td>
-                            
-                            <!-- Check-in Time -->
-                            <td>{{ att.checkIn }}</td>
 
-                            <!-- Check-out Time -->
-                            <td>{{ att.checkOut }}</td>
-
-                            <!-- Attendance Status -->
+                            <!-- Attendance Status (per invigilator) -->
                             <td>{{ att.remark }}</td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
-            </tbody>
+            </tbody>    
         </table>
     </div>
 </div>

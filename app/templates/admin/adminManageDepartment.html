@@ -149,20 +149,24 @@
                     <td>{{ row.departmentName }}</td>
                     <td>
                         {% if row.dean %}
-                            Dean/Hos ID         : {{ row.dean.userId }} <br>
-                            Dean/Hos Name       : {{ row.dean.userName }} <br>
-                            Dean/Hos Email      : {{ row.dean.userEmail }} <br>
-                            Dean/Hos Contact    : {{ row.dean.userContact }} <br>
-                            Dean/Hos Department : {{ row.dean.userDepartment }}
+                            <div class="info-grid">
+                                <div>Dean/Hos ID</div><div><strong>: {{ row.dean.userId }}</strong></div>
+                                <div>Dean/Hos Name</div><div><strong>: {{ row.dean.userName }}</strong></div>
+                                <div>Dean/Hos Email</div><div><strong>: {{ row.dean.userEmail }}</strong></div>
+                                <div>Dean/Hos Contact</div><div><strong>: {{ row.dean.userContact }}</strong></div>
+                                <div>Dean/Hos Department</div><div><strong>: {{ row.dean.userDepartment }}</strong></div>
+                            </div>
                         {% endif %}
                     </td>
                     <td>
                         {% if row.hop %}
-                            Hop ID          : {{ row.hop.userId }} <br>
-                            Hop Name        : {{ row.hop.userName }} <br>
-                            Hop Email       : {{ row.hop.userEmail }} <br>
-                            Hop Contact     : {{ row.hop.userContact }} <br>
-                            Hop Department  : {{ row.hop.userDepartment }}
+                            <div class="info-grid">
+                                <div>Hop ID</div><div><strong>: {{ row.hop.userId }}</strong></div>
+                                <div>Hop Name</div><div><strong>: {{ row.hop.userName }}</strong></div>
+                                <div>Hop Email</div><div><strong>: {{ row.hop.userEmail }}</strong></div>
+                                <div>Hop Contact</div><div><strong>: {{ row.hop.userContact }}</strong></div>
+                                <div>Hop Department</div><div><strong>: {{ row.hop.userDepartment }}</strong></div>
+                            </div>=
                         {% endif %}
                     </td>
                 </tr>

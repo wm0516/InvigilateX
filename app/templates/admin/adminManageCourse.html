@@ -252,24 +252,16 @@
                         <td>{{ row.courseDepartment }}</td>
                         <td>{{ row.courseStudent }}</td>
                         <td>
-                            {% if row.practicalLecturer %}
-                                Practical Lecturer: <strong>{{ row.practicalLecturer.userName }}</strong>
-                            {% else %}
-                                <span class="status frame-red">Practical Lecturer: ERROR</span>
-                            {% endif %}
-                            <br>
-                            {% if row.tutorialLecturer %}
-                                Tutorial Lecturer: <strong>{{ row.tutorialLecturer.userName }}</strong>
-                            {% else %}
-                                <span class="status frame-red">Tutorial Lecturer: ERROR</span>
-                            {% endif %}
+                            <div class="info-grid">
+                                <div>Practical Lecturer</div>
+                                <div><strong>{{ row.practicalLecturer.userName if row.practicalLecturer else 'ERROR' }}</strong></div>
+
+                                <div>Tutorial Lecturer</div>
+                                <div><strong>{{ row.tutorialLecturer.userName if row.tutorialLecturer else 'ERROR' }}</strong></div>
+                            </div>
                         </td>
                         <td>
-                            {% if row.courseExamId is none %}
-                                <span class="status frame-red">{{ row.courseExamId }}</span>
-                            {% else %}
-                                {{ row.courseExamId }}
-                            {% endif %}
+                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-red">None</span>' | safe }}
                         </td>
                     </tr>
                 {% endfor %}
@@ -278,6 +270,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 {% block extra_scripts %}
 <script>
