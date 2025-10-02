@@ -99,6 +99,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                     df.columns = [str(col).strip().lower() for col in df.columns]
 
                     if not set(expected_cols).issubset(df.columns):
+                        flash(f"{df.columns}")
                         raise ValueError(f"Excel columns do not match expected format: {df.columns.tolist()}")
 
                     # normalize all columns
