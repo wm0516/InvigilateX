@@ -604,6 +604,7 @@ def generate_manageexam_template():
     ws.title = "Exams"
 
     # Header row
+    ws.append([])
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
     ws.append(headers)
 
