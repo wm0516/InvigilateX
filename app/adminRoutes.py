@@ -48,14 +48,16 @@ def parse_date(val):
     if isinstance(val, datetime):
         return val.date()
     try:
-        # Format from HTML5 input: "YYYY-MM-DD"
-        return datetime.strptime(str(val), "%Y-%m-%d").date()
+        return datetime.strptime(str(val).strip(), "%Y-%m-%d").date()
     except ValueError:
-        try:
-            return datetime.strptime(str(val), "%m/%d/%Y").date()
-        except Exception:
-            print(f"[Date Parse Error] Could not parse: {val}")
-            return None
+        for fmt in ("%m/%d/%Y", "%m/%d/%y"):  # allow 2-digit year also
+            try:
+                return datetime.strptime(str(val).strip(), fmt).date()
+            except ValueError:
+                continue
+        print(f"[Date Parse Error] Could not parse: {val!r}")
+        return None
+
 
 # -------------------------------
 # Handle Timeline Read From ExcelFile And Convert To The Correct Format
@@ -66,17 +68,18 @@ def standardize_time_with_seconds(time_value):
     elif isinstance(time_value, datetime):
         return time_value.strftime("%H:%M:%S")
     elif isinstance(time_value, str):
-        # Try multiple formats
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):  # Handle 12-hour format with AM/PM
+        time_str = str(time_value).replace("\xa0", " ").strip()  # clean Excel weird spaces
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
             try:
-                dt = datetime.strptime(time_value.strip(), fmt)
-                return dt.strftime("%H:%M:%S")  # Convert to 24-hour format (HH:MM:SS)
+                dt = datetime.strptime(time_str, fmt)
+                return dt.strftime("%H:%M:%S")
             except ValueError:
                 continue
-        print(f"[Time Parse Error] Could not parse: {time_value}")
+        print(f"[Time Parse Error] Could not parse: {time_value!r}")
         return None
     else:
         return None
+
 
 # -------------------------------
 # Function handle file upload
