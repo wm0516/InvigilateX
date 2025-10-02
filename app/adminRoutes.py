@@ -699,8 +699,8 @@ def download_exam_template():
 # -------------------------------
 def process_exam_row(row):
     examDate_text = parse_date(row['date'])
-    startTime_text = standardize_time_with_seconds(row['start'])
-    endTime_text = standardize_time_with_seconds(row['end'])
+    startTime_text = row['start']
+    endTime_text = row['end']
 
     if not examDate_text or not startTime_text or not endTime_text:
         return False, "Invalid time/date"
