@@ -700,16 +700,24 @@ def process_exam_row(row):
     examDate_text = parse_date(row['date'])
     startTime_text = standardize_time_with_seconds(row['start'])
     endTime_text = standardize_time_with_seconds(row['end'])
+
     if not examDate_text or not startTime_text or not endTime_text:
         return False, "Invalid time/date"
 
-    start_dt = datetime.combine(examDate_text, datetime.strptime(startTime_text, "%H:%M:%S").time())
-    end_dt = datetime.combine(examDate_text, datetime.strptime(endTime_text, "%H:%M:%S").time())
+    # Parse using the same format returned from standardize_time_with_seconds
+    start_dt = datetime.combine(
+        examDate_text,
+        datetime.strptime(startTime_text, "%I:%M:%S %p").time()
+    )
+    end_dt = datetime.combine(
+        examDate_text,
+        datetime.strptime(endTime_text, "%I:%M:%S %p").time()
+    )
 
     flash(f"DEBUG Row: {row}", "error")
     flash(f"DEBUG Date: {row['date']} ({type(row['date'])})", "error")
-    flash(f"DEBUG Start: {row['start']} ({type(row['start'])})", "error")
-    flash(f"DEBUG End: {row['end']} ({type(row['end'])})", "error")
+    flash(f"DEBUG Start: {row['start']} ({type(row['start'])}) -> {start_dt}", "error")
+    flash(f"DEBUG End: {row['end']} ({type(row['end'])}) -> {end_dt}", "error")
 
     return create_exam_and_related(
         start_dt, end_dt,
@@ -719,6 +727,7 @@ def process_exam_row(row):
         None,
         invigilatorNo=None
     )
+
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
