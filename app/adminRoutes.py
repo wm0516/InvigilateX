@@ -134,8 +134,8 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
 def generate_managecourse_template():
     # Get departments and lecturers
-    departments = [d.departmentCode for d in Department.query.all()]
-    lecturers = [u.userId for u in User.query.filter_by(userLevel=1).all()]  # Only lecturers
+    departments = [f"[{d.departmentCode}] {d.departmentName}" for d in Department.query.all()]
+    lecturers = [f"[{u.userId}] {u.userName}" for u in User.query.filter_by(userLevel=1).all()]
 
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -143,8 +143,8 @@ def generate_managecourse_template():
     ws.title = "Courses"
 
     # Header row
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name',
-               'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+    ws.append([])
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
     ws.append(headers)
 
     # --- Only add dropdown if list is not empty ---

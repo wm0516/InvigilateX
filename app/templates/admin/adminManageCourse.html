@@ -59,17 +59,17 @@
                     <div id="courseSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
-            <div class="button-wrapper">
-                <a href="{{ url_for('download_course_template') }}">
-                    <button type="button">Download ManageCourse.xlsx Template</button>
-                </a>
-            </div>
             <input type="file" id="course_list" name="course_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
             <br>
 
             <div class="button-wrapper">
-                <button type="submit">Upload Course</button>
+                <div><button type="submit">Upload Course</button></div>
+                <div>
+                    <a href="{{ url_for('download_course_template') }}">
+                        <button type="button">Download ManageCourse.xlsx Template</button>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
