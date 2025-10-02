@@ -105,7 +105,7 @@
                             <!-- Exam Details -->
                             <td rowspan="{{ rowspan }}">
                                 <div class="info-grid">
-                                    <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftimestrftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftimestrftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Exam Day</div><div><strong>{{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
                                     <div>Exam Time</div><div><strong>{{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
                                     <div>Exam Period</div><div><strong>{{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>

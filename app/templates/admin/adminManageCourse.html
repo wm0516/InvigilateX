@@ -254,10 +254,9 @@
                         <td>
                             <div class="info-grid">
                                 <div>Practical Lecturer</div>
-                                <div><strong>{{ row.practicalLecturer.userName if row.practicalLecturer else 'ERROR' }}</strong></div>
-
+                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
                                 <div>Tutorial Lecturer</div>
-                                <div><strong>{{ row.tutorialLecturer.userName if row.tutorialLecturer else 'ERROR' }}</strong></div>
+                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
                             </div>
                         </td>
                         <td>

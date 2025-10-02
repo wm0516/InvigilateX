@@ -255,7 +255,7 @@
                         {% elif row.userStatus|int == 2 %}
                             <span class="status frame-red">[DELETED]</span>
                         {% endif %}
-                        <br>Date: {{ row.userRegisterDateTime.strftime("%Y-%m-%d") }}
+                        <br>Date: {{ row.userRegisterDateTime.strftime("%d/%b/%Y") }}
                     </td>
                     
                     <td>{{ row.userId }}</td>
@@ -280,17 +280,16 @@
                     </td>
 
                     <!-- Department -->
-                    <td>
-                        {{ row.userDepartment if row.userDepartment else '<span style="color:red;">ERROR</span>' | safe }}
-                    </td>
+                    <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">'N/A'</span>' | safe }}</td>
 
                     <!-- Invigilation -->
                     <td>
-                        Cumulative: {{ row.userCumulativeHours }} hrs <br>
-                        Pending: {{ row.userPendingCumulativeHours }} hrs
+                        <div class="info-grid">
+                            <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
+                            <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
+                        </div>
                     </td>
                 </tr>
-
                 {% endfor %}
             </tbody>
         </table>
