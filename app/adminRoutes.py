@@ -80,7 +80,7 @@ def standardize_time_with_seconds(time_value):
 # -------------------------------
 # Function handle file upload
 # -------------------------------
-def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows):
+def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
     file = request.files.get(file_key)
     if file and file.filename:
         try:
