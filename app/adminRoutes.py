@@ -722,7 +722,7 @@ def process_exam_row(row):
     flash(f"DEBUG Start: {row['start']} ({type(row['start'])}) -> {start_dt}", "error")
     flash(f"DEBUG End: {row['end']} ({type(row['end'])}) -> {end_dt}", "error")
 
-    return create_exam_and_related(
+    create_exam_and_related(
         start_dt, end_dt,
         str(row['course/sec']).upper(),
         str(row['room']).upper(),
@@ -730,6 +730,8 @@ def process_exam_row(row):
         None,
         invigilatorNo=None
     )
+
+    return True, f"Exam for {row['course/sec']} uploaded"
 
 
 # -------------------------------
