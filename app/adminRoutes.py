@@ -593,7 +593,6 @@ def admin_manageVenue():
 
 
 def generate_manageexam_template():
-
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
     ws = wb.active
