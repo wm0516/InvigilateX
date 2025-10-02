@@ -1,0 +1,703 @@
+{% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
+{% set show_upload = true %}
+{% set show_dashboard = true %}
+{% set show_manual = true %}
+{% set show_edit = true %}
+{% block title %}Admin ManageExams{% endblock %}
+{% block head_title %}<h2>Manage Exams</h2>{% endblock %}
+
+{% block dashboard_section %}
+<form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST">
+    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
+        <input type="hidden" name="form_type" value="dashboard">
+        <div class="form-left" style="width: 100%">
+
+            <!-- Overview -->
+            <div class="dashboard-row">
+                <div class="dashboard-frame">
+                    <h3>Total Exams</h3>
+                    <p class="dashboard-text">{{ exam_data|length }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Completed Exams</h3>
+                    <p class="dashboard-text" style="color:green;">{{ complete_exam }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Exams with Errors</h3>
+                    <p class="dashboard-text" style="color:red;">{{ exam_data|length - complete_exam - unassigned_exam }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Exams Not Created Yet</h3>
+                    <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block upload_section %}
+<!-- Upload Form -->
+<form id="uploadForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
+    <div id="uploadSection" class="function-frame">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="exam_list">
+                <div class="upload-container" id="examUploadContainer">
+                    <div class="upload-text">
+                        Upload a file with an empty first row. Data should start from columns A to J,<br> 
+                        labeled as: ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']<br><br><br>
+                        Click to upload or drag and drop with below file format
+                    </div>
+                    <div class="file-types">XLSX, XLS, or XLSM</div><br>
+                    <!-- Selected file display -->
+                    <div id="examSelectedFileName" class="file-name-display"></div>
+                </div>
+            </label>
+            <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+            <!-- 🔽 Add this hidden input here -->
+            <input type="hidden" name="form_type" value="upload">
+            <br>
+
+            <!-- Upload Form Submit -->
+            <div class="button-wrapper">
+                <button type="submit">Upload Exam</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block manual_section %}
+<!-- Manual Form -->
+<form id="manualForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
+    <div id="manualSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Manual Data Entry Section</h4>
+        <div class="profile-frame">
+            <div class="form-left" style="margin: auto;">
+                <label>Exam Start Date & Time</label>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="startDate" name="startDate" required>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div><br>
+
+                <label>Exam End Date & Time</label>     
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="endDate" name="endDate" required>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div><br>
+
+                <label>Program Code</label>
+                <select name="programCode" id="examManualProgramCode" required>
+                    <option value="" disabled selected>Select Program Code</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}">
+                            [{{ dept.departmentCode }}] {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-middle" style="margin: auto;">
+                <label>Course/Section - Course Name</label>
+                <select name="courseSection" id="examManualCourseSection" required>
+                    <option value="" disabled selected>Select Course Section</option>
+                </select><br>
+
+                <label>Course Practical Lecturer</label>
+                <input type="text" id="examPracticalLecturer" name="practicalLecturer" readonly><br>
+
+                <label>Course Tutorial Lecturer</label>
+                <input type="text" id="examTutorialLecturer" name="tutorialLecturer" readonly>
+            </div> 
+
+            <div class="form-right" style="margin: auto;">
+                <label>Number of Students</label>
+                <input type="number" id="student" name="student" readonly><br>
+
+                <label>Exam Venue</label>
+                <select name="venue" id="venueSection" required>
+                    <option value="" disabled selected>Select Exam Venue</option>
+                    {% for venue in venue_data %}
+                        <option value="{{ venue.venueNumber }}">
+                            [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
+                        </option>
+                    {% endfor %}
+                </select><br>
+
+                <label>Number of Invigilators</label>
+                <input type="text" value="≤32 students → 2 invigilators, >32 → 3 invigilators" readonly>
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="manual">
+        <br><br>
+
+        <div class="button-wrapper">
+            <button type="submit">Add New Exam</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block edit_section %}
+<form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
+    <div id="editSection" class="function-frame" style="width:100%">
+        <h4 style="text-align: center;">Edit Existing Exams</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label for="editExamCourseSection">Select Exam Course/Section - Course Name</label>
+                <select name="editExamCourseSection" id="editExamCourseSection" required>
+                    <option value="" disabled selected>Select Course Section</option>
+                    {% for exam in exam_data %}
+                        {% if exam.course %}
+                            <option value="{{ exam.course.courseCodeSection }}">
+                                [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
+                            </option>
+                        {% else %}
+                            {# optional: show a disabled placeholder for exams without a linked course #}
+                            <option value="" disabled>Unlinked exam (ID: {{ exam.examId }})</option>
+                        {% endif %}
+                    {% endfor %}
+                </select><br>
+
+                <label>Program Code</label>
+                <select id="editProgramCode" name="programCode" readonly>
+                    <option value="" disabled selected>Select Department</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
+                    {% endfor %}
+                </select><br>
+                
+                <label>Number of Students</label>
+                <input type="number" id="editStudent" name="student" value="" readonly>
+            </div>
+
+            <div class="form-middle">
+                <label>Practical Lecturer</label>
+                <select id="editPracticalLecturer" name="practicalLecturer" readonly>
+                    <option value="" disabled>Select Practical Lecturer</option>
+                </select><br>
+
+                <label>Tutorial Lecturer</label>
+                <select id="editTutorialLecturer" name="tutorialLecturer" readonly>
+                    <option value="" disabled>Select Tutorial Lecturer</option>
+                </select><br>
+
+                <label>Exam Venue (Editable)</label>
+                <select name="venue" id="editVenue" required>
+                    <option value="" disabled selected>Select Exam Venue</option>
+                    {% for venue in venue_data %}
+                        <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-right">
+                <label>Exam Start Date & Time</label>
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="startDate" name="startDate" required>
+                    <input type="time" id="startTime" name="startTime" required>
+                </div><br>
+
+                <label>Exam End Date & Time</label>     
+                <div style="display: flex; gap: 2%;">
+                    <input type="date" id="endDate" name="endDate" required>
+                    <input type="time" id="endTime" name="endTime" required>
+                </div><br>
+
+                <label>Number of Invigilators (Editable)</label>
+                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="edit">
+        <br><br>
+
+        <div class="button-wrapper" style="gap: 5%;">
+            <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
+                <i class="fas fa-check"></i> Update Exam
+            </button>
+            <button type="submit" name="action" value="delete" style="background-color: #f8d7da; color: #721c24;"
+                    onclick="return confirm('Are you sure to delete this exam?')">
+                <i class="fas fa-trash"></i> Delete Exam
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block content %}
+<div class="menu-section">
+    <h2>List of Exams</h2>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Course Details</th>
+                    <th>Exam ID</th>
+                    <th>Exam Details</th>
+                    <th>Number of Invigilators</th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% for row in exam_data %}
+                    <tr class="{% if row.examNoInvigilator == 0 or row.examStartTime is none or row.examEndTime is none or row.examVenue is none %}error-row-show{% endif %}">
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <div class="info-grid">
+                                <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
+                                <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSection }}</strong></div>
+                                <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
+                                <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
+                                <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
+                                <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
+                            </div>
+                        </td>
+                        <td>[{{ row.examId }}]</td>
+
+                        <!-- Exam Details -->
+                        <td>
+                            {% if row.examStartTime and row.examEndTime %}
+                                <div class="info-grid">
+                                    <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
+                                    <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
+                                    <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                    <div>Exam Venue</div><div><strong>: {{ row.examVenue }}</strong></div>
+                                </div>
+                            {% else %}
+                                <span class="status frame-red">Exam details not yet assigned</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if row.examNoInvigilator == 0 %}
+                                <span class="status frame-red">Error: No Invigilator Assigned!</span>
+                            {% else %}
+                                [{{ row.examNoInvigilator }}]
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+// examManual.js
+document.addEventListener("DOMContentLoaded", function () {
+    // Manual Section Dropdowns
+    const programCode = document.getElementById('examManualProgramCode');
+    if (!programCode) return;
+
+    const courseSectionSelect = document.getElementById('examManualCourseSection');
+    const practicalLecturer = document.getElementById('examPracticalLecturer');
+    const tutorialLecturer = document.getElementById('examTutorialLecturer');
+    const studentField = document.getElementById('student');
+
+    // When program/department changes
+    programCode.addEventListener('change', function () {
+        const deptCode = this.value;
+        console.log("Selected Department Code is:", deptCode);
+
+        // Reset dependent fields
+        courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
+        practicalLecturer.value = "";
+        tutorialLecturer.value = "";
+        studentField.value = "";
+
+        if (deptCode) {
+            fetch(`/get_courses_by_department/${deptCode}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.courseCodeSection;
+                        option.textContent = `${course.courseCodeSection} - ${course.courseName}`;
+                        courseSectionSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching courses:', error));
+        }
+    });
+
+    // When course/section changes
+    courseSectionSelect.addEventListener('change', function () {
+        const sectionCode = this.value;
+        const deptCode = programCode.value;
+
+        if (sectionCode && deptCode) {
+            console.log(`[Fetch] Getting details for course: ${sectionCode} under ${deptCode}`);
+            fetch(`/get_course_details/${encodeURIComponent(deptCode)}/${encodeURIComponent(sectionCode)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error("Error in course details:", data.error);
+                        return;
+                    }
+                    console.log("Loaded course data:", data);
+                    practicalLecturer.value = data.practicalLecturer || "";
+                    tutorialLecturer.value = data.tutorialLecturer || "";
+                    studentField.value = data.courseStudent || "";
+                })
+                .catch(err => console.error("Error loading course details:", err));
+        }
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    const studentInput = document.getElementById('student');
+    const startDateInput = document.getElementById('startDate');
+    const startTimeInput = document.getElementById('startTime');
+    const endDateInput = document.getElementById('endDate');
+    const endTimeInput = document.getElementById('endTime');
+    const venueSelect = document.getElementById('venueSection');
+
+    function updateAvailableVenues() {
+        const studentCount = parseInt(studentInput.value);
+        const startDate = startDateInput.value;
+        const startTime = startTimeInput.value;
+        const endDate = endDateInput.value;
+        const endTime = endTimeInput.value;
+
+        if (!studentCount || !startDate || !startTime || !endDate || !endTime) return;
+
+        const start_dt = `${startDate}T${startTime}`;
+        const end_dt = `${endDate}T${endTime}`;
+
+        fetch(`/get_available_venues?students=${studentCount}&start=${start_dt}&end=${end_dt}`)
+            .then(res => res.json())
+            .then(data => {
+                venueSelect.innerHTML = '<option value="" disabled selected>Select Venue</option>';
+                data.forEach(v => {
+                    const option = document.createElement('option');
+                    option.value = v.venueNumber;
+                    option.textContent = `[Capacity: ${v.venueCapacity}] - ${v.venueNumber}`;
+                    venueSelect.appendChild(option);
+                });
+            });
+    }
+
+    studentInput.addEventListener('input', updateAvailableVenues);
+    startDateInput.addEventListener('change', updateAvailableVenues);
+    startTimeInput.addEventListener('change', updateAvailableVenues);
+    endDateInput.addEventListener('change', updateAvailableVenues);
+    endTimeInput.addEventListener('change', updateAvailableVenues);
+});
+
+
+// examEdit.js
+document.addEventListener("DOMContentLoaded", function () {
+    // Edit Exam Section
+    const editCourseSelect = document.getElementById('editExamCourseSection');
+    if (!editCourseSelect) return;
+
+    console.log('[DEBUG] Edit course select element found');
+    
+    editCourseSelect.addEventListener('change', function () {
+        const courseCode = this.value;
+        console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
+
+        if (!courseCode || courseCode === '') {
+            console.log("[DEBUG] Empty course code selected, clearing fields");
+            clearEditFields();
+            return;
+        }
+
+        const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
+        console.log(`[DEBUG] Fetching from: ${apiUrl}`);
+        
+        fetch(apiUrl)
+            .then(res => {
+                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                console.log('[DEBUG] Raw response data:', data);
+                if (data.error) {
+                    console.error('[DEBUG] API returned error:', data.error);
+                    alert('Error loading exam details: ' + data.error);
+                    return;
+                }
+                if (!data.courseCodeSection) {
+                    console.error('[DEBUG] Missing courseCodeSection in response');
+                    alert('Invalid response from server');
+                    return;
+                }
+                populateEditForm(data);
+            })
+            .catch(err => {
+                console.error("[DEBUG] Fetch failed:", err);
+                alert('Failed to load exam details. Check console for details.');
+            });
+    });
+
+    // Clear edit fields
+    function clearEditFields() {
+        const fieldsToClear = [
+            'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
+            'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
+        ];
+        
+        fieldsToClear.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                if (field.tagName === 'SELECT') {
+                    field.selectedIndex = 0;
+                } else {
+                    field.value = '';
+                }
+            }
+        });
+    }
+
+    // Populate edit form
+    function populateEditForm(data) {
+        console.log('[DEBUG] Populating form with data:', data);
+
+        const fieldMappings = {
+            'editProgramCode': data.courseDepartment,
+            'editStudent': data.courseStudent,
+            'editVenue': data.examVenue,
+            'editInvigilatorNo': data.examNoInvigilator,
+            'editExamStartTime': data.examStartTime,
+            'editExamEndTime': data.examEndTime
+        };
+
+        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = value || '';
+                console.log(`[DEBUG] Set ${fieldId} to:`, value);
+            }
+        });
+
+        const practicalSelect = document.getElementById('editPracticalLecturer');
+        const tutorialSelect = document.getElementById('editTutorialLecturer');
+
+        if (practicalSelect) {
+            practicalSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = data.practicalLecturer || '';
+            option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
+            option.selected = true;
+            practicalSelect.appendChild(option);
+            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
+        }
+
+        if (tutorialSelect) {
+            tutorialSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.value = data.tutorialLecturer || '';
+            option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
+            option.selected = true;
+            tutorialSelect.appendChild(option);
+            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
+        }
+
+        console.log('[DEBUG] Form population complete');
+    }
+});
+</script>
+{% endblock %}
+
+
+
+
+@app.route('/admin/manageExam', methods=['GET', 'POST'])
+def admin_manageExam():
+    department_data = Department.query.all()
+    venue_data = Venue.query.all()
+
+    # Base query: only exams whose course is active
+    exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
+    exam_data = exam_data_query.order_by(Exam.examStartTime.asc(),Exam.examVenue.asc(),Exam.examId.asc()).all()
+
+    # For Edit section
+    exam_selected = request.form.get('editExamCourseSection')
+    course = Course.query.filter_by(courseCodeSection=exam_selected).first()
+    exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
+
+    unassigned_exam = len([
+        e for e in exam_data
+        if e.examStartTime is None
+        and e.examEndTime is None
+        and e.examVenue is None
+        and (e.examNoInvigilator is None or e.examNoInvigilator == 0)
+    ])
+
+    complete_exam = len([
+        e for e in exam_data
+        if e.examStartTime is not None
+        and e.examEndTime is not None
+        and e.examVenue is not None
+        and e.examNoInvigilator not in (None, 0)
+    ])
+
+    # Default manual form values
+    courseSection_text = practicalLecturer_text = tutorialLecturer_text = venue_text = invigilatorNo_text = ''
+
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
+
+        # --------------------- UPLOAD ADD EXAM FORM ---------------------
+        if form_type == 'upload':
+            return handle_file_upload(
+                file_key='exam_file',
+                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec','lecturer','no of','room'],
+                process_row_fn=process_exam_row,
+                redirect_endpoint='admin_manageExam',
+                usecols="A:I"
+            )
+
+        # --------------------- EDIT EXAM FORM ---------------------
+        elif form_type == 'edit' and exam_select:
+            action = request.form.get('action')
+            start_dt_raw = request.form.get('startDateTime', '').strip()
+            end_dt_raw = request.form.get('endDateTime', '').strip()
+
+            if not start_dt_raw or not end_dt_raw:
+                flash("Start or end date/time is missing", "error")
+                return redirect(url_for('admin_manageExam'))
+
+            start_dt = datetime.strptime(start_dt_raw, "%Y-%m-%dT%H:%M")
+            end_dt = datetime.strptime(end_dt_raw, "%Y-%m-%dT%H:%M")
+
+            venue_text = request.form.get('venue', '').strip()
+            invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
+
+            if action == 'update':
+                venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
+
+                if not venue_obj:
+                    flash(f"Selected venue {venue_text} does not exist", "error")
+                elif venue_obj.venueCapacity < exam_select.course.courseStudent:
+                    flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
+                else:
+                    # Update exam fields
+                    exam_select.examStartTime = start_dt
+                    exam_select.examEndTime = end_dt
+                    exam_select.examVenue = venue_text
+                    exam_select.examNoInvigilator = invigilatorNo_text
+
+                    # Manage related InvigilationReport + Attendances
+                    existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+
+                    if not existing_report:
+                        # No report exists → create new
+                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSection, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
+                    elif exam_select.examNoInvigilator != int(invigilatorNo_text):
+                        report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                        if report:
+                            adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
+                        else:
+                            create_exam_and_related(start_dt, end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
+
+                    db.session.commit()
+                    flash("Exam updated successfully", "success")
+
+            elif action == 'delete':
+                # Delete all related reports (cascade removes attendances too)
+                reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
+                for report in reports:
+                    db.session.delete(report)
+
+                db.session.delete(exam_select)
+                db.session.commit()
+                flash("Exam deleted successfully", "success")
+
+            return redirect(url_for('admin_manageExam'))
+
+        # --------------------- MANUAL ADD EXAM FORM ---------------------
+        elif form_type == 'manual':
+            try:
+                startDate_raw = request.form.get('startDate', '').strip()
+                endDate_raw = request.form.get('endDate', '').strip()
+                startTime_raw = request.form.get('startTime', '').strip()
+                endTime_raw = request.form.get('endTime', '').strip()
+
+                if len(startTime_raw) == 5:
+                    startTime_raw += ":00"
+                if len(endTime_raw) == 5:
+                    endTime_raw += ":00"
+
+                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
+                end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
+
+                courseSection_text = request.form.get('courseSection', '').strip()
+                venue_text = request.form.get('venue', '').strip()
+                practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
+                tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
+                invigilatorNo_text = 0
+
+                success, message = create_exam_and_related(start_dt, end_dt, courseSection_text,venue_text, practicalLecturer_text,tutorialLecturer_text, invigilatorNo_text)
+                flash(message, "success" if success else "error")
+                return redirect(url_for('admin_manageExam'))
+
+            except Exception as manual_err:
+                print(f"[Manual Form Error] {manual_err}")
+                traceback.print_exc()
+                flash(f"Error processing manual form: {manual_err}", "error")
+                return redirect(url_for('admin_manageExam'))
+
+    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, 
+                           venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select)
+
+
+# -------------------------------
+# Read All Course Under The Selected Department For ManageExamPage
+# ------------------------------- 
+@app.route('/get_courses_by_department/<department_code>')
+def get_courses_by_department(department_code):
+    courses = (
+        db.session.query(Course)
+        .join(Exam, Course.courseExamId == Exam.examId)
+        .filter(
+            Course.courseDepartment == department_code,
+            Course.courseExamId.isnot(None),
+            Exam.examStartTime.is_(None),
+            Exam.examEndTime.is_(None),
+            Exam.examVenue.is_(None),
+            Exam.examNoInvigilator.is_(None)
+        )
+        .all()
+    )
+
+    courses_list = [
+        {"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}
+        for c in courses
+    ]
+    return jsonify(courses_list)
+
+# -------------------------------
+# Read All CourseDetails Under Selected Department for ManageExamPage
+# -------------------------------
+@app.route('/get_course_details/<department_code>/<path:course_section>')
+def get_course_details(department_code, course_section):
+    course = Course.query.filter_by(
+        courseDepartment=department_code,
+        courseCodeSection=course_section
+    ).first()
+
+    if not course:
+        return jsonify({"error": "Course not found"}), 404
+
+    return jsonify({
+        "courseCodeSection": course.courseCodeSection,
+        "courseName": course.courseName,
+        "practicalLecturer": course.coursePractical,
+        "tutorialLecturer": course.courseTutorial,
+        "courseStudent": course.courseStudent
+    })
+
+

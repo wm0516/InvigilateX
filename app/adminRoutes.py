@@ -533,51 +533,7 @@ def process_exam_row(row):
         invigilatorNo=0
     )
 
-# -------------------------------
-# Read All Course Under The Selected Department For ManageExamPage
-# ------------------------------- 
-@app.route('/get_courses_by_department/<department_code>')
-def get_courses_by_department(department_code):
-    courses = (
-        db.session.query(Course)
-        .join(Exam, Course.courseExamId == Exam.examId)
-        .filter(
-            Course.courseDepartment == department_code,
-            Course.courseExamId.isnot(None),
-            Exam.examStartTime.is_(None),
-            Exam.examEndTime.is_(None),
-            Exam.examVenue.is_(None),
-            Exam.examNoInvigilator.is_(None)
-        )
-        .all()
-    )
 
-    courses_list = [
-        {"courseCodeSection": c.courseCodeSection, "courseName": c.courseName}
-        for c in courses
-    ]
-    return jsonify(courses_list)
-
-# -------------------------------
-# Read All CourseDetails Under Selected Department for ManageExamPage
-# -------------------------------
-@app.route('/get_course_details/<department_code>/<path:course_section>')
-def get_course_details(department_code, course_section):
-    course = Course.query.filter_by(
-        courseDepartment=department_code,
-        courseCodeSection=course_section
-    ).first()
-
-    if not course:
-        return jsonify({"error": "Course not found"}), 404
-
-    return jsonify({
-        "courseCodeSection": course.courseCodeSection,
-        "courseName": course.courseName,
-        "practicalLecturer": course.coursePractical,
-        "tutorialLecturer": course.courseTutorial,
-        "courseStudent": course.courseStudent
-    })
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
@@ -801,37 +757,6 @@ def admin_manageExam():
 
             return redirect(url_for('admin_manageExam'))
 
-        # --------------------- MANUAL ADD EXAM FORM ---------------------
-        elif form_type == 'manual':
-            try:
-                startDate_raw = request.form.get('startDate', '').strip()
-                endDate_raw = request.form.get('endDate', '').strip()
-                startTime_raw = request.form.get('startTime', '').strip()
-                endTime_raw = request.form.get('endTime', '').strip()
-
-                if len(startTime_raw) == 5:
-                    startTime_raw += ":00"
-                if len(endTime_raw) == 5:
-                    endTime_raw += ":00"
-
-                start_dt = datetime.strptime(f"{startDate_raw} {startTime_raw}", "%Y-%m-%d %H:%M:%S")
-                end_dt = datetime.strptime(f"{endDate_raw} {endTime_raw}", "%Y-%m-%d %H:%M:%S")
-
-                courseSection_text = request.form.get('courseSection', '').strip()
-                venue_text = request.form.get('venue', '').strip()
-                practicalLecturer_text = request.form.get('practicalLecturer', '').strip()
-                tutorialLecturer_text = request.form.get('tutorialLecturer', '').strip()
-                invigilatorNo_text = 0
-
-                success, message = create_exam_and_related(start_dt, end_dt, courseSection_text,venue_text, practicalLecturer_text,tutorialLecturer_text, invigilatorNo_text)
-                flash(message, "success" if success else "error")
-                return redirect(url_for('admin_manageExam'))
-
-            except Exception as manual_err:
-                print(f"[Manual Form Error] {manual_err}")
-                traceback.print_exc()
-                flash(f"Error processing manual form: {manual_err}", "error")
-                return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, 
                            venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select)

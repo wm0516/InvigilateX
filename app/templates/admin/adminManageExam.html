@@ -2,7 +2,7 @@
 {% set show_tabs = true %}
 {% set show_upload = true %}
 {% set show_dashboard = true %}
-{% set show_manual = true %}
+{% set show_manual = false %}
 {% set show_edit = true %}
 {% block title %}Admin ManageExams{% endblock %}
 {% block head_title %}<h2>Manage Exams</h2>{% endblock %}
@@ -70,79 +70,6 @@
 </form>
 {% endblock %}
 
-
-{% block manual_section %}
-<!-- Manual Form -->
-<form id="manualForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
-    <div id="manualSection" class="function-frame" style="width:100%">
-        <h4 style="text-align: center;">Manual Data Entry Section</h4>
-        <div class="profile-frame">
-            <div class="form-left" style="margin: auto;">
-                <label>Exam Start Date & Time</label>
-                <div style="display: flex; gap: 2%;">
-                    <input type="date" id="startDate" name="startDate" required>
-                    <input type="time" id="startTime" name="startTime" required>
-                </div><br>
-
-                <label>Exam End Date & Time</label>     
-                <div style="display: flex; gap: 2%;">
-                    <input type="date" id="endDate" name="endDate" required>
-                    <input type="time" id="endTime" name="endTime" required>
-                </div><br>
-
-                <label>Program Code</label>
-                <select name="programCode" id="examManualProgramCode" required>
-                    <option value="" disabled selected>Select Program Code</option>
-                    {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">
-                            [{{ dept.departmentCode }}] {{ dept.departmentName }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-middle" style="margin: auto;">
-                <label>Course/Section - Course Name</label>
-                <select name="courseSection" id="examManualCourseSection" required>
-                    <option value="" disabled selected>Select Course Section</option>
-                </select><br>
-
-                <label>Course Practical Lecturer</label>
-                <input type="text" id="examPracticalLecturer" name="practicalLecturer" readonly><br>
-
-                <label>Course Tutorial Lecturer</label>
-                <input type="text" id="examTutorialLecturer" name="tutorialLecturer" readonly>
-            </div> 
-
-            <div class="form-right" style="margin: auto;">
-                <label>Number of Students</label>
-                <input type="number" id="student" name="student" readonly><br>
-
-                <label>Exam Venue</label>
-                <select name="venue" id="venueSection" required>
-                    <option value="" disabled selected>Select Exam Venue</option>
-                    {% for venue in venue_data %}
-                        <option value="{{ venue.venueNumber }}">
-                            [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
-                        </option>
-                    {% endfor %}
-                </select><br>
-
-                <label>Number of Invigilators</label>
-                <input type="text" value="≤32 students → 2 invigilators, >32 → 3 invigilators" readonly>
-            </div>
-        </div>
-        <input type="hidden" name="form_type" value="manual">
-        <br><br>
-
-        <div class="button-wrapper">
-            <button type="submit">Add New Exam</button>
-        </div>
-    </div>
-</form>
-{% endblock %}
-
-
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
     <div id="editSection" class="function-frame" style="width:100%">
@@ -165,27 +92,18 @@
                 </select><br>
 
                 <label>Program Code</label>
-                <select id="editProgramCode" name="programCode" readonly>
-                    <option value="" disabled selected>Select Department</option>
-                    {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
-                    {% endfor %}
-                </select><br>
-                
+                <input type="text" id="editProgramCode" name="programCode" readonly><br>
+
                 <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" value="" readonly>
+                <input type="number" id="editStudent" name="student" value="" readonly><br>
             </div>
 
             <div class="form-middle">
                 <label>Practical Lecturer</label>
-                <select id="editPracticalLecturer" name="practicalLecturer" readonly>
-                    <option value="" disabled>Select Practical Lecturer</option>
-                </select><br>
+                <input type="text" id="editPracticalLecturer" name="practicalLecturer" readonly><br>
 
                 <label>Tutorial Lecturer</label>
-                <select id="editTutorialLecturer" name="tutorialLecturer" readonly>
-                    <option value="" disabled>Select Tutorial Lecturer</option>
-                </select><br>
+                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly><br>
 
                 <label>Exam Venue (Editable)</label>
                 <select name="venue" id="editVenue" required>
@@ -291,225 +209,128 @@
 {% endblock %}
 
 
+
 {% block extra_scripts %}
 <script>
-// examManual.js
-document.addEventListener("DOMContentLoaded", function () {
-    // Manual Section Dropdowns
-    const programCode = document.getElementById('examManualProgramCode');
-    if (!programCode) return;
-
-    const courseSectionSelect = document.getElementById('examManualCourseSection');
-    const practicalLecturer = document.getElementById('examPracticalLecturer');
-    const tutorialLecturer = document.getElementById('examTutorialLecturer');
-    const studentField = document.getElementById('student');
-
-    // When program/department changes
-    programCode.addEventListener('change', function () {
-        const deptCode = this.value;
-        console.log("Selected Department Code is:", deptCode);
-
-        // Reset dependent fields
-        courseSectionSelect.innerHTML = '<option value="" disabled selected>Select Course Section</option>';
-        practicalLecturer.value = "";
-        tutorialLecturer.value = "";
-        studentField.value = "";
-
-        if (deptCode) {
-            fetch(`/get_courses_by_department/${deptCode}`)
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(course => {
-                        const option = document.createElement('option');
-                        option.value = course.courseCodeSection;
-                        option.textContent = `${course.courseCodeSection} - ${course.courseName}`;
-                        courseSectionSelect.appendChild(option);
-                    });
-                })
-                .catch(error => console.error('Error fetching courses:', error));
-        }
-    });
-
-    // When course/section changes
-    courseSectionSelect.addEventListener('change', function () {
-        const sectionCode = this.value;
-        const deptCode = programCode.value;
-
-        if (sectionCode && deptCode) {
-            console.log(`[Fetch] Getting details for course: ${sectionCode} under ${deptCode}`);
-            fetch(`/get_course_details/${encodeURIComponent(deptCode)}/${encodeURIComponent(sectionCode)}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.error) {
-                        console.error("Error in course details:", data.error);
-                        return;
-                    }
-                    console.log("Loaded course data:", data);
-                    practicalLecturer.value = data.practicalLecturer || "";
-                    tutorialLecturer.value = data.tutorialLecturer || "";
-                    studentField.value = data.courseStudent || "";
-                })
-                .catch(err => console.error("Error loading course details:", err));
-        }
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    const studentInput = document.getElementById('student');
-    const startDateInput = document.getElementById('startDate');
-    const startTimeInput = document.getElementById('startTime');
-    const endDateInput = document.getElementById('endDate');
-    const endTimeInput = document.getElementById('endTime');
-    const venueSelect = document.getElementById('venueSection');
-
-    function updateAvailableVenues() {
-        const studentCount = parseInt(studentInput.value);
-        const startDate = startDateInput.value;
-        const startTime = startTimeInput.value;
-        const endDate = endDateInput.value;
-        const endTime = endTimeInput.value;
-
-        if (!studentCount || !startDate || !startTime || !endDate || !endTime) return;
-
-        const start_dt = `${startDate}T${startTime}`;
-        const end_dt = `${endDate}T${endTime}`;
-
-        fetch(`/get_available_venues?students=${studentCount}&start=${start_dt}&end=${end_dt}`)
-            .then(res => res.json())
-            .then(data => {
-                venueSelect.innerHTML = '<option value="" disabled selected>Select Venue</option>';
-                data.forEach(v => {
-                    const option = document.createElement('option');
-                    option.value = v.venueNumber;
-                    option.textContent = `[Capacity: ${v.venueCapacity}] - ${v.venueNumber}`;
-                    venueSelect.appendChild(option);
-                });
-            });
-    }
-
-    studentInput.addEventListener('input', updateAvailableVenues);
-    startDateInput.addEventListener('change', updateAvailableVenues);
-    startTimeInput.addEventListener('change', updateAvailableVenues);
-    endDateInput.addEventListener('change', updateAvailableVenues);
-    endTimeInput.addEventListener('change', updateAvailableVenues);
-});
-
-
-// examEdit.js
-document.addEventListener("DOMContentLoaded", function () {
-    // Edit Exam Section
-    const editCourseSelect = document.getElementById('editExamCourseSection');
-    if (!editCourseSelect) return;
-
-    console.log('[DEBUG] Edit course select element found');
+// Clear edit form fields when course changes
+function clearEditFields() {
+    const fieldsToClear = [
+        'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
+        'startDate', 'startTime', 'endDate', 'endTime',
+        'editPracticalLecturer', 'editTutorialLecturer'
+    ];
     
-    editCourseSelect.addEventListener('change', function () {
-        const courseCode = this.value;
-        console.log(`[DEBUG] Course selection changed to: "${courseCode}"`);
-
-        if (!courseCode || courseCode === '') {
-            console.log("[DEBUG] Empty course code selected, clearing fields");
-            clearEditFields();
-            return;
-        }
-
-        const apiUrl = `/get_exam_details/${encodeURIComponent(courseCode)}`;
-        console.log(`[DEBUG] Fetching from: ${apiUrl}`);
-        
-        fetch(apiUrl)
-            .then(res => {
-                console.log(`[DEBUG] Response status: ${res.status}, ok: ${res.ok}`);
-                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                return res.json();
-            })
-            .then(data => {
-                console.log('[DEBUG] Raw response data:', data);
-                if (data.error) {
-                    console.error('[DEBUG] API returned error:', data.error);
-                    alert('Error loading exam details: ' + data.error);
-                    return;
-                }
-                if (!data.courseCodeSection) {
-                    console.error('[DEBUG] Missing courseCodeSection in response');
-                    alert('Invalid response from server');
-                    return;
-                }
-                populateEditForm(data);
-            })
-            .catch(err => {
-                console.error("[DEBUG] Fetch failed:", err);
-                alert('Failed to load exam details. Check console for details.');
-            });
+    fieldsToClear.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) field.value = '';
     });
+}
 
-    // Clear edit fields
-    function clearEditFields() {
-        const fieldsToClear = [
-            'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
-            'editExamStartTime', 'editExamEndTime', 'editPracticalLecturer', 'editTutorialLecturer'
-        ];
-        
-        fieldsToClear.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                if (field.tagName === 'SELECT') {
-                    field.selectedIndex = 0;
-                } else {
-                    field.value = '';
-                }
-            }
-        });
+// Populate edit form when course data is loaded
+function populateEditForm(data) {
+    document.getElementById('editProgramCode').value = data.courseDepartment || '';
+    document.getElementById('editStudent').value = data.courseStudent || '';
+    document.getElementById('editVenue').value = data.examVenue || '';
+    document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
+
+    // split datetime for inputs
+    if (data.examStartTime) {
+        const [date, time] = data.examStartTime.split('T');
+        document.getElementById('startDate').value = date;
+        document.getElementById('startTime').value = time;
+    }
+    if (data.examEndTime) {
+        const [date, time] = data.examEndTime.split('T');
+        document.getElementById('endDate').value = date;
+        document.getElementById('endTime').value = time;
     }
 
-    // Populate edit form
-    function populateEditForm(data) {
-        console.log('[DEBUG] Populating form with data:', data);
+    document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
+    document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
+}
 
-        const fieldMappings = {
-            'editProgramCode': data.courseDepartment,
-            'editStudent': data.courseStudent,
-            'editVenue': data.examVenue,
-            'editInvigilatorNo': data.examNoInvigilator,
-            'editExamStartTime': data.examStartTime,
-            'editExamEndTime': data.examEndTime
-        };
+// ==============================
+// Admin Manage Exam Page: Date/Time Restrictions
+// ==============================
+document.addEventListener("DOMContentLoaded", function() {
+    const startDate = document.getElementById("startDate");
+    const startTime = document.getElementById("startTime");
+    const endDate = document.getElementById("endDate");
+    const endTime = document.getElementById("endTime");
 
-        Object.entries(fieldMappings).forEach(([fieldId, value]) => {
-            const field = document.getElementById(fieldId);
-            if (field) {
-                field.value = value || '';
-                console.log(`[DEBUG] Set ${fieldId} to:`, value);
-            }
-        });
+    if (!startDate || !startTime || !endDate || !endTime) return;
 
-        const practicalSelect = document.getElementById('editPracticalLecturer');
-        const tutorialSelect = document.getElementById('editTutorialLecturer');
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    const nextYear = new Date(now);
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const nextYearDate = nextYear.toISOString().split("T")[0];
 
-        if (practicalSelect) {
-            practicalSelect.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = data.practicalLecturer || '';
-            option.textContent = data.practicalLecturer || 'Select Practical Lecturer';
-            option.selected = true;
-            practicalSelect.appendChild(option);
-            console.log(`[DEBUG] Set practical lecturer to:`, data.practicalLecturer);
+    // Restrict date pickers
+    startDate.min = today;
+    startDate.max = nextYearDate;
+    endDate.min = today;
+    endDate.max = nextYearDate;
+
+    // Default: set both dates to today
+    startDate.value = today;
+    endDate.value = today;
+
+    // Restrict time: disable past times if today is selected
+    function restrictStartTime() {
+        if (startDate.value === today) {
+            let hh = String(now.getHours()).padStart(2, "0");
+            let mm = String(now.getMinutes()).padStart(2, "0");
+            startTime.min = hh + ":" + mm;  // from now onwards
+        } else {
+            startTime.min = "00:00"; // full day allowed
         }
-
-        if (tutorialSelect) {
-            tutorialSelect.innerHTML = '';
-            const option = document.createElement('option');
-            option.value = data.tutorialLecturer || '';
-            option.textContent = data.tutorialLecturer || 'Select Tutorial Lecturer';
-            option.selected = true;
-            tutorialSelect.appendChild(option);
-            console.log(`[DEBUG] Set tutorial lecturer to:`, data.tutorialLecturer);
-        }
-
-        console.log('[DEBUG] Form population complete');
     }
+
+    function restrictEndTime() {
+        if (endDate.value === today) {
+            let hh = String(now.getHours()).padStart(2, "0");
+            let mm = String(now.getMinutes()).padStart(2, "0");
+            endTime.min = hh + ":" + mm;
+        } else {
+            endTime.min = "00:00";
+        }
+    }
+
+    // Adjust end date automatically
+    function adjustEndDate() {
+        if (!startDate.value || !startTime.value || !endTime.value) return;
+
+        const start = new Date(startDate.value + "T" + startTime.value);
+        let end = new Date(endDate.value + "T" + endTime.value);
+
+        // If end time is earlier than start time → assume overnight
+        if (end < start) {
+            let nextDay = new Date(start);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDate.value = nextDay.toISOString().split("T")[0];
+        } else {
+            endDate.value = startDate.value;
+        }
+    }
+
+    // Bind events
+    startDate.addEventListener("change", () => {
+        endDate.value = startDate.value;
+        restrictStartTime();
+        restrictEndTime();
+    });
+    endDate.addEventListener("change", restrictEndTime);
+    startTime.addEventListener("change", adjustEndDate);
+    endTime.addEventListener("change", adjustEndDate);
+
+    // Initial restriction setup
+    restrictStartTime();
+    restrictEndTime();
 });
 </script>
 {% endblock %}
+
 
 
 
