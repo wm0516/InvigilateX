@@ -604,10 +604,7 @@ def generate_manageexam_template():
     ws.title = "Exams"
 
     # Header row
-    headers = [
-        'Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec',
-        'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room'
-    ]
+    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
     ws.append(headers)
 
     # --- Create Excel number formats ---
@@ -642,7 +639,7 @@ def generate_manageexam_template():
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"G{i}"] = v.venueName   # put venues in column G
+        ws_lists[f"G{i}"] = v.venueNumber   # put venues in column G
 
     # === Data Validations ===
     if courses:
