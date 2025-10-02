@@ -41,45 +41,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
-# -------------------------------
-# Handle Timeline Read From ExcelFile
-# -------------------------------
-def parse_date(val):
-    if isinstance(val, datetime):
-        return val.date()
-    try:
-        return datetime.strptime(str(val).strip(), "%Y-%m-%d").date()
-    except ValueError:
-        for fmt in ("%m/%d/%Y", "%m/%d/%y"):  # allow 2-digit year also
-            try:
-                return datetime.strptime(str(val).strip(), fmt).date()
-            except ValueError:
-                continue
-        print(f"[Date Parse Error] Could not parse: {val!r}")
-        return None
-
-
-# -------------------------------
-# Handle Timeline Read From ExcelFile And Convert To The Correct Format
-# -------------------------------
-def standardize_time_with_seconds(time_value):
-    if isinstance(time_value, time):
-        return time_value.strftime("%H:%M:%S")
-    elif isinstance(time_value, datetime):
-        return time_value.strftime("%H:%M:%S")
-    elif isinstance(time_value, str):
-        time_str = str(time_value).replace("\xa0", " ").strip()  # clean Excel weird spaces
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
-            try:
-                dt = datetime.strptime(time_str, fmt)
-                return dt.strftime("%H:%M:%S")
-            except ValueError:
-                continue
-        print(f"[Time Parse Error] Could not parse: {time_value!r}")
-        return None
-    else:
-        return None
-
 
 # -------------------------------
 # Function handle file upload
@@ -144,6 +105,14 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
 
 
+
+
+
+
+
+# -------------------------------
+# Function for Admin ManageCourse Download Excel File Format 
+# -------------------------------
 def generate_managecourse_template(department_code=None):
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
@@ -197,7 +166,9 @@ def generate_managecourse_template(department_code=None):
     output.seek(0)
     return output
 
-
+# -------------------------------
+# Function for Admin ManageCourse Download Excel File Template
+# -------------------------------
 @app.route('/download_course_template/<department_code>')
 def download_course_template(department_code):
     output = generate_managecourse_template(department_code)
@@ -207,8 +178,6 @@ def download_course_template(department_code):
         download_name=f"ManageCourse_{department_code}.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
 
 # -------------------------------
 # Function for Admin ManageCourse Route Upload File
@@ -406,6 +375,10 @@ def admin_manageCourse():
 
 
 
+
+
+
+
 # -------------------------------
 # Get Department Details for ManageDepartmentEditPage
 # -------------------------------
@@ -489,6 +462,7 @@ def admin_manageDepartment():
 
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hops=hops)
+
 
 
 
@@ -599,8 +573,49 @@ def admin_manageVenue():
 
 
 
+# -------------------------------
+# Handle Timeline Read From ExcelFile
+# -------------------------------
+def parse_date(val):
+    if isinstance(val, datetime):
+        return val.date()
+    try:
+        return datetime.strptime(str(val).strip(), "%Y-%m-%d").date()
+    except ValueError:
+        for fmt in ("%m/%d/%Y", "%m/%d/%y"):  # allow 2-digit year also
+            try:
+                return datetime.strptime(str(val).strip(), fmt).date()
+            except ValueError:
+                continue
+        print(f"[Date Parse Error] Could not parse: {val!r}")
+        return None
 
 
+# -------------------------------
+# Handle Timeline Read From ExcelFile And Convert To The Correct Format
+# -------------------------------
+def standardize_time_with_seconds(time_value):
+    if isinstance(time_value, time):
+        return time_value.strftime("%H:%M:%S")
+    elif isinstance(time_value, datetime):
+        return time_value.strftime("%H:%M:%S")
+    elif isinstance(time_value, str):
+        time_str = str(time_value).replace("\xa0", " ").strip()  # clean Excel weird spaces
+        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
+            try:
+                dt = datetime.strptime(time_str, fmt)
+                return dt.strftime("%H:%M:%S")
+            except ValueError:
+                continue
+        print(f"[Time Parse Error] Could not parse: {time_value!r}")
+        return None
+    else:
+        return None
+
+
+# -------------------------------
+# Function for Admin ManageExam Download Excel File Format
+# -------------------------------
 def generate_manageexam_template():
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
@@ -678,9 +693,9 @@ def generate_manageexam_template():
     output.seek(0)
     return output
 
-
-
-
+# -------------------------------
+# Function for Admin ManageExam Download Excel File Template
+# -------------------------------
 @app.route('/download_exam_template')
 def download_exam_template():
     output = generate_manageexam_template()
@@ -690,9 +705,6 @@ def download_exam_template():
         download_name="ManageExam.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
-
 
 # -------------------------------
 # Function for Admin ManageExam Route Upload File
@@ -720,7 +732,6 @@ def process_exam_row(row):
         None,
         invigilatorNo=None
     )
-
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
@@ -834,8 +845,6 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
             db.session.delete(att)
 
     db.session.commit()
-
-
 
 # -------------------------------
 # Function for Admin ManageExam Route
@@ -951,6 +960,26 @@ def admin_manageExam():
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, 
                            venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
