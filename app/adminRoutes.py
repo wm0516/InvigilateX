@@ -3,6 +3,7 @@
 # -------------------------------
 import os
 import re
+import warnings
 from datetime import datetime, time
 from io import BytesIO
 from collections import defaultdict
@@ -135,6 +136,8 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
 
 def generate_managecourse_template():
+    warnings.simplefilter("ignore", UserWarning)
+
     wb = openpyxl.Workbook()
     ws = wb.active
     assert ws is not None, "Workbook has no active worksheet"
@@ -185,7 +188,7 @@ def download_course_template():
     return send_file(
         output,
         as_attachment=True,
-        download_name="ManageCourse.xlsx",  # type: ignore[arg-type]
+        attachment_filename="ManageCourse.xlsx", 
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
