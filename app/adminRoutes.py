@@ -593,6 +593,7 @@ def parse_date(val):
 # Handle Timeline Read From ExcelFile And Convert To The Correct Format
 # -------------------------------
 def standardize_time_with_seconds(time_value):
+    flash(f"{time_value}","error")
     # If Excel gave a time object
     if isinstance(time_value, time):
         return time_value.strftime("%I:%M:%S %p")  # keep AM/PM format
