@@ -154,7 +154,7 @@ def generate_managecourse_template():
     ws_lists = wb.create_sheet(title="Lists")
     
     # Departments
-    departments = [d.departmentName for d in Department.query.all()]
+    departments = [d.departmentCode for d in Department.query.all()]
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
     
