@@ -147,8 +147,7 @@ def generate_managecourse_template(department_code=None):
     
     # Header row (start from row 2)
     ws.append([])
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour',
-               'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
     ws.append(headers)
     
     # Hidden sheet for dropdown lists
@@ -237,12 +236,12 @@ def get_lecturers_by_department(department_code):
 # -------------------------------
 @app.route('/get_courseCodeSection/<path:courseCodeSection_select>')
 def get_courseCodeSection(courseCodeSection_select):
-    course = Course.query.filter_by(courseCodeSection=courseCodeSection_select).first()
+    course = Course.query.filter_by(courseCodeSectionIntake=courseCodeSection_select).first()
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
     return jsonify({
-        "courseCodeSection": course.courseCodeSection,
+        "courseCodeSection": course.courseCodeSectionIntake,
         "courseDepartment": course.courseDepartment,
         "coursePractical": course.coursePractical,
         "courseTutorial": course.courseTutorial,
@@ -266,12 +265,12 @@ def admin_manageCourse():
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')
-    course_select = Course.query.filter_by(courseCodeSection=course_id).first()
+    course_select = Course.query.filter_by(courseCodeSectionIntake=course_id).first()
 
     # Count rows with missing/empty values
     error_rows = Course.query.filter(
         (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
-        (Course.courseCodeSection.is_(None)) | (Course.courseCodeSection == '') |
+        (Course.courseCodeSectionIntake.is_(None)) | (Course.courseCodeSectionIntake == '') |
         (Course.courseName.is_(None)) | (Course.courseName == '') |
         (Course.courseHour.is_(None)) |
         (Course.courseStudent.is_(None)) |
@@ -283,12 +282,12 @@ def admin_manageCourse():
     courses_by_department_raw = (
         db.session.query(
             func.coalesce(Department.departmentCode, "Unknown").label("department"),
-            func.count(Course.courseCodeSection).label("course_count")
+            func.count(Course.courseCodeSectionIntake).label("course_count")
         )
         .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
         .filter(Course.courseStatus == True)   # ✅ filter BEFORE group_by
         .group_by(func.coalesce(Department.departmentCode, "Unknown"))
-        .having(func.count(Course.courseCodeSection) > 0)
+        .having(func.count(Course.courseCodeSectionIntake) > 0)
         .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())
         .all()
         or []
@@ -619,14 +618,14 @@ def process_exam_row(row):
 # -------------------------------
 @app.route('/get_exam_details/<path:course_code_section>')
 def get_exam_details(course_code_section):
-    course = Course.query.filter_by(courseCodeSection=course_code_section).first()
+    course = Course.query.filter_by(courseCodeSectionIntake=course_code_section).first()
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
 
     response_data = {
-        "courseCodeSection": course.courseCodeSection,
+        "courseCodeSection": course.courseCodeSectionIntake,
         "courseName": course.courseName or "",
         "courseDepartment": course.courseDepartment or "",
         "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
@@ -743,7 +742,7 @@ def admin_manageExam():
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
-    course = Course.query.filter_by(courseCodeSection=exam_selected).first()
+    course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
 
     unassigned_exam = len([
@@ -817,13 +816,13 @@ def admin_manageExam():
 
                     if not existing_report:
                         # No report exists → create new
-                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSection, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
+                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
                     elif exam_select.examNoInvigilator != int(invigilatorNo_text):
                         report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                         if report:
                             adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
                         else:
-                            create_exam_and_related(start_dt, end_dt,exam_select.course.courseCodeSection,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
+                            create_exam_and_related(start_dt, end_dt,exam_select.course.courseCodeSectionIntake,venue_text,exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
                     db.session.commit()
                     flash("Exam updated successfully", "success")

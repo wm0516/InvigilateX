@@ -212,7 +212,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         tutorial_id = None
 
     courseCodeSection_text = (code + '/' + section)
-    existing_courseCodeSection = Course.query.filter(Course.courseCodeSection.ilike(courseCodeSection_text)).first()
+    existing_courseCodeSection = Course.query.filter(Course.courseCodeSectionIntake.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
         return False, "Course Already Registered"
     
@@ -252,7 +252,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 
     # Create the Course
     new_course = Course(
-        courseCodeSection=f"{code}/{section}".upper() if code and section else None,
+        courseCodeSectionIntake=f"{code}/{section}".upper() if code and section else None,
         courseDepartment=department,
         courseName=name.upper() if name else None,
         courseHour=hour,
@@ -279,7 +279,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     else:
         venue_text = venue_text.upper()
 
-    course = Course.query.filter_by(courseCodeSection=courseSection).first()
+    course = Course.query.filter_by(courseCodeSectionIntake=courseSection).first()
     if not course:
         return False, f"Course with section {courseSection} not found"
 

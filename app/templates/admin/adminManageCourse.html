@@ -153,9 +153,9 @@
                 <select id="editCourseSelect" name="editCourseSelect" required>
                     <option value="" disabled selected>Select Course</option>
                     {% for row in course_data %}
-                        <option value="{{ row.courseCodeSection }}"
-                            {% if course_select and course_select.courseCodeSection == row.courseCodeSection %}selected{% endif %}>
-                            {{ row.courseCodeSection }} - {{ row.courseName }}
+                        <option value="{{ row.courseCodeSectionIntake }}"
+                            {% if course_select and course_select.courseCodeSectionIntake == row.courseCodeSectionIntake %}selected{% endif %}>
+                            {{ row.courseCodeSectionIntake }} - {{ row.courseName }}
                         </option>
                     {% endfor %}
                 </select><br>
@@ -255,7 +255,7 @@
                                 <span class="status frame-red">Inactivated</span>
                             {% endif %}
                         </td>
-                        <td>{{ row.courseCodeSection }}</td>
+                        <td>{{ row.courseCodeSectionIntake }}</td>
                         <td>{{ row.courseName }}</td>
                         <td>{{ row.courseHour }}</td>
                         <td>{{ row.courseDepartment }}</td>

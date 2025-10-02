@@ -81,8 +81,8 @@
                     <option value="" disabled selected>Select Course Section</option>
                     {% for exam in exam_data %}
                         {% if exam.course %}
-                            <option value="{{ exam.course.courseCodeSection }}">
-                                [{{ exam.course.courseCodeSection }}] - {{ exam.course.courseName }}
+                            <option value="{{ exam.course.courseCodeSectionIntake }}">
+                                [{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}
                             </option>
                         {% else %}
                             {# optional: show a disabled placeholder for exams without a linked course #}
@@ -169,7 +169,7 @@
                         <td>
                             <div class="info-grid">
                                 <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
-                                <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSection }}</strong></div>
+                                <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
                                 <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
                                 <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
                                 <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
