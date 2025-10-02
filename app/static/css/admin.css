@@ -579,7 +579,7 @@ input[readonly] {
     color: white;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 25%;
+    /* width: 25%; */
     text-align: center;
 }
 

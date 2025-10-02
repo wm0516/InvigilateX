@@ -70,7 +70,7 @@ def standardize_time_with_seconds(time_value):
 # -------------------------------
 # Function handle file upload
 # -------------------------------
-def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
+def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z"):
     file = request.files.get(file_key)
     if file and file.filename:
         try:
@@ -84,12 +84,11 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         excel_file,
                         sheet_name=sheet_name,
                         usecols=usecols,
-                        skiprows=skiprows,
                         dtype=str
                     )
                     df.columns = [str(col).strip().lower() for col in df.columns]
 
-                    if df.columns.tolist() != expected_cols:
+                    if not set(expected_cols).issubset(df.columns):
                         raise ValueError(f"Excel columns do not match expected format: {df.columns.tolist()}")
 
                     # normalize all columns
