@@ -138,7 +138,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
 
 
-def generate_managecourse_template():
+def generate_managecourse_template(department_code=None):
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -146,33 +146,42 @@ def generate_managecourse_template():
     ws.title = "Courses"
     
     # Header row (start from row 2)
-    ws.append([])  # skip first row
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+    ws.append([])
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour',
+               'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
     ws.append(headers)
     
-    # --- Hidden sheet for dropdown lists ---
+    # Hidden sheet for dropdown lists
     ws_lists = wb.create_sheet(title="Lists")
-    
+
     # Departments
-    departments = [d.departmentCode for d in Department.query.all()]
+    if department_code:  
+        departments = [department_code]   # single department
+    else:  
+        departments = [d.departmentCode for d in Department.query.all()]  # fallback: all
+
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
-    
-    # Lecturers
-    lecturers = [u.userId for u in User.query.filter_by(userLevel=1).all()]
+
+    # Lecturers (filtered by department if needed)
+    lecturers_query = User.query.filter_by(userLevel=1)
+    if department_code:
+        lecturers_query = lecturers_query.filter_by(userDepartment=department_code)
+
+    lecturers = [u.userId for u in lecturers_query.all()]
     for i, lec in enumerate(lecturers, start=1):
         ws_lists[f"B{i}"] = lec
+
+    ws_lists.sheet_state = 'hidden'
     
-    ws_lists.sheet_state = 'hidden'  # hide the sheet
-    
-    # Dropdowns using list references
+    # Dropdowns
     if departments:
-        dv_dept = DataValidation(type="list", formula1="=Lists!$A$1:$A${}".format(len(departments)), allow_blank=False)
+        dv_dept = DataValidation(type="list", formula1=f"=Lists!$A$1:$A${len(departments)}", allow_blank=False)
         ws.add_data_validation(dv_dept)
         dv_dept.add("A3:A1000")
     
     if lecturers:
-        dv_lecturer = DataValidation(type="list", formula1="=Lists!$B$1:$B${}".format(len(lecturers)), allow_blank=True)
+        dv_lecturer = DataValidation(type="list", formula1=f"=Lists!$B$1:$B${len(lecturers)}", allow_blank=True)
         ws.add_data_validation(dv_lecturer)
         dv_lecturer.add("F3:F1000")
         dv_lecturer.add("G3:G1000")
@@ -184,13 +193,13 @@ def generate_managecourse_template():
     return output
 
 
-@app.route('/download_course_template')
-def download_course_template():
-    output = generate_managecourse_template()
+@app.route('/download_course_template/<department_code>')
+def download_course_template(department_code):
+    output = generate_managecourse_template(department_code)
     return send_file(
         output,
         as_attachment=True,
-        download_name="ManageCourse.xlsx",  # type: ignore[arg-type]
+        download_name=f"ManageCourse_{department_code}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
