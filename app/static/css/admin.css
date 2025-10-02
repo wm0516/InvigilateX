@@ -604,7 +604,13 @@ input[readonly] {
     color: #721c24;
 }  
 
-
+.messages-container {
+    max-height: 300px;      /* limit height */
+    overflow-y: auto;       /* scroll if too many lines */
+    padding: 8px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+}
 
 
 
