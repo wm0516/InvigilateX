@@ -125,17 +125,6 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
 
 
-
-
-
-
-
-
-
-from openpyxl.worksheet.datavalidation import DataValidation
-from io import BytesIO
-import openpyxl
-
 def generate_managecourse_template():
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -193,33 +182,6 @@ def download_course_template():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Function for Admin ManageCourse Route Upload File
 # -------------------------------
@@ -248,7 +210,7 @@ def get_lecturers_by_department(department_code):
     return jsonify(lecturers_list) 
 
 # -------------------------------
-# Read All CourseCodeSection Under The ManageCourseEditPage
+# Read All CourseCodeSection and Return all the selected data details Under The ManageCourseEditPage
 # -------------------------------
 @app.route('/get_courseCodeSection/<path:courseCodeSection_select>')
 def get_courseCodeSection(courseCodeSection_select):
