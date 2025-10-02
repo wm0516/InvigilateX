@@ -165,12 +165,7 @@
                 </select><br>
 
                 <label>Program Code</label>
-                <select id="editProgramCode" name="programCode" required>
-                    <option value="" disabled selected>Select Department</option>
-                    {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
-                    {% endfor %}
-                </select><br>
+                <input type="text" id="editProgramCode" name="programCode" value="" readonly><br>
                 
                 <label>Number of Students</label>
                 <input type="number" id="editStudent" name="student" value="" readonly>
@@ -178,14 +173,10 @@
 
             <div class="form-middle">
                 <label>Practical Lecturer</label>
-                <select id="editPracticalLecturer" name="practicalLecturer" readonly>
-                    <option value="" disabled>Select Practical Lecturer</option>
-                </select><br>
+                <input type="text" id="editPracticalLecturer" name="practicalLecturer" value="" readonly><br>
 
                 <label>Tutorial Lecturer</label>
-                <select id="editTutorialLecturer" name="tutorialLecturer" readonly>
-                    <option value="" disabled>Select Tutorial Lecturer</option>
-                </select><br>
+                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" value="" readonly><br>
 
                 <label>Exam Venue (Editable)</label>
                 <select name="venue" id="editVenue" required>
