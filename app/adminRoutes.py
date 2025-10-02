@@ -634,7 +634,7 @@ def generate_manageexam_template():
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake
         ws_lists[f"B{i}"] = c.courseDepartment
         ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""
-        ws_lists[f"E{i}"] = c.courseStudent or 0
+        ws_lists[f"D{i}"] = c.courseStudent or 0
 
     # --- Venues ---
     venues = Venue.query.all()
