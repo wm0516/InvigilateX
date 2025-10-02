@@ -604,7 +604,6 @@ def generate_manageexam_template():
     ws.title = "Exams"
 
     # Header row
-    ws.append([])
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
     ws.append(headers)
 
@@ -618,7 +617,7 @@ def generate_manageexam_template():
         wb.add_named_style(time_style)
 
     # Apply formats + formulas for first 1000 rows
-    for row in range(3, 1002):
+    for row in range(2, 1001):
         ws[f"A{row}"].style = "date_style"   # Date column
         ws[f"C{row}"].style = "time_style"   # Start Time
         ws[f"D{row}"].style = "time_style"   # End Time
