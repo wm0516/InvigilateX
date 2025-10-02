@@ -147,24 +147,26 @@ def generate_managecourse_template():
                'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
     ws.append(headers)
 
-    # Dropdown for departments
-    dept_str = ",".join(departments)
-    dv_dept = DataValidation(type="list", formula1=f'"{dept_str}"', allow_blank=False)
-    ws.add_data_validation(dv_dept)
-    dv_dept.add(f"A2:A1048576")  # Column A
+    # --- Only add dropdown if list is not empty ---
+    if departments:
+        dept_str = ",".join(departments).replace('"', '""')  # Escape quotes
+        dv_dept = DataValidation(type="list", formula1=f'"{dept_str}"', allow_blank=False)
+        ws.add_data_validation(dv_dept)
+        dv_dept.add("A2:A1000")  # limit to 1000 rows for safety
 
-    # Dropdown for lecturers
-    lecturer_str = ",".join(lecturers)
-    dv_lecturer = DataValidation(type="list", formula1=f'"{lecturer_str}"', allow_blank=True)
-    ws.add_data_validation(dv_lecturer)
-    dv_lecturer.add("F2:F1048576")  # Practical Lecturer
-    dv_lecturer.add("G2:G1048576")  # Tutorial Lecturer
+    if lecturers:
+        lecturer_str = ",".join(lecturers).replace('"', '""')
+        dv_lecturer = DataValidation(type="list", formula1=f'"{lecturer_str}"', allow_blank=True)
+        ws.add_data_validation(dv_lecturer)
+        dv_lecturer.add("F2:F1000")  # Practical Lecturer
+        dv_lecturer.add("G2:G1000")  # Tutorial Lecturer
 
     # Return as BytesIO for sending to user
     output = BytesIO()
     wb.save(output)
     output.seek(0)
     return output
+
 
 @app.route('/download_course_template')
 def download_course_template():
