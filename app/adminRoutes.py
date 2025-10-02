@@ -80,7 +80,7 @@ def standardize_time_with_seconds(time_value):
 # -------------------------------
 # Function handle file upload
 # -------------------------------
-def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
+def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows):
     file = request.files.get(file_key)
     if file and file.filename:
         try:
@@ -154,12 +154,12 @@ def generate_managecourse_template():
     ws_lists = wb.create_sheet(title="Lists")
     
     # Departments
-    departments = [f"[{d.departmentCode}] {d.departmentName}" for d in Department.query.all()]
+    departments = [d.departmentName for d in Department.query.all()]
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
     
     # Lecturers
-    lecturers = [f"[{u.userId}] {u.userName}" for u in User.query.filter_by(userLevel=1).all()]
+    lecturers = [u.userId for u in User.query.filter_by(userLevel=1).all()]
     for i, lec in enumerate(lecturers, start=1):
         ws_lists[f"B{i}"] = lec
     
