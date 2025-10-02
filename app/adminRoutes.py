@@ -702,16 +702,19 @@ def admin_manageExam():
         # --------------------- EDIT EXAM FORM ---------------------
         elif form_type == 'edit' and exam_select:
             action = request.form.get('action')
-            start_dt_raw = request.form.get('startDateTime', '').strip()
-            end_dt_raw = request.form.get('endDateTime', '').strip()
+            start_date_raw = request.form.get('startDate', '').strip()
+            start_time_raw = request.form.get('startTime', '').strip()
+            end_date_raw = request.form.get('endDate', '').strip()
+            end_time_raw = request.form.get('endTime', '').strip()
 
-            if not start_dt_raw or not end_dt_raw:
+            if not start_date_raw or not start_time_raw or not end_date_raw or not end_time_raw:
                 flash("Start or end date/time is missing", "error")
                 return redirect(url_for('admin_manageExam'))
 
+            start_dt_raw = f"{start_date_raw}T{start_time_raw}"
+            end_dt_raw = f"{end_date_raw}T{end_time_raw}"
             start_dt = datetime.strptime(start_dt_raw, "%Y-%m-%dT%H:%M")
             end_dt = datetime.strptime(end_dt_raw, "%Y-%m-%dT%H:%M")
-
             venue_text = request.form.get('venue', '').strip()
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
