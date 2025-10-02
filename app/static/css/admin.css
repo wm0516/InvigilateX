@@ -586,7 +586,7 @@ input[readonly] {
 
 
 .alert {
-    width: 35%;
+    width: 50%;
     text-align: center;
     padding: 10px;
     margin-bottom: 10px;
@@ -605,7 +605,7 @@ input[readonly] {
 }  
 
 .messages-container {
-    max-height: 100px;      /* limit height */
+    max-height: 150px;      /* limit height */
     overflow-y: auto;       /* scroll if too many lines */
     padding: 8px;
     border: 2px solid #ddd;
