@@ -125,7 +125,13 @@
                                 </div>
                             </td>
 
-                            <!-- Attendance Status (per invigilator) -->
+                            <!-- Check-in Time -->
+                            <td>{{ att.checkIn }}</td>
+
+                            <!-- Check-out Time -->
+                            <td>{{ att.checkOut }}</td>
+
+                            <!-- Attendance Status -->
                             <td>{{ att.remark }}</td>
                         </tr>
                     {% endfor %}

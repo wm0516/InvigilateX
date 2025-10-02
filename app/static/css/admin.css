@@ -393,7 +393,9 @@ input, select{
     box-sizing: border-box;
 }
 
-
+input[readonly] {
+    background: lightgrey;
+}
 
 .toggle-password-btn {
     position: absolute;
