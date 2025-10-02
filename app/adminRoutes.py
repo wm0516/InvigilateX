@@ -31,8 +31,6 @@ from .backend import *
 from .database import *
 
 
-
-
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -606,31 +604,33 @@ def generate_manageexam_template():
     ws.title = "Exams"
 
     # Header row
-    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec','Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']
+    headers = [
+        'Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec',
+        'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room'
+    ]
     ws.append(headers)
 
     # --- Create Excel number formats ---
-    # Date format: M/D/YYYY
     if "date_style" not in wb.named_styles:
         date_style = NamedStyle(name="date_style", number_format="M/D/YYYY")
         wb.add_named_style(date_style)
 
-    # Time format: h:mm AM/PM
     if "time_style" not in wb.named_styles:
         time_style = NamedStyle(name="time_style", number_format="h:mm AM/PM")
         wb.add_named_style(time_style)
 
     # Apply formats + formulas for first 1000 rows
     for row in range(2, 1001):
-        ws[f"A{row}"].style = "date_style"   # Date
-        ws[f"C{row}"].style = "time_style"   # Start
-        ws[f"D{row}"].style = "time_style"   # End
-        ws[f"B{row}"].value = f"=IF(A{row}<>\"\",TEXT(A{row},\"DDD\"),\"\")"  
-        # Auto day (MON, TUE, etc.)
+        ws[f"A{row}"].style = "date_style"   # Date column
+        ws[f"C{row}"].style = "time_style"   # Start Time
+        ws[f"D{row}"].style = "time_style"   # End Time
+        # Auto day from date (first 3 letters of weekday)
+        ws[f"B{row}"].value = f"=IF(A{row}<>\"\",TEXT(A{row},\"DDD\"),\"\")"
 
     # === Hidden sheet for lookup lists ===
     ws_lists = wb.create_sheet(title="Lists")
 
+    # --- Courses ---
     courses = Course.query.filter_by(courseStatus=True).all()
     for i, c in enumerate(courses, start=1):
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake
@@ -639,6 +639,12 @@ def generate_manageexam_template():
         ws_lists[f"D{i}"] = c.tutorialLecturer.userName if c.tutorialLecturer else ""
         ws_lists[f"E{i}"] = c.courseStudent or 0
 
+    # --- Venues ---
+    venues = Venue.query.all()
+    for i, v in enumerate(venues, start=1):
+        ws_lists[f"G{i}"] = v.venueName   # put venues in column G
+
+    # === Data Validations ===
     if courses:
         dv_course = DataValidation(
             type="list",
@@ -646,13 +652,23 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_course)
-        dv_course.add("F2:F1000")  # Course/Sec column dropdown
+        dv_course.add("F2:F1000")  # Course/Sec dropdown
 
+        # Auto-fill program, lecturers, no of students
         for row in range(2, 1001):
             ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},2,FALSE))'
             ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},3,FALSE))'
             ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},4,FALSE))'
             ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
+
+    if venues:
+        dv_venue = DataValidation(
+            type="list",
+            formula1=f"=Lists!$G$1:$G${len(venues)}",
+            allow_blank=False
+        )
+        ws.add_data_validation(dv_venue)
+        dv_venue.add("J2:J1000")  # Venue dropdown
 
     ws_lists.sheet_state = 'hidden'
 
@@ -660,6 +676,7 @@ def generate_manageexam_template():
     wb.save(output)
     output.seek(0)
     return output
+
 
 
 @app.route('/download_exam_template')
@@ -671,9 +688,6 @@ def download_exam_template():
         download_name="ManageExam.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
-
 
 
 
