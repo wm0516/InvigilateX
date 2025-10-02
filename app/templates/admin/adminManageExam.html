@@ -41,7 +41,7 @@
 {% block upload_section %}
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
-    <div id="uploadSection" class="function-frame">
+    <div id="uploadSection" class="function-frame" style="width:80%">
         <div class="form-left" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="exam_list">
@@ -72,7 +72,7 @@
 
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
-    <div id="editSection" class="function-frame" style="width:100%">
+    <div id="editSection" class="function-frame">
         <h4 style="text-align: center;">Edit Existing Exams</h4>
         <div class="profile-frame">
             <div class="form-left">

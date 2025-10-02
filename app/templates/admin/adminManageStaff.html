@@ -41,7 +41,7 @@
 {% block upload_section %}
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageStaff') }}" method="POST" enctype="multipart/form-data">
-    <div id="uploadSection" class="function-frame">
+    <div id="uploadSection" class="function-frame" style="width:80%">
         <div class="form-left" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="staff_list">
@@ -76,7 +76,7 @@
 {% block manual_section %}
 <!-- Manual Form -->
 <form id="manualForm" action="{{ url_for('admin_manageStaff') }}" method="POST" enctype="multipart/form-data">
-    <div id="manualSection" class="function-frame" style="width:100%">
+    <div id="manualSection" class="function-frame">
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
             <div class="form-left">
