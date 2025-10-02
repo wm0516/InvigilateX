@@ -1,22 +1,31 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
-from app import app
-from .backend import *
-from sqlalchemy import case
-from .database import *
-import calendar
-from datetime import  datetime, time
-from io import BytesIO
-import pandas as pd
-from flask_bcrypt import Bcrypt
-from itsdangerous import URLSafeTimedSerializer
-import traceback
+# -------------------------------
+# Standard library imports
+# -------------------------------
 import os
 import re
-import PyPDF2
-from sqlalchemy import func
+from datetime import datetime, time
+from io import BytesIO
 from collections import defaultdict
+
+# -------------------------------
+# Third-party imports
+# -------------------------------
+import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
+import PyPDF2
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
+from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer
+from sqlalchemy import func
+
+# -------------------------------
+# Local application imports
+# -------------------------------
+from app import app
+from .backend import *
+from .database import *
+
 
 
 
