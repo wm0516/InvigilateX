@@ -594,11 +594,13 @@ def generate_manageexam_template():
         db.session.query(Course)
         .outerjoin(Exam, Course.courseExamId == Exam.examId)
         .filter(
-            or_(
+            and_(
                 Course.courseStatus == True,
-                Exam.examStartTime.is_(None),
-                Exam.examEndTime.is_(None),
-                Exam.examVenue.is_(None)
+                or_(
+                    Exam.examStartTime.is_(None),
+                    Exam.examEndTime.is_(None),
+                    Exam.examVenue.is_(None)
+                )
             )
         )
         .all()
