@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from app import app
 from .backend import *
 from sqlalchemy import case
@@ -15,6 +15,8 @@ import re
 import PyPDF2
 from sqlalchemy import func
 from collections import defaultdict
+import openpyxl
+from openpyxl.worksheet.datavalidation import DataValidation
 
 
 
@@ -48,9 +50,6 @@ def parse_date(val):
 # Handle Timeline Read From ExcelFile And Convert To The Correct Format
 # -------------------------------
 def standardize_time_with_seconds(time_value):
-    """
-    Convert input time (string or datetime.time/datetime) to HH:MM:SS string format.
-    """
     if isinstance(time_value, time):
         return time_value.strftime("%H:%M:%S")
     elif isinstance(time_value, datetime):
@@ -77,9 +76,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
         try:
             file_stream = BytesIO(file.read())
             excel_file = pd.ExcelFile(file_stream)
-
-            records_added = 0
-            records_failed = 0
+            records_added = records_failed = 0
 
             for sheet_name in excel_file.sheet_names:
                 try:
@@ -126,6 +123,83 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
     else:
         flash("No file uploaded", "error")
         return redirect(url_for(redirect_endpoint))
+
+
+
+
+
+
+
+
+
+def generate_managecourse_template():
+    # Get departments and lecturers
+    departments = [d.departmentCode for d in Department.query.all()]
+    lecturers = [u.userId for u in User.query.filter_by(userLevel=1).all()]  # Only lecturers
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    assert ws is not None, "Workbook has no active worksheet"
+    ws.title = "Courses"
+
+    # Header row
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name',
+               'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+    ws.append(headers)
+
+    # Dropdown for departments
+    dept_str = ",".join(departments)
+    dv_dept = DataValidation(type="list", formula1=f'"{dept_str}"', allow_blank=False)
+    ws.add_data_validation(dv_dept)
+    dv_dept.add(f"A2:A1048576")  # Column A
+
+    # Dropdown for lecturers
+    lecturer_str = ",".join(lecturers)
+    dv_lecturer = DataValidation(type="list", formula1=f'"{lecturer_str}"', allow_blank=True)
+    ws.add_data_validation(dv_lecturer)
+    dv_lecturer.add("F2:F1048576")  # Practical Lecturer
+    dv_lecturer.add("G2:G1048576")  # Tutorial Lecturer
+
+    # Return as BytesIO for sending to user
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+@app.route('/download_course_template')
+def download_course_template():
+    output = generate_managecourse_template()
+    return send_file(
+        output,
+        as_attachment=True,
+        attachment_filename="ManageCourse.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -183,8 +257,12 @@ def get_courseCodeSection(courseCodeSection_select):
 # -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 def admin_manageCourse():
-    # === Load basic data safely ===
-    course_data = Course.query.order_by(Course.coursePractical.asc(),Course.courseTutorial.asc(),Course.courseStatus.desc(),Course.courseDepartment.asc()).all()
+    course_data = Course.query.order_by(
+        Course.coursePractical.asc(),
+        Course.courseTutorial.asc(),
+        Course.courseStatus.desc(),
+        Course.courseDepartment.asc()
+    ).all()
     department_data = Department.query.all()
 
     course_id = request.form.get('editCourseSelect')

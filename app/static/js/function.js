@@ -30,10 +30,10 @@ function updateDepartmentLabel() {
             departmentLabel.textContent = 'Lecturer of Department';
             break;
         case 'DEAN':
-            departmentLabel.textContent = 'Dean of Department';
+            departmentLabel.textContent = 'Dean of Department/Head of School';
             break;
         case 'HOP':
-            departmentLabel.textContent = 'Head of Department';
+            departmentLabel.textContent = 'Head of Programme';
             break;
         case 'ADMIN':
             departmentLabel.textContent = 'Admin of Department';
@@ -202,7 +202,6 @@ function setupFileUpload(fileInputId, uploadContainerId, fileNameDisplayId) {
         }
     });
 }
-
 
 // Initialize all upload components on DOM ready
 document.addEventListener('DOMContentLoaded', function () {

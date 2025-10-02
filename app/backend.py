@@ -495,6 +495,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
 # -------------------------------
 # Admin Function 4
 # -------------------------------
+'''
 def get_available_venues(examDate, startTime, endTime):
     # Return a list of venueNumbers that are AVAILABLE during the given exam slot.
     available_venues = Venue.query.all()
@@ -523,6 +524,8 @@ def get_available_venues(examDate, startTime, endTime):
             usable_venues.append(venue.venueNumber)
 
     return usable_venues
+'''
+
 
 # -------------------------------
 # Admin Function 5: View and Edit Admin Profile
