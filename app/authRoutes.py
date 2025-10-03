@@ -234,7 +234,7 @@ def admin_homepage():
 # -------------------------------
 # Function for DEAN/HOS/HOP Homepage route
 # -------------------------------
-@app.route('access/home', methods=['GET', 'POST'])
+@app.route('/access/home', methods=['GET', 'POST'])
 @login_required
 def access_homepage():
     return render_template('access/homepage.html', active_tab='access_hometab')
