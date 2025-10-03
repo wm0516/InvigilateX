@@ -33,12 +33,12 @@ def access_invigilationReport():
     return render_template('access/accessInvigilationReport.html', active_tab='access_invigilationReporttab', attendances=attendances)
 
 
-@app.route('/access/timetable', methods=['GET', 'POST'])
-def access_timetable():
+@app.route('/access/ownTimetable', methods=['GET', 'POST'])
+def access_ownTimetable():
     deanId = session.get('user_id')
     timetable = Timetable.query.filter_by(user_id=deanId).first()
     timetable_rows = timetable.rows if timetable else []
-    return render_template('access/accessTimetable.html', active_tab='access_timetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
+    return render_template('access/accessOwnTimetable.html', active_tab='access_ownTimetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
 
 
 @app.route('/access/mergeTimetable', methods=['GET', 'POST'])
@@ -77,7 +77,7 @@ def access_profile():
         valid, message = check_profile(deanId, deanContact_text, deanPassword1_text, deanPassword2_text)
         if not valid:
             flash(message, 'error')
-            return redirect(url_for('dean_profile'))
+            return redirect(url_for('access_profile'))
 
         if valid and dean:
             if deanContact_text:
@@ -88,7 +88,7 @@ def access_profile():
 
             db.session.commit()
             flash("Successfully updated", 'success')
-            return redirect(url_for('dean_profile'))
+            return redirect(url_for('access_profile'))
 
     return render_template(
         'access/accessProfile.html',
