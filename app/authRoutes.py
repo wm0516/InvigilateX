@@ -43,6 +43,8 @@ def login():
             return redirect(url_for('admin_homepage'))
         elif role == DEAN:
             return redirect(url_for('dean_homepage'))
+        elif role == HOS:
+            return redirect(url_for('dean_homepage'))
         elif role == HOP:
             return redirect(url_for('hop_homepage'))
         elif role == LECTURER:
@@ -64,6 +66,7 @@ def register():
     role_map = {
         'LECTURER': LECTURER,
         'DEAN': DEAN,
+        'HOS': HOS,
         'HOP': HOP,
         'ADMIN': ADMIN
     }
@@ -229,21 +232,12 @@ def admin_homepage():
 
 
 # -------------------------------
-# Function for Dean Homepage route
+# Function for DEAN/HOS/HOP Homepage route
 # -------------------------------
-@app.route('/dean/home', methods=['GET', 'POST'])
+@app.route('access/home', methods=['GET', 'POST'])
 @login_required
-def dean_homepage():
-    return render_template('dean/deanHomepage.html', active_tab='dean_hometab')
-
-
-# -------------------------------
-# Function for HOP Homepage route
-# -------------------------------
-@app.route('/hop/home', methods=['GET', 'POST'])
-@login_required
-def hop_homepage():
-    return render_template('hop/hopHomepage.html', active_tab='hop_hometab')
+def access_homepage():
+    return render_template('access/homepage.html', active_tab='access_hometab')
 
 
 # -------------------------------

@@ -25,16 +25,19 @@ class Department(db.Model):
     departmentName = db.Column(db.String(60), nullable=False)                       # Department Name
     deanId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)  # Dean (FK to User)
     hopId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)   # HOP (FK to User)
+    hosId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)   # HOS (FK to User)
 
     # Relationship
     dean = db.relationship("User", foreign_keys=[deanId], backref="dean_of_departments")
     hop = db.relationship("User", foreign_keys=[hopId], backref="hop_of_departments")
+    hos = db.relationship("User", foreign_keys=[hosId], backref="hos_of_departments")
     '''
     CREATE TABLE Department (
         departmentCode VARCHAR(10) NOT NULL PRIMARY KEY,
         departmentName VARCHAR(60) NOT NULL,
         deanId VARCHAR(20) NULL,
-        hopId VARCHAR(20) NULL
+        hopId VARCHAR(20) NULL,
+        hosId VARCHAR(20) NULL
     );
     '''
 

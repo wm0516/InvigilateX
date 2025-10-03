@@ -273,10 +273,12 @@
                         {% if row.userLevel == 1 %}
                             LECTURER
                         {% elif row.userLevel == 2 %}
-                            DEAN/HOS
+                            DEAN
                         {% elif row.userLevel == 3 %}
-                            HOP
+                            HOS
                         {% elif row.userLevel == 4 %}
+                            HOP
+                        {% elif row.userLevel == 5 %}
                             ADMIN
                         {% else %}
                             Unknown
@@ -404,8 +406,8 @@
         const charts = [
             {
                 id: 'staffPieChart',
-                labels: ['Admin', 'Lecturer', 'Dean', 'HOP'],
-                data: [{{ total_admin }}, {{ total_lecturer }}, {{ total_dean }}, {{ total_hop }}],
+                labels: ['Admin', 'Lecturer', 'Dean', 'HOP', 'HOS'],
+                data: [{{ total_admin }}, {{ total_lecturer }}, {{ total_dean }}, {{ total_hop }}, {{ total_hos }}],
                 label: 'Staff Distribution'
             },
             {

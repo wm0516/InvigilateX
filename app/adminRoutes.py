@@ -85,7 +85,6 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
                 except Exception as sheet_err:
                     pass
-                    flash(f"[Sheet Error] {sheet_err}", "error")
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
@@ -403,7 +402,8 @@ def admin_manageDepartment():
     department_data = Department.query.all()
     total_department = len(department_data)
     deans = User.query.filter_by(userLevel=2).all()
-    hops = User.query.filter_by(userLevel=3).all()
+    hoss = User.query.filter_by(userLevel=3).all()
+    hops = User.query.filter_by(userLevel=4).all()
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
@@ -429,6 +429,7 @@ def admin_manageDepartment():
         elif form_type == 'edit' and department_select:
             action = request.form.get('action')
             departmentName = request.form.get('departmentName')
+            hosId = request.form.get('hosName')
             deanId = request.form.get('deanName')
             hopId = request.form.get('hopName')
 
@@ -436,8 +437,14 @@ def admin_manageDepartment():
             if deanId:
                 dean_user = User.query.filter_by(userId=deanId, userLevel=2).first()
                 if not dean_user or dean_user.userDepartment != department_select.departmentCode:
-                    flash("Selected Dean/Hos does not belong to this department. Ignoring Dean/Hos selection.", "error")
+                    flash("Selected Dean does not belong to this department. Ignoring Dean selection.", "error")
                     deanId = None
+            # Validate Hos belongs to this department (only if a new selection is made)
+            if hosId:
+                hos_user = User.query.filter_by(userId=hosId, userLevel=3).first()
+                if not hos_user or hos_user.userDepartment != department_select.departmentCode:
+                    flash("Selected Hos does not belong to this department. Ignoring Hos selection.", "error")
+                    hosId = None
             # Validate HOP belongs to this department (only if a new selection is made)
             if hopId:
                 hop_user = User.query.filter_by(userId=hopId, userLevel=3).first()
@@ -450,6 +457,9 @@ def admin_manageDepartment():
                 # Update Dean only if a valid selection is made
                 if deanId is not None:
                     department_select.deanId = deanId
+                # Update Hos only if a valid selection is made
+                if hosId is not None:
+                    department_select.hosId = hosId
                 # Update HOP only if a valid selection is made
                 if hopId is not None:
                     department_select.hopId = hopId
@@ -461,7 +471,7 @@ def admin_manageDepartment():
                 flash("Department deleted successfully", "success")
 
             return redirect(url_for('admin_manageDepartment'))
-    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hops=hops)
+    return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)
 
 
 
@@ -972,12 +982,12 @@ def generate_user_template():
         ws_lists[f"A{i}"] = d.departmentCode
 
     # --- Roles ---
-    roles = ["Lecturer", "Dean/HOS", "HOP", "Admin"]
+    roles = ["Lecturer", "Dean", "HOS", "HOP", "Admin"]
     for i, r in enumerate(roles, start=1):
         ws_lists[f"B{i}"] = r
 
     # --- Gender ---
-    genders = ["Male", "Female", "Other"]
+    genders = ["Male", "Female"]
     for i, g in enumerate(genders, start=1):
         ws_lists[f"C{i}"] = g
 
@@ -1046,7 +1056,7 @@ def clean_contact(contact):
 # Function for Admin ManageStaff Route Upload File
 # -------------------------------
 def process_staff_row(row):
-    role_mapping = {'lecturer': 1, 'hop': 2, 'dean': 3, 'admin': 4}
+    role_mapping = {'lecturer': 1, 'dean': 2, 'hos': 3, 'hop': 4, 'admin': 5}
     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
     return create_staff(
         id=str(row['id']).upper(),
@@ -1089,8 +1099,9 @@ def admin_manageStaff():
 
     # === Dashboard Counts ===
     total_staff = User.query.count()
-    total_admin = User.query.filter_by(userLevel=4).count()
-    total_hop = User.query.filter_by(userLevel=3).count()
+    total_admin = User.query.filter_by(userLevel=5).count()
+    total_hop = User.query.filter_by(userLevel=4).count()
+    total_hos = User.query.filter_by(userLevel=3).count()
     total_dean = User.query.filter_by(userLevel=2).count()
     total_lecturer = User.query.filter_by(userLevel=1).count()
     total_male_staff = User.query.filter_by(userGender="MALE").count()
@@ -1175,6 +1186,7 @@ def admin_manageStaff():
         total_staff=total_staff,
         total_admin=total_admin,
         total_hop=total_hop,
+        total_hos=total_hos,
         total_dean=total_dean,
         total_lecturer=total_lecturer,
         total_male_staff=total_male_staff,
@@ -1185,6 +1197,20 @@ def admin_manageStaff():
         error_rows=error_rows,
         user_select=user_select
     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1464,7 +1490,7 @@ def admin_manageTimetable():
 
     # Staff list (exclude certain levels/status)
     staff_list = User.query.filter(
-        User.userLevel != 4,
+        User.userLevel != 5,
         User.userStatus != 2
     ).all()
 

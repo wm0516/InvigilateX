@@ -87,12 +87,22 @@
             </div>
 
             <div class="form-right">
-                <label>Dean/Hos Name</label>
+                <label>Dean Name</label>
                 <select id="deanName" name="deanName">
                     <option value="" disabled selected>Select a Dean</option>
                     {% for dean in deans %}
                         <option value="{{ dean.userId }}">
                             [{{ dean.userDepartment }}] {{ dean.userName }}
+                        </option>
+                    {% endfor %}
+                </select><br>
+
+                <label>Hos Name</label>
+                <select id="hosName" name="hosName">
+                    <option value="" disabled selected>Select a Hos</option>
+                    {% for hos in hoss %}
+                        <option value="{{ hos.userId }}">
+                            [{{ hos.userDepartment }}] {{ hos.userName }}
                         </option>
                     {% endfor %}
                 </select><br>
@@ -136,7 +146,8 @@
                     <th>No</th>
                     <th>Department Code</th>
                     <th>Department Name</th>
-                    <th>Dean/Hos Details</th>
+                    <th>Dean Details</th>
+                    <th>Hos Details</th>
                     <th>Hop Details</th>
                 </tr>
             </thead>
@@ -149,11 +160,22 @@
                     <td>
                         {% if row.dean %}
                             <div class="info-grid">
-                                <div>Dean/Hos ID</div><div><strong>: {{ row.dean.userId }}</strong></div>
-                                <div>Dean/Hos Name</div><div><strong>: {{ row.dean.userName }}</strong></div>
-                                <div>Dean/Hos Email</div><div><strong>: {{ row.dean.userEmail }}</strong></div>
-                                <div>Dean/Hos Contact</div><div><strong>: {{ row.dean.userContact }}</strong></div>
-                                <div>Dean/Hos Department</div><div><strong>: {{ row.dean.userDepartment }}</strong></div>
+                                <div>Dean ID</div><div><strong>: {{ row.dean.userId }}</strong></div>
+                                <div>Dean Name</div><div><strong>: {{ row.dean.userName }}</strong></div>
+                                <div>Dean Email</div><div><strong>: {{ row.dean.userEmail }}</strong></div>
+                                <div>Dean Contact</div><div><strong>: {{ row.dean.userContact }}</strong></div>
+                                <div>Dean Department</div><div><strong>: {{ row.dean.userDepartment }}</strong></div>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.hos %}
+                            <div class="info-grid">
+                                <div>Hos ID</div><div><strong>: {{ row.hos.userId }}</strong></div>
+                                <div>Hos Name</div><div><strong>: {{ row.hos.userName }}</strong></div>
+                                <div>Hos Email</div><div><strong>: {{ row.hos.userEmail }}</strong></div>
+                                <div>Hos Contact</div><div><strong>: {{ row.hos.userContact }}</strong></div>
+                                <div>Hos Department</div><div><strong>: {{ row.hos.userDepartment }}</strong></div>
                             </div>
                         {% endif %}
                     </td>
@@ -182,6 +204,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         const departmentSelect    = document.getElementById("editDepartment");
         const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
+        const hosSelect           = document.getElementById("hosName");
         const deanSelect          = document.getElementById("deanName");
         const hopSelect           = document.getElementById("hopName");
 
@@ -200,11 +223,17 @@
                 // Fill department name
                 departmentNameInput.value = dept.departmentName || "";
 
-                // Preselect dean & hop if IDs are provided
+                // Preselect dean & hop & hos if IDs are provided
                 if (dept.deanId && deanSelect) {
                     deanSelect.value = dept.deanId;
                 } else if (deanSelect) {
                     deanSelect.value = ""; // reset if none
+                }
+
+                if (dept.hosId && hosSelect) {
+                    hosSelect.value = dept.hosId;
+                } else if (hosSelect) {
+                    hosSelect.value = ""; // reset if none
                 }
 
                 if (dept.hopId && hopSelect) {

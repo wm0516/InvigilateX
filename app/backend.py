@@ -14,8 +14,9 @@ from sqlalchemy import and_, or_
 
 
 # constants.py or at the top of your app.py
-ADMIN = 4
-HOP = 3
+ADMIN = 5
+HOP = 4
+HOS = 3
 DEAN = 2
 LECTURER = 1
 
@@ -23,6 +24,7 @@ LECTURER = 1
 role_map = {
     'LECTURER': LECTURER,
     'DEAN': DEAN,
+    'HOS': HOS,
     'HOP': HOP,
     'ADMIN': ADMIN
 }
@@ -71,7 +73,7 @@ def check_login(loginEmail, loginPassword):
         return False, "Invalid Email or Password", None
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid Password", None 
-    if user.userLevel not in [ADMIN, DEAN, HOP, LECTURER]:
+    if user.userLevel not in [ADMIN, DEAN, HOS, HOP, LECTURER]:
         return False, "User Role is NotRecognized", None
 
     return True, user.userId, user.userLevel
@@ -483,7 +485,9 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
     if dept:
         if role == 2:  # Dean
             dept.deanId = new_staff.userId
-        elif role == 3:  # HOP
+        elif role == 3: # HOS
+            dept.hosId = new_staff.userId
+        elif role == 4:  # HOP
             dept.hopId = new_staff.userId
         db.session.add(dept)
 
