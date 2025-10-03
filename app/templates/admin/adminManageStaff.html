@@ -47,22 +47,17 @@
             <label for="staff_list">
                 <div class="upload-container" id="staffUploadContainer">
                     <h4 style="text-align: center;">
-                        Download the staff template 
-                        <a href="{{ url_for('download_user_template') }}">here</a>.
+                        Download the staff template <a href="{{ url_for('download_user_template') }}"> here</a>.
                     </h4><br>
-                    <h4>Download Staff Templates</h4>
-                    <div>
-                        <a href="{{ url_for('download_user_template') }}">Download the Staff Template</a>
-                    </div><br><br>
                     <div class="upload-text">
                         Please upload a file with the <b>first row left empty</b>.  
                         Data should begin from columns <b>A to G</b>, with headers as follows:<br><br>
                         <i>['ID', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']</i><br><br>
-                        Ensure the data follows this format:  
-                        • <b>Email</b> must end with <b>@newinti.edu.my</b>  
+                        Ensure the data follows this format:<br>
+                        • <b>Email</b> must end with <b>@newinti.edu.my</b><br>
                         • <b>Contact</b> must start with <b>01</b> and contain 10–11 digits<br><br>
                         Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
-                    </div><br>
+                    </div><br><br>
                     <div id="staffSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
