@@ -85,7 +85,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
                 except Exception as sheet_err:
                     pass
-                    
+                    flash(f"[Sheet Error] {sheet_err}", "error")
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
@@ -663,8 +663,9 @@ def download_exam_template():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+
 # -------------------------------
-# Function for Admin ManageExam Route Upload File
+# Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
     # Parse date
@@ -694,7 +695,6 @@ def process_exam_row(row):
     return True, f"Exam for {row['course/sec']} uploaded"
 
 
-
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
@@ -719,6 +719,7 @@ def get_exam_details(course_code_section):
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
     }
     return jsonify(response_data)
+
 
 # -------------------------------
 # Get VenueDetails for ManageExamEditPage
@@ -807,6 +808,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
             db.session.delete(att)
 
     db.session.commit()
+
 
 # -------------------------------
 # Function for Admin ManageExam Route
@@ -944,6 +946,87 @@ def admin_manageExam():
 
 
 
+# -------------------------------
+# Function for Admin User Download Excel Template
+# -------------------------------
+def generate_user_template():
+    
+    warnings.simplefilter("ignore", UserWarning)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    assert ws is not None, "Workbook has no active worksheet"
+    ws.title = "Users"
+
+    # First row empty
+    ws.append([])
+    # Second row = headers
+    headers = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
+    ws.append(headers)
+
+    # === Hidden sheet for lookup lists ===
+    ws_lists = wb.create_sheet(title="Lists")
+
+    # --- Departments ---
+    departments = Department.query.all()
+    for i, d in enumerate(departments, start=1):
+        ws_lists[f"A{i}"] = d.departmentCode
+
+    # --- Roles ---
+    roles = ["Lecturer", "Dean/HOS", "HOP", "Admin"]
+    for i, r in enumerate(roles, start=1):
+        ws_lists[f"B{i}"] = r
+
+    # --- Gender ---
+    genders = ["Male", "Female", "Other"]
+    for i, g in enumerate(genders, start=1):
+        ws_lists[f"C{i}"] = g
+
+    # === Data Validations ===
+    if departments:
+        dv_department = DataValidation(
+            type="list",
+            formula1=f"=Lists!$A$1:$A${len(departments)}",
+            allow_blank=False
+        )
+        ws.add_data_validation(dv_department)
+        dv_department.add("C3:C1002")  # Department dropdown
+
+    dv_role = DataValidation(
+        type="list",
+        formula1=f"=Lists!$B$1:$B${len(roles)}",
+        allow_blank=False
+    )
+    ws.add_data_validation(dv_role)
+    dv_role.add("D3:D1002")  # Role dropdown
+
+    dv_gender = DataValidation(
+        type="list",
+        formula1=f"=Lists!$C$1:$C${len(genders)}",
+        allow_blank=False
+    )
+    ws.add_data_validation(dv_gender)
+    dv_gender.add("G3:G1002")  # Gender dropdown
+
+    ws_lists.sheet_state = 'hidden'
+
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return output
+
+
+# -------------------------------
+# Route to download User Excel template
+# -------------------------------
+@app.route('/download_user_template')
+def download_user_template():
+    output = generate_user_template()
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="UserTemplate.xlsx",  # type: ignore[arg-type]
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 
 
