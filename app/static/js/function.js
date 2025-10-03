@@ -30,7 +30,10 @@ function updateDepartmentLabel() {
             departmentLabel.textContent = 'Lecturer of Department';
             break;
         case 'DEAN':
-            departmentLabel.textContent = 'Dean of Department/Head of School';
+            departmentLabel.textContent = 'Dean of Department';
+            break;
+        case 'HOS':
+            departmentLabel.textContent = 'Head of School';
             break;
         case 'HOP':
             departmentLabel.textContent = 'Head of Programme';
@@ -81,6 +84,12 @@ document.addEventListener('DOMContentLoaded', function() {
     '/lecturer/invigilationTimetable': 'lecturer_invigilationTimetabletab',
     '/lecturer/invigilationReport': 'lecturer_invigilationReporttab',
     '/lecturer/profile': 'lecturer_profiletab',
+
+    '/access/home': 'access_hometab',
+    '/access/ownTimetable': 'access_timetabletab',
+    '/access/invigilationReport': 'access_invigilationReporttab',
+    '/access/profile': 'access_profiletab',
+    '/access/mergeTimetable': 'access_mergeTimetabletab',
 
     '/dean/home': 'dean_hometab',
     '/dean/timetable': 'dean_timetabletab',

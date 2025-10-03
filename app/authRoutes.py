@@ -231,7 +231,13 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-
+# -------------------------------
+# Function for DEAN/HOS/HOP Homepage route
+# -------------------------------
+@app.route('access/home', methods=['GET', 'POST'])
+@login_required
+def access_homepage():
+    return render_template('access/homepage.html', active_tab='access_hometab')
 
 
 # -------------------------------
