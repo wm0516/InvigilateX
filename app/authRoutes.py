@@ -224,10 +224,14 @@ def login_required(f):
             return redirect(url_for("login"))
 
         # 3. Check status
-        if not user.userStatus:  # assuming userStatus is Boolean
-            flash("Please activate your account from the link in your email", "error")
+        if user.userStatus == 0:
+            flash("Please activate your account using the link in your email.", "error")
+            return redirect(url_for("login"))
+        elif user.userStatus == 2:
+            flash("This account has been deleted. Please contact support.", "error")
             return redirect(url_for("login"))
 
+        # 4. Correct status allow in
         return f(*args, **kwargs)
     return decorated_function
 
