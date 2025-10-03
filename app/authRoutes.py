@@ -206,12 +206,28 @@ def inject_user_data():
 # -------------------------------
 # Function for Auth RequiredLoginForEachPage
 # -------------------------------
+# -------------------------------
+# Function for Auth RequiredLoginForEachPage
+# -------------------------------
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # 1. Check if logged in
         if 'user_id' not in session:
             flash("Please log in first", "error")
             return redirect(url_for("login"))
+
+        # 2. Get user from database
+        user = User.query.get(session['user_id'])
+        if not user:
+            flash("User not found", "error")
+            return redirect(url_for("login"))
+
+        # 3. Check status
+        if not user.userStatus:  # assuming userStatus is Boolean
+            flash("Please activate your account from the link in your email", "error")
+            return redirect(url_for("login"))
+
         return f(*args, **kwargs)
     return decorated_function
 
