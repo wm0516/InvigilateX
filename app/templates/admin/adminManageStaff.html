@@ -189,8 +189,9 @@
                     <option value="" disabled selected>Select Role</option>
                     <option value="1">LECTURER</option>
                     <option value="2">DEAN</option>
-                    <option value="3">(HOP) HEAD OF PROGRAMME</option>
-                    <option value="4">ADMIN</option>
+                    <option value="3">(HOS) HEAD OF SCHOOL</option>
+                    <option value="4">(HOP) HEAD OF PROGRAMME</option>
+                    <option value="5">ADMIN</option>
                 </select><br>
 
                 <label id="departmentLabel">Department</label>
@@ -397,8 +398,8 @@
         const charts = [
             {
                 id: 'staffPieChart',
-                labels: ['Admin', 'Lecturer', 'Dean', 'HOP', 'HOS'],
-                data: [{{ total_admin }}, {{ total_lecturer }}, {{ total_dean }}, {{ total_hop }}, {{ total_hos }}],
+                labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer'],
+                data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}],
                 label: 'Staff Distribution'
             },
             {
