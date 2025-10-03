@@ -42,7 +42,7 @@ with app.app_context():
 
 # Import routes (must be after app creation to avoid circular imports)
 try:
-    from app import adminRoutes, deanRoutes, hopRoutes, lecturerRoutes, authRoutes, accessRoutes
+    from app import adminRoutes, lecturerRoutes, authRoutes, accessRoutes
     print("Routes imported successfully")  # Debug point 11
 except ImportError as e:
     print(f"Failed to import routes: {e}")  
