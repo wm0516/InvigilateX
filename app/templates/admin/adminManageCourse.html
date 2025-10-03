@@ -49,16 +49,16 @@
     <div id="uploadSection" class="function-frame" style="width:80%;">
         <div class="form-left" style="width: 100%;">
             <h4 style="text-align: center;">File Upload Section</h4>
-            <h5 style="text-align: center;">Download Course Templates by Department</h5>
-            <div style="text-align: center; margin-bottom: 20px;">
-                {% for dept in department_data %}
-                    <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}" style="margin: 0 10px;">
-                        {{ dept.departmentCode }}
-                    </a>
-                {% endfor %}
-            </div>
             <label for="course_list">
                 <div class="upload-container" id="courseUploadContainer">
+                    <h4>Download Course Templates by Department</h4>
+                    <div style="margin-bottom: 20px;">
+                        {% for dept in department_data %}
+                            <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}" style="margin: 0 10px;">
+                                {{ dept.departmentCode }}
+                            </a>
+                        {% endfor %}
+                    </div>
                     <div class="upload-text">
                         Please upload a file with an empty first row. Data should begin from columns A to H,<br>
                         labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students'].<br><br>

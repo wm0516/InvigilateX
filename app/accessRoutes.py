@@ -10,6 +10,7 @@ from .backend import *
 from .database import *
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
+from .authRoutes import login_required
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -28,12 +29,14 @@ def get_all_attendances():
 
 
 @app.route('/access/invigilationReport', methods=['GET', 'POST'])
+@login_required
 def access_invigilationReport():
     attendances = get_all_attendances()
     return render_template('access/accessInvigilationReport.html', active_tab='access_invigilationReporttab', attendances=attendances)
 
 
 @app.route('/access/ownTimetable', methods=['GET', 'POST'])
+@login_required
 def access_ownTimetable():
     deanId = session.get('user_id')
     timetable = Timetable.query.filter_by(user_id=deanId).first()
@@ -42,6 +45,7 @@ def access_ownTimetable():
 
 
 @app.route('/access/mergeTimetable', methods=['GET', 'POST'])
+@login_required
 def access_mergeTimetable():
     dean_id = session.get('user_id')
     dean_user = User.query.get(dean_id)
@@ -59,6 +63,7 @@ def access_mergeTimetable():
 
 
 @app.route('/access/profile', methods=['GET', 'POST'])
+@login_required
 def access_profile():
     deanId = session.get('user_id')
     dean = User.query.filter_by(userId=deanId).first()
