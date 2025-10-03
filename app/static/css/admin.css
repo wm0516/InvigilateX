@@ -191,10 +191,6 @@ html, body {
     margin-bottom: 10px;
 }
 
-.file-types {
-    font-size: 0.9em;
-    color: #777;
-}
 
 #file-input {
     display: none;

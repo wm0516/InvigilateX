@@ -51,24 +51,20 @@
                         <a href="{{ url_for('download_user_template') }}">Download Staff Template</a>
                     </div>
                     <div class="upload-text">
-                        Please upload a file with an empty first row. Data should begin from columns A to G,<br>
-                        labeled as: ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender'].<br><br>
-                        Ensure the data follows this format:<br>
-                        • 'Email' must end with <b>@newinti.edu.my</b><br>
-                        • 'Contact' must start with '01' and contain 10–11 digits<br><br><br>
-                        Click to upload or drag and drop a file below (accepted file formats).
+                        Please upload a file with the <b>first row left empty</b>.  
+                        Data should begin from columns <b>A to G</b>, with headers as follows:<br><br>
+                        <i>['ID', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']</i><br><br>
+                        Ensure the data follows this format:  
+                        • <b>Email</b> must end with <b>@newinti.edu.my</b>  
+                        • <b>Contact</b> must start with <b>01</b> and contain 10–11 digits<br><br>
+                        Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
                     </div>
-                    <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                    <!-- Selected file display -->
                     <div id="staffSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
             <input type="file" id="staff_list" name="staff_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
-            <!-- 🔽 Add this hidden input here -->
             <input type="hidden" name="form_type" value="upload">
             <br>
-
-            <!-- Upload Form Submit -->
             <div class="button-wrapper">
                 <button type="submit">Upload New Staff</button>
             </div>

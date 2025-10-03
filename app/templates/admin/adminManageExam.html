@@ -46,27 +46,23 @@
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="exam_list">
                 <div class="upload-container" id="examUploadContainer">
-                    
                     <h4 style="text-align: center;">Download Exam Templates</h4>
                     <div style="text-align: center; margin-bottom: 20px;">
                         <a href="{{ url_for('download_exam_template') }}">Download Exam Template</a>
                     </div>
                     <div class="upload-text">
-                        Upload a file with an empty first row. Data should start from columns A to J,<br> 
-                        labeled as: ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Practical Lecturer', 'Tutorial Lecturer', 'No of', 'Room']<br><br><br>
-                        Click to upload or drag and drop with below file format
+                        Please upload a file with the <b>first row left empty</b>.  
+                        Data should begin from columns <b>A to J</b>, with headers as follows:<br><br>
+                        <i>['Date', 'Day', 'Start', 'End', 'Program', 'Course/Section', 'Practical Lecturer', 'Tutorial Lecturer', 'No. of Students', 'Room']</i><br><br>
+                        You may also download the exam template using the link above.<br><br>
+                        Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
                     </div>
-                    <div class="file-types">XLSX, XLS, or XLSM</div><br>
-                    <!-- Selected file display -->
                     <div id="examSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
             <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
-            <!-- 🔽 Add this hidden input here -->
             <input type="hidden" name="form_type" value="upload">
             <br>
-
-            <!-- Upload Form Submit -->
             <div class="button-wrapper">
                 <button type="submit">Upload Exam</button>
             </div>
