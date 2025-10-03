@@ -52,6 +52,7 @@
             <label for="course_list">
                 <div class="upload-container" id="courseUploadContainer">
                     <h4>Download Course Templates by Department</h4>
+
                     <div style="margin-bottom: 20px;">
                         {% for dept in department_data %}
                             <a href="{{ url_for('download_course_template', department_code=dept.departmentCode) }}" style="margin: 0 10px;">
@@ -60,11 +61,12 @@
                         {% endfor %}
                     </div>
                     <div class="upload-text">
-                        Please upload a file with an empty first row. Data should begin from columns A to H,<br>
-                        labeled as: ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students'].<br><br>
-                        You may also download an Excel template from the above link, generated based on your department with all the required table headers.<br><br>
-                        Click to upload or drag and drop a file below (accepted file formats).
+                        Please upload a file with the <b>first row left empty</b>.Data should begin from columns <b>A to H</b>, with headers as follows:  <br><br>
+                        <i>['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No. of Students']</i><br><br>
+                        You may also download an Excel template for your department using the links above.<br><br>
+                        Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
                     </div>
+
                     <div class="file-types">XLSX, XLS, or XLSM</div><br>
                     <div id="courseSelectedFileName" class="file-name-display"></div>
                 </div>
