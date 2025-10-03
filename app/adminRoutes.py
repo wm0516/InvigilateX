@@ -389,8 +389,9 @@ def get_department(department_code):
     return jsonify({
         "departmentCode": dept.departmentCode,
         "departmentName": dept.departmentName,
-        "deanId": dept.deanId,
-        "hopId": dept.hopId
+        "deanId"        : dept.deanId,
+        "hosId"         : dept.hosId,
+        "hopId"         : dept.hopId
     })
 
 # -------------------------------
@@ -399,15 +400,15 @@ def get_department(department_code):
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 def admin_manageDepartment():
     # Load all departments and stats
-    department_data = Department.query.all()
-    total_department = len(department_data)
-    deans = User.query.filter_by(userLevel=2).all()
-    hoss = User.query.filter_by(userLevel=3).all()
-    hops = User.query.filter_by(userLevel=4).all()
+    department_data     = Department.query.all()
+    total_department    = len(department_data)
+    deans               = User.query.filter_by(userLevel=2).all()
+    hoss                = User.query.filter_by(userLevel=3).all()
+    hops                = User.query.filter_by(userLevel=4).all()
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
-    department_select = Department.query.filter_by(departmentCode=department_selected_code).first()
+    department_select        = Department.query.filter_by(departmentCode=department_selected_code).first()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -427,11 +428,11 @@ def admin_manageDepartment():
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
-            action = request.form.get('action')
-            departmentName = request.form.get('departmentName')
-            hosId = request.form.get('hosName')
-            deanId = request.form.get('deanName')
-            hopId = request.form.get('hopName')
+            action           = request.form.get('action')
+            departmentName   = request.form.get('departmentName')
+            hosId            = request.form.get('hosName')
+            deanId           = request.form.get('deanName')
+            hopId            = request.form.get('hopName')
 
             # Validate Dean belongs to this department (only if a new selection is made)
             if deanId:
