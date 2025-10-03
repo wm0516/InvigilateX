@@ -448,7 +448,7 @@ def admin_manageDepartment():
                     hosId = None
             # Validate HOP belongs to this department (only if a new selection is made)
             if hopId:
-                hop_user = User.query.filter_by(userId=hopId, userLevel=3).first()
+                hop_user = User.query.filter_by(userId=hopId, userLevel=4).first()
                 if not hop_user or hop_user.userDepartment != department_select.departmentCode:
                     flash("Selected Hop does not belong to this department. Ignoring Hop selection.", "error")
                     hopId = None
