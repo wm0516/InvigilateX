@@ -1162,19 +1162,15 @@ def admin_manageStaff():
                 user_select.userGender = request.form['editGender']
                 user_select.userLevel = int(request.form['editRole'])
                 user_select.userStatus = int(request.form['editStatus'])
+                new_department_code = request.form['editDepartment']
 
-                # In case user delete by updated    
                 if user_select.userStatus == 2:
                     user_select.userRegisterDateTime = datetime.now(timezone.utc)
 
-                # Handle department change
-                new_department_code = request.form['editDepartment']
                 if user_select.userDepartment != new_department_code:
+                    # 1. Remove user from OLD department
                     old_department = Department.query.filter_by(departmentCode=user_select.userDepartment).first()
-                    new_department = Department.query.filter_by(departmentCode=new_department_code).first()
-
                     if old_department:
-                        # Remove from old roles if they are assigned
                         if old_department.hopId == user_select.userId:
                             old_department.hopId = None
                         if old_department.deanId == user_select.userId:
@@ -1182,28 +1178,19 @@ def admin_manageStaff():
                         if old_department.hosId == user_select.userId:
                             old_department.hosId = None
 
-                        if new_department:
-                            # Assign based on user role
-                            if user_select.userLevel == 3:  # HOS
-                                if new_department.hosId and new_department.hosId != user_select.userId:
-                                    # Replace existing HOS
-                                    flash(f"Department {new_department.departmentName} HOS replaced with {user_select.userName}", "info")
-                                new_department.hosId = user_select.userId
+                    # 2. Assign user to NEW department
+                    new_department = Department.query.filter_by(departmentCode=new_department_code).first()
+                    if new_department:
+                        if user_select.userLevel == 3:  # HOS
+                            new_department.hosId = user_select.userId
+                        elif user_select.userLevel == 4:  # HOP
+                            new_department.hopId = user_select.userId
+                        elif user_select.userLevel == 2:  # Dean
+                            new_department.deanId = user_select.userId
 
-                            elif user_select.userLevel == 4:  # HOP
-                                if new_department.hopId and new_department.hopId != user_select.userId:
-                                    # Replace existing HOP
-                                    flash(f"Department {new_department.departmentName} HOP replaced with {user_select.userName}", "info")
-                                new_department.hopId = user_select.userId
-
-                            elif user_select.userLevel == 2:  # Dean
-                                if new_department.deanId and new_department.deanId != user_select.userId:
-                                    # Replace existing Dean
-                                    flash(f"Department {new_department.departmentName} Dean replaced with {user_select.userName}", "info")
-                                new_department.deanId = user_select.userId
-
-                    # Finally update user’s department
+                    # 3. Update user table
                     user_select.userDepartment = new_department_code
+
                 db.session.commit()
                 flash("Staff updated successfully", "success")
 
