@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/lecturer/profile': 'lecturer_profiletab',
 
     '/access/home': 'access_hometab',
-    '/access/ownTimetable': 'access_timetabletab',
+    '/access/ownTimetable': 'access_ownTimetabletab',
     '/access/invigilationReport': 'access_invigilationReporttab',
     '/access/profile': 'access_profiletab',
     '/access/mergeTimetable': 'access_mergeTimetabletab',
