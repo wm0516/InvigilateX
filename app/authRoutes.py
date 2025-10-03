@@ -8,8 +8,6 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-
-
 # -------------------------------
 # Function for default route 
 # -------------------------------
@@ -243,15 +241,4 @@ def access_homepage():
 @login_required
 def lecturer_homepage():
     return render_template('lecturer/lecturerHomepage.html', active_tab='lecturer_hometab')
-
-
-
-
-
-
-
-
-
-
-
 

@@ -27,7 +27,7 @@ from openpyxl.styles import numbers
 # Local application imports
 # -------------------------------
 from app import app
-from .authRoutes import *
+from .authRoutes import login_required
 from .backend import *
 from .database import *
 
