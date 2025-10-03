@@ -170,6 +170,7 @@ def generate_managecourse_template(department_code=None):
 # Function for Admin ManageCourse Download Excel File Template
 # -------------------------------
 @app.route('/download_course_template/<department_code>')
+@login_required
 def download_course_template(department_code):
     output = generate_managecourse_template(department_code)
     return send_file(
@@ -199,6 +200,7 @@ def process_course_row(row):
 # Read All LecturerName Under The Selected Department For ManageCoursePage
 # -------------------------------
 @app.route('/get_lecturers_by_department/<department_code>')
+@login_required
 def get_lecturers_by_department(department_code):
     # Ensure case-insensitive match if needed
     flash(f"User Department Code is: {department_code}", "success")
@@ -210,6 +212,7 @@ def get_lecturers_by_department(department_code):
 # Read All CourseCodeSection and Return all the selected data details Under The ManageCourseEditPage
 # -------------------------------
 @app.route('/get_courseCodeSection/<path:courseCodeSection_select>')
+@login_required
 def get_courseCodeSection(courseCodeSection_select):
     course = Course.query.filter_by(courseCodeSectionIntake=courseCodeSection_select).first()
     if not course:
@@ -230,6 +233,7 @@ def get_courseCodeSection(courseCodeSection_select):
 # Function for Admin ManageCourse Route
 # -------------------------------
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
+@login_required
 def admin_manageCourse():
     course_data = Course.query.order_by(
         Course.coursePractical.asc(),
@@ -383,6 +387,7 @@ def admin_manageCourse():
 # Get Department Details for ManageDepartmentEditPage
 # -------------------------------
 @app.route('/get_department/<path:department_code>')
+@login_required
 def get_department(department_code):
     dept = Department.query.filter_by(departmentCode=department_code).first()
     if not dept:
@@ -399,6 +404,7 @@ def get_department(department_code):
 # Admin Manage Department
 # -------------------------------
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
+@login_required
 def admin_manageDepartment():
     # Load all departments and stats
     department_data     = Department.query.all()
@@ -482,6 +488,7 @@ def admin_manageDepartment():
 # Get Venue Details for ManageVenueEditPage
 # -------------------------------
 @app.route('/get_venue/<venue_number>')
+@login_required
 def get_venue(venue_number):
     venue = Venue.query.filter_by(venueNumber=venue_number).first()
     if not venue:
@@ -667,6 +674,7 @@ def generate_manageexam_template():
 # Function for Admin ManageExam Download Excel File Template
 # -------------------------------
 @app.route('/download_exam_template')
+@login_required
 def download_exam_template():
     output = generate_manageexam_template()
     return send_file(
@@ -712,6 +720,7 @@ def process_exam_row(row):
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
 @app.route('/get_exam_details/<path:course_code_section>')
+@login_required
 def get_exam_details(course_code_section):
     course = Course.query.filter_by(courseCodeSectionIntake=course_code_section).first()
     if not course:
@@ -738,6 +747,7 @@ def get_exam_details(course_code_section):
 # Get VenueDetails for ManageExamEditPage
 # -------------------------------
 @app.route('/get_available_venues')
+@login_required
 def get_available_venues():
     try:
         student_count = int(request.args.get('students', 0))
@@ -827,6 +837,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
 # Function for Admin ManageExam Route
 # -------------------------------
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
+@login_required
 def admin_manageExam():
     department_data = Department.query.all()
     venue_data = Venue.query.all()
@@ -1032,6 +1043,7 @@ def generate_user_template():
 # Route to download User Excel template
 # -------------------------------
 @app.route('/download_user_template')
+@login_required
 def download_user_template():
     output = generate_user_template()
     return send_file(
@@ -1076,6 +1088,7 @@ def process_staff_row(row):
 # Read All StaffDetails Under The ManageLecturerEditPage
 # -------------------------------
 @app.route('/get_staff/<id>')
+@login_required
 def get_staff(id):
     user = User.query.filter_by(userId=id).first()
     if not user:
@@ -1096,6 +1109,7 @@ def get_staff(id):
 # Function for Admin ManageStaff Route
 # -------------------------------
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
+@login_required
 def admin_manageStaff():
     user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.desc()).all()
     department_data = Department.query.all()
@@ -1374,6 +1388,7 @@ def parse_date_range(date_range):
 # Get TimetableLink Details for ManageTimetableEditPage
 # -------------------------------
 @app.route('/get_linkTimetable/<path:timetableID>')
+@login_required
 def get_linkTimetable(timetableID):
     timetable = Timetable.query.filter_by(timetableId=timetableID).first()
     if not timetable:
@@ -1475,6 +1490,7 @@ def save_timetable_to_db(structured):
 # Function for Admin ManageTimetable Route
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
+@login_required
 def admin_manageTimetable():
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
@@ -1698,6 +1714,7 @@ def calculate_invigilation_stats():
 # Function for Admin ManageInviglationTimetable Route
 # -------------------------------
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+@login_required
 def admin_manageInvigilationTimetable():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
@@ -1708,6 +1725,7 @@ def admin_manageInvigilationTimetable():
 # Function for Admin ManageInviglationReport Route
 # -------------------------------
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
+@login_required
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
@@ -1723,6 +1741,7 @@ def admin_manageInvigilationReport():
 # Function for Admin ManageProfile Route
 # -------------------------------
 @app.route('/admin/profile', methods=['GET', 'POST'])
+@login_required
 def admin_profile():
     adminId = session.get('user_id')
     admin = User.query.filter_by(userId=adminId).first()
