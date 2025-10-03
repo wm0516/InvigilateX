@@ -1,7 +1,6 @@
 from app import db
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String  # correct import
 from datetime import datetime, timezone
+from sqlalchemy.sql import func
 # db.String  -> string
 # db.Date    -> date format
 # db.Time    -> time format
@@ -44,7 +43,7 @@ class Department(db.Model):
 class User(db.Model):
     __tablename__ = 'User'
     userId = db.Column(db.String(20), primary_key=True)                                                               # [PK]Refer to Staff ID
-    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=True)              # [FK] Refer to Staff Department
+    userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)             # [FK] Refer to Staff Department
     userName = db.Column(db.String(255), nullable=False)                                                              # Refer to Staff Name
     userLevel = db.Column(db.Integer, nullable=False)                                                                 # Lecturer = 1, Dean/HOS = 2, HOP = 3, Admin = 4
     userEmail = db.Column(db.String(255), nullable=False)                                                             # Refer to Staff INTI email
@@ -52,7 +51,7 @@ class User(db.Model):
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
     userStatus = db.Column(db.Integer, default=0)                                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
-    userRegisterDateTime = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))         # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+    userRegisterDateTime = db.Column(db.DateTime, server_default=func.now())                                          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
@@ -62,7 +61,7 @@ class User(db.Model):
     '''
     CREATE TABLE User (
         userId VARCHAR(20) PRIMARY KEY,
-        userDepartment VARCHAR(10) NULL,
+        userDepartment VARCHAR(10) NOT NULL,
         userName VARCHAR(255) NOT NULL,
         userLevel INT NOT NULL,
         userEmail VARCHAR(255) NOT NULL,
