@@ -27,6 +27,7 @@ from openpyxl.styles import numbers
 # Local application imports
 # -------------------------------
 from app import app
+from authRoutes import *
 from .backend import *
 from .database import *
 
@@ -496,6 +497,7 @@ def get_venue(venue_number):
 # Function for Admin ManageVenue Route
 # -------------------------------
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
+@login_required
 def admin_manageVenue():
     # Load all venues and stats
     venue_data = Venue.query.order_by(Venue.venueLevel.asc()).all()

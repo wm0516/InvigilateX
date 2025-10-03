@@ -89,18 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
     '/access/ownTimetable': 'access_ownTimetabletab',
     '/access/invigilationReport': 'access_invigilationReporttab',
     '/access/profile': 'access_profiletab',
-    '/access/mergeTimetable': 'access_mergeTimetabletab',
-
-    '/dean/home': 'dean_hometab',
-    '/dean/timetable': 'dean_timetabletab',
-    '/dean/invigilationReport': 'dean_invigilationReporttab',
-    '/dean/profile': 'dean_profiletab',
-    '/dean/mergeTimetable': 'dean_mergeTimetabletab',
-
-    '/hop/home': 'hop_hometab',
-    '/hop/timetable': 'hop_timetabletab',
-    '/hop/invigilationReport': 'hop_invigilationReporttab',
-    '/hop/profile': 'hop_profiletab'
+    '/access/mergeTimetable': 'access_mergeTimetabletab'
   };
 
   const currentPath = window.location.pathname;
