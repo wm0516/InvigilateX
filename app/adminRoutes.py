@@ -854,7 +854,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-    exam_data = exam_data_query.order_by(Exam.examStartTime.asc(),Exam.examVenue.asc(),Exam.examStatus.asc(),Exam.examId.asc()).all()
+    exam_data = exam_data_query.order_by(Exam.examStartTime.asc(),Exam.examVenue.asc(),Exam.examStatus.desc(),Exam.examId.asc()).all()
     total_exam_activated = Exam.query.filter_by(examStatus=1).count()
 
     # For Edit section
@@ -969,11 +969,10 @@ def admin_manageExam():
                 for va in venue_availabilities:
                     db.session.delete(va)
 
-                # Clear exam details (keep examId, examNoInvigilator, examStatus)
+                # Clear exam details (keep examId, examNoInvigilator)
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
                 exam_select.examVenue = None
-                exam_select.examStatus = False  # or True depending on your logic
 
                 db.session.commit()
                 flash("Exam deleted successfully, and all related records were cleared.", "success")

@@ -331,7 +331,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if end_dt <= start_dt:
         adj_end_dt = end_dt + timedelta(days=1)
 
-    # Create venue availability
+    # Clean old records first
+    delete_exam_related(exam.examId, commit=False)
+
+    # create new availability
     if venue_text:
         new_availability = VenueAvailability(
             venueNumber=venue_text,
@@ -340,9 +343,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
             examId=exam.examId
         )
         db.session.add(new_availability)
-
-    # Remove old report & attendances if they exist
-    delete_exam_related(exam.examId, commit=False)
 
     # Create new report
     new_report = InvigilationReport(examId=exam.examId)
