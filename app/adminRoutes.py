@@ -943,13 +943,10 @@ def admin_manageExam():
                     flash("Exam updated successfully", "success")
 
             elif action == 'delete':
-                # Delete all related reports (cascade removes attendances too)
-                reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
-                for report in reports:
-                    report.examStartTime = None
-                    report.examEndTime = None
-                    report.examVenue = None
-
+                exam_select.examStartTime = None
+                exam_select.examEndTime = None
+                exam_select.examVenue = None
+                db.session.delete(exam_select)
                 db.session.commit()
                 flash("Exam deleted successfully", "success")
 
