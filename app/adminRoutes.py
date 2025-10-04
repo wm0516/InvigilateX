@@ -1477,7 +1477,6 @@ def save_timetable_to_db(structured):
     else:
         timetable = None
 
-    new_rows = []
     rows_inserted = 0   # <--- track how many inserted
 
     for day, activities in structured["days"].items():
