@@ -1038,7 +1038,6 @@ def generate_user_template():
     output.seek(0)
     return output
 
-
 # -------------------------------
 # Route to download User Excel template
 # -------------------------------
@@ -1052,8 +1051,6 @@ def download_user_template():
         download_name="UserTemplate.xlsx",  # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
 
 # -------------------------------
 # Function for Admin ManageStaff Route Upload File, Validate Contact Number
