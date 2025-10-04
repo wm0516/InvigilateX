@@ -705,14 +705,7 @@ def process_exam_row(row):
     start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
     end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
     
-    create_exam_and_related(
-        start_dt, end_dt,
-        str(row['course/sec']).upper(),
-        str(row['room']).upper(),
-        str(row['lecturer']).upper(),
-        None,
-        invigilatorNo=None
-    )
+    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), str(row['room']).upper(), str(row['lecturer']).upper(), None, invigilatorNo=None)
     return True, f"Exam for {row['course/sec']} uploaded"
 
 
@@ -839,6 +832,13 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 @login_required
 def admin_manageExam():
+    # Automatically change exam status
+    now = datetime.now()
+    expired_exams = Exam.query.filter(Exam.examEndTime < now, Exam.examStatus == True).all()
+    for exam in expired_exams:
+        exam.examStatus = False
+    db.session.commit()
+
     department_data = Department.query.all()
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
 
