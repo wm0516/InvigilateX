@@ -1753,7 +1753,6 @@ def get_all_attendances():
 # Calculate All InvigilatorAttendance and InvigilationReport Data From Database
 # -------------------------------
 def calculate_invigilation_stats():
-    # Use LEFT OUTER JOIN to keep all InvigilatorAttendance rows
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -1764,12 +1763,13 @@ def calculate_invigilation_stats():
             Exam.examEndTime,
             InvigilatorAttendance.reportId
         )
-        .outerjoin(Exam, Exam.examId == InvigilatorAttendance.reportId)
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(Exam.examStatus == True)
         .all()
     )
 
-    # Total reports and total assigned invigilators
     total_report = (
         InvigilationReport.query
         .join(Exam, InvigilationReport.examId == Exam.examId)
@@ -1782,6 +1782,7 @@ def calculate_invigilation_stats():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(Exam.examStatus == True)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
         .count()
     )
 
@@ -1792,34 +1793,28 @@ def calculate_invigilation_stats():
         "total_checkInLate": 0,
         "total_checkOutOnTime": 0,
         "total_checkOutEarly": 0,
-        "total_checkInOut": 0,    # missing both
-        "total_inProgress": 0     # checked in but no check out
+        "total_checkInOut": 0,
+        "total_inProgress": 0
     }
 
     for row in query:
-        # Case 1: No checkIn at all
         if row.checkIn is None:
             stats["total_checkInOut"] += 1
             continue
 
-        # Case 2: CheckIn exists, but no checkOut (in progress)
         if row.checkOut is None:
             stats["total_inProgress"] += 1
             continue
 
-        # Case 3: Both checkIn and checkOut exist
-        # If Exam times are missing, skip time comparison
-        if row.examStartTime is not None:
-            if row.checkIn <= row.examStartTime:
-                stats["total_checkInOnTime"] += 1
-            else:
-                stats["total_checkInLate"] += 1
+        if row.examStartTime and row.checkIn <= row.examStartTime:
+            stats["total_checkInOnTime"] += 1
+        elif row.examStartTime:
+            stats["total_checkInLate"] += 1
 
-        if row.examEndTime is not None:
-            if row.checkOut >= row.examEndTime:
-                stats["total_checkOutOnTime"] += 1
-            else:
-                stats["total_checkOutEarly"] += 1
+        if row.examEndTime and row.checkOut >= row.examEndTime:
+            stats["total_checkOutOnTime"] += 1
+        elif row.examEndTime:
+            stats["total_checkOutEarly"] += 1
 
     return stats
 
