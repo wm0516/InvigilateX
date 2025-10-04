@@ -731,6 +731,42 @@ def process_exam_row(row):
     )
     return True, ''
 
+
+# -------------------------------
+# Get VenueDetails for ManageExamEditPage
+# -------------------------------
+@app.route('/get_available_venues', methods=['POST'])
+@login_required
+def get_available_venues():
+    start_date = request.form.get('startDate')
+    start_time = request.form.get('startTime')
+    end_date = request.form.get('endDate')
+    end_time = request.form.get('endTime')
+
+    if not all([start_date, start_time, end_date, end_time]):
+        return jsonify({'venues': []})
+
+    start_dt = parse_datetime(start_date, start_time)
+    end_dt = parse_datetime(end_date, end_time)
+
+    available = []
+    for v in Venue.query.all():
+        conflict = VenueAvailability.query.filter(
+            VenueAvailability.venueNumber == v.venueNumber,
+            VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
+            VenueAvailability.endDateTime > start_dt - timedelta(minutes=30)
+        ).first()
+        if not conflict:
+            available.append(v.venueNumber)
+
+    return jsonify({'venues': available})
+
+
+
+
+
+
+
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
@@ -769,42 +805,8 @@ def parse_datetime(date_str, time_str):
             continue
     raise ValueError(f"Unrecognized datetime format: {raw}")
 
-# -------------------------------
-# Get VenueDetails for ManageExamEditPage
-# -------------------------------
-@app.route('/get_available_venues', methods=['POST'])
-@login_required
-def get_available_venues():
-    start_date = request.form.get('startDate')
-    start_time = request.form.get('startTime')
-    end_date = request.form.get('endDate')
-    end_time = request.form.get('endTime')
 
-    if not all([start_date, start_time, end_date, end_time]):
-        return jsonify({'venues': []})
 
-    start_dt = parse_datetime(start_date, start_time)
-    end_dt = parse_datetime(end_date, end_time)
-
-    if not start_dt or not end_dt:
-        return jsonify({'venues': []})
-
-    # Get all venues
-    all_venues = Venue.query.all()
-    available_venues = []
-
-    for venue in all_venues:
-        # Check for any conflict in VenueAvailability
-        conflict = VenueAvailability.query.filter(
-            VenueAvailability.venueNumber == venue.venueNumber,
-            VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
-            VenueAvailability.endDateTime > start_dt - timedelta(minutes=30),
-        ).first()
-
-        if not conflict:
-            available_venues.append(venue.venueNumber)
-
-    return jsonify({'venues': available_venues})
 
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
