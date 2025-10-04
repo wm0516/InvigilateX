@@ -718,16 +718,11 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
-        return None, (
-            f"Skipped: Venue '{venue}' is occupied from "
-            f"{conflict.startDateTime.strftime('%Y-%m-%d %H:%M')} "
-            f"to {conflict.endDateTime.strftime('%Y-%m-%d %H:%M')} "
-            f"(requires 30-min gap)"
-        )
+        return None, ''
 
     # No conflict → create
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, str(row['lecturer']).upper(), None, invigilatorNo=None)
-    return True, f"Exam for {row['course/sec']} uploaded"
+    return True, ''
 
 
 # -------------------------------
