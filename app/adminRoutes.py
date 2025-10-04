@@ -950,9 +950,10 @@ def admin_manageExam():
                 # Delete all related reports (cascade removes attendances too)
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
                 for report in reports:
-                    db.session.delete(report)
+                    report.examStartTime = None
+                    report.examEndTime = None
+                    report.examVenue = None
 
-                db.session.delete(exam_select)
                 db.session.commit()
                 flash("Exam deleted successfully", "success")
 
