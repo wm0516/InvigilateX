@@ -115,12 +115,9 @@
                 <select name="venue" id="editVenue" required>
                     <option value="" disabled selected>Select Exam Venue</option>
                     {% for venue in venue_data %}
-                        {% if venue.venueCapacity > exam_select.course.courseStudent %}
-                            <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
-                        {% endif %}
+                        <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                     {% endfor %}
                 </select><br>
-
 
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
