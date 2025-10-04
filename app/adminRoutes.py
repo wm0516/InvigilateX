@@ -871,7 +871,8 @@ def admin_manageExam():
 
     unassigned_exam = len([
         e for e in exam_data
-        if e.examStartTime is None
+        if e.examStatus is True
+        and e.examStartTime is None
         and e.examEndTime is None
         and e.examVenue is None
         and (e.examNoInvigilator is None or e.examNoInvigilator == 0)
@@ -879,7 +880,8 @@ def admin_manageExam():
 
     complete_exam = len([
         e for e in exam_data
-        if e.examStartTime is not None
+        if e.examStatus is True
+        and e.examStartTime is not None
         and e.examEndTime is not None
         and e.examVenue is not None
         and e.examNoInvigilator not in (None, 0)
