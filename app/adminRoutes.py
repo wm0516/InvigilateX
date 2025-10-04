@@ -1545,9 +1545,9 @@ def save_timetable_to_db(structured):
 @login_required
 def admin_manageTimetable():
     # Auto cleanup expired timetable rows
-    expired_removed = cleanup_expired_timetable_rows()
-    if expired_removed > 0:
-        flash(f"Auto-cleaned {expired_removed} expired timetable rows.", "success")
+    # expired_removed = cleanup_expired_timetable_rows()
+    # if expired_removed > 0:
+    #    flash(f"Auto-cleaned {expired_removed} expired timetable rows.", "success")
 
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
