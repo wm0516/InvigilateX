@@ -1647,7 +1647,7 @@ def admin_manageTimetable():
                     row.timetable_id = timetable.timetableId
 
                 db.session.commit()
-                flash(f"{lecturer} Timetable linked to staff ID {user_id}", "success")
+                flash(f"Timetable for {lecturer} has been successfully linked to Staff ID {user_id}.", "success")
             else:
                 flash("Missing lecturer or staff", "error")
 
