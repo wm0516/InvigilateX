@@ -1,16 +1,30 @@
+# -------------------------------
+# Standard library imports
+# -------------------------------
 import re
-from flask_bcrypt import Bcrypt
-from .database import *
+from functools import wraps
+from datetime import datetime, timedelta
+
+# -------------------------------
+# Third-party imports
+# -------------------------------
 from flask import redirect, url_for, flash, session
+from flask_bcrypt import Bcrypt
 from flask_mail import Message
-from app import app, mail
 from itsdangerous import URLSafeTimedSerializer
+from sqlalchemy import or_
+
+# -------------------------------
+# Local application imports
+# -------------------------------
+from app import app, mail
+from .database import *
+
+# -------------------------------
+# Flask and application setup
+# -------------------------------
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-from functools import wraps
-import random
-from datetime import datetime, timedelta
-from sqlalchemy import and_, or_
 
 
 # constants.py or at the top of your app.py

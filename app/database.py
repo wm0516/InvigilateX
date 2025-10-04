@@ -1,6 +1,18 @@
-from app import db
+# -------------------------------
+# Standard library imports
+# -------------------------------
 from datetime import datetime, timezone
+
+# -------------------------------
+# Third-party imports
+# -------------------------------
 from sqlalchemy.sql import func
+
+# -------------------------------
+# Local application imports
+# -------------------------------
+from app import db
+
 # db.String  -> string
 # db.Date    -> date format
 # db.Time    -> time format

@@ -4,9 +4,9 @@
 import os
 import re
 import warnings
-from datetime import datetime, time
 from io import BytesIO
 from collections import defaultdict
+from datetime import datetime
 
 # -------------------------------
 # Third-party imports
@@ -15,13 +15,10 @@ import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
 import PyPDF2
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
+from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func
-from openpyxl.styles import NamedStyle
-from openpyxl.styles import numbers
-
 
 # -------------------------------
 # Local application imports
@@ -31,15 +28,17 @@ from .authRoutes import login_required
 from .backend import *
 from .database import *
 
-
+# -------------------------------
+# Flask and application setup
+# -------------------------------
+# Initialize serializer and bcrypt
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
+# Upload configuration
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# Create upload folder if not exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 
 
 
@@ -1688,6 +1687,16 @@ def admin_manageTimetable():
 
     return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,total_timetable=total_timetable,
         unassigned_summary=unassigned_summary,staff_list=staff_list,**day_counts,timetable_list=timetable_list,timetable_map=timetable_map,timetable_select=timetable_select)
+
+
+
+
+
+
+
+
+
+
 
 
 

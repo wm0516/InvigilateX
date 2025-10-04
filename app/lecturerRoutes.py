@@ -1,16 +1,21 @@
-from flask import render_template, request, redirect, url_for, flash, session, jsonify
-from app import app
-from .backend import *
-from .database import *
-import os
-from io import BytesIO
-import pandas as pd
-from werkzeug.utils import secure_filename
-from .backend import *
-from .database import *
+# -------------------------------
+# Third-party imports
+# -------------------------------
+from flask import render_template, request, redirect, url_for, flash, session
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
+
+# -------------------------------
+# Local application imports
+# -------------------------------
+from app import app
 from .authRoutes import login_required
+from .backend import *
+from .database import *
+
+# -------------------------------
+# Flask and application setup
+# -------------------------------
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 

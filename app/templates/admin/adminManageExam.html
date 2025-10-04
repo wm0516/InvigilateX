@@ -12,18 +12,10 @@
     <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-            <div class="dashboard-row">
+            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame pie">
                     <h3>Total Exams</h3>
                     <p class="dashboard-text">{{ exam_data|length }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Completed & Activated Exams</h3>
-                    <p class="dashboard-text" style="color:green;">{{ complete_exam }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Unassigned Activated Exams</h3>
-                    <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Activated Exams</h3>
@@ -32,6 +24,14 @@
                 <div class="dashboard-frame">
                     <h3>Inactivated Exams</h3>
                     <p class="dashboard-text" style="color:red;">{{ exam_data|length - total_exam_activated }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Completed & Activated Exams</h3>
+                    <p class="dashboard-text" style="color:green;">{{ complete_exam }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Unassigned Activated Exams</h3>
+                    <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
                 </div>
             </div>
         </div>
