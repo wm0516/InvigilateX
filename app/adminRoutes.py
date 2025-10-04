@@ -1436,6 +1436,30 @@ def parse_date_range(date_range):
         return None, None
 
 # -------------------------------
+# Always check the row classWeekDate updated or not
+# -------------------------------
+def cleanup_expired_timetable_rows():
+    """Delete timetable rows whose classWeekDate end date has expired."""
+    now = datetime.now()
+    expired_count = 0
+
+    all_rows = TimetableRow.query.all()
+
+    for row in all_rows:
+        if not row.classWeekDate:
+            continue
+
+        start, end = parse_date_range(row.classWeekDate)
+        if end and now > end:
+            db.session.delete(row)
+            expired_count += 1
+
+    if expired_count > 0:
+        db.session.commit()
+
+    return expired_count
+
+# -------------------------------
 # Get TimetableLink Details for ManageTimetableEditPage
 # -------------------------------
 @app.route('/get_linkTimetable/<path:timetableID>')
@@ -1453,7 +1477,11 @@ def get_linkTimetable(timetableID):
 # Save Parsed Timetable to DB
 # -------------------------------
 def save_timetable_to_db(structured):
-    """Insert or replace timetable rows for a lecturer."""
+    # Auto cleanup expired timetable rows
+    expired_removed = cleanup_expired_timetable_rows()
+    if expired_removed > 0:
+        flash(f"Auto-cleaned {expired_removed} expired timetable rows.", "success")
+
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
 
