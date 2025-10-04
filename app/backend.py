@@ -351,6 +351,14 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         db.session.rollback()
         return False, result
 
+    # Create attendance records
+    for inv in result:
+        db.session.add(InvigilatorAttendance(
+            examId=exam.examId,
+            userId=inv.userId,
+            status="PENDING"
+        ))
+
     db.session.commit()
     return True, f"Exam created/updated successfully. Assigned invigilators: {[i.userName for i in result]}"
 
@@ -458,6 +466,9 @@ def assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo
         chosen = pool[:invigilatorNo]
 
     return True, chosen
+
+
+
 
 # -------------------------------
 # Delete All Related Exam after get modify
