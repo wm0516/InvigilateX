@@ -902,10 +902,6 @@ def admin_manageExam():
             start_time_raw = request.form.get('startTime', '').strip()
             end_date_raw = request.form.get('endDate', '').strip()
             end_time_raw = request.form.get('endTime', '').strip()
-
-            if not start_date_raw or not start_time_raw or not end_date_raw or not end_time_raw:
-                flash("Start or end date/time is missing", "error")
-                return redirect(url_for('admin_manageExam'))
            
             start_dt = parse_datetime(start_date_raw, start_time_raw)
             end_dt = parse_datetime(end_date_raw, end_time_raw)
