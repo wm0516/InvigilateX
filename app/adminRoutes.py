@@ -20,6 +20,7 @@ from flask import render_template, request, redirect, url_for,flash, session, js
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func
+from sqlalchemy import and_, or_
 
 # -------------------------------
 # Local application imports
