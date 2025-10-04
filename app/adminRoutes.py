@@ -885,32 +885,7 @@ def admin_manageExam():
     exam_selected = request.form.get('editExamCourseSection')
     course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
-    
-    venue_data = []
-    if course:
-        # Ensure courseStudent is valid
-        course_student = course.courseStudent
-        min_capacity = course_student
-        max_capacity = course_student + 5
-        flash(f"{course_student}, {min_capacity}, {max_capacity}")
-
-        venue_data = (
-            Venue.query.filter(
-                Venue.venueCapacity >= min_capacity,
-                Venue.venueCapacity <= max_capacity
-            )
-            .order_by(Venue.venueCapacity.asc())
-            .all()
-        )
-
-        # Optional: If no venue fits the range, relax the limit slightly
-        if not venue_data:
-            venue_data = (
-                Venue.query.filter(Venue.venueCapacity >= course_student)
-                .order_by(Venue.venueCapacity.asc())
-                .all()
-            )
-
+    venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
 
     unassigned_exam = len([
         e for e in exam_data
@@ -960,45 +935,52 @@ def admin_manageExam():
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
-                # Check for venue time conflict before saving
-                conflict = VenueAvailability.query.filter(
-                    VenueAvailability.venueNumber == venue_text,
-                    VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
-                    VenueAvailability.endDateTime > start_dt - timedelta(minutes=30),
-                    VenueAvailability.examId != exam_select.examId  # exclude same exam
-                ).first()
+                venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
 
-                if conflict:
-                    flash(f"Venue '{venue_text}' is already booked between "
-                        f"{conflict.startDateTime.strftime('%Y-%m-%d %H:%M')} and "
-                        f"{conflict.endDateTime.strftime('%Y-%m-%d %H:%M')}. "
-                        f"Please choose a different time or venue.", "error")
-                    return redirect(url_for('admin_manageExam'))
+                if not venue_obj:
+                    flash(f"Selected venue {venue_text} does not exist", "error")
+                elif venue_obj.venueCapacity < exam_select.course.courseStudent:
+                    flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
+                else:
+                    # Check for venue time conflict before saving
+                    conflict = VenueAvailability.query.filter(
+                        VenueAvailability.venueNumber == venue_text,
+                        VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
+                        VenueAvailability.endDateTime > start_dt - timedelta(minutes=30),
+                        VenueAvailability.examId != exam_select.examId  # exclude same exam
+                    ).first()
 
-                # If no conflict → proceed with update
-                exam_select.examStartTime = start_dt
-                exam_select.examEndTime = end_dt
-                exam_select.examVenue = venue_text
-                exam_select.examNoInvigilator = invigilatorNo_text
+                    if conflict:
+                        flash(f"Venue '{venue_text}' is already booked between "
+                            f"{conflict.startDateTime.strftime('%Y-%m-%d %H:%M')} and "
+                            f"{conflict.endDateTime.strftime('%Y-%m-%d %H:%M')}. "
+                            f"Please choose a different time or venue.", "error")
+                        return redirect(url_for('admin_manageExam'))
 
-                # Manage related InvigilationReport + Attendances
-                existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                    # If no conflict → proceed with update
+                    exam_select.examStartTime = start_dt
+                    exam_select.examEndTime = end_dt
+                    exam_select.examVenue = venue_text
+                    exam_select.examNoInvigilator = invigilatorNo_text
 
-                if not existing_report:
-                    create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,
-                                            venue_text, exam_select.course.coursePractical,
-                                            exam_select.course.courseTutorial, invigilatorNo_text)
-                elif exam_select.examNoInvigilator != int(invigilatorNo_text):
-                    report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
-                    if report:
-                        adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
-                    else:
+                    # Manage related InvigilationReport + Attendances
+                    existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+
+                    if not existing_report:
                         create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,
                                                 venue_text, exam_select.course.coursePractical,
                                                 exam_select.course.courseTutorial, invigilatorNo_text)
+                    elif exam_select.examNoInvigilator != int(invigilatorNo_text):
+                        report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                        if report:
+                            adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
+                        else:
+                            create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,
+                                                    venue_text, exam_select.course.coursePractical,
+                                                    exam_select.course.courseTutorial, invigilatorNo_text)
 
-                db.session.commit()
-                flash("Exam updated successfully", "success")
+                    db.session.commit()
+                    flash("Exam updated successfully", "success")
 
             elif action == 'delete':
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
