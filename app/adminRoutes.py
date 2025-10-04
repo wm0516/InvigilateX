@@ -943,15 +943,42 @@ def admin_manageExam():
                     flash("Exam updated successfully", "success")
 
             elif action == 'delete':
+                reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
+
+                for report in reports:
+                    attendances = InvigilatorAttendance.query.filter_by(reportId=report.invigilationReportId).all()
+
+                    for attendance in attendances:
+                        # Calculate duration to revert pending hours
+                        if exam_select.examStartTime and exam_select.examEndTime:
+                            duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
+                            user = User.query.get(attendance.invigilatorId)
+                            if user:
+                                user.userPendingCumulativeHours -= duration
+                                if user.userPendingCumulativeHours < 0:
+                                    user.userPendingCumulativeHours = 0
+
+                        # Delete attendance
+                        db.session.delete(attendance)
+
+                    # Delete invigilation report
+                    db.session.delete(report)
+
+                #  Delete venue availability
+                venue_availabilities = VenueAvailability.query.filter_by(examId=exam_select.examId).all()
+                for va in venue_availabilities:
+                    db.session.delete(va)
+
+                # Clear exam details (keep examId, examNoInvigilator, examStatus)
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
                 exam_select.examVenue = None
-                db.session.delete(exam_select)
+                exam_select.examStatus = False  # or True depending on your logic
+
                 db.session.commit()
-                flash("Exam deleted successfully", "success")
+                flash("Exam deleted successfully, and all related records were cleared.", "success")
 
             return redirect(url_for('admin_manageExam'))
-
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, 
                            venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select, total_exam_activated=total_exam_activated)
