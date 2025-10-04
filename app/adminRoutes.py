@@ -905,10 +905,6 @@ def admin_manageExam():
            
             start_dt = parse_datetime(start_date_raw, start_time_raw)
             end_dt = parse_datetime(end_date_raw, end_time_raw)
-            # start_dt_raw = f"{start_date_raw}T{start_time_raw}"
-            # end_dt_raw = f"{end_date_raw}T{end_time_raw}"
-            # start_dt = datetime.strptime(start_dt_raw, "%Y-%m-%dT%H:%M")
-            # end_dt = datetime.strptime(end_dt_raw, "%Y-%m-%dT%H:%M")
             venue_text = request.form.get('venue', '').strip()
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
