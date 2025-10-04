@@ -12,8 +12,8 @@
     <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                <div class="dashboard-frame pie">
+            <div class="dashboard-row" style="grid-template-columns: repeat(5, 1fr);">
+                <div class="dashboard-frame">
                     <h3>Total Exams</h3>
                     <p class="dashboard-text">{{ exam_data|length }}</p>
                 </div>
