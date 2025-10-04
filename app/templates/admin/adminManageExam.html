@@ -173,7 +173,13 @@
             </thead>    
             <tbody>
                 {% for row in exam_data %}
-                    <tr class="{% if row.examNoInvigilator == 0 or row.examStartTime is none or row.examEndTime is none or row.examVenue is none %}error-row-show{% endif %}">
+                    <tr class="
+                        {% if not row.examStatus %}
+                            inactive-row-show
+                        {% elif row.examNoInvigilator == 0 or row.examVenue is none %}
+                            error-row-show
+                        {% endif %}
+                    ">      
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.examStatus %}
