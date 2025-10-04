@@ -885,15 +885,31 @@ def admin_manageExam():
     exam_selected = request.form.get('editExamCourseSection')
     course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
-
+    
     venue_data = []
     if course:
-        min_capacity = course.courseStudent
-        max_capacity = course.courseStudent + 5
-        venue_data = Venue.query.filter(
-            Venue.venueCapacity >= min_capacity,
-            Venue.venueCapacity <= max_capacity
-        ).order_by(Venue.venueCapacity.asc()).all()
+        # Ensure courseStudent is valid
+        course_student = course.courseStudent or 0
+        min_capacity = course_student
+        max_capacity = course_student + 5
+
+        venue_data = (
+            Venue.query.filter(
+                Venue.venueCapacity >= min_capacity,
+                Venue.venueCapacity <= max_capacity
+            )
+            .order_by(Venue.venueCapacity.asc())
+            .all()
+        )
+
+        # Optional: If no venue fits the range, relax the limit slightly
+        if not venue_data:
+            venue_data = (
+                Venue.query.filter(Venue.venueCapacity >= course_student)
+                .order_by(Venue.venueCapacity.asc())
+                .all()
+            )
+
 
     unassigned_exam = len([
         e for e in exam_data
