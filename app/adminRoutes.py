@@ -598,6 +598,7 @@ def admin_manageVenue():
 
 
 
+
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Format
 # -------------------------------
@@ -676,7 +677,6 @@ def generate_manageexam_template():
     output.seek(0)
     return output
 
-
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Template
 # -------------------------------
@@ -690,12 +690,6 @@ def download_exam_template():
         download_name="ManageExam.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
-
-
-
-
-
 
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
@@ -735,8 +729,6 @@ def process_exam_row(row):
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, str(row['lecturer']).upper(), None, invigilatorNo=None)
     return True, f"Exam for {row['course/sec']} uploaded"
 
-
-
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
@@ -763,7 +755,6 @@ def get_exam_details(course_code_section):
     }
     return jsonify(response_data)
 
-
 # -------------------------------
 # Reformat the datetime for ManageExamEditPage
 # -------------------------------
@@ -775,7 +766,6 @@ def parse_datetime(date_str, time_str):
         except ValueError:
             continue
     raise ValueError(f"Unrecognized datetime format: {raw}")
-
 
 # -------------------------------
 # Get VenueDetails for ManageExamEditPage
@@ -814,7 +804,9 @@ def get_available_venues():
 
     return jsonify({'venues': available_venues})
 
-
+# -------------------------------
+# Reassign invigilator for ManageExamEditPage
+# -------------------------------
 def adjust_invigilators(report, new_count, start_dt, end_dt):
     pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
@@ -860,7 +852,6 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
             db.session.delete(att)
 
     db.session.commit()
-
 
 # -------------------------------
 # Function for Admin ManageExam Route
