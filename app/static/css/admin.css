@@ -222,10 +222,9 @@ html, body {
 
 .user-table-container {
     margin: 20px 0;
-    max-height: 2000px;        
-    overflow-y: auto;            
-    overflow-x: auto;            
-    border: 1px solid #ccc;
+    max-height: 700px;    
+    overflow-y: auto;    
+    overflow-x: auto;     
 }
 
 .user-data-table {
@@ -243,9 +242,9 @@ html, body {
     font-weight: 600;
     font-size: 0.85em;
     letter-spacing: 0.5px;
-    position: sticky;   
-    top: 0;             
-    z-index: 2;         
+    position: sticky;
+    top: 0;
+    z-index: 2; 
 }
 
 .user-data-table td {
@@ -263,14 +262,6 @@ html, body {
 .user-data-table tr:hover {
     background-color: #f5f7fa;
 }
-
-
-
-
-
-
-
-
 
 
 
