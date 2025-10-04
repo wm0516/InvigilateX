@@ -326,6 +326,12 @@ def admin_manageCourse():
                     course_select.courseStudent
                 ]
 
+                invigilatorNo = None
+                if course_select.courseStudent > 32:
+                    invigilatorNo = 3
+                else: 
+                    invigilatorNo = 2
+
                 if all(f is not None and f != '' for f in required_fields):
                     # Create Exam if none exists
                     if not course_select.courseExamId:
@@ -333,7 +339,7 @@ def admin_manageCourse():
                             examVenue=None,
                             examStartTime=None,
                             examEndTime=None,
-                            examNoInvigilator=None
+                            examNoInvigilator=invigilatorNo
                         )
                         db.session.add(new_exam)
                         db.session.flush()  # assign examId before commit

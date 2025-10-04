@@ -194,8 +194,8 @@
                                 <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
                                 <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
                                 <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
-                                <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
-                                <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
+                                <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
+                                <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                             </div>
                         </td>
                         <td>[{{ row.examId }}]</td>
