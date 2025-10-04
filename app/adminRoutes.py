@@ -1285,22 +1285,26 @@ def admin_manageStaff():
 
 
 
-
 # -------------------------------
-# Extract time from the database
+# Extract Base Name + Timestamp
 # -------------------------------
-def parse_date_range(date_range):
-    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime."""
-    if not date_range:
-        return None, None
-    try:
-        start_str, end_str = date_range.split("-")
-        start = datetime.strptime(start_str.strip(), "%m/%d/%Y")
-        end = datetime.strptime(end_str.strip(), "%m/%d/%Y")
-        return start, end
-    except Exception:
-        return None, None
+def extract_base_name_and_timestamp(file_name):
+    """Extract base name + optional _DDMMYY"""
+    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
+    match = re.match(pattern, file_name, re.IGNORECASE)
 
+    if match:
+        base_name = match.group(1).strip()
+        timestamp_str = match.group(2)
+        try:
+            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
+        except ValueError:
+            timestamp = None
+    else:
+        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
+        timestamp = None
+
+    return base_name, timestamp
 
 # -------------------------------
 # Parse Activity Line
@@ -1416,6 +1420,20 @@ def parse_timetable(raw_text):
 
     return structured
 
+# -------------------------------
+# Extract time from the database
+# -------------------------------
+def parse_date_range(date_range):
+    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime."""
+    if not date_range:
+        return None, None
+    try:
+        start_str, end_str = date_range.split("-")
+        start = datetime.strptime(start_str.strip(), "%m/%d/%Y")
+        end = datetime.strptime(end_str.strip(), "%m/%d/%Y")
+        return start, end
+    except Exception:
+        return None, None
 
 # -------------------------------
 # Get TimetableLink Details for ManageTimetableEditPage
@@ -1434,136 +1452,119 @@ def get_linkTimetable(timetableID):
 # -------------------------------
 # Save Parsed Timetable to DB
 # -------------------------------
-def save_timetable_to_db_all_files(structured_files):
-    rows_inserted = 0
-    lecturer_rows = defaultdict(list)
+def save_timetable_to_db(structured):
+    lecturer = structured.get("lecturer")
+    filename = structured.get("filename")
 
-    # Step 1: Collect all rows by lecturerName
-    for structured in structured_files:
-        lecturer = structured.get("lecturer")
-        filename = structured.get("filename")
-        if not lecturer:
-            continue
+    if not lecturer:
+        return 0
 
-        for day, activities in structured["days"].items():
-            for act in activities:
-                if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
-                    continue
-                if act.get("sections"):
-                    for sec in act["sections"]:
-                        new_entry = {
-                            "filename": filename,
-                            "lecturerName": lecturer,
-                            "classType": act.get("class_type"),
-                            "classDay": day,
-                            "classTime": act.get("time"),
-                            "classRoom": act.get("room"),
-                            "courseName": act.get("course"),
-                            "courseIntake": sec.get("intake"),
-                            "courseCode": sec.get("course_code"),
-                            "courseSection": sec.get("section"),
-                            "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                            "classWeekDate": act.get("weeks_date"),
-                        }
-                        lecturer_rows[lecturer].append(new_entry)
+    user = User.query.filter_by(userName=lecturer).first()
 
-    # Step 2: Deduplicate by class info and keep latest classWeekDate
-    for lecturer, rows in lecturer_rows.items():
-        grouped = defaultdict(list)
-        for row in rows:
-            key = (
-                row["classType"], row["classDay"], row["classTime"], row["classRoom"],
-                row["courseName"], row["courseIntake"], row["courseCode"], row["courseSection"]
-            )
-            grouped[key].append(row)
+    if user:
+        timetable = Timetable.query.filter_by(user_id=user.userId).first()
+        if timetable:
+            TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
+        else:
+            timetable = Timetable(user_id=user.userId)
+            db.session.add(timetable)
+            db.session.commit()
+    else:
+        timetable = None
 
-        for key, duplicates in grouped.items():
-            if len(duplicates) == 1:
-                entry = duplicates[0]
-            else:
-                # Compare start dates of classWeekDate
-                def get_start_date(cwd):
-                    try:
-                        return datetime.strptime(cwd.split("-")[0].strip(), "%m/%d/%Y")
-                    except Exception:
-                        return None
+    new_rows = []
+    rows_inserted = 0   # <--- track how many inserted
 
-                duplicates.sort(key=lambda x: get_start_date(x["classWeekDate"]) or datetime.min, reverse=True)
-                entry = duplicates[0]  # Latest start date
+    for day, activities in structured["days"].items():
+        for act in activities:
+            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
+                continue
+            if act.get("sections"):
+                for sec in act["sections"]:
+                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
+                        continue
 
-            # Step 3: Insert/update in DB
-            user = User.query.filter_by(userName=lecturer).first()
-            timetable = None
-            if user:
-                timetable = Timetable.query.filter_by(user_id=user.userId).first()
-                if not timetable:
-                    timetable = Timetable(user_id=user.userId)
-                    db.session.add(timetable)
-                    db.session.commit()
+                    new_entry = {
+                        "timetable_id"  : timetable.timetableId if timetable else None,
+                        "filename"      : filename,
+                        "lecturerName"  : lecturer,
+                        "classType"     : act.get("class_type"),
+                        "classDay"      : day,
+                        "classTime"     : act.get("time"),
+                        "classRoom"     : act.get("room"),
+                        "courseName"    : act.get("course"),
+                        "courseIntake"  : sec.get("intake"),
+                        "courseCode"    : sec.get("course_code"),
+                        "courseSection" : sec.get("section"),
+                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        "classWeekDate" : act.get("weeks_date"),
+                    }
 
-            # Check if row exists
-            existing = TimetableRow.query.filter_by(
-                lecturerName=entry["lecturerName"],
-                classType=entry["classType"],
-                classDay=entry["classDay"],
-                classTime=entry["classTime"],
-                classRoom=entry["classRoom"],
-                courseName=entry["courseName"],
-                courseIntake=entry["courseIntake"],
-                courseCode=entry["courseCode"],
-                courseSection=entry["courseSection"]
-            ).first()
+                    existing = TimetableRow.query.filter_by(
+                        lecturerName=lecturer,
+                        classType=new_entry["classType"],
+                        classDay=new_entry["classDay"],
+                        classTime=new_entry["classTime"],
+                        classRoom=new_entry["classRoom"],
+                        courseName=new_entry["courseName"],
+                        courseIntake=new_entry["courseIntake"],
+                        courseCode=new_entry["courseCode"],
+                        courseSection=new_entry["courseSection"],
+                    ).first()
 
-            if existing:
-                existing_start, _ = parse_date_range(existing.classWeekDate)
-                new_start, _ = parse_date_range(entry["classWeekDate"])
-                if new_start and existing_start and new_start > existing_start:
-                    db.session.delete(existing)
-                    entry["timetable_id"] = timetable.timetableId if timetable else None
-                    db.session.add(TimetableRow(**entry))
-                    rows_inserted += 1
-            else:
-                entry["timetable_id"] = timetable.timetableId if timetable else None
-                db.session.add(TimetableRow(**entry))
-                rows_inserted += 1
+                    if existing and existing.classWeekDate and new_entry["classWeekDate"]:
+                        old_start, _ = parse_date_range(existing.classWeekDate)
+                        new_start, _ = parse_date_range(new_entry["classWeekDate"])
+
+                        if old_start and new_start:
+                            if new_start > old_start:
+                                db.session.delete(existing)
+                                db.session.add(TimetableRow(**new_entry))
+                                rows_inserted += 1
+                            elif new_start < old_start:
+                                continue
+                            else:
+                                continue
+                        else:
+                            db.session.delete(existing)
+                            db.session.add(TimetableRow(**new_entry))
+                            rows_inserted += 1
+                    else:
+                        db.session.add(TimetableRow(**new_entry))
+                        rows_inserted += 1
 
     db.session.commit()
-    return rows_inserted
-
-
-
-
-# -------------------------------
-# Helper to parse first date of classWeekDate
-# -------------------------------
-def get_start_date(classWeekDate):
-    """Extract the first date from 'MM/DD/YYYY-MM/DD/YYYY' format"""
-    try:
-        first_date = classWeekDate.split("-")[0].strip()
-        return datetime.strptime(first_date, "%m/%d/%Y")
-    except Exception:
-        return None
+    return rows_inserted   # <--- return actual count
 
 
 # -------------------------------
-# Admin ManageTimetable route
+# Function for Admin ManageTimetable Route
 # -------------------------------
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
-    # Default GET rendering
+    # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
+    # Use Timetable directly (not TimetableRow)
     total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
+
+    # Predefine timetable_select to avoid UnboundLocalError
     timetable_select = None
     timetable_selected = request.form.get('editTimetableList')
     if timetable_selected:
         timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
-    staff_list = User.query.filter(User.userLevel != 5, User.userStatus != 2).all()
+    # Staff list (exclude certain levels/status)
+    staff_list = User.query.filter(
+        User.userLevel != 5,
+        User.userStatus != 2
+    ).all()
+
+    # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
     day_counts = {
         f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
@@ -1571,10 +1572,14 @@ def admin_manageTimetable():
         for day in days
     }
 
+    # Group all lecturers with unassigned rows
     grouped_unassigned = defaultdict(int)
     for row in TimetableRow.query.filter_by(timetable_id=None).all():
         grouped_unassigned[row.lecturerName] += 1
+
     unassigned_summary = [{"lecturer": name, "count": count} for name, count in grouped_unassigned.items()]
+
+    # Build mapping: user_id -> timetableId
     timetable_map = {t.user_id: t.timetableId for t in timetable_list}
 
     # ---- POST Handling ----
@@ -1582,154 +1587,112 @@ def admin_manageTimetable():
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
+            # ---- File Upload Handling ----
             files = request.files.getlist("timetable_file[]")
-            all_rows = []
+            latest_files = {}
+            skipped_files = []
 
-            # Step 1: Read all files and collect all rows
+            # Filter to keep only the latest timestamp for each base_name
             for file in files:
+                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
+                if not base_name:
+                    continue
+                if base_name not in latest_files:
+                    latest_files[base_name] = (timestamp, file)
+                else:
+                    existing_timestamp, existing_file = latest_files[base_name]
+                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
+                        skipped_files.append(existing_file.filename)
+                        latest_files[base_name] = (timestamp, file)
+                    else:
+                        skipped_files.append(file.filename)
+
+            # Process each latest file
+            total_rows_inserted = 0
+            total_files_processed = 0
+            for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
                 structured = parse_timetable(raw_text)
-                filename = file.filename
+                structured['filename'] = file.filename
+                rows_inserted = save_timetable_to_db(structured)
 
-                for day, activities in structured["days"].items():
-                    for act in activities:
-                        if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
-                            continue
-                        if act.get("sections"):
-                            for sec in act["sections"]:
-                                all_rows.append({
-                                    "filename": filename,
-                                    "lecturerName": structured["lecturer"],
-                                    "classType": act.get("class_type"),
-                                    "classDay": day,
-                                    "classTime": act.get("time"),
-                                    "classRoom": act.get("room"),
-                                    "courseName": act.get("course"),
-                                    "courseIntake": sec.get("intake"),
-                                    "courseCode": sec.get("course_code"),
-                                    "courseSection": sec.get("section"),
-                                    "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                                    "classWeekDate": act.get("weeks_date")
-                                })
+                total_rows_inserted += rows_inserted
+                if rows_inserted > 0:
+                    total_files_processed += 1   # count only if rows were actually inserted
 
-            # Step 2: Group by lecturer and class info
-            grouped = defaultdict(list)
-            for row in all_rows:
-                key = (
-                    row["lecturerName"],
-                    row["classType"],
-                    row["courseName"],
-                    row["courseIntake"],
-                    row["courseCode"],
-                    row["courseSection"]
-                )
-                grouped[key].append(row)
-
-            # Step 3: Keep only row with latest first date in classWeekDate
-            rows_to_insert = []
-            for key, rows in grouped.items():
-                if len(rows) == 1:
-                    rows_to_insert.append(rows[0])
-                else:
-                    # multiple rows → pick the latest first date
-                    latest_row = max(rows, key=lambda x: get_start_date(x["classWeekDate"]) or datetime.min)
-                    rows_to_insert.append(latest_row)
-
-            # Step 4: Insert/update database
-            rows_inserted = 0
-            for row in rows_to_insert:
-                user = User.query.filter_by(userName=row["lecturerName"]).first()
-                timetable = None
-                if user:
-                    timetable = Timetable.query.filter_by(user_id=user.userId).first()
-                    if not timetable:
-                        timetable = Timetable(user_id=user.userId)
-                        db.session.add(timetable)
-                        db.session.commit()
-
-                row["timetable_id"] = timetable.timetableId if timetable else None
-
-                # Remove any existing row with same class info
-                existing = TimetableRow.query.filter_by(
-                    lecturerName=row["lecturerName"],
-                    classType=row["classType"],
-                    classDay=row["classDay"],
-                    classTime=row["classTime"],
-                    classRoom=row["classRoom"],
-                    courseName=row["courseName"],
-                    courseIntake=row["courseIntake"],
-                    courseCode=row["courseCode"],
-                    courseSection=row["courseSection"]
-                ).first()
-                if existing:
-                    db.session.delete(existing)
-
-                db.session.add(TimetableRow(**row))
-                rows_inserted += 1
-
-            db.session.commit()
-            flash(f"Files uploaded: {len(files)}, Rows inserted: {rows_inserted}", "success")
+            flash(f"Files read: {len(files)}, Files processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             return redirect(url_for('admin_manageTimetable'))
-
-        # ---------- Manual linking ----------
+        
         elif form_type == 'manual':
-            user_id = request.form.get("staffList")
+            user_id = request.form.get("staffList")      # <-- this is User.userId
             lecturer = request.form.get("lecturerName")
+
             if user_id and lecturer:
+                # Ensure this user has a Timetable entry
                 timetable = Timetable.query.filter_by(user_id=user_id).first()
                 if not timetable:
                     timetable = Timetable(user_id=user_id)
                     db.session.add(timetable)
-                    db.session.commit()
+                    db.session.commit()  # commit so timetableId is generated
+
+                # Now update all rows for that lecturer
                 rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
                 for row in rows:
-                    row.timetable_id = timetable.timetableId
+                    row.timetable_id = timetable.timetableId   # <-- valid FK
+
                 db.session.commit()
-                flash(f"{lecturer} Timetable linked to staff ID {user_id}", "success")
+                flash(f"{lecturer} Timetable  linked to staff ID {user_id}", "success")
             else:
                 flash("Missing lecturer or staff", "error")
-            return redirect(url_for('admin_manageTimetable'))
 
-        # ---------- Edit / Delete ----------
+            return redirect(url_for('admin_manageTimetable'))
+        
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and timetable_select:
                 new_user_id = request.form['editStaffList']
+
+                # Case 1: Same staff already linked → success
                 if str(timetable_select.user_id) == new_user_id:
                     flash("No changes made. Timetable already linked to this staff.", "success")
+
                 else:
+                    # Check if this staff is already linked to another timetable
                     existing = Timetable.query.filter(
                         Timetable.user_id == new_user_id,
                         Timetable.timetableId != timetable_select.timetableId
                     ).first()
+
                     if existing:
-                        flash(f"Staff ID:{new_user_id} already linked to another timetable(ID:{existing.timetableId}).", "error")
+                        # Case 2: Found in another timetable → error
+                        flash(f"Staff ID:{new_user_id} is already linked to another timetable(ID:{existing.timetableId}).", "error")
                     else:
+                        # Case 3: Not found → update
                         timetable_select.user_id = new_user_id
                         db.session.commit()
                         flash("Timetable updated successfully.", "success")
+
             elif action == 'delete' and timetable_select:
                 db.session.delete(timetable_select)
                 db.session.commit()
                 flash("Timetable deleted successfully.", "success")
+
                 return redirect(url_for('admin_manageTimetable'))
 
-    # ---- Render template ----
-    return render_template(
-        'admin/adminManageTimetable.html',
-        active_tab='admin_manageTimetabletab',
-        timetable_data=timetable_data,
-        lecturers=lecturers,
-        selected_lecturer=selected_lecturer,
-        total_timetable=total_timetable,
-        unassigned_summary=unassigned_summary,
-        staff_list=staff_list,
-        **day_counts,
-        timetable_list=timetable_list,
-        timetable_map=timetable_map,
-        timetable_select=timetable_select
-    )
+    return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,total_timetable=total_timetable,
+        unassigned_summary=unassigned_summary,staff_list=staff_list,**day_counts,timetable_list=timetable_list,timetable_map=timetable_map,timetable_select=timetable_select)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
