@@ -1420,29 +1420,26 @@ def parse_timetable(raw_text):
 
     return structured
 
-# -------------------------------
-# Extract time from the database
-# -------------------------------
+
 def parse_date_range(date_range):
-    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime."""
+    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime safely."""
     if not date_range:
         return None, None
     try:
-        start_str, end_str = date_range.split("-")
+        # Split only on the last hyphen in case there are others in the string
+        start_str, end_str = date_range.rsplit("-", 1)
         start = datetime.strptime(start_str.strip(), "%m/%d/%Y")
         end = datetime.strptime(end_str.strip(), "%m/%d/%Y")
         return start, end
-    except Exception:
+    except Exception as e:
+        print(f"Date parse error for '{date_range}': {e}")
         return None, None
 
-# -------------------------------
-# Always check the row classWeekDate updated or not
-# -------------------------------
+
 def cleanup_expired_timetable_rows():
     """Delete timetable rows whose classWeekDate end date has expired."""
     now = datetime.now()
     expired_count = 0
-
     all_rows = TimetableRow.query.all()
 
     for row in all_rows:
@@ -1450,7 +1447,10 @@ def cleanup_expired_timetable_rows():
             continue
 
         start, end = parse_date_range(row.classWeekDate)
-        if end and now > end:
+        if end is None:
+            continue  # Skip malformed rows
+
+        if now > end:
             db.session.delete(row)
             expired_count += 1
 
@@ -1458,6 +1458,7 @@ def cleanup_expired_timetable_rows():
         db.session.commit()
 
     return expired_count
+
 
 # -------------------------------
 # Get TimetableLink Details for ManageTimetableEditPage
