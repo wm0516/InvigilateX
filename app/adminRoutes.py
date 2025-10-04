@@ -1770,8 +1770,20 @@ def calculate_invigilation_stats():
     )
 
     # Total reports and total assigned invigilators
-    total_report = InvigilationReport.query.count()
-    total_invigilator = InvigilatorAttendance.query.count()
+    total_report = (
+        InvigilationReport.query
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(Exam.examStatus == True)
+        .count()
+    )
+
+    total_invigilator = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(Exam.examStatus == True)
+        .count()
+    )
 
     stats = {
         "total_report": total_report,
