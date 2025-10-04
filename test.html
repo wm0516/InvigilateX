@@ -440,6 +440,230 @@ def get_available_venues(examDate, startTime, endTime):
 
 
 
+# -------------------------------
+# Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
+# -------------------------------
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
+    venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
+    if not venue_place:
+        venue_text = None
+    else:
+        venue_text = venue_text.upper()
+
+    course = Course.query.filter_by(courseCodeSectionIntake=courseSection).first()
+    if not course:
+        return False, f"Course with section {courseSection} not found"
+
+    exam = Exam.query.filter_by(examId=course.courseExamId).first()
+    if not exam:
+        return False, f"Exam for course {courseSection} not found"
+
+    invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
+    try:
+        invigilatorNo = int(invigilatorNo)
+    except ValueError:
+        return False, "Number of Invigilators must be an integer"
+    if invigilatorNo < 1:
+        return False, "Number of Invigilators must be at least 1"
+
+    exam.examStartTime = start_dt
+    exam.examEndTime = end_dt
+    exam.examVenue = venue_text
+    exam.examNoInvigilator = invigilatorNo
+
+    # Assign lecturers
+    if practicalLecturer:
+        lecturer_user = User.query.filter(
+            or_(User.userId == practicalLecturer, User.userName.ilike(practicalLecturer))
+        ).first()
+        if not lecturer_user:
+            return False, f"Lecturer '{practicalLecturer}' not found"
+        course.coursePractical = lecturer_user.userId
+        course.courseTutorial = lecturer_user.userId
+    else:
+        course.coursePractical = None
+        course.courseTutorial = None
+
+    adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
+    delete_exam_related(exam.examId, commit=False)
+
+    if venue_text:
+        db.session.add(VenueAvailability(
+            venueNumber=venue_text,
+            startDateTime=start_dt,
+            endDateTime=adj_end_dt,
+            examId=exam.examId
+        ))
+
+    new_report = InvigilationReport(examId=exam.examId)
+    db.session.add(new_report)
+    db.session.flush()
+
+    # ============================
+    # New Invigilator Assignment
+    # ============================
+    success, result = assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo)
+    if not success:
+        db.session.rollback()
+        return False, result
+
+    # Create attendance records
+    for inv in result:
+        db.session.add(InvigilatorAttendance(
+            examId=exam.examId,
+            userId=inv.userId,
+            status="PENDING"
+        ))
+
+    db.session.commit()
+    return True, f"Exam created/updated successfully. Assigned invigilators: {[i.userName for i in result]}"
+
+
+# ===================================================
+# HELPER FUNCTION: Assign Invigilators with Conflict Check
+# ===================================================
+def assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo):
+    exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
+
+    eligible_invigilators = User.query.filter(
+        ~User.userId.in_(exclude_ids),
+        User.userLevel == 1
+    ).all()
+
+    if not eligible_invigilators:
+        return False, "No eligible invigilators available"
+
+    exam_date = exam.examStartTime.date()
+
+    def parse_time(t):
+        """Convert '9:00 AM' or '9:00 AM - 11:00 AM' to datetime.time objects"""
+        try:
+            t = t.strip()
+            if '-' in t:
+                start, end = t.split('-')
+                start = datetime.strptime(start.strip(), "%I:%M %p").time()
+                end = datetime.strptime(end.strip(), "%I:%M %p").time()
+                return start, end
+        except Exception:
+            return None, None
+        return None, None
+
+    def parse_week_range(r):
+        """Convert '4/7/2025-8/24/2025' to (date1, date2)"""
+        try:
+            start_str, end_str = r.split('-')
+            start = datetime.strptime(start_str.strip(), "%m/%d/%Y").date()
+            end = datetime.strptime(end_str.strip(), "%m/%d/%Y").date()
+            return start, end
+        except Exception:
+            return None, None
+
+    def has_conflict(user):
+        """Return True if user has class that overlaps with exam"""
+        timetable = Timetable.query.filter_by(user_id=user.userId).first()
+        if not timetable or not timetable.rows:
+            return False
+
+        for row in timetable.rows:
+            start_range, end_range = parse_week_range(row.classWeekDate)
+            if not start_range or not end_range:
+                continue
+            # Ignore if exam date is beyond class week range
+            if exam_date > end_range:
+                continue
+            # Only check conflicts if exam is within active weeks
+            if start_range <= exam_date <= end_range:
+                class_start, class_end = parse_time(row.classTime)
+                if not class_start or not class_end:
+                    continue
+                # Compare times (on same day)
+                exam_start = exam.examStartTime.time()
+                exam_end = exam.examEndTime.time()
+                if exam_start < class_end and exam_end > class_start:
+                    return True
+        return False
+
+    # Filter out those with time conflicts
+    available_invigilators = [u for u in eligible_invigilators if not has_conflict(u)]
+    if not available_invigilators:
+        return False, "No available invigilators (all have class conflicts)"
+
+    # Split into gender groups
+    male_list = [u for u in available_invigilators if u.userGender == "MALE"]
+    female_list = [u for u in available_invigilators if u.userGender == "FEMALE"]
+
+    def workload(u):
+        return (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
+
+    male_list.sort(key=workload)
+    female_list.sort(key=workload)
+
+    chosen = []
+    if invigilatorNo == 2:
+        if not male_list or not female_list:
+            return False, "Need one male and one female invigilator"
+        chosen = [male_list[0], female_list[0]]
+    elif invigilatorNo == 3:
+        if not male_list or not female_list:
+            return False, "Need at least one male and one female invigilator"
+        chosen = [male_list[0], female_list[0]]
+        if len(male_list) > len(female_list) and len(male_list) > 1:
+            chosen.append(male_list[1])
+        elif len(female_list) > 1:
+            chosen.append(female_list[1])
+        else:
+            pool = sorted(male_list + female_list, key=workload)
+            for u in pool:
+                if u not in chosen:
+                    chosen.append(u)
+                    break
+    else:
+        pool = sorted(male_list + female_list, key=workload)
+        chosen = pool[:invigilatorNo]
+
+    return True, chosen
+
+
+
+
+# -------------------------------
+# Delete All Related Exam after get modify
+# -------------------------------
+def delete_exam_related(exam_id, commit=True):
+    exam = Exam.query.get(exam_id)
+    if not exam:
+        return False, f"Exam {exam_id} not found"   
+
+    if exam.examStartTime and exam.examEndTime:
+        pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+    else:
+        pending_hours = 0
+
+    # Roll back pending hours from invigilators
+    reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
+    for report in reports:
+        for att in report.attendances:
+            invigilator = att.invigilator
+            if invigilator:
+                invigilator.userPendingCumulativeHours = max(
+                    0.0,
+                    (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
+                )
+
+    # Delete reports and venue availability
+    InvigilationReport.query.filter_by(examId=exam.examId).delete()
+    VenueAvailability.query.filter_by(examId=exam.examId).delete()
+
+    if commit:
+        db.session.commit()
+
+    return True, f"Related data for exam {exam_id} deleted successfully"
+
+
+
+
+
+
 
 
 
