@@ -1453,27 +1453,34 @@ def get_linkTimetable(timetableID):
 # Save Parsed Timetable to DB
 # -------------------------------
 def save_timetable_to_db(structured):
+    """Insert or replace timetable rows for a lecturer."""
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
 
     if not lecturer:
         return 0
 
+    # Find user for lecturer
     user = User.query.filter_by(userName=lecturer).first()
 
+    # Ensure timetable exists for user
     if user:
         timetable = Timetable.query.filter_by(user_id=user.userId).first()
-        if timetable:
-            TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
-        else:
+        if not timetable:
             timetable = Timetable(user_id=user.userId)
             db.session.add(timetable)
             db.session.commit()
     else:
         timetable = None
 
-    new_rows = []
-    rows_inserted = 0   # <--- track how many inserted
+    # ---- Delete old rows if lecturer already exists in DB ----
+    existing_rows = TimetableRow.query.filter_by(lecturerName=lecturer).count()
+    if existing_rows > 0:
+        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
+        db.session.commit()
+
+    # ---- Insert new rows from structured data ----
+    rows_inserted = 0
 
     for day, activities in structured["days"].items():
         for act in activities:
@@ -1484,57 +1491,27 @@ def save_timetable_to_db(structured):
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
                         continue
 
-                    new_entry = {
-                        "timetable_id"  : timetable.timetableId if timetable else None,
-                        "filename"      : filename,
-                        "lecturerName"  : lecturer,
-                        "classType"     : act.get("class_type"),
-                        "classDay"      : day,
-                        "classTime"     : act.get("time"),
-                        "classRoom"     : act.get("room"),
-                        "courseName"    : act.get("course"),
-                        "courseIntake"  : sec.get("intake"),
-                        "courseCode"    : sec.get("course_code"),
-                        "courseSection" : sec.get("section"),
-                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        "classWeekDate" : act.get("weeks_date"),
-                    }
-
-                    existing = TimetableRow.query.filter_by(
+                    new_row = TimetableRow(
+                        timetable_id=timetable.timetableId if timetable else None,
+                        filename=filename,
                         lecturerName=lecturer,
-                        classType=new_entry["classType"],
-                        classDay=new_entry["classDay"],
-                        classTime=new_entry["classTime"],
-                        classRoom=new_entry["classRoom"],
-                        courseName=new_entry["courseName"],
-                        courseIntake=new_entry["courseIntake"],
-                        courseCode=new_entry["courseCode"],
-                        courseSection=new_entry["courseSection"],
-                    ).first()
-
-                    if existing and existing.classWeekDate and new_entry["classWeekDate"]:
-                        old_start, _ = parse_date_range(existing.classWeekDate)
-                        new_start, _ = parse_date_range(new_entry["classWeekDate"])
-
-                        if old_start and new_start:
-                            if new_start > old_start:
-                                db.session.delete(existing)
-                                db.session.add(TimetableRow(**new_entry))
-                                rows_inserted += 1
-                            elif new_start < old_start:
-                                continue
-                            else:
-                                continue
-                        else:
-                            db.session.delete(existing)
-                            db.session.add(TimetableRow(**new_entry))
-                            rows_inserted += 1
-                    else:
-                        db.session.add(TimetableRow(**new_entry))
-                        rows_inserted += 1
+                        classType=act.get("class_type"),
+                        classDay=day,
+                        classTime=act.get("time"),
+                        classRoom=act.get("room"),
+                        courseName=act.get("course"),
+                        courseIntake=sec.get("intake"),
+                        courseCode=sec.get("course_code"),
+                        courseSection=sec.get("section"),
+                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
+                        classWeekDate=act.get("weeks_date"),
+                    )
+                    db.session.add(new_row)
+                    rows_inserted += 1
 
     db.session.commit()
-    return rows_inserted   # <--- return actual count
+    return rows_inserted
+
 
 
 # -------------------------------
@@ -1587,12 +1564,11 @@ def admin_manageTimetable():
         form_type = request.form.get('form_type')
 
         if form_type == 'upload':
-            # ---- File Upload Handling ----
             files = request.files.getlist("timetable_file[]")
             latest_files = {}
             skipped_files = []
 
-            # Filter to keep only the latest timestamp for each base_name
+            # ---- Compare & Keep only latest file for each lecturer (first-time upload) ----
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
                 if not base_name:
@@ -1607,9 +1583,10 @@ def admin_manageTimetable():
                     else:
                         skipped_files.append(file.filename)
 
-            # Process each latest file
             total_rows_inserted = 0
             total_files_processed = 0
+
+            # ---- Process each latest file ----
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
@@ -1617,12 +1594,13 @@ def admin_manageTimetable():
                 structured['filename'] = file.filename
                 rows_inserted = save_timetable_to_db(structured)
 
-                total_rows_inserted += rows_inserted
                 if rows_inserted > 0:
-                    total_files_processed += 1   # count only if rows were actually inserted
+                    total_files_processed += 1
+                    total_rows_inserted += rows_inserted
 
-            flash(f"Files read: {len(files)}, Files processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
+            flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             return redirect(url_for('admin_manageTimetable'))
+
         
         elif form_type == 'manual':
             user_id = request.form.get("staffList")      # <-- this is User.userId
