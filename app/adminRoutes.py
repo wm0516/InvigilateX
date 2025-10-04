@@ -699,22 +699,23 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
+    """Combine date/time, validate conflicts, and create exam."""
     examDate = row['date']
     if isinstance(examDate, str):
         examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
     examDate_text = examDate.strftime("%Y-%m-%d")
-    
+
     startTime_text = row['start']
-    endTime_text   = row['end']
+    endTime_text = row['end']
 
     if not examDate_text or not startTime_text or not endTime_text:
         return False, "Invalid time/date"
-    
+
     start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
-    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
+    end_dt = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
     venue = str(row['room']).upper()
 
-    # Conflict check before saving
+    # Conflict check
     conflict = VenueAvailability.query.filter(
         VenueAvailability.venueNumber == venue,
         VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
@@ -724,10 +725,11 @@ def process_exam_row(row):
     if conflict:
         return None, ''
 
-    # No conflict → create
-    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, str(row['lecturer']).upper(), None, invigilatorNo=None)
+    create_exam_and_related(
+        start_dt, end_dt, str(row['course/sec']).upper(), venue,
+        str(row['lecturer']).upper(), None, invigilatorNo=None
+    )
     return True, ''
-
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
