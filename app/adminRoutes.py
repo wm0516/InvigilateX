@@ -1548,6 +1548,11 @@ def save_timetable_to_db(structured):
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
+    # Auto cleanup expired timetable rows
+    expired_removed = cleanup_expired_timetable_rows()
+    if expired_removed > 0:
+        flash(f"Auto-cleaned {expired_removed} expired timetable rows.", "info")
+
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
@@ -1596,7 +1601,7 @@ def admin_manageTimetable():
             latest_files = {}
             skipped_files = []
 
-            # ---- Compare & Keep only latest file for each lecturer (first-time upload) ----
+            # ---- Compare & Keep only latest file for each lecturer ----
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
                 if not base_name:
@@ -1629,9 +1634,8 @@ def admin_manageTimetable():
             flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             return redirect(url_for('admin_manageTimetable'))
 
-        
         elif form_type == 'manual':
-            user_id = request.form.get("staffList")      # <-- this is User.userId
+            user_id = request.form.get("staffList")
             lecturer = request.form.get("lecturerName")
 
             if user_id and lecturer:
@@ -1640,41 +1644,36 @@ def admin_manageTimetable():
                 if not timetable:
                     timetable = Timetable(user_id=user_id)
                     db.session.add(timetable)
-                    db.session.commit()  # commit so timetableId is generated
+                    db.session.commit()
 
-                # Now update all rows for that lecturer
+                # Update all rows for that lecturer
                 rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
                 for row in rows:
-                    row.timetable_id = timetable.timetableId   # <-- valid FK
+                    row.timetable_id = timetable.timetableId
 
                 db.session.commit()
-                flash(f"{lecturer} Timetable  linked to staff ID {user_id}", "success")
+                flash(f"{lecturer} Timetable linked to staff ID {user_id}", "success")
             else:
                 flash("Missing lecturer or staff", "error")
 
             return redirect(url_for('admin_manageTimetable'))
-        
+
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and timetable_select:
                 new_user_id = request.form['editStaffList']
 
-                # Case 1: Same staff already linked → success
                 if str(timetable_select.user_id) == new_user_id:
                     flash("No changes made. Timetable already linked to this staff.", "success")
-
                 else:
-                    # Check if this staff is already linked to another timetable
                     existing = Timetable.query.filter(
                         Timetable.user_id == new_user_id,
                         Timetable.timetableId != timetable_select.timetableId
                     ).first()
 
                     if existing:
-                        # Case 2: Found in another timetable → error
                         flash(f"Staff ID:{new_user_id} is already linked to another timetable(ID:{existing.timetableId}).", "error")
                     else:
-                        # Case 3: Not found → update
                         timetable_select.user_id = new_user_id
                         db.session.commit()
                         flash("Timetable updated successfully.", "success")
@@ -1686,12 +1685,8 @@ def admin_manageTimetable():
 
                 return redirect(url_for('admin_manageTimetable'))
 
-    return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,total_timetable=total_timetable,
-        unassigned_summary=unassigned_summary,staff_list=staff_list,**day_counts,timetable_list=timetable_list,timetable_map=timetable_map,timetable_select=timetable_select)
-
-
-
-
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer,
+        total_timetable=total_timetable, unassigned_summary=unassigned_summary, staff_list=staff_list, **day_counts, timetable_list=timetable_list, timetable_map=timetable_map, timetable_select=timetable_select)
 
 
 
