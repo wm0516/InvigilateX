@@ -106,16 +106,19 @@
                 <label>Tutorial Lecturer</label>
                 <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly><br>
 
+                <label>Number of Invigilators</label>
+                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>
+            </div>
+
+            <div class="form-right">
                 <label>Exam Venue</label>
                 <select name="venue" id="editVenue" required>
                     <option value="" disabled selected>Select Exam Venue</option>
                     {% for venue in venue_data %}
                         <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                     {% endfor %}
-                </select>
-            </div>
+                </select><br>
 
-            <div class="form-right">
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="startDate" name="startDate" required>
@@ -126,10 +129,7 @@
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="endDate" name="endDate" required>
                     <input type="time" id="endTime" name="endTime" required>
-                </div><br>
-
-                <label>Number of Invigilators</label>
-                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>
+                </div>
             </div>
         </div>
         <input type="hidden" name="form_type" value="edit">
@@ -207,7 +207,6 @@
                                 <span class="status frame-red">Exam details not yet assigned</span>
                             {% endif %}
                         </td>
-
                         <td>[{{ row.examNoInvigilator }}]</td>
                     </tr>
                 {% endfor %}
@@ -223,12 +222,7 @@
 <script>
 // Clear edit form fields when course changes
 function clearEditFields() {
-    const fieldsToClear = [
-        'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo',
-        'startDate', 'startTime', 'endDate', 'endTime',
-        'editPracticalLecturer', 'editTutorialLecturer'
-    ];
-    
+    const fieldsToClear = ['editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo', 'startDate', 'startTime', 'endDate', 'endTime', 'editPracticalLecturer', 'editTutorialLecturer'];
     fieldsToClear.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
@@ -294,8 +288,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const startTime = document.getElementById("startTime");
     const endDate = document.getElementById("endDate");
     const endTime = document.getElementById("endTime");
+    const venueSelect = document.getElementById("venue");
 
-    if (!startDate || !startTime || !endDate || !endTime) return;
+    if (!startDate || !startTime || !endDate || !endTime || !venueSelect) return;
 
     const now = new Date();
     const today = now.toISOString().split("T")[0];
@@ -303,24 +298,23 @@ document.addEventListener("DOMContentLoaded", function () {
     nextYear.setFullYear(nextYear.getFullYear() + 1);
     const nextYearDate = nextYear.toISOString().split("T")[0];
 
-    // Restrict date pickers
+    // 1 Date & Time Restrictions
     startDate.min = today;
     startDate.max = nextYearDate;
     endDate.min = today;
     endDate.max = nextYearDate;
 
-    // Default: set both dates to today
+    // Default both to today
     startDate.value = today;
     endDate.value = today;
 
-    // Restrict time: disable past times if today is selected
     function restrictStartTime() {
         if (startDate.value === today) {
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
-            startTime.min = hh + ":" + mm;  // from now onwards
+            startTime.min = `${hh}:${mm}`;
         } else {
-            startTime.min = "00:00";  // full day allowed
+            startTime.min = "00:00";
         }
     }
 
@@ -328,20 +322,19 @@ document.addEventListener("DOMContentLoaded", function () {
         if (endDate.value === today) {
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
-            endTime.min = hh + ":" + mm;
+            endTime.min = `${hh}:${mm}`;
         } else {
             endTime.min = "00:00";
         }
     }
 
-    // Adjust end date automatically
     function adjustEndDate() {
         if (!startDate.value || !startTime.value || !endTime.value) return;
 
-        const start = new Date(startDate.value + "T" + startTime.value);
-        let end = new Date(endDate.value + "T" + endTime.value);
+        const start = new Date(`${startDate.value}T${startTime.value}`);
+        const end = new Date(`${endDate.value}T${endTime.value}`);
 
-        // If end time is earlier than start time → assume overnight
+        // If end time < start time → move end date to next day
         if (end < start) {
             let nextDay = new Date(start);
             nextDay.setDate(nextDay.getDate() + 1);
@@ -351,21 +344,81 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Bind events
+    // 2 Fetch Available Venues (30-min gap rule)
+    async function updateAvailableVenues() {
+        const startDateVal = startDate.value;
+        const startTimeVal = startTime.value;
+        const endDateVal = endDate.value;
+        const endTimeVal = endTime.value;
+
+        // Ensure all values exist
+        if (!startDateVal || !startTimeVal || !endDateVal || !endTimeVal) return;
+
+        const formData = new FormData();
+        formData.append("startDate", startDateVal);
+        formData.append("startTime", startTimeVal);
+        formData.append("endDate", endDateVal);
+        formData.append("endTime", endTimeVal);
+
+        try {
+            const res = await fetch("/get_available_venues", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+
+            // Reset venue dropdown
+            venueSelect.innerHTML = "";
+
+            if (!data.venues || data.venues.length === 0) {
+                const opt = document.createElement("option");
+                opt.text = "No venues available";
+                opt.disabled = true;
+                opt.selected = true;
+                venueSelect.add(opt);
+            } else {
+                data.venues.forEach((v) => {
+                    const opt = document.createElement("option");
+                    opt.value = v;
+                    opt.text = v;
+                    venueSelect.add(opt);
+                });
+            }
+        } catch (err) {
+            console.error("Error fetching available venues:", err);
+        }
+    }
+
+    // 3 Event Bindings
     startDate.addEventListener("change", () => {
         endDate.value = startDate.value;
         restrictStartTime();
         restrictEndTime();
+        adjustEndDate();
+        updateAvailableVenues();
     });
 
-    endDate.addEventListener("change", restrictEndTime);
-    startTime.addEventListener("change", adjustEndDate);
-    endTime.addEventListener("change", adjustEndDate);
+    endDate.addEventListener("change", () => {
+        restrictEndTime();
+        adjustEndDate();
+        updateAvailableVenues();
+    });
+
+    startTime.addEventListener("change", () => {
+        adjustEndDate();
+        updateAvailableVenues();
+    });
+
+    endTime.addEventListener("change", () => {
+        adjustEndDate();
+        updateAvailableVenues();
+    });
 
     // Initial restriction setup
     restrictStartTime();
     restrictEndTime();
 });
+
 </script>
 {% endblock %}
 

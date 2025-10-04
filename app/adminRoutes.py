@@ -7,6 +7,7 @@ import warnings
 from io import BytesIO
 from collections import defaultdict
 from datetime import datetime
+import random
 
 # -------------------------------
 # Third-party imports
@@ -691,6 +692,11 @@ def download_exam_template():
     )
 
 
+
+
+
+
+
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
@@ -742,6 +748,9 @@ def get_exam_details(course_code_section):
     return jsonify(response_data)
 
 
+# -------------------------------
+# Reformat the datetime for ManageExamEditPage
+# -------------------------------
 def parse_datetime(date_str, time_str):
     raw = f"{date_str} {time_str}"
     for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %I:%M %p"):
@@ -755,143 +764,86 @@ def parse_datetime(date_str, time_str):
 # -------------------------------
 # Get VenueDetails for ManageExamEditPage
 # -------------------------------
-@app.route('/get_available_venues')
+@app.route('/get_available_venues', methods=['POST'])
 @login_required
 def get_available_venues():
-    try:
-        student_count = int(request.args.get('students', 0))
-        start_dt_str = request.args.get('start')
-        end_dt_str = request.args.get('end')
+    start_date = request.form.get('startDate')
+    start_time = request.form.get('startTime')
+    end_date = request.form.get('endDate')
+    end_time = request.form.get('endTime')
 
-        if not start_dt_str or not end_dt_str:
-            return jsonify([])
+    if not all([start_date, start_time, end_date, end_time]):
+        return jsonify({'venues': []})
 
-        start_dt = datetime.strptime(start_dt_str, "%Y-%m-%dT%H:%M")
-        end_dt = datetime.strptime(end_dt_str, "%Y-%m-%dT%H:%M")
+    start_dt = parse_datetime(start_date, start_time)
+    end_dt = parse_datetime(end_date, end_time)
 
-        # Query venues with enough capacity
-        venues = Venue.query.filter(Venue.venueCapacity >= student_count).all()
+    if not start_dt or not end_dt:
+        return jsonify({'venues': []})
 
-        available_venues = []
+    # Get all venues
+    all_venues = Venue.query.all()
+    available_venues = []
 
-        for v in venues:
-            # Check if venue has overlapping exam in VenueAvailability
-            overlap = VenueAvailability.query.filter(
-                VenueAvailability.venueNumber == v.venueNumber,
-                VenueAvailability.startDateTime < end_dt,
-                VenueAvailability.endDateTime > start_dt
-            ).first()
+    for venue in all_venues:
+        # Check for any conflict in VenueAvailability
+        conflict = VenueAvailability.query.filter(
+            VenueAvailability.venueNumber == venue.venueNumber,
+            VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
+            VenueAvailability.endDateTime > start_dt - timedelta(minutes=30),
+        ).first()
 
-            if not overlap:
-                available_venues.append({
-                    "venueNumber": v.venueNumber,
-                    "venueCapacity": v.venueCapacity
-                })
+        if not conflict:
+            available_venues.append(venue.venueNumber)
 
-        return jsonify(available_venues)
-    
-    except Exception as e:
-        flash(f"[Error fetching available venues] {e}", "error")
-        return jsonify([])
+    return jsonify({'venues': available_venues})
 
 
-def adjust_invigilators(exam_id, new_invigilatorNo):
-    try:
-        exam = Exam.query.get(exam_id)
-        if not exam:
-            return False, f"Exam ID {exam_id} not found."
+def adjust_invigilators(report, new_count, start_dt, end_dt):
+    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-        report = InvigilationReport.query.filter_by(examId=exam_id).first()
-        if not report:
-            return False, f"No report found for exam {exam_id}."
+    current_attendances = list(report.attendances)
+    current_count = len(current_attendances)
 
-        # --- Current attendance list ---
-        current_attendances = InvigilatorAttendance.query.filter_by(reportId=report.invigilationReportId).all()
-        current_invigilators = [att.invigilatorId for att in current_attendances]
+    if new_count == current_count:
+        return  # nothing to change
 
-        # --- Get current exam duration (for workload adjustment) ---
-        start_dt = datetime.strptime(f"{exam.examDate} {exam.examStartTime}", "%Y-%m-%d %H:%M")
-        end_dt = datetime.strptime(f"{exam.examDate} {exam.examEndTime}", "%Y-%m-%d %H:%M")
-        exam_hours = (end_dt - start_dt).seconds / 3600
-
-        # --- Adjust existing vs. required number ---
-        diff = new_invigilatorNo - len(current_invigilators)
-
-        if diff == 0:
-            return True, "No change in invigilator number required."
-
-        # --- Fetch all eligible invigilators ---
-        course = Course.query.filter_by(courseCode=exam.courseCode).first()
-        exclude_ids = []
-        if course:
-            if course.coursePracticalLecturer:
-                exclude_ids.append(course.coursePracticalLecturer)
-            if course.courseTutorialLecturer:
-                exclude_ids.append(course.courseTutorialLecturer)
+    if new_count > current_count:
+        # Need to ADD more invigilators
+        extra_needed = new_count - current_count
+        already_assigned_ids = [att.invigilatorId for att in current_attendances]
 
         eligible_invigilators = User.query.filter(
-            ~User.userId.in_(exclude_ids),
-            User.userLevel == 1
+            User.userLevel == 1,
+            ~User.userId.in_(already_assigned_ids)
         ).all()
 
-        # --- Helper for sorting workload ---
-        def total_hours(inv):
-            return (inv.userPendingCumulativeHours or 0) + (inv.userCumulativeHours or 0)
+        if not eligible_invigilators:
+            raise ValueError("No extra eligible invigilators available")
 
-        # --- Split genders and sort ---
-        male_invigilators = sorted([inv for inv in eligible_invigilators if inv.userGender and inv.userGender.upper() == "MALE"], key=total_hours)
-        female_invigilators = sorted([inv for inv in eligible_invigilators if inv.userGender and inv.userGender.upper() == "FEMALE"], key=total_hours)
+        random.shuffle(eligible_invigilators)
+        for inv in eligible_invigilators[:extra_needed]:
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
+            db.session.add(InvigilatorAttendance(
+                reportId=report.invigilationReportId,
+                invigilatorId=inv.userId,
+                timeCreate=datetime.now(timezone.utc)
+            ))
 
-        # --- Handle reduction case ---
-        if diff < 0:
-            # Remove highest workload invigilators first
-            to_remove = current_attendances[diff:]  # negative slice
-            for att in to_remove:
-                inv = User.query.get(att.invigilatorId)
-                if inv:
-                    inv.userPendingCumulativeHours = max(
-                        (inv.userPendingCumulativeHours or 0) - exam_hours, 0
-                    )
-                db.session.delete(att)
-
-        # --- Handle increase case ---
-        elif diff > 0:
-            pool = sorted([inv for inv in eligible_invigilators if inv.userId not in current_invigilators], key=total_hours)
-            chosen = []
-
-            if new_invigilatorNo == 2 and male_invigilators and female_invigilators:
-                chosen = [male_invigilators[0], female_invigilators[0]]
-            elif new_invigilatorNo == 3 and male_invigilators and female_invigilators:
-                chosen = [male_invigilators[0], female_invigilators[0]]
-                next_male = male_invigilators[1] if len(male_invigilators) > 1 else None
-                next_female = female_invigilators[1] if len(female_invigilators) > 1 else None
-                if next_male and next_female:
-                    chosen.append(next_male if total_hours(next_male) < total_hours(next_female) else next_female)
-                elif next_male:
-                    chosen.append(next_male)
-                elif next_female:
-                    chosen.append(next_female)
-            else:
-                chosen = pool[:diff]
-
-            for inv in chosen:
-                inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + exam_hours
-                new_att = InvigilatorAttendance(
-                    reportId=report.invigilationReportId,
-                    invigilatorId=inv.userId,
-                    timeCreate=datetime.now(timezone.utc)
+    else:  
+        # Need to REMOVE invigilators
+        remove_count = current_count - new_count
+        to_remove = random.sample(current_attendances, remove_count)
+        for att in to_remove:
+            inv = att.invigilator
+            if inv:
+                inv.userPendingCumulativeHours = max(
+                    0.0,
+                    (inv.userPendingCumulativeHours or 0.0) - pending_hours
                 )
-                db.session.add(new_att)
+            db.session.delete(att)
 
-        # --- Update exam record ---
-        exam.examInvigilatorNo = new_invigilatorNo
-        db.session.commit()
-        return True, f"Invigilator count adjusted to {new_invigilatorNo} successfully."
-
-    except Exception as e:
-        db.session.rollback()
-        return False, f"Error adjusting invigilators: {str(e)}"
-
+    db.session.commit()
 
 
 # -------------------------------
@@ -983,7 +935,6 @@ def admin_manageExam():
 
                     # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
-                    flash(f"{start_dt}, {end_dt}, {venue_text}, {invigilatorNo_text}", "success")
 
                     if not existing_report:
                         # No report exists → create new
