@@ -889,9 +889,10 @@ def admin_manageExam():
     venue_data = []
     if course:
         # Ensure courseStudent is valid
-        course_student = course.courseStudent or 0
+        course_student = course.courseStudent
         min_capacity = course_student
         max_capacity = course_student + 5
+        flash(f"{course_student}, {min_capacity}, {max_capacity}")
 
         venue_data = (
             Venue.query.filter(
