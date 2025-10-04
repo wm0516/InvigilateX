@@ -100,12 +100,14 @@ class Exam(db.Model):
     examStartTime = db.Column(db.DateTime, nullable=True)                                        # Refer to Exam StartTime
     examEndTime = db.Column(db.DateTime, nullable=True)                                          # Refer to Exam EndTime
     examNoInvigilator = db.Column(db.Integer, nullable=False)                                    # Number of invigilators needed
+    examStatus = db.Column(db.Boolean, default=True, nullable=False)                             # Refer to Course Status, when course deleted, it will show False
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
     venue = db.relationship("Venue", back_populates="exams")                                     # Many Exams ↔ One Venue
     venue_availabilities = db.relationship("VenueAvailability", back_populates="exam")           # One Exam ↔ Many VenueAvailability
     invigilation_reports = db.relationship("InvigilationReport", backref="exam")                 # One Exam ↔ Many InvigilationReport
+    
 
     '''
     CREATE TABLE Exam (
@@ -114,6 +116,7 @@ class Exam(db.Model):
         examEndTime DATETIME NULL,
         examVenue VARCHAR(10) NOT NULL,
         examNoInvigilator INT NOT NULL,
+        examStatus TINYINT(1) NOT NULL DEFAULT 1,
         FOREIGN KEY (examVenue) REFERENCES Venue(venueNumber)
     );
     '''

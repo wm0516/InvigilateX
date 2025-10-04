@@ -14,7 +14,7 @@
         <div class="form-left" style="width: 100%">
 
             <!-- Overview -->
-            <div class="dashboard-row">
+            <div class="dashboard-row" style=" grid-template-columns: repeat(5, 1fr);">
                 <div class="dashboard-frame">
                     <h3>Total Exams</h3>
                     <p class="dashboard-text">{{ exam_data|length }}</p>
@@ -30,6 +30,14 @@
                 <div class="dashboard-frame">
                     <h3>Exams Not Created Yet</h3>
                     <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Activated Exams</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_exam_activated }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Inactivated Exams</h3>
+                    <p class="dashboard-text" style="color:red;">{{ exam_data|length - total_exam_activated }}</p>
                 </div>
             </div>
         </div>
@@ -156,6 +164,7 @@
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Exam Status</th>
                     <th>Course Details</th>
                     <th>Exam ID</th>
                     <th>Exam Details</th>
@@ -166,6 +175,13 @@
                 {% for row in exam_data %}
                     <tr class="{% if row.examNoInvigilator == 0 or row.examStartTime is none or row.examEndTime is none or row.examVenue is none %}error-row-show{% endif %}">
                         <td>{{ loop.index }}</td>
+                        <td>
+                            {% if row.examStatus %}
+                                <span class="status frame-green">[Activated]</span>
+                            {% else %}
+                                <span class="status frame-oren">[Inactivated]</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="info-grid">
                                 <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>

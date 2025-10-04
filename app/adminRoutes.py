@@ -845,6 +845,7 @@ def admin_manageExam():
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
     exam_data = exam_data_query.order_by(Exam.examStartTime.asc(),Exam.examVenue.asc(),Exam.examId.asc()).all()
+    total_exam_activated = Exam.query.filter_by(examStatus=1).count()
 
     # For Edit section
     exam_selected = request.form.get('editExamCourseSection')
@@ -947,7 +948,7 @@ def admin_manageExam():
 
 
     return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, 
-                           venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select)
+                           venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select, total_exam_activated=total_exam_activated)
 
 
 
