@@ -855,7 +855,8 @@ def parse_datetime(date_str, time_str):
 
 # -------------------------------
 # Function for Admin ManageExam Route
-# -------------------------------@app.route('/admin/manageExam', methods=['GET', 'POST'])
+# -------------------------------
+@app.route('/admin/manageExam', methods=['GET', 'POST'])
 @login_required
 def admin_manageExam():
     # Auto disable expired exams
