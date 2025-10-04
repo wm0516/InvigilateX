@@ -22,10 +22,6 @@
                     <p class="dashboard-text" style="color:green;">{{ complete_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Incomplete but Activated Exams</h3>
-                    <p class="dashboard-text" style="color:red;">{{ exam_data|length - complete_exam - unassigned_exam }}</p>
-                </div>
-                <div class="dashboard-frame">
                     <h3>Unassigned Activated Exams</h3>
                     <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
                 </div>
@@ -42,7 +38,6 @@
     </div>
 </form>
 {% endblock %}
-
 
 {% block upload_section %}
 <!-- Upload Form -->
@@ -174,7 +169,7 @@
                     <tr class="
                         {% if not row.examStatus %}
                             inactive-row-show
-                        {% elif row.examNoInvigilator == 0 or row.examVenue is none %}
+                        {% elif row.examVenue is none %}
                             error-row-show
                         {% endif %}
                     ">      

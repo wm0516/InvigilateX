@@ -875,7 +875,6 @@ def admin_manageExam():
         and e.examStartTime is None
         and e.examEndTime is None
         and e.examVenue is None
-        and (e.examNoInvigilator is None or e.examNoInvigilator == 0)
     ])
 
     complete_exam = len([
