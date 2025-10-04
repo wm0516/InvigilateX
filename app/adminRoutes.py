@@ -1739,7 +1739,7 @@ def admin_manageTimetable():
 # -------------------------------
 # Read All InvigilatorAttendance Data From Database
 # -------------------------------
-def get_first_active_exam_attendance():
+def get_all_attendances():
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
