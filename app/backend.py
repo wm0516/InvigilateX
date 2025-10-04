@@ -287,7 +287,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-# -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
@@ -303,12 +302,9 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 
-    # -------------------------------
     # Auto-set invigilator count if not provided
-    # -------------------------------
     invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
 
-    # Validate the value
     try:
         invigilatorNo = int(invigilatorNo)
     except ValueError:
@@ -345,10 +341,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if end_dt <= start_dt:
         adj_end_dt = end_dt + timedelta(days=1)
 
-    # Clean old records first
+    # Clean old related records
     delete_exam_related(exam.examId, commit=False)
 
-    # create new availability
+    # Create new venue availability & report
     if venue_text:
         new_availability = VenueAvailability(
             venueNumber=venue_text,
@@ -358,64 +354,64 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         )
         db.session.add(new_availability)
 
-    # Create new report
     new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
     db.session.flush()
 
-    pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
-
-    # Exclude lecturers
+    # Invigilator selection logic (new)
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
+
     eligible_invigilators = User.query.filter(
         ~User.userId.in_(exclude_ids),
         User.userLevel == 1
     ).all()
 
     if not eligible_invigilators:
-        return False, "No eligible invigilators available for assignment"
+        return False, "No eligible invigilators available"
 
-    # Split by gender
-    male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
-    female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
+    # Separate into male/female
+    male_list = [u for u in eligible_invigilators if u.userGender == "MALE"]
+    female_list = [u for u in eligible_invigilators if u.userGender == "FEMALE"]
 
-    # Sort by workload
-    def workload(inv):
-        return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+    # Sort by workload (asc)
+    def workload(u):
+        return (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
 
-    male_invigilators.sort(key=workload)
-    female_invigilators.sort(key=workload)
+    male_list.sort(key=workload)
+    female_list.sort(key=workload)
 
     chosen_invigilators = []
 
-    if invigilatorNo == 1:
-        pool = sorted(male_invigilators + female_invigilators, key=workload)
-        if not pool:
-            return False, "No available invigilators"
-        chosen_invigilators = [pool[0]]
+    # Pick invigilators
+    if invigilatorNo == 2:
+        if not male_list or not female_list:
+            return False, "Need at least one male and one female invigilator"
+        chosen_invigilators = [male_list[0], female_list[0]]
+
+    elif invigilatorNo == 3:
+        if not male_list or not female_list:
+            return False, "Need at least one male and one female invigilator"
+        chosen_invigilators = [male_list[0], female_list[0]]
+        # Choose from the group with more members
+        if len(male_list) > len(female_list) and len(male_list) > 1:
+            chosen_invigilators.append(male_list[1])
+        elif len(female_list) > 1:
+            chosen_invigilators.append(female_list[1])
+        else:
+            # fallback if not enough
+            combined = sorted(male_list + female_list, key=workload)
+            for u in combined:
+                if u not in chosen_invigilators:
+                    chosen_invigilators.append(u)
+                    break
     else:
-        if not male_invigilators or not female_invigilators:
-            return False, "Need both male and female invigilators when assigning 2 or more"
+        # For any number > 3, just take alternately from both lists
+        combined = sorted(male_list + female_list, key=workload)
+        chosen_invigilators = combined[:invigilatorNo]
 
-        chosen_invigilators = [male_invigilators.pop(0), female_invigilators.pop(0)]
-        pool = sorted(male_invigilators + female_invigilators, key=workload)
-        chosen_invigilators += pool[:invigilatorNo - 2]
-
-    if len(chosen_invigilators) < invigilatorNo:
-        return False, f"Not enough invigilators available. Required: {invigilatorNo}, Available: {len(chosen_invigilators)}"
-
-    for chosen in chosen_invigilators:
-        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
-        attendance = InvigilatorAttendance(
-            reportId=new_report.invigilationReportId,
-            invigilatorId=chosen.userId,
-            timeCreate=datetime.now(timezone.utc)
-        )
-        db.session.add(attendance)
-
+    # Commit exam update and return success
     db.session.commit()
-    return True, "Exam created/updated successfully"
-
+    return True, f"Exam created/updated successfully. Selected Invigilators: {[i.userName for i in chosen_invigilators]}"
 
 
 # -------------------------------
