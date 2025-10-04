@@ -325,11 +325,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const today = now.toISOString().split("T")[0];
 
         if (startDate.value === today) {
+            // If today → restrict from current time onwards
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
             startTime.min = `${hh}:${mm}`;
         } else {
-            startTime.min = "00:00"; // allow full day for future dates
+            // If future date → allow full day
+            startTime.min = "00:00";
         }
     }
 
@@ -342,7 +344,7 @@ document.addEventListener("DOMContentLoaded", function() {
             let mm = String(now.getMinutes()).padStart(2, "0");
             endTime.min = `${hh}:${mm}`;
         } else {
-            endTime.min = "00:00"; // allow full day for future dates
+            endTime.min = "00:00";
         }
     }
 
