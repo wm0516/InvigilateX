@@ -308,20 +308,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const endDate = document.getElementById("endDate");
     const endTime = document.getElementById("endTime");
 
-    // Format today in YYYY-MM-DD
-    const today = new Date().toISOString().split("T")[0];
-    startDate.setAttribute("min", today);
-    endDate.setAttribute("min", today);
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
 
-    // Prefill today only if empty
-    if (!startDate.value) startDate.value = today;
-    if (!endDate.value) endDate.value = today;
+    // Prevent past dates
+    startDate.setAttribute("min", todayStr);
+    endDate.setAttribute("min", todayStr);
 
-    // Restrict available time options
+    // Prefill if empty
+    if (!startDate.value) startDate.value = todayStr;
+    if (!endDate.value) endDate.value = todayStr;
+
+    // Properly check if selected date is "today"
+    function isToday(dateString) {
+        const selected = new Date(dateString);
+        return (
+            selected.getFullYear() === today.getFullYear() &&
+            selected.getMonth() === today.getMonth() &&
+            selected.getDate() === today.getDate()
+        );
+    }
+
+    // Restrict time input correctly
     function restrictTime(inputDate, inputTime) {
         if (!inputDate || !inputTime) return;
 
-        if (inputDate.value === today) {
+        if (isToday(inputDate.value)) {
             // Only allow times after current time
             const now = new Date();
             const currentTime = now.toTimeString().slice(0, 5); // HH:MM
@@ -333,16 +345,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Auto adjust end date if earlier than start date
+    // Adjust end date if before start date
     function adjustEndDate() {
         if (!startDate.value || !startTime.value || !endDate.value || !endTime.value) return;
-
         const start = new Date(startDate.value + "T" + startTime.value);
-        let end = new Date(endDate.value + "T" + endTime.value);
+        const end = new Date(endDate.value + "T" + endTime.value);
 
         if (end < start) {
-            // Move to next day if end is before start
-            let nextDay = new Date(start);
+            const nextDay = new Date(start);
             nextDay.setDate(nextDay.getDate() + 1);
             endDate.value = nextDay.toISOString().split("T")[0];
         }
@@ -367,10 +377,11 @@ document.addEventListener("DOMContentLoaded", function () {
         adjustEndDate();
     });
 
-    // Initial run
+    // Initial restriction setup
     restrictTime(startDate, startTime);
     restrictTime(endDate, endTime);
 });
+
 
 </script>
 {% endblock %}
