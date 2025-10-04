@@ -302,18 +302,14 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 
-    # Auto-set invigilator count if not provided
     invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
-
     try:
         invigilatorNo = int(invigilatorNo)
     except ValueError:
         return False, "Number of Invigilators must be an integer"
-
     if invigilatorNo < 1:
         return False, "Number of Invigilators must be at least 1"
 
-    # Update exam details
     exam.examStartTime = start_dt
     exam.examEndTime = end_dt
     exam.examVenue = venue_text
@@ -322,43 +318,47 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # Assign lecturers
     if practicalLecturer:
         lecturer_user = User.query.filter(
-            or_(
-                User.userId == practicalLecturer,
-                User.userName.ilike(practicalLecturer)
-            )
+            or_(User.userId == practicalLecturer, User.userName.ilike(practicalLecturer))
         ).first()
         if not lecturer_user:
-            return False, f"Lecturer '{practicalLecturer}' not found in User table"
-
+            return False, f"Lecturer '{practicalLecturer}' not found"
         course.coursePractical = lecturer_user.userId
         course.courseTutorial = lecturer_user.userId
     else:
         course.coursePractical = None
-        course.courseTutorial = None  
+        course.courseTutorial = None
 
-    # Adjust end time if necessary
-    adj_end_dt = end_dt
-    if end_dt <= start_dt:
-        adj_end_dt = end_dt + timedelta(days=1)
-
-    # Clean old related records
+    adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
     delete_exam_related(exam.examId, commit=False)
 
-    # Create new venue availability & report
     if venue_text:
-        new_availability = VenueAvailability(
+        db.session.add(VenueAvailability(
             venueNumber=venue_text,
             startDateTime=start_dt,
             endDateTime=adj_end_dt,
             examId=exam.examId
-        )
-        db.session.add(new_availability)
+        ))
 
     new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
     db.session.flush()
 
-    # Invigilator selection logic (new)
+    # ============================
+    # New Invigilator Assignment
+    # ============================
+    success, result = assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo)
+    if not success:
+        db.session.rollback()
+        return False, result
+
+    db.session.commit()
+    return True, f"Exam created/updated successfully. Assigned invigilators: {[i.userName for i in result]}"
+
+
+# ===================================================
+# HELPER FUNCTION: Assign Invigilators with Conflict Check
+# ===================================================
+def assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo):
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
 
     eligible_invigilators = User.query.filter(
@@ -369,50 +369,95 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not eligible_invigilators:
         return False, "No eligible invigilators available"
 
-    # Separate into male/female
-    male_list = [u for u in eligible_invigilators if u.userGender == "MALE"]
-    female_list = [u for u in eligible_invigilators if u.userGender == "FEMALE"]
+    exam_date = exam.examStartTime.date()
 
-    # Sort by workload (asc)
+    def parse_time(t):
+        """Convert '9:00 AM' or '9:00 AM - 11:00 AM' to datetime.time objects"""
+        try:
+            t = t.strip()
+            if '-' in t:
+                start, end = t.split('-')
+                start = datetime.strptime(start.strip(), "%I:%M %p").time()
+                end = datetime.strptime(end.strip(), "%I:%M %p").time()
+                return start, end
+        except Exception:
+            return None, None
+        return None, None
+
+    def parse_week_range(r):
+        """Convert '4/7/2025-8/24/2025' to (date1, date2)"""
+        try:
+            start_str, end_str = r.split('-')
+            start = datetime.strptime(start_str.strip(), "%m/%d/%Y").date()
+            end = datetime.strptime(end_str.strip(), "%m/%d/%Y").date()
+            return start, end
+        except Exception:
+            return None, None
+
+    def has_conflict(user):
+        """Return True if user has class that overlaps with exam"""
+        timetable = Timetable.query.filter_by(user_id=user.userId).first()
+        if not timetable or not timetable.rows:
+            return False
+
+        for row in timetable.rows:
+            start_range, end_range = parse_week_range(row.classWeekDate)
+            if not start_range or not end_range:
+                continue
+            # Ignore if exam date is beyond class week range
+            if exam_date > end_range:
+                continue
+            # Only check conflicts if exam is within active weeks
+            if start_range <= exam_date <= end_range:
+                class_start, class_end = parse_time(row.classTime)
+                if not class_start or not class_end:
+                    continue
+                # Compare times (on same day)
+                exam_start = exam.examStartTime.time()
+                exam_end = exam.examEndTime.time()
+                if exam_start < class_end and exam_end > class_start:
+                    return True
+        return False
+
+    # Filter out those with time conflicts
+    available_invigilators = [u for u in eligible_invigilators if not has_conflict(u)]
+    if not available_invigilators:
+        return False, "No available invigilators (all have class conflicts)"
+
+    # Split into gender groups
+    male_list = [u for u in available_invigilators if u.userGender == "MALE"]
+    female_list = [u for u in available_invigilators if u.userGender == "FEMALE"]
+
     def workload(u):
         return (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
 
     male_list.sort(key=workload)
     female_list.sort(key=workload)
 
-    chosen_invigilators = []
-
-    # Pick invigilators
+    chosen = []
     if invigilatorNo == 2:
         if not male_list or not female_list:
-            return False, "Need at least one male and one female invigilator"
-        chosen_invigilators = [male_list[0], female_list[0]]
-
+            return False, "Need one male and one female invigilator"
+        chosen = [male_list[0], female_list[0]]
     elif invigilatorNo == 3:
         if not male_list or not female_list:
             return False, "Need at least one male and one female invigilator"
-        chosen_invigilators = [male_list[0], female_list[0]]
-        # Choose from the group with more members
+        chosen = [male_list[0], female_list[0]]
         if len(male_list) > len(female_list) and len(male_list) > 1:
-            chosen_invigilators.append(male_list[1])
+            chosen.append(male_list[1])
         elif len(female_list) > 1:
-            chosen_invigilators.append(female_list[1])
+            chosen.append(female_list[1])
         else:
-            # fallback if not enough
-            combined = sorted(male_list + female_list, key=workload)
-            for u in combined:
-                if u not in chosen_invigilators:
-                    chosen_invigilators.append(u)
+            pool = sorted(male_list + female_list, key=workload)
+            for u in pool:
+                if u not in chosen:
+                    chosen.append(u)
                     break
     else:
-        # For any number > 3, just take alternately from both lists
-        combined = sorted(male_list + female_list, key=workload)
-        chosen_invigilators = combined[:invigilatorNo]
+        pool = sorted(male_list + female_list, key=workload)
+        chosen = pool[:invigilatorNo]
 
-    # Commit exam update and return success
-    db.session.commit()
-    return True, f"Exam created/updated successfully. Selected Invigilators: {[i.userName for i in chosen_invigilators]}"
-
+    return True, chosen
 
 # -------------------------------
 # Delete All Related Exam after get modify
