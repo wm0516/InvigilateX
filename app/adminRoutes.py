@@ -957,27 +957,40 @@ def admin_manageExam():
                             f"Please choose a different time or venue.", "error")
                         return redirect(url_for('admin_manageExam'))
 
-                    # If no conflict → proceed with update
+                    # Update exam core details
                     exam_select.examStartTime = start_dt
                     exam_select.examEndTime = end_dt
                     exam_select.examVenue = venue_text
                     exam_select.examNoInvigilator = invigilatorNo_text
 
+                    # -----------------------------
+                    # Ensure VenueAvailability is synced
+                    # -----------------------------
+                    existing_va = VenueAvailability.query.filter_by(examId=exam_select.examId).first()
+                    if existing_va:
+                        existing_va.venueNumber = venue_text
+                        existing_va.startDateTime = start_dt
+                        existing_va.endDateTime = end_dt
+                    else:
+                        new_va = VenueAvailability(
+                            venueNumber=venue_text,
+                            startDateTime=start_dt,
+                            endDateTime=end_dt,
+                            examId=exam_select.examId
+                        )
+                        db.session.add(new_va)
+
                     # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
 
                     if not existing_report:
-                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,
-                                                venue_text, exam_select.course.coursePractical,
-                                                exam_select.course.courseTutorial, invigilatorNo_text)
+                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
                     elif exam_select.examNoInvigilator != int(invigilatorNo_text):
                         report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                         if report:
                             adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
                         else:
-                            create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,
-                                                    venue_text, exam_select.course.coursePractical,
-                                                    exam_select.course.courseTutorial, invigilatorNo_text)
+                            create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
 
                     db.session.commit()
                     flash("Exam updated successfully", "success")
