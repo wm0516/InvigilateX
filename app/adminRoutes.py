@@ -326,15 +326,16 @@ def admin_manageCourse():
                     course_select.courseStudent
                 ]
 
-                invigilatorNo = None
-                if course_select.courseStudent > 32:
-                    invigilatorNo = 3
-                else: 
-                    invigilatorNo = 2
+                invigilatorNo = 3 if course_select.courseStudent > 32 else 2
 
                 if all(f is not None and f != '' for f in required_fields):
-                    # Create Exam if none exists
-                    if not course_select.courseExamId:
+                    # Update existing exam if it already exists
+                    if course_select.courseExamId:
+                        existing_exam = Exam.query.get(course_select.courseExamId)
+                        if existing_exam:
+                            existing_exam.examNoInvigilator = invigilatorNo
+                    else:
+                        # Create new exam if none exists
                         new_exam = Exam(
                             examVenue=None,
                             examStartTime=None,
@@ -342,7 +343,7 @@ def admin_manageCourse():
                             examNoInvigilator=invigilatorNo
                         )
                         db.session.add(new_exam)
-                        db.session.flush()  # assign examId before commit
+                        db.session.flush()
                         course_select.courseExamId = new_exam.examId
 
                 db.session.commit()
