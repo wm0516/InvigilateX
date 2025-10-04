@@ -179,7 +179,7 @@
                             {% if row.examStatus %}
                                 <span class="status frame-green">[Activated]</span>
                             {% else %}
-                                <span class="status frame-oren">[Inactivated]</span>
+                                <span class="status frame-red">[Inactivated]</span>
                             {% endif %}
                         </td>
                         <td>
@@ -320,24 +320,29 @@ document.addEventListener("DOMContentLoaded", function() {
     startDate.value = today;
     endDate.value = today;
 
-    // Restrict time: disable past times if today is selected
     function restrictStartTime() {
+        const now = new Date();
+        const today = now.toISOString().split("T")[0];
+
         if (startDate.value === today) {
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
-            startTime.min = hh + ":" + mm;  // from now onwards
+            startTime.min = `${hh}:${mm}`;
         } else {
-            startTime.min = "00:00"; // full day allowed
+            startTime.min = "00:00"; // allow full day for future dates
         }
     }
 
     function restrictEndTime() {
+        const now = new Date();
+        const today = now.toISOString().split("T")[0];
+
         if (endDate.value === today) {
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
-            endTime.min = hh + ":" + mm;
+            endTime.min = `${hh}:${mm}`;
         } else {
-            endTime.min = "00:00";
+            endTime.min = "00:00"; // allow full day for future dates
         }
     }
 
