@@ -1530,6 +1530,9 @@ def save_timetable_to_db_all_files(structured_files):
     db.session.commit()
     return rows_inserted
 
+
+
+
 # -------------------------------
 # Helper to parse first date of classWeekDate
 # -------------------------------
