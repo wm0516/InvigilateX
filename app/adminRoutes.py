@@ -599,6 +599,18 @@ def admin_manageVenue():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Format
 # -------------------------------
@@ -609,16 +621,15 @@ def generate_manageexam_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Exams"
 
-    # First row empty
+    # Empty first row, then headers
     ws.append([])
-    # Second row = headers
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No of', 'Room']
     ws.append(headers)
 
-    # === Hidden sheet for lookup lists ===
+    # --- Hidden lookup sheet ---
     ws_lists = wb.create_sheet(title="Lists")
 
-    # --- Courses ---
+    # --- Courses (unassigned only) ---
     courses = (
         db.session.query(Course)
         .outerjoin(Exam, Course.courseExamId == Exam.examId)
@@ -631,44 +642,35 @@ def generate_manageexam_template():
                     Exam.examVenue.is_(None)
                 )
             )
-        )
-        .all()
+        ).all()
     )
+
     for i, c in enumerate(courses, start=1):
-        ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
-        ws_lists[f"B{i}"] = c.courseDepartment          # Program
-        ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""  # Lecturer
-        ws_lists[f"D{i}"] = c.courseStudent or 0        # No of students
+        ws_lists[f"A{i}"] = c.courseCodeSectionIntake
+        ws_lists[f"B{i}"] = c.courseDepartment
+        ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""
+        ws_lists[f"D{i}"] = c.courseStudent or 0
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"G{i}"] = v.venueNumber   # put venues in column G
+        ws_lists[f"G{i}"] = v.venueNumber
 
-    # === Data Validations ===
+    # --- Dropdowns ---
     if courses:
-        dv_course = DataValidation(
-            type="list",
-            formula1=f"=Lists!$A$1:$A${len(courses)}",
-            allow_blank=False
-        )
+        dv_course = DataValidation(type="list", formula1=f"=Lists!$A$1:$A${len(courses)}", allow_blank=False)
         ws.add_data_validation(dv_course)
-        dv_course.add("F3:F1002")  # Course/Sec dropdown
+        dv_course.add("F3:F1002")
 
-        # Auto-fill program, lecturers, no of students
         for row in range(3, 1003):
-            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))'  # Program
-            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))'  # Lecturer
-            ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))'  # No of Students
+            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))'
+            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))'
+            ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))'
 
     if venues:
-        dv_venue = DataValidation(
-            type="list",
-            formula1=f"=Lists!$G$1:$G${len(venues)}",
-            allow_blank=False
-        )
+        dv_venue = DataValidation(type="list", formula1=f"=Lists!$G$1:$G${len(venues)}", allow_blank=False)
         ws.add_data_validation(dv_venue)
-        dv_venue.add("I3:I1002")  # Room dropdown
+        dv_venue.add("I3:I1002")
 
     ws_lists.sheet_state = 'hidden'
 
@@ -690,6 +692,8 @@ def download_exam_template():
         download_name="ManageExam.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+
 
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
