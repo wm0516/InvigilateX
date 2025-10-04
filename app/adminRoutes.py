@@ -1746,7 +1746,7 @@ def get_all_attendances():
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
         .filter(Exam.examStatus == True)
-        .first()
+        .all()
     )
 
 # -------------------------------
