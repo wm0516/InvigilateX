@@ -83,7 +83,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for exam, grouped in attendances|groupby("report.exam.examId") %}
+                {% for exam, grouped in attendances %}
                     {% set rowspan = grouped|length %}
                     
                     {% for att in grouped %}
