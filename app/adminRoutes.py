@@ -983,6 +983,7 @@ def admin_manageExam():
 
                     # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                    flash(f"{start_dt}, {end_dt}, {venue_text}, {invigilatorNo_text}", "success")
 
                     if not existing_report:
                         # No report exists → create new
