@@ -296,86 +296,85 @@ document.addEventListener("DOMContentLoaded", function() {
 // ==============================
 // Admin Manage Exam Page: Date/Time Restrictions
 // ==============================
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const startDate = document.getElementById("startDate");
     const startTime = document.getElementById("startTime");
     const endDate = document.getElementById("endDate");
     const endTime = document.getElementById("endTime");
 
-    if (!startDate || !startTime || !endDate || !endTime) return;
+    // Format today in YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0];
+    startDate.setAttribute("min", today);
+    endDate.setAttribute("min", today);
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-    const nextYear = new Date(now);
-    nextYear.setFullYear(nextYear.getFullYear() + 1);
-    const nextYearDate = nextYear.toISOString().split("T")[0];
+    // Prefill today only if empty
+    if (!startDate.value) startDate.value = today;
+    if (!endDate.value) endDate.value = today;
 
-    // Restrict date pickers
-    startDate.min = today;
-    startDate.max = nextYearDate;
-    endDate.min = today;
-    endDate.max = nextYearDate;
-
-    // Default: set both dates to today
-    startDate.value = today;
-    endDate.value = today;
-
-    function restrictStartTime() {
-        const now = new Date();
-        const today = now.toISOString().split("T")[0];
-
-        if (startDate.value === today) {
-            // If today → restrict from current time onwards
-            let hh = String(now.getHours()).padStart(2, "0");
-            let mm = String(now.getMinutes()).padStart(2, "0");
-            startTime.min = `${hh}:${mm}`;
-        } else {
-            // If future date → allow full day
-            startTime.min = "00:00";
-        }
-    }
-
-    function restrictEndTime() {
-        const now = new Date();
-        const today = now.toISOString().split("T")[0];
-
-        if (endDate.value === today) {
-            let hh = String(now.getHours()).padStart(2, "0");
-            let mm = String(now.getMinutes()).padStart(2, "0");
-            endTime.min = `${hh}:${mm}`;
-        } else {
-            endTime.min = "00:00";
-        }
-    }
-
-    // Adjust end date automatically
+    // Ensure end date adjusts correctly
     function adjustEndDate() {
         if (!startDate.value || !startTime.value || !endTime.value) return;
 
         const start = new Date(startDate.value + "T" + startTime.value);
         let end = new Date(endDate.value + "T" + endTime.value);
 
-        // If end time is earlier than start time → assume overnight
+        // If end datetime is before start datetime → move to next day
         if (end < start) {
             let nextDay = new Date(start);
             nextDay.setDate(nextDay.getDate() + 1);
             endDate.value = nextDay.toISOString().split("T")[0];
-        } else {
-            endDate.value = startDate.value;
         }
     }
 
-    // Bind events
+    // Ensure start time isn't in the past (if same day as today)
+    function restrictStartTime() {
+        if (startDate.value === today) {
+            const now = new Date();
+            const currentTime = now.toTimeString().slice(0, 5);
+            startTime.min = currentTime;
+        } else {
+            startTime.removeAttribute("min");
+        }
+    }
+
+    // Ensure end time follows start time (or now if today)
+    function restrictEndTime() {
+        if (!startDate.value || !startTime.value) return;
+
+        const start = new Date(startDate.value + "T" + startTime.value);
+        const end = new Date(endDate.value + "T" + (endTime.value || "00:00"));
+
+        if (end < start) {
+            endTime.min = startTime.value;
+        } else if (endDate.value === today) {
+            const now = new Date();
+            const currentTime = now.toTimeString().slice(0, 5);
+            endTime.min = currentTime;
+        } else {
+            endTime.removeAttribute("min");
+        }
+    }
+
+    // Event listeners
     startDate.addEventListener("change", () => {
-        endDate.value = startDate.value;
         restrictStartTime();
+        adjustEndDate();
         restrictEndTime();
     });
-    endDate.addEventListener("change", restrictEndTime);
-    startTime.addEventListener("change", adjustEndDate);
-    endTime.addEventListener("change", adjustEndDate);
+    startTime.addEventListener("change", () => {
+        adjustEndDate();
+        restrictEndTime();
+    });
+    endDate.addEventListener("change", () => {
+        adjustEndDate();
+        restrictEndTime();
+    });
+    endTime.addEventListener("change", () => {
+        adjustEndDate();
+        restrictEndTime();
+    });
 
-    // Initial restriction setup
+    // Initial run
     restrictStartTime();
     restrictEndTime();
 });
