@@ -736,6 +736,16 @@ def get_exam_details(course_code_section):
     return jsonify(response_data)
 
 
+def parse_datetime(date_str, time_str):
+    raw = f"{date_str} {time_str}"
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %I:%M %p"):
+        try:
+            return datetime.strptime(raw, fmt)
+        except ValueError:
+            continue
+    raise ValueError(f"Unrecognized datetime format: {raw}")
+
+
 # -------------------------------
 # Get VenueDetails for ManageExamEditPage
 # -------------------------------
@@ -896,11 +906,13 @@ def admin_manageExam():
             if not start_date_raw or not start_time_raw or not end_date_raw or not end_time_raw:
                 flash("Start or end date/time is missing", "error")
                 return redirect(url_for('admin_manageExam'))
-
-            start_dt_raw = f"{start_date_raw}T{start_time_raw}"
-            end_dt_raw = f"{end_date_raw}T{end_time_raw}"
-            start_dt = datetime.strptime(start_dt_raw, "%Y-%m-%dT%H:%M")
-            end_dt = datetime.strptime(end_dt_raw, "%Y-%m-%dT%H:%M")
+           
+            start_dt = parse_datetime(start_date_raw, start_time_raw)
+            end_dt = parse_datetime(end_date_raw, end_time_raw)
+            # start_dt_raw = f"{start_date_raw}T{start_time_raw}"
+            # end_dt_raw = f"{end_date_raw}T{end_time_raw}"
+            # start_dt = datetime.strptime(start_dt_raw, "%Y-%m-%dT%H:%M")
+            # end_dt = datetime.strptime(end_dt_raw, "%Y-%m-%dT%H:%M")
             venue_text = request.form.get('venue', '').strip()
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
