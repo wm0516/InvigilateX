@@ -840,7 +840,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
 @login_required
 def admin_manageExam():
     department_data = Department.query.all()
-    venue_data = Venue.query.all()
+    venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
