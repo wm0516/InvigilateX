@@ -41,7 +41,13 @@
             {% endif %}
 
             <div class="calendar-row">
-                <div class="calendar-date-label">{{ date.strftime("%d %b (%A)") }}</div>
+                <div class="calendar-date-label"
+                    {% if date < datetime.utcnow() %}
+                        style="background-color: lightgrey;"
+                    {% endif %}
+                >{{ date.strftime("%d %b (%A)") }}
+                </div>
+
                 <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
