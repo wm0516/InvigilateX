@@ -1762,9 +1762,6 @@ def get_calendar_data():
 
     for att in attendances:
         exam = att.report.exam
-        if exam.examStatus != 1:
-            continue
-
         if exam.examId in seen_exams:  # ✅ Skip duplicates
             continue
         seen_exams.add(exam.examId)
@@ -1873,7 +1870,6 @@ def get_all_attendances():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
-        .filter(Exam.examStatus == True)
         .all()
     )
 
