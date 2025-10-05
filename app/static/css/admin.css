@@ -374,7 +374,7 @@ html, body {
 
 .timetable-cell {
     flex: 1;
-    min-height: 60px; /* <-- Set 1 hour = 60px height for visual scale */
+    min-height: 80px;
     position: relative;
     border-left: 1px solid #eee;
     padding: 4px;
@@ -383,8 +383,7 @@ html, body {
 .class-block {
     position: absolute; /* changed from relative */
     top: 0;
-    left: 2%;
-    width: 96%;
+    width: 94%;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
