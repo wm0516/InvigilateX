@@ -1764,6 +1764,16 @@ def get_calendar_data():
 
     return calendar_data
 
+# -------------------------------
+# Function for Admin ManageInviglationTimetable Route
+# -------------------------------
+@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+@login_required
+def admin_manageInvigilationTimetable():
+    calendar_data = get_calendar_data()
+    
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
+
 
 
 
@@ -1836,17 +1846,6 @@ def calculate_invigilation_stats():
             stats["total_checkOutEarly"] += 1
 
     return stats
-
-# -------------------------------
-# Function for Admin ManageInviglationTimetable Route
-# -------------------------------
-@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
-@login_required
-def admin_manageInvigilationTimetable():
-    calendar_data = get_calendar_data()
-    
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
-
 
 # -------------------------------
 # Read All InvigilatorAttendance Data From Database
