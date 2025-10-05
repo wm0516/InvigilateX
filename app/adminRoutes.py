@@ -1748,10 +1748,12 @@ def get_calendar_data():
 
     for att in attendances:
         exam = att.report.exam
+        if exam.examStatus != 1:  # optional, only active exams
+            continue
         exam_date = exam.examStartTime.date()
         calendar_data[exam_date].append({
-            "start_time": exam.examStartTime.time(),
-            "end_time": exam.examEndTime.time(),
+            "start_time": exam.examStartTime,  # keep as datetime
+            "end_time": exam.examEndTime,      # keep as datetime
             "exam_id": exam.examId,
             "course_name": exam.course.courseName,
             "course_code": exam.course.courseCodeSectionIntake,
@@ -1761,6 +1763,7 @@ def get_calendar_data():
         })
 
     return calendar_data
+
 
 
 # -------------------------------
