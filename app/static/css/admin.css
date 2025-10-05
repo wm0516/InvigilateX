@@ -275,34 +275,56 @@ html, body {
 
 
 
+.calendar-container {
+    overflow-x: auto;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    font-family: sans-serif;
+}
 
+/* Row wrapper for time and day rows */
+.calendar-row {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    align-items: flex-start;
+}
 
+/* First column: date or time label */
+.calendar-date-label {
+    width: 160px;
+    min-width: 160px;
+    padding: 10px;
+    background: #f0f0f0;
+    font-weight: bold;
+    font-size: 14px;
+    border-right: 1px solid #ccc;
+}
+
+/* Empty top-left cell (in time header row) */
+.time-label {
+    background: #fff;
+}
+
+/* Timeline hours (in header row) */
+.calendar-hour {
+    width: 80px;
+    min-width: 80px;
+    text-align: center;
+    font-size: 12px;
+    padding: 5px 0;
+    border-right: 1px solid #ccc;
+    background: #fafafa;
+}
+
+/* Day's block area where exams appear */
 .calendar-day {
     position: relative;
-    border-bottom: 1px solid #ccc;
-    min-height: 100px; /* enough for at least one row */
-    margin-bottom: 5px;
-    margin-top: 5px;
-}
-
-.calendar-header {
-    display: flex;
-    flex-direction: column;
-    position: sticky;
-    top: 0;
+    min-height: 60px;
     background: white;
-    z-index: 10;
+    border-left: 1px solid #ccc;
 }
 
-.calendar-hour {
-    flex: 1;
-    text-align: center;
-    padding: 5px;
-    border-right: 1px solid #555;
-    font-size: 12px;
-    width: 100px;
-}
-
+/* Exam block */
 .exam-block {
     position: absolute;
     background-color: #4682b4;
@@ -312,19 +334,9 @@ html, body {
     font-size: 12px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
 }
 
-.day-label {
-    position: absolute;
-    left: 0;
-    top: 35px;
-    background: #555;
-    color: #fff;
-    padding: 3px 8px;
-    border-radius: 4px;
-    z-index: 3;
-}
 
 
 
