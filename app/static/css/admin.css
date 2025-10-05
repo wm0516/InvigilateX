@@ -273,11 +273,10 @@ html, body {
 }
 
 .calendar-day {
+    border-bottom: 1px solid #ddd;
     position: relative;
-    border: 1px solid #ccc;
-    margin-bottom: 20px;
-    padding: 10px;
-    min-height: 120px;
+    height: 100px;
+    min-width: 2400px; /* 100px per hour (scrollable) */
 }
 
 .calendar-header {
@@ -301,13 +300,15 @@ html, body {
 
 .exam-block {
     position: absolute;
-    height: 50px;
-    background: #e0f7fa;
-    border: 1px solid #00796b;
+    top: 5px;
+    height: 80px;
+    background-color: #4CAF50;
+    color: white;
     border-radius: 6px;
-    padding: 5px;
-    box-sizing: border-box;
+    padding: 6px;
+    font-size: 12px;
     overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .exam-block:hover {
@@ -315,8 +316,14 @@ html, body {
 }
 
 .day-label {
-    font-weight: bold;
-    margin-bottom: 8px;
+    position: absolute;
+    left: 0;
+    top: 35px;
+    background: #555;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    z-index: 3;
 }
 
 
