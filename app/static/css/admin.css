@@ -346,13 +346,15 @@ html, body {
     border: 1px solid #ccc;
     border-radius: 8px;
     background: #fff;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .timetable-row {
     display: flex;
     align-items: stretch;
-    position: relative;
     border-bottom: 1px solid #e0e0e0;
+    position: relative;
 }
 
 .timetable-header {
@@ -361,49 +363,53 @@ html, body {
     border-bottom: 2px solid #ccc;
 }
 
-.timetable-day-label {
-    width: 8%;
-    min-width: 80px;
+.timetable-time-label {
+    width: 10%;
+    min-width: 100px;
     padding: 10px;
     text-align: center;
-    border-right: 1px solid #e0e0e0;
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+    font-weight: 600;
 }
 
-.timetable-hour {
+.timetable-cell {
     flex: 1;
-    text-align: center;
-    padding: 5px 0;
-    border-left: 1px solid #f0f0f0;
+    height: 80px; /* height of each hour row */
+    position: relative;
+    border-left: 1px solid #eee;
 }
 
 .timetable-day {
-    width: 92%;
-    position: relative;
-    height: 100px;
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
     border-left: 1px solid #e0e0e0;
 }
 
 .class-block {
     position: absolute;
-    top: 4px;
-    background-color: #c6d9f1;
-    border: 1px solid #8ba7cc;
+    left: 4px;
+    right: 4px;
+    background-color: #d9e8ff;
+    border-left: 4px solid #4a90e2;
     border-radius: 8px;
     padding: 6px;
     font-size: 13px;
     overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .class-block hr {
     border: 0;
     border-top: 1px dashed #6b6b6b;
+    margin: 4px 0;
 }
 
 .course-details small {
     color: #333;
     font-size: 11px;
 }
-
 
 
 

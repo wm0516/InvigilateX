@@ -25,20 +25,22 @@
                         {% for row in timetable_rows %}
                             {% if row.classDay|upper == day %}
                                 {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
-                                {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
                                 {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
+                                {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
                                 {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
-                                
+
                                 {% set start_decimal = start_hour + (start_minute / 60) %}
                                 {% set end_decimal = end_hour + (end_minute / 60) %}
                                 
-                                {% if hour >= start_hour and hour < end_hour %}
-                                    <div class="class-block">
+                                {% if hour == start_hour %}
+                                    {% set duration = (end_decimal - start_decimal) %}
+                                    <div class="class-block" 
+                                         style="top:0; height:{{ duration * 80 }}px;">
                                         <strong>{{ row.courseName }}</strong><br>
                                         [{{ row.classType }}]<br>
                                         <i>{{ row.classRoom }}</i><br>
-                                        <span>{{ row.classTime }}</span><br>
-                                        <hr style="margin: 4px 0;">
+                                        <span>{{ row.classTime }}</span>
+                                        <hr>
                                         <div class="course-details">
                                             {% for i in range(row.courseIntakes|length) %}
                                                 <small>
