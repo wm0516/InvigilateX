@@ -91,33 +91,27 @@
             {% endfor %}
 
             <div class="calendar-row calendar-day-row">
-                <div class="calendar-date-label">
-                    {{ date.strftime("%d %b (%A)") }}
-                </div>
+                <div class="calendar-date-label">{{ date.strftime("%d %b (%A)") }}</div>
 
-                {% set max_row_index = positions | map(attribute='row') | max(default=0) %}
-
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; min-height: {{ (max_row_index + 1) * 60 }}px;">
-                    {% for i in range(sorted_exams|length) %}
-                        {% set exam = sorted_exams[i] %}
-                        {% set pos = positions[i] %}
-                        {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
-                        {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                        {% set left_pos = start_hour * hour_width %}
-                        {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set row_index = pos.row %}
-
+                {% for i in range(sorted_exams|length) %}
+                    {% set exam = sorted_exams[i] %}
+                    {% set pos = positions[i] %}
+                    {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
+                    {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
+                    {% set left_pos = start_hour * hour_width %}
+                    {% set width = (end_hour - start_hour) * hour_width %}
+                    {% set row_index = pos.row %}
+                    <div class="calendar-day" style="width: {{ hour_width * 24 }}px;">
                         <div class="exam-block"
                             style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
                             <strong>{{ exam.course_code }}</strong><br>
                             {{ exam.course_name }}<br>
                             <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
+                {% endfor %}
             </div>
         {% endfor %}
     </div>
-
 </div>
 {% endblock %}
