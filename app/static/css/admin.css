@@ -276,7 +276,8 @@ html, body {
     position: relative;
     border-bottom: 1px solid #ccc;
     min-height: 100px; /* enough for at least one row */
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+    margin-top: 5px;
 }
 
 .calendar-header {
@@ -300,7 +301,6 @@ html, body {
 
 .exam-block {
     position: absolute;
-    height: 80px;
     background-color: #4CAF50;
     color: white;
     border-radius: 6px;
