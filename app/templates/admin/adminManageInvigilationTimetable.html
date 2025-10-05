@@ -85,10 +85,7 @@
 
             {# -- Precompute positions and row indexes for overlapping exams -- #}
             {% for exam in sorted_exams %}
-                {% set overlapping = positions
-                    | selectattr("start", "lt", exam.end_time)
-                    | selectattr("end", "gt", exam.start_time)
-                    | list %}
+                {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
                 {% set row_index = overlapping | length %}
                 {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
             {% endfor %}
