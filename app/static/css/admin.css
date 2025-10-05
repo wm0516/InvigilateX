@@ -382,17 +382,18 @@ html, body {
 }
 
 .class-block {
-    position: relative;
+    position: absolute;
+    top: 0;
+    width: 94%;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
     padding: 8px;
     font-size: 13px;
-    margin-bottom: 6px;
-    overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: auto; /* 👈 Auto height */
+    height: calc(80px * var(--duration)); 
 }
+
 
 .class-block hr {
     border: 0;

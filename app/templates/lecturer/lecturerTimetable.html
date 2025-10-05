@@ -28,16 +28,16 @@
                         {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
                         {% if hour == start_hour %}
                             {% set has_class = true %}
-                            <div class="class-block">
+                            <div class="class-block" style="--duration: {{ duration }};">
                                 <strong>{{ row.courseName }}</strong><br>
                                 [{{ row.classType }}]<br>
                                 <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
                                 <hr>
                                 <div class="course-details">
                                     {% for i in range(row.courseIntakes|length) %}
-                                        <small>
-                                            {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
-                                        </small><br>
+                                    <small>
+                                        {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
+                                    </small><br>
                                     {% endfor %}
                                 </div>
                             </div>
