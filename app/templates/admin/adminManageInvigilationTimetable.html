@@ -98,8 +98,8 @@
                     {% set left_pos = start_hour * 100 %}
                     {% set width = (end_hour - start_hour) * 100 %}
 
-                    <div class="exam-block"
-                        style="left:{{ left_pos }}px; width:{{ width }}px;">
+                    {% set top_offset = 5 + (row_index * 90) %}  {# 90px = 80 height + 10 spacing #}
+                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_offset }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
                         <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
