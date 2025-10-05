@@ -1828,11 +1828,9 @@ def get_calendar_data():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationTimetable():
-    local_tz = ZoneInfo('Asia/Kuala_Lumpur')
-    now = datetime.now(local_tz)
     calendar_data = get_calendar_data()
     
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, now=now)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
 
 
 

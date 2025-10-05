@@ -42,7 +42,7 @@
 
             <div class="calendar-row">
                 <div class="calendar-date-label"    
-                    {% if date < now %}
+                    {% if not exam.examStatus %}
                         style="background-color: lightgrey;"
                     {% endif %}
                 >{{ date.strftime("%d %b (%A)") }}
