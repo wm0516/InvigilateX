@@ -52,7 +52,7 @@
                         {% set width = (end_hour - start_hour) * hour_width %}
                         {% set top_pos = 5 + (pos.row * 60) %}
 
-                        <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px; {% if not exam.examStatus %} background-color: grey {% endif %};">
+                        <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px; background-color: {% if not exam.examStatus %} grey {% endif %};">
                             <strong>{{ exam.course_code }}</strong><br>
                             {{ exam.course_name }}<br>
                             <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
