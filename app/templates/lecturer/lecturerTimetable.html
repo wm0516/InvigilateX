@@ -11,7 +11,7 @@
             <div class="timetable-time-label">Time / Day</div>
             {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
             {% for day in days %}
-                <div class="timetable-day">{{ day }}</div>
+                <div class="timetable-cell">{{ day }}</div>
             {% endfor %}
         </div>
 
@@ -37,8 +37,7 @@
                                     <div class="class-block">
                                         <strong>{{ row.courseName }}</strong><br>
                                         [{{ row.classType }}]<br>
-                                        <i>{{ row.classRoom }}</i><br>
-                                        <span>{{ row.classTime }}</span>
+                                        <i>{{ row.classRoom }}</i><span>{{ row.classTime }}</span>
                                         <hr>
                                         <div class="course-details">
                                             {% for i in range(row.courseIntakes|length) %}
