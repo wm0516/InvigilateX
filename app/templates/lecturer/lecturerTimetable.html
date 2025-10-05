@@ -6,7 +6,7 @@
     <h2>My Teaching Timetable</h2>
 
     <div class="timetable-container">
-        <!-- Header Row: Days (X-axis) -->
+        <!-- Header Row -->
         <div class="timetable-row timetable-header">
             <div class="timetable-time-label">Time / Day</div>
             {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
@@ -15,44 +15,44 @@
             {% endfor %}
         </div>
 
-        <!-- Rows for Time (Y-axis) -->
+        <!-- Time Rows -->
         {% for hour in range(7, 24) %}
-            <div class="timetable-row">
-                <div class="timetable-time-label">{{ "%02d:00"|format(hour) }}</div>
+        <div class="timetable-row">
+            <div class="timetable-time-label">{{ "%02d:00"|format(hour) }}</div>
 
-                {% for day in days %}
-                    <div class="timetable-cell">
-                        {% for row in timetable_rows %}
-                            {% if row.classDay|upper == day %}
-                                {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
-                                {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
-                                {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
-                                {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
+            {% for day in days %}
+            <div class="timetable-cell">
+                {% for row in timetable_rows %}
+                    {% if row.classDay|upper == day %}
+                        {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
+                        {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
+                        {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
+                        {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
 
-                                {% set start_decimal = start_hour + (start_minute / 60) %}
-                                {% set end_decimal = end_hour + (end_minute / 60) %}
+                        {% set start_decimal = start_hour + (start_minute / 60) %}
+                        {% set end_decimal = end_hour + (end_minute / 60) %}
+                        {% set duration = end_decimal - start_decimal %}
 
-                                {% if hour == start_hour %}
-                                    {% set duration = (end_decimal - start_decimal) %}
-                                    <div class="class-block">
-                                        <strong>{{ row.courseName }}</strong><br>
-                                        [{{ row.classType }}]<br>
-                                        <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
-                                        <hr>
-                                        <div class="course-details">
-                                            {% for i in range(row.courseIntakes|length) %}
-                                                <small>
-                                                    {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
-                                                </small><br>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            {% endif %}
-                        {% endfor %}
-                    </div>
+                        {% if hour == start_hour %}
+                        <div class="class-block" style="height: calc(60px * {{ duration }});">
+                            <strong>{{ row.courseName }}</strong><br>
+                            [{{ row.classType }}]<br>
+                            <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
+                            <hr>
+                            <div class="course-details">
+                                {% for i in range(row.courseIntakes|length) %}
+                                <small>
+                                    {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
+                                </small><br>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
                 {% endfor %}
             </div>
+            {% endfor %}
+        </div>
         {% endfor %}
     </div>
 </div>

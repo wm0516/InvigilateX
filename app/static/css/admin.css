@@ -374,15 +374,17 @@ html, body {
 
 .timetable-cell {
     flex: 1;
-    min-height: 20px;
+    min-height: 60px; /* <-- Set 1 hour = 60px height for visual scale */
     position: relative;
     border-left: 1px solid #eee;
     padding: 4px;
 }
 
 .class-block {
-    width: 95%; 
-    position: relative;
+    position: absolute; /* changed from relative */
+    top: 0;
+    left: 2%;
+    width: 96%;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
@@ -390,9 +392,7 @@ html, body {
     font-size: 13px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin-bottom: 4px;
 }
-
 .class-block hr {
     border: 0;
     border-top: 1px dashed #6b6b6b;
