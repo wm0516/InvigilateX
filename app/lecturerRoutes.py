@@ -20,13 +20,43 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
-@app.route('/lecturer/timetable', methods=['GET', 'POST'])
+
+
+
+
+@app.route('/lecturer/timetable', methods=['GET'])
 @login_required
 def lecturer_timetable():
     userId = session.get('user_id')
     timetable = Timetable.query.filter_by(user_id=userId).first()
     timetable_rows = timetable.rows if timetable else []
-    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
+
+    # Combine overlapping (same day & same time) entries
+    merged = {}
+    for row in timetable_rows:
+        key = (row.classDay.upper(), row.classTime, row.classType, row.classRoom)
+        if key not in merged:
+            merged[key] = {
+                'classDay': row.classDay,
+                'classTime': row.classTime,
+                'classType': row.classType,
+                'classRoom': row.classRoom,
+                'courseName': row.courseName,
+                'courseIntakes': [row.courseIntake],
+                'courseCodes': [row.courseCode],
+                'courseSections': [row.courseSection]
+            }
+        else:
+            merged[key]['courseIntakes'].append(row.courseIntake)
+            merged[key]['courseCodes'].append(row.courseCode)
+            merged[key]['courseSections'].append(row.courseSection)
+
+    merged_timetable = list(merged.values())
+
+    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable_rows=merged_timetable
+)
+
+
 
 @app.route('/lecturer/invigilationTimetable', methods=['GET', 'POST'])
 @login_required

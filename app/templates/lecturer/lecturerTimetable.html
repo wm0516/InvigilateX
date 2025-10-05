@@ -37,7 +37,15 @@
                                 <strong>{{ row.courseName }}</strong><br>
                                 [{{ row.classType }}]<br>
                                 <i>{{ row.classRoom }}</i><br>
-                                <span>{{ row.classTime }}</span>
+                                <span>{{ row.classTime }}</span><br>
+                                <hr style="margin: 4px 0;">
+                                <div class="course-details">
+                                    {% for i in range(row.courseIntakes|length) %}
+                                        <small>
+                                            {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
+                                        </small><br>
+                                    {% endfor %}
+                                </div>
                             </div>
                         {% endif %}
                     {% endfor %}
