@@ -273,15 +273,6 @@ html, body {
 }
 
 
-
-
-.calendar-container {
-    overflow-x: auto;
-    border: 1px solid #ccc;
-    background: #f9f9f9;
-    font-family: sans-serif;
-}
-
 /* Row wrapper for time and day rows */
 .calendar-row {
     display: flex;
