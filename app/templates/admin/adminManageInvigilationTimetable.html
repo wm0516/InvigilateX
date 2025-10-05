@@ -87,13 +87,14 @@
                 {% for exam in sorted_exams %}
                     {# Determine which row (y-position) the exam should go to #}
                     {% set row_index = 0 %}
+                    {% set ns = namespace(row_index=0) %}
+
                     {% for p in positions %}
                         {% if exam.start_time < p.end and exam.end_time > p.start %}
-                            {% set row_index = row_index + 1 %}
+                            {% set ns.row_index = ns.row_index + 1 %}
                         {% endif %}
                     {% endfor %}
-                    {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
-
+                    {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': ns.row_index}) %}
                     {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                     {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                     {% set left_pos = start_hour * 100 %}
