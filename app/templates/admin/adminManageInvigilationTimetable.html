@@ -82,42 +82,23 @@
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
                 {% set sorted_exams = exams|sort(attribute='start_time') %}
-                {% set rows = [] %}
+                {% set positions = [] %}
 
                 {% for exam in sorted_exams %}
-                    {# Find the first available row that doesn't conflict #}
-                    {% set row_index = rows|length %}
-                    {% set found = false %}
-
-                    {% for i in range(rows|length) %}
-                        {% if not found %}
-                            {% set conflict = false %}
-                            {% for e in rows[i] %}
-                                {% if exam.start_time < e.end_time and exam.end_time > e.start_time %}
-                                    {% set conflict = true %}
-                                {% endif %}
-                            {% endfor %}
-                            {% if not conflict %}
-                                {% set row_index = i %}
-                                {% set found = true %}
-                            {% endif %}
+                    {% set row_index = 0 %}
+                    {% for p in positions %}
+                        {% if exam.start_time < p.end and exam.end_time > p.start %}
+                            {% set row_index = row_index + 1 %}
                         {% endif %}
                     {% endfor %}
+                    {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
 
-                    {# Create a new row if needed #}
-                    {% if rows|length <= row_index %}
-                        {% do rows.append([]) %}
-                    {% endif %}
-                    {% do rows[row_index].append(exam) %}
-
-                    {# Calculate position and size #}
                     {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                     {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                     {% set left_pos = start_hour * 100 %}
                     {% set width = (end_hour - start_hour) * 100 %}
-                    {% set top_offset = 5 + (row_index * 90) %}
 
-                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_offset }}px;">
+                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
                         <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
@@ -126,5 +107,6 @@
             </div>
         {% endfor %}
     </div>
-</div>  
+</div>
+
 {% endblock %}
