@@ -32,7 +32,6 @@
         </div>
 
         {% set hour_width = 80 %}
-        {% set today = now().date() %}
         {% for date in full_dates if date >= today %}
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}

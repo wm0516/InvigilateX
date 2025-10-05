@@ -6,7 +6,7 @@ import re
 import warnings
 from io import BytesIO
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, date
 from zoneinfo import ZoneInfo
 import random
 
@@ -1874,7 +1874,8 @@ def get_calendar_data():
 @login_required
 def admin_manageInvigilationTimetable():
     calendar_data, full_dates = get_calendar_data()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates)
+    today = date.today()
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates, today=today)
 
 
 
