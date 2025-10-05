@@ -1763,10 +1763,6 @@ def get_calendar_data():
     return calendar_data
 
 
-
-
-
-
 # -------------------------------
 # Read All InvigilatorAttendance Data From Database
 # -------------------------------

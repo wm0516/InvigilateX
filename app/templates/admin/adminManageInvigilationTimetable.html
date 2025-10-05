@@ -69,27 +69,32 @@
 <div class="menu-section">
     <h3>List of All Exam Sessions Details</h3>
     <div class="calendar-container">
+        <!-- Header Row for Time -->
         <div class="calendar-header">
-            <div class="time-slot" style="grid-column: 1 / 2;">Date / Time</div>
             {% for hour in range(0, 24) %}
-                <div class="time-slot">{{ "%02d:00"|format(hour) }}</div>
+                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
 
-        {% for date, exams in calendar_data.items() %}
-        <div class="calendar-row">
-            <div class="calendar-date">{{ date.strftime("%d %b %Y") }}</div>
-            <div class="calendar-exams">
-                {% for exam in exams %}
-                    <div class="calendar-exam" style="grid-column: {{ exam.start_time.hour - 7 }} / {{ exam.end_time.hour - 7 + 1 }}">
-                        <strong>{{ exam.course_name }}</strong><br>
-                        ID: {{ exam.exam_id }}<br>
-                        Students: {{ exam.num_students }}<br>
-                        Venue: {{ exam.venue }}
+        <!-- Each Date Row -->
+        {% set grouped_att = attendances|groupby("report.exam.examStartTime.date()") %}
+        {% for date, grouped in grouped_att %}
+            <div class="calendar-day">
+                <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
+
+                {% for att in grouped %}
+                    {% set exam = att.report.exam %}
+                    {% set start_hour = exam.examStartTime.hour + (exam.examStartTime.minute / 60) %}
+                    {% set end_hour = exam.examEndTime.hour + (exam.examEndTime.minute / 60) %}
+                    {% set left_pos = start_hour * 100 %}
+                    {% set width = (end_hour - start_hour) * 100 %}
+                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px;">
+                        <strong>{{ exam.course.courseCodeSectionIntake }}</strong><br>
+                        {{ exam.course.courseName }}<br>
+                        <small>{{ exam.examVenue }} | {{ exam.examStartTime.strftime("%H:%M") }}–{{ exam.examEndTime.strftime("%H:%M") }}</small>
                     </div>
                 {% endfor %}
             </div>
-        </div>
         {% endfor %}
     </div>
 </div>

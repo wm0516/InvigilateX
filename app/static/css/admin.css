@@ -266,43 +266,66 @@ html, body {
 
 
 .calendar-container {
-    display: grid;
-    grid-template-columns: repeat(25, 1fr); /* 24 hours + date column */
+    width: 100%;
     overflow-x: auto;
-    overflow-y: auto;
-    gap: 5px;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
 }
 
-.calendar-header, .calendar-row {
-    display: contents;
+.calendar-day {
+    border-bottom: 1px solid #ddd;
+    position: relative;
+    height: 100px;
+    min-width: 2400px; /* 100px per hour (scrollable) */
 }
 
-.calendar-date {
-    grid-column: 1 / 2;
-    background: #f0f0f0;
-    padding: 5px;
+.calendar-header {
+    display: flex;
+    min-width: 2400px;
+    position: sticky;
+    top: 0;
+    background: #333;
+    color: #fff;
+    z-index: 2;
 }
 
-.time-slot {
-    background: #ddd;
+.calendar-hour {
+    flex: 1;
     text-align: center;
     padding: 5px;
+    border-right: 1px solid #555;
+    font-size: 12px;
+    width: 100px;
 }
 
-.calendar-exams {
-    display: grid;
-    gap: 3px;
-}
-
-.calendar-exam {
-    background: #4caf50;
+.exam-block {
+    position: absolute;
+    top: 10px;
+    height: 80px;
+    background-color: #4CAF50;
     color: white;
-    padding: 3px;
-    font-size: 0.8em;
-    border-radius: 3px;
-    text-align: center;
+    border-radius: 6px;
+    padding: 6px;
+    font-size: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
+.exam-block:hover {
+    background-color: #388E3C;
+}
+
+.day-label {
+    position: absolute;
+    left: 0;
+    top: 35px;
+    background: #555;
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 4px;
+    z-index: 3;
+}
 
 
 
