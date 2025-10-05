@@ -34,8 +34,7 @@
                                 
                                 {% if hour == start_hour %}
                                     {% set duration = (end_decimal - start_decimal) %}
-                                    <div class="class-block" 
-                                         style="top:0; height:{{ duration * 80 }}px;">
+                                    <div class="class-block" style="height:{{ 80 + duration * 20 }}px;">
                                         <strong>{{ row.courseName }}</strong><br>
                                         [{{ row.classType }}]<br>
                                         <i>{{ row.classRoom }}</i><br>
