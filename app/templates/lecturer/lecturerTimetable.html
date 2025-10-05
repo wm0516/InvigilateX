@@ -10,7 +10,7 @@
     <div class="timetable-container">
         <!-- Header row for time -->
         <div class="timetable-row">
-            <div class="timetable-day-label"></div>
+            <div class="timetable-day-label">Date/Time</div>
             {% for hour in range(7, 24) %}
                 <div class="timetable-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
