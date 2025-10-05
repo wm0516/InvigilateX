@@ -40,29 +40,28 @@
             <div class="calendar-row">
                 <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
                 <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 70 }}px;">
-                    {% for i in range(sorted_exams|length) %}
-                        {% set exam = sorted_exams[i] %}
-                        {% set pos = positions[i] %}
-                        {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
-                        {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                        {% set left_pos = 10 + start_hour * hour_width %}
-                        {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set top_pos = 5 + (pos.row * 60) %}
+                {% for i in range(sorted_exams|length) %}
+                    {% set exam = sorted_exams[i] %}
+                    {% set pos = positions[i] %}
+                    {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
+                    {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
+                    {% set left_pos = 10 + start_hour * hour_width %}
+                    {% set width = (end_hour - start_hour) * hour_width %}
+                    {% set top_pos = 5 + (pos.row * 60) %}
 
-                        {% set today = now().date() %}
-                        {% if date < today %}
-                            {% set block_color = 'grey' %}
-                        {% else %}
-                            {% set block_color = '#4682b4' %}
-                        {% endif %}
+                    {% if exam.status %}
+                        {% set block_color = '#4682b4' %}  {# Upcoming exam #}
+                    {% else %}
+                        {% set block_color = 'lightgrey' %}  {# Past exam #}
+                    {% endif %}
 
-                        <div class="exam-block"
-                            style="background-color: {{ block_color }}; left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
-                            <strong>{{ exam.course_code }}</strong><br>
-                            {{ exam.course_name }}<br>
-                            <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
-                        </div>
-                    {% endfor %}
+                    <div class="exam-block"
+                        style="background-color: {{ block_color }}; left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
+                        <strong>{{ exam.course_code }}</strong><br>
+                        {{ exam.course_name }}<br>
+                        <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
+                    </div>
+                {% endfor %}
                 </div>
             </div>
         {% endfor %}
