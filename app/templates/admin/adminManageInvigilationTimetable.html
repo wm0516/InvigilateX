@@ -77,23 +77,31 @@
         </div>
 
         {% for date, exams in calendar_data.items() %}
-        {% set max_row = positions | map(attribute='row') | max(default=0) %}
+            {% set sorted_exams = exams | sort(attribute='start_time') %}
+            {% set positions = [] %}
+
+            {# -- Precompute all positions and row indexes -- #}
+            {% for exam in sorted_exams %}
+                {% set overlapping = positions
+                    | selectattr("start", "lt", exam.end_time)
+                    | selectattr("end", "gt", exam.start_time)
+                    | list %}
+                {% set row_index = overlapping | length %}
+                {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
+            {% endfor %}
+
+            {# -- Compute max row for dynamic height -- #}
+            {% set max_row = positions | map(attribute='row') | max(default=0) %}
+
             <div class="calendar-day" style="height: {{ (max_row + 1) * 60 + 20 }}px;">
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
-                {% set sorted_exams = exams | sort(attribute='start_time') %}
-                {% set positions = [] %}
-
-                {% for exam in sorted_exams %}
-                    {# Find overlapping exams to determine row index #}
-                    {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
-                    {% set row_index = overlapping | length %}
-                    {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
-
+                {% for exam, pos in zip(sorted_exams, positions) %}
                     {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                     {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                     {% set left_pos = start_hour * 100 %}
                     {% set width = (end_hour - start_hour) * 100 %}
+                    {% set row_index = pos.row %}
 
                     <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
