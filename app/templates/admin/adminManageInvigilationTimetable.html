@@ -67,7 +67,7 @@
                         {% set pos = positions[i] %}
                         {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                        {% set left_pos = start_hour * hour_width %}
+                        {% set left_pos = 30 + start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
                         {% set top_pos = pos.row * 60 %}
 
@@ -77,10 +77,7 @@
                             {% set block_color = 'lightgrey' %}
                         {% endif %}
 
-                        <div class="exam-block"
-                             style="position: absolute; left: {{ left_pos }}px; top: {{ top_pos }}px;
-                                    width: {{ width }}px; height: 50px; background-color: {{ block_color }};
-                                    border-radius: 4px; padding: 3px; box-sizing: border-box; overflow: hidden; font-size: 12px;">
+                        <div class="exam-block" style="left: {{ left_pos }}px; top: {{ top_pos }}px; width: {{ width }}px;>
                             <strong>{{ exam.course_code }}</strong><br>
                             {{ exam.course_name }}<br>
                             <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
