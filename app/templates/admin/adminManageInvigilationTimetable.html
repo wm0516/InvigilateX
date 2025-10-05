@@ -69,56 +69,53 @@
 <div class="menu-section">
     <h3>List of All Exam Sessions Details</h3>
     <div class="calendar-container">
-        <!-- Calendar Header with Date and Time -->
-        <div class="calendar-header">
-            <div class="date-row">
-                {% for date, _ in calendar_data.items() %}
-                    <div class="date-cell" style="grid-column: span 24;">
-                        {{ date.strftime("%d %b (%A)") }}
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="time-row">
-                {% for date, _ in calendar_data.items() %}
-                    {% for hour in range(0, 24) %}
-                        <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
-                    {% endfor %}
-                {% endfor %}
-            </div>
+
+        <!-- Time Header Row -->
+        <div class="calendar-row calendar-header-row">
+            <div class="calendar-date-label time-label"></div>  {# Empty top-left cell #}
+            {% for hour in range(0, 24) %}
+                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
+            {% endfor %}
         </div>
 
-        <!-- Calendar Body -->
         {% set hour_width = 80 %}
         {% for date, exams in calendar_data.items() %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
 
-            {# -- Precompute positions and row indexes for overlapping exams -- #}
+            {# Calculate row indexes for overlapping exams #}
             {% for exam in sorted_exams %}
                 {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
                 {% set row_index = overlapping | length %}
                 {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
             {% endfor %}
 
-            <div class="calendar-day">
-                {% for i in range(sorted_exams|length) %}
-                    {% set exam = sorted_exams[i] %}
-                    {% set pos = positions[i] %}
-                    {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
-                    {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                    {% set left_pos = start_hour * hour_width %}
-                    {% set width = (end_hour - start_hour) * hour_width %}
-                    {% set row_index = pos.row %}
+            <div class="calendar-row calendar-day-row">
+                <div class="calendar-date-label">
+                    {{ date.strftime("%d %b (%A)") }}
+                </div>
 
-                    <div class="exam-block"
-                        style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
-                        <strong>{{ exam.course_code }}</strong><br>
-                        {{ exam.course_name }}<br>
-                        <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
-                    </div>
-                {% endfor %}
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px;">
+                    {% for i in range(sorted_exams|length) %}
+                        {% set exam = sorted_exams[i] %}
+                        {% set pos = positions[i] %}
+                        {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
+                        {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
+                        {% set left_pos = start_hour * hour_width %}
+                        {% set width = (end_hour - start_hour) * hour_width %}
+                        {% set row_index = pos.row %}
+
+                        <div class="exam-block"
+                            style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
+                            <strong>{{ exam.course_code }}</strong><br>
+                            {{ exam.course_name }}<br>
+                            <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         {% endfor %}
     </div>
+
 </div>
 {% endblock %}
