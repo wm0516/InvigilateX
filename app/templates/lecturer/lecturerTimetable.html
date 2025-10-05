@@ -11,7 +11,7 @@
             <div class="timetable-time-label">Time / Day</div>
             {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
             {% for day in days %}
-                <div class="timetable-cell">{{ day }}</div>
+                <div class="timetable-cell" style="text-align: center;">{{ day }}</div>
             {% endfor %}
         </div>
 
@@ -22,34 +22,32 @@
 
             {% for day in days %}
             <div class="timetable-cell">
+                {% set has_class = false %}
                 {% for row in timetable_rows %}
                     {% if row.classDay|upper == day %}
                         {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
-                        {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
-                        {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
-                        {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
-
-                        {% set start_decimal = start_hour + (start_minute / 60) %}
-                        {% set end_decimal = end_hour + (end_minute / 60) %}
-                        {% set duration = end_decimal - start_decimal %}
-
                         {% if hour == start_hour %}
-                        <div class="class-block" style="height: calc(80px * {{ duration }});">
-                            <strong>{{ row.courseName }}</strong><br>
-                            [{{ row.classType }}]<br>
-                            <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
-                            <hr>
-                            <div class="course-details">
-                                {% for i in range(row.courseIntakes|length) %}
-                                <small>
-                                    {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
-                                </small><br>
-                                {% endfor %}
+                            {% set has_class = true %}
+                            <div class="class-block">
+                                <strong>{{ row.courseName }}</strong><br>
+                                [{{ row.classType }}]<br>
+                                <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
+                                <hr>
+                                <div class="course-details">
+                                    {% for i in range(row.courseIntakes|length) %}
+                                        <small>
+                                            {{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}
+                                        </small><br>
+                                    {% endfor %}
+                                </div>
                             </div>
-                        </div>
                         {% endif %}
                     {% endif %}
                 {% endfor %}
+                
+                {% if not has_class %}
+                    <div style="height: auto; min-height: 40px;"></div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
