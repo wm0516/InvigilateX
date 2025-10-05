@@ -3,29 +3,29 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>My Timetable</h2>
+    <h2>Mine Timetable</h2>
 
     <div class="calendar-container">
-        <!-- Header Row for Time (X-axis) -->
-        <div class="calendar-row header-row">
+        <!-- Header Row for Time -->
+        <div class="calendar-row">
             <div class="calendar-day-label"></div>
             {% for hour in range(7, 24) %}
                 <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
 
-        <!-- Each Row = Day (Y-axis) -->
         {% set hour_width = 80 %}
         {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
         {% for day in days %}
             <div class="calendar-row">
                 <div class="calendar-day-label">{{ day }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 17 }}px; position: relative; height: 100px;">
+
+                <div class="calendar-day" style="width: {{ hour_width * 17 }}px; height: 100px; position: relative;">
                     {% for row in timetable_rows %}
                         {% if row.classDay == day %}
                             {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
-                            {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
                             {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
+                            {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
                             {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
 
                             {% set start_decimal = start_hour + (start_minute / 60) %}
@@ -48,3 +48,4 @@
     </div>
 </div>
 {% endblock %}
+
