@@ -10,7 +10,17 @@
 {% block content %}
 <div class="menu-section">
     <h3>List of All Exam Sessions Details</h3>
-    <h4>Color <span style="color: lightgrey;">pass exam</span>, and color <span style="color: #4682b4;">coming exam</span></h4>
+    <h4>Exam Status:</h4>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="width: 20px; height: 20px; background-color: lightgrey; display: inline-block; border-radius: 4px;"></span>
+            <span>Pass Exam</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="width: 20px; height: 20px; background-color: #4682b4; display: inline-block; border-radius: 4px;"></span>
+            <span>Coming Exam</span>
+        </div>
+    </div>
     <div class="calendar-container">
         <!-- Time Header Row -->
         <div class="calendar-row">
