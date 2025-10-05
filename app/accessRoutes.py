@@ -43,8 +43,8 @@ def access_invigilationReport():
 @app.route('/access/ownTimetable', methods=['GET', 'POST'])
 @login_required
 def access_ownTimetable():
-    deanId = session.get('user_id')
-    timetable = Timetable.query.filter_by(user_id=deanId).first()
+    userId = session.get('user_id')
+    timetable = Timetable.query.filter_by(user_id=userId).first()
     timetable_rows = timetable.rows if timetable else []
     return render_template('access/accessOwnTimetable.html', active_tab='access_ownTimetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
 

@@ -23,13 +23,16 @@ bcrypt = Bcrypt()
 @app.route('/lecturer/timetable', methods=['GET', 'POST'])
 @login_required
 def lecturer_timetable():
-    # timetable = Invigilation.query.all()
-    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab') #, timetable=timetable)
+    userId = session.get('user_id')
+    timetable = Timetable.query.filter_by(user_id=userId).first()
+    timetable_rows = timetable.rows if timetable else []
+    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable_rows=timetable_rows) #, timetable=timetable)
 
 @app.route('/lecturer/invigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def lecturer_invigilationTimetable():
     return render_template('lecturer/lecturerInvigilationTimetable.html', active_tab='lecturer_invigilationTimetabletab')
+
 
 @app.route('/lecturer/invigilationReport', methods=['GET', 'POST'])
 @login_required
