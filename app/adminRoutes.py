@@ -1843,10 +1843,9 @@ def calculate_invigilation_stats():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationTimetable():
-    stats = calculate_invigilation_stats()
     calendar_data = get_calendar_data()
     
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, **stats)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
 
 
 # -------------------------------
