@@ -381,6 +381,7 @@ html, body {
 }
 
 .class-block {
+    width: 95%; 
     position: relative;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
