@@ -101,7 +101,7 @@
                     {% set left_pos = start_hour * hour_width %}
                     {% set width = (end_hour - start_hour) * hour_width %}
                     {% set row_index = pos.row %}
-                    <div class="calendar-day" style="width: {{ hour_width * 24 }}px;">
+                    <div class="calendar-day" style="width: {{ hour_width * 24 }}px; min-height: {{ row_index * 60 }}px;">
                         <div class="exam-block"
                             style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
                             <strong>{{ exam.course_code }}</strong><br>
