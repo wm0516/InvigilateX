@@ -192,68 +192,53 @@
 
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
     {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
-    {% set hour_width = 80 %}
-    {% set row_height = 80 %}
-    <div class="menu-section">
-        <h3>Class Timetable View (Calendar Format)</h3>
-        <div class="calendar-container">
 
-            <!-- Time Header -->
-            <div class="calendar-row">
-                <div class="calendar-date-label"></div>
-                {% for hour in range(7, 20) %}  {# from 07:00 to 19:00 #}
-                    <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
-                {% endfor %}
-            </div>
-
-            {% for day in week_days %}
-                {% set classes = timetable_data | selectattr("classDay", "equalto", day) | list %}
-                {% set sorted_classes = classes | sort(attribute="classTime") %}
-                {% set positions = [] %}
-
-                {% for class in sorted_classes %}
-                    {% set start, end = class.classTime.split('-') %}
-                    {% set overlapping = positions
-                        | selectattr("start", "lt", end)
-                        | selectattr("end", "gt", start)
-                        | list %}
-                    {% set row_index = overlapping | length %}
-                    {% set _ = positions.append({'start': start, 'end': end, 'row': row_index}) %}
-                {% endfor %}
-
-                {% if positions %}
-                    {% set max_row = (positions | map(attribute='row') | max) + 1 %}
-                {% else %}
-                    {% set max_row = 1 %}
-                {% endif %}
-
-                <div class="calendar-row">
-                    <div class="calendar-date-label">{{ day }}</div>
-                    <div class="calendar-day" style="width: {{ hour_width * 13 }}px; height: {{ max_row * row_height }}px;">
-                        {% for i in range(sorted_classes|length) %}
-                            {% set class = sorted_classes[i] %}
-                            {% set pos = positions[i] %}
-                            {% set start_hour = class.classTime.split('-')[0].split(':') %}
-                            {% set end_hour = class.classTime.split('-')[1].split(':') %}
-                            {% set start_decimal = start_hour[0]|int + (start_hour[1]|int / 60) %}
-                            {% set end_decimal = end_hour[0]|int + (end_hour[1]|int / 60) %}
-                            {% set left_pos = (start_decimal - 7) * hour_width %}
-                            {% set width = (end_decimal - start_decimal) * hour_width %}
-                            {% set top_pos = 5 + (pos.row * row_height) %}
-
-                            <div class="exam-block"
-                                style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
-                                <strong>{{ class.lecturerName }}</strong><br>
-                                [{{ class.classType }}]<br>
-                                {{ class.courseName }}<br>
-                                Room: {{ class.classRoom }}<br>
-                                <i>{{ class.classTime }}</i>
-                            </div>
+    <!-- Timetable Grid -->
+    <div class="user-table-container">
+        <table class="user-data-table" border="1">
+            <thead>
+                <tr>
+                    <th>Day / Time</th>
+                    {% for time in time_slots %}
+                        <th>{{ time }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in week_days %}
+                    {% if timetable_data %}
+                    <tr>
+                        <td><strong>{{ day }}</strong></td>
+                        {% for time in time_slots %}
+                        <td>
+                            {% set ns = namespace(displayed=[]) %}
+                            {% for row in timetable_data %}
+                                {% if not selected_lecturer or row.lecturerName == selected_lecturer %}
+                                    {% set class_day = row.classDay %}
+                                    {% set class_time = row.classTime %}
+                                    {% set start_time = class_time.split('-')[0] %}
+                                    {% set end_time = class_time.split('-')[1] %}
+                                    {% if class_day == day and time >= start_time and time < end_time %}
+                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                        {% if key not in ns.displayed %}
+                                            {% set ns.displayed = ns.displayed + [key] %}
+                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
+                                                <strong>{{ row.lecturerName }}</strong><br>
+                                                <strong>[{{ row.classType }}]</strong><br>
+                                                {{ row.courseName }}<br>
+                                                Room: {{ row.classRoom }}
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
                         {% endfor %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
