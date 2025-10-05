@@ -303,7 +303,7 @@ html, body {
 
 .exam-block {
     position: absolute;
-    background-color: #4CAF50;
+    background-color: #4682b4;
     color: white;
     border-radius: 6px;
     padding: 6px;
@@ -315,7 +315,7 @@ html, body {
 
 
 .exam-block:hover {
-    background-color: #388E3C;
+    background-color: #4682b4;
 }
 
 .day-label {

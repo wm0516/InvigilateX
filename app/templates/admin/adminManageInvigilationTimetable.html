@@ -106,12 +106,10 @@
                     {% set row_index = pos.row %}
 
                     <div class="exam-block"
-                        style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 + 40 }}px;">
+                        style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
-                        <small>{{ exam.venue }} |
-                            {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
-                        <em>Row: {{ row_index }}</em>
+                        <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
                     </div>
                 {% endfor %}
             </div>
