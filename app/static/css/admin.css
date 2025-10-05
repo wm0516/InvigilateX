@@ -265,6 +265,7 @@ html, body {
 
 
 
+
 .calendar-container {
     overflow-x: auto;
     padding: 1rem;
@@ -291,10 +292,6 @@ html, body {
     border-right: 1px solid #ccc;
 }
 
-/* Empty top-left cell (in time header row) */
-.time-label {
-    background: #333;
-}
 
 /* Timeline hours (in header row) */
 .calendar-hour {
