@@ -6,23 +6,21 @@
     <h2>Mine Timetable</h2>
 
     <div class="calendar-container">
-        <!-- Header Row for Time -->
+        <!-- Header Row -->
         <div class="calendar-row">
-            <div class="calendar-day-label"></div>
+            <div class="calendar-day-label">Date / Time</div>
             {% for hour in range(7, 24) %}
                 <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
 
-        {% set hour_width = 80 %}
-        {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+        {% set days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"] %}
         {% for day in days %}
             <div class="calendar-row">
                 <div class="calendar-day-label">{{ day }}</div>
-
-                <div class="calendar-day" style="width: {{ hour_width * 17 }}px; height: 100px; position: relative;">
+                <div class="calendar-day">
                     {% for row in timetable_rows %}
-                        {% if row.classDay == day %}
+                        {% if row.classDay|upper == day %}
                             {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
                             {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
                             {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
@@ -31,10 +29,11 @@
                             {% set start_decimal = start_hour + (start_minute / 60) %}
                             {% set end_decimal = end_hour + (end_minute / 60) %}
 
-                            {% set left_pos = (start_decimal - 7) * hour_width %}
-                            {% set width = (end_decimal - start_decimal) * hour_width %}
+                            {% set total_hours = 17 %}
+                            {% set left_percent = ((start_decimal - 7) / total_hours) * 100 %}
+                            {% set width_percent = ((end_decimal - start_decimal) / total_hours) * 100 %}
 
-                            <div class="class-block" style="left: {{ left_pos }}px; width: {{ width }}px;">
+                            <div class="class-block" style="left: {{ left_percent }}%; width: {{ width_percent }}%;">
                                 <strong>{{ row.courseName }}</strong><br>
                                 [{{ row.classType }}]<br>
                                 <i>{{ row.classRoom }}</i><br>
@@ -48,4 +47,3 @@
     </div>
 </div>
 {% endblock %}
-
