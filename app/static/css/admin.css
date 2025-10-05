@@ -265,6 +265,66 @@ html, body {
 
 
 
+.calendar-container {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr); /* 12 hours + date column */
+    gap: 5px;
+}
+
+.calendar-header, .calendar-row {
+    display: contents;
+}
+
+.calendar-date {
+    grid-column: 1 / 2;
+    background: #f0f0f0;
+    padding: 5px;
+}
+
+.time-slot {
+    background: #ddd;
+    text-align: center;
+    padding: 5px;
+}
+
+.calendar-exams {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr); /* each hour a column */
+    gap: 3px;
+}
+
+.calendar-exam {
+    background: #4caf50;
+    color: white;
+    padding: 3px;
+    font-size: 0.8em;
+    border-radius: 3px;
+    text-align: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .filter-container {
     margin-bottom: 20px;
     display: flex;

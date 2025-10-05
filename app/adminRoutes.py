@@ -1742,6 +1742,26 @@ def admin_manageTimetable():
 
 
 
+def get_calendar_data():
+    attendances = get_all_attendances()
+    calendar_data = defaultdict(list)  # key: date, value: list of exams
+
+    for att in attendances:
+        exam = att.report.exam
+        exam_date = exam.examStartTime.date()
+        calendar_data[exam_date].append({
+            "start_time": exam.examStartTime.time(),
+            "end_time": exam.examEndTime.time(),
+            "exam_id": exam.examId,
+            "course_name": exam.course.courseName,
+            "course_code": exam.course.courseCodeSectionIntake,
+            "num_students": exam.course.courseStudent,
+            "venue": exam.examVenue,
+            "num_invigilators": exam.examNoInvigilator
+        })
+
+    return calendar_data
+
 
 
 
@@ -1835,10 +1855,10 @@ def calculate_invigilation_stats():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationTimetable():
-    attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
-
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', attendances=attendances, **stats)
+    calendar_data = get_calendar_data()
+    
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, **stats)
 
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
@@ -1849,8 +1869,7 @@ def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
-    return render_template(
-        'admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 
 
