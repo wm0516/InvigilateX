@@ -84,6 +84,7 @@
                 {% set positions = [] %}
 
                 {% for exam in sorted_exams %}
+                    {# Find overlapping exams to determine row index #}
                     {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
                     {% set row_index = overlapping | length %}
                     {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
@@ -96,16 +97,12 @@
                     <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
-                        <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
-                        <br>Row Index: {{ row_index }}
+                        <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
+                        Row Index: {{ row_index }}
                     </div>
                 {% endfor %}
-
             </div>
         {% endfor %}
-
-
     </div>
 </div>
-
 {% endblock %}
