@@ -375,7 +375,7 @@ html, body {
 
 .timetable-cell {
     flex: 1;
-    height: 80px; /* height of each hour row */
+    height: 20px; /* height of each hour row */
     position: relative;
     border-left: 1px solid #eee;
 }
