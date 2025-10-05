@@ -40,24 +40,17 @@
                 {% set max_row = 1 %}
             {% endif %}
 
-            <div class="calendar-row">
-                <div class="calendar-date-label"    
-                    {% if not exam.examStatus %}
-                        style="background-color: lightgrey;"
-                    {% endif %}
-                >{{ date.strftime("%d %b (%A)") }}
-                </div>
-
+            <div class="calendar-row" {% if not exam.examStatus %} style="background-color: lightgrey;" {% endif %}>
+                <div class="calendar-date-label">{{ date.strftime("%d %b (%A)") }}</div>
                 <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
                         {% set pos = positions[i] %}
                         {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                        {% set left_pos = 10 + start_hour * hour_width %}    
+                        {% set left_pos = 10 + start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
                         {% set top_pos =  5 + (pos.row * 60) %}
-
                         <div class="exam-block"
                             style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
                             <strong>{{ exam.course_code }}</strong><br>
@@ -67,6 +60,8 @@
                     {% endfor %}
                 </div>
             </div>
+
+
         {% endfor %}
     </div>
 </div>
