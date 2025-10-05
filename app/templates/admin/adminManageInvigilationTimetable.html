@@ -71,7 +71,7 @@
     <div class="calendar-container">
 
         <!-- Time Header Row -->
-        <div class="calendar-row calendar-header-row">
+        <div class="calendar-row">
             <div class="calendar-date-label time-label"></div>  {# Empty top-left cell #}
             {% for hour in range(0, 24) %}
                 <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
@@ -95,7 +95,7 @@
                     {{ date.strftime("%d %b (%A)") }}
                 </div>
 
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px;">
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; min-height: {{ row_index * 60 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
                         {% set pos = positions[i] %}
