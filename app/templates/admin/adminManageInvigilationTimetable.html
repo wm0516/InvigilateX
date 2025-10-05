@@ -32,7 +32,7 @@
         </div>
 
         {% set hour_width = 80 %}
-        {% for date in full_dates if date >= today %}
+        {% for date in full_dates %}
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
@@ -49,7 +49,7 @@
 
             <div class="calendar-row" id="date-{{ date.strftime('%Y-%m-%d') }}">
                 <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 80 }}px;">
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ 10 + max_row * 70 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
                         {% set pos = positions[i] %}
@@ -57,7 +57,7 @@
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                         {% set left_pos = 10 + start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set top_pos = 5 + (pos.row * 80) %}
+                        {% set top_pos = 5 + (pos.row * 70) %}
 
                         {% if exam.status %}
                             {% set block_color = '#75bdf9' %}
@@ -88,13 +88,15 @@ document.addEventListener("DOMContentLoaded", function() {
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     const todayId = `date-${yyyy}-${mm}-${dd}`;
+    const container = document.querySelector('.calendar-container');
     const todayRow = document.getElementById(todayId);
 
-    if (todayRow) {
-        const container = document.querySelector('.calendar-container');
-
-        // ✅ Scroll so today's row is at the top of the view
-        container.scrollTop = todayRow.offsetTop;
+    if (todayRow && container) {
+        // ✅ Smoothly scroll to today's row
+        container.scrollTo({
+            top: todayRow.offsetTop - 40,
+            behavior: 'smooth'
+        });
     }
 });
 </script>

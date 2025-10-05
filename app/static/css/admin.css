@@ -285,6 +285,16 @@ html, body {
     align-items: flex-start;
 }
 
+/* Make first row (time header) sticky */
+.calendar-row:first-child {
+    position: sticky;
+    top: 0;
+    background: #fafafa;
+    z-index: 10;
+    border-bottom: 3px solid #999;
+}
+
+
 /* First column: date or time label */
 .calendar-date-label {
     width: 160px;
