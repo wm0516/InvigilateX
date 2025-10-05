@@ -266,20 +266,22 @@ html, body {
 
 
 
+/* Container: allows scrolling in both directions */
 .calendar-container {
     overflow-x: auto;
+    overflow-y: auto;      /* enable vertical scroll */
     padding: 1rem;
     border: 1px solid #ccc;
     background: #f9f9f9;
+    max-height: 600px;     /* optional, to constrain height */
 }
-
 
 /* Row wrapper for time and day rows */
 .calendar-row {
-    width: 2130px;
     display: flex;
     border-bottom: 2px solid #b7bbed;
     align-items: flex-start;
+    min-width: 100%;       /* ensure full width */
 }
 
 /* First column: date or time label */
@@ -291,8 +293,8 @@ html, body {
     font-weight: bold;
     font-size: 14px;
     border-right: 1px solid #ccc;
+    text-align: right;
 }
-
 
 /* Timeline hours (in header row) */
 .calendar-hour {
@@ -303,6 +305,7 @@ html, body {
     padding: 5px 0;
     border-right: 1px solid #ccc;
     background: #fafafa;
+    position: relative;
 }
 
 /* Day's block area where exams appear */
@@ -310,8 +313,8 @@ html, body {
     padding: 5px;
     position: relative;
     background: white;
+    min-height: 60px;      /* ensures rows have some height even if no exams */
 }
-
 
 /* Exam block */
 .exam-block {
@@ -322,10 +325,14 @@ html, body {
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background 0.2s ease;
+    cursor: pointer;
 }
 
-
-
+/* Optional: Hover effect for exam block */
+.exam-block:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
 
 
 
