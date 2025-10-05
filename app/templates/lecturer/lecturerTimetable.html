@@ -3,47 +3,36 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>My Teaching Timetable</h2>
+    <h2>My Timetable</h2>
 
-    <div class="calendar-container">
-        <!-- Header Row for Time -->
-        <div class="calendar-row">
-            <div class="calendar-day-label"></div>
-            {% for hour in range(7, 24) %}
-                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
-            {% endfor %}
-        </div>
-
-        {% set hour_width = 80 %}
+    <div class="timetable-container">
+        <!-- Header Row -->
+        <div></div>
         {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
         {% for day in days %}
-            <div class="calendar-row">
-                <div class="calendar-day-label">{{ day }}</div>
+            <div class="timetable-header">{{ day }}</div>
+        {% endfor %}
 
-                <div class="calendar-day" style="width: {{ hour_width * 17 }}px; height: 100px; position: relative;">
+        <!-- Time Rows -->
+        {% for hour in range(7, 24) %}
+            <div class="time-cell">{{ "%02d:00"|format(hour) }}</div>
+            {% for day in days %}
+                <div class="day-cell">
                     {% for row in timetable_rows %}
                         {% if row.classDay == day %}
                             {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
-                            {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
-                            {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
-                            {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
-
-                            {% set start_decimal = start_hour + (start_minute / 60) %}
-                            {% set end_decimal = end_hour + (end_minute / 60) %}
-
-                            {% set left_pos = (start_decimal - 7) * hour_width %}
-                            {% set width = (end_decimal - start_decimal) * hour_width %}
-
-                            <div class="class-block" style="left: {{ left_pos }}px; width: {{ width }}px;">
-                                <strong>{{ row.courseName }}</strong><br>
-                                [{{ row.classType }}]<br>
-                                <i>{{ row.classRoom }}</i><br>
-                                <span>{{ row.classTime }}</span>
-                            </div>
+                            {% if start_hour == hour %}
+                                <div class="class-block">
+                                    <strong>{{ row.courseName }}</strong><br>
+                                    [{{ row.classType }}]<br>
+                                    <i>{{ row.classRoom }}</i><br>
+                                    <span>{{ row.classTime }}</span>
+                                </div>
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
                 </div>
-            </div>
+            {% endfor %}
         {% endfor %}
     </div>
 </div>

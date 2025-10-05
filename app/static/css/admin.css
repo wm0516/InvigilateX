@@ -342,6 +342,46 @@ html, body {
 
 
 
+.timetable-container {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    background: #fafafa;
+}
+.timetable-header {
+    background: #eee;
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+.time-cell {
+    text-align: center;
+    font-size: 12px;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+}
+.day-cell {
+    border-left: 1px solid #ccc;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+    height: 60px;
+}
+.class-block {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    background-color: #f3e8ff;
+    border: 2px solid #d8b4fe;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 12px;
+    overflow: hidden;
+    padding: 5px;
+}
 
 
 
