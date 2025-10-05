@@ -68,6 +68,7 @@
 {% block content %}
 <div class="menu-section">
     <h3>List of All Exam Sessions Details</h3>
+
     <div class="calendar-container">
         <!-- Header Row for Time -->
         <div class="calendar-header">
@@ -76,11 +77,13 @@
             {% endfor %}
         </div>
 
+        {% set hour_width = 80 %}
+
         {% for date, exams in calendar_data.items() %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
 
-            {# -- Precompute all positions and row indexes -- #}
+            {# -- Precompute positions and row indexes for overlapping exams -- #}
             {% for exam in sorted_exams %}
                 {% set overlapping = positions
                     | selectattr("start", "lt", exam.end_time)
@@ -90,29 +93,29 @@
                 {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
             {% endfor %}
 
-
             <div class="calendar-day">
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
-                {% for exam, pos in zip(sorted_exams, positions) %}
+                {% for i in range(sorted_exams|length) %}
+                    {% set exam = sorted_exams[i] %}
+                    {% set pos = positions[i] %}
                     {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                     {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                    {% set left_pos = start_hour * 100 %}
-                    {% set width = (end_hour - start_hour) * 100 %}
+                    {% set left_pos = start_hour * hour_width %}
+                    {% set width = (end_hour - start_hour) * hour_width %}
                     {% set row_index = pos.row %}
 
                     <div class="exam-block"
-                        style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 }}px;">
+                        style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ row_index * 60 + 40 }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
-                        <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
-                        Row Index: {{ row_index }}
+                        <small>{{ exam.venue }} |
+                            {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small><br>
+                        <em>Row: {{ row_index }}</em>
                     </div>
                 {% endfor %}
             </div>
         {% endfor %}
     </div>
-
 </div>
-
 {% endblock %}
