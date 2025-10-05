@@ -86,17 +86,21 @@
 
                 {% for exam in sorted_exams %}
                     {# Find the first available row that doesn't conflict #}
-                    {% set row_index = 0 %}
+                    {% set row_index = rows|length %}
+                    {% set found = false %}
+
                     {% for i in range(rows|length) %}
-                        {% set conflict = false %}
-                        {% for e in rows[i] %}
-                            {% if exam.start_time < e.end_time and exam.end_time > e.start_time %}
-                                {% set conflict = true %}
+                        {% if not found %}
+                            {% set conflict = false %}
+                            {% for e in rows[i] %}
+                                {% if exam.start_time < e.end_time and exam.end_time > e.start_time %}
+                                    {% set conflict = true %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if not conflict %}
+                                {% set row_index = i %}
+                                {% set found = true %}
                             {% endif %}
-                        {% endfor %}
-                        {% if not conflict %}
-                            {% set row_index = i %}
-                            {% break %}
                         {% endif %}
                     {% endfor %}
 
@@ -122,7 +126,5 @@
             </div>
         {% endfor %}
     </div>
-
-</div>
-
+</div>  
 {% endblock %}
