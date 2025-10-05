@@ -81,12 +81,26 @@
             <div class="calendar-day">
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
-                {% for exam in exams %}
+                {% set sorted_exams = exams|sort(attribute='start_time') %}
+                {% set positions = [] %}
+
+                {% for exam in sorted_exams %}
+                    {# compute row index based on overlap #}
+                    {% set row_index = 0 %}
+                    {% for p in positions %}
+                        {% if exam.start_time < p.end and exam.end_time > p.start %}
+                            {% set row_index = row_index + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time}) %}
+
                     {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                     {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                     {% set left_pos = start_hour * 100 %}
                     {% set width = (end_hour - start_hour) * 100 %}
-                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px;">
+                    {% set top_pos = 10 + (row_index * 90) %}  {# 90px gap per stacked line #}
+
+                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
                         <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
@@ -94,6 +108,7 @@
                 {% endfor %}
             </div>
         {% endfor %}
+
     </div>
 </div>
 
