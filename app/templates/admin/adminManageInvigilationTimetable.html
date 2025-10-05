@@ -17,10 +17,11 @@
             <span>Pass Exam</span>
         </div>
         <div style="display: flex; align-items: center; gap: 5px;">
-            <span style="width: 20px; height: 20px; background-color: #4682b4; display: inline-block; border-radius: 4px;"></span>
+            <span style="width: 20px; height: 20px; background-color: #75bdf9; display: inline-block; border-radius: 4px;"></span>
             <span>Coming Exam</span>
         </div>
-    </div>
+    </div><br>
+
     <div class="calendar-container">
         <!-- Time Header Row -->
         <div class="calendar-row">
@@ -60,7 +61,7 @@
                     {% set top_pos = 5 + (pos.row * 60) %}
 
                     {% if exam.status %}
-                        {% set block_color = '#4682b4' %}  {# Upcoming exam #}
+                        {% set block_color = '#75bdf9' %}  {# Upcoming exam #}
                     {% else %}
                         {% set block_color = 'lightgrey' %}  {# Past exam #}
                     {% endif %}
