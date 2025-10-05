@@ -1527,14 +1527,18 @@ def get_linkTimetable(timetableID):
 # Save Parsed Timetable to DB
 # -------------------------------
 def save_timetable_to_db(structured):
+
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
 
     if not lecturer:
-        return 0
+        return 
 
-    # Find user for lecturer
-    user = User.query.filter_by(userName=lecturer).first()
+    # Normalize the lecturer input: remove all spaces
+    normalized_lecturer = ''.join(lecturer.split())
+
+    # Find user where username with spaces removed matches normalized lecturer
+    user = User.query.filter(func.replace(User.userName, " ", "") == normalized_lecturer).first()
 
     # Ensure timetable exists for user
     if user:
