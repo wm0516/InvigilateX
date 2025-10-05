@@ -14,11 +14,15 @@
         <h4>Exam Status:</h4>
         <div style="display: flex; align-items: center; gap: 5px;">
             <span style="width: 20px; height: 20px; background-color: lightgrey; display: inline-block; border-radius: 4px;"></span>
-            <span>Pass Exam</span>
+            <span>Past Exam</span>
         </div>
         <div style="display: flex; align-items: center; gap: 5px;">
             <span style="width: 20px; height: 20px; background-color: #75bdf9; display: inline-block; border-radius: 4px;"></span>
-            <span>Coming Exam</span>
+            <span>Upcoming Exam</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <span style="width: 20px; height: 20px; background-color: #dc74f7; display: inline-block; border-radius: 4px;"></span>
+            <span>Overnight Exam (Starts Today, Ends Tomorrow)</span>
         </div>
     </div><br>
 
@@ -59,7 +63,9 @@
                         {% set width = (end_hour - start_hour) * hour_width %}
                         {% set top_pos = 5 + (pos.row * 70) %}
 
-                        {% if exam.status %}
+                        {% if exam.is_today_overnight %}
+                            {% set block_color = '#dc74f7' %}
+                        {% elif exam.status %}
                             {% set block_color = '#75bdf9' %}
                         {% else %}
                             {% set block_color = 'lightgrey' %}

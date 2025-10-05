@@ -1803,6 +1803,7 @@ def get_calendar_data():
     calendar_data = defaultdict(list)
     seen_exams = set()
     all_exam_dates = []
+    today = date.today()
 
     for att in attendances:
         exam = att.report.exam
@@ -1813,52 +1814,56 @@ def get_calendar_data():
         start_time = exam.examStartTime
         end_time = exam.examEndTime
 
+        # ✅ Detect if exam starts today and ends tomorrow
+        is_today_overnight = (
+            start_time.date() == today and
+            end_time.date() == today + timedelta(days=1)
+        )
+
+        # ✅ Helper function to build exam dictionary
+        def exam_dict(start, end):
+            return {
+                "start_time": start,
+                "end_time": end,
+                "exam_id": exam.examId,
+                "course_name": exam.course.courseName,
+                "course_code": exam.course.courseCodeSectionIntake,
+                "venue": exam.examVenue,
+                "status": exam.examStatus,
+                "is_today_overnight": is_today_overnight  # ✅ Pass to template
+            }
+
         # ✅ Handle overnight exams (spanning past midnight)
         if end_time.date() > start_time.date():
             # --- Part 1: from start to midnight ---
-            calendar_data[start_time.date()].append({
-                "start_time": start_time,
-                "end_time": datetime.combine(start_time.date(), datetime.max.time()).replace(hour=23, minute=59),
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "venue": exam.examVenue,
-                "status": exam.examStatus
-            })
+            calendar_data[start_time.date()].append(
+                exam_dict(
+                    start_time,
+                    datetime.combine(start_time.date(), datetime.max.time()).replace(hour=23, minute=59)
+                )
+            )
             all_exam_dates.append(start_time.date())
 
             # --- Part 2: from midnight to real end ---
-            calendar_data[end_time.date()].append({
-                "start_time": datetime.combine(end_time.date(), datetime.min.time()),
-                "end_time": end_time,
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "venue": exam.examVenue,
-                "status": exam.examStatus
-            })
+            calendar_data[end_time.date()].append(
+                exam_dict(
+                    datetime.combine(end_time.date(), datetime.min.time()),
+                    end_time
+                )
+            )
             all_exam_dates.append(end_time.date())
 
         else:
             # ✅ Normal same-day exam
-            calendar_data[start_time.date()].append({
-                "start_time": start_time,
-                "end_time": end_time,
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "venue": exam.examVenue,
-                "status": exam.examStatus
-            })
+            calendar_data[start_time.date()].append(exam_dict(start_time, end_time))
             all_exam_dates.append(start_time.date())
 
-    # ✅ Create full date range for whole year (for Y-axis)
+    # ✅ Create full date range for the entire year
     if all_exam_dates:
-        year = min(all_exam_dates).year  # Use year of earliest exam
+        year = min(all_exam_dates).year  # Use the earliest exam’s year
     else:
         year = datetime.now().year
 
-    # Generate every date of that year
     full_dates = []
     current = datetime(year, 1, 1).date()
     while current.year == year:
@@ -1867,6 +1872,7 @@ def get_calendar_data():
 
     return calendar_data, full_dates
 
+
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
 # -------------------------------
@@ -1874,8 +1880,12 @@ def get_calendar_data():
 @login_required
 def admin_manageInvigilationTimetable():
     calendar_data, full_dates = get_calendar_data()
-    today = date.today()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates, today=today)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates)
+
+
+
+
+
 
 
 
