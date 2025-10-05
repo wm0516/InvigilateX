@@ -1921,7 +1921,7 @@ def admin_manageInvigilationReport():
         att.group_key = (att.report.exam.examStatus, att.report.exam.examStartTime)
 
     stats = calculate_invigilation_stats()
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats, datetime=datetime)
 
 
 
