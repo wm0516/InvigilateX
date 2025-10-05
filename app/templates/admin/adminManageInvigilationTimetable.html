@@ -32,7 +32,8 @@
         </div>
 
         {% set hour_width = 80 %}
-        {% for date in full_dates %}
+        {% set today = now().date() %}
+        {% for date in full_dates if date >= today %}
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
@@ -49,7 +50,7 @@
 
             <div class="calendar-row" id="date-{{ date.strftime('%Y-%m-%d') }}">
                 <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 70 }}px;">
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 80 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
                         {% set pos = positions[i] %}
@@ -57,7 +58,7 @@
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                         {% set left_pos = 10 + start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set top_pos = 5 + (pos.row * 80) %}
+                        {% set top_pos = 5 + (pos.row * 70) %}
 
                         {% if exam.status %}
                             {% set block_color = '#75bdf9' %}
