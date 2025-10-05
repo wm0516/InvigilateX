@@ -1829,7 +1829,7 @@ def get_calendar_data():
 def admin_manageInvigilationTimetable():
     calendar_data = get_calendar_data()
     
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, datetime=datetime)
 
 
 
@@ -1921,7 +1921,7 @@ def admin_manageInvigilationReport():
         att.group_key = (att.report.exam.examStatus, att.report.exam.examStartTime)
 
     stats = calculate_invigilation_stats()
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats, datetime=datetime)
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 
 
