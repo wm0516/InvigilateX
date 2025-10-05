@@ -86,13 +86,13 @@
                 {% for grouped in attendances %}
                     {% set rowspan = grouped|length %}
                     {% for att in grouped %}
-                    <tr class="
-                        {% if not row.examStatus %}
-                            inactive-row-show
-                        {% elif row.examVenue is none %}
-                            error-row-show
-                        {% endif %}
-                    ">      
+                        <tr class="
+                            {% if not row.examStatus %}
+                                inactive-row-show
+                            {% elif row.examVenue is none %}
+                                error-row-show
+                            {% endif %}
+                        ">      
                             {% if loop.first %}
                                 <!-- Exam ID -->
                                 <td rowspan="{{ rowspan }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
