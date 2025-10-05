@@ -2,25 +2,28 @@
 {% block title %}Lecturer Timetable{% endblock %}
 
 {% block content %}
-<div class="menu-section">
-    <h2>Mine Timetable</h2>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lecturerTimetable.css') }}">
 
-    <div class="calendar-container">
-        <!-- Header Row -->
-        <div class="calendar-row">
-            <div class="calendar-day-label">Date / Time</div>
+<div class="menu-section">
+    <h2>My Teaching Timetable</h2>
+
+    <div class="timetable-container">
+        <!-- Header row for time -->
+        <div class="timetable-row">
+            <div class="timetable-day-label"></div>
             {% for hour in range(7, 24) %}
-                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
+                <div class="timetable-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
 
-        {% set days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"] %}
+        {% set hour_width = 80 %}
+        {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
         {% for day in days %}
-            <div class="calendar-row">
-                <div class="calendar-day-label">{{ day }}</div>
-                <div class="calendar-day">
+            <div class="timetable-row">
+                <div class="timetable-day-label">{{ day }}</div>
+                <div class="timetable-day" style="width: {{ hour_width * 17 }}px; height: 100px; position: relative;">
                     {% for row in timetable_rows %}
-                        {% if row.classDay|upper == day %}
+                        {% if row.classDay == day %}
                             {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
                             {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
                             {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
@@ -29,11 +32,10 @@
                             {% set start_decimal = start_hour + (start_minute / 60) %}
                             {% set end_decimal = end_hour + (end_minute / 60) %}
 
-                            {% set total_hours = 17 %}
-                            {% set left_percent = ((start_decimal - 7) / total_hours) * 100 %}
-                            {% set width_percent = ((end_decimal - start_decimal) / total_hours) * 100 %}
+                            {% set left_pos = (start_decimal - 7) * hour_width %}
+                            {% set width = (end_decimal - start_decimal) * hour_width %}
 
-                            <div class="class-block" style="left: {{ left_percent }}%; width: {{ width_percent }}%;">
+                            <div class="timetable-block" style="left: {{ left_pos }}px; width: {{ width }}px;">
                                 <strong>{{ row.courseName }}</strong><br>
                                 [{{ row.classType }}]<br>
                                 <i>{{ row.classRoom }}</i><br>

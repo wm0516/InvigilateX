@@ -342,6 +342,91 @@ html, body {
 
 
 
+/* ========== TIMETABLE CONTAINER ========== */
+.timetable-container {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 600px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    padding: 1rem;
+    border-radius: 10px;
+}
+
+/* ========== ROW STRUCTURE ========== */
+.timetable-row {
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 2px solid #d8def7;
+    min-width: 1440px;
+}
+
+/* Sticky header row for hours */
+.timetable-row:first-child {
+    position: sticky;
+    top: 0;
+    background: #f4f6ff;
+    z-index: 5;
+}
+
+/* ========== TIME HEADER CELLS ========== */
+.timetable-hour {
+    width: 80px;
+    text-align: center;
+    font-size: 14px;
+    border-right: 1px solid #ccc;
+    padding: 5px 0;
+}
+
+/* ========== DAY LABEL (FIRST COLUMN) ========== */
+.timetable-day-label {
+    width: 100px;
+    min-width: 100px;
+    background: #e9ecf5;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+}
+
+/* ========== DAY AREA ========== */
+.timetable-day {
+    background: white;
+    position: relative;
+}
+
+/* ========== CLASS BLOCKS ========== */
+.timetable-block {
+    position: absolute;
+    top: 10px;
+    height: 70px;
+    background-color: #75bdf9;
+    color: black;
+    border-radius: 6px;
+    padding: 5px;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+.timetable-block:hover {
+    transform: scale(1.05);
+    background-color: #4ca9f7;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
