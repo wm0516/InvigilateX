@@ -12,10 +12,10 @@
 <body>
     <header class="header">
         <div class="toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
-            <i class="fas fa-bars"></i>
+            <i class="fas fa-bars"></i> | <span id="current-datetime"></span> 
         </div>
         <div class="user-info">
-            {{ user_name }} | {{ user_id }} | Admin of {{ user_department }}
+            {{ user_name }} | {{ user_id }} | Admin of {{ user_department }} 
         </div>
     </header>
 
@@ -153,6 +153,21 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/highcharts-3d.js"></script>
     <script src="{{ url_for('static', filename='js/function.js') }}"></script>
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit',
+                hour12: false 
+            };
+            const formatted = now.toLocaleString('en-GB', options).replace(',', ':');
+            document.getElementById("current-datetime").textContent = formatted;
+        }
+
+        updateDateTime(); // initial run
+        setInterval(updateDateTime, 1000); // update every second
+    </script>
 
     {% block extra_scripts %}{% endblock %}
 </body>
