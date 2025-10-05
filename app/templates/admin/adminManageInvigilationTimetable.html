@@ -36,20 +36,19 @@
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
-
             {% for exam in sorted_exams %}
                 {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
                 {% set row_index = overlapping | length %}
                 {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
             {% endfor %}
-
             {% if positions %}
                 {% set max_row = (positions | map(attribute='row') | max) + 1 %}
             {% else %}
                 {% set max_row = 1 %}
             {% endif %}
 
-            <div class="calendar-row">
+            <!-- ✅ Add unique id for JS scroll -->
+            <div class="calendar-row" id="date-{{ date.strftime('%Y-%m-%d') }}">
                 <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
                 <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 70 }}px;">
                     {% for i in range(sorted_exams|length) %}
@@ -80,3 +79,30 @@
     </div>
 </div>
 {% endblock %}
+
+
+
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    const todayId = `date-${yyyy}-${mm}-${dd}`;
+    const todayRow = document.getElementById(todayId);
+
+    if (todayRow) {
+        const container = document.querySelector('.calendar-container');
+        const rowTop = todayRow.offsetTop;
+        const containerHeight = container.clientHeight;
+
+        // ✅ Scroll so today's row is roughly in the middle
+        container.scrollTop = rowTop - containerHeight / 2;
+    }
+});
+</script>
+{% endblock %}
+
+
