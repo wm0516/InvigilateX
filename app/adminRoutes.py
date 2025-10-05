@@ -7,6 +7,7 @@ import warnings
 from io import BytesIO
 from collections import defaultdict
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import random
 
 # -------------------------------
@@ -1827,9 +1828,11 @@ def get_calendar_data():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationTimetable():
+    local_tz = ZoneInfo('Asia/Kuala_Lumpur')
+    date = datetime.now(local_tz)
     calendar_data = get_calendar_data()
     
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, datetime=datetime)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, date=date)
 
 
 
