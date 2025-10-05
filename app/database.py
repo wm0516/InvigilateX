@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 # Third-party imports
 # -------------------------------
 from sqlalchemy.sql import func
+from sqlalchemy import Enum
 
 # -------------------------------
 # Local application imports
@@ -201,8 +202,6 @@ class InvigilationReport(db.Model):
     __tablename__ = 'InvigilationReport'
     invigilationReportId = db.Column(db.Integer, primary_key=True, autoincrement=True)           # [PK] Refer to Invigilation Report ID
     examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Refer to Which Exam, and with the details of
-    remarks = db.Column(db.Text, nullable=True)                                                  # Remarks on session
-
 
     # Relationships
     attendances = db.relationship("InvigilatorAttendance", backref="report", cascade="all, delete-orphan")
@@ -210,7 +209,6 @@ class InvigilationReport(db.Model):
     CREATE TABLE InvigilationReport (
         invigilationReportId INT AUTO_INCREMENT PRIMARY KEY,
         examId INT NOT NULL,
-        remarks TEXT NULL,
         FOREIGN KEY (examId) REFERENCES Exam(examId)
     );
     '''
@@ -224,23 +222,23 @@ class InvigilatorAttendance(db.Model):
     invigilatorId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
     checkIn = db.Column(db.DateTime, nullable=True)                                                                # Check-in time
     checkOut = db.Column(db.DateTime, nullable=True)                                                               # Check-out time
-    remark = db.Column(db.Text, nullable=True)                                                                     # Notes
+    timeAction = db.Column(db.DateTime, nullable=True)
     timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    timeAction = db.Column(db.DateTime, nullable=True, default=lambda: datetime.now(timezone.utc))
     invigilationStatus = db.Column(db.Boolean, default=True)
+    remark = db.Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","CHECK OUT",name="attendance_remark_enum"),nullable=False,default="PENDING")  # Remark 
 
     # Relationships
     invigilator = db.relationship("User")
     '''
     CREATE TABLE InvigilatorAttendance (
         attendanceId INT AUTO_INCREMENT PRIMARY KEY,
-        reportId INT NOT NULL,  
+        reportId INT NOT NULL,
         invigilatorId VARCHAR(20) NOT NULL,
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
-        remark TEXT NULL,
+        remark ENUM('PENDING', 'CHECK IN LATE', 'CHECK IN', 'CHECK OUT EARLY', 'CHECK OUT') NOT NULL DEFAULT 'PENDING',
         timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        timeAction DATETIME NULL DEFAULT CURRENT_TIMESTAMP,
+        timeAction DATETIME NULL,
         invigilationStatus BOOLEAN DEFAULT TRUE,
         FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
