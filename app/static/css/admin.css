@@ -274,8 +274,10 @@ html, body {
 }
 
 .calendar-day {
-    min-height: auto;
-    height: auto;
+    border-bottom: 1px solid #ddd;
+    position: relative;
+    height: 100px;
+    min-width: 2400px; /* 100px per hour (scrollable) */
 }
 
 .calendar-header {
@@ -299,6 +301,7 @@ html, body {
 
 .exam-block {
     position: absolute;
+    top: 10px;
     height: 80px;
     background-color: #4CAF50;
     color: white;
@@ -307,12 +310,10 @@ html, body {
     font-size: 12px;
     overflow: hidden;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: all 0.2s ease;
 }
 
 .exam-block:hover {
     background-color: #388E3C;
-    transform: scale(1.02);
 }
 
 .day-label {
