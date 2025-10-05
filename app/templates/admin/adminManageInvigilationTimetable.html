@@ -81,18 +81,20 @@
             <div class="calendar-day">
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
-                {% set sorted_exams = exams|sort(attribute='start_time') %}
+                {% set sorted_exams = exams | sort(attribute='start_time') %}
                 {% set positions = [] %}
 
                 {% for exam in sorted_exams %}
-                    {% set row_index = 0 %}
-                    {% for p in positions %}
-                        {% if exam.start_time < p.end and exam.end_time > p.start %}
-                            {% set row_index = row_index + 1 %}
-                        {% endif %}
-                    {% endfor %}
+                    {# Find overlapping exams in positions #}
+                    {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
+                    
+                    {# row_index = number of overlapping exams #}
+                    {% set row_index = overlapping | length %}
+
+                    {# Save current exam in positions #}
                     {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
 
+                    {# Compute left and width for CSS #}
                     {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                     {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                     {% set left_pos = start_hour * 100 %}
@@ -107,6 +109,7 @@
                 {% endfor %}
             </div>
         {% endfor %}
+
     </div>
 </div>
 
