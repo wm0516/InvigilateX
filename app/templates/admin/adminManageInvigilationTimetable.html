@@ -50,7 +50,7 @@
 
             <div class="calendar-row">
                 <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 70 }}px;">
                 {% for i in range(sorted_exams|length) %}
                     {% set exam = sorted_exams[i] %}
                     {% set pos = positions[i] %}
@@ -70,7 +70,7 @@
                         style="background-color: {{ block_color }}; left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
-                        <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
+                        <i>{{ exam.venue }}<br>{{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
                     </div>
                 {% endfor %}
                 </div>
