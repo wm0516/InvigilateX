@@ -77,7 +77,8 @@
         </div>
 
         {% for date, exams in calendar_data.items() %}
-            <div class="calendar-day">
+        {% set max_row = positions | map(attribute='row') | max(default=0) %}
+            <div class="calendar-day" style="height: {{ (max_row + 1) * 60 + 20 }}px;">
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
                 {% set sorted_exams = exams | sort(attribute='start_time') %}
