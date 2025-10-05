@@ -1915,11 +1915,6 @@ def get_all_attendances():
 def admin_manageInvigilationReport():
     update_attendanceStatus()
     attendances = get_all_attendances()
-
-    # Add composite group key: (examStatus, examStartTime)
-    for att in attendances:
-        att.group_key = (att.report.exam.examStatus, att.report.exam.examStartTime)
-
     stats = calculate_invigilation_stats()
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
