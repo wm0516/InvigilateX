@@ -1738,19 +1738,24 @@ def admin_manageTimetable():
 
 
 
-
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
+    seen_exams = set()  # ✅ Track unique exams
 
     for att in attendances:
         exam = att.report.exam
-        if exam.examStatus != 1:  # only active exams
+        if exam.examStatus != 1:
             continue
+
+        if exam.examId in seen_exams:  # ✅ Skip duplicates
+            continue
+        seen_exams.add(exam.examId)
+
         exam_date = exam.examStartTime.date()
         calendar_data[exam_date].append({
-            "start_time": exam.examStartTime,  # datetime, NOT .time()
-            "end_time": exam.examEndTime,      # datetime
+            "start_time": exam.examStartTime,
+            "end_time": exam.examEndTime,
             "exam_id": exam.examId,
             "course_name": exam.course.courseName,
             "course_code": exam.course.courseCodeSectionIntake,
@@ -1761,18 +1766,7 @@ def get_calendar_data():
 
 
 
-# -------------------------------
-# Read All InvigilatorAttendance Data From Database
-# -------------------------------
-def get_all_attendances():
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
-        .filter(Exam.examStatus == True)
-        .all()
-    )
+
 
 # -------------------------------
 # Calculate All InvigilatorAttendance and InvigilationReport Data From Database
@@ -1853,6 +1847,20 @@ def admin_manageInvigilationTimetable():
     calendar_data = get_calendar_data()
     
     return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, **stats)
+
+
+# -------------------------------
+# Read All InvigilatorAttendance Data From Database
+# -------------------------------
+def get_all_attendances():
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(Exam.examStatus == True)
+        .all()
+    )
 
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
