@@ -83,7 +83,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for grouped in attendances %}
+                {% for exam, grouped in attendances %}
                     {% set rowspan = grouped|length %}
                     {% for att in grouped %}
                         <tr class="
