@@ -98,7 +98,7 @@
                     {% set left_pos = start_hour * 100 %}
                     {% set width = (end_hour - start_hour) * 100 %}
 
-                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ 30 + (row_index * 35) }}px;">
+                    <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ 30 + (row_index * 60) }}px;">
                         <strong>{{ exam.course_code }}</strong><br>
                         {{ exam.course_name }}<br>
                         <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
