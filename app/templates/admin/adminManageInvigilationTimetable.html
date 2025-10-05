@@ -95,7 +95,9 @@
                     {{ date.strftime("%d %b (%A)") }}
                 </div>
 
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; min-height: {{ row_index * 60 }}px;">
+                {% set max_row_index = positions | map(attribute='row') | max(default=0) %}
+
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; min-height: {{ (max_row_index + 1) * 60 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
                         {% set pos = positions[i] %}
