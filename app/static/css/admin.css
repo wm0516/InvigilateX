@@ -341,77 +341,60 @@ html, body {
 
 
 
-
-/* ========== TIMETABLE CONTAINER ========== */
 .timetable-container {
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 600px;
+    width: 100%;
     border: 1px solid #ccc;
-    background: #fafafa;
-    padding: 1rem;
-    border-radius: 10px;
+    border-radius: 8px;
+    background: #fff;
+    overflow-x: auto;
 }
 
-/* ========== ROW STRUCTURE ========== */
 .timetable-row {
     display: flex;
-    align-items: flex-start;
-    border-bottom: 2px solid #d8def7;
-    min-width: 1440px;
-}
-
-/* Sticky header row for hours */
-.timetable-row:first-child {
-    position: sticky;
-    top: 0;
-    background: #f4f6ff;
-    z-index: 5;
-}
-
-/* ========== TIME HEADER CELLS ========== */
-.timetable-hour {
-    width: 80px;
-    text-align: center;
-    font-size: 14px;
-    border-right: 1px solid #ccc;
-    padding: 5px 0;
-}
-
-/* ========== DAY LABEL (FIRST COLUMN) ========== */
-.timetable-day-label {
-    width: 100px;
-    min-width: 100px;
-    background: #e9ecf5;
-    font-weight: bold;
-    text-align: center;
-    padding: 10px;
-    border-right: 1px solid #ccc;
-}
-
-/* ========== DAY AREA ========== */
-.timetable-day {
-    background: white;
+    align-items: stretch;
     position: relative;
+    border-bottom: 1px solid #e0e0e0;
 }
 
-/* ========== CLASS BLOCKS ========== */
-.timetable-block {
+.timetable-header {
+    background: #f8f9ff;
+    font-weight: bold;
+    border-bottom: 2px solid #ccc;
+}
+
+.timetable-day-label {
+    width: 8%;
+    min-width: 80px;
+    padding: 10px;
+    text-align: center;
+    border-right: 1px solid #e0e0e0;
+}
+
+.timetable-hour {
+    flex: 1;
+    text-align: center;
+    padding: 5px 0;
+    border-left: 1px solid #f0f0f0;
+}
+
+.timetable-day {
+    width: 92%;
+    position: relative;
+    height: 100px;
+    border-left: 1px solid #e0e0e0;
+}
+
+.class-block {
     position: absolute;
     top: 10px;
-    height: 70px;
-    background-color: #75bdf9;
-    color: black;
+    height: 80px;
+    background: #4aa3ff;
+    color: white;
+    padding: 6px;
     border-radius: 6px;
-    padding: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     font-size: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     overflow: hidden;
-    transition: all 0.2s ease;
-}
-.timetable-block:hover {
-    transform: scale(1.05);
-    background-color: #4ca9f7;
 }
 
 
