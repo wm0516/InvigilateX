@@ -266,7 +266,6 @@ html, body {
 
 
 .calendar-container {
-    width: 100%;
     overflow-x: auto;
     padding: 1rem;
     border: 1px solid #ccc;
