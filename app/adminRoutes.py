@@ -1949,7 +1949,7 @@ def get_all_attendances():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
-        .order_by(Exam.examStatus.desc(), Exam.examStartTime.desc())
+        .order_by(Exam.examStatus.desc(), Exam.examStartTime.asc())
         .all()
     )
 
@@ -1966,7 +1966,7 @@ def admin_manageInvigilationReport():
 
     # Add composite group key: (examStatus, examStartTime)
     for att in attendances:
-        att.group_key = (att.report.exam.examStatus, att.report.exam.examStartTime)
+        att.group_key = (not att.report.exam.examStatus, att.report.exam.examStartTime)
 
     stats = calculate_invigilation_stats()
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
