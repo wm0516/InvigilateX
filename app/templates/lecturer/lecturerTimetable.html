@@ -1,53 +1,50 @@
 {% extends "lecturer/lecturerBase.html" %}
-{% block title %}Timetable{% endblock %}
+{% block title %}Lecturer Timetable{% endblock %}
+
 {% block content %}
 <div class="menu-section">
-    <h2>Timetable</h2>
+    <h2>My Teaching Timetable</h2>
 
-    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-    {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+    <div class="calendar-container">
+        <!-- Header Row for Time -->
+        <div class="calendar-row">
+            <div class="calendar-day-label"></div>
+            {% for hour in range(7, 24) %}
+                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
+            {% endfor %}
+        </div>
 
-    <div class="user-table-container">
-        <table class="user-data-table" border="1">
-            <thead>
-                <tr>
-                    <th>Day / Time</th>
-                    {% for time in time_slots %}
-                        <th>{{ time }}</th>
+        {% set hour_width = 80 %}
+        {% set days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+        {% for day in days %}
+            <div class="calendar-row">
+                <div class="calendar-day-label">{{ day }}</div>
+
+                <div class="calendar-day" style="width: {{ hour_width * 17 }}px; height: 100px; position: relative;">
+                    {% for row in timetable_rows %}
+                        {% if row.classDay == day %}
+                            {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
+                            {% set end_hour = row.classTime.split('-')[1].split(':')[0] | int %}
+                            {% set start_minute = row.classTime.split('-')[0].split(':')[1] | int %}
+                            {% set end_minute = row.classTime.split('-')[1].split(':')[1] | int %}
+
+                            {% set start_decimal = start_hour + (start_minute / 60) %}
+                            {% set end_decimal = end_hour + (end_minute / 60) %}
+
+                            {% set left_pos = (start_decimal - 7) * hour_width %}
+                            {% set width = (end_decimal - start_decimal) * hour_width %}
+
+                            <div class="class-block" style="left: {{ left_pos }}px; width: {{ width }}px;">
+                                <strong>{{ row.courseName }}</strong><br>
+                                [{{ row.classType }}]<br>
+                                <i>{{ row.classRoom }}</i><br>
+                                <span>{{ row.classTime }}</span>
+                            </div>
+                        {% endif %}
                     {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in week_days %}
-                    <tr>
-                        <td><strong>{{ day }}</strong></td>
-                        {% for time in time_slots %}
-                            <td>
-                                {% set ns = namespace(displayed=[]) %}
-                                {% for row in timetable_rows %}
-                                    {% set class_day = row.classDay %}
-                                    {% set class_time = row.classTime %}
-                                    {% set start_time = class_time.split('-')[0] %}
-                                    {% set end_time = class_time.split('-')[1] %}
-                                    {% if class_day == day and time >= start_time and time < end_time %}
-                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                        {% if key not in ns.displayed %}
-                                            {% set ns.displayed = ns.displayed + [key] %}
-                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                                <strong>{{ row.lecturerName }}</strong><br>
-                                                <strong>[{{ row.classType }}]</strong><br>
-                                                {{ row.courseName }}<br>
-                                                Room: {{ row.classRoom }}
-                                            </div>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
