@@ -347,7 +347,6 @@ html, body {
     border-radius: 8px;
     background: #fff;
     overflow-x: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .timetable-row {
@@ -375,22 +374,14 @@ html, body {
 
 .timetable-cell {
     flex: 1;
-    height: 20px; /* height of each hour row */
+    min-height: 20px;
     position: relative;
     border-left: 1px solid #eee;
-}
-
-.timetable-day {
-    flex: 1;
-    text-align: center;
-    padding: 10px 0;
-    border-left: 1px solid #e0e0e0;
+    padding: 4px;
 }
 
 .class-block {
-    position: absolute;
-    left: 4px;
-    right: 4px;
+    position: relative;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
@@ -398,6 +389,7 @@ html, body {
     font-size: 13px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 4px;
 }
 
 .class-block hr {
@@ -410,8 +402,6 @@ html, body {
     color: #333;
     font-size: 11px;
 }
-
-
 
 
 
