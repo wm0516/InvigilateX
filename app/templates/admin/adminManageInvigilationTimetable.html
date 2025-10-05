@@ -10,9 +10,7 @@
 {% block content %}
 <div class="menu-section">
     <h3>List of All Exam Sessions Details</h3>
-
-    <!-- Legend -->
-    <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; gap: 15px; align-items: center;">
         <h4>Exam Status:</h4>
         <div style="display: flex; align-items: center; gap: 5px;">
             <span style="width: 20px; height: 20px; background-color: lightgrey; display: inline-block; border-radius: 4px;"></span>
@@ -22,23 +20,19 @@
             <span style="width: 20px; height: 20px; background-color: #75bdf9; display: inline-block; border-radius: 4px;"></span>
             <span>Coming Exam</span>
         </div>
-    </div>
+    </div><br>
 
-    <!-- Calendar -->
-    <div class="calendar-container" style="overflow-x: auto; overflow-y: auto; border: 1px solid #ccc;">
+    <div class="calendar-container">
         <!-- Time Header Row -->
-        <div class="calendar-row" style="display: flex; position: sticky; top: 0; background: #f9f9f9; z-index: 10;">
-            <div class="calendar-date-label" style="width: 150px;"></div>
-            {% set hour_width = 80 %}
-            {% for hour in range(0, 24) %}
-                <div class="calendar-hour" style="width: {{ hour_width }}px; text-align: center; border-left: 1px solid #ddd;">
-                    {{ "%02d:00"|format(hour) }}
-                </div>
+        <div class="calendar-row">
+            <div class="calendar-date-label"></div>
+            {% for hour in range(0, 24) %}  
+                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
 
-        {% for date in full_dates %}
-            {% set exams = calendar_data.get(date, []) %}
+        {% set hour_width = 80 %}
+        {% for date, exams in calendar_data.items() %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
 
@@ -54,35 +48,31 @@
                 {% set max_row = 1 %}
             {% endif %}
 
-            <div class="calendar-row" style="display: flex; position: relative; margin-bottom: 10px;">
-                <!-- Y-axis date -->
-                <div class="calendar-date-label" style="width: 150px; text-align: right; padding-right: 5px;">
-                    {{ date.strftime("%d/%m/%Y (%A)") }}
-                </div>
+            <div class="calendar-row">
+                <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
+                {% for i in range(sorted_exams|length) %}
+                    {% set exam = sorted_exams[i] %}
+                    {% set pos = positions[i] %}
+                    {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
+                    {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
+                    {% set left_pos = 10 + start_hour * hour_width %}
+                    {% set width = (end_hour - start_hour) * hour_width %}
+                    {% set top_pos = 5 + (pos.row * 60) %}
 
-                <!-- Exams area -->
-                <div class="calendar-day" style="position: relative; width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
-                    {% for i in range(sorted_exams|length) %}
-                        {% set exam = sorted_exams[i] %}
-                        {% set pos = positions[i] %}
-                        {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
-                        {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                        {% set left_pos = 30 + start_hour * hour_width %}
-                        {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set top_pos = pos.row * 60 %}
+                    {% if exam.status %}
+                        {% set block_color = '#75bdf9' %}  {# Upcoming exam #}
+                    {% else %}
+                        {% set block_color = 'lightgrey' %}  {# Past exam #}
+                    {% endif %}
 
-                        {% if exam.status %}
-                            {% set block_color = '#75bdf9' %}
-                        {% else %}
-                            {% set block_color = 'lightgrey' %}
-                        {% endif %}
-
-                        <div class="exam-block" style="left: {{ left_pos }}px; top: {{ top_pos }}px; width: {{ width }}px;>
-                            <strong>{{ exam.course_code }}</strong><br>
-                            {{ exam.course_name }}<br>
-                            <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
-                        </div>
-                    {% endfor %}
+                    <div class="exam-block"
+                        style="background-color: {{ block_color }}; left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
+                        <strong>{{ exam.course_code }}</strong><br>
+                        {{ exam.course_name }}<br>
+                        <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
+                    </div>
+                {% endfor %}
                 </div>
             </div>
         {% endfor %}
