@@ -382,21 +382,16 @@ html, body {
 }
 
 .class-block {
+    position: relative;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
     padding: 8px;
     font-size: 13px;
     margin-bottom: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.empty-slot {
-    height: 60px; /* default for 1 hour */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: auto; /* 👈 Auto height */
 }
 
 .class-block hr {

@@ -25,13 +25,10 @@
                 {% set has_class = false %}
                 {% for row in timetable_rows %}
                     {% if row.classDay|upper == day %}
-                        {% set start_time, end_time = row.classTime.split('-') %}
-                        {% set start_hour = start_time.split(':')[0] | int %}
-                        {% set end_hour = end_time.split(':')[0] | int %}
-                        {% set duration = end_hour - start_hour %}
+                        {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
                         {% if hour == start_hour %}
                             {% set has_class = true %}
-                            <div class="class-block" style="height: calc(60px * {{ duration }});">
+                            <div class="class-block">
                                 <strong>{{ row.courseName }}</strong><br>
                                 [{{ row.classType }}]<br>
                                 <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
@@ -47,10 +44,6 @@
                         {% endif %}
                     {% endif %}
                 {% endfor %}
-                
-                {% if not has_class %}
-                    <div class="empty-slot"></div>
-                {% endif %}
             </div>
             {% endfor %}
         </div>
