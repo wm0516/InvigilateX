@@ -1737,7 +1737,9 @@ def admin_manageTimetable():
 
 
 
-
+# -------------------------------
+# Function for Admin ManageInviglationTimetable Route to read all the timetable in calendar mode
+# -------------------------------
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
