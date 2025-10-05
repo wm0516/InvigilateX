@@ -40,7 +40,7 @@
                 {% set max_row = 1 %}
             {% endif %}
 
-            <div class="calendar-row" {% if not exam.examStatus %} style="background-color: lightgrey;" {% endif %}>
+            <div class="calendar-row">
                 <div class="calendar-date-label">{{ date.strftime("%d %b (%A)") }}</div>
                 <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
                     {% for i in range(sorted_exams|length) %}
