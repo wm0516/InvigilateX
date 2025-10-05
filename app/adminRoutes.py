@@ -1801,40 +1801,69 @@ def admin_manageTimetable():
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
-    seen_exams = set()  # ✅ Track unique exams
-
+    seen_exams = set()
     all_exam_dates = []
 
     for att in attendances:
         exam = att.report.exam
-        if exam.examId in seen_exams:  # ✅ Skip duplicates
+        if exam.examId in seen_exams:
             continue
         seen_exams.add(exam.examId)
 
-        exam_date = exam.examStartTime.date()
-        all_exam_dates.append(exam_date)
+        start_time = exam.examStartTime
+        end_time = exam.examEndTime
 
-        calendar_data[exam_date].append({
-            "start_time": exam.examStartTime,
-            "end_time": exam.examEndTime,
-            "exam_id": exam.examId,
-            "course_name": exam.course.courseName,
-            "course_code": exam.course.courseCodeSectionIntake,
-            "venue": exam.examVenue,
-            "status": exam.examStatus
-        })
+        # ✅ Handle overnight exams (spanning past midnight)
+        if end_time.date() > start_time.date():
+            # --- Part 1: from start to midnight ---
+            calendar_data[start_time.date()].append({
+                "start_time": start_time,
+                "end_time": datetime.combine(start_time.date(), datetime.max.time()).replace(hour=23, minute=59),
+                "exam_id": exam.examId,
+                "course_name": exam.course.courseName,
+                "course_code": exam.course.courseCodeSectionIntake,
+                "venue": exam.examVenue,
+                "status": exam.examStatus
+            })
+            all_exam_dates.append(start_time.date())
 
-    # Generate full date range
+            # --- Part 2: from midnight to real end ---
+            calendar_data[end_time.date()].append({
+                "start_time": datetime.combine(end_time.date(), datetime.min.time()),
+                "end_time": end_time,
+                "exam_id": exam.examId,
+                "course_name": exam.course.courseName,
+                "course_code": exam.course.courseCodeSectionIntake,
+                "venue": exam.examVenue,
+                "status": exam.examStatus
+            })
+            all_exam_dates.append(end_time.date())
+
+        else:
+            # ✅ Normal same-day exam
+            calendar_data[start_time.date()].append({
+                "start_time": start_time,
+                "end_time": end_time,
+                "exam_id": exam.examId,
+                "course_name": exam.course.courseName,
+                "course_code": exam.course.courseCodeSectionIntake,
+                "venue": exam.examVenue,
+                "status": exam.examStatus
+            })
+            all_exam_dates.append(start_time.date())
+
+    # ✅ Create full date range for whole year (for Y-axis)
     if all_exam_dates:
-        start_date = min(all_exam_dates)
-        end_date = max(all_exam_dates)
-        full_dates = []
-        current = start_date
-        while current <= end_date:
-            full_dates.append(current)
-            current += timedelta(days=1)
+        year = min(all_exam_dates).year  # Use year of earliest exam
     else:
-        full_dates = []
+        year = datetime.now().year
+
+    # Generate every date of that year
+    full_dates = []
+    current = datetime(year, 1, 1).date()
+    while current.year == year:
+        full_dates.append(current)
+        current += timedelta(days=1)
 
     return calendar_data, full_dates
 
