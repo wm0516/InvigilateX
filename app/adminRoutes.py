@@ -1795,7 +1795,6 @@ def admin_manageTimetable():
 
 
 
-
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route to read all the timetable in calendar mode
 # -------------------------------
@@ -1804,6 +1803,8 @@ def get_calendar_data():
     calendar_data = defaultdict(list)
     seen_exams = set()  # ✅ Track unique exams
 
+    all_exam_dates = []
+
     for att in attendances:
         exam = att.report.exam
         if exam.examId in seen_exams:  # ✅ Skip duplicates
@@ -1811,6 +1812,8 @@ def get_calendar_data():
         seen_exams.add(exam.examId)
 
         exam_date = exam.examStartTime.date()
+        all_exam_dates.append(exam_date)
+
         calendar_data[exam_date].append({
             "start_time": exam.examStartTime,
             "end_time": exam.examEndTime,
@@ -1820,7 +1823,20 @@ def get_calendar_data():
             "venue": exam.examVenue,
             "status": exam.examStatus
         })
-    return calendar_data
+
+    # Generate full date range
+    if all_exam_dates:
+        start_date = min(all_exam_dates)
+        end_date = max(all_exam_dates)
+        full_dates = []
+        current = start_date
+        while current <= end_date:
+            full_dates.append(current)
+            current += timedelta(days=1)
+    else:
+        full_dates = []
+
+    return calendar_data, full_dates
 
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
@@ -1828,10 +1844,8 @@ def get_calendar_data():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationTimetable():
-    calendar_data = get_calendar_data()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
-
-
+    calendar_data, full_dates = get_calendar_data()
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates)
 
 
 

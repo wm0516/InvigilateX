@@ -37,7 +37,8 @@
             {% endfor %}
         </div>
 
-        {% for date, exams in calendar_data.items() %}
+        {% for date in full_dates %}
+            {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
             {% set positions = [] %}
 
@@ -54,9 +55,9 @@
             {% endif %}
 
             <div class="calendar-row" style="display: flex; position: relative; margin-bottom: 10px;">
-                <!-- Y-axis date + time -->
+                <!-- Y-axis date -->
                 <div class="calendar-date-label" style="width: 150px; text-align: right; padding-right: 5px;">
-                    {{ date.strftime("%d %b %Y (%A)") }}
+                    {{ date.strftime("%d/%m/%Y (%A)") }}
                 </div>
 
                 <!-- Exams area -->
@@ -71,15 +72,15 @@
                         {% set top_pos = pos.row * 60 %}
 
                         {% if exam.status %}
-                            {% set block_color = '#75bdf9' %}  {# Upcoming exam #}
+                            {% set block_color = '#75bdf9' %}
                         {% else %}
-                            {% set block_color = 'lightgrey' %}  {# Past exam #}
+                            {% set block_color = 'lightgrey' %}
                         {% endif %}
 
                         <div class="exam-block"
-                            style="position: absolute; left: {{ left_pos }}px; top: {{ top_pos }}px;
-                                   width: {{ width }}px; height: 50px; background-color: {{ block_color }};
-                                   border-radius: 4px; padding: 3px; box-sizing: border-box; overflow: hidden; font-size: 12px;">
+                             style="position: absolute; left: {{ left_pos }}px; top: {{ top_pos }}px;
+                                    width: {{ width }}px; height: 50px; background-color: {{ block_color }};
+                                    border-radius: 4px; padding: 3px; box-sizing: border-box; overflow: hidden; font-size: 12px;">
                             <strong>{{ exam.course_code }}</strong><br>
                             {{ exam.course_name }}<br>
                             <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
