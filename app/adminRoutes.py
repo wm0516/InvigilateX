@@ -45,6 +45,74 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 # -------------------------------
+# Function run non-stop
+# -------------------------------
+def cleanup_expired_timetable_rows():
+    """Delete timetable rows whose classWeekDate end date has expired."""
+    now = datetime.now()
+    all_rows = TimetableRow.query.all()
+
+    for row in all_rows:
+        if not row.classWeekDate:
+            continue
+
+        start, end = parse_date_range(row.classWeekDate)
+        if end is None:
+            continue  # Skip malformed rows
+
+        if now > end:
+            db.session.delete(row)
+
+    db.session.commit()  # Commit even if 0, or you can add a check
+
+
+def update_attendanceStatus():
+    all_attendance = InvigilatorAttendance.query.all()
+
+    for attendance in all_attendance:
+        report = attendance.report
+        exam = report.exam if report else None
+
+        if not exam:
+            continue  # skip if exam is missing
+
+        check_in = attendance.checkIn
+        check_out = attendance.checkOut
+        exam_start = exam.examStartTime
+        exam_end = exam.examEndTime
+
+        # Default remark
+        remark = "PENDING"
+
+        if check_in:
+            if check_in <= exam_start - timedelta(hours=1):
+                remark = "CHECK IN"
+            elif check_in > exam_start:
+                remark = "CHECK IN LATE"
+
+        if check_out:
+            if check_out < exam_end:
+                remark = "CHECK OUT EARLY"
+            elif check_out >= exam_end:
+                remark = "CHECK OUT"
+
+        attendance.remark = remark
+
+    db.session.commit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------
 # Function handle file upload
 # -------------------------------
 def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
@@ -1485,29 +1553,6 @@ def parse_date_range(date_range):
         return None, None
 
 
-def cleanup_expired_timetable_rows():
-    """Delete timetable rows whose classWeekDate end date has expired."""
-    now = datetime.now()
-    expired_count = 0
-    all_rows = TimetableRow.query.all()
-
-    for row in all_rows:
-        if not row.classWeekDate:
-            continue
-
-        start, end = parse_date_range(row.classWeekDate)
-        if end is None:
-            continue  # Skip malformed rows
-
-        if now > end:
-            db.session.delete(row)
-            expired_count += 1
-
-    if expired_count > 0:
-        db.session.commit()
-
-    return expired_count
-
 
 # -------------------------------
 # Get TimetableLink Details for ManageTimetableEditPage
@@ -1598,9 +1643,7 @@ def save_timetable_to_db(structured):
 @login_required
 def admin_manageTimetable():
     # Auto cleanup expired timetable rows
-    # expired_removed = cleanup_expired_timetable_rows()
-    # if expired_removed > 0:
-    #    flash(f"Auto-cleaned {expired_removed} expired timetable rows.", "success")
+    # cleanup_expired_timetable_rows()
 
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
@@ -1813,21 +1856,9 @@ def calculate_invigilation_stats():
         .all()
     )
 
-    total_report = (
-        InvigilationReport.query
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .filter(Exam.examStatus == True)
-        .count()
-    )
-
-    total_invigilator = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .filter(Exam.examStatus == True)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
-        .count()
-    )
+    # Total reports and total assigned invigilators
+    total_report = InvigilationReport.query.count()
+    total_invigilator = InvigilatorAttendance.query.count()
 
     stats = {
         "total_report": total_report,
@@ -1870,9 +1901,11 @@ def get_all_attendances():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
-        .order_by(Exam.examStatus.desc(), Exam.examStartTime.asc())
+        .order_by(Exam.examStatus.asc(), Exam.examStartTime.asc())
         .all()
     )
+
+
 
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
@@ -1880,6 +1913,7 @@ def get_all_attendances():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
+    update_attendanceStatus()
     attendances = get_all_attendances()
 
     # Add composite group key: (examStatus, examStartTime)
