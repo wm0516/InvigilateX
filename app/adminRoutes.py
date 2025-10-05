@@ -1817,7 +1817,8 @@ def get_calendar_data():
             "exam_id": exam.examId,
             "course_name": exam.course.courseName,
             "course_code": exam.course.courseCodeSectionIntake,
-            "venue": exam.examVenue
+            "venue": exam.examVenue,
+            "status": exam.examStatus
         })
 
     return calendar_data
