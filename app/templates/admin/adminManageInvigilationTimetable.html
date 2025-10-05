@@ -63,7 +63,7 @@
                         {% set width = (end_hour - start_hour) * hour_width %}
                         {% set top_pos = 5 + (pos.row * 70) %}
 
-                        {% if exam.is_today_overnight %}
+                        {% if exam.is_overnight %}
                             {% set block_color = '#dc74f7' %}
                         {% elif exam.status %}
                             {% set block_color = '#75bdf9' %}

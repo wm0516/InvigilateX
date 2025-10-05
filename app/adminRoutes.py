@@ -1793,8 +1793,6 @@ def admin_manageTimetable():
 
 
 
-
-
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route to read all the timetable in calendar mode
 # -------------------------------
@@ -1803,7 +1801,6 @@ def get_calendar_data():
     calendar_data = defaultdict(list)
     seen_exams = set()
     all_exam_dates = []
-    today = date.today()
 
     for att in attendances:
         exam = att.report.exam
@@ -1814,11 +1811,8 @@ def get_calendar_data():
         start_time = exam.examStartTime
         end_time = exam.examEndTime
 
-        # ✅ Detect if exam starts today and ends tomorrow
-        is_today_overnight = (
-            start_time.date() == today and
-            end_time.date() == today + timedelta(days=1)
-        )
+        # ✅ Detect if exam spans multiple days (overnight)
+        is_overnight = start_time.date() != end_time.date()
 
         # ✅ Helper function to build exam dictionary
         def exam_dict(start, end):
@@ -1830,11 +1824,11 @@ def get_calendar_data():
                 "course_code": exam.course.courseCodeSectionIntake,
                 "venue": exam.examVenue,
                 "status": exam.examStatus,
-                "is_today_overnight": is_today_overnight  # ✅ Pass to template
+                "is_overnight": is_overnight  # ✅ Mark overnight exams
             }
 
-        # ✅ Handle overnight exams (spanning past midnight)
-        if end_time.date() > start_time.date():
+        # ✅ Handle overnight exams (spanning across midnight)
+        if is_overnight:
             # --- Part 1: from start to midnight ---
             calendar_data[start_time.date()].append(
                 exam_dict(
@@ -1852,7 +1846,6 @@ def get_calendar_data():
                 )
             )
             all_exam_dates.append(end_time.date())
-
         else:
             # ✅ Normal same-day exam
             calendar_data[start_time.date()].append(exam_dict(start_time, end_time))
@@ -1860,7 +1853,7 @@ def get_calendar_data():
 
     # ✅ Create full date range for the entire year
     if all_exam_dates:
-        year = min(all_exam_dates).year  # Use the earliest exam’s year
+        year = min(all_exam_dates).year
     else:
         year = datetime.now().year
 
@@ -1871,6 +1864,7 @@ def get_calendar_data():
         current += timedelta(days=1)
 
     return calendar_data, full_dates
+
 
 
 # -------------------------------
