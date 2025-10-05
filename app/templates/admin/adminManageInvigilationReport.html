@@ -126,7 +126,16 @@
                             <td>{{ att.checkOut }}</td>
 
                             <!-- Attendance Status -->
-                            <td>{{ att.remark }}</td>
+                            <td>
+                                {% set remark_classes = {
+                                    "PENDING": "frame-oren",
+                                    "CHECK IN": "frame-green",
+                                    "CHECK OUT": "frame-green",
+                                    "CHECK IN LATE": "frame-red",
+                                    "CHECK OUT EARLY": "frame-red"
+                                } %}
+                                <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
+                            </td>
                         </tr>
                     {% endfor %}
                 {% endfor %}
