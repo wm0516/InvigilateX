@@ -1,69 +1,11 @@
 {% extends "admin/adminBase.html" %}
-{% set show_tabs = true %}
+{% set show_tabs = false %}
 {% set show_upload = false %}
-{% set show_dashboard = true %}
+{% set show_dashboard = false %}
 {% set show_manual = false %}
-{% set show_edit = true %}
+{% set show_edit = false %}
 {% block title %}Admin ManageInvigilationTimetable{% endblock %}
 {% block head_title %}<h2>Manage Invigilation Timetable</h2>{% endblock %}
-
-{% block dashboard_section %}
-<!-- Dashboard Form -->
-<form id="dashboardForm" action="{{ url_for('admin_manageInvigilationTimetable') }}" method="POST">
-    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
-        <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
-
-            <!-- Overview -->
-            <div class="dashboard-row">
-                <div class="dashboard-frame">
-                    <h3>Total Invigilation Reports</h3>
-                    <p class="dashboard-text">{{ total_report }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Total Assigned Invigilators</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_invigilator }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators In Progress</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators Pending Check-In/Out</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators Checked In On Time</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_checkInOnTime }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators Checked Out On Time</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_checkOutOnTime }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators Checked In Late</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Invigilators Checked Out Early</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-{% endblock %}
-
-{% block edit_section %}
-<!-- Edit Form -->
-<form id="editForm" action="{{ url_for('admin_manageInvigilationTimetable') }}" method="POST">
-    <div id="editSection" style="width: 100%; margin:auto;">
-        <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
-        </div>
-    </div>
-</form>
-{% endblock %}
 
 {% block content %}
 <div class="menu-section">
@@ -72,7 +14,7 @@
         <!-- Time Header Row -->
         <div class="calendar-row">
             <div class="calendar-date-label"></div>
-            {% for hour in range(0, 24) %}
+            {% for hour in range(0, 24) %}  
                 <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
@@ -99,7 +41,7 @@
 
             <div class="calendar-row">
                 <div class="calendar-date-label">{{ date.strftime("%d %b (%A)") }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 60 }}px;">
+                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 55 }}px;">
                     {% for i in range(sorted_exams|length) %}
                         {% set exam = sorted_exams[i] %}
                         {% set pos = positions[i] %}
@@ -113,7 +55,7 @@
                             style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
                             <strong>{{ exam.course_code }}</strong><br>
                             {{ exam.course_name }}<br>
-                            <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
+                            <i>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
                         </div>
                     {% endfor %}
                 </div>
