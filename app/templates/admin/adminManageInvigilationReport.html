@@ -83,7 +83,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for (status, start_time), grouped in attendances|groupby("group_key")|reverse %}
+                {% for (status, start_time), grouped in attendances|groupby("group_key") %}
                     {% set rowspan = grouped|length %}
                     {% for att in grouped %}
                         <tr class="
