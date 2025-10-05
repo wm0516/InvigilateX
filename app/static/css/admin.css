@@ -267,7 +267,9 @@ html, body {
 
 .calendar-container {
     display: grid;
-    grid-template-columns: repeat(13, 1fr); /* 12 hours + date column */
+    grid-template-columns: repeat(25, 1fr); /* 24 hours + date column */
+    overflow-x: auto;
+    overflow-y: auto;
     gap: 5px;
 }
 
@@ -289,7 +291,6 @@ html, body {
 
 .calendar-exams {
     display: grid;
-    grid-template-columns: repeat(12, 1fr); /* each hour a column */
     gap: 3px;
 }
 

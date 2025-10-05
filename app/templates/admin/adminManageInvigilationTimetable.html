@@ -71,7 +71,7 @@
     <div class="calendar-container">
         <div class="calendar-header">
             <div class="time-slot" style="grid-column: 1 / 2;">Date / Time</div>
-            {% for hour in range(8, 20) %}  {# Example: 8AM - 8PM #}
+            {% for hour in range(0, 24) %}
                 <div class="time-slot">{{ "%02d:00"|format(hour) }}</div>
             {% endfor %}
         </div>
