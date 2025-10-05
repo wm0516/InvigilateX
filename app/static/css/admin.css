@@ -270,6 +270,7 @@ html, body {
     overflow-x: auto;
     overflow-y: auto;
     scroll-behavior: smooth; /* ✅ Smooth scrolling */
+    max-height: 600px;
     padding: 1rem;
     border: 1px solid #ccc;
     background: #f9f9f9;
@@ -305,6 +306,7 @@ html, body {
     padding: 5px 0;
     border-right: 1px solid #ccc;
     background: #fafafa;
+    position: static;
 }
 
 /* Day's block area where exams appear */
