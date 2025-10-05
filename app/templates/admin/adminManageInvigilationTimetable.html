@@ -107,7 +107,7 @@
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                         {% set left_pos = start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set top_pos = pos.row * 60 %}
+                        {% set top_pos =  5 + (pos.row * 60) %}
 
                         <div class="exam-block"
                             style="left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
@@ -119,7 +119,6 @@
                 </div>
             </div>
         {% endfor %}
-
     </div>
 </div>
 {% endblock %}
