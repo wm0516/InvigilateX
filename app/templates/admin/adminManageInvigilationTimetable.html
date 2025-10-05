@@ -41,8 +41,8 @@
             {% endif %}
 
             <div class="calendar-row">
-                <div class="calendar-date-label"
-                    {% if date < datetime %}
+                <div class="calendar-date-label"    
+                    {% if date < now %}
                         style="background-color: lightgrey;"
                     {% endif %}
                 >{{ date.strftime("%d %b (%A)") }}
