@@ -318,8 +318,8 @@ html, body {
 
 /* Day's block area where exams appear */
 .calendar-day {
+    padding: 5px;
     position: relative;
-    min-height: 60px;
     background: white;
     border-left: 1px solid #ccc;
 }
