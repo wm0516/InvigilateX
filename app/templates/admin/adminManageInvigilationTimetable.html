@@ -77,21 +77,19 @@
         </div>
 
         <!-- Each Date Row -->
-        {% set grouped_att = attendances|groupby("report.exam.examStartTime.date()") %}
-        {% for date, grouped in grouped_att %}
+        {% for date, exams in calendar_data.items() %}
             <div class="calendar-day">
                 <div class="day-label">{{ date.strftime("%d %b (%A)") }}</div>
 
-                {% for att in grouped %}
-                    {% set exam = att.report.exam %}
-                    {% set start_hour = exam.examStartTime.hour + (exam.examStartTime.minute / 60) %}
-                    {% set end_hour = exam.examEndTime.hour + (exam.examEndTime.minute / 60) %}
+                {% for exam in exams %}
+                    {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
+                    {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                     {% set left_pos = start_hour * 100 %}
                     {% set width = (end_hour - start_hour) * 100 %}
                     <div class="exam-block" style="left:{{ left_pos }}px; width:{{ width }}px;">
-                        <strong>{{ exam.course.courseCodeSectionIntake }}</strong><br>
-                        {{ exam.course.courseName }}<br>
-                        <small>{{ exam.examVenue }} | {{ exam.examStartTime.strftime("%H:%M") }}–{{ exam.examEndTime.strftime("%H:%M") }}</small>
+                        <strong>{{ exam.course_code }}</strong><br>
+                        {{ exam.course_name }}<br>
+                        <small>{{ exam.venue }} | {{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</small>
                     </div>
                 {% endfor %}
             </div>
