@@ -47,7 +47,6 @@
                 {% set max_row = 1 %}
             {% endif %}
 
-            <!-- ✅ Add unique id for JS scroll -->
             <div class="calendar-row" id="date-{{ date.strftime('%Y-%m-%d') }}">
                 <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
                 <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ max_row * 70 }}px;">
@@ -58,7 +57,7 @@
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                         {% set left_pos = 10 + start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
-                        {% set top_pos = 15 + (pos.row * 60) %}
+                        {% set top_pos = 5 + (pos.row * 70) %}
 
                         {% if exam.status %}
                             {% set block_color = '#75bdf9' %}
@@ -95,14 +94,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (todayRow) {
         const container = document.querySelector('.calendar-container');
-        const rowTop = todayRow.offsetTop;
-        const containerHeight = container.clientHeight;
 
-        // ✅ Scroll so today's row is roughly in the middle
-        container.scrollTop = rowTop - containerHeight / 2;
+        // ✅ Scroll so today's row is at the top of the view
+        container.scrollTop = todayRow.offsetTop;
     }
 });
 </script>
+
 {% endblock %}
 
 
