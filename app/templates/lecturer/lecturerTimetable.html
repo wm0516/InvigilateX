@@ -6,22 +6,28 @@
     <h2>My Teaching Timetable</h2>
 
     <div class="timetable-container">
-        <!-- Header -->
+        <!-- Header Row -->
         <div class="timetable-row timetable-header">
             <div class="timetable-time-label">Time / Day</div>
             {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
-                <div class="timetable-cell day-header">{{ day }}</div>
+                <div class="timetable-day-label">{{ day }}</div>
             {% endfor %}
         </div>
 
-        <!-- Timetable Rows -->
+        <!-- Time Rows -->
         {% for hour in range(7, 24) %}
         <div class="timetable-row">
+            <!-- Left-side Time -->
             <div class="timetable-time-label">{{ "%02d:00"|format(hour) }}</div>
+
+            <!-- Day Cells -->
             {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
                 <div class="timetable-cell">
                     {% for row in timetable_rows if row.classDay|upper == day and (row.classTime.split('-')[0].split(':')[0]|int) == hour %}
-                        <div class="class-block" style="--duration: {{ (row.classTime.split('-')[1].split(':')[0]|int - row.classTime.split('-')[0].split(':')[0]|int) }}">
+                        {% set start_hour = row.classTime.split('-')[0].split(':')[0]|int %}
+                        {% set end_hour = row.classTime.split('-')[1].split(':')[0]|int %}
+                        {% set duration = end_hour - start_hour %}
+                        <div class="class-block" style="--duration: {{ duration }}">
                             <strong>{{ row.courseName }}</strong><br>
                             [{{ row.classType }}]<br>
                             <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
