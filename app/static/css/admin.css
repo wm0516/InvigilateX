@@ -352,6 +352,7 @@ html, body {
 }
 
 .timetable-row {
+    height: auto;
     display: flex;
     align-items: stretch;
     border-bottom: 1px solid #e0e0e0;

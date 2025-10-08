@@ -28,6 +28,11 @@
                         {% set start_hour = row.classTime.split('-')[0].split(':')[0] | int %}
                         {% if hour == start_hour %}
                             {% set has_class = true %}
+                            {% set start_time = row.classTime.split('-')[0].strip() %}
+                            {% set end_time = row.classTime.split('-')[1].strip() %}
+                            {% set start_hour = start_time.split(':')[0] | int %}
+                            {% set end_hour = end_time.split(':')[0] | int %}
+                            {% set duration = end_hour - start_hour %}
                             <div class="class-block" style="--duration: {{ duration }};">
                                 <strong>{{ row.courseName }}</strong><br>
                                 [{{ row.classType }}]<br>
