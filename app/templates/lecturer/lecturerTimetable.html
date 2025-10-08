@@ -28,13 +28,13 @@
                                 {% set duration = end_hour - start_hour %}
                                 <div class="class-block" 
                                      data-duration="{{ duration }}"
-                                     style="height: calc({{ duration }} * 60px - 4px);">
+                                     style="height: calc({{ duration }} * 50px);">
                                     <div class="class-header">
                                         <strong>{{ row.courseName }}</strong>
-                                        <span class="class-type">[{{ row.classType }}]</span>
                                     </div>
                                     <div class="class-details">
                                         <i class="room">{{ row.classRoom }}</i>
+                                        <span class="class-type">[{{ row.classType }}]</span>
                                         <span class="time">{{ row.classTime }}</span>
                                     </div>
                                     <div class="course-groups">
