@@ -264,13 +264,27 @@ def user_ownTimetable():
 @login_required
 def user_mergeTimetable():
     userId = session.get('user_id')
-    timetable = (
+
+    # Get the logged-in user's department
+    current_user = User.query.filter_by(userId=userId).first()
+    if not current_user:
+        flash("User not found.", "danger")
+        return redirect(url_for('user_dashboard'))
+
+    user_department = current_user.userDepartment
+
+    # Query all timetables for users in the same department
+    timetables = (
         Timetable.query
-        .join(User)  # join the related User table
-        .filter(Timetable.user_id == userId, User.userStatus == 1)
-        .first()
+        .join(User, Timetable.user_id == User.userId)
+        .filter(User.userDepartment == user_department, User.userStatus == 1)
+        .all()
     )
-    timetable_rows = timetable.rows if timetable else []
+
+    # Collect all timetable rows
+    timetable_rows = []
+    for timetable in timetables:
+        timetable_rows.extend(timetable.rows)
 
     # Combine overlapping (same day & same time) entries
     merged = {}
@@ -292,13 +306,17 @@ def user_mergeTimetable():
             merged[key]['courseCodes'].append(row.courseCode)
             merged[key]['courseSections'].append(row.courseSection)
 
+    # Build merged timetable list for rendering
     merged_timetable = []
     for item in merged.values():
-        # zip the lists directly (combine element by element)
         item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
         merged_timetable.append(item)
-    
-    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable)
+
+    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, department=user_department)
+
+
+
+
 
 
 
