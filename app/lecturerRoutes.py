@@ -55,19 +55,11 @@ def lecturer_timetable():
     for item in merged.values():
         # zip the lists directly (combine element by element)
         item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
-
-        # ✅ Calculate class duration in hours
-        start, end = item['classTime'].split('-')
-        h1 = int(start.strip().split(':')[0])
-        h2 = int(end.strip().split(':')[0])
-        item['duration'] = h2 - h1  # 2-hour class -> 2
         merged_timetable.append(item)
 
-    return render_template(
-        'lecturer/lecturerTimetable.html',
-        active_tab='lecturer_timetabletab',
-        timetable_rows=merged_timetable
-    )
+
+    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable_rows=merged_timetable)
+
 
 
 
