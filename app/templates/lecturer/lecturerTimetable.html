@@ -4,13 +4,13 @@
 <div class="menu-section">
     <h2>Lecturer Timetable</h2>
 
-    <!-- Timetable Display -->
     <div class="user-table-container">
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
                     <th>Day / Time</th>
-                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                    {% for time in time_slots %}
                         <th>{{ time }}</th>
                     {% endfor %}
                 </tr>
@@ -20,12 +20,14 @@
                 <tr>
                     <td><strong>{{ day }}</strong></td>
 
-                    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-                    {% set i = 0 %}
-                    {% while i < time_slots|length %}
-                        {% set time = time_slots[i] %}
-                        {% set class_found = False %}
+                    {% set skip = 0 %}
+                    {% for time in time_slots %}
+                        {% if skip > 0 %}
+                            {% set skip = skip - 1 %}
+                            {% continue %}
+                        {% endif %}
 
+                        {% set class_found = false %}
                         {% for row in timetable_rows %}
                             {% if row.classDay == day %}
                                 {% set start = row.classTime.split('-')[0].strip() %}
@@ -35,7 +37,7 @@
                                     {% set end_hour = end.split(':')[0]|int %}
                                     {% set duration = end_hour - start_hour %}
                                     <td colspan="{{ duration }}">
-                                        <div style="border:1px solid #ccc; padding:6px; background:#f8f9fa; border-radius:6px;">
+                                        <div style="border:1px solid #ccc; padding:6px; background:#f8f9fa; border-radius:6px; text-align:center;">
                                             <strong>{{ row.courseName }}</strong><br>
                                             [{{ row.classType }}]<br>
                                             Room: {{ row.classRoom }}<br>
@@ -51,8 +53,8 @@
                                             {% endif %}
                                         </div>
                                     </td>
-                                    {% set i = i + duration %}
-                                    {% set class_found = True %}
+                                    {% set skip = duration - 1 %}
+                                    {% set class_found = true %}
                                     {% break %}
                                 {% endif %}
                             {% endif %}
@@ -60,9 +62,8 @@
 
                         {% if not class_found %}
                             <td></td>
-                            {% set i = i + 1 %}
                         {% endif %}
-                    {% endwhile %}
+                    {% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -70,13 +71,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
