@@ -24,11 +24,12 @@ bcrypt = Bcrypt()
 
 
 # -------------------------------
-# Calculate Invigilation Stats for User's Department Only
+# Calculate Invigilation Stats (Filtered by User Department Only)
 # -------------------------------
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
 
+    # ✅ Main query — only include invigilations under same department
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -42,12 +43,13 @@ def calculate_invigilation_stats():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)  # ✅ join Course to access department
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # for lecturer info
         .filter(InvigilatorAttendance.invigilationStatus == True)
         .filter(Exam.examStatus == True)
+        .filter(Course.courseDepartment == user.userDepartment)  # ✅ restrict by department
+        .all()
     )
 
-    # Count totals (also restricted by department)
+    # ✅ Department-limited totals
     total_report = (
         InvigilationReport.query
         .join(Exam, InvigilationReport.examId == Exam.examId)
@@ -76,6 +78,7 @@ def calculate_invigilation_stats():
         "total_inProgress": 0
     }
 
+    # ✅ Calculate time-based stats
     for row in query:
         if row.checkIn is None:
             stats["total_checkInOut"] += 1
