@@ -89,7 +89,6 @@ def calculate_invigilation_stats():
 
 
 def get_all_attendances(user):
-    # Start the base query
     query = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -105,8 +104,7 @@ def get_all_attendances(user):
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
     elif user.userLevel in [2, 3, 4]:
         # Dean / HOS / HOP / Admin — view all lecturers in the same department
-        query = query.filter(Department.departmentCode == user.userDepartment)
-
+        query = query.filter(InvigilatorAttendance.invigilatorId.userDepartment == user.userDepartment)
     # Order by exam status and time
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
 
@@ -118,7 +116,7 @@ def get_all_attendances(user):
 @login_required
 def user_invigilationReport():
     user = User.query.get(session.get('user_id'))
-    flash(f"{user.userId}", "success")
+    flash(f"{user.userId, user.userLevel}", "success")
     attendances = get_all_attendances(user)
     stats = calculate_invigilation_stats()
 
