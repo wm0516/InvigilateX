@@ -264,7 +264,12 @@ def user_ownTimetable():
 @login_required
 def user_mergeTimetable():
     userId = session.get('user_id')
-    timetable = Timetable.query.filter_by(user_id=userId).first()
+    timetable = (
+        Timetable.query
+        .join(User)  # join the related User table
+        .filter(Timetable.user_id == userId, User.userStatus == 1)
+        .first()
+    )
     timetable_rows = timetable.rows if timetable else []
 
     # Combine overlapping (same day & same time) entries
