@@ -95,7 +95,7 @@
                 <label>Staff Linked</label>
                 <select name="staffList" id="staffList" required>
                     <option value="" disabled selected>Select Staff</option>
-                    {% for staff in staff_list %}
+                    {% for staff in unassigned_staff_list %}
                         <option value="{{ staff.userId }}">[{{ staff.userId }}] {{ staff.userName }}</option>
                     {% endfor %}
                 </select>

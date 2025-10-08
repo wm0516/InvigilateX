@@ -1661,11 +1661,16 @@ def admin_manageTimetable():
     if timetable_selected:
         timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
 
+    # Build mapping: user_id -> timetableId
+    timetable_map = {t.user_id: t.timetableId for t in timetable_list}
+
     # Staff list (exclude certain levels/status)
-    staff_list = User.query.filter(
+    staff_all  = User.query.filter(
         User.userLevel != 5,
         User.userStatus != 2
     ).all()
+    unassigned_staff_list = [staff for staff in staff_all if staff.userId not in timetable_map]
+    staff_list = staff_all
 
     # Count timetable per day
     days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
@@ -1681,9 +1686,6 @@ def admin_manageTimetable():
         grouped_unassigned[row.lecturerName] += 1
 
     unassigned_summary = [{"lecturer": name, "count": count} for name, count in grouped_unassigned.items()]
-
-    # Build mapping: user_id -> timetableId
-    timetable_map = {t.user_id: t.timetableId for t in timetable_list}
 
     # ---- POST Handling ----
     if request.method == "POST":
@@ -1720,9 +1722,9 @@ def admin_manageTimetable():
                 structured['filename'] = file.filename
                 rows_inserted = save_timetable_to_db(structured)
 
-                if rows_inserted > 0:
+                if (rows_inserted or 0) > 0:
                     total_files_processed += 1
-                    total_rows_inserted += rows_inserted
+                    total_rows_inserted += rows_inserted or 0
 
             flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             return redirect(url_for('admin_manageTimetable'))
@@ -1778,7 +1780,7 @@ def admin_manageTimetable():
 
                 return redirect(url_for('admin_manageTimetable'))
 
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer,
+    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer, unassigned_staff_list=unassigned_staff_list
         total_timetable=total_timetable, unassigned_summary=unassigned_summary, staff_list=staff_list, **day_counts, timetable_list=timetable_list, timetable_map=timetable_map, timetable_select=timetable_select)
 
 

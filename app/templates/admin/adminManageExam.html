@@ -83,8 +83,11 @@
                     {% for exam in exam_data %}
                         {% if exam.course %}
                             <option value="{{ exam.course.courseCodeSectionIntake }}">
-                                [Already Link][{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}
+                                [{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}
                             </option>
+                        {% else %}
+                            {# optional: show a disabled placeholder for exams without a linked course #}
+                            <option value="" disabled>Unlinked exam (ID: {{ exam.examId }})</option>
                         {% endif %}
                     {% endfor %}
                 </select><br>

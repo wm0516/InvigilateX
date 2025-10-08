@@ -12,7 +12,7 @@ from collections import defaultdict
 from app import app
 from .authRoutes import login_required
 from .backend import *
-from .database import *
+from .database import * 
 
 # -------------------------------
 # Flask and application setup
