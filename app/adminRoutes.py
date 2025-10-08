@@ -1648,9 +1648,10 @@ def admin_manageTimetable():
     timetable_data = (
         Timetable.query
         .join(User)  # join the related User table
-        .filter(Timetable.user_id == userId, User.userStatus == 1)
+        .filter(User.userStatus == 1)
         .first()
     )
+
     lecturers = sorted({row.lecturerName for row in timetable_data.rows}) if timetable_data else []
     selected_lecturer = request.args.get("lecturer")
 
