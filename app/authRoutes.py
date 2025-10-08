@@ -292,18 +292,22 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-# -------------------------------
-# Function for DEAN/HOS/HOP Homepage route
-# -------------------------------
+def get_all_records(user_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.invigilatorId == user_id
+        )
+        .order_by(Exam.examStatus.desc(), Exam.examStartTime.asc())
+        .all()
+    )
+
 @app.route('/user/home', methods=['GET', 'POST'])
 @login_required
 def user_homepage():
     user_id = session.get('user_id')
-    user = User.query.get(user_id)
-    
-    if not user:
-        flash("User not found", "error")
-        return redirect(url_for('login'))
-    
-    return render_template('user/userHomepage.html', active_tab='user_hometab')
-
+    records = get_all_records(user_id)
+    return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)

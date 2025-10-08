@@ -31,9 +31,21 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for record in records %}
                     <tr>
+                        <td>{{ record.report.exam.course.courseName }}</td>
+                        <td>{{ record.report.exam.course.courseCodeSectionIntake }}</td>
+                        <td>{{ record.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ record.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                        <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
+                        <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
+                        <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
                     </tr>
-                </tbody>    
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">No pending records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
     </div>
