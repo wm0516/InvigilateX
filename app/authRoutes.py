@@ -103,26 +103,33 @@ def register():
         password2_text = request.form.get('password2', '').strip()
 
         is_valid, error_message = check_register(id_text, email_text, contact_text, password1_text, password2_text)
-        success, message = send_verifyActivateLink(email_text)
+
         if error_message:
             flash(error_message, 'error')
-        elif is_valid and success:
+        elif is_valid:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
                 userId=id_text.upper(),
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
-                userLevel=role_map[role_text],  # use mapped constant
+                userLevel=role_map.get(role_text, ADMIN),  # default to ADMIN if role missing
                 userEmail=email_text,
                 userContact=contact_text,
                 userPassword=hashed_pw,
                 userGender=gender_text,
-                userStatus=0,
+                userStatus=0,  # not verified yet
                 userRegisterDateTime=datetime.now()
             )
             db.session.add(new_user)
             db.session.commit()
-            flash("Verify link sent to your email address.", 'success')
+
+            # Send verification email after saving user
+            success, message = send_verifyActivateLink(email_text)
+            if success:
+                flash("Verify link sent to your email address.", 'success')
+            else:
+                flash(f"Failed to send verification email: {message}", 'error')
+
             flash("Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login'))
 
