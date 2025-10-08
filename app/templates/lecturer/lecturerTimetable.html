@@ -21,11 +21,10 @@
                     <td><strong>{{ day }}</strong></td>
                     {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
                     <td>
-                        {% for row in timetable_data %}
-                            {% if (not selected_lecturer or row.lecturerName == selected_lecturer)
-                                  and row.classDay == day %}
-                                {% set start = row.classTime.split('-')[0] %}
-                                {% set end = row.classTime.split('-')[1] %}
+                        {% for row in timetable_rows %}
+                            {% if row.classDay == day %}
+                                {% set start = row.classTime.split('-')[0].strip() %}
+                                {% set end = row.classTime.split('-')[1].strip() %}
                                 {% if time >= start and time < end %}
                                     <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
                                         <strong>{{ row.courseName }}</strong><br>

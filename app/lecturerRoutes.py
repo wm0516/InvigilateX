@@ -58,6 +58,9 @@ def lecturer_timetable():
 
 
 
+
+
+
 @app.route('/lecturer/invigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def lecturer_invigilationTimetable():
