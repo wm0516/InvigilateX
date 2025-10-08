@@ -1,3 +1,66 @@
+{% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
+{% set show_upload = false %}
+{% set show_dashboard = true %}
+{% set show_manual = false %}
+{% set show_edit = true %}
+{% block title %}Admin ManageInvigilationReport{% endblock %}
+{% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
+
+{% block dashboard_section %}
+<!-- Dashboard Form -->
+<form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
+    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
+        <input type="hidden" name="form_type" value="dashboard">
+        <div class="form-left" style="width: 100%">
+            <div class="dashboard-row" style="grid-template-columns: repeat(7, 1fr);">
+                <div class="dashboard-frame">
+                    <h3>Active Reports</h3>
+                    <p class="dashboard-text">{{ total_report }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Exam In Going</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Pending Check-In/Out</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Checked In On Time</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_checkInOnTime }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Checked Out On Time</h3>
+                    <p class="dashboard-text" style="color:green;">{{ total_checkOutOnTime }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Checked In Late</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Checked Out Early</h3>
+                    <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block edit_section %}
+<!-- Edit Form -->
+<form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
+    <div id="editSection" style="width: 100%; margin:auto;">
+        <input type="hidden" name="form_type" value="edit">
+        <div class="form-left" style="width: 100%">
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block content %}
 <div class="menu-section">
     <h3>List of Lecturer Invigilation Report</h3>
     <div class="user-table-container">
@@ -109,3 +172,4 @@
         </table>
     </div>
 </div>
+{% endblock %}
