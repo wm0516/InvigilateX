@@ -3,7 +3,7 @@
 {% block head_title %}<h2>Own Timetable</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="user-table-container" style="max-height: None;">    
+    <div class="user-table-container">    
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
@@ -17,27 +17,47 @@
                 {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-                    <td>
+                    
+                    {# define time slots #}
+                    {% set times = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                    {% set t_index = 0 %}
+                    
+                    {% while t_index < times|length %}
+                        {% set current_time = times[t_index] %}
+                        {% set found = false %}
+                        
                         {% for row in timetable_rows %}
                             {% if row.classDay == day %}
                                 {% set start = row.classTime.split('-')[0].strip() %}
                                 {% set end = row.classTime.split('-')[1].strip() %}
-                                {% if time >= start and time < end %}
-                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
-                                        <strong>Course</strong>:<br><i>{{ row.courseName }}</i><br>
-                                        <strong>Class Type</strong>: <i>{{ row.classType }}</i><br>
-                                        <strong>Room</strong>: <i>{{ row.classRoom }}</i><br>
-                                        <strong>Sections</strong>: <br>
+                                
+                                {% if current_time == start %}
+                                    {# compute how many columns (hours) to span #}
+                                    {% set span = (times.index(end) - times.index(start)) if end in times else 1 %}
+                                    
+                                    <td colspan="{{ span }}" style="background:#f8f9fa; border:1px solid #ccc; padding:6px;">
+                                        <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
+                                        <strong>Type:</strong> <i>{{ row.classType }}</i><br>
+                                        <strong>Room:</strong> <i>{{ row.classRoom }}</i><br>
+                                        <strong>Sections:</strong><br>
                                         {% for intake, code, section in row.combined %}
                                             <i>{{ intake }} | {{ code }} | {{ section }};</i><br>
                                         {% endfor %}
-                                    </div>
+                                    </td>
+                                    
+                                    {% set t_index = t_index + span %}
+                                    {% set found = true %}
+                                    {% break %}
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
-                    </td>
-                    {% endfor %}
+                        
+                        {% if not found %}
+                            <td></td>
+                            {% set t_index = t_index + 1 %}
+                        {% endif %}
+                    {% endwhile %}
+                    
                 </tr>
                 {% endfor %}
             </tbody>
@@ -45,13 +65,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
