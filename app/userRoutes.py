@@ -23,19 +23,35 @@ bcrypt = Bcrypt()
 
 
 
+
 def get_all_attendances():
-    dean = User.query.get(session.get('user_id'))
-    return (
+    user = User.query.get(session.get('user_id'))
+
+    # Start the base query
+    query = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # join to get the invigilator
-        .filter(User.userDepartment == dean.userDepartment)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Join to get invigilator details
+        .join(Department, User.userDepartment == Department.departmentCode)  # Join to get department details
         .filter(InvigilatorAttendance.invigilationStatus == True)
-        .all()
     )
 
+    # Apply condition based on user level
+    if user.userLevel == 1:
+        # Lecturer — view only their own invigilation records
+        query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+    elif user.userLevel in [2, 3, 4]:
+        # Dean / HOS / HOP / Admin — view all lecturers in the same department
+        query = query.filter(Department.departmentCode == user.userDepartment)
 
+    # Order by exam status and time
+    return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
+
+
+
+# Lecturer get own
+# DEAN, HOS, HOP get under own
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
 @login_required
 def user_invigilationReport():

@@ -3,9 +3,7 @@
 {% block title %}Homepage{% endblock %}
 {% block content %}
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
-        <!-- Row 1 First Fesatures to upload merge schedule files--> 
         <div class="menu-section">
-            <!--   <h2>Upload File</h2><br>  -->
             <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
             <li class="submenu">
                 <strong>  Purpose:</strong>
@@ -16,22 +14,20 @@
             </li>
         </div>
 
-        <!-- Row 2 First auto generated scdehule-->
-        <div class="menu-section">
-            <!-- <h2>Generate Exam Schedule</h2> -->
-            <a href="{{ url_for('user_invigilationReport')}}" style="text-decoration: none;"><h2>Invigilation Report</h2></a>
-            <li class="submenu">
-                <strong>  Functionality:</strong>
-                <ul>
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
-                </ul>
-            </li>
-        </div>
+        {% if user_level in [2, 3, 4] %}
+            <div class="menu-section">
+                <a href="{{ url_for('user_invigilationTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
+                <li class="submenu">
+                    <strong>  Purpose:</strong>
+                    <ul>    
+                        <li>Upload merged lecturer schedule files</li>
+                        <li>Access and review combined lecturer timetables</li>
+                    </ul>
+                </li>
+            </div>
+        {% endif %}
 
-        <!-- Row 3 First Fesatures to upload merge schedule files--> 
         <div class="menu-section">
-            <!--   <h2>Upload File</h2><br>  -->
             <a href="{{ url_for('user_mergeTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
             <li class="submenu">
                 <strong>  Purpose:</strong>
@@ -44,13 +40,11 @@
     </div>
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
-        <!-- Row 1 First Fesatures to upload merge schedule files--> 
         <div class="menu-section">
-            <!--   <h2>Upload File</h2><br>  -->
-            <a href="{{ url_for('user_invigilationTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
+            <a href="{{ url_for('user_invigilationReport')}}" style="text-decoration: none;"><h2>Invigilation Report</h2></a>
             <li class="submenu">
-                <strong>  Purpose:</strong>
-                <ul>    
+                <strong>  Functionality:</strong>
+                <ul>
                     <li>Upload merged lecturer schedule files</li>
                     <li>Access and review combined lecturer timetables</li>
                 </ul>
