@@ -339,8 +339,10 @@ def user_homepage():
         if record:
             if action == 'accept':
                 record.invigilationStatus = True
+                flash("Exam Invigilation Accept", "success")
             elif action == 'reject':
                 record.invigilationStatus = False
+                flash("Exam Invigilation Reject", "error")
             db.session.commit()
         return redirect(url_for('user_homepage'))
     
