@@ -266,6 +266,8 @@ html, body {
 
 
 
+
+
 .calendar-container {
     overflow-x: auto;
     overflow-y: auto;
@@ -276,10 +278,9 @@ html, body {
     background: #f9f9f9;
 }
 
-
 /* Row wrapper for time and day rows */
 .calendar-row {
-    width: 2130px;
+    width: 2530px; /* ✅ updated from 2130px (24 * 100 + margins) */
     display: flex;
     border-bottom: 2px solid #b7bbed;
     align-items: flex-start;
@@ -294,7 +295,6 @@ html, body {
     border-bottom: 3px solid #999;
 }
 
-
 /* First column: date or time label */
 .calendar-date-label {
     width: 160px;
@@ -306,11 +306,10 @@ html, body {
     border-right: 1px solid #ccc;
 }
 
-
-/* Timeline hours (in header row) */
+/* ✅ Timeline hours (in header row) */
 .calendar-hour {
-    width: 80px;
-    min-width: 80px;
+    width: 100px; /* was 80px */
+    min-width: 100px;
     text-align: center;
     font-size: 16px;
     padding: 5px 0;
@@ -326,7 +325,6 @@ html, body {
     background: white;
 }
 
-
 /* Exam block */
 .exam-block {
     position: absolute;
@@ -337,6 +335,7 @@ html, body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background 0.2s ease;
 }
+
 
 
 

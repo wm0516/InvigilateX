@@ -35,7 +35,7 @@
             {% endfor %}
         </div>
 
-        {% set hour_width = 80 %}
+        {% set hour_width = 100 %}  {# ✅ updated from 80 #}
         {% for date in full_dates %}
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
@@ -85,7 +85,6 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -98,7 +97,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const todayRow = document.getElementById(todayId);
 
     if (todayRow && container) {
-        // ✅ Smoothly scroll to today's row
         container.scrollTo({
             top: todayRow.offsetTop - 40,
             behavior: 'smooth'
@@ -107,5 +105,3 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 {% endblock %}
-
-
