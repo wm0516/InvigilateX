@@ -4,12 +4,21 @@
 {% block content %}
     {% if userLevel == 1 %}
         <div class="menu-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1%; width: 100%;;">
-            <div class="menu-section">
-                
+            <div class="dashboard-row" style="grid-template-columns: repeat(7, 1fr);">
+                <div class="dashboard-frame">
+                    <h3>Cumulative Invigilation Hour</h3>
+                    <p class="dashboard-text" style="color:green;">{{ userCumulativeHours }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Pending Cumulative Invigilation Hour</h3>
+                    <p class="dashboard-text" style="color:blueviolet;">{{ userPendingCumulativeHours   }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Pending Cumulative Invigilation Hour</h3>
+                    <p class="dashboard-text" style="color:blueviolet;">{{ userPendingCumulativeHours   }}</p>
+                </div>
             </div>
         </div>
-
-
     {% endif %}
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
