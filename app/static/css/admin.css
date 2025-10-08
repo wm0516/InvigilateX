@@ -280,7 +280,7 @@ html, body {
 
 /* Row wrapper for time and day rows */
 .calendar-row {
-    width: 2600px;
+    width: 2840px;
     display: flex;
     border-bottom: 2px solid #b7bbed;
     align-items: flex-start;

@@ -61,13 +61,8 @@
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
                         {% set left_pos = start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
-
-                        {# ✅ Apply your offsets safely #}
-                        {% if start_hour > 1 %}
-                            {% set left_pos = left_pos + 30 %}
-                        {% endif %}
                         {% if width > 110 %}
-                            {% set width = width + 10 %}
+                            {% set width = width - 10 %}
                         {% endif %}
 
                         {% set top_pos = 5 + (pos.row * 70) %}
