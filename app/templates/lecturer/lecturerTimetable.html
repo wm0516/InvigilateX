@@ -6,38 +6,36 @@
     <h2>My Teaching Timetable</h2>
 
     <div class="timetable-container">
-        <div class="timetable-time-label">Time / Day</div>
-        {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
-            <div class="timetable-time-label">{{ day }}</div>
-        {% endfor %}
-        <div></div>
-                
-        {% for hour in range(7, 24) %}
-            {% set has_class = false %}
-            {% for row in timetable_rows if (row.classTime.split('-')[0].split(':')[0]|int) == hour %}
-                {% set has_class = true %}
+        <!-- Header -->
+        <div class="timetable-row timetable-header">
+            <div class="timetable-time-label">Time / Day</div>
+            {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
+                <div class="timetable-cell day-header">{{ day }}</div>
             {% endfor %}
-            
-            <div class="timetable-row {% if has_class %}has-class{% endif %}">
-                <div class="timetable-time-label">{{ "%02d:00"|format(hour) }}</div>
-                {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
-                    <div class="timetable-cell">
-                        {% for row in timetable_rows if row.classDay|upper == day and (row.classTime.split('-')[0].split(':')[0]|int) == hour %}
-                            <div class="class-block" style="--duration: {{ (row.classTime.split('-')[1].split(':')[0]|int - row.classTime.split('-')[0].split(':')[0]|int) }}">
-                                <strong>{{ row.courseName }}</strong><br>
-                                [{{ row.classType }}]<br>
-                                <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
-                                <hr>
-                                <div class="course-details">
-                                    {% for i in range(row.courseIntakes|length) %}
+        </div>
+
+        <!-- Timetable Rows -->
+        {% for hour in range(7, 24) %}
+        <div class="timetable-row">
+            <div class="timetable-time-label">{{ "%02d:00"|format(hour) }}</div>
+            {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
+                <div class="timetable-cell">
+                    {% for row in timetable_rows if row.classDay|upper == day and (row.classTime.split('-')[0].split(':')[0]|int) == hour %}
+                        <div class="class-block" style="--duration: {{ (row.classTime.split('-')[1].split(':')[0]|int - row.classTime.split('-')[0].split(':')[0]|int) }}">
+                            <strong>{{ row.courseName }}</strong><br>
+                            [{{ row.classType }}]<br>
+                            <i>{{ row.classRoom }}</i> | <span>{{ row.classTime }}</span>
+                            <hr>
+                            <div class="course-details">
+                                {% for i in range(row.courseIntakes|length) %}
                                     <small>{{ row.courseIntakes[i] }} | {{ row.courseCodes[i] }} | {{ row.courseSections[i] }}</small><br>
-                                    {% endfor %}
-                                </div>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
         {% endfor %}
     </div>
 </div>
