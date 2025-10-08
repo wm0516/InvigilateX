@@ -6,7 +6,7 @@
 
     <!-- Timetable Display -->
     <div class="user-table-container">
-        <table class="user-data-table" border="1">
+        <table class="user-data-table" border="1" style="height: 65px;">
             <thead>
                 <tr>
                     <th>Day / Time</th>
@@ -25,8 +25,9 @@
                             {% if row.classDay == day %}
                                 {% set start = row.classTime.split('-')[0].strip() %}
                                 {% set end = row.classTime.split('-')[1].strip() %}
-                                {% if time == start %}  {# ✅ Only show at the start time #}
-                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
+                                {% if time == start %}
+                                    {% set height = 65 * row.duration %}
+                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; height:{{ height }}px;">
                                         <strong>{{ row.courseName }}</strong><br>
                                         [{{ row.classType }}]<br>
                                         Room: {{ row.classRoom }}<br>
