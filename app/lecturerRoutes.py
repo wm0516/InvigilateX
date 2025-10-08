@@ -51,7 +51,12 @@ def lecturer_timetable():
             merged[key]['courseCodes'].append(row.courseCode)
             merged[key]['courseSections'].append(row.courseSection)
 
-    merged_timetable = list(merged.values())
+    merged_timetable = []
+    for item in merged.values():
+        # zip the lists directly (combine element by element)
+        item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
+        merged_timetable.append(item)
+
 
     return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable_rows=merged_timetable)
 

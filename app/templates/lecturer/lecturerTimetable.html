@@ -30,10 +30,9 @@
                                         <strong>{{ row.courseName }}</strong><br>
                                         [{{ row.classType }}]<br>
                                         Room: {{ row.classRoom }}<br>
-                                        <small>{{ row.classTime }}</small>
-                                        <small>{{ row.courseIntakes }}</small>
-                                        <small>{{ row.courseCodes }}</small>
-                                        <small>{{ row.courseSections }}</small>
+                                        {% for intake, code, section in row.combined %}
+                                            <small>{{ intake }} | {{ code }} | {{ section }}</small><br>
+                                        {% endfor %}
                                     </div>
                                 {% endif %}
                             {% endif %}
