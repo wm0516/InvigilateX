@@ -61,6 +61,7 @@
         </nav>
 
         <main class="main-content">
+            {% block head_title %}{% endblock %}
             <!-- Flash Message Section -->
             {% set flashes = get_flashed_messages(with_categories=true) %}
             {% if uploadResult or uploadErrors or flashes %}
