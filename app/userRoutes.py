@@ -185,18 +185,37 @@ def user_ownTimetable():
 @app.route('/user/mergeTimetable', methods=['GET', 'POST'])
 @login_required
 def user_mergeTimetable():
-    user_id = session.get('user_id')
-    user = User.query.get(user_id)
+    userId = session.get('user_id')
+    timetable = Timetable.query.filter_by(user_id=userId).first()
+    timetable_rows = timetable.rows if timetable else []
+
+    # Combine overlapping (same day & same time) entries
+    merged = {}
+    for row in timetable_rows:
+        key = (row.classDay.upper(), row.classTime, row.classType, row.classRoom)
+        if key not in merged:
+            merged[key] = {
+                'classDay': row.classDay,
+                'classTime': row.classTime,
+                'classType': row.classType,
+                'classRoom': row.classRoom,
+                'courseName': row.courseName,
+                'courseIntakes': [row.courseIntake],
+                'courseCodes': [row.courseCode],
+                'courseSections': [row.courseSection]
+            }
+        else:
+            merged[key]['courseIntakes'].append(row.courseIntake)
+            merged[key]['courseCodes'].append(row.courseCode)
+            merged[key]['courseSections'].append(row.courseSection)
+
+    merged_timetable = []
+    for item in merged.values():
+        # zip the lists directly (combine element by element)
+        item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
+        merged_timetable.append(item)
     
-    # Get all timetables for users in the same department
-    timetables = Timetable.query.join(User, Timetable.user == User.userId).filter(User.userDepartment == user.userDepartment).all()
-        
-    # Flatten all rows into a single list
-    timetable_rows = []
-    for t in timetables:
-        timetable_rows.extend(t.rows)
-    
-    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=timetable_rows)
+    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable)
 
 
 
@@ -233,25 +252,8 @@ def user_profile():
             flash("Successfully updated", 'success')
             return redirect(url_for('user_profile'))
 
-    return render_template(
-        'user/userProfile.html',
-        active_tab='user_profiletab',
-        user_name=user.userName if user else '',
-        user_id=user.userId if user else '',
-        user_email=user.userEmail if user else '',
-        user_department_text=user.userDepartment if user else '',
-        user_gender=user.userGender if user else '',
-        user_role_text={
-            LECTURER: "LECTURER",
-            HOP: "HOP",
-            HOS: "HOS",
-            DEAN: "DEAN",
-            ADMIN: "ADMIN"
-        }.get(user.userLevel, "Unknown") if user else '',
-        userContact_text=user.userContact if user else '',
-        userPassword1_text=userPassword1_text,
-        userPassword2_text=userPassword2_text,
-        error_message=error_message
-    )
+    return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, userContact_text=user.userContact if user else '',
+                            userPassword1_text=userPassword1_text, userPassword2_text=userPassword2_text, error_message=error_message)
+
 
 
