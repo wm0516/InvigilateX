@@ -146,19 +146,19 @@ def verifyAccount(token):
         user = User.query.filter_by(userEmail=email).first()
         if not user:
             flash("Invalid verification link.", "danger")
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('login'))
 
         user.userStatus = True
         db.session.commit()
         flash("Your account has been verified successfully!", "success")
-        return redirect(url_for('auth.login'))
+        return redirect(url_for('login'))
 
     except SignatureExpired:
         flash("The verification link has expired.", "warning")
-        return redirect(url_for('auth.register'))
+        return redirect(url_for('register'))
     except BadSignature:
         flash("Invalid verification token.", "danger")
-        return redirect(url_for('auth.register'))
+        return redirect(url_for('register'))
 
 
 # -------------------------------
