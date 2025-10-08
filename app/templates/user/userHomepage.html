@@ -3,7 +3,7 @@
 {% block title %}Homepage{% endblock %}
 {% block content %}
     <h1>Welcome Back</h1>
-    {% if user_level == 1 %}
+    {% if user_level == 1 %}    
     <div class="dashboard-row">
         <div class="dashboard-frame">
             <h3>Cumulative Invigilation Hour</h3>
@@ -15,6 +15,13 @@
             <p class="dashboard-text" style="color:blueviolet;">{{ user_pendingInvigilationHour   }}</p>
         </div>
     </div><br>
+
+    <div>
+        <h3>Accept or Reject for Invigilation Slot</h3>
+
+        
+    </div>
+
     {% endif %}
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
