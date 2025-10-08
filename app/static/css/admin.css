@@ -271,7 +271,7 @@ html, body {
 .calendar-container {
     overflow-x: auto;
     overflow-y: auto;
-    scroll-behavior: smooth; /* ✅ Smooth scrolling */
+    scroll-behavior: smooth; 
     max-height: 600px;
     padding: 1rem;
     border: 1px solid #ccc;
@@ -280,7 +280,7 @@ html, body {
 
 /* Row wrapper for time and day rows */
 .calendar-row {
-    width: 2530px; /* ✅ updated from 2130px (24 * 100 + margins) */
+    width: 2600px;
     display: flex;
     border-bottom: 2px solid #b7bbed;
     align-items: flex-start;
