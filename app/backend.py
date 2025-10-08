@@ -36,7 +36,8 @@ role_map = {
 # Basic User Details Function 1: Email Format [End with @newinti.edu.my]
 # -------------------------------
 def email_format(email):
-    return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
+    return email
+    # return bool(re.match(r"^[a-zA-Z0-9._%+-]+@newinti\.edu\.my$", email))
 
 # -------------------------------
 # Basic User Details Function 2: Contact Number Format [Start With 01 and Total Length in Between 10-11]
