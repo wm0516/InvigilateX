@@ -61,6 +61,24 @@
         </nav>
 
         <main class="main-content">
+            <!-- Flash Message Section -->
+            {% set flashes = get_flashed_messages(with_categories=true) %}
+            {% if uploadResult or uploadErrors or flashes %}
+                <div class="messages-container">
+                    {% if uploadResult %}
+                        <div class="result-message">{{ uploadResult }}</div>
+                    {% elif uploadErrors %}
+                        <div class="error-message">{{ uploadErrors }}</div>
+                    {% elif flashes %}
+                        {% for category, message in flashes %}
+                            <div class="alert alert-{{ category }}">
+                                <strong>{{ category.capitalize() }}:</strong> {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div><br>
+            {% endif %}
+
             {% block content %}{% endblock %}
         </main>
     </div>
@@ -77,6 +95,7 @@
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
     </script>
+    
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
