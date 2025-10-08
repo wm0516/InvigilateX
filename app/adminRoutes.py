@@ -1906,18 +1906,19 @@ def calculate_invigilation_stats():
         .all()
     )
 
-    # Total reports for exams that are active (examStatus=True)
+    # Total active reports (InvigilationReport for exams with examStatus=True)
     total_report = (
         db.session.query(InvigilationReport)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Exam)  # joins on InvigilationReport.examId == Exam.examId via relationship
         .filter(Exam.examStatus == True)
         .count()
     )
 
-    # Total assigned invigilators for exams that are active
+    # Total active invigilators (InvigilatorAttendance for exams with examStatus=True)
     total_invigilator = (
         db.session.query(InvigilatorAttendance)
-        .join(Exam, InvigilatorAttendance.examId == Exam.examId)
+        .join(InvigilationReport)  # joins on InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId
+        .join(Exam)                # joins on InvigilationReport.examId == Exam.examId
         .filter(Exam.examStatus == True)
         .count()
     )
