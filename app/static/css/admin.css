@@ -359,7 +359,7 @@ html, body {
     display: flex;
     border-bottom: 1px solid #e0e0e0;
     position: relative;
-    min-height: 65px; /* base height per hour */
+    min-height: 63px; /* base height per hour */
 }
 
 .timetable-time-label {
@@ -389,16 +389,14 @@ html, body {
 
 .class-block {
     position: absolute;
-    top: 0;
-    left: 5%;
-    width: 90%;
+    width: 93%;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
-    padding: 8px;
+    padding: 5px;
     font-size: 13px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: calc(65px * var(--duration)); /* 65px per hour duration */
+    height: calc(63px * var(--duration)); /* 65px per hour duration */
 }
 
 .class-block hr {
