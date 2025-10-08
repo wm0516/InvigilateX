@@ -297,6 +297,7 @@ def user_mergeTimetable():
                 'classType': row.classType,
                 'classRoom': row.classRoom,
                 'courseName': row.courseName,
+                'lecturerName': row.lecturerName,
                 'courseIntakes': [row.courseIntake],
                 'courseCodes': [row.courseCode],
                 'courseSections': [row.courseSection]
