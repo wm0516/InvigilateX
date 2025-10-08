@@ -16,61 +16,56 @@
         </div>
     </div><br>
 
-    <div class="menu-section">
-        <h3>Accept or Reject for Invigilation Slot</h3>
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
-                        <th>Exam Date</th>
-                        <th>Exam Day</th>
-                        <th>Exam Time</th>
-                        <th>Exam Period</th>
-                        <th>Accept</th>
-                        <th>Reject With Reason(Optional)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in records %}
-                    <tr>
-                        <td>{{ record.report.exam.course.courseName }}</td>
-                        <td>{{ record.report.exam.course.courseCodeSectionIntake }}</td>
-                        <td>{{ record.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ record.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+    <form action="{{ url_for('user_homepage') }}" method="POST">
+        <div class="menu-section">
+            <h3>Accept or Reject for Invigilation Slot</h3>
+            <div class="user-table-container">
+                <table class="user-data-table">
+                    <thead>
+                        <tr>
+                            <th>Course Name</th>
+                            <th>Course Code</th>
+                            <th>Exam Date</th>
+                            <th>Exam Day</th>
+                            <th>Exam Time</th>
+                            <th>Exam Period</th>
+                            <th>Accept</th>
+                            <th>Reject With Reason(Optional)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>{{ record.report.exam.course.courseName }}</td>
+                            <td>{{ record.report.exam.course.courseCodeSectionIntake }}</td>
+                            <td>{{ record.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ record.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                            <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
+                            <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
+                            <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
 
-                        <!-- Accept Form -->
-                        <td>
-                            <form method="POST">
-                                <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
-                                <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724;">
-                                    <i class="fas fa-check"></i> Accept
-                                </button>
-                            </form>
-                        </td>
-
-                        <!-- Reject Form -->
-                        <td>
-                            <form method="POST">
-                                <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
-                                <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24;">
-                                    <i class="fas fa-trash"></i> Reject
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="8" class="text-center">No pending records found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div><br>
+                            <td>
+                                <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
+                                    <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724;">
+                                        <i class="fas fa-check"></i> Accept
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                                    <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
+                                    <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24;">
+                                        <i class="fas fa-trash"></i> Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div><br>
+    </form>
     {% endif %}
 
 

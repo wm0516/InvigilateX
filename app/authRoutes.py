@@ -329,12 +329,11 @@ def user_homepage():
 
     if request.method == 'POST':
         action = request.form.get('action')
-        record_id = request.form.get('record_id')  # get the specific record ID from the form
-
-        # Fetch the specific record for this user
+        record_id = request.form.get('record_id')
+        
         record = InvigilatorAttendance.query.filter_by(
             invigilatorId=user_id,
-            attendanceId=record_id  # assuming 'attendanceId' is the PK
+            attendanceId=record_id
         ).first()
 
         if record:
@@ -342,9 +341,7 @@ def user_homepage():
                 record.invigilationStatus = True
             elif action == 'reject':
                 record.invigilationStatus = False
-
-            db.session.commit()  # save changes to the database
-
+            db.session.commit()
         return redirect(url_for('user_homepage'))
     
     return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)
