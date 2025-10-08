@@ -19,7 +19,7 @@
                 <tr>
                     <td><strong>{{ day }}</strong></td>
                     {% set time_idx = 0 %}
-                    {% while time_idx < all_times|length %}
+                    {% if time_idx < all_times|length %}
                         {% set cell_rendered = false %}
                         {% for row in timetable_rows %}
                             {% if row.classDay.upper() == day %}
@@ -47,7 +47,7 @@
                             <td></td>
                             {% set time_idx = time_idx + 1 %}
                         {% endif %}
-                    {% endwhile %}
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
