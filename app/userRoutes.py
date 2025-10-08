@@ -105,13 +105,9 @@ def get_all_attendances(user):
     # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilators in same department
     elif user.userLevel in [2, 3, 4]:
         flash(f"elif: {user.userId, user.userLevel}", "success")
-        flash(f"{user.userDepartment}, {User.userDepartment}", "error")
-        flash(f"{user.userId}, {InvigilatorAttendance.invigilatorId}", "error")
         query = query.filter(User.userDepartment == user.userDepartment)
 
-    # Order by exam status and time
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
-
 
 
 # Lecturer get own
