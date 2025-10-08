@@ -262,21 +262,11 @@ def user_ownTimetable():
     timetable = Timetable.query.filter_by(user_id=userId).first()
     timetable_rows = timetable.rows if timetable else []
 
+    # Combine overlapping (same day & same time) entries
     merged = {}
     for row in timetable_rows:
         key = (row.classDay.upper(), row.classTime, row.classType, row.classRoom)
-        
         if key not in merged:
-            try:
-                start_time_str, end_time_str = [t.strip() for t in row.classTime.split('-')]
-                TIME_FORMAT = '%H:%M'
-                start_dt = datetime.strptime(start_time_str, TIME_FORMAT)
-                end_dt = datetime.strptime(end_time_str, TIME_FORMAT)
-                duration = int((end_dt - start_dt).total_seconds() / 3600)
-            except ValueError:
-                duration = 1  
-                start_time_str = row.classTime.split('-')[0].strip()
-
             merged[key] = {
                 'classDay': row.classDay,
                 'classTime': row.classTime,
@@ -285,9 +275,7 @@ def user_ownTimetable():
                 'courseName': row.courseName,
                 'courseIntakes': [row.courseIntake],
                 'courseCodes': [row.courseCode],
-                'courseSections': [row.courseSection],
-                'colspan': duration,         
-                'start_time': start_time_str 
+                'courseSections': [row.courseSection]
             }
         else:
             merged[key]['courseIntakes'].append(row.courseIntake)
@@ -296,10 +284,13 @@ def user_ownTimetable():
 
     merged_timetable = []
     for item in merged.values():
+        # zip the lists directly (combine element by element)
         item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
         merged_timetable.append(item)
 
     return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable)
+
+
 
 
 
