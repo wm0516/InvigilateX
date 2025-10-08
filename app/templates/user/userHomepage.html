@@ -30,7 +30,7 @@
                             <th>Exam Time</th>
                             <th>Exam Period</th>
                             <th>Accept</th>
-                            <th>Reject With Reason(Optional)</th>
+                            <th>Reject</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,19 +44,15 @@
                             <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
 
                             <td>
-                                <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                                <form action="{{ url_for('user_homepage') }}" method="POST">
                                     <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
-                                    <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724;">
-                                        <i class="fas fa-check"></i> Accept
-                                    </button>
+                                    <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724;">Accept</button>
                                 </form>
                             </td>
                             <td>
-                                <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                                <form action="{{ url_for('user_homepage') }}" method="POST">
                                     <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
-                                    <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24;">
-                                        <i class="fas fa-trash"></i> Reject
-                                    </button>
+                                    <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24;">Reject</button>
                                 </form>
                             </td>
                         </tr>
