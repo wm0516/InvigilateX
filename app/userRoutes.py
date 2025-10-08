@@ -130,7 +130,7 @@ def get_calendar_data():
 # -------------------------------
 @app.route('/user/invigilationTimetable', methods=['GET', 'POST'])
 @login_required
-def user_manageInvigilationTimetable():
+def user_invigilationTimetable():
     calendar_data, full_dates = get_calendar_data()
     return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates)
 
