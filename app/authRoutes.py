@@ -203,7 +203,9 @@ def inject_user_data():
                 'user_email': user.userEmail,
                 'user_contact': user.userContact,
                 'user_password': user.userPassword,
-                'user_status': user.userStatus
+                'user_status': user.userStatus,
+                'user_invigilationHour': user.userCumulativeHours,
+                'user_pendingInvigilationHour': user.userPendingCumulativeHours
             }
     return {
         'user_id': None,
@@ -213,7 +215,9 @@ def inject_user_data():
         'user_email': '',
         'user_contact': '',
         'user_password': '',
-        'user_status': ''
+        'user_status': '',
+        'user_invigilationHour': '',
+        'user_pendingInvigilationHour': ''
     }
 
 
