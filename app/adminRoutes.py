@@ -1647,7 +1647,14 @@ def admin_manageTimetable():
     # cleanup_expired_timetable_rows()
 
     # ---- Default GET rendering ----
-    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
+    timetable_data = (
+        TimetableRow.query
+        .join(TimetableRow.timetable)        # Join to Timetable
+        .join(Timetable.user)                # Join to User
+        .filter(User.userStatus == 1)        # Only users with status == 1 (active)
+        .order_by(TimetableRow.rowId.asc())  # Order by rowId
+        .all()
+    )
     lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
