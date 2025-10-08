@@ -504,7 +504,8 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
         userEmail=email,
         userContact=contact,
         userGender=gender,
-        userPassword=hashed_pw
+        userPassword=hashed_pw,
+        userRegisterDateTime=datetime.now(timezone.utc)
     )
     db.session.add(new_staff)
     db.session.flush()  # Push to DB so userId is available for FK relations

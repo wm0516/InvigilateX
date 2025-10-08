@@ -27,7 +27,7 @@ from sqlalchemy import and_, or_
 # Local application imports
 # -------------------------------
 from app import app
-from .authRoutes import login_required
+from .authRoutes import login_required, verifyAccount
 from .backend import *
 from .database import *
 
@@ -1393,11 +1393,11 @@ def admin_manageStaff():
             success, message = create_staff(**form_data)
             if success:
                 # Send verification email
-                email_success, email_message = send_verifyActivateLink(form_data['email'])
+                email_success, email_message = send_verifyActivateLink(form_data["email"])
                 if email_success:
                     flash("Staff account created and verification link sent!", "success")
                 else:
-                    flash(f"Staff account created but failed to send verification email: {email_message}", "warning")
+                    flash(f"Staff account created but failed to send verification email: {email_message}", "error")
             else:
                 flash(message, "error")
             return redirect(url_for('admin_manageStaff'))
