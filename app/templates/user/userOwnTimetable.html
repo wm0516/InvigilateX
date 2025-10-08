@@ -18,7 +18,7 @@
                 <tr>
                     <td><strong>{{ day }}</strong></td>
                     {% set current_hour = 7 %}
-                    {% while current_hour <= 23 %}
+                    {% if current_hour <= 23 %}
                         {% set filled = False %}
                         {% for row in timetable_rows %}
                             {% if row.classDay == day %}
@@ -38,15 +38,14 @@
                                     </td>
                                     {% set current_hour = end_hour %}
                                     {% set filled = True %}
-                                    {% break %}
-                                {% endif %}
+\                                {% endif %}
                             {% endif %}
                         {% endfor %}
                         {% if not filled %}
                             <td></td>
                             {% set current_hour = current_hour + 1 %}
                         {% endif %}
-                    {% endwhile %}
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
