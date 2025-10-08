@@ -15,7 +15,6 @@
             </thead>
             <tbody>
             {% set times = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-
             {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
             <tr>
                 <td><strong>{{ day }}</strong></td>
@@ -24,14 +23,12 @@
                 {% for time in times %}
                     {% if skip > 0 %}
                         {% set skip = skip - 1 %}
-                        {# skip this hour because previous cell spans over it #}
                         {% continue %}
                     {% endif %}
 
                     {% set matched_row = None %}
                     {% set span = 1 %}
 
-                    {# find class starting at this hour #}
                     {% for row in timetable_rows %}
                         {% if row.classDay == day %}
                             {% set start = row.classTime.split('-')[0].strip() %}
