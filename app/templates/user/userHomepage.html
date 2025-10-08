@@ -16,7 +16,7 @@
         </div>
     </div><br>
 
-    <div>
+    <div class="menu-section">
         <h3>Accept or Reject for Invigilation Slot</h3>
         <div class="user-table-container">
             <table class="user-data-table">
@@ -28,6 +28,8 @@
                         <th>Exam Day</th>
                         <th>Exam Time</th>
                         <th>Exam Period</th>
+                        <th>Accept</th>
+                        <th>Reject With Reason(Optional)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,6 +41,8 @@
                         <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
                         <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ record.report.exam.course.courseName }}</td>
+                        <td>{{ record.report.exam.course.courseName }}</td>
                     </tr>
                     {% else %}
                     <tr>
@@ -48,14 +52,8 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </div><br>
     {% endif %}
-
-
-
-
-
-
 
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
