@@ -1575,57 +1575,35 @@ def get_linkTimetable(timetableID):
 def save_timetable_to_db(structured):
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
-    structured_range = structured.get("classWeekDate")  # mm/dd/yyyy-mm/dd/yyyy
 
     if not lecturer:
-        return 0
+        return 
 
-    # 1. Normalize lecturer: remove all spaces
+    # Normalize the lecturer input: remove all spaces
     normalized_lecturer = ''.join(lecturer.split())
 
-    # 2. Find user where username with spaces removed matches lecturer
+    # Find user where username with spaces removed matches normalized lecturer
     user = User.query.filter(func.replace(User.userName, " ", "") == normalized_lecturer).first()
-    if not user:
-        return 0
 
-    # 3. Extract start date from structured data
-    if not structured_range:
-        return 0
-    try:
-        structured_start = datetime.strptime(structured_range.split("-")[0], "%m/%d/%Y")
-    except ValueError:
-        return 0
+    # Ensure timetable exists for user
+    if user:
+        timetable = Timetable.query.filter_by(user_id=user.userId).first()
+        if not timetable:
+            timetable = Timetable(user_id=user.userId)
+            db.session.add(timetable)
+            db.session.commit()
+    else:
+        timetable = None
 
-    # 4. Check existing timetable rows for this lecturer
-    old_timetable = Timetable.query.filter_by(user_id=user.userId).first()
-    if old_timetable:
-        existing_rows = TimetableRow.query.filter_by(timetable_id=old_timetable.timetableId).all()
-        ignore_upload = False
-        for row in existing_rows:
-            if row.classWeekDate:
-                try:
-                    existing_start = datetime.strptime(row.classWeekDate.split("-")[0], "%m/%d/%Y")
-                    if structured_start <= existing_start:
-                        ignore_upload = True
-                        break
-                except ValueError:
-                    continue
-        if ignore_upload:
-            # Do not replace old timetable if new start date is earlier
-            return 0
-
-        # 5. Delete old timetable and rows since new upload is valid
-        TimetableRow.query.filter_by(timetable_id=old_timetable.timetableId).delete()
-        db.session.delete(old_timetable)
+    # ---- Delete old rows if lecturer already exists in DB ----
+    existing_rows = TimetableRow.query.filter_by(lecturerName=lecturer).count()
+    if existing_rows > 0:
+        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
         db.session.commit()
 
-    # 6. Create new timetable
-    timetable = Timetable(user_id=user.userId)
-    db.session.add(timetable)
-    db.session.commit()  # commit to get timetableId
-
-    # 7. Insert new rows
+    # ---- Insert new rows from structured data ----
     rows_inserted = 0
+
     for day, activities in structured["days"].items():
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
@@ -1636,7 +1614,7 @@ def save_timetable_to_db(structured):
                         continue
 
                     new_row = TimetableRow(
-                        timetable_id=timetable.timetableId,
+                        timetable_id=timetable.timetableId if timetable else None,
                         filename=filename,
                         lecturerName=lecturer,
                         classType=act.get("class_type"),
@@ -1648,14 +1626,13 @@ def save_timetable_to_db(structured):
                         courseCode=sec.get("course_code"),
                         courseSection=sec.get("section"),
                         classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        classWeekDate=structured_range,
+                        classWeekDate=act.get("weeks_date"),
                     )
                     db.session.add(new_row)
                     rows_inserted += 1
 
     db.session.commit()
     return rows_inserted
-
 
 
 
