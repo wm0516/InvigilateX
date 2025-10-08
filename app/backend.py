@@ -163,7 +163,7 @@ def send_verifyActivateLink(email):
 
     try:
         token = serializer.dumps(email, salt='account-verify-salt')
-        verify_link = url_for("auth.verifyAccount", token=token, _external=True)
+        verify_link = url_for("verifyAccount", token=token, _external=True)
 
         msg = Message('InvigilateX - Verify Your Account', recipients=[email])
         msg.body = f'''Hi,
