@@ -42,7 +42,6 @@
                             <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
                             <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
                             <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-
                             <td>
                                 <form action="{{ url_for('user_homepage') }}" method="POST">
                                     <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
