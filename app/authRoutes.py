@@ -326,29 +326,25 @@ def get_all_records(user_id):
 def user_homepage():
     user_id = session.get('user_id')
     records = get_all_records(user_id)
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+        record_id = request.form.get('record_id')  # get the specific record ID from the form
+
+        # Fetch the specific record for this user
+        record = InvigilatorAttendance.query.filter_by(
+            invigilatorId=user_id,
+            attendanceId=record_id  # assuming 'attendanceId' is the PK
+        ).first()
+
+        if record:
+            if action == 'accept':
+                record.invigilationStatus = True
+            elif action == 'reject':
+                record.invigilationStatus = False
+
+            db.session.commit()  # save changes to the database
+
+        return redirect(url_for('user_homepage'))
+    
     return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)
-
-
-# -------------------------------
-# AJAX route for Accept / Reject
-# -------------------------------
-@app.route('/update_invigilation_status', methods=['POST'])
-@login_required
-def update_invigilation_status():
-    data = request.get_json()
-    attendance_id = data.get('attendanceId')
-    action = data.get('action')
-
-    attendance = InvigilatorAttendance.query.get(attendance_id)
-    if not attendance:
-        return jsonify(success=False, message="Attendance record not found"), 404
-
-    if action == 'accept':
-        attendance.invigilationStatus = True
-    elif action == 'reject':
-        attendance.invigilationStatus = False
-    else:
-        return jsonify(success=False, message="Invalid action"), 400
-
-    db.session.commit()
-    return jsonify(success=True)
