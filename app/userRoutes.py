@@ -99,10 +99,12 @@ def get_all_attendances(user):
 
     # Lecturer (Level 1) — see own only
     if user.userLevel == 1:
+        flash(f"if: {user.userId, user.userLevel}", "success")
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
 
     # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilators in same department
     elif user.userLevel in [2, 3, 4]:
+        flash(f"elif: {user.userId, user.userLevel}", "success")
         query = query.filter(User.userDepartment == user.userDepartment)
 
     # Order by exam status and time
@@ -116,7 +118,6 @@ def get_all_attendances(user):
 @login_required
 def user_invigilationReport():
     user = User.query.get(session.get('user_id'))
-    flash(f"{user.userId, user.userLevel}", "success")
     attendances = get_all_attendances(user)
     stats = calculate_invigilation_stats()
 
