@@ -3,7 +3,7 @@
 {% block head_title %}<h2>Own Timetable</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="user-table-container" style="max-height: None;">
+    <div class="user-table-container" style="max-height: None;">    
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
@@ -25,12 +25,12 @@
                                 {% set end = row.classTime.split('-')[1].strip() %}
                                 {% if time >= start and time < end %}
                                     <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
-                                        <strong>Course</strong>: {{ row.courseName }}<br>
-                                        <strong>Class Type</strong>: {{ row.classType }}<br>
-                                        <strong>Room</strong>: {{ row.classRoom }}<br>
+                                        <strong>Course</strong>:<br><i>{{ row.courseName }}</i><br>
+                                        <strong>Class Type</strong>: <i>{{ row.classType }}</i><br>
+                                        <strong>Room</strong>: <i>{{ row.classRoom }}</i><br>
                                         <strong>Sections</strong>: <br>
                                         {% for intake, code, section in row.combined %}
-                                            {{ intake }} | {{ code }} | {{ section }};<br>
+                                            <i>{{ intake }} | {{ code }} | {{ section }};</i><br>
                                         {% endfor %}
                                     </div>
                                 {% endif %}

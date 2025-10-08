@@ -222,11 +222,11 @@
                                         {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                         {% if key not in ns.displayed %}
                                             {% set ns.displayed = ns.displayed + [key] %}
-                                            <div style="border: 1px solid #999; margin: 2px; padding: 2px;">
-                                                <strong>{{ row.lecturerName }}</strong><br>
-                                                <strong>[{{ row.classType }}]</strong><br>
-                                                {{ row.courseName }}<br>
-                                                Room: {{ row.classRoom }}
+                                            <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
+                                                <strong>Lecturer</strong>: <i>{{ row.lecturerName }}</i><br>
+                                                <strong>Course</strong>:<br><i>{{ row.courseName }}</i><br>
+                                                <strong>Class Type</strong>: <i>{{ row.classType }}</i><br>
+                                                <strong>Room</strong>: <i>{{ row.classRoom }}</i>
                                             </div>
                                         {% endif %}
                                     {% endif %}
