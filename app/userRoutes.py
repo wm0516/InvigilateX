@@ -59,19 +59,8 @@ def calculate_invigilation_stats():
         .count()
     )
 
-    total_invigilator = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .filter(Course.courseDepartment == user.userDepartment)
-        .filter(Exam.examStatus == True)
-        .count()
-    )
-
     stats = {
         "total_report": total_report,
-        "total_invigilator": total_invigilator,
         "total_checkInOnTime": 0,
         "total_checkInLate": 0,
         "total_checkOutOnTime": 0,

@@ -1914,18 +1914,8 @@ def calculate_invigilation_stats():
         .count()
     )
 
-    # Total active invigilators (InvigilatorAttendance for exams with examStatus=True)
-    total_invigilator = (
-        db.session.query(InvigilatorAttendance)
-        .join(InvigilationReport)  # joins on InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId
-        .join(Exam)                # joins on InvigilationReport.examId == Exam.examId
-        .filter(Exam.examStatus == True)
-        .count()
-    )
-
     stats = {
         "total_report": total_report,
-        "total_invigilator": total_invigilator,
         "total_checkInOnTime": 0,
         "total_checkInLate": 0,
         "total_checkOutOnTime": 0,
