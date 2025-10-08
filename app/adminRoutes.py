@@ -1365,6 +1365,7 @@ def admin_manageStaff():
 
                     # 3. Update user table
                     user_select.userDepartment = new_department_code
+                    user_select.userRegisterDateTime = datetime.now(timezone.utc)
 
                 db.session.commit()
                 flash("Staff updated successfully", "success")
@@ -1390,7 +1391,15 @@ def admin_manageStaff():
                 "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
             }
             success, message = create_staff(**form_data)
-            flash(message, "success" if success else "error")
+            if success:
+                # Send verification email
+                email_success, email_message = send_verifyActivateLink(form_data['email'])
+                if email_success:
+                    flash("Staff account created and verification link sent!", "success")
+                else:
+                    flash(f"Staff account created but failed to send verification email: {email_message}", "warning")
+            else:
+                flash(message, "error")
             return redirect(url_for('admin_manageStaff'))
 
     return render_template(
