@@ -269,8 +269,7 @@ def user_mergeTimetable():
     current_user = User.query.filter_by(userId=userId).first()
     if not current_user:
         flash("User not found.", "danger")
-        return redirect(url_for('user_dashboard'))
-
+        return redirect(url_for('user_mergeTimetable'))
     user_department = current_user.userDepartment
 
     # Query all timetables for users in the same department
