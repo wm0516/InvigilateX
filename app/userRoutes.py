@@ -26,10 +26,13 @@ bcrypt = Bcrypt()
 # -------------------------------
 # Calculate Invigilation Stats (Filtered by User Department Only)
 # -------------------------------
+# -------------------------------
+# Calculate Invigilation Stats (Filtered by User Department or Own Data)
+# -------------------------------
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
 
-    # ✅ Main query — only include invigilations under same department
+    # Base query
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -42,22 +45,35 @@ def calculate_invigilation_stats():
         )
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)  # ✅ join Course to access department
+        .join(Course, Course.courseExamId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
         .filter(Exam.examStatus == True)
-        .filter(Course.courseDepartment == user.userDepartment)  # ✅ restrict by department
-        .all()
     )
 
-    # ✅ Department-limited totals
-    total_report = (
-        InvigilationReport.query
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .filter(Course.courseDepartment == user.userDepartment)
-        .filter(Exam.examStatus == True)
-        .count()
-    )
+    # Apply conditional filter based on userLevel
+    if user.userLevel == 1:
+        query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+        total_report = (
+            InvigilationReport.query
+            .join(Exam, InvigilationReport.examId == Exam.examId)
+            .join(Course, Course.courseExamId == Exam.examId)
+            .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
+            .filter(InvigilatorAttendance.invigilatorId == user.userId)
+            .filter(Exam.examStatus == True)
+            .count()
+        )
+    else:  # userLevel 2,3,4
+        query = query.filter(Course.courseDepartment == user.userDepartment)
+        total_report = (
+            InvigilationReport.query
+            .join(Exam, InvigilationReport.examId == Exam.examId)
+            .join(Course, Course.courseExamId == Exam.examId)
+            .filter(Course.courseDepartment == user.userDepartment)
+            .filter(Exam.examStatus == True)
+            .count()
+        )
+
+    query = query.all()
 
     stats = {
         "total_report": total_report,
@@ -69,7 +85,7 @@ def calculate_invigilation_stats():
         "total_inProgress": 0
     }
 
-    # ✅ Calculate time-based stats
+    # Calculate time-based stats
     for row in query:
         if row.checkIn is None:
             stats["total_checkInOut"] += 1
@@ -90,6 +106,7 @@ def calculate_invigilation_stats():
             stats["total_checkOutEarly"] += 1
 
     return stats
+
 
 
 
