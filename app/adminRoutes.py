@@ -1649,10 +1649,13 @@ def admin_manageTimetable():
     timetable_data = (
         Timetable.query
         .join(User, Timetable.user_id == User.userId)
-        .filter(User.userStatus == 1)
+        .filter(
+            User.userStatus == 1,
+            Timetable.user_id.isnot(None)
+        )
         .all()
     )
-
+    
     lecturers = sorted({
         row.lecturerName
         for timetable in timetable_data
@@ -1662,7 +1665,15 @@ def admin_manageTimetable():
 
     # Use Timetable directly (not TimetableRow)
     total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
-    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
+    timetable_list = (
+        Timetable.query
+        .join(User, Timetable.user_id == User.userId)
+        .filter(
+            User.userStatus == 1,
+            Timetable.user_id.isnot(None)
+        )
+        .all()
+    )
 
     # Predefine timetable_select to avoid UnboundLocalError
     timetable_select = None
