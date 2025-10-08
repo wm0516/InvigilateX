@@ -153,6 +153,37 @@ The InvigilateX Team'''
         return True, None
     except Exception as e:
         return False, f"Failed to Send Email. Error: {str(e)}"
+    
+
+def send_verifyActivateLink(email):
+    user = User.query.filter_by(userEmail=email).first()
+    if not user:
+        return False, "No Account Associated With This Email."
+
+    try:
+        email_to_verify = user.userEmail
+        # Generate token for verification
+        token = serializer.dumps(email_to_verify, salt='account-verify-salt')
+        verify_link = url_for("verifyAccount", token=token, _external=True)
+
+        msg = Message('InvigilateX - Verify Your Account', recipients=[email_to_verify])
+        msg.body = f'''Hi,
+
+Thank you for registering for InvigilateX!
+
+Please verify your account by clicking the link below:
+{verify_link}
+
+If you did not register for an account, please ignore this email.
+
+Thank you,  
+The InvigilateX Team'''
+        
+        mail.send(msg)
+        return True, None
+    except Exception as e:
+        return False, f"Failed to Send Email. Error: {str(e)}"
+
 
 # -------------------------------
 # Auth Function 5: Check Reset Password [Must with Token(userId), and Both Password Must Be Same]

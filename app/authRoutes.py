@@ -103,9 +103,10 @@ def register():
         password2_text = request.form.get('password2', '').strip()
 
         is_valid, error_message = check_register(id_text, email_text, contact_text, password1_text, password2_text)
+        success, message = send_verifyActivateLink(email_text)
         if error_message:
             flash(error_message, 'error')
-        elif is_valid:
+        elif is_valid and success:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
                 userId=id_text.upper(),
@@ -121,6 +122,7 @@ def register():
             )
             db.session.add(new_user)
             db.session.commit()
+            flash("Verify link sent to your email address.", 'success')
             flash("Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login'))
 
