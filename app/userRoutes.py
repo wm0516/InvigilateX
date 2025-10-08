@@ -23,14 +23,12 @@ bcrypt = Bcrypt()
 
 
 
-
-
-
-
 # -------------------------------
-# Calculate All InvigilatorAttendance and InvigilationReport Data From Database
+# Calculate Invigilation Stats for User's Department Only
 # -------------------------------
 def calculate_invigilation_stats():
+    user = User.query.get(session.get('user_id'))
+
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -43,14 +41,29 @@ def calculate_invigilation_stats():
         )
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)  # ✅ join Course to access department
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # for lecturer info
         .filter(InvigilatorAttendance.invigilationStatus == True)
         .filter(Exam.examStatus == True)
-        .all()
     )
 
-    # Total reports and total assigned invigilators
-    total_report = InvigilationReport.query.count()
-    total_invigilator = InvigilatorAttendance.query.count()
+    # Count totals (also restricted by department)
+    total_report = (
+        InvigilationReport.query
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .filter(Course.courseDepartment == user.userDepartment)
+        .count()
+    )
+
+    total_invigilator = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .filter(Course.courseDepartment == user.userDepartment)
+        .count()
+    )
 
     stats = {
         "total_report": total_report,
@@ -83,6 +96,7 @@ def calculate_invigilation_stats():
             stats["total_checkOutEarly"] += 1
 
     return stats
+
 
 
 
@@ -220,6 +234,24 @@ def user_invigilationTimetable():
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @app.route('/user/ownTimetable', methods=['GET'])
 @login_required
 def user_ownTimetable():
@@ -254,6 +286,12 @@ def user_ownTimetable():
         merged_timetable.append(item)
 
     return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable)
+
+
+
+
+
+
 
 
 

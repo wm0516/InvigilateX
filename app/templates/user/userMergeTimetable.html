@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="menu-section">
-    <div class="user-table-container" styl="max-height: None;">
+    <div class="user-table-container">
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
@@ -25,7 +25,7 @@
                                 {% set start = row.classTime.split('-')[0].strip() %}
                                 {% set end = row.classTime.split('-')[1].strip() %}
                                 {% if time >= start and time < end %}
-                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
+                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
                                         <strong>Course</strong>: {{ row.lecturerName }}<br>
                                         <strong>Course</strong>: {{ row.courseName }}<br>
                                         <strong>Class Type</strong>: {{ row.classType }}<br>
