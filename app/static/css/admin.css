@@ -352,7 +352,7 @@ html, body {
 }
 
 .timetable-row {
-    height: auto;
+    height: 80px;
     display: flex;
     align-items: stretch;
     border-bottom: 1px solid #e0e0e0;
@@ -385,14 +385,13 @@ html, body {
 .class-block {
     position: absolute;
     top: 0;
-    width: 94%;
+    width: 90%;
     background-color: #d9e8ff;
     border-left: 4px solid #4a90e2;
     border-radius: 8px;
     padding: 8px;
     font-size: 13px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    height: calc(80px * var(--duration)); 
 }
 
 
