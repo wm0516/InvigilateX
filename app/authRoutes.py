@@ -298,5 +298,12 @@ def admin_homepage():
 @app.route('/user/home', methods=['GET', 'POST'])
 @login_required
 def user_homepage():
+    user_id = session.get('user_id')
+    user = User.query.get(user_id)
+    
+    if not user:
+        flash("User not found", "error")
+        return redirect(url_for('login'))
+    
     return render_template('user/userHomepage.html', active_tab='user_hometab')
 
