@@ -35,7 +35,7 @@
             {% endfor %}
         </div>
 
-        {% set hour_width = 100 %}
+        {% set hour_width = 110 %}
         {% for date in full_dates %}
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
@@ -59,8 +59,14 @@
                         {% set pos = positions[i] %}
                         {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
                         {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
+                        {% if start_hour > 1 %}
+                            left_pos += 30
+                        {% endif %}
                         {% set left_pos = start_hour * hour_width %}
                         {% set width = (end_hour - start_hour) * hour_width %}
+                        {% if width > 110 %}
+                            width += 10
+                        {% endif %}
                         {% set top_pos = 5 + (pos.row * 70) %}
 
                         {% if exam.is_overnight %}

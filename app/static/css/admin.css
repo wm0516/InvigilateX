@@ -308,8 +308,8 @@ html, body {
 
 /* ✅ Timeline hours (in header row) */
 .calendar-hour {
-    width: 100px; /* was 80px */
-    min-width: 100px;
+    width: 110px;
+    min-width: 110px;
     text-align: center;
     font-size: 16px;
     padding: 5px 0;
