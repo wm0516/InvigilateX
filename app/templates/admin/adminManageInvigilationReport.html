@@ -75,9 +75,9 @@
                     <th>Exam Details</th>
                     <th>Number of Invigilators</th>
                     <th>Invigilator Details</th>
-                    <th>Check-in Time</th>
-                    <th>Check-out Time</th>
+                    <th>Check-in/out Time</th>
                     <th>Attendance Status</th>
+                    <th>Invigilation Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -123,11 +123,13 @@
                                 </div>
                             </td>
 
-                            <!-- Check-in Time -->
-                            <td>{{ att.checkIn }}</td>
-
-                            <!-- Check-out Time -->
-                            <td>{{ att.checkOut }}</td>
+                            <!-- Check-in/out Time -->
+                            <td>
+                                <div class="info-grid">
+                                    <div>Check-in Time</div><div><strong>: {{ att.checkIn }}</strong></div>
+                                    <div>Check-out Time</div><div><strong>: {{ att.checkIn }}</strong></div>
+                                </div>
+                            </td>
 
                             <!-- Attendance Status -->
                             <td>
@@ -139,6 +141,13 @@
                                     "CHECK OUT EARLY": "frame-red"
                                 } %}
                                 <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
+                            </td>
+                            <td>
+                                {% if att.invigilationStatus == 1 %}
+                                    <span class="status frame-green">Accepted</span>
+                                {% else %}
+                                    <span class="status frame-red">Declined</span>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
