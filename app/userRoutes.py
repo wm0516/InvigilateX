@@ -88,9 +88,7 @@ def calculate_invigilation_stats():
 
 
 
-def get_all_attendances():
-    user = User.query.get(session.get('user_id'))
-
+def get_all_attendances(user):
     # Start the base query
     query = (
         InvigilatorAttendance.query
@@ -119,7 +117,9 @@ def get_all_attendances():
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
 @login_required
 def user_invigilationReport():
-    attendances = get_all_attendances()
+    user = User.query.get(session.get('user_id'))
+    flash(f"{user.userId}", "success")
+    attendances = get_all_attendances(user)
     stats = calculate_invigilation_stats()
 
     # Add composite group key: (examStatus, examStartTime)
