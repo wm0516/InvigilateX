@@ -1645,14 +1645,19 @@ def save_timetable_to_db(structured):
 def admin_manageTimetable():
     # Auto cleanup expired timetable rows
     # cleanup_expired_timetable_rows()
+    
     timetable_data = (
         Timetable.query
-        .join(User)  # join the related User table
+        .join(User, Timetable.user_id == User.userId)
         .filter(User.userStatus == 1)
-        .first()
+        .all()
     )
 
-    lecturers = sorted({row.lecturerName for row in timetable_data.rows}) if timetable_data else []
+    lecturers = sorted({
+        row.lecturerName
+        for timetable in timetable_data
+        for row in timetable.rows
+    })
     selected_lecturer = request.args.get("lecturer")
 
     # Use Timetable directly (not TimetableRow)
