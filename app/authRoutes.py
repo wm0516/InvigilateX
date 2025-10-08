@@ -6,7 +6,7 @@ from datetime import datetime
 # -------------------------------
 # Third-party imports
 # -------------------------------
-from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
+from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
@@ -302,9 +302,9 @@ def admin_homepage():
 
 
 
-
-
-
+# -------------------------------
+# Helper function to get pending records
+# -------------------------------
 def get_all_records(user_id):
     return (
         InvigilatorAttendance.query
@@ -317,6 +317,10 @@ def get_all_records(user_id):
         .all()
     )
 
+
+# -------------------------------
+# Main User Homepage
+# -------------------------------
 @app.route('/user/home', methods=['GET', 'POST'])
 @login_required
 def user_homepage():
@@ -324,24 +328,27 @@ def user_homepage():
     records = get_all_records(user_id)
     return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)
 
-@app.route('/user/update-invigilation-status/<int:attendance_id>', methods=['POST'])
+
+# -------------------------------
+# AJAX route for Accept / Reject
+# -------------------------------
+@app.route('/update_invigilation_status', methods=['POST'])
 @login_required
-def update_invigilation_status(attendance_id):
-    attendance = InvigilatorAttendance.query.get_or_404(attendance_id)
+def update_invigilation_status():
+    data = request.get_json()
+    attendance_id = data.get('attendanceId')
+    action = data.get('action')
 
-    # Get data from form
-    status_str = request.form.get('status', 'False')
-    status = status_str == 'True'  # Convert string to boolean
-    # reason = request.form.get('reason', '').strip()
+    attendance = InvigilatorAttendance.query.get(attendance_id)
+    if not attendance:
+        return jsonify(success=False, message="Attendance record not found"), 404
 
-    # Update record
-    attendance.invigilationStatus = status
-    attendance.timeAction = datetime.now()
-    # attendance.reason = reason if not status else None  # Store reason only if rejected
+    if action == 'accept':
+        attendance.invigilationStatus = True
+    elif action == 'reject':
+        attendance.invigilationStatus = False
+    else:
+        return jsonify(success=False, message="Invalid action"), 400
 
     db.session.commit()
-
-    flash('Invigilation status updated successfully.', 'success')
-    return redirect(url_for('user_homepage'))
-
-
+    return jsonify(success=True)

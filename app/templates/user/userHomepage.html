@@ -41,20 +41,15 @@
                         <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
                         <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <!-- Accept Button -->
                         <td>
-                            <form method="POST" action="{{ url_for('update_invigilation_status', attendance_id=record.invigilatorAttendanceId) }}">
-                                <input type="hidden" name="status" value="True">
-                                <button type="submit" class="btn btn-success">Accept</button>
-                            </form>
+                            <div class="button-wrapper">
+                                <button class="action-btn accept-btn" data-id="{{ record.attendanceId }}" data-action="accept">Accept</button>
+                            </div>
                         </td>
-                        <!-- Reject Button with optional reason -->
                         <td>
-                            <form method="POST" action="{{ url_for('update_invigilation_status', attendance_id=record.invigilatorAttendanceId) }}">
-                                <input type="hidden" name="status" value="False">
-                                <input type="text" name="reason" placeholder="Optional reason" class="form-control">
-                                <button type="submit" class="btn btn-danger">Reject</button>
-                            </form>
+                            <div class="button-wrapper">
+                                <button class="action-btn reject-btn" data-id="{{ record.attendanceId }}" data-action="reject">Reject</button>
+                            </div>
                         </td>
                     </tr>
                     {% else %}
@@ -118,4 +113,44 @@
             </div>
         {% endif %}
     </div>  
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const buttons = document.querySelectorAll('.action-btn');
+
+    buttons.forEach(button => {
+        button.addEventListener('click', function() {
+            const attendanceId = this.dataset.id;
+            const action = this.dataset.action;
+
+            fetch('/update_invigilation_status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}' // only if you use Flask-WTF CSRF protection
+                },
+                body: JSON.stringify({
+                    attendanceId: attendanceId,
+                    action: action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Record ${action === 'accept' ? 'accepted' : 'rejected'} successfully.`);
+                    // Optional: visually update row
+                    this.closest('tr').style.backgroundColor = action === 'accept' ? '#d4edda' : '#f8d7da';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
