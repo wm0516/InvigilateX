@@ -181,3 +181,9 @@ if (ctx) {
 
 
 
+
+            <div class="button-wrapper">
+                {% for dept in department_data %}
+                    <button type="submit" id="uploadButton">Upload Lecturer Timetable {{ dept.departmentCode }}</button>
+                {% endfor %}
+            </div>
