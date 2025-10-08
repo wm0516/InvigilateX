@@ -79,18 +79,6 @@ document.addEventListener('DOMContentLoaded', function() {
     '/admin/manageDepartment': 'admin_manageDepartmenttab',
     '/admin/manageVenue': 'admin_manageVenuetab',
 
-    '/lecturer/home': 'lecturer_hometab',
-    '/lecturer/timetable': 'lecturer_timetabletab',
-    '/lecturer/invigilationTimetable': 'lecturer_invigilationTimetabletab',
-    '/lecturer/invigilationReport': 'lecturer_invigilationReporttab',
-    '/lecturer/profile': 'lecturer_profiletab',
-
-    '/access/home': 'access_hometab',
-    '/access/ownTimetable': 'access_ownTimetabletab',
-    '/access/invigilationReport': 'access_invigilationReporttab',
-    '/access/profile': 'access_profiletab',
-    '/access/mergeTimetable': 'access_mergeTimetabletab',
-
     '/user/home': 'user_hometab',
     '/user/ownTimetable': 'user_ownTimetabletab',
     '/user/mergeTimetable': 'user_mergeTimetabletab',
