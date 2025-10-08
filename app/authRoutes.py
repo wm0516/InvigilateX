@@ -292,6 +292,19 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 def get_all_records(user_id):
     return (
         InvigilatorAttendance.query
@@ -301,7 +314,6 @@ def get_all_records(user_id):
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.invigilatorId == user_id
         )
-        .order_by(Exam.examStatus.desc(), Exam.examStartTime.asc())
         .all()
     )
 
@@ -311,3 +323,25 @@ def user_homepage():
     user_id = session.get('user_id')
     records = get_all_records(user_id)
     return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)
+
+@app.route('/user/update-invigilation-status/<int:attendance_id>', methods=['POST'])
+@login_required
+def update_invigilation_status(attendance_id):
+    attendance = InvigilatorAttendance.query.get_or_404(attendance_id)
+
+    # Get data from form
+    status_str = request.form.get('status', 'False')
+    status = status_str == 'True'  # Convert string to boolean
+    # reason = request.form.get('reason', '').strip()
+
+    # Update record
+    attendance.invigilationStatus = status
+    attendance.timeAction = datetime.now()
+    # attendance.reason = reason if not status else None  # Store reason only if rejected
+
+    db.session.commit()
+
+    flash('Invigilation status updated successfully.', 'success')
+    return redirect(url_for('user_homepage'))
+
+

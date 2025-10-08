@@ -41,8 +41,21 @@
                         <td>{{ record.report.exam.examStartTime.strftime("%A") }} - {{ record.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
                         <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>{{ record.report.exam.course.courseName }}</td>
-                        <td>{{ record.report.exam.course.courseName }}</td>
+                        <!-- Accept Button -->
+                        <td>
+                            <form method="POST" action="{{ url_for('update_invigilation_status', attendance_id=record.invigilatorAttendanceId) }}">
+                                <input type="hidden" name="status" value="True">
+                                <button type="submit" class="btn btn-success">Accept</button>
+                            </form>
+                        </td>
+                        <!-- Reject Button with optional reason -->
+                        <td>
+                            <form method="POST" action="{{ url_for('update_invigilation_status', attendance_id=record.invigilatorAttendanceId) }}">
+                                <input type="hidden" name="status" value="False">
+                                <input type="text" name="reason" placeholder="Optional reason" class="form-control">
+                                <button type="submit" class="btn btn-danger">Reject</button>
+                            </form>
+                        </td>
                     </tr>
                     {% else %}
                     <tr>
