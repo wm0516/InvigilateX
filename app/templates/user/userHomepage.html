@@ -18,11 +18,101 @@
 
     <div>
         <h3>Accept or Reject for Invigilation Slot</h3>
+        <div class="user-table-container">
+            <table class="user-data-table">
+                <thead>
+                    <tr>
+                        <th>Course Name</th>
+                        <th>Course Code</th>
+                        <th>Exam Date</th>
+                        <th>Exam Day</th>
+                        <th>Exam Time</th>
+                        <th>Exam Period</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th></th>
+                    </tr>
 
-        
+
+                    {% for (status, start_time), grouped in attendances|groupby("group_key") %}
+                        {% set rowspan = grouped|length %}
+                        {% for att in grouped %}
+                            <tr> 
+                                {% if loop.first %}
+                                <!-- Exam ID -->
+                                <td rowspan="{{ rowspan }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
+
+                                <!-- Course & Exam Details -->
+                                <td rowspan="{{ rowspan }}">
+                                    <div class="info-grid">
+                                        <div>Course Name</div><div><strong>: {{ att.report.exam.course.courseName }}</strong></div>
+                                        <div>Course Code/Section</div><div><strong>: {{ att.report.exam.course.courseCodeSectionIntake }}</strong></div>
+                                        <div>Number of Students</div><div><strong>: {{ att.report.exam.course.courseStudent }}</strong></div>
+                                        <div>Program Code</div><div><strong>: {{ att.report.exam.course.courseDepartment }}</strong></div>
+                                        <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                                        <div>Exam Day</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
+                                        <div>Exam Time</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
+                                        <div>Exam Period</div><div><strong>: {{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                        <div>Exam Venue</div><div><strong>: {{ att.report.exam.examVenue }}</strong></div>
+                                    </div>
+                                </td>
+
+                                <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
+                                {% endif %}
+
+                                <!-- Invigilator Details (one per row) -->
+                                <td>
+                                    <div class="info-grid">
+                                        <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                        <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                        <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
+                                        <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
+                                    </div>
+                                </td>
+
+                                <!-- Check-in/out Time -->
+                                <td>
+                                    <div class="info-grid">
+                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn }}</strong></div>
+                                        <div>Check-out Time</div><div><strong>: {{ att.checkIn }}</strong></div>
+                                    </div>
+                                </td>
+
+                                <!-- Attendance Status -->
+                                <td>
+                                    {% set remark_classes = {
+                                        "PENDING": "frame-oren",
+                                        "CHECK IN": "frame-green",
+                                        "CHECK OUT": "frame-green",
+                                        "CHECK IN LATE": "frame-red",
+                                        "CHECK OUT EARLY": "frame-red"
+                                    } %}
+                                    <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
+                                </td>
+                                <td>
+                                    {% if att.invigilationStatus == 1 %}
+                                        <span class="status frame-green">Accepted</span>
+                                    {% else %}
+                                        <span class="status frame-red">Declined</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>    
+            </table>
+        </div>
     </div>
-
     {% endif %}
+
+
+
+
+
+
+
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
         <div class="menu-section">

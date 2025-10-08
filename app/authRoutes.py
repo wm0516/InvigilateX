@@ -224,9 +224,6 @@ def inject_user_data():
 # -------------------------------
 # Function for Auth RequiredLoginForEachPage
 # -------------------------------
-# -------------------------------
-# Function for Auth RequiredLoginForEachPage
-# -------------------------------
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -269,5 +266,10 @@ def admin_homepage():
 @app.route('/user/home', methods=['GET', 'POST'])
 @login_required
 def user_homepage():
+    userId = session.get('user_id')
+    if userId.userLevel == 1:
+        
+        return redirect(url_for('user_homepage'))
+
     return render_template('user/userHomepage.html', active_tab='user_hometab')
 
