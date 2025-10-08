@@ -22,7 +22,6 @@
                     {% for time in time_slots %}
                         {% if time in skip_times %}
                             <td></td>
-                            {% continue %}
                         {% endif %}
 
                         {% set matching = None %}
