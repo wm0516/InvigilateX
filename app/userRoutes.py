@@ -87,13 +87,13 @@ def calculate_invigilation_stats():
 
 
 
-
 def get_all_attendances(user):
     query = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Lecturer info
+        .join(Course, Course.courseExamId == Exam.examId)  # ✅ join Course
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # lecturer info
         .filter(InvigilatorAttendance.invigilationStatus == True)
     )
 
@@ -102,12 +102,13 @@ def get_all_attendances(user):
         flash(f"if: {user.userId, user.userLevel}", "success")
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
 
-    # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilators in same department
+    # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilations for courses under same department
     elif user.userLevel in [2, 3, 4]:
         flash(f"elif: {user.userId, user.userLevel}", "success")
-        query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+        query = query.filter(Course.courseDepartment == user.userDepartment)  # ✅ filter by Course dept
 
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
+
 
 
 # Lecturer get own
