@@ -1651,7 +1651,7 @@ def admin_manageTimetable():
         .filter(Timetable.user_id == userId, User.userStatus == 1)
         .first()
     )
-    lecturers = sorted({row.lecturerName for row in timetable_data})
+    lecturers = sorted({row.lecturerName for row in timetable_data.rows}) if timetable_data else []
     selected_lecturer = request.args.get("lecturer")
 
     # Use Timetable directly (not TimetableRow)
