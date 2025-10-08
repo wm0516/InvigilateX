@@ -19,49 +19,50 @@
                 {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-
                     {% set skip = 0 %}
+
                     {% for time in time_slots %}
                         {% if skip > 0 %}
                             {% set skip = skip - 1 %}
-                            {% continue %}
-                        {% endif %}
-
-                        {% set class_found = false %}
-                        {% for row in timetable_rows %}
-                            {% if row.classDay == day %}
-                                {% set start = row.classTime.split('-')[0].strip() %}
-                                {% set end = row.classTime.split('-')[1].strip() %}
-                                {% if time == start %}
-                                    {% set start_hour = start.split(':')[0]|int %}
-                                    {% set end_hour = end.split(':')[0]|int %}
-                                    {% set duration = end_hour - start_hour %}
-                                    <td colspan="{{ duration }}">
-                                        <div style="border:1px solid #ccc; padding:6px; background:#f8f9fa; border-radius:6px; text-align:center;">
-                                            <strong>{{ row.courseName }}</strong><br>
-                                            [{{ row.classType }}]<br>
-                                            Room: {{ row.classRoom }}<br>
-                                            <small>{{ row.classTime }}</small><br>
-                                            {% if row.courseIntakes %}
-                                                <small>Intakes: {{ row.courseIntakes | join(', ') }}</small><br>
-                                            {% endif %}
-                                            {% if row.courseCodes %}
-                                                <small>Codes: {{ row.courseCodes | join(', ') }}</small><br>
-                                            {% endif %}
-                                            {% if row.courseSections %}
-                                                <small>Sections: {{ row.courseSections | join(', ') }}</small><br>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    {% set skip = duration - 1 %}
-                                    {% set class_found = true %}
-                                    {% break %}
+                        {% else %}
+                            {% set class_block = None %}
+                            {% set duration = 1 %}
+                            {% for row in timetable_rows %}
+                                {% if row.classDay == day %}
+                                    {% set time_range = row.classTime.split('-') %}
+                                    {% set start = time_range[0].strip() %}
+                                    {% set end = time_range[1].strip() %}
+                                    {% if time == start %}
+                                        {% set start_hour = start.split(':')[0]|int %}
+                                        {% set end_hour = end.split(':')[0]|int %}
+                                        {% set duration = end_hour - start_hour %}
+                                        {% set class_block = row %}
+                                        {% set skip = duration - 1 %}
+                                    {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        {% endfor %}
+                            {% endfor %}
 
-                        {% if not class_found %}
-                            <td></td>
+                            {% if class_block %}
+                                <td colspan="{{ duration }}">
+                                    <div style="border:1px solid #ccc; padding:6px; background:#f8f9fa; border-radius:6px; text-align:center;">
+                                        <strong>{{ class_block.courseName }}</strong><br>
+                                        [{{ class_block.classType }}]<br>
+                                        Room: {{ class_block.classRoom }}<br>
+                                        <small>{{ class_block.classTime }}</small><br>
+                                        {% if class_block.courseIntakes %}
+                                            <small>Intakes: {{ class_block.courseIntakes | join(', ') }}</small><br>
+                                        {% endif %}
+                                        {% if class_block.courseCodes %}
+                                            <small>Codes: {{ class_block.courseCodes | join(', ') }}</small><br>
+                                        {% endif %}
+                                        {% if class_block.courseSections %}
+                                            <small>Sections: {{ class_block.courseSections | join(', ') }}</small><br>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            {% else %}
+                                <td></td>
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
                 </tr>
