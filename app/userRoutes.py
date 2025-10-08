@@ -24,6 +24,70 @@ bcrypt = Bcrypt()
 
 
 
+
+
+
+# -------------------------------
+# Calculate All InvigilatorAttendance and InvigilationReport Data From Database
+# -------------------------------
+def calculate_invigilation_stats():
+    query = (
+        db.session.query(
+            InvigilatorAttendance.attendanceId,
+            InvigilatorAttendance.invigilatorId,
+            InvigilatorAttendance.checkIn,
+            InvigilatorAttendance.checkOut,
+            Exam.examStartTime,
+            Exam.examEndTime,
+            InvigilatorAttendance.reportId
+        )
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(Exam.examStatus == True)
+        .all()
+    )
+
+    # Total reports and total assigned invigilators
+    total_report = InvigilationReport.query.count()
+    total_invigilator = InvigilatorAttendance.query.count()
+
+    stats = {
+        "total_report": total_report,
+        "total_invigilator": total_invigilator,
+        "total_checkInOnTime": 0,
+        "total_checkInLate": 0,
+        "total_checkOutOnTime": 0,
+        "total_checkOutEarly": 0,
+        "total_checkInOut": 0,
+        "total_inProgress": 0
+    }
+
+    for row in query:
+        if row.checkIn is None:
+            stats["total_checkInOut"] += 1
+            continue
+
+        if row.checkOut is None:
+            stats["total_inProgress"] += 1
+            continue
+
+        if row.examStartTime and row.checkIn <= row.examStartTime:
+            stats["total_checkInOnTime"] += 1
+        elif row.examStartTime:
+            stats["total_checkInLate"] += 1
+
+        if row.examEndTime and row.checkOut >= row.examEndTime:
+            stats["total_checkOutOnTime"] += 1
+        elif row.examEndTime:
+            stats["total_checkOutEarly"] += 1
+
+    return stats
+
+
+
+
+
 def get_all_attendances():
     user = User.query.get(session.get('user_id'))
 
@@ -56,11 +120,13 @@ def get_all_attendances():
 @login_required
 def user_invigilationReport():
     attendances = get_all_attendances()
-    
+    stats = calculate_invigilation_stats()
+
     # Add composite group key: (examStatus, examStartTime)
     for att in attendances:
         att.group_key = (not att.report.exam.examStatus, att.report.exam.examStartTime)
-    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances)
+    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats)
+
 
 
 

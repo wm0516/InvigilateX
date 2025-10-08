@@ -3,6 +3,41 @@
 {% block content %}
 <div class="menu-section">
     <h3>Invigilation Report</h3>
+    <div class="dashboard-row">
+        <div class="dashboard-frame">
+            <h3>Total Invigilation Reports</h3>
+            <p class="dashboard-text">{{ total_report }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Total Assigned Invigilators</h3>
+            <p class="dashboard-text" style="color:green;">{{ total_invigilator }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Exam In Going</h3>
+            <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Invigilators Pending Check-In/Out</h3>
+            <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Invigilators Checked In On Time</h3>
+            <p class="dashboard-text" style="color:green;">{{ total_checkInOnTime }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Invigilators Checked Out On Time</h3>
+            <p class="dashboard-text" style="color:green;">{{ total_checkOutOnTime }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Invigilators Checked In Late</h3>
+            <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Invigilators Checked Out Early</h3>
+            <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
+        </div>
+    </div>
+
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -37,6 +72,7 @@
                                     <div>Course Name</div><div><strong>: {{ att.report.exam.course.courseName }}</strong></div>
                                     <div>Course Code/Section</div><div><strong>: {{ att.report.exam.course.courseCodeSectionIntake }}</strong></div>
                                     <div>Number of Students</div><div><strong>: {{ att.report.exam.course.courseStudent }}</strong></div>
+                                    <div>Program Code</div><div><strong>: {{ att.report.exan.course.courseDepartment }}</strong></div>
                                     <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Exam Day</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
                                     <div>Exam Time</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
