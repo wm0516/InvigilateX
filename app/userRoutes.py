@@ -106,6 +106,7 @@ def get_all_attendances(user):
     elif user.userLevel in [2, 3, 4]:
         flash(f"elif: {user.userId, user.userLevel}", "success")
         flash(f"{user.userDepartment}, {User.userDepartment}", "error")
+        flash(f"{user.userId}, {InvigilatorAttendance.invigilatorId}", "error")
         query = query.filter(User.userDepartment == user.userDepartment)
 
     # Order by exam status and time
