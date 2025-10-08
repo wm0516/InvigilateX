@@ -27,11 +27,12 @@
                                 {% set end = row.classTime.split('-')[1].strip() %}
                                 {% if time >= start and time < end %}
                                     <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
-                                        <strong>{{ row.courseName }}</strong><br>
-                                        [{{ row.classType }}]<br>
-                                        Room: {{ row.classRoom }}<br>
+                                        <strong>Course:</strong>{{ row.courseName }}<br>
+                                        <strong>Class Type:</strong>{{ row.classType }}<br>
+                                        <strong>Room:</strong>{{ row.classRoom }}<br>
+                                        <strong>Sections:</strong>
                                         {% for intake, code, section in row.combined %}
-                                            <small>{{ intake }} | {{ code }} | {{ section }}</small><br>
+                                            {{ intake }} | {{ code }} | {{ section }}<br>
                                         {% endfor %}
                                     </div>
                                 {% endif %}
