@@ -1573,38 +1573,36 @@ def get_linkTimetable(timetableID):
 # Save Parsed Timetable to DB
 # -------------------------------
 def save_timetable_to_db(structured):
-
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
 
     if not lecturer:
-        return 
+        return 0
 
-    # Normalize the lecturer input: remove all spaces
+    # Normalize lecturer: remove spaces
     normalized_lecturer = ''.join(lecturer.split())
 
-    # Find user where username with spaces removed matches normalized lecturer
+    # Find user where username with spaces removed matches lecturer
     user = User.query.filter(func.replace(User.userName, " ", "") == normalized_lecturer).first()
+    if not user:
+        return 0
 
-    # Ensure timetable exists for user
-    if user:
-        timetable = Timetable.query.filter_by(user_id=user.userId).first()
-        if not timetable:
-            timetable = Timetable(user_id=user.userId)
-            db.session.add(timetable)
-            db.session.commit()
-    else:
-        timetable = None
-
-    # ---- Delete old rows if lecturer already exists in DB ----
-    existing_rows = TimetableRow.query.filter_by(lecturerName=lecturer).count()
-    if existing_rows > 0:
-        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
+    # ---- Delete old timetable & rows for this user ----
+    old_timetable = Timetable.query.filter_by(user_id=user.userId).first()
+    if old_timetable:
+        # Delete all rows linked to this timetable
+        TimetableRow.query.filter_by(timetable_id=old_timetable.timetableId).delete()
+        # Delete timetable itself
+        db.session.delete(old_timetable)
         db.session.commit()
 
-    # ---- Insert new rows from structured data ----
-    rows_inserted = 0
+    # ---- Create new timetable ----
+    timetable = Timetable(user_id=user.userId)
+    db.session.add(timetable)
+    db.session.commit()  # commit to get timetableId
 
+    # ---- Insert new rows ----
+    rows_inserted = 0
     for day, activities in structured["days"].items():
         for act in activities:
             if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
@@ -1615,7 +1613,7 @@ def save_timetable_to_db(structured):
                         continue
 
                     new_row = TimetableRow(
-                        timetable_id=timetable.timetableId if timetable else None,
+                        timetable_id=timetable.timetableId,
                         filename=filename,
                         lecturerName=lecturer,
                         classType=act.get("class_type"),
@@ -1637,6 +1635,7 @@ def save_timetable_to_db(structured):
 
 
 
+
 # -------------------------------
 # Function for Admin ManageTimetable Route
 # -------------------------------
@@ -1646,6 +1645,7 @@ def admin_manageTimetable():
     # Auto cleanup expired timetable rows
     # cleanup_expired_timetable_rows()
 
+    department_data = Department.query.all()
     # ---- Default GET rendering ----
     timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
@@ -1781,7 +1781,7 @@ def admin_manageTimetable():
                 return redirect(url_for('admin_manageTimetable'))
 
     return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer, unassigned_staff_list=unassigned_staff_list,
-        total_timetable=total_timetable, unassigned_summary=unassigned_summary, staff_list=staff_list, **day_counts, timetable_list=timetable_list, timetable_map=timetable_map, timetable_select=timetable_select)
+        total_timetable=total_timetable, unassigned_summary=unassigned_summary, staff_list=staff_list, **day_counts, timetable_list=timetable_list, timetable_map=timetable_map, timetable_select=timetable_select, department_data=department_data)
 
 
 
