@@ -87,28 +87,24 @@ def calculate_invigilation_stats():
 
 
 
-
 def get_all_attendances(user):
     query = (
         InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(InvigilationReport, InvigilatorAttendance.report)  # use relationship
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Lecturer info
+        .join(User, InvigilatorAttendance.invigilator)  # use relationship
+        .join(Department, User.department)  # use relationship
         .filter(InvigilatorAttendance.invigilationStatus == True)
     )
 
-    # Lecturer (Level 1) — see own only
+    # Role-based filtering
     if user.userLevel == 1:
-        flash(f"if: {user.userId, user.userLevel}", "success")
+        # Lecturer — only their own records
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
-
-    # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilators in same department
-    elif user.userLevel in [2, 3, 4]:
-        flash(f"elif: {user.userId, user.userLevel}", "success")
+    elif user.userLevel in [2, 3]:
+        # Dean / HOS — see all invigilators under same department
         query = query.filter(User.userDepartment == user.userDepartment)
-
-    # Order by exam status and time
-    return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
+    return query.order_by(Exam.examStatus.asc(), Exam.examStartTime.asc()).all()
 
 
 
