@@ -414,6 +414,9 @@ html, body {
     background-color: #ff7280; /* red */
 }
 
+.frame-waiting {
+    background-color: #f0b2ff;
+}
 
 .info-grid {
     display: grid;

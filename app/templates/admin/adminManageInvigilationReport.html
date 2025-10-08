@@ -125,7 +125,7 @@
                                         <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
                                     </div>
                                 {% else %}
-                                    <em class="frame-oren">In Processing</em>
+                                    <em class="status frame-waiting">In Processing</em>
                                 {% endif %}
                             </td>
 
@@ -137,7 +137,7 @@
                                         <div>Check-out Time</div><div><strong>: {{ att.checkOut }}</strong></div>
                                     </div>
                                 {% else %}
-                                    <em class="frame-oren">In Processing</em>
+                                    <em class="status frame-waiting">In Processing</em>
                                 {% endif %}
                             </td>
 
@@ -153,7 +153,7 @@
                                     } %}
                                     <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
                                 {% else %}
-                                    <em class="frame-oren">In Processing</em>
+                                    <em class="status frame-waiting">In Processing</em>
                                 {% endif %}
                             </td>
 
@@ -162,7 +162,7 @@
                                 {% if att and att.invigilationStatus %}
                                     <span class="status frame-green">Accepted</span>
                                 {% else %}
-                                    <em class="frame-oren">In Processing</em>
+                                    <em class="status frame-waiting">In Processing</em>
                                 {% endif %}
                             </td>
                         </tr>
