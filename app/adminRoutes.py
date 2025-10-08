@@ -1575,33 +1575,56 @@ def get_linkTimetable(timetableID):
 def save_timetable_to_db(structured):
     lecturer = structured.get("lecturer")
     filename = structured.get("filename")
+    structured_range = structured.get("classWeekDate")  # mm/dd/yyyy-mm/dd/yyyy
 
     if not lecturer:
         return 0
 
-    # Normalize lecturer: remove spaces
+    # 1. Normalize lecturer: remove all spaces
     normalized_lecturer = ''.join(lecturer.split())
 
-    # Find user where username with spaces removed matches lecturer
+    # 2. Find user where username with spaces removed matches lecturer
     user = User.query.filter(func.replace(User.userName, " ", "") == normalized_lecturer).first()
     if not user:
         return 0
 
-    # ---- Delete old timetable & rows for this user ----
+    # 3. Extract start date from structured data
+    if not structured_range:
+        return 0
+    try:
+        structured_start = datetime.strptime(structured_range.split("-")[0], "%m/%d/%Y")
+    except ValueError:
+        return 0
+
+    # 4. Check existing timetable rows for this lecturer
     old_timetable = Timetable.query.filter_by(user_id=user.userId).first()
     if old_timetable:
-        # Delete all rows linked to this timetable
+        existing_rows = TimetableRow.query.filter_by(timetable_id=old_timetable.timetableId).all()
+        ignore_upload = False
+        for row in existing_rows:
+            if row.classWeekDate:
+                try:
+                    existing_start = datetime.strptime(row.classWeekDate.split("-")[0], "%m/%d/%Y")
+                    if structured_start <= existing_start:
+                        ignore_upload = True
+                        break
+                except ValueError:
+                    continue
+        if ignore_upload:
+            # Do not replace old timetable if new start date is earlier
+            return 0
+
+        # 5. Delete old timetable and rows since new upload is valid
         TimetableRow.query.filter_by(timetable_id=old_timetable.timetableId).delete()
-        # Delete timetable itself
         db.session.delete(old_timetable)
         db.session.commit()
 
-    # ---- Create new timetable ----
+    # 6. Create new timetable
     timetable = Timetable(user_id=user.userId)
     db.session.add(timetable)
     db.session.commit()  # commit to get timetableId
 
-    # ---- Insert new rows ----
+    # 7. Insert new rows
     rows_inserted = 0
     for day, activities in structured["days"].items():
         for act in activities:
@@ -1625,7 +1648,7 @@ def save_timetable_to_db(structured):
                         courseCode=sec.get("course_code"),
                         courseSection=sec.get("section"),
                         classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        classWeekDate=act.get("weeks_date"),
+                        classWeekDate=structured_range,
                     )
                     db.session.add(new_row)
                     rows_inserted += 1
