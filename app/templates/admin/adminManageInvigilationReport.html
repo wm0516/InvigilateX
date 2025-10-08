@@ -1,66 +1,3 @@
-{% extends "admin/adminBase.html" %}
-{% set show_tabs = true %}
-{% set show_upload = false %}
-{% set show_dashboard = true %}
-{% set show_manual = false %}
-{% set show_edit = true %}
-{% block title %}Admin ManageInvigilationReport{% endblock %}
-{% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
-
-{% block dashboard_section %}
-<!-- Dashboard Form -->
-<form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
-    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
-        <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
-            <div class="dashboard-row" style="grid-template-columns: repeat(7, 1fr);">
-                <div class="dashboard-frame">
-                    <h3>Active Reports</h3>
-                    <p class="dashboard-text">{{ total_report }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Exam In Going</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Pending Check-In/Out</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkInOut }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Checked In On Time</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_checkInOnTime }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Checked Out On Time</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_checkOutOnTime }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Checked In Late</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Checked Out Early</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-{% endblock %}
-
-{% block edit_section %}
-<!-- Edit Form -->
-<form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
-    <div id="editSection" style="width: 100%; margin:auto;">
-        <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
-        </div>
-    </div>
-</form>
-{% endblock %}
-
-
-{% block content %}
 <div class="menu-section">
     <h3>List of Lecturer Invigilation Report</h3>
     <div class="user-table-container">
@@ -80,66 +17,70 @@
                 {% for (status, start_time), grouped in attendances|groupby("group_key") %}
                     {% set inv_count  = grouped|length %}
                     {% set expected_count = grouped[0].report.exam.examNoInvigilator %}
-                    {% set missing_count = expected_count - inv_count %}
-                    {% for att in grouped %}
+                    {% set total_rows = expected_count %}
+                    
+                    {# Generate invigilator rows #}
+                    {% for i in range(total_rows) %}
+                        {% set att = grouped[i] if i < inv_count else None %}
                         <tr class="
-                            {% if not att.report.exam.examStatus %}
+                            {% if att and not att.report.exam.examStatus %}
                                 inactive-row-show
-                            {% elif att.report.exam.examVenue is none %}
+                            {% elif att and att.report.exam.examVenue is none %}
                                 error-row-show
                             {% endif %}
                         "> 
-                            {% if loop.first %}
-                            <!-- Exam ID -->
-                            <td rowspan="{{ expected_count }}" style="text-align:center;">[{{ att.report.exam.examId }}]</td>
+                            {% if i == 0 %}
+                                <!-- Exam ID -->
+                                <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
 
-                            <!-- Course & Exam Details -->
-                            <td rowspan="{{ expected_count }}">
-                                <div class="info-grid">
-                                    <div>Course Name</div><div><strong>: {{ att.report.exam.course.courseName }}</strong></div>
-                                    <div>Course Code/Section</div><div><strong>: {{ att.report.exam.course.courseCodeSectionIntake }}</strong></div>
-                                    <div>Number of Students</div><div><strong>: {{ att.report.exam.course.courseStudent }}</strong></div>
-                                    <div>Program Code</div><div><strong>: {{ att.report.exam.course.courseDepartment }}</strong></div>
-                                    <div>Exam Date</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ att.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                                    <div>Exam Day</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
-                                    <div>Exam Time</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
-                                    <div>Exam Period</div><div><strong>: {{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                    <div>Exam Venue</div><div><strong>: {{ att.report.exam.examVenue }}</strong></div>
-                                </div>
-                            </td>
+                                <!-- Course & Exam Details -->
+                                <td rowspan="{{ total_rows }}">
+                                    <div class="info-grid">
+                                        <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
+                                        <div>Course Code/Section</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</strong></div>
+                                        <div>Number of Students</div><div><strong>: {{ grouped[0].report.exam.course.courseStudent }}</strong></div>
+                                        <div>Program Code</div><div><strong>: {{ grouped[0].report.exam.course.courseDepartment }}</strong></div>
+                                        <div>Exam Date</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ grouped[0].report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                                        <div>Exam Day</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%A") }} - {{ grouped[0].report.exam.examEndTime.strftime("%A") }}</strong></div>
+                                        <div>Exam Time</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%H:%M") }} - {{ grouped[0].report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
+                                        <div>Exam Period</div><div><strong>: {{ (grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds // 3600 }}h {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                        <div>Exam Venue</div><div><strong>: {{ grouped[0].report.exam.examVenue }}</strong></div>
+                                    </div>
+                                </td>
 
-                            <td rowspan="{{ expected_count }}">[{{ att.report.exam.examNoInvigilator }}]</td>
+                                <!-- Number of Invigilators -->
+                                <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
                             {% endif %}
 
-                            <!-- Invigilator Details (one per row) -->
+                            <!-- Invigilator Details -->
                             <td>
-                                <div class="info-grid">
-                                    {% if att.invigilationStatus %}
+                                {% if att and att.invigilationStatus %}
+                                    <div class="info-grid">
                                         <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
                                         <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
                                         <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
                                         <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
-                                    {% else %}
-                                        <em>In Processing</em>
-                                    {% endif %}
-                                </div>
+                                    </div>
+                                {% else %}
+                                    <em>In Processing</em>
+                                {% endif %}
                             </td>
 
                             <!-- Check-in/out Time -->
                             <td>
-                                <div class="info-grid">
-                                    {% if att.invigilationStatus %}
+                                {% if att and att.invigilationStatus %}
+                                    <div class="info-grid">
                                         <div>Check-in Time</div><div><strong>: {{ att.checkIn }}</strong></div>
-                                        <div>Check-out Time</div><div><strong>: {{ att.checkIn }}</strong></div>
-                                    {% else %}
-                                        <em>In Processing</em>
-                                    {% endif %}
-                                </div>
+                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut }}</strong></div>
+                                    </div>
+                                {% else %}
+                                    <em>In Processing</em>
+                                {% endif %}
                             </td>
 
                             <!-- Attendance Status -->
                             <td>
-                                {% if att.invigilationStatus %}
+                                {% if att and att.invigilationStatus %}
                                     {% set remark_classes = {
                                         "PENDING": "frame-oren",
                                         "CHECK IN": "frame-green",
@@ -152,8 +93,10 @@
                                     <em>In Processing</em>
                                 {% endif %}
                             </td>
+
+                            <!-- Invigilation Status -->
                             <td>
-                                {% if att.invigilationStatus %}
+                                {% if att and att.invigilationStatus %}
                                     <span class="status frame-green">Accepted</span>
                                 {% else %}
                                     <em>In Processing</em>
@@ -166,5 +109,3 @@
         </table>
     </div>
 </div>
-
-{% endblock %}
