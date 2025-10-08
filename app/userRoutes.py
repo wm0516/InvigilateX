@@ -93,17 +93,16 @@ def get_all_attendances(user):
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Join to get invigilator details
-        .join(Department, User.userDepartment == Department.departmentCode)  # Join to get department details
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Lecturer info
         .filter(InvigilatorAttendance.invigilationStatus == True)
     )
 
-    # Apply condition based on user level
+    # Lecturer (Level 1) — see own only
     if user.userLevel == 1:
-        # Lecturer — view only their own invigilation records
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+
+    # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilators in same department
     elif user.userLevel in [2, 3, 4]:
-        # Dean / HOS / HOP / Admin — view all lecturers in the same department
         query = query.filter(User.userDepartment == user.userDepartment)
 
     # Order by exam status and time
