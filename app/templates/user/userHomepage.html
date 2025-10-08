@@ -4,7 +4,7 @@
 {% block content %}
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
         <div class="menu-section">
-            <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
+            <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;"><h2>Own Timetable</h2></a>
             <li class="submenu">
                 <strong>  Purpose:</strong>
                 <ul>    
@@ -13,22 +13,9 @@
                 </ul>
             </li>
         </div>
-
-        {% if user_level in [2, 3, 4] %}
-            <div class="menu-section">
-                <a href="{{ url_for('user_invigilationTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
-                <li class="submenu">
-                    <strong>  Purpose:</strong>
-                    <ul>    
-                        <li>Upload merged lecturer schedule files</li>
-                        <li>Access and review combined lecturer timetables</li>
-                    </ul>
-                </li>
-            </div>
-        {% endif %}
 
         <div class="menu-section">
-            <a href="{{ url_for('user_mergeTimetable')}}" style="text-decoration: none;"><h2>Timetable</h2></a>
+            <a href="{{ url_for('user_invigilationTimetable')}}" style="text-decoration: none;"><h2>Invigilation Timetable</h2></a>
             <li class="submenu">
                 <strong>  Purpose:</strong>
                 <ul>    
@@ -37,9 +24,7 @@
                 </ul>
             </li>
         </div>
-    </div>
 
-    <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
         <div class="menu-section">
             <a href="{{ url_for('user_invigilationReport')}}" style="text-decoration: none;"><h2>Invigilation Report</h2></a>
             <li class="submenu">
@@ -50,5 +35,20 @@
                 </ul>
             </li>
         </div>
+    </div>
+
+    <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
+        {% if user_level in [2, 3, 4] %}
+            <div class="menu-section">
+                <a href="{{ url_for('user_mergeTimetable')}}" style="text-decoration: none;"><h2>Merge Timetable</h2></a>
+                <li class="submenu">
+                    <strong>  Purpose:</strong>
+                    <ul>    
+                        <li>Upload merged lecturer schedule files</li>
+                        <li>Access and review combined lecturer timetables</li>
+                    </ul>
+                </li>
+            </div>
+        {% endif %}
     </div>  
 {% endblock %}
