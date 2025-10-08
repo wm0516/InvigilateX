@@ -7,6 +7,7 @@ from datetime import datetime
 # Third-party imports
 # -------------------------------
 from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 
@@ -136,6 +137,28 @@ def register():
     return render_template('auth/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
                            contact_text=contact_text, password1_text=password1_text, password2_text=password2_text, gender_text=gender_text,
                            department_text=department_text, role_text=role_text, department_data=department_data, error_message=error_message)
+
+
+@app.route('/verify/<token>')
+def verifyAccount(token):
+    try:
+        email = serializer.loads(token, salt='account-verify-salt', max_age=3600)
+        user = User.query.filter_by(userEmail=email).first()
+        if not user:
+            flash("Invalid verification link.", "danger")
+            return redirect(url_for('auth.login'))
+
+        user.userStatus = True
+        db.session.commit()
+        flash("Your account has been verified successfully!", "success")
+        return redirect(url_for('auth.login'))
+
+    except SignatureExpired:
+        flash("The verification link has expired.", "warning")
+        return redirect(url_for('auth.register'))
+    except BadSignature:
+        flash("Invalid verification token.", "danger")
+        return redirect(url_for('auth.register'))
 
 
 # -------------------------------

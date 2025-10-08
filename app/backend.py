@@ -162,12 +162,10 @@ def send_verifyActivateLink(email):
         return False, "No Account Associated With This Email."
 
     try:
-        email_to_verify = user.userEmail
-        # Generate token for verification
-        token = serializer.dumps(email_to_verify, salt='account-verify-salt')
-        verify_link = url_for("verifyAccount", token=token, _external=True)
+        token = serializer.dumps(email, salt='account-verify-salt')
+        verify_link = url_for("auth.verifyAccount", token=token, _external=True)
 
-        msg = Message('InvigilateX - Verify Your Account', recipients=[email_to_verify])
+        msg = Message('InvigilateX - Verify Your Account', recipients=[email])
         msg.body = f'''Hi,
 
 Thank you for registering for InvigilateX!
