@@ -885,7 +885,6 @@ def get_available_venues():
 # -------------------------------
 def adjust_invigilators(report, new_count, start_dt, end_dt):
     pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
-
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
@@ -893,20 +892,47 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
         return  # nothing to change
 
     if new_count > current_count:
-        # Need to ADD more invigilators
         extra_needed = new_count - current_count
         already_assigned_ids = [att.invigilatorId for att in current_attendances]
 
         eligible_invigilators = User.query.filter(
             User.userLevel == 1,
+            User.userStatus == True,
             ~User.userId.in_(already_assigned_ids)
         ).all()
 
         if not eligible_invigilators:
-            raise ValueError("No extra eligible invigilators available")
+            raise ValueError("No eligible invigilators available to add")
 
-        random.shuffle(eligible_invigilators)
-        for inv in eligible_invigilators[:extra_needed]:
+        # Split by gender
+        male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
+        female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
+
+        # Sort by workload
+        def workload(inv):
+            return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+
+        male_invigilators.sort(key=workload)
+        female_invigilators.sort(key=workload)
+        chosen_invigilators = []
+
+        if new_count >= 2:
+            # Ensure at least one male and one female if possible
+            if male_invigilators:
+                chosen_invigilators.append(male_invigilators.pop(0))
+            if female_invigilators and len(chosen_invigilators) < extra_needed:
+                chosen_invigilators.append(female_invigilators.pop(0))
+            extra_needed -= len(chosen_invigilators)
+
+        # Fill remaining slots with lowest workload invigilators
+        pool = sorted(male_invigilators + female_invigilators, key=workload)
+        chosen_invigilators += pool[:extra_needed]
+
+        if len(chosen_invigilators) < new_count - current_count:
+            raise ValueError("Not enough eligible invigilators to increase")
+
+        # Assign chosen invigilators
+        for inv in chosen_invigilators:
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
@@ -914,7 +940,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
                 timeCreate=datetime.now(timezone.utc)
             ))
 
-    else:  
+    else:
         # Need to REMOVE invigilators
         remove_count = current_count - new_count
         to_remove = random.sample(current_attendances, remove_count)
@@ -926,8 +952,8 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
                     (inv.userPendingCumulativeHours or 0.0) - pending_hours
                 )
             db.session.delete(att)
-
     db.session.commit()
+
 
 # -------------------------------
 # Function for Admin ManageExam Route
@@ -1031,9 +1057,7 @@ def admin_manageExam():
                     exam_select.examVenue = venue_text
                     exam_select.examNoInvigilator = invigilatorNo_text
 
-                    # -----------------------------
                     # Ensure VenueAvailability is synced
-                    # -----------------------------
                     existing_va = VenueAvailability.query.filter_by(examId=exam_select.examId).first()
                     if existing_va:
                         existing_va.venueNumber = venue_text

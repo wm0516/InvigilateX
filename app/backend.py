@@ -273,7 +273,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-# -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
@@ -289,9 +288,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 
-    # -------------------------------
-    # Auto-set invigilator count if not provided
-    # -------------------------------
+    # Auto-set invigilator count
     invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
 
     # Validate the value
@@ -355,7 +352,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
     eligible_invigilators = User.query.filter(
         ~User.userId.in_(exclude_ids),
-        User.userLevel == 1
+        User.userLevel == 1,
+        User.userStatus == True
     ).all()
 
     if not eligible_invigilators:
