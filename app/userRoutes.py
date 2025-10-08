@@ -87,7 +87,8 @@ def calculate_invigilation_stats():
 
 
 
-def get_all_attendances(user):
+def get_all_attendances():
+    user = User.query.get(session.get('user_id'))
     query = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -99,13 +100,11 @@ def get_all_attendances(user):
 
     # Lecturer (Level 1) — see own only
     if user.userLevel == 1:
-        flash(f"if: {user.userId, user.userLevel}", "success")
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
 
     # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilations for courses under same department
     elif user.userLevel in [2, 3, 4]:
-        flash(f"elif: {user.userId, user.userLevel}", "success")
-        query = query.filter(Course.courseDepartment == user.userDepartment)  # ✅ filter by Course dept
+        query = query.filter(Course.courseDepartment == user.userDepartment)
 
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
 
@@ -116,8 +115,7 @@ def get_all_attendances(user):
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
 @login_required
 def user_invigilationReport():
-    user = User.query.get(session.get('user_id'))
-    attendances = get_all_attendances(user)
+    attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
     # Add composite group key: (examStatus, examStartTime)
