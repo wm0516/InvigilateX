@@ -1645,35 +1645,15 @@ def save_timetable_to_db(structured):
 def admin_manageTimetable():
     # Auto cleanup expired timetable rows
     # cleanup_expired_timetable_rows()
-    
-    timetable_data = (
-        Timetable.query
-        .join(User, Timetable.user_id == User.userId)
-        .filter(
-            User.userStatus == 1,
-            Timetable.user_id.isnot(None)
-        )
-        .all()
-    )
-    
-    lecturers = sorted({
-        row.lecturerName
-        for timetable in timetable_data
-        for row in timetable.rows
-    })
+
+    # ---- Default GET rendering ----
+    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
+    lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
 
     # Use Timetable directly (not TimetableRow)
     total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
-    timetable_list = (
-        Timetable.query
-        .join(User, Timetable.user_id == User.userId)
-        .filter(
-            User.userStatus == 1,
-            Timetable.user_id.isnot(None)
-        )
-        .all()
-    )
+    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
 
     # Predefine timetable_select to avoid UnboundLocalError
     timetable_select = None
