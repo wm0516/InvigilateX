@@ -21,14 +21,17 @@ bcrypt = Bcrypt()
 
 
 
+
+
+
 @app.route('/lecturer/timetable', methods=['GET'])
 @login_required
 def lecturer_timetable():
     userId = session.get('user_id')
-    
-    # Fetch all timetable rows for this lecturer
-    timetable_rows = Timetable.query.filter_by(user_id=userId).all()
+    timetable = Timetable.query.filter_by(user_id=userId).first()
+    timetable_rows = timetable.rows if timetable else []
 
+    # Combine overlapping (same day & same time) entries
     merged = {}
     for row in timetable_rows:
         key = (row.classDay.upper(), row.classTime, row.classType, row.classRoom)
@@ -50,11 +53,9 @@ def lecturer_timetable():
 
     merged_timetable = list(merged.values())
 
-    return render_template(
-        'lecturer/lecturerTimetable.html',
-        active_tab='lecturer_timetabletab',
-        timetable_rows=merged_timetable
-    )
+    return render_template('lecturer/lecturerTimetable.html', active_tab='lecturer_timetabletab', timetable_rows=merged_timetable)
+
+
 
 
 
