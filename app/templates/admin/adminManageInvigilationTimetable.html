@@ -35,7 +35,7 @@
             {% endfor %}
         </div>
 
-        {% set hour_width = 110 %}
+        {% set hour_width = 111 %}
         {% for date in full_dates %}
             {% set exams = calendar_data.get(date, []) %}
             {% set sorted_exams = exams | sort(attribute='start_time') %}
