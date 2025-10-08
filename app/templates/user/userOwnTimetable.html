@@ -3,50 +3,50 @@
 {% block head_title %}<h2>Own Timetable</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="user-table-container">    
+    <div class="user-table-container" style="max-height: None;">    
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
                     <th>Day / Time</th>
-                    {% set all_times = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-                    {% for time in all_times %}
+                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
                         <th>{{ time }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for day in ["MON","TUE","WED","THU","FRI"] %}
+                {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-                    {% set time_idx = 0 %}
-                    {% if time_idx < all_times|length %}
-                        {% set cell_rendered = false %}
+                    {% set current_hour = 7 %}
+                    {% while current_hour <= 23 %}
+                        {% set filled = False %}
                         {% for row in timetable_rows %}
-                            {% if row.classDay.upper() == day %}
-                                {% set start = row.classTime.split('-')[0].strip() %}
-                                {% set end = row.classTime.split('-')[1].strip() %}
-                                {% set start_idx = all_times.index(start) %}
-                                {% set end_idx = all_times.index(end) %}
-                                {% if time_idx == start_idx %}
-                                    <td colspan="{{ end_idx - start_idx }}" style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
-                                        <strong>Course</strong>: <i>{{ row.courseName }}</i><br>
-                                        <strong>Class Type</strong>: <i>{{ row.classType }}</i><br>
-                                        <strong>Room</strong>: <i>{{ row.classRoom }}</i><br>
-                                        <strong>Sections</strong>:<br>
-                                        {% for intake, code, section in row.combined %}
-                                            <i>{{ intake }} | {{ code }} | {{ section }};</i><br>
-                                        {% endfor %}
+                            {% if row.classDay == day %}
+                                {% set start_hour = row.classStart.split(':')[0]|int %}
+                                {% set end_hour = row.classEnd.split(':')[0]|int %}
+                                {% if current_hour == start_hour %}
+                                    <td colspan="{{ end_hour - start_hour }}">
+                                        <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
+                                            <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
+                                            <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
+                                            <strong>Room:</strong> <i>{{ row.classRoom }}</i><br>
+                                            <strong>Sections:</strong><br>
+                                            {% for intake, code, section in row.combined %}
+                                                <i>{{ intake }} | {{ code }} | {{ section }};</i><br>
+                                            {% endfor %}
+                                        </div>
                                     </td>
-                                    {% set time_idx = end_idx %}
-                                    {% set cell_rendered = true %}
+                                    {% set current_hour = end_hour %}
+                                    {% set filled = True %}
+                                    {% break %}
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
-                        {% if not cell_rendered %}
+                        {% if not filled %}
                             <td></td>
-                            {% set time_idx = time_idx + 1 %}
+                            {% set current_hour = current_hour + 1 %}
                         {% endif %}
-                    {% endif %}
+                    {% endwhile %}
                 </tr>
                 {% endfor %}
             </tbody>
