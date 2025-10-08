@@ -1953,8 +1953,6 @@ def get_all_attendances():
         .all()
     )
 
-
-
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
 # -------------------------------

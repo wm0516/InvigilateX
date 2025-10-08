@@ -55,10 +55,8 @@ def login():
 
         if role == ADMIN:
             return redirect(url_for('admin_homepage'))
-        elif role in (DEAN, HOS, HOP):
-            return redirect(url_for('access_homepage'))
-        elif role == LECTURER:
-            return redirect(url_for('lecturer_homepage'))
+        elif role in (DEAN, HOS, HOP, LECTURER):
+            return redirect(url_for('user_homepage'))
         else:
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
@@ -264,17 +262,8 @@ def admin_homepage():
 # -------------------------------
 # Function for DEAN/HOS/HOP Homepage route
 # -------------------------------
-@app.route('/access/home', methods=['GET', 'POST'])
+@app.route('/user/home', methods=['GET', 'POST'])
 @login_required
-def access_homepage():
-    return render_template('access/accessHomepage.html', active_tab='access_hometab')
-
-
-# -------------------------------
-# Function for Lecturer Homepage route
-# -------------------------------
-@app.route('/lecturer/home', methods=['GET', 'POST'])
-@login_required
-def lecturer_homepage():
-    return render_template('lecturer/lecturerHomepage.html', active_tab='lecturer_hometab')
+def user_homepage():
+    return render_template('user/userHomepage.html', active_tab='user_hometab')
 

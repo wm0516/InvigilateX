@@ -1,0 +1,58 @@
+{% extends "user/userBase.html" %}
+{% block title %}Timetable{% endblock %}
+{% block content %}
+<div class="menu-section">
+    <h2>Own Timetable</h2>
+    
+    <div class="user-table-container" styl="max-height: None;">
+        <table class="user-data-table" border="1">
+            <thead>
+                <tr>
+                    <th>Day / Time</th>
+                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                        <th>{{ time }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
+                <tr>
+                    <td><strong>{{ day }}</strong></td>
+                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                    <td>
+                        {% for row in timetable_rows %}
+                            {% if row.classDay == day %}
+                                {% set start = row.classTime.split('-')[0].strip() %}
+                                {% set end = row.classTime.split('-')[1].strip() %}
+                                {% if time >= start and time < end %}
+                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
+                                        <strong>Course:</strong>{{ row.courseName }}<br>
+                                        <strong>Class Type:</strong>{{ row.classType }}<br>
+                                        <strong>Room:</strong>{{ row.classRoom }}<br>
+                                        <strong>Sections:</strong><br>
+                                        {% for intake, code, section in row.combined %}
+                                            {{ intake }} | {{ code }} | {{ section }};<br>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

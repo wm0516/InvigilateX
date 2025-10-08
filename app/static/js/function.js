@@ -89,7 +89,14 @@ document.addEventListener('DOMContentLoaded', function() {
     '/access/ownTimetable': 'access_ownTimetabletab',
     '/access/invigilationReport': 'access_invigilationReporttab',
     '/access/profile': 'access_profiletab',
-    '/access/mergeTimetable': 'access_mergeTimetabletab'
+    '/access/mergeTimetable': 'access_mergeTimetabletab',
+
+    '/user/home': 'user_hometab',
+    '/user/ownTimetable': 'user_ownTimetabletab',
+    '/user/mergeTimetable': 'user_mergeTimetabletab',
+    '/user/invigilationReport': 'user_invigilationReporttab',
+    '/user/invigilationTimetable': 'user_invigilationTimetabletab',
+    '/user/profile': 'user_profiletab'
   };
 
   const currentPath = window.location.pathname;
