@@ -49,6 +49,43 @@
 
 
 
+@app.route('/user/ownTimetable', methods=['GET'])
+@login_required
+def user_ownTimetable():
+    userId = session.get('user_id')
+    timetable = Timetable.query.filter_by(user_id=userId).first()
+    timetable_rows = timetable.rows if timetable else []
+
+    # Combine overlapping (same day & same time) entries
+    merged = {}
+    for row in timetable_rows:
+        key = (row.classDay.upper(), row.classTime, row.classType, row.classRoom)
+        if key not in merged:
+            merged[key] = {
+                'classDay': row.classDay,
+                'classTime': row.classTime,
+                'classType': row.classType,
+                'classRoom': row.classRoom,
+                'courseName': row.courseName,
+                'courseIntakes': [row.courseIntake],
+                'courseCodes': [row.courseCode],
+                'courseSections': [row.courseSection]
+            }
+        else:
+            merged[key]['courseIntakes'].append(row.courseIntake)
+            merged[key]['courseCodes'].append(row.courseCode)
+            merged[key]['courseSections'].append(row.courseSection)
+
+    merged_timetable = []
+    for item in merged.values():
+        # zip the lists directly (combine element by element)
+        item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
+        merged_timetable.append(item)
+
+    return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable)
+
+
+
 
 
 

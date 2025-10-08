@@ -3,62 +3,63 @@
 {% block head_title %}<h2>Own Timetable</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="user-table-container" style="max-height: None;">    
+    <div class="user-table-container" style="max-height: None;">
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
                     <th>Day / Time</th>
-                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                    {% for time in time_slots %}
                         <th>{{ time }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
                 {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
                 <tr>
                     <td><strong>{{ day }}</strong></td>
-                    {% set skip_times = [] %}
+                    {% set day_map = {} %}
                     {% for time in time_slots %}
-                        {% if time in skip_times %}
-                            <td></td>
-                        {% endif %}
+                        {% do day_map.update({time: 'EMPTY'}) %} 
+                    {% endfor %}
 
-                        {% set matching = None %}
-                        {% for row in timetable_rows %}
-                            {% if row.classDay == day %}
-                                {% set start = row.classTime.split('-')[0].strip() %}
-                                {% set end = row.classTime.split('-')[1].strip() %}
+                    {% for row in timetable_rows %}
+                        {% if row.classDay == day %}
+                            {% set start_time = row.start_time %}
+                            {% set duration = row.colspan %}
 
-                                {% if start == time %}
-                                    {% set matching = row %}
-                                    {% set start_hour = start.split(':')[0]|int %}
-                                    {% set end_hour = end.split(':')[0]|int %}
-                                    {% set colspan = end_hour - start_hour %}
-                                {% endif %}
+                            {% if start_time in time_slots %}
+                                {% set start_index = time_slots.index(start_time) %}
+                                {% do day_map.update({start_time: row}) %}
+                                {% for i in range(1, duration) %}
+                                    {% set covered_index = start_index + i %}
+                                    {% if covered_index < time_slots|length %}
+                                        {% set covered_time = time_slots[covered_index] %}
+                                        {% do day_map.update({covered_time: 'COVERED'}) %}
+                                    {% endif %}
+                                {% endfor %}
                             {% endif %}
-                        {% endfor %}
+                        {% endif %}
+                    {% endfor %}
 
-                        {% if matching %}
-                            <td colspan="{{ colspan }}">
-                                <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
-                                    <strong>Course</strong>: <br><i>{{ matching.courseName }}</i><br>
-                                    <strong>Class Type</strong>: <i>{{ matching.classType }}</i><br>
-                                    <strong>Room</strong>: <i>{{ matching.classRoom }}</i><br>
+                    {% for time in time_slots %}
+                        {% set slot_status = day_map[time] %}
+                        {% if slot_status == 'EMPTY' %}
+                            <td></td>
+                        {% elif slot_status == 'COVERED' %}
+                            {# No action: The logic of skipping is simply not rendering a <td> here #}
+                        {% else %}
+                            <td colspan="{{ slot_status.colspan }}">
+                                <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; height: 100%;">
+                                    <strong>Course</strong>:<br><i>{{ slot_status.courseName }}</i><br>
+                                    <strong>Class Type</strong>: <i>{{ slot_status.classType }}</i><br>
+                                    <strong>Room</strong>: <i>{{ slot_status.classRoom }}</i><br>
                                     <strong>Sections</strong>: <br>
-                                    {% for intake, code, section in matching.combined %}
+                                    {% for intake, code, section in slot_status.combined %}
                                         <i>{{ intake }} | {{ code }} | {{ section }};</i><br>
                                     {% endfor %}
                                 </div>
                             </td>
-                            {# Add skipped times manually (e.g. 10:00 to 13:00 skips 11, 12) #}
-                            {% set current_index = time_slots.index(time) %}
-                            {% for i in range(1, colspan) %}
-                                {% set skip_time = time_slots[current_index + i] %}
-                                {% set _ = skip_times.append(skip_time) %}
-                            {% endfor %}
-                        {% else %}
-                            <td></td>
                         {% endif %}
                     {% endfor %}
                 </tr>
@@ -68,13 +69,3 @@
     </div>
 </div>
 {% endblock %}
-
-
-
-
-
-
-
-
-
-
