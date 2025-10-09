@@ -3,17 +3,20 @@
 {% block title %}Admin Homepage{% endblock %}
 {% block content %}
 <div class="menu-grid">
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageCourse')}}" style="text-decoration: none;"><h2>Manage Course</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>Manually add new courses</li>
-                <li>Upload course data in bulk</li>
-                <li>Edit existing course information</li>
+    <a href="{{ url_for('admin_manageCourse') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-section">
+            <h2>Manage Course</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>Manually add new courses</li>
+                    <li>Upload course data in bulk</li>
+                    <li>Edit existing course information</li>
+                </ul>
             </ul>
-        </li>
-    </div>
+        </div>
+    </a>
+
     <div class="menu-section">
         <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
         <li class="submenu">
