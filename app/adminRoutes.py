@@ -1683,12 +1683,19 @@ def admin_manageTimetable():
     department_data = Department.query.all()
     selected_lecturer = request.args.get("lecturer")
     selected_department = request.args.get("department")
-    timetable_data_query = TimetableRow.query
+    timetable_data_query = TimetableRow.query \
+        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId) \
+        .join(User, Timetable.user_id == User.userId) \
+        .filter(
+            TimetableRow.timetable_id.isnot(None),
+            User.userStatus == 1
+        )
 
     if selected_lecturer:
         timetable_data_query = timetable_data_query.filter(TimetableRow.lecturerName == selected_lecturer)
+
     if selected_department:
-        timetable_data_query = timetable_data_query.join(User, TimetableRow.user_id == User.userId).filter(User.userDepartment == selected_department)
+        timetable_data_query = timetable_data_query.filter(User.userDepartment == selected_department)
 
     timetable_data = timetable_data_query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()})
