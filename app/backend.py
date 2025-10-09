@@ -376,8 +376,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     db.session.add(new_report)
     db.session.flush()
 
-    pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
-
     # Exclude lecturers
     exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
     eligible_invigilators = User.query.filter(
@@ -419,7 +417,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         return False, f"Not enough invigilators available. Required: {invigilatorNo}, Available: {len(chosen_invigilators)}"
 
     for chosen in chosen_invigilators:
-        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
         attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,

@@ -44,8 +44,8 @@
                             <td>
                                 <form action="{{ url_for('user_homepage') }}" method="POST" class="d-flex justify-content-center gap-2">
                                     <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
-                                    <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724;">Accept</button>
-                                    <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24;">Reject</button>
+                                    <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                                    <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
                                 </form>
                             </td>
                         </tr>
@@ -56,8 +56,6 @@
         </div>
     </form><br>
     {% endif %}
-
-
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
         <div class="menu-section">

@@ -6,8 +6,7 @@ import re
 import warnings
 from io import BytesIO
 from collections import defaultdict
-from datetime import datetime, date
-from zoneinfo import ZoneInfo
+from datetime import datetime
 import random
 
 # -------------------------------
@@ -27,7 +26,7 @@ from sqlalchemy import and_, or_
 # Local application imports
 # -------------------------------
 from app import app
-from .authRoutes import login_required, verifyAccount
+from .authRoutes import login_required
 from .backend import *
 from .database import *
 
@@ -1152,7 +1151,6 @@ def admin_manageExam():
 # Function for Admin User Download Excel Template
 # -------------------------------
 def generate_user_template():
-    
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
     ws = wb.active

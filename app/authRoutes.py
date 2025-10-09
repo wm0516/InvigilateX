@@ -340,7 +340,28 @@ def user_homepage():
         if record:
             if action == 'accept':
                 record.invigilationStatus = True
-                flash("Exam Invigilation Accept", "success")
+                record.timeAction = datetime.now()
+
+                # Calculate and add pending hours
+                exam = (
+                    Exam.query
+                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                    .filter(InvigilationReport.invigilationReportId == record.reportId)
+                    .first()
+                )
+                if exam and exam.examStartTime and exam.examEndTime:
+                    start_dt = exam.examStartTime
+                    end_dt = exam.examEndTime
+
+                    if end_dt < start_dt:
+                        end_dt += timedelta(days=1)
+                    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+                    chosen = User.query.filter_by(userId=user_id).first()
+                    if chosen:
+                        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
+
+                flash("Exam Invigilation Accepted", "success")
+
             elif action == 'reject':
                 record.invigilationStatus = False
                 flash("Exam Invigilation Reject", "error")
