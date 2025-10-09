@@ -5,32 +5,31 @@
     <div class="menu-section">
         <a href="{{ url_for('admin_manageCourse')}}" style="text-decoration: none;"><h2>Manage Course</h2></a>
         <li class="submenu">
-            <strong>  Purpose:</strong>
+            <strong>Purpose:</strong>
             <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>Manually add new courses</li>
+                <li>Upload course data in bulk</li>
+                <li>Edit existing course information</li>
             </ul>
         </li>
     </div>
-
     <div class="menu-section">
         <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
         <li class="submenu">
-            <strong>  Purpose:</strong>
+            <strong>Purpose:</strong>
             <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>Manually add new departments</li>
+                <li>Edit existing department details</li>
             </ul>
         </li>
     </div>
-
     <div class="menu-section">
         <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;"><h2>Manage Venue</h2></a>
         <li class="submenu">
-            <strong>  Purpose:</strong>
+            <strong>Purpose:</strong>
             <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>Manually add new venues</li>
+                <li>Edit existing venue information</li>
             </ul>
         </li>
     </div>
@@ -40,32 +39,31 @@
     <div class="menu-section">
         <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;"><h2>Manage Exam</h2></a>
         <li class="submenu">
-            <strong>  Account Controls: </strong>
+            <strong>Purpose:</strong>
             <ul>
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>Upload new exams</li>
+                <li>Edit existing exam information</li>
             </ul>
         </li>
     </div>
-
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;"><h2>Manage Staff</h2></a>
+        <div class="menu-section">
+        <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;"><h2>Manage Lecturer</h2></a>
         <li class="submenu">
-            <strong>  Functionality:</strong>
-            <ul>
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+            <strong>Purpose:</strong>
+            <ul>    
+                <li>Manually add new lecturer data</li>
+                <li>Upload lecturer data in bulk</li>
+                <li>Edit existing lecturer information</li>
             </ul>
         </li>
-    </div>
-
+    </div>  
     <div class="menu-section">
         <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;"><h2>Manage Timetable</h2></a>
         <li class="submenu">
-            <strong>  Purpose:</strong>
+            <strong>Purpose:</strong>
             <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>Upload timetable PDFs (multiple files allowed)</li>
+                <li>Automatically link timetables to existing lecturer names</li>
             </ul>
         </li>
     </div>
@@ -75,41 +73,31 @@
     <div class="menu-section">
         <a href="{{ url_for('admin_manageInvigilationTimetable')}}" style="text-decoration: none;"><h2>Manage Invigilation Timetable</h2></a>
         <li class="submenu">
-            <strong>  Functionality:</strong>
+            <strong>Purpose:</strong>
             <ul>
-                <li>Automatically assign examiners based on availability</li>
-                <li>Review and manage generated exam timetables</li>
+                <li>View invigilation exam slots in a calendar view</li>
+                <li>Different colors indicate exam types: overnight, past, upcoming</li>
             </ul>
         </li>
     </div>
-
     <div class="menu-section">
-        <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;"><h2>Manage Inviglation Report</h2></a>
+        <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;"><h2>Manage Invigilation Report</h2></a>
         <li class="submenu">
-            <strong>  Purpose:</strong>
+            <strong>Purpose:</strong>
             <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>View all invigilator attendance records</li>
+                <li>Check details for each exam session</li>
             </ul>
         </li>
     </div>
-
     <div class="menu-section">
         <a href="{{ url_for('admin_profile')}}" style="text-decoration: none;"><h2>Profile</h2></a>
         <li class="submenu">
-            <strong>  Purpose:</strong>
+            <strong>Purpose:</strong>
             <ul>    
-                <li>Upload merged lecturer schedule files</li>
-                <li>Access and review combined lecturer timetables</li>
+                <li>View and update your profile information</li>
             </ul>
         </li>
     </div>
 </div>
 {% endblock %}
-
-
-
-
-
-
-

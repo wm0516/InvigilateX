@@ -576,16 +576,25 @@ input[readonly] {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Main menu container layout (small frame that divide in the big frame) */
+/* Hover effect for menu sections */
 .menu-section {
     background-color: white;
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    /* Extra */
     border: 1px solid #ddd;
     box-sizing: border-box;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
+
+/* When hovered */
+.menu-section:hover {
+    transform: scale(1.05); /* Slightly bigger */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Stronger shadow */
+    background-color: #f0f8ff; /* Slightly different background */
+    cursor: pointer; /* Shows clickable pointer */
+}
+
 
 
 /* Title with the layout of each frame */

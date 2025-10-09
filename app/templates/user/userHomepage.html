@@ -59,10 +59,10 @@
         <div class="menu-section">
             <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;"><h2>Own Timetable</h2></a>
             <li class="submenu">
-                <strong>  Purpose:</strong>
+                <strong>Purpose:</strong>
                 <ul>    
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
+                    <li>View personal timetable</li>
+                    <li>Check scheduled classes and times</li>
                 </ul>
             </li>
         </div>
@@ -70,10 +70,10 @@
         <div class="menu-section">
             <a href="{{ url_for('user_invigilationTimetable')}}" style="text-decoration: none;"><h2>Invigilation Timetable</h2></a>
             <li class="submenu">
-                <strong>  Purpose:</strong>
+                <strong>Purpose:</strong>
                 <ul>    
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
+                    <li>View invigilation timetable</li>
+                    <li>Check scheduled duties by date and time</li>
                 </ul>
             </li>
         </div>
@@ -81,24 +81,25 @@
         <div class="menu-section">
             <a href="{{ url_for('user_invigilationReport')}}" style="text-decoration: none;"><h2>Invigilation Report</h2></a>
             <li class="submenu">
-                <strong>  Functionality:</strong>
+                <strong>Functionality:</strong>
                 <ul>
-                    <li>Upload merged lecturer schedule files</li>
-                    <li>Access and review combined lecturer timetables</li>
+                    <li>View invigilation attendance records</li>
+                    <li>Check check-in and check-out times</li>
+                    <li>Review attendance status for each session</li>
                 </ul>
             </li>
         </div>
-    </div>
+    </div><br>
 
     <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;;">
         {% if user_level in [2, 3, 4] %}
             <div class="menu-section">
                 <a href="{{ url_for('user_mergeTimetable')}}" style="text-decoration: none;"><h2>Merge Timetable</h2></a>
                 <li class="submenu">
-                    <strong>  Purpose:</strong>
+                    <strong>Purpose:</strong>
                     <ul>    
-                        <li>Upload merged lecturer schedule files</li>
-                        <li>Access and review combined lecturer timetables</li>
+                        <li>View all merged department timetables</li>
+                        <li>Access combined schedules across lecturers and classes</li>
                     </ul>
                 </li>
             </div>
