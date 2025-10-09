@@ -22,23 +22,6 @@
                     <p class="dashboard-text" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
                 </div>
             </div>
-            <br>
-            <div class="dashboard-row" style="grid-template-columns: repeat(5, 1fr);">
-                {% set days = [
-                    {'name':'Monday','value':mon_timetable,'color':'#007bff'},
-                    {'name':'Tuesday','value':tue_timetable,'color':'#28a745'},
-                    {'name':'Wednesday','value':wed_timetable,'color':'#fd7e14'},
-                    {'name':'Thursday','value':thu_timetable,'color':'#dc3545'},
-                    {'name':'Friday','value':fri_timetable,'color':'#6f42c1'}
-                ] %}
-
-                {% for day in days %}
-                <div class="dashboard-frame">
-                    <h3>{{ day.name }}<br>Scheduled Classes</h3>
-                    <p class="dashboard-text" style="color:{{ day.color }}">{{ day.value }}</p>
-                </div>
-                {% endfor %}
-            </div>
         </div>
     </div>
 </form>

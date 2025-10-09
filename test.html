@@ -1,681 +1,259 @@
-
-
-# -------------------------------
-# Extract Base Name + Timestamp
-# -------------------------------
-def extract_base_name_and_timestamp(file_name):
-    """Extract base name + optional _DDMMYY"""
-    pattern = r"^(.*?)(?:_([0-9]{6}))(?:\s.*)?\.pdf$"
-    match = re.match(pattern, file_name, re.IGNORECASE)
-
-    if match:
-        base_name = match.group(1).strip()
-        timestamp_str = match.group(2)
-        try:
-            timestamp = datetime.strptime(timestamp_str, "%d%m%y")
-        except ValueError:
-            timestamp = None
-    else:
-        base_name = re.sub(r"(_\d{6}.*)?\.pdf$", "", file_name, flags=re.IGNORECASE).strip()
-        timestamp = None
-
-    return base_name, timestamp
-
-# -------------------------------
-# Parse Activity Line
-# -------------------------------
-def parse_activity(line):
-    activity = {}
-
-    m_type = re.match(r"(LECTURE|TUTORIAL|PRACTICAL)", line)
-    if m_type:
-        activity["class_type"] = m_type.group(1)
-
-    m_time = re.search(r",(\d{2}:\d{2}-\d{2}:\d{2})", line)
-    if m_time:
-        activity["time"] = m_time.group(1)
-
-    m_weeks = re.search(r"WEEKS:([^C]+)", line)
-    if m_weeks:
-        weeks_data = m_weeks.group(1).split(",")
-        if len(weeks_data) > 1:
-            activity["weeks_range"] = weeks_data[:-1]
-            activity["weeks_date"]  = weeks_data[-1]
-        else:
-            activity["weeks_range"] = weeks_data
-
-    m_course = re.search(r"COURSES:([^;]+);", line)
-    if m_course:
-        activity["course"] = m_course.group(1)
-
-    m_sections = re.search(r"SECTIONS:(.+?)ROOMS", line)
-    if m_sections:
-        sections = m_sections.group(1).strip(";").split(";")
-        activity["sections"] = []
-        for sec in sections:
-            if "|" in sec:
-                intake, code, sec_name = sec.split("|")
-                activity["sections"].append({
-                    "intake": intake,
-                    "course_code": code,
-                    "section": sec_name
-                })
-
-    m_room = re.search(r"ROOMS:([^;]+);", line)
-    if m_room:
-        activity["room"] = m_room.group(1)
-
-    return activity
-
-# -------------------------------
-# Parse Timetable Text
-# -------------------------------
-def parse_timetable(raw_text):
-    text_no_whitespace = re.sub(r"\s+", "", raw_text)
-
-    lecturer_name = "UNKNOWN"
-    timerow = ""
-
-    # Try extract title/timerow
-    title_match = re.match(r"^(.*?)(07:00.*?23:00)", text_no_whitespace)
-    if title_match:
-        title_raw   = title_match.group(1)
-        timerow     = title_match.group(2)
-    else:
-        title_raw = ""
-
-    # Extract lecturer name
-    try:
-        name_match = re.search(r"-([^-()]+)\(", title_raw)
-        if name_match:
-            raw_name            = name_match.group(1)
-            formatted_name      = re.sub(r'(?<!^)([A-Z])', r' \1', raw_name).strip()
-            formatted_name      = formatted_name.replace("A/ P", "A/P").replace("A/ L", "A/L")
-            lecturer_name       = formatted_name
-            text_no_whitespace  = text_no_whitespace.replace(raw_name, lecturer_name.replace(" ", ""))
-    except Exception:
-        pass
-
-    text = text_no_whitespace.upper()
-    match_title = re.match(r"^(.*?)(07:00.*?23:00)", text)
-    if match_title:
-        title = match_title.group(1).strip()
-        timerow = match_title.group(2).strip()
-        text = text.replace(title, "").replace(timerow, "")
-    else:
-        title = "TIMETABLE"
-
-    days = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
-    for day in days:
-        text = re.sub(day, f"\n\n{day}", text, flags=re.IGNORECASE)
-
-    for kw in ["LECTURE", "TUTORIAL", "PRACTICAL", "PUBLISHED"]:
-        sep = "\n\n" if kw == "PUBLISHED" else "\n"
-        text = re.sub(kw, f"{sep}{kw}", text, flags=re.IGNORECASE)
-
-    text = re.sub(r"\n{3,}", "\n\n", text)
-
-    structured = {
-        "title"     : title,
-        "lecturer"  : lecturer_name,
-        "timerow"   : timerow,
-        "days"      : {}
-    }
-
-    current_day = None
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if line in days:
-            current_day = line
-            structured["days"][current_day] = []
-        elif current_day and any(kw in line for kw in ["LECTURE", "TUTORIAL", "PRACTICAL"]):
-            structured["days"][current_day].append(parse_activity(line))
-
-    return structured
-
-# -------------------------------
-# Extract time from the database
-# -------------------------------
-def parse_date_range(date_range):
-    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime."""
-    if not date_range:
-        return None, None
-    try:
-        start_str, end_str = date_range.split("-")
-        start = datetime.strptime(start_str.strip(), "%m/%d/%Y")
-        end = datetime.strptime(end_str.strip(), "%m/%d/%Y")
-        return start, end
-    except Exception:
-        return None, None
-
-# -------------------------------
-# Get TimetableLink Details for ManageTimetableEditPage
-# -------------------------------
-@app.route('/get_linkTimetable/<path:timetableID>')
-@login_required
-def get_linkTimetable(timetableID):
-    timetable = Timetable.query.filter_by(timetableId=timetableID).first()
-    if not timetable:
-        return jsonify({"error": "Timetable not found"}), 404
-    return jsonify({
-        "timetableId": timetable.timetableId,
-        "user_id": timetable.user_id
-    })
-
-# -------------------------------
-# Save Parsed Timetable to DB
-# -------------------------------
-def save_timetable_to_db(structured):
-    lecturer = structured.get("lecturer")
-    filename = structured.get("filename")
-
-    if not lecturer:
-        return 0
-
-    user = User.query.filter_by(userName=lecturer).first()
-
-    if user:
-        timetable = Timetable.query.filter_by(user_id=user.userId).first()
-        if timetable:
-            TimetableRow.query.filter_by(timetable_id=timetable.timetableId).delete()
-        else:
-            timetable = Timetable(user_id=user.userId)
-            db.session.add(timetable)
-            db.session.commit()
-    else:
-        timetable = None
-
-    new_rows = []
-    rows_inserted = 0   # <--- track how many inserted
-
-    for day, activities in structured["days"].items():
-        for act in activities:
-            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
-                continue
-            if act.get("sections"):
-                for sec in act["sections"]:
-                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
-                        continue
-
-                    new_entry = {
-                        "timetable_id"  : timetable.timetableId if timetable else None,
-                        "filename"      : filename,
-                        "lecturerName"  : lecturer,
-                        "classType"     : act.get("class_type"),
-                        "classDay"      : day,
-                        "classTime"     : act.get("time"),
-                        "classRoom"     : act.get("room"),
-                        "courseName"    : act.get("course"),
-                        "courseIntake"  : sec.get("intake"),
-                        "courseCode"    : sec.get("course_code"),
-                        "courseSection" : sec.get("section"),
-                        "classWeekRange": ",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        "classWeekDate" : act.get("weeks_date"),
-                    }
-
-                    existing = TimetableRow.query.filter_by(
-                        lecturerName=lecturer,
-                        classType=new_entry["classType"],
-                        classDay=new_entry["classDay"],
-                        classTime=new_entry["classTime"],
-                        classRoom=new_entry["classRoom"],
-                        courseName=new_entry["courseName"],
-                        courseIntake=new_entry["courseIntake"],
-                        courseCode=new_entry["courseCode"],
-                        courseSection=new_entry["courseSection"],
-                    ).first()
-
-                    if existing and existing.classWeekDate and new_entry["classWeekDate"]:
-                        old_start, _ = parse_date_range(existing.classWeekDate)
-                        new_start, _ = parse_date_range(new_entry["classWeekDate"])
-
-                        if old_start and new_start:
-                            if new_start > old_start:
-                                db.session.delete(existing)
-                                db.session.add(TimetableRow(**new_entry))
-                                rows_inserted += 1
-                            elif new_start < old_start:
-                                continue
-                            else:
-                                continue
-                        else:
-                            db.session.delete(existing)
-                            db.session.add(TimetableRow(**new_entry))
-                            rows_inserted += 1
-                    else:
-                        db.session.add(TimetableRow(**new_entry))
-                        rows_inserted += 1
-
-    db.session.commit()
-    return rows_inserted   # <--- return actual count
-
-
-# -------------------------------
-# Function for Admin ManageTimetable Route
-# -------------------------------
-@app.route('/admin/manageTimetable', methods=['GET', 'POST'])
-@login_required
-def admin_manageTimetable():
-    # ---- Default GET rendering ----
-    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
-    lecturers = sorted({row.lecturerName for row in timetable_data})
-    selected_lecturer = request.args.get("lecturer")
-
-    # Use Timetable directly (not TimetableRow)
-    total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
-    timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
-
-    # Predefine timetable_select to avoid UnboundLocalError
-    timetable_select = None
-    timetable_selected = request.form.get('editTimetableList')
-    if timetable_selected:
-        timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
-
-    # Staff list (exclude certain levels/status)
-    staff_list = User.query.filter(
-        User.userLevel != 5,
-        User.userStatus != 2
-    ).all()
-
-    # Count timetable per day
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
-    day_counts = {
-        f"{day.lower()}_timetable": db.session.query(TimetableRow.courseCode)
-            .filter(TimetableRow.classDay == day).distinct().count()
-        for day in days
-    }
-
-    # Group all lecturers with unassigned rows
-    grouped_unassigned = defaultdict(int)
-    for row in TimetableRow.query.filter_by(timetable_id=None).all():
-        grouped_unassigned[row.lecturerName] += 1
-
-    unassigned_summary = [{"lecturer": name, "count": count} for name, count in grouped_unassigned.items()]
-
-    # Build mapping: user_id -> timetableId
-    timetable_map = {t.user_id: t.timetableId for t in timetable_list}
-
-    # ---- POST Handling ----
-    if request.method == "POST":
-        form_type = request.form.get('form_type')
-
-        if form_type == 'upload':
-            # ---- File Upload Handling ----
-            files = request.files.getlist("timetable_file[]")
-            latest_files = {}
-            skipped_files = []
-
-            # Filter to keep only the latest timestamp for each base_name
-            for file in files:
-                base_name, timestamp = extract_base_name_and_timestamp(file.filename)
-                if not base_name:
-                    continue
-                if base_name not in latest_files:
-                    latest_files[base_name] = (timestamp, file)
-                else:
-                    existing_timestamp, existing_file = latest_files[base_name]
-                    if timestamp and (existing_timestamp is None or timestamp > existing_timestamp):
-                        skipped_files.append(existing_file.filename)
-                        latest_files[base_name] = (timestamp, file)
-                    else:
-                        skipped_files.append(file.filename)
-
-            # Process each latest file
-            total_rows_inserted = 0
-            total_files_processed = 0
-            for base_name, (timestamp, file) in latest_files.items():
-                reader = PyPDF2.PdfReader(file.stream)
-                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
-                structured = parse_timetable(raw_text)
-                structured['filename'] = file.filename
-                rows_inserted = save_timetable_to_db(structured)
-
-                total_rows_inserted += rows_inserted
-                if rows_inserted > 0:
-                    total_files_processed += 1   # count only if rows were actually inserted
-
-            flash(f"Files read: {len(files)}, Files processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
-            return redirect(url_for('admin_manageTimetable'))
-        
-        elif form_type == 'manual':
-            user_id = request.form.get("staffList")      # <-- this is User.userId
-            lecturer = request.form.get("lecturerName")
-
-            if user_id and lecturer:
-                # Ensure this user has a Timetable entry
-                timetable = Timetable.query.filter_by(user_id=user_id).first()
-                if not timetable:
-                    timetable = Timetable(user_id=user_id)
-                    db.session.add(timetable)
-                    db.session.commit()  # commit so timetableId is generated
-
-                # Now update all rows for that lecturer
-                rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
-                for row in rows:
-                    row.timetable_id = timetable.timetableId   # <-- valid FK
-
-                db.session.commit()
-                flash(f"{lecturer} Timetable  linked to staff ID {user_id}", "success")
-            else:
-                flash("Missing lecturer or staff", "error")
-
-            return redirect(url_for('admin_manageTimetable'))
-        
-        elif form_type == 'edit':
-            action = request.form.get('action')
-            if action == 'update' and timetable_select:
-                new_user_id = request.form['editStaffList']
-
-                # Case 1: Same staff already linked → success
-                if str(timetable_select.user_id) == new_user_id:
-                    flash("No changes made. Timetable already linked to this staff.", "success")
-
-                else:
-                    # Check if this staff is already linked to another timetable
-                    existing = Timetable.query.filter(
-                        Timetable.user_id == new_user_id,
-                        Timetable.timetableId != timetable_select.timetableId
-                    ).first()
-
-                    if existing:
-                        # Case 2: Found in another timetable → error
-                        flash(f"Staff ID:{new_user_id} is already linked to another timetable(ID:{existing.timetableId}).", "error")
-                    else:
-                        # Case 3: Not found → update
-                        timetable_select.user_id = new_user_id
-                        db.session.commit()
-                        flash("Timetable updated successfully.", "success")
-
-            elif action == 'delete' and timetable_select:
-                db.session.delete(timetable_select)
-                db.session.commit()
-                flash("Timetable deleted successfully.", "success")
-
-                return redirect(url_for('admin_manageTimetable'))
-
-    return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,total_timetable=total_timetable,
-        unassigned_summary=unassigned_summary,staff_list=staff_list,**day_counts,timetable_list=timetable_list,timetable_map=timetable_map,timetable_select=timetable_select)
-
-
-
-
-# -------------------------------
-# Admin Function 4
-# -------------------------------
-'''
-def get_available_venues(examDate, startTime, endTime):
-    # Return a list of venueNumbers that are AVAILABLE during the given exam slot.
-    available_venues = Venue.query.all()
-    usable_venues = []
-
-    for venue in available_venues:
-        conflicting = VenueAvailability.query.filter(
-            VenueAvailability.venueNumber == venue.venueNumber,
-            or_(
-                and_(
-                    VenueAvailability.startDateTime <= startTime,
-                    VenueAvailability.endDateTime > startTime
-                ),
-                and_(
-                    VenueAvailability.startDateTime < endTime,
-                    VenueAvailability.endDateTime >= endTime
-                ),
-                and_(
-                    VenueAvailability.startDateTime >= startTime,
-                    VenueAvailability.endDateTime <= endTime
-                )
-            )
-        ).first()
-
-        if not conflicting:
-            usable_venues.append(venue.venueNumber)
-
-    return usable_venues
-'''
-
-
-
-
-
-
-# -------------------------------
-# Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
-# -------------------------------
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
-    venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
-    if not venue_place:
-        venue_text = None
-    else:
-        venue_text = venue_text.upper()
-
-    course = Course.query.filter_by(courseCodeSectionIntake=courseSection).first()
-    if not course:
-        return False, f"Course with section {courseSection} not found"
-
-    exam = Exam.query.filter_by(examId=course.courseExamId).first()
-    if not exam:
-        return False, f"Exam for course {courseSection} not found"
-
-    invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
-    try:
-        invigilatorNo = int(invigilatorNo)
-    except ValueError:
-        return False, "Number of Invigilators must be an integer"
-    if invigilatorNo < 1:
-        return False, "Number of Invigilators must be at least 1"
-
-    exam.examStartTime = start_dt
-    exam.examEndTime = end_dt
-    exam.examVenue = venue_text
-    exam.examNoInvigilator = invigilatorNo
-
-    # Assign lecturers
-    if practicalLecturer:
-        lecturer_user = User.query.filter(
-            or_(User.userId == practicalLecturer, User.userName.ilike(practicalLecturer))
-        ).first()
-        if not lecturer_user:
-            return False, f"Lecturer '{practicalLecturer}' not found"
-        course.coursePractical = lecturer_user.userId
-        course.courseTutorial = lecturer_user.userId
-    else:
-        course.coursePractical = None
-        course.courseTutorial = None
-
-    adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
-    delete_exam_related(exam.examId, commit=False)
-
-    if venue_text:
-        db.session.add(VenueAvailability(
-            venueNumber=venue_text,
-            startDateTime=start_dt,
-            endDateTime=adj_end_dt,
-            examId=exam.examId
-        ))
-
-    new_report = InvigilationReport(examId=exam.examId)
-    db.session.add(new_report)
-    db.session.flush()
-
-    # ============================
-    # New Invigilator Assignment
-    # ============================
-    success, result = assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo)
-    if not success:
-        db.session.rollback()
-        return False, result
-
-    # Create attendance records
-    for inv in result:
-        db.session.add(InvigilatorAttendance(
-            examId=exam.examId,
-            userId=inv.userId,
-            status="PENDING"
-        ))
-
-    db.session.commit()
-    return True, f"Exam created/updated successfully. Assigned invigilators: {[i.userName for i in result]}"
-
-
-# ===================================================
-# HELPER FUNCTION: Assign Invigilators with Conflict Check
-# ===================================================
-def assign_invigilators(exam, practicalLecturer, tutorialLecturer, invigilatorNo):
-    exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
-
-    eligible_invigilators = User.query.filter(
-        ~User.userId.in_(exclude_ids),
-        User.userLevel == 1
-    ).all()
-
-    if not eligible_invigilators:
-        return False, "No eligible invigilators available"
-
-    exam_date = exam.examStartTime.date()
-
-    def parse_time(t):
-        """Convert '9:00 AM' or '9:00 AM - 11:00 AM' to datetime.time objects"""
-        try:
-            t = t.strip()
-            if '-' in t:
-                start, end = t.split('-')
-                start = datetime.strptime(start.strip(), "%I:%M %p").time()
-                end = datetime.strptime(end.strip(), "%I:%M %p").time()
-                return start, end
-        except Exception:
-            return None, None
-        return None, None
-
-    def parse_week_range(r):
-        """Convert '4/7/2025-8/24/2025' to (date1, date2)"""
-        try:
-            start_str, end_str = r.split('-')
-            start = datetime.strptime(start_str.strip(), "%m/%d/%Y").date()
-            end = datetime.strptime(end_str.strip(), "%m/%d/%Y").date()
-            return start, end
-        except Exception:
-            return None, None
-
-    def has_conflict(user):
-        """Return True if user has class that overlaps with exam"""
-        timetable = Timetable.query.filter_by(user_id=user.userId).first()
-        if not timetable or not timetable.rows:
-            return False
-
-        for row in timetable.rows:
-            start_range, end_range = parse_week_range(row.classWeekDate)
-            if not start_range or not end_range:
-                continue
-            # Ignore if exam date is beyond class week range
-            if exam_date > end_range:
-                continue
-            # Only check conflicts if exam is within active weeks
-            if start_range <= exam_date <= end_range:
-                class_start, class_end = parse_time(row.classTime)
-                if not class_start or not class_end:
-                    continue
-                # Compare times (on same day)
-                exam_start = exam.examStartTime.time()
-                exam_end = exam.examEndTime.time()
-                if exam_start < class_end and exam_end > class_start:
-                    return True
-        return False
-
-    # Filter out those with time conflicts
-    available_invigilators = [u for u in eligible_invigilators if not has_conflict(u)]
-    if not available_invigilators:
-        return False, "No available invigilators (all have class conflicts)"
-
-    # Split into gender groups
-    male_list = [u for u in available_invigilators if u.userGender == "MALE"]
-    female_list = [u for u in available_invigilators if u.userGender == "FEMALE"]
-
-    def workload(u):
-        return (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-
-    male_list.sort(key=workload)
-    female_list.sort(key=workload)
-
-    chosen = []
-    if invigilatorNo == 2:
-        if not male_list or not female_list:
-            return False, "Need one male and one female invigilator"
-        chosen = [male_list[0], female_list[0]]
-    elif invigilatorNo == 3:
-        if not male_list or not female_list:
-            return False, "Need at least one male and one female invigilator"
-        chosen = [male_list[0], female_list[0]]
-        if len(male_list) > len(female_list) and len(male_list) > 1:
-            chosen.append(male_list[1])
-        elif len(female_list) > 1:
-            chosen.append(female_list[1])
-        else:
-            pool = sorted(male_list + female_list, key=workload)
-            for u in pool:
-                if u not in chosen:
-                    chosen.append(u)
-                    break
-    else:
-        pool = sorted(male_list + female_list, key=workload)
-        chosen = pool[:invigilatorNo]
-
-    return True, chosen
-
-
-
-
-# -------------------------------
-# Delete All Related Exam after get modify
-# -------------------------------
-def delete_exam_related(exam_id, commit=True):
-    exam = Exam.query.get(exam_id)
-    if not exam:
-        return False, f"Exam {exam_id} not found"   
-
-    if exam.examStartTime and exam.examEndTime:
-        pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
-    else:
-        pending_hours = 0
-
-    # Roll back pending hours from invigilators
-    reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
-    for report in reports:
-        for att in report.attendances:
-            invigilator = att.invigilator
-            if invigilator:
-                invigilator.userPendingCumulativeHours = max(
-                    0.0,
-                    (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
-                )
-
-    # Delete reports and venue availability
-    InvigilationReport.query.filter_by(examId=exam.examId).delete()
-    VenueAvailability.query.filter_by(examId=exam.examId).delete()
-
-    if commit:
-        db.session.commit()
-
-    return True, f"Related data for exam {exam_id} deleted successfully"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{% extends "admin/adminBase.html" %}
+{% set show_tabs = true %}
+{% set show_upload = true %}
+{% set show_dashboard = true %}
+{% set show_manual = true %}
+{% set show_edit = true %}
+{% block title %}Admin ManageTimetable{% endblock %}
+{% block head_title %}<h2>Manage Timetable</h2>{% endblock %}
+
+{% block dashboard_section %}
+<form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
+    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
+        <input type="hidden" name="form_type" value="dashboard">    
+        <div class="form-left" style="width: 100%">
+            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr;">
+                <div class="dashboard-frame">
+                    <h3>Total Timetable Sets</h3>
+                    <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Lecturers without Assigned Timetable</h3>
+                    <p class="dashboard-text" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
+                </div>
+            </div>
+            <br>
+            <div class="dashboard-row" style="grid-template-columns: repeat(5, 1fr);">
+                {% set days = [
+                    {'name':'Monday','value':mon_timetable,'color':'#007bff'},
+                    {'name':'Tuesday','value':tue_timetable,'color':'#28a745'},
+                    {'name':'Wednesday','value':wed_timetable,'color':'#fd7e14'},
+                    {'name':'Thursday','value':thu_timetable,'color':'#dc3545'},
+                    {'name':'Friday','value':fri_timetable,'color':'#6f42c1'}
+                ] %}
+
+                {% for day in days %}
+                <div class="dashboard-frame">
+                    <h3>{{ day.name }}<br>Scheduled Classes</h3>
+                    <p class="dashboard-text" style="color:{{ day.color }}">{{ day.value }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block upload_section %}
+<form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
+    <div id="uploadSection" style="margin: auto;">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="timetable_list">
+                <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
+                    <div class="upload-text">
+                        Please upload your timetable files in <b>PDF format only</b>.<br><br>
+                        You may click below to upload or drag and drop your files here.<br>
+                        <b>Note:</b> Upload <i>one timetable per PDF file</i>. Multiple files are allowed,<br>
+                        but <i>merged PDFs containing multiple timetables in a single file are not supported</i>.
+                    </div><br>
+                    <div id="timetableSelectedFileName" class="file-name-display"></div>
+                </div>
+            </label>
+            <input type="file" id="timetable_list" name="timetable_file[]" accept=".pdf" style="display: none;" multiple>
+            <input type="hidden" name="form_type" value="upload">
+            <br>
+            <div class="button-wrapper">
+                <button type="submit" id="uploadButton">Upload Lecturer Timetable</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block manual_section %}
+<form id="manualForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
+    <div id="manualSection" style="width: 100%; margin:auto;">
+        <h4 style="text-align: center;">Link Timetable With Staff</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Unassigned Lecturers</label>
+                <select name="lecturerName" id="lecturerName" required>
+                    <option value="" disabled selected>Select Lecturer</option>
+                    {% for item in unassigned_summary %}
+                        <option value="{{ item.lecturer }}">[{{ item.count }} row(s)] {{ item.lecturer }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-right">
+                <label>Staff Linked</label>
+                <select name="staffList" id="staffList" required>
+                    <option value="" disabled selected>Select Staff</option>
+                    {% for staff in unassigned_staff_list %}
+                        <option value="{{ staff.userId }}">[{{ staff.userId }}] {{ staff.userName }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="manual">
+        <br><br>
+        <div class="button-wrapper">
+            <button type="submit" id="linkButton">Link Timetable</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block edit_section %}
+<form id="editForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
+    <div id="editSection" style="width: 100%; margin:auto;">
+        <h4 style="text-align: center;">Edit or Delete Timetable Link</h4>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label>Existing Timetable List</label>
+                <select name="editTimetableList" id="editTimetableList" required>
+                    <option value="" disabled selected>Select Timetable</option>
+                    {% for t in timetable_list %}
+                        <option value="{{ t.timetableId }}">
+                            [{{ t.timetableId }}] {{ t.rows[0].lecturerName if t.rows else "No Lecturer" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-right">
+                <label>Staff Linked</label>
+                <select name="editStaffList" id="editStaffList" required>
+                    <option value="" disabled selected>Select Staff</option>
+                    {% for staff in staff_list %}
+                        {% set tid = timetable_map.get(staff.userId) %}
+                        <option value="{{ staff.userId }}" {% if timetable_select and staff.userId == timetable_select.user_id %}selected{% endif %}>
+                            {% if tid %}[Already With Timetable ID[{{ tid }}]]{% endif %}
+                            [{{ staff.userId }}] {{ staff.userName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="edit">
+        <br><br>
+        <div class="button-wrapper" style="gap: 5%;">
+            <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
+                <i class="fas fa-check"></i> Update Timetable Relationship
+            </button> 
+            <button type="submit" name="action" value="delete" style="background-color: #f8d7da; color: #721c24;" 
+                    onclick="return confirm('Are you sure to delete this timetable relationship?')">
+                <i class="fas fa-trash"></i> Delete Timetable Relationship
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="menu-section">
+    <h2>Timetable</h2>
+
+    <!-- Filters -->
+    <div class="profile-frame" style="margin-bottom: 20px;">
+        <form method="get" style="display:flex; align-items:center; gap:10px;">
+            <label for="lecturer">Select_Lecturer:</label>
+            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                <option value="">All Lecturers</option>
+                {% for lecturer in lecturers %}
+                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                        {{ lecturer }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label for="department">Select_Department:</label>
+            <select name="department" id="department" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in department_data %}
+                    <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
+                        {{ dept.departmentName }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if selected_lecturer or selected_department %}
+                <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" style="padding: 4px 8px;">Clear_Filter</button>
+            {% endif %}
+        </form>
+    </div>
+
+    {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+    {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
+
+    <!-- Timetable Grid -->
+    <div class="user-table-container">
+        <table class="user-data-table" border="1">
+            <thead>
+                <tr>
+                    <th>Day / Time</th>
+                    {% for time in time_slots %}
+                        <th>{{ time }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in week_days %}
+                    <tr>
+                        <td><strong>{{ day }}</strong></td>
+                        {% for time in time_slots %}
+                            <td>
+                                {% set ns = namespace(displayed=[]) %}
+                                {% for row in timetable_data %}
+                                    {% if (not selected_lecturer or row.lecturerName == selected_lecturer) %}
+                                        {% set class_day = row.classDay %}
+                                        {% set start_time = row.classTime.split('-')[0] %}
+                                        {% set end_time = row.classTime.split('-')[1] %}
+                                        {% if class_day == day and time >= start_time and time < end_time %}
+                                            {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                            {% if key not in ns.displayed %}
+                                                {% set ns.displayed = ns.displayed + [key] %}
+                                                <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
+                                                    <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
+                                                    <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
+                                                    <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
+                                                    <strong>Room:</strong> <i>{{ row.classRoom }}</i>
+                                                </div>
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+$(document).ready(function() {
+    $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const timetableSelect = document.getElementById('editTimetableList');
+    const staffSelect = document.getElementById('editStaffList');
+
+    timetableSelect.addEventListener('change', function () {
+        const timetableId = this.value;
+        if (!timetableId) return;
+
+        fetch(`/get_linkTimetable/${timetableId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) { alert(data.error); return; }
+                staffSelect.value = data.user_id;
+            })
+            .catch(err => console.error(err));
+    });
+});
+</script>
+{% endblock %}  
