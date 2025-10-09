@@ -1,8 +1,9 @@
 {% extends "admin/adminBase.html" %}
+{% set body_class = 'admin-homepage' %}
 {% block title %}Admin Homepage{% endblock %}
 {% block content %}
 <div class="menu-grid">
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageCourse')}}" style="text-decoration: none;"><h2>Manage Course</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -13,7 +14,7 @@
             </ul>
         </li>
     </div>
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -23,7 +24,7 @@
             </ul>
         </li>
     </div>
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;"><h2>Manage Venue</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -36,7 +37,7 @@
 </div><br>
 
 <div class="menu-grid">
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;"><h2>Manage Exam</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -46,7 +47,7 @@
             </ul>
         </li>
     </div>
-        <div class="frame-section">
+        <div class="menu-section">
         <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;"><h2>Manage Lecturer</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -57,7 +58,7 @@
             </ul>
         </li>
     </div>  
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;"><h2>Manage Timetable</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -70,7 +71,7 @@
 </div><br>
 
 <div class="menu-grid">
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageInvigilationTimetable')}}" style="text-decoration: none;"><h2>Manage Invigilation Timetable</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -80,7 +81,7 @@
             </ul>
         </li>
     </div>
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;"><h2>Manage Invigilation Report</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
@@ -90,7 +91,7 @@
             </ul>
         </li>
     </div>
-    <div class="frame-section">
+    <div class="menu-section">
         <a href="{{ url_for('admin_profile')}}" style="text-decoration: none;"><h2>Profile</h2></a>
         <li class="submenu">
             <strong>Purpose:</strong>
