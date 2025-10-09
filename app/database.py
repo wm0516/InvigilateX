@@ -65,12 +65,11 @@ class User(db.Model):
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
     userStatus = db.Column(db.Integer, default=0)                                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
     userRegisterDateTime = db.Column(db.DateTime, server_default=func.now())                                          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
-    userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
-    userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
-    timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
 
     # Relationship
     department = db.relationship("Department", backref="users", foreign_keys=[userDepartment])
+    invigilation_hours = db.relationship('InvigilationHour', back_populates='user', cascade="all, delete-orphan")
+    timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
     '''
     CREATE TABLE User (
         userId VARCHAR(20) PRIMARY KEY,
@@ -83,11 +82,37 @@ class User(db.Model):
         userPassword VARCHAR(255) NOT NULL,
         userStatus INT DEFAULT 0,
         userRegisterDateTime DATETIME DEFAULT CURRENT_TIMESTAMP,
-        userCumulativeHours FLOAT DEFAULT 0.0,
-        userPendingCumulativeHours FLOAT DEFAULT 0.0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
+
+class InvigilationHour(db.Model):
+    __tablename__ = 'InvigilationHour'
+    invigilationId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    userId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)
+    intake = db.Column(db.String(20), nullable=True)                                                              # e.g., "Jan 2025", optional
+    cumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
+    pendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
+    processingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                  # Refer to the processing total hours of invigilator
+    lastUpdated = db.Column(db.DateTime, server_default=func.now()) 
+
+    # Relationship
+    user = db.relationship("User", back_populates="invigilation_hours")
+    '''
+    CREATE TABLE InvigilationHour (
+        invigilationId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        userId VARCHAR(20) NOT NULL,
+        intake VARCHAR(20) NULL,
+        cumulativeHours FLOAT DEFAULT 0.0 NOT NULL,
+        pendingCumulativeHours FLOAT DEFAULT 0.0 NOT NULL,
+        processingCumulativeHours FLOAT DEFAULT 0.0 NOT NULL,
+        lastUpdated DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES User(userId)
+    );
+    '''
+
+
+
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
