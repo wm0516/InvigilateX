@@ -1920,6 +1920,18 @@ def admin_manageInvigilationTimetable():
 # Calculate All InvigilatorAttendance and InvigilationReport Data From Database
 # -------------------------------
 def calculate_invigilation_stats():
+    base_query = (
+        db.session.query(InvigilationReport)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .distinct()
+    )
+
+    total_report = base_query.count()
+    total_active_report = base_query.filter(Exam.examStatus == True).count()
+
+    # Pull all attendance records for detailed time analysis
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -1937,15 +1949,6 @@ def calculate_invigilation_stats():
         .all()
     )
 
-    # Total active reports (InvigilationReport for exams with examStatus=True)
-    total_active_report = (
-        db.session.query(InvigilationReport)
-        .join(Exam)  # joins on InvigilationReport.examId == Exam.examId via relationship
-        .filter(Exam.examStatus == True)
-        .count()
-    )
-
-    total_report = InvigilationReport.query.count()
     stats = {
         "total_report": total_report,
         "total_activeReport": total_active_report,
@@ -1954,7 +1957,7 @@ def calculate_invigilation_stats():
         "total_checkOutOnTime": 0,
         "total_checkOutEarly": 0,
         "total_checkInOut": 0,
-        "total_inProgress": 0
+        "total_inProgress": 0,
     }
 
     for row in query:
@@ -1972,7 +1975,10 @@ def calculate_invigilation_stats():
             stats["total_checkOutOnTime"] += 1
         elif row.examEndTime:
             stats["total_checkOutEarly"] += 1
+
     return stats
+
+
 
 # -------------------------------
 # Read All InvigilatorAttendance Data From Database
