@@ -251,6 +251,8 @@ def user_invigilationTimetable():
 @login_required
 def user_ownTimetable():
     userId = session.get('user_id')
+    user = User.query.filter_by(userId=userId).first()
+    user_name = user.userName if user else "Unknown User"
     timetable = Timetable.query.filter_by(user_id=userId).first()
     timetable_rows = timetable.rows if timetable else []
 
@@ -280,7 +282,7 @@ def user_ownTimetable():
         item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
         merged_timetable.append(item)
 
-    return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable)
+    return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable, user_name=user_name)
 
 
 
