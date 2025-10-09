@@ -1924,7 +1924,6 @@ def calculate_invigilation_stats():
         db.session.query(InvigilationReport)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
         .distinct()
     )
 
