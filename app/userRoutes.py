@@ -112,10 +112,10 @@ def get_all_attendances():
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)  # ✅ join Course
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # lecturer info
-        .filter(InvigilatorAttendance.invigilationStatus == True)
     )
 
     # Lecturer (Level 1) — see own only
+    # .filter(InvigilatorAttendance.invigilationStatus == True)
     if user.userLevel == 1:
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
 
