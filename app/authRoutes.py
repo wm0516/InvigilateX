@@ -358,7 +358,7 @@ def user_homepage():
                     pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
                     chosen = User.query.filter_by(userId=user_id).first()
                     if chosen:
-                        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
+                        chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
 
                 flash("Exam Invigilation Accepted", "success")
 
