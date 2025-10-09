@@ -13,14 +13,18 @@
     <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-            <div class="dashboard-row" style="grid-template-columns: repeat(7, 1fr);">
+            <div class="dashboard-row" style="grid-template-columns: repeat(8, 1fr);">
                 <div class="dashboard-frame">
                     <h3>Active Reports</h3>
-                    <p class="dashboard-text">{{ total_report }}</p>
+                    <p class="dashboard-text">{{ total_activeReport }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Pass Reports</h3>
+                    <p class="dashboard-text">{{ total_report - total_activeReport }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Exam In Going</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
+                    <p class="dashboard-text" style="color:green;">{{ total_inProgress }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Pending Check-In/Out</h3>
@@ -81,8 +85,6 @@
                     {% set inv_count  = grouped|length %}
                     {% set expected_count = grouped[0].report.exam.examNoInvigilator %}
                     {% set total_rows = expected_count %}
-                    
-                    {# Generate invigilator rows #}
                     {% for i in range(total_rows) %}
                         {% set att = grouped[i] if i < inv_count else None %}
                         <tr class="
@@ -117,16 +119,12 @@
 
                             <!-- Invigilator Details -->
                             <td>
-                                {% if att and att.invigilationStatus %}
-                                    <div class="info-grid">
-                                        <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
-                                        <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
-                                        <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
-                                        <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
-                                    </div>
-                                {% else %}
-                                    <em class="status frame-waiting">In Processing</em>
-                                {% endif %}
+                                <div class="info-grid">
+                                    <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                    <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                    <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
+                                    <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
+                                </div>
                             </td>
 
                             <!-- Check-in/out Time -->

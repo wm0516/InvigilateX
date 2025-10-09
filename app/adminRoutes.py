@@ -1938,15 +1938,17 @@ def calculate_invigilation_stats():
     )
 
     # Total active reports (InvigilationReport for exams with examStatus=True)
-    total_report = (
+    total_active_report = (
         db.session.query(InvigilationReport)
         .join(Exam)  # joins on InvigilationReport.examId == Exam.examId via relationship
         .filter(Exam.examStatus == True)
         .count()
     )
 
+    total_report = InvigilationReport.query.count()
     stats = {
         "total_report": total_report,
+        "total_activeReport": total_active_report,
         "total_checkInOnTime": 0,
         "total_checkInLate": 0,
         "total_checkOutOnTime": 0,
@@ -1959,21 +1961,17 @@ def calculate_invigilation_stats():
         if row.checkIn is None:
             stats["total_checkInOut"] += 1
             continue
-
         if row.checkOut is None:
             stats["total_inProgress"] += 1
             continue
-
         if row.examStartTime and row.checkIn <= row.examStartTime:
             stats["total_checkInOnTime"] += 1
         elif row.examStartTime:
             stats["total_checkInLate"] += 1
-
         if row.examEndTime and row.checkOut >= row.examEndTime:
             stats["total_checkOutOnTime"] += 1
         elif row.examEndTime:
             stats["total_checkOutEarly"] += 1
-
     return stats
 
 # -------------------------------

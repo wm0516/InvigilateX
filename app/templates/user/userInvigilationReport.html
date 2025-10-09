@@ -3,14 +3,18 @@
 {% block head_title %}<h2>Invigilation Report</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="dashboard-row" style="grid-template-columns: repeat(7, 1fr);">
+    <div class="dashboard-row" style="grid-template-columns: repeat(8, 1fr);">
         <div class="dashboard-frame">
             <h3>Active Reports</h3>
-            <p class="dashboard-text">{{ total_report }}</p>
+            <p class="dashboard-text">{{ total_activeReport }}</p>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Pass Reports</h3>
+            <p class="dashboard-text">{{ total_report - total_activeReport }}</p>
         </div>
         <div class="dashboard-frame">
             <h3>Exam In Going</h3>
-            <p class="dashboard-text" style="color:green;">{{ total_inProgress   }}</p>
+            <p class="dashboard-text" style="color:green;">{{ total_inProgress }}</p>
         </div>
         <div class="dashboard-frame">
             <h3>Pending Check-In/Out</h3>

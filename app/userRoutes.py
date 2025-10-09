@@ -28,8 +28,6 @@ bcrypt = Bcrypt()
 # -------------------------------
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
-
-    # Base query
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -50,7 +48,7 @@ def calculate_invigilation_stats():
     # Apply conditional filter based on userLevel
     if user.userLevel == 1:
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
-        total_report = (
+        total_active_report = (
             InvigilationReport.query
             .join(Exam, InvigilationReport.examId == Exam.examId)
             .join(Course, Course.courseExamId == Exam.examId)
@@ -61,7 +59,7 @@ def calculate_invigilation_stats():
         )
     else:  # userLevel 2,3,4
         query = query.filter(Course.courseDepartment == user.userDepartment)
-        total_report = (
+        total_active_report = (
             InvigilationReport.query
             .join(Exam, InvigilationReport.examId == Exam.examId)
             .join(Course, Course.courseExamId == Exam.examId)
@@ -71,9 +69,10 @@ def calculate_invigilation_stats():
         )
 
     query = query.all()
-
+    total_report = InvigilationReport.query.count()
     stats = {
         "total_report": total_report,
+        "total_activeReport": total_active_report,
         "total_checkInOnTime": 0,
         "total_checkInLate": 0,
         "total_checkOutOnTime": 0,
@@ -87,21 +86,17 @@ def calculate_invigilation_stats():
         if row.checkIn is None:
             stats["total_checkInOut"] += 1
             continue
-
         if row.checkOut is None:
             stats["total_inProgress"] += 1
             continue
-
         if row.examStartTime and row.checkIn <= row.examStartTime:
             stats["total_checkInOnTime"] += 1
         elif row.examStartTime:
             stats["total_checkInLate"] += 1
-
         if row.examEndTime and row.checkOut >= row.examEndTime:
             stats["total_checkOutOnTime"] += 1
         elif row.examEndTime:
             stats["total_checkOutEarly"] += 1
-
     return stats
 
 
