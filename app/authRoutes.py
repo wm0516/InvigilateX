@@ -331,42 +331,49 @@ def user_homepage():
     if request.method == 'POST':
         action = request.form.get('action')
         record_id = request.form.get('record_id')
-        
         record = InvigilatorAttendance.query.filter_by(
             invigilatorId=user_id,
             attendanceId=record_id
         ).first()
 
         if record:
-            if action == 'accept':
+            # Get exam hours
+            exam = (
+                Exam.query
+                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                .filter(InvigilationReport.invigilationReportId == record.reportId)
+                .first()
+            )
+
+            pending_hours = 0
+            if exam and exam.examStartTime and exam.examEndTime:
+                start_dt = exam.examStartTime
+                end_dt = exam.examEndTime
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+
+            # Get the user record
+            chosen = User.query.filter_by(userId=user_id).first()
+
+            if action == 'accept' and chosen:
                 record.invigilationStatus = True
                 record.timeAction = datetime.now()
-
-                # Calculate and add pending hours
-                exam = (
-                    Exam.query
-                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                    .filter(InvigilationReport.invigilationReportId == record.reportId)
-                    .first()
-                )
-                if exam and exam.examStartTime and exam.examEndTime:
-                    start_dt = exam.examStartTime
-                    end_dt = exam.examEndTime
-
-                    if end_dt < start_dt:
-                        end_dt += timedelta(days=1)
-                    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
-                    chosen = User.query.filter_by(userId=user_id).first()
-                    if chosen:
-                        chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
-
+                chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
+                chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 flash("Exam Invigilation Accepted", "success")
 
-            elif action == 'reject':
-                record.invigilationStatus = False
-                flash("Exam Invigilation Reject", "error")
+            elif action in ['reject', 'delete'] and chosen:
+                # Only remove pending hours
+                chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
+                if action == 'reject':
+                    record.invigilationStatus = False
+                    flash("Exam Invigilation Rejected", "error")
+                else:
+                    db.session.delete(record)
+                    flash("Exam Invigilation Deleted", "warning")
+
             record.timeAction = datetime.now()
             db.session.commit()
         return redirect(url_for('user_homepage'))
-    
     return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)
