@@ -17,7 +17,7 @@
     </div><br>
 
     <form action="{{ url_for('user_homepage') }}" method="POST">
-        <div class="menu-section">
+        <div style="padding: 10px;">
             <h3>Accept or Reject for Invigilation Slot</h3>
             <div class="user-table-container">
                 <table class="user-data-table">
@@ -29,8 +29,7 @@
                             <th>Exam Day</th>
                             <th>Exam Time</th>
                             <th>Exam Period</th>
-                            <th>Accept</th>
-                            <th>Reject</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -43,14 +42,9 @@
                             <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
                             <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
                             <td>
-                                <form action="{{ url_for('user_homepage') }}" method="POST">
+                                <form action="{{ url_for('user_homepage') }}" method="POST" class="d-flex justify-content-center gap-2">
                                     <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
                                     <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724;">Accept</button>
-                                </form>
-                            </td>
-                            <td>
-                                <form action="{{ url_for('user_homepage') }}" method="POST">
-                                    <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
                                     <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24;">Reject</button>
                                 </form>
                             </td>
@@ -59,8 +53,8 @@
                     </tbody>
                 </table>
             </div>
-        </div><br>
-    </form>
+        </div>
+    </form><br>
     {% endif %}
 
 

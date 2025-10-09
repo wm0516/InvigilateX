@@ -40,7 +40,6 @@
                 <tr>
                     <th>Exam ID</th>
                     <th>Exam Details</th>
-                    <th>Number of Invigilators</th>
                     <th>Invigilator Details</th>
                     <th>Check-in/out Time</th>
                     <th>Attendance Status</th>
@@ -76,8 +75,6 @@
                                     <div>Exam Venue</div><div><strong>: {{ att.report.exam.examVenue }}</strong></div>
                                 </div>
                             </td>
-
-                            <td rowspan="{{ rowspan }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                             {% endif %}
 
                             <!-- Invigilator Details (one per row) -->

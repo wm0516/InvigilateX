@@ -24,9 +24,6 @@ bcrypt = Bcrypt()
 
 
 # -------------------------------
-# Calculate Invigilation Stats (Filtered by User Department Only)
-# -------------------------------
-# -------------------------------
 # Calculate Invigilation Stats (Filtered by User Department or Own Data)
 # -------------------------------
 def calculate_invigilation_stats():
@@ -59,7 +56,7 @@ def calculate_invigilation_stats():
             .join(Course, Course.courseExamId == Exam.examId)
             .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
             .filter(InvigilatorAttendance.invigilatorId == user.userId)
-            .filter(Exam.examStatus == True)
+            .filter(InvigilatorAttendance.invigilationStatus  == True)
             .count()
         )
     else:  # userLevel 2,3,4
