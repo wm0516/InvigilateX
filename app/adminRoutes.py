@@ -805,6 +805,7 @@ def process_exam_row(row):
         return None, ''
 
     # No conflict → create
+    flash(f"[DEBUG] start={start_dt}, end={end_dt}, course={row['course/sec']}, venue={venue}, lecturer={row['lecturer']}", "success")
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, str(row['lecturer']).upper(), None, invigilatorNo=None)
     return True, ''
 
