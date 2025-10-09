@@ -15,6 +15,7 @@ import random
 import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.styles import NamedStyle
 import PyPDF2
 from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
@@ -134,7 +135,6 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         dtype=str
                     )
                     df.columns = [str(col).strip().lower() for col in df.columns]
-                    flash(f"Columns Read: {df.columns}", "success")
 
                     if not set(expected_cols).issubset(df.columns):
                         flash(f"{df.columns}","error")
@@ -149,11 +149,8 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         success, message = process_row_fn(row)
                         if success:
                             records_added += 1
-                            flash(f'{message}',"success")
                         else:
                             records_failed += 1
-                            flash(f'{message}',"error")
-
                 except Exception as sheet_err:
                     pass
 
@@ -693,6 +690,15 @@ def generate_manageexam_template():
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No of', 'Room']
     ws.append(headers)
 
+    # === Apply formatting ===
+    date_style = NamedStyle(name="date_style", number_format="MM/DD/YYYY")
+
+    for row in range(3, 503):
+        # Column A = Date with date format
+        ws[f"A{row}"].style = date_style
+        # Column B = Day (auto formula from date)
+        ws[f"B{row}"] = f'=IF(A{row}="","",TEXT(A{row},"dddd"))'
+
     # === Hidden sheet for lookup lists ===
     ws_lists = wb.create_sheet(title="Lists")
 
@@ -734,7 +740,7 @@ def generate_manageexam_template():
         dv_course.add("F3:F1002")  # Course/Sec dropdown
 
         # Auto-fill program, lecturers, no of students
-        for row in range(3, 1003):
+        for row in range(3, 503):
             ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))'  # Program
             ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))'  # Lecturer
             ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))'  # No of Students
