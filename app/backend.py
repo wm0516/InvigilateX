@@ -305,6 +305,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
+    flash(f"[CHECK] start={start_dt}, end={end_dt}, course={courseSection}, venue={venue_text}, lecturer={practicalLecturer}, lecturer={tutorialLecturer}, invigilator={invigilatorNo}", "success")
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
