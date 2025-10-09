@@ -3,7 +3,7 @@
 {% block title %}Admin Homepage{% endblock %}
 {% block content %}
 <div class="menu-grid">
-    <a href="{{ url_for('admin_manageCourse') }}" style="text-decoration: none; color: inherit;">
+    <a href="{{ url_for('admin_manageCourse') }}" style="text-decoration: none;">
         <div class="menu-section">
             <h2>Manage Course</h2>
             <ul class="submenu">
@@ -17,91 +17,112 @@
         </div>
     </a>
 
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;"><h2>Manage Department</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>Manually add new departments</li>
-                <li>Edit existing department details</li>
-            </ul>
-        </li>
-    </div>
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;"><h2>Manage Venue</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>Manually add new venues</li>
-                <li>Edit existing venue information</li>
-            </ul>
-        </li>
-    </div>
-</div><br>
-
-<div class="menu-grid">
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;"><h2>Manage Exam</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>
-                <li>Upload new exams</li>
-                <li>Edit existing exam information</li>
-            </ul>
-        </li>
-    </div>
+    <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;">
         <div class="menu-section">
-        <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;"><h2>Manage Lecturer</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>Manually add new lecturer data</li>
-                <li>Upload lecturer data in bulk</li>
-                <li>Edit existing lecturer information</li>
+            <h2>Manage Department</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>Manually add new departments</li>
+                    <li>Edit existing department details</li>
+                </ul>
             </ul>
-        </li>
-    </div>  
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;"><h2>Manage Timetable</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>Upload timetable PDFs (multiple files allowed)</li>
-                <li>Automatically link timetables to existing lecturer names</li>
+        </div>
+    </a>
+
+    <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Venue</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>Manually add new venues</li>
+                    <li>Edit existing venue information</li>
+                </ul>
             </ul>
-        </li>
-    </div>
+        </div>
+    </a>
 </div><br>
 
 <div class="menu-grid">
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageInvigilationTimetable')}}" style="text-decoration: none;"><h2>Manage Invigilation Timetable</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>
-                <li>View invigilation exam slots in a calendar view</li>
-                <li>Different colors indicate exam types: overnight, past, upcoming</li>
+    <a href="{{ url_for('admin_manageExam')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Exam</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>
+                    <li>Upload new exams</li>
+                    <li>Edit existing exam information</li>
+                </ul>
             </ul>
-        </li>
-    </div>
-    <div class="menu-section">
-        <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;"><h2>Manage Invigilation Report</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>View all invigilator attendance records</li>
-                <li>Check details for each exam session</li>
+        </div>
+    </a>
+
+    <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Lecturer</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>Manually add new lecturer data</li>
+                    <li>Upload lecturer data in bulk</li>
+                    <li>Edit existing lecturer information</li>
+                </ul>
             </ul>
-        </li>
-    </div>
-    <div class="menu-section">
-        <a href="{{ url_for('admin_profile')}}" style="text-decoration: none;"><h2>Profile</h2></a>
-        <li class="submenu">
-            <strong>Purpose:</strong>
-            <ul>    
-                <li>View and update your profile information</li>
+        </div>
+    </a>
+
+    <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Timetable</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>Upload timetable PDFs (multiple files allowed)</li>
+                    <li>Automatically link timetables to existing lecturer names</li>
+                </ul>
             </ul>
-        </li>
-    </div>
+        </div>
+    </a>
+</div><br>
+
+<div class="menu-grid">
+    <a href="{{ url_for('admin_manageInvigilationTimetable')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Invigilation Timetable</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>
+                    <li>View invigilation exam slots in a calendar view</li>
+                    <li>Different colors indicate exam types: overnight, past, upcoming</li>
+                </ul>
+            </ul>
+        </div>
+    </a>
+
+    <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Invigilation Report</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>View all invigilator attendance records</li>
+                    <li>Check details for each exam session</li>
+                </ul>
+            </ul>
+        </div>
+    </a>
+
+    <a href="{{ url_for('admin_profile')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Profile</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>View and update your profile information</li>
+                </ul>
+            </ul>
+        </div>
+    </a>
 </div>
 {% endblock %}
