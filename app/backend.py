@@ -358,6 +358,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     adj_end_dt = end_dt
     if end_dt <= start_dt:
         adj_end_dt = end_dt + timedelta(days=1)
+    pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
     # Clean old records first
     delete_exam_related(exam.examId, commit=False)
@@ -418,6 +419,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         return False, f"Not enough invigilators available. Required: {invigilatorNo}, Available: {len(chosen_invigilators)}"
 
     for chosen in chosen_invigilators:
+        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
         attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,
