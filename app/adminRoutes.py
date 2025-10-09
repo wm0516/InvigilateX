@@ -1987,7 +1987,6 @@ def get_all_attendances():
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
         .order_by(Exam.examStatus.desc(), Exam.examStartTime.asc())
         .all()
     )
