@@ -119,12 +119,14 @@
 
                             <!-- Invigilator Details -->
                             <td>
-                                <div class="info-grid">
-                                    <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
-                                    <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
-                                    <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
-                                    <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
-                                </div>
+                                {% if att %}
+                                    <div class="info-grid">
+                                        <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                        <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                        <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
+                                        <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
+                                    </div>
+                                {% endif %}
                             </td>
 
                             <!-- Check-in/out Time -->
