@@ -285,7 +285,7 @@ def user_ownTimetable():
 
 
 
-@app.route('/user/mergeTimetable', methods=['GET', 'POST'])
+@app.route('/user/mergeTimetable', methods=['GET'])
 @login_required
 def user_mergeTimetable():
     userId = session.get('user_id')
@@ -293,9 +293,10 @@ def user_mergeTimetable():
     # Get the logged-in user's department
     current_user = User.query.filter_by(userId=userId).first()
     if not current_user:
-        flash("User not found.", "danger")
         return redirect(url_for('user_mergeTimetable'))
+
     user_department = current_user.userDepartment
+    selected_lecturer = request.args.get("lecturer")
 
     # Query all timetables for users in the same department
     timetables = (
@@ -309,6 +310,13 @@ def user_mergeTimetable():
     timetable_rows = []
     for timetable in timetables:
         timetable_rows.extend(timetable.rows)
+
+    # Filter by lecturer if selected
+    if selected_lecturer:
+        timetable_rows = [row for row in timetable_rows if row.lecturerName == selected_lecturer]
+
+    # Extract unique lecturers for dropdown
+    lecturers = sorted({row.lecturerName for row in timetable_rows})
 
     # Combine overlapping (same day & same time) entries
     merged = {}
@@ -327,7 +335,7 @@ def user_mergeTimetable():
                 'courseSections': [row.courseSection]
             }
         else:
-            merged[key]['courseIntakes'].append(row.courseIntake)
+            merged[key]['courseIntakes'].append(row.courseIntake)   
             merged[key]['courseCodes'].append(row.courseCode)
             merged[key]['courseSections'].append(row.courseSection)
 
@@ -337,7 +345,7 @@ def user_mergeTimetable():
         item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
         merged_timetable.append(item)
 
-    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, user_department=user_department)
+    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, user_department=user_department, lecturers=lecturers, selected_lecturer=selected_lecturer)
 
 
 

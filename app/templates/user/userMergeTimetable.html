@@ -4,6 +4,28 @@
 
 {% block content %}
 <div class="menu-section">
+    <!-- Lecturer Filter -->
+    <div class="profile-frame" style="margin-bottom: 20px;">
+        <form method="get" style="display:flex; align-items:center; gap:8px;">
+            <label for="lecturer">Select Lecturer:</label>
+            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                <option value="">All Lecturers</option>
+                {% for lecturer in lecturers %}
+                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                        {{ lecturer }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            {% if selected_lecturer %}
+                <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'"
+                        style="margin-left: 10px; padding: 4px 8px;">
+                    Clear Filter
+                </button>
+            {% endif %}
+        </form>
+    </div>
+
     <div class="user-table-container">
         <table class="user-data-table" border="1">
             <thead>
@@ -49,7 +71,16 @@
 {% endblock %}
 
 
-
+{% block extra_scripts %}
+<script>
+    $(document).ready(function() {
+        $('#lecturer').select2({
+            placeholder: "Type to search...",
+            allowClear: true
+        });
+    });
+</script>
+{% endblock %}
 
 
 

@@ -1680,24 +1680,25 @@ def save_timetable_to_db(structured):
 def admin_manageTimetable():
     # Auto cleanup expired timetable rows
     # cleanup_expired_timetable_rows()
-
     department_data = Department.query.all()
-    # ---- Default GET rendering ----
-    timetable_data = TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()
-    lecturers = sorted({row.lecturerName for row in timetable_data})
     selected_lecturer = request.args.get("lecturer")
+    selected_department = request.args.get("department")
+    timetable_data_query = TimetableRow.query
 
-    # Use Timetable directly (not TimetableRow)
+    if selected_lecturer:
+        timetable_data_query = timetable_data_query.filter(TimetableRow.lecturerName == selected_lecturer)
+    if selected_department:
+        timetable_data_query = timetable_data_query.join(User, TimetableRow.user_id == User.userId).filter(User.userDepartment == selected_department)
+
+    timetable_data = timetable_data_query.order_by(TimetableRow.rowId.asc()).all()
+    lecturers = sorted({row.lecturerName for row in TimetableRow.query.order_by(TimetableRow.rowId.asc()).all()})
     total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
-
-    # Predefine timetable_select to avoid UnboundLocalError
+    
     timetable_select = None
     timetable_selected = request.form.get('editTimetableList')
     if timetable_selected:
         timetable_select = Timetable.query.filter_by(timetableId=timetable_selected).first()
-
-    # Build mapping: user_id -> timetableId
     timetable_map = {t.user_id: t.timetableId for t in timetable_list}
 
     # Staff list (exclude certain levels/status)
@@ -1727,12 +1728,13 @@ def admin_manageTimetable():
     if request.method == "POST":
         form_type = request.form.get('form_type')
 
+        # --- Upload timetable PDF files ---
         if form_type == 'upload':
             files = request.files.getlist("timetable_file[]")
             latest_files = {}
             skipped_files = []
 
-            # ---- Compare & Keep only latest file for each lecturer ----
+            # Keep only the latest file per lecturer
             for file in files:
                 base_name, timestamp = extract_base_name_and_timestamp(file.filename)
                 if not base_name:
@@ -1750,7 +1752,7 @@ def admin_manageTimetable():
             total_rows_inserted = 0
             total_files_processed = 0
 
-            # ---- Process each latest file ----
+            # Process each latest file
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
@@ -1761,23 +1763,21 @@ def admin_manageTimetable():
                 if (rows_inserted or 0) > 0:
                     total_files_processed += 1
                     total_rows_inserted += rows_inserted or 0
-
             flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             return redirect(url_for('admin_manageTimetable'))
 
+        # --- Manual link timetable to staff ---
         elif form_type == 'manual':
             user_id = request.form.get("staffList")
             lecturer = request.form.get("lecturerName")
 
             if user_id and lecturer:
-                # Ensure this user has a Timetable entry
                 timetable = Timetable.query.filter_by(user_id=user_id).first()
                 if not timetable:
                     timetable = Timetable(user_id=user_id)
                     db.session.add(timetable)
                     db.session.commit()
 
-                # Update all rows for that lecturer
                 rows = TimetableRow.query.filter_by(lecturerName=lecturer, timetable_id=None).all()
                 for row in rows:
                     row.timetable_id = timetable.timetableId
@@ -1786,9 +1786,9 @@ def admin_manageTimetable():
                 flash(f"Timetable for {lecturer} has been successfully linked to Staff ID {user_id}.", "success")
             else:
                 flash("Missing lecturer or staff", "error")
-
             return redirect(url_for('admin_manageTimetable'))
 
+        # --- Edit / Delete timetable link ---
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and timetable_select:
@@ -1813,12 +1813,11 @@ def admin_manageTimetable():
                 db.session.delete(timetable_select)
                 db.session.commit()
                 flash("Timetable deleted successfully.", "success")
-
                 return redirect(url_for('admin_manageTimetable'))
 
-    return render_template('admin/adminManageTimetable.html', active_tab='admin_manageTimetabletab', timetable_data=timetable_data, lecturers=lecturers, selected_lecturer=selected_lecturer, unassigned_staff_list=unassigned_staff_list,
-        total_timetable=total_timetable, unassigned_summary=unassigned_summary, staff_list=staff_list, **day_counts, timetable_list=timetable_list, timetable_map=timetable_map, timetable_select=timetable_select, department_data=department_data)
-
+    return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,
+        department_data=department_data,selected_department=selected_department,unassigned_staff_list=unassigned_staff_list,total_timetable=total_timetable,unassigned_summary=unassigned_summary,staff_list=staff_list,
+        **day_counts,timetable_list=timetable_list,timetable_map=timetable_map,timetable_select=timetable_select)
 
 
 

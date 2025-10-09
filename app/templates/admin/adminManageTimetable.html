@@ -181,6 +181,16 @@
                 {% endfor %}
             </select>
 
+            <label for="department">Select_Department:</label>
+            <select name="department" id="department" onchange="this.form.submit()">
+                <option value="">All Departments</option>
+                {% for dept in department_data %}
+                    <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
+                        {{ dept.departmentName }}
+                    </option>
+                {% endfor %}
+            </select>
+
             {% if selected_lecturer %}
                 <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'"
                         style="margin-left: 10px; padding: 4px 8px;">
