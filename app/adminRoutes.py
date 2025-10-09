@@ -721,7 +721,7 @@ def generate_manageexam_template():
     for i, c in enumerate(courses, start=1):
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
         ws_lists[f"B{i}"] = c.courseDepartment          # Program
-        ws_lists[f"C{i}"] = c.practicalLecturer.userName if c.practicalLecturer else ""  # Lecturer
+        ws_lists[f"C{i}"] = c.practicalLecturer.userId if c.practicalLecturer else ""  # Lecturer
         ws_lists[f"D{i}"] = c.courseStudent or 0        # No of students
 
     # --- Venues ---
@@ -729,7 +729,7 @@ def generate_manageexam_template():
     for i, v in enumerate(venues, start=1):
         ws_lists[f"G{i}"] = v.venueNumber   # put venues in column G
 
-    # === Data Validations ===
+    # === Data Validations ===s
     if courses:
         dv_course = DataValidation(
             type="list",
