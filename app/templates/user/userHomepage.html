@@ -2,7 +2,7 @@
 {% extends "user/userBase.html" %}
 {% block title %}Homepage{% endblock %}
 {% block content %}
-    <h1>Welcome Back {{ user_name }}</h1>
+    <h1>Welcome Back - {{ user_name }}</h1>
     {% if user_level == 1 %}    
     <div class="dashboard-row">
         <div class="dashboard-frame">
@@ -42,11 +42,9 @@
                             <td>{{ record.report.exam.examStartTime.strftime("%H:%M") }} - {{ record.report.exam.examEndTime.strftime("%H:%M") }}</td>
                             <td>{{ (record.report.exam.examEndTime - record.report.exam.examStartTime).seconds // 3600 }}h {{ ((record.report.exam.examEndTime - record.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
                             <td>
-                                <form action="{{ url_for('user_homepage') }}" method="POST" class="d-flex justify-content-center gap-2">
-                                    <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
-                                    <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
-                                    <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
-                                </form>
+                                <input type="hidden" name="record_id" value="{{ record.attendanceId }}">
+                                <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                                <button type="submit" name="action" value="reject" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
                             </td>
                         </tr>
                         {% endfor %}
