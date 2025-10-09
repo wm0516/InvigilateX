@@ -286,10 +286,14 @@
 
                     <!-- Invigilation -->
                     <td>
-                        <div class="info-grid">
-                            <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
-                            <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
-                        </div>
+                        {% if row.userLevel == 1 %}
+                            <div class="info-grid">
+                                <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
+                                <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
+                            </div>
+                        {% else %}
+                            ---
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
