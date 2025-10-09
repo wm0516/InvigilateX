@@ -5,8 +5,8 @@
 {% block content %}
 <div class="menu-section">
     <!-- Lecturer Filter -->
-    <div class="user-table-container" style="max-height: None; margin: 0px;"> 
-        <form method="get" style="display:flex; align-items:center; gap:8px;">
+    <div> 
+        <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
             <label for="lecturer">Select_Lecturer:</label>
             <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                 <option value="">All Lecturers</option>
@@ -21,7 +21,7 @@
         </form>
     </div>
 
-    <div class="user-table-container" style="max-height: None;">
+    <div class="user-table-container">
         <table class="user-data-table" border="1">
             <thead>
                 <tr>
