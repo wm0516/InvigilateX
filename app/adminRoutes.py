@@ -805,7 +805,6 @@ def process_exam_row(row):
         return None, ''
 
     # No conflict → create
-    flash(f"[DEBUG] start={start_dt}, end={end_dt}, course={row['course/sec']}, venue={venue}, lecturer={row['lecturer']}", "success")
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, str(row['lecturer']).upper(), None, None)
     return True, ''
 
@@ -889,7 +888,6 @@ def get_available_venues():
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
 def adjust_invigilators(report, new_count, start_dt, end_dt):
-    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
@@ -938,7 +936,6 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
 
         # Assign chosen invigilators
         for inv in chosen_invigilators:
-            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
