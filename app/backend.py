@@ -301,41 +301,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 
 
 
-
-
-# -------------------------------
-# Sort by workload (with priority rule)
-# -------------------------------
-def workload(inv):
-    hour = (
-        InvigilationHour.query
-        .filter_by(userId=inv.userId)
-        .order_by(InvigilationHour.lastUpdated.desc())
-        .first()
-    )
-    
-    if not hour:
-        # If no record yet, treat as 0 workload → highest priority
-        return (0, 0.0)
-
-    total_hours = ((hour.cumulativeHours or 0.0) + (hour.pendingCumulativeHours or 0.0) + (hour.processingCumulativeHours or 0.0))
-
-    # Priority rule:
-    #  - Invigilators with total < 36 hours come first (priority 0)
-    #  - Those >= 36 hours come next (priority 1)
-    #  - Within each priority group, sort by total hours ascending
-    priority_flag = 0 if total_hours < 36 else 1
-
-    return (priority_flag, total_hours)
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
 # -------------------------------
@@ -393,7 +358,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     adj_end_dt = end_dt
     if end_dt <= start_dt:
         adj_end_dt = end_dt + timedelta(days=1)
-    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
     # Clean old records first
     delete_exam_related(exam.examId, commit=False)
@@ -427,12 +391,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # Split by gender
     male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
     female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
-    
+
+    # Sort by workload
     def workload(inv):
-        hour = InvigilationHour.query.filter_by(userId=inv.userId).order_by(InvigilationHour.lastUpdated.desc()).first()
-        if hour:
-            return (hour.cumulativeHours or 0) + (hour.pendingCumulativeHours or 0)
-        return 0.0
+        return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
 
     male_invigilators.sort(key=workload)
     female_invigilators.sort(key=workload)
@@ -487,10 +449,10 @@ def delete_exam_related(exam_id, commit=True):
         for att in report.attendances:
             invigilator = att.invigilator
             if invigilator:
-                hour = InvigilationHour.query.filter_by(userId=invigilator.userId).order_by(InvigilationHour.lastUpdated.desc()).first()
-                if hour:
-                    hour.pendingCumulativeHours = max(0.0, (hour.pendingCumulativeHours or 0.0) - pending_hours)
-                    hour.lastUpdated = datetime.now(timezone.utc)
+                invigilator.userPendingCumulativeHours = max(
+                    0.0,
+                    (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
+                )
 
     # Delete reports and venue availability
     InvigilationReport.query.filter_by(examId=exam.examId).delete()

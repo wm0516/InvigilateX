@@ -884,15 +884,6 @@ def get_available_venues():
 
     return jsonify({'venues': available_venues})
 
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
@@ -921,6 +912,10 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
         male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
         female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
 
+        # Sort by workload
+        def workload(inv):
+            return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+
         male_invigilators.sort(key=workload)
         female_invigilators.sort(key=workload)
         chosen_invigilators = []
@@ -940,21 +935,14 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
         if len(chosen_invigilators) < new_count - current_count:
             raise ValueError("Not enough eligible invigilators to increase")
 
+        # Assign chosen invigilators
         for inv in chosen_invigilators:
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
                 timeCreate=datetime.now(timezone.utc)
             ))
-
-            # Update InvigilationHour record
-            hour = InvigilationHour.query.filter_by(userId=inv.userId).order_by(InvigilationHour.lastUpdated.desc()).first()
-            if not hour:
-                hour = InvigilationHour(userId=inv.userId)
-                db.session.add(hour)
-
-            hour.processingCumulativeHours += pending_hours
-            hour.lastUpdated = datetime.now(timezone.utc)
 
     else:
         # Need to REMOVE invigilators
@@ -963,10 +951,10 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
         for att in to_remove:
             inv = att.invigilator
             if inv:
-                hour = InvigilationHour.query.filter_by(userId=inv.userId).order_by(InvigilationHour.lastUpdated.desc()).first()
-                if hour:
-                    hour.processingCumulativeHours = max(0.0, (hour.processingCumulativeHours or 0.0) - pending_hours)
-                    hour.lastUpdated = datetime.now(timezone.utc)
+                inv.userPendingCumulativeHours = max(
+                    0.0,
+                    (inv.userPendingCumulativeHours or 0.0) - pending_hours
+                )
             db.session.delete(att)
     db.session.commit()
 
@@ -1115,10 +1103,9 @@ def admin_manageExam():
                             duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
                             user = User.query.get(attendance.invigilatorId)
                             if user:
-                                hour = InvigilationHour.query.filter_by(userId=user.userId).order_by(InvigilationHour.lastUpdated.desc()).first()
-                                if hour:
-                                    hour.pendingCumulativeHours = max(0.0, (hour.pendingCumulativeHours or 0.0) - duration)
-                                    hour.lastUpdated = datetime.now(timezone.utc)
+                                user.userPendingCumulativeHours -= duration
+                                if user.userPendingCumulativeHours < 0:
+                                    user.userPendingCumulativeHours = 0
 
                         # Delete attendance
                         db.session.delete(attendance)
