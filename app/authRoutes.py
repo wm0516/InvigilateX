@@ -305,7 +305,7 @@ def admin_homepage():
 # -------------------------------
 # Helper function to get pending records
 # -------------------------------
-def get_all_records(user_id):
+def waiting_record(user_id):
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -318,6 +318,16 @@ def get_all_records(user_id):
         .all()
     )
 
+def confirm_record(user_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .filter(InvigilatorAttendance.invigilatorId == user_id)
+        .all()
+    )
 
 # -------------------------------
 # Main User Homepage
@@ -326,22 +336,23 @@ def get_all_records(user_id):
 @login_required
 def user_homepage():
     user_id = session.get('user_id')
-    records = get_all_records(user_id)
+    waiting = waiting_record(user_id)
+    confirm = confirm_record(user_id)
 
     if request.method == 'POST':
         action = request.form.get('action')
-        record_id = request.form.get('record_id')
-        record = InvigilatorAttendance.query.filter_by(
+        waiting_id = request.form.get('w_id')
+        waiting = InvigilatorAttendance.query.filter_by(
             invigilatorId=user_id,
-            attendanceId=record_id
+            attendanceId=waiting_id
         ).first()
 
-        if record:
+        if waiting:
             # Get exam hours
             exam = (
                 Exam.query
                 .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == record.reportId)
+                .filter(InvigilationReport.invigilationReportId == waiting.reportId)
                 .first()
             )
 
@@ -357,8 +368,8 @@ def user_homepage():
             chosen = User.query.filter_by(userId=user_id).first()
 
             if action == 'accept' and chosen:
-                record.invigilationStatus = True
-                record.timeAction = datetime.now()
+                waiting.invigilationStatus = True
+                waiting.timeAction = datetime.now()
                 chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 flash("Exam Invigilation Accepted", "success")
@@ -367,13 +378,13 @@ def user_homepage():
                 # Only remove pending hours
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 if action == 'reject':
-                    record.invigilationStatus = False
+                    waiting.invigilationStatus = False
                     flash("Exam Invigilation Rejected", "error")
                 else:
-                    db.session.delete(record)
+                    db.session.delete(waiting)
                     flash("Exam Invigilation Deleted", "warning")
 
-            record.timeAction = datetime.now()
+            waiting.timeAction = datetime.now()
             db.session.commit()
         return redirect(url_for('user_homepage'))
-    return render_template('user/userHomepage.html', active_tab='user_hometab', records=records)
+    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm)
