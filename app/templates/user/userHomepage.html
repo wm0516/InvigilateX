@@ -2,7 +2,7 @@
 {% extends "user/userBase.html" %}
 {% block title %}Homepage{% endblock %}
 {% block content %}
-    <h1>Welcome Back</h1>
+    <h1>Welcome Back {{ user_name }}</h1>
     {% if user_level == 1 %}    
     <div class="dashboard-row">
         <div class="dashboard-frame">
@@ -18,7 +18,7 @@
 
     <form action="{{ url_for('user_homepage') }}" method="POST">
         <div style="padding: 10px;">
-            <h3>Confirm or Decline Invigilation Slot</h3>
+            <h2>Confirm or Decline Invigilation Slot</h2>
             <div class="user-table-container">
                 <table class="user-data-table">
                     <thead>
