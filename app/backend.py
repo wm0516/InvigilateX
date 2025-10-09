@@ -184,6 +184,7 @@ The InvigilateX Team'''
         return False, f"Failed to Send Email. Error: {str(e)}"
 
 
+
 # -------------------------------
 # Auth Function 5: Check Reset Password [Must with Token(userId), and Both Password Must Be Same]
 # -------------------------------
