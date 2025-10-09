@@ -120,8 +120,6 @@ class Exam(db.Model):
     venue = db.relationship("Venue", back_populates="exams")                                     # Many Exams ↔ One Venue
     venue_availabilities = db.relationship("VenueAvailability", back_populates="exam")           # One Exam ↔ Many VenueAvailability
     invigilation_reports = db.relationship("InvigilationReport", backref="exam")                 # One Exam ↔ Many InvigilationReport
-    
-
     '''
     CREATE TABLE Exam (
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -145,7 +143,6 @@ class VenueAvailability(db.Model):
     # Relationships
     exam = db.relationship("Exam", back_populates="venue_availabilities")
     venue = db.relationship("Venue", back_populates="availabilities")
-
     '''
     CREATE TABLE VenueAvailability (
         examVenueId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -177,7 +174,6 @@ class Course(db.Model):
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])   
     exam = db.relationship("Exam", back_populates="course", uselist=False)  # One Course ↔ One Exam
-
     '''
     CREATE TABLE Course (
         courseCodeSectionIntake VARCHAR(50) NOT NULL PRIMARY KEY,
