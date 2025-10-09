@@ -782,8 +782,8 @@ def process_exam_row(row):
     examDate = row['date']
     if isinstance(examDate, str):
         examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
+        
     examDate_text = examDate.strftime("%Y-%m-%d")
-    
     startTime_text = row['start']
     endTime_text   = row['end']
 
@@ -1089,7 +1089,7 @@ def admin_manageExam():
                             create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
 
                     db.session.commit()
-                    flash("Exam updated successfully", "success")
+                    flash(f"{exam_select.course.courseCodeSectionIntake} updated successfully", "success")
 
             elif action == 'delete':
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
