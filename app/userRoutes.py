@@ -28,6 +28,8 @@ bcrypt = Bcrypt()
 # -------------------------------
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
+
+    # Base query for invigilator attendance joined with report, exam, and course
     query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
@@ -41,35 +43,22 @@ def calculate_invigilation_stats():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
-        .filter(Exam.examStatus == True)
     )
 
-    # Apply conditional filter based on userLevel
+    # Role-based filtering for query and active report
     if user.userLevel == 1:
+        # Own attendance only
         query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
-        total_active_report = (
-            InvigilationReport.query
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .join(Course, Course.courseExamId == Exam.examId)
-            .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
-            .filter(InvigilatorAttendance.invigilatorId == user.userId)
-            .filter(InvigilatorAttendance.invigilationStatus  == True)
-            .count()
-        )
+        total_active_report = query.filter(Exam.examStatus == True).count()
+        total_report = query.count()
     else:  # userLevel 2,3,4
+        # Same department
         query = query.filter(Course.courseDepartment == user.userDepartment)
-        total_active_report = (
-            InvigilationReport.query
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .join(Course, Course.courseExamId == Exam.examId)
-            .filter(Course.courseDepartment == user.userDepartment)
-            .filter(Exam.examStatus == True)
-            .count()
-        )
+        total_active_report = query.filter(Exam.examStatus == True).count()
+        total_report = query.count()
 
-    query = query.all()
-    total_report = InvigilationReport.query.count()
+    query = query.filter(InvigilatorAttendance.invigilationStatus == True).all()
+
     stats = {
         "total_report": total_report,
         "total_activeReport": total_active_report,
@@ -97,7 +86,9 @@ def calculate_invigilation_stats():
             stats["total_checkOutOnTime"] += 1
         elif row.examEndTime:
             stats["total_checkOutEarly"] += 1
+
     return stats
+
 
 
 
@@ -346,7 +337,7 @@ def user_mergeTimetable():
         item['combined'] = list(zip(item['courseIntakes'], item['courseCodes'], item['courseSections']))
         merged_timetable.append(item)
 
-    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, department=user_department)
+    return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, user_department=user_department)
 
 
 

@@ -1,11 +1,10 @@
 {% extends "user/userBase.html" %}
 {% block title %}Timetable{% endblock %}
-{% block head_title %}<h2>Own Timetable</h2>{% endblock %}
+{% block head_title %}<h2>Staff Timetable - {{ user_name }}</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
     <div class="user-table-container" style="max-height: None; margin: 0px;">    
         <table class="user-data-table" border="1">
-            <h3>Timetable for {{ user_name }}</h3>
             <thead>
                 <tr>
                     <th>Day / Time</th>
