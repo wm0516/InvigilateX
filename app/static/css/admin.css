@@ -255,10 +255,6 @@ html, body {
     line-height: 1.1;
 }
 
-.user-data-table tr:last-child td {
-    border-bottom: none;
-}
-
 .user-data-table tr:hover {
     background-color: #f5f7fa;
 }
