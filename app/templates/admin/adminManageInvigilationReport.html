@@ -153,16 +153,16 @@
                                     } %}
                                     <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
                                 {% else %}
-                                    <em class="status frame-waiting">In Processing</em>
+                                    <em class="status frame-waiting">IN PROCESSING</em>
                                 {% endif %}
                             </td>
 
                             <!-- Invigilation Status -->
                             <td>
                                 {% if att and att.invigilationStatus %}
-                                    <span class="status frame-green">Accepted</span>
+                                    <span class="status frame-green">ACCEPTED</span>
                                 {% else %}
-                                    <em class="status frame-waiting">In Processing</em>
+                                    <em class="status frame-waiting">IN PROCESSING</em>
                                 {% endif %}
                             </td>
                         </tr>

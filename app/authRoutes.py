@@ -299,11 +299,8 @@ def admin_homepage():
 
 
 
-
-
-
 # -------------------------------
-# Helper function to get pending records
+# Helper functions
 # -------------------------------
 def waiting_record(user_id):
     return (
@@ -329,6 +326,22 @@ def confirm_record(user_id):
         .all()
     )
 
+def open_record():
+    cutoff_time = datetime.now() - timedelta(days=2)
+    return (
+        InvigilatorAttendance.query
+        .filter(
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.timeCreate < cutoff_time,
+            InvigilatorAttendance.timeAction.is_(None)
+        )
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .all()
+    )
+
 # -------------------------------
 # Main User Homepage
 # -------------------------------
@@ -338,21 +351,24 @@ def user_homepage():
     user_id = session.get('user_id')
     waiting = waiting_record(user_id)
     confirm = confirm_record(user_id)
+    open_slots = open_record()
 
     if request.method == 'POST':
         action = request.form.get('action')
+        chosen = User.query.filter_by(userId=user_id).first()
+
+        # Handle waiting approval
         waiting_id = request.form.get('w_id')
-        waiting = InvigilatorAttendance.query.filter_by(
+        waiting_slot = InvigilatorAttendance.query.filter_by(
             invigilatorId=user_id,
             attendanceId=waiting_id
         ).first()
 
-        if waiting:
-            # Get exam hours
+        if waiting_slot:
             exam = (
                 Exam.query
                 .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == waiting.reportId)
+                .filter(InvigilationReport.invigilationReportId == waiting_slot.reportId)
                 .first()
             )
 
@@ -364,27 +380,54 @@ def user_homepage():
                     end_dt += timedelta(days=1)
                 pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-            # Get the user record
-            chosen = User.query.filter_by(userId=user_id).first()
-
-            if action == 'accept' and chosen:
-                waiting.invigilationStatus = True
-                waiting.timeAction = datetime.now()
+            if action == 'accept':
+                waiting_slot.invigilationStatus = True
+                waiting_slot.timeAction = datetime.now()
                 chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 flash("Exam Invigilation Accepted", "success")
 
-            elif action in ['reject', 'delete'] and chosen:
-                # Only remove pending hours
+            elif action == 'reject':
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 if action == 'reject':
-                    waiting.invigilationStatus = False
+                    waiting_slot.invigilationStatus = False
                     flash("Exam Invigilation Rejected", "error")
                 else:
-                    db.session.delete(waiting)
+                    db.session.delete(waiting_slot)
                     flash("Exam Invigilation Deleted", "warning")
 
-            waiting.timeAction = datetime.now()
+            waiting_slot.timeAction = datetime.now()
             db.session.commit()
+
+        # Handle open public slot selection
+        open_id = request.form.get('a_id')
+        open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
+
+        if open_slot and action == 'open_accept' and chosen:
+            open_slot.invigilatorId = user_id
+            open_slot.invigilationStatus = True
+            open_slot.timeAction = datetime.now()
+
+            # Get exam to calculate hours
+            exam = (
+                Exam.query
+                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
+                .first()
+            )
+
+            hours = 0
+            if exam and exam.examStartTime and exam.examEndTime:
+                start_dt = exam.examStartTime
+                end_dt = exam.examEndTime
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                hours = (end_dt - start_dt).total_seconds() / 3600.0
+
+            chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
+            db.session.commit()
+            flash("Open Slot Accepted Successfully", "success")
+
         return redirect(url_for('user_homepage'))
-    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm)
+
+    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
