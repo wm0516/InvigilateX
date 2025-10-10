@@ -330,7 +330,7 @@ def confirm_record(user_id):
 
 # cutoff_time = datetime.now() - timedelta(days=2)
 def open_record():
-    cutoff_time = datetime.now() - timedelta(hours=5)
+    cutoff_time = datetime.now() - timedelta(minutes=1)
 
     # Query all unassigned, older than 2 days, and still open slots
     slots = (
