@@ -119,7 +119,7 @@
                                     <div class="info-grid">
                                         <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%Y-%m-%d %H:%M") }}</strong></div>
                                         <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%Y-%m-%d %H:%M") }}</strong></div>
-                                        <div style="color: green;">Total Invigilation Time</div><div><strong>None</strong></div>
+                                        <div style="color: green;">Total Invigilation Time</div><div><strong>{{ att.checkIn.strftime("%Y-%m-%d %H:%M") }}</strong></div>
                                     </div>
                                 {% else %}
                                     <em class="status frame-waiting">IN PROCESSING</em>
