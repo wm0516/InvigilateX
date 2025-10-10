@@ -20,53 +20,22 @@
     </div><br>
 
     <div class="calendar-container">
-        {% set hour_width = 80 %}
-        {% for date in valid_dates %}
-            {% set exams = calendar_data.get(date, []) %}
-            {% set sorted_exams = exams | sort(attribute='start_time') %}
-            {% set positions = [] %}
-            {% for exam in sorted_exams %}
-                {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
-                {% set row_index = overlapping | length %}
-                {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
-            {% endfor %}
-            {% if positions %}
-                {% set max_row = (positions | map(attribute='row') | max) + 1 %}
-            {% else %}
-                {% set max_row = 1 %}
-            {% endif %}
-
-            <div class="calendar-row" id="date-{{ date.strftime('%Y-%m-%d') }}">
-                <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ 10 + max_row * 70 }}px;">
-                    {% for i in range(sorted_exams|length) %}
-                        {% set exam = sorted_exams[i] %}
-                        {% set pos = positions[i] %}
-                        {% set left_pos = 10 + (exam.start_time.hour * hour_width) %}
-                        {% set top_pos = 5 + (pos.row * 70) %}
-
-                        {% if exam.is_overnight %}
-                            {% set block_color = '#dc74f7' %}
-                        {% elif exam.status %}
-                            {% set block_color = '#75bdf9' %}
-                        {% else %}
-                            {% set block_color = 'lightgrey' %}
-                        {% endif %}
-
-                        <!-- ✅ Fixed width for all blocks -->
-                        <div class="exam-block"
-                            style="background-color: {{ block_color }};
-                                left: {{ left_pos }}px;
-                                width: 200px;  /* fixed width */
-                                top: {{ top_pos }}px;">
-                            <strong>{{ exam.course_code }}</strong><br>
-                            {{ exam.course_name }}<br>
-                            <i>{{ exam.venue }}<br>{{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
+        {% if calendar_data %}
+            {% for date, exams in calendar_data.items() %}
+                <div class="calendar-day">
+                    <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }}</h3>
+                    {% for exam in exams %}
+                        <div class="exam-card" style="background-color: {% if exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
+                            <strong>{{ exam.course_code }}</strong> - {{ exam.course_name }}<br>
+                            Venue: {{ exam.venue }}<br>
+                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
                         </div>
                     {% endfor %}
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p>No exam data available.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

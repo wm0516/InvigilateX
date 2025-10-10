@@ -274,21 +274,13 @@ html, body {
     background: #f9f9f9;
 }
 
+
 /* Row wrapper for time and day rows */
 .calendar-row {
     width: 2840px;
     display: flex;
     border-bottom: 2px solid #b7bbed;
     align-items: flex-start;
-}
-
-/* Make first row (time header) sticky */
-.calendar-row:first-child {
-    position: sticky;
-    top: 0;
-    background: #fafafa;
-    z-index: 10;
-    border-bottom: 3px solid #999;
 }
 
 /* First column: date or time label */

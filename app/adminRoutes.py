@@ -1858,78 +1858,60 @@ def admin_manageTimetable():
 
 
 
-
 # -------------------------------
-# Function for Admin ManageInviglationTimetable Route to read all the timetable in calendar mode
+# Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
-    seen_exams = set()
-    all_exam_dates = []
 
     for att in attendances:
         exam = att.report.exam
-        if exam.examId in seen_exams:
-            continue
-        seen_exams.add(exam.examId)
+        start_dt = exam.examStartTime
+        end_dt = exam.examEndTime
+        start_date = start_dt.date()
+        end_date = end_dt.date()
 
-        start_time = exam.examStartTime
-        end_time = exam.examEndTime
-
-        # ✅ Detect if exam spans multiple days (overnight)
-        is_overnight = start_time.date() != end_time.date()
-
-        # ✅ Helper function to build exam dictionary
+        # Helper: create a dictionary of exam details
         def exam_dict(start, end):
             return {
-                "start_time": start,
-                "end_time": end,
                 "exam_id": exam.examId,
                 "course_name": exam.course.courseName,
                 "course_code": exam.course.courseCodeSectionIntake,
                 "venue": exam.examVenue,
+                "start_time": start,
+                "end_time": end,
                 "status": exam.examStatus,
-                "is_overnight": is_overnight  # ✅ Mark overnight exams
+                "is_overnight": start_date != end_date
             }
 
-        # ✅ Handle overnight exams (spanning across midnight)
-        if is_overnight:
-            # --- Part 1: from start to midnight ---
-            calendar_data[start_time.date()].append(
-                exam_dict(
-                    start_time,
-                    datetime.combine(start_time.date(), datetime.max.time()).replace(hour=23, minute=59)
-                )
+        # Case 1: Overnight exam — appears on both start and end dates
+        if start_date != end_date:
+            # Part 1: From start time to 23:59 on start day
+            calendar_data[start_date].append(
+                exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59))
             )
-            all_exam_dates.append(start_time.date())
 
-            # --- Part 2: from midnight to real end ---
-            calendar_data[end_time.date()].append(
-                exam_dict(
-                    datetime.combine(end_time.date(), datetime.min.time()),
-                    end_time
-                )
+            # Part 2: From 00:00 on next day to real end time
+            calendar_data[end_date].append(
+                exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt)
             )
-            all_exam_dates.append(end_time.date())
         else:
-            # ✅ Normal same-day exam
-            calendar_data[start_time.date()].append(exam_dict(start_time, end_time))
-            all_exam_dates.append(start_time.date())
-    return calendar_data
+            # Case 2: Normal same-day exam
+            calendar_data[start_date].append(exam_dict(start_dt, end_dt))
 
+    # ✅ Sort by date
+    calendar_data = dict(sorted(calendar_data.items()))
+    return calendar_data
 
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
 # -------------------------------
-@app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
+@app.route('/admin/manageInvigilationTimetable', methods=['GET'])
 @login_required
 def admin_manageInvigilationTimetable():
     calendar_data = get_calendar_data()
-    valid_dates = sorted(calendar_data.keys())
-
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, valid_dates=valid_dates)
-
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
 
 
 
