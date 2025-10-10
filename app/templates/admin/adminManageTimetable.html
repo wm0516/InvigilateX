@@ -139,8 +139,8 @@
     <!-- Filters -->
     <div class="profile-frame" style="margin-bottom: 20px;">
         <form method="get" style="display:flex; align-items:center; gap:10px;">
-            <label for="lecturer">Select Lecturer:</label>
-            <select name="lecturer" id="lecturer">
+            <label for="lecturer">Select_Lecturer:</label>
+            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                 <option value="">All Lecturers</option>
                 {% for lecturer in lecturers %}
                     <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
@@ -150,7 +150,7 @@
             </select><br>
 
             <label for="department">Select_Department:</label>
-            <select name="department" id="department">
+            <select name="department" id="department" onchange="this.form.submit()">
                 <option value="">All Departments</option>
                 {% for dept in department_data %}
                     <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
@@ -160,7 +160,7 @@
             </select>
 
             {% if selected_lecturer or selected_department %}
-                <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" style="padding: 4px 8px;">Clear Filter</button>
+                <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" style="padding: 4px 8px;">Clear_Filter</button>
             {% endif %}
         </form>
     </div>
@@ -217,6 +217,10 @@
 
 {% block extra_scripts %}
 <script>
+$(document).ready(function() {
+    $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     const timetableSelect = document.getElementById('editTimetableList');
     const staffSelect = document.getElementById('editStaffList');
