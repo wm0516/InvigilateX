@@ -1956,30 +1956,15 @@ def calculate_invigilation_stats():
     stats = {
         "total_report": total_report,
         "total_activeReport": total_active_report,
-        "total_checkInOnTime": 0,
         "total_checkInLate": 0,
-        "total_checkOutOnTime": 0,
         "total_checkOutEarly": 0,
-        "total_checkInOut": 0,
-        "total_inProgress": 0,
     }
 
     for row in query:
-        if row.checkIn is None:
-            stats["total_checkInOut"] += 1
-            continue
-        if row.checkOut is None:
-            stats["total_inProgress"] += 1
-            continue
-        if row.examStartTime and row.checkIn <= row.examStartTime:
-            stats["total_checkInOnTime"] += 1
-        elif row.examStartTime:
+        if row.examStartTime and row.checkIn >= row.examStartTime:
             stats["total_checkInLate"] += 1
-        if row.examEndTime and row.checkOut >= row.examEndTime:
-            stats["total_checkOutOnTime"] += 1
-        elif row.examEndTime:
+        if row.examEndTime and row.checkOut <= row.examEndTime:
             stats["total_checkOutEarly"] += 1
-
     return stats
 
 
