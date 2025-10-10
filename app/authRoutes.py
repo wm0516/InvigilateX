@@ -441,11 +441,11 @@ def user_homepage():
             
             # Check already assigned genders
             assigned_genders = [
-                ia.invigilator.gender
-                for ia in open_slot.invigilationReport.invigilator_attendances
+                ia.invigilator.userGender
+                for ia in open_slot.report.attendances
                 if ia.invigilationStatus
             ]
-            if assigned_genders and chosen.gender in assigned_genders:
+            if assigned_genders and chosen.userGender in assigned_genders:
                 flash("Cannot assign: gender already assigned for this exam", "error")
                 return redirect(url_for('user_homepage'))
 
@@ -466,6 +466,7 @@ def user_homepage():
             chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
             db.session.commit()
             flash("Open Slot Accepted Successfully", "success")
+
 
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
