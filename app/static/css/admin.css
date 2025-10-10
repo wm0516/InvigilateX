@@ -275,7 +275,7 @@ html, body {
 }
 
 
-/* Row wrapper for time and day rows */
+/* Row wrapper for time and day rows 
 .calendar-row {
     width: 2840px;
     display: flex;
@@ -283,7 +283,6 @@ html, body {
     align-items: flex-start;
 }
 
-/* First column: date or time label */
 .calendar-date-label {
     width: 160px;
     min-width: 160px;
@@ -294,7 +293,6 @@ html, body {
     border-right: 1px solid #ccc;
 }
 
-/* ✅ Timeline hours (in header row) */
 .calendar-hour {
     width: 110px;
     min-width: 110px;
@@ -306,14 +304,12 @@ html, body {
     position: static;
 }
 
-/* Day's block area where exams appear */
 .calendar-day {
     padding: 5px;
     position: relative;
     background: white;
 }
 
-/* Exam block */
 .exam-block {
     border-radius: 6px;
     padding: 6px;
@@ -322,10 +318,39 @@ html, body {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background 0.2s ease;
 }
+*/
 
 
+.calendar-container {
+    background: #f8f8f8;
+    padding: 20px;
+    border-radius: 10px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
 
+.calendar-day {
+    background: #fff;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
 
+.calendar-date {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.exam-card {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-size: 14px;
+}
 
 
 
