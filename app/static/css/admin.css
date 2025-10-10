@@ -407,7 +407,7 @@ max-height: 1000px;
 }
 
 .time-header div {
-    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #aaa;
     padding-bottom: 4px;
 }
 
