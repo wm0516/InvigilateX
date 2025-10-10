@@ -1,40 +1,11 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
 {% set show_upload = false %}
-{% set show_dashboard = true %}
+{% set show_dashboard = false %}
 {% set show_manual = true %}
 {% set show_edit = true %}
 {% block title %}Admin ManageVenue{% endblock %}
 {% block head_title %}<h2>Manage Venue</h2>{% endblock %}
-
-{% block dashboard_section %}
-<!-- Dashboard Form -->
-<form id="dashboardForm" action="{{ url_for('admin_manageVenue') }}" method="POST">
-    <div id="dashboardSection" style="width: 90%; margin:auto; padding:1%">
-        <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
-
-            <!-- Overview -->
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                <div class="dashboard-frame">
-                    <h3>Total Venues</h3>
-                    <p class="dashboard-text">{{ venue_data|length }}</p>
-                </div>
-                <div class="dashboard-frame pie">
-                    <h3>Venues by Floor</h3>    
-                    <canvas id="venueFloorPieChart"></canvas>
-                </div>
-                <div class="dashboard-frame pie">
-                    <h3>Venues by Capacity</h3>
-                    <canvas id="venueCapacityChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-{% endblock %}
-
-
 
 {% block manual_section %}
 <!-- Manual Form -->
