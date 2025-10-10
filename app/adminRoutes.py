@@ -926,8 +926,12 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
         ).all()
 
         # Filter those under 36 total hours if possible
-        eligible_invigilators = [inv for inv in eligible_invigilators
-                                 if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36]
+        # When filtering eligible invigilators
+        eligible_invigilators = [
+            inv for inv in eligible_invigilators
+            if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
+            and is_lecturer_available(inv.userId, start_dt, end_dt)
+        ]
 
         if not eligible_invigilators:
             raise ValueError("No eligible invigilators available to add")

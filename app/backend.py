@@ -300,6 +300,40 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     return True, "Course created successfully"
 
 
+# -------------------------------
+# Helper: Check lecturer availability based on their timetable
+# -------------------------------
+def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=90):
+    """
+    Check if the lecturer is available based on their timetable.
+    Returns True if available, False if any class overlaps with exam +/- buffer.
+    """
+    buffer_delta = timedelta(minutes=buffer_minutes)
+    start_check = exam_start - buffer_delta
+    end_check = exam_end + buffer_delta
+
+    timetable = Timetable.query.filter_by(user_id=lecturer_id).first()
+    if not timetable:
+        return True  # No timetable, assume available
+
+    for row in timetable.rows:
+        try:
+            # Each class time is stored as string, e.g., "09:00-11:00"
+            class_start_str, class_end_str = row.classTime.split('-')
+            # classWeekDate might contain multiple dates separated by commas; check all
+            for class_date_str in row.classWeekDate.split(','):
+                class_start_dt = datetime.strptime(f"{class_date_str.strip()} {class_start_str}", "%Y-%m-%d %H:%M")
+                class_end_dt = datetime.strptime(f"{class_date_str.strip()} {class_end_str}", "%Y-%m-%d %H:%M")
+
+                # Check overlap with exam + buffer
+                if (class_start_dt < end_check and class_end_dt > start_check):
+                    return False
+        except Exception as e:
+            print(f"Error parsing timetable row {row.rowId}: {e}")
+            continue
+
+    return True
+
 
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
@@ -321,13 +355,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     # Auto-set invigilator count
     invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
-
-    # Validate the value
     try:
         invigilatorNo = int(invigilatorNo)
     except ValueError:
         return False, "Number of Invigilators must be an integer"
-
     if invigilatorNo < 1:
         return False, "Number of Invigilators must be at least 1"
 
@@ -363,7 +394,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # Clean old records first
     delete_exam_related(exam.examId, commit=False)
 
-    # create new availability
+    # Create new venue availability
     if venue_text:
         new_availability = VenueAvailability(
             venueNumber=venue_text,
@@ -373,44 +404,48 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
         )
         db.session.add(new_availability)
 
-    # Create new report
+    # Create new invigilation report
     new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
     db.session.flush()
 
-    # Exclude lecturers
-    exclude_ids = [uid for uid in [practicalLecturer, tutorialLecturer] if uid]
+    # Exclude course lecturers
+    exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial] if uid]
+
+    # Eligible invigilators: active, level 1, not assigned, <36 hours, and available in timetable
     eligible_invigilators = User.query.filter(
-        ~User.userId.in_(exclude_ids),
         User.userLevel == 1,
-        User.userStatus == True
+        User.userStatus == True,
+        ~User.userId.in_(exclude_ids)
     ).all()
 
+    eligible_invigilators = [
+        inv for inv in eligible_invigilators
+        if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
+        and is_lecturer_available(inv.userId, start_dt, adj_end_dt)
+    ]
+
     if not eligible_invigilators:
-        return False, "No eligible invigilators available for assignment"
+        return False, "No eligible invigilators available due to timetable conflicts or workload limits"
 
     # Split by gender
     male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
     female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
 
-    # Sort by workload
+    # Sort by workload (lowest hours first)
     def workload(inv):
         return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
 
     male_invigilators.sort(key=workload)
     female_invigilators.sort(key=workload)
-
     chosen_invigilators = []
 
     if invigilatorNo == 1:
         pool = sorted(male_invigilators + female_invigilators, key=workload)
-        if not pool:
-            return False, "No available invigilators"
         chosen_invigilators = [pool[0]]
     else:
         if not male_invigilators or not female_invigilators:
             return False, "Need both male and female invigilators when assigning 2 or more"
-
         chosen_invigilators = [male_invigilators.pop(0), female_invigilators.pop(0)]
         pool = sorted(male_invigilators + female_invigilators, key=workload)
         chosen_invigilators += pool[:invigilatorNo - 2]
@@ -418,6 +453,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     if len(chosen_invigilators) < invigilatorNo:
         return False, f"Not enough invigilators available. Required: {invigilatorNo}, Available: {len(chosen_invigilators)}"
 
+    # Assign chosen invigilators
     for chosen in chosen_invigilators:
         chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
         attendance = InvigilatorAttendance(
@@ -429,6 +465,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     db.session.commit()
     return True, "Exam created/updated successfully"
+
 
 
 
