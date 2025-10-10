@@ -252,14 +252,14 @@ def download_course_template(department_code):
 # -------------------------------
 def process_course_row(row):
     return create_course_and_exam(
-        department=str(row['department code']).strip(),
-        code=str(row['course code']).strip().replace(" ", ""),
-        section=str(row['course section']).strip().replace(" ", ""),
-        name=str(row['course name']).strip(),
-        hour=int(row['credit hour']),
-        practical=str(row['practical lecturer']).strip().upper(),
-        tutorial=str(row['tutorial lecturer']).strip().upper(),
-        students=int(row['no of students']),
+        department  = str(row['department code']).strip(),
+        code        = str(row['course code']).strip().replace(" ", ""),
+        section     = str(row['course section']).strip().replace(" ", ""),
+        name        = str(row['course name']).strip(),
+        hour        = int(row['credit hour']),
+        practical   = str(row['practical lecturer']).strip().upper(),
+        tutorial    = str(row['tutorial lecturer']).strip().upper(),
+        students    = int(row['no of students']),
     )
 
 # -------------------------------
@@ -284,14 +284,14 @@ def get_courseCodeSection(courseCodeSection_select):
         return jsonify({"error": "Course not found"}), 404
 
     return jsonify({
-        "courseCodeSection": course.courseCodeSectionIntake,
-        "courseDepartment": course.courseDepartment,
-        "coursePractical": course.coursePractical,
-        "courseTutorial": course.courseTutorial,
-        "courseName": course.courseName,
-        "courseHour": course.courseHour,
-        "courseStudent": course.courseStudent,
-        "courseStatus": course.courseStatus,
+        "courseCodeSection" : course.courseCodeSectionIntake,
+        "courseDepartment"  : course.courseDepartment,
+        "coursePractical"   : course.coursePractical,
+        "courseTutorial"    : course.courseTutorial,
+        "courseName"        : course.courseName,
+        "courseHour"        : course.courseHour,
+        "courseStudent"     : course.courseStudent,
+        "courseStatus"      : course.courseStatus,
     })
 
 # -------------------------------
@@ -362,11 +362,11 @@ def admin_manageCourse():
             action = request.form.get('action')
             if action == 'update' and course_select:
                 # Update course values
-                course_select.courseDepartment = request.form.get('departmentCode', '').strip()
-                course_select.courseName = request.form.get('courseName', '').strip()
-                course_select.coursePractical = request.form.get('practicalLecturerSelect', '').strip()
-                course_select.courseTutorial = request.form.get('tutorialLecturerSelect', '').strip()
-                course_select.courseStatus = True if request.form.get('courseStatus') == '1' else False
+                course_select.courseDepartment  = request.form.get('departmentCode', '').strip()
+                course_select.courseName        = request.form.get('courseName', '').strip()
+                course_select.coursePractical   = request.form.get('practicalLecturerSelect', '').strip()
+                course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip()
+                course_select.courseStatus      = True if request.form.get('courseStatus') == '1' else False
 
                 # Safe int conversion
                 try:
@@ -430,13 +430,13 @@ def admin_manageCourse():
 
             form_data = {
                 "department": request.form.get('departmentCode', '').strip(),
-                "code": request.form.get('courseCode', '').replace(' ', ''),
-                "section": request.form.get('courseSection', '').replace(' ', ''),
-                "name": request.form.get('courseName', '').strip(),
-                "hour": safe_int(request.form.get('courseHour')),
-                "practical": request.form.get('practicalLecturerSelect', '').strip(),
-                "tutorial": request.form.get('tutorialLecturerSelect', '').strip(),
-                "students": safe_int(request.form.get('courseStudent')),
+                "code"      : request.form.get('courseCode', '').replace(' ', ''),
+                "section"   : request.form.get('courseSection', '').replace(' ', ''),
+                "name"      : request.form.get('courseName', '').strip(),
+                "hour"      : safe_int(request.form.get('courseHour')),
+                "practical" : request.form.get('practicalLecturerSelect', '').strip(),
+                "tutorial"  : request.form.get('tutorialLecturerSelect', '').strip(),
+                "students"  : safe_int(request.form.get('courseStudent')),
             }
             success, message = create_course_and_exam(**form_data)
             flash(message, "success" if success else "error")
@@ -566,9 +566,9 @@ def get_venue(venue_number):
         return jsonify({"error": "Venue not found"}), 404
 
     return jsonify({
-        "venueNumber": venue.venueNumber,
-        "venueLevel": venue.venueLevel,
-        "venueCapacity": venue.venueCapacity
+        "venueNumber"   : venue.venueNumber,
+        "venueLevel"    : venue.venueLevel,
+        "venueCapacity" : venue.venueCapacity
     })
 
 # -------------------------------
@@ -580,27 +580,18 @@ def admin_manageVenue():
     # Load all venues and stats
     venue_data = Venue.query.order_by(Venue.venueLevel.asc()).all()
 
-    # Floor counts
-    venues_by_floor = [
-        {"floor": floor, "count": count}
-        for floor, count in db.session.query(Venue.venueLevel, func.count())
-        .group_by(Venue.venueLevel)
-        .order_by(Venue.venueLevel)
-        .all()
-    ]
-
     # For edit section
-    venue_selected_number = request.form.get('editVenueNumber')
-    venue_select = Venue.query.filter_by(venueNumber=venue_selected_number).first()
+    venue_selected_number   = request.form.get('editVenueNumber')
+    venue_select            = Venue.query.filter_by(venueNumber=venue_selected_number).first()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
         # ---------------- Manual Section ----------------
         if form_type == 'manual':
-            venueNumber = request.form.get('venueNumber', '').strip().upper()
-            venueLevel = request.form.get('venueLevel', '').strip()
-            venueCapacity = request.form.get('venueCapacity', '').strip()
+            venueNumber     = request.form.get('venueNumber', '').strip().upper()
+            venueLevel      = request.form.get('venueLevel', '').strip()
+            venueCapacity   = request.form.get('venueCapacity', '').strip()
 
             # Check if venue already exists
             if Venue.query.filter_by(venueNumber=venueNumber).first():
@@ -623,9 +614,9 @@ def admin_manageVenue():
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and venue_select:
-            action = request.form.get('action')
-            venueLevel = request.form.get('venueLevel')
-            venueCapacity = request.form.get('venueCapacity')
+            action          = request.form.get('action')
+            venueLevel      = request.form.get('venueLevel')
+            venueCapacity   = request.form.get('venueCapacity')
 
             if action == 'update':
                 try:
@@ -644,8 +635,8 @@ def admin_manageVenue():
                     # Set related foreign keys to NULL
                     Exam.query.filter_by(examVenue=venue_select.venueNumber).update({"examVenue": None})
                     VenueAvailability.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
-                    
                     db.session.commit()  # Commit the updates first
+
                     db.session.delete(venue_select)  # Delete the venue
                     db.session.commit()
                     flash("Venue Deleted, related references set to NULL", "success")
@@ -654,7 +645,7 @@ def admin_manageVenue():
                     flash(f"Failed to delete venue: {str(e)}", "error")
             return redirect(url_for('admin_manageVenue'))
     # Render template
-    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venue_select=venue_select, venues_by_floor=venues_by_floor)
+    return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venue_select=venue_select)
 
 
 
@@ -1925,21 +1916,7 @@ def get_calendar_data():
             # ✅ Normal same-day exam
             calendar_data[start_time.date()].append(exam_dict(start_time, end_time))
             all_exam_dates.append(start_time.date())
-
-    # ✅ Create full date range for the entire year
-    if all_exam_dates:
-        year = min(all_exam_dates).year
-    else:
-        year = datetime.now().year
-
-    full_dates = []
-    current = datetime(year, 1, 1).date()
-    while current.year == year:
-        full_dates.append(current)
-        current += timedelta(days=1)
-
-    return calendar_data, full_dates
-
+    return calendar_data
 
 
 # -------------------------------
@@ -1948,9 +1925,10 @@ def get_calendar_data():
 @app.route('/admin/manageInvigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationTimetable():
-    calendar_data, full_dates = get_calendar_data()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates)
+    calendar_data = get_calendar_data()
+    valid_dates = sorted(calendar_data.keys())
 
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data, valid_dates=valid_dates)
 
 
 
