@@ -1,6 +1,8 @@
 {% extends "user/userBase.html" %}
 {% block title %}Timetable{% endblock %}
-{% block head_title %}<h2>{{ user_department }} - Merge Timetable</h2>{% endblock %}
+{% block head_title %}
+<h2>{{ user_department }} - Merge Timetable</h2>
+{% endblock %}
 
 {% block content %}
 <div class="menu-section">
@@ -11,12 +13,16 @@
             <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                 <option value="">All Lecturers</option>
                 {% for lecturer in lecturers %}
-                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>{{ lecturer }}</option>
+                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                        {{ lecturer }}
+                    </option>
                 {% endfor %}
             </select>
 
             {% if selected_lecturer %}
-                <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'" style="margin-left: 10px; padding: 4px 8px;">Clear_Filter</button>
+                <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'" style="margin-left: 10px; padding: 4px 8px;">
+                    Clear_Filter
+                </button>
             {% endif %}
         </form>
     </div>
@@ -32,9 +38,17 @@
                 </tr>
             </thead>
             <tbody>
+                {% set day_colors = {
+                    "MON": "#e3f2fd",  /* Light Blue */
+                    "TUE": "#fce4ec",  /* Light Pink */
+                    "WED": "#e8f5e9",  /* Light Green */
+                    "THU": "#fff3e0",  /* Light Orange */
+                    "FRI": "#ede7f6"   /* Light Purple */
+                } %}
                 {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
-                <tr>
-                    <td><strong>{{ day }}</strong></td>
+                <tr style="background-color: {{ day_colors[day] }}">
+                    <td><strong>{{ day }}</strong><br></td>
+
                     {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
                     <td>
                         {% for row in timetable_rows %}
@@ -65,7 +79,6 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
     $(document).ready(function() {
@@ -76,10 +89,3 @@
     });
 </script>
 {% endblock %}
-
-
-
-
-
-
-
