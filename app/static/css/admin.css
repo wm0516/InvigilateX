@@ -404,6 +404,7 @@ max-height: 1000px;
     margin-bottom: 5px;
     width: calc(100% - 60px);
     border-left: 1px solid #aaa; /* leftmost border */
+    border-bottom: 1px solid #aaa; /* leftmost border */
 }
 
 .time-header div {
