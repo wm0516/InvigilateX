@@ -888,11 +888,6 @@ def get_available_venues():
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
 def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
-    """
-    Adjust invigilators for an exam report.
-    - Recalculate pending hours if time changed.
-    - Add/remove invigilators if count changed.
-    """
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
@@ -1109,7 +1104,7 @@ def admin_manageExam():
                     # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                     if existing_report:
-                        adjust_invigilators(existing_report, new_count=int(invigilatorNo), start_dt=start_dt, end_dt=end_dt)
+                        adjust_invigilators(existing_report, int(invigilatorNo_text), start_dt=start_dt, end_dt=end_dt)
 
                     if not existing_report:
                         create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
