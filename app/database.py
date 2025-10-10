@@ -221,7 +221,7 @@ class InvigilatorAttendance(db.Model):
     timeAction = db.Column(db.DateTime, nullable=True)
     timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     invigilationStatus = db.Column(db.Boolean, default=False)
-    remark = db.Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","CHECK OUT",name="attendance_remark_enum"),nullable=False,default="PENDING")  # Remark 
+    remark = db.Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","CHECK OUT","COMPLETED","EXPIRED",name="attendance_remark_enum"),nullable=False,default="PENDING")  # Remark 
 
     # Relationships
     invigilator = db.relationship("User")
@@ -232,7 +232,7 @@ class InvigilatorAttendance(db.Model):
         invigilatorId VARCHAR(20) NOT NULL,
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
-        remark ENUM('PENDING', 'CHECK IN LATE', 'CHECK IN', 'CHECK OUT EARLY', 'CHECK OUT') NOT NULL DEFAULT 'PENDING',
+        remark ENUM('PENDING', 'CHECK IN LATE', 'CHECK IN', 'CHECK OUT EARLY', 'CHECK OUT', 'COMPLETED', 'EXPIRED') NOT NULL DEFAULT 'PENDING',
         timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         timeAction DATETIME NULL,
         invigilationStatus BOOLEAN DEFAULT False,

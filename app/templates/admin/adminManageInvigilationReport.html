@@ -133,11 +133,18 @@
                             <td>
                                 {% if att and att.invigilationStatus %}
                                     <div class="info-grid">
-                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn }}</strong></div>
-                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut }}</strong></div>
+                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%Y-%m-%d %H:%M") }}</strong></div>
+                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%Y-%m-%d %H:%M") }}</strong></div>
+                                        {% set duration = att.checkOut - att.checkIn %}
+                                        {% set hours = duration.total_seconds() // 3600 %}
+                                        {% set minutes = (duration.total_seconds() % 3600) // 60 %}
+                                        <div>Total Invigilation Time</div>
+                                        <div style="color: green; white-space: nowrap;">
+                                            <strong>: {{ "%d hr %d min"|format(hours, minutes) }}</strong>
+                                        </div>
                                     </div>
                                 {% else %}
-                                    <em class="status frame-waiting">In Processing</em>
+                                    <em class="status frame-waiting">IN PROCESSING</em>
                                 {% endif %}
                             </td>
 
@@ -148,8 +155,10 @@
                                         "PENDING": "frame-oren",
                                         "CHECK IN": "frame-green",
                                         "CHECK OUT": "frame-green",
+                                        "COMPLETED": "frame-green",
                                         "CHECK IN LATE": "frame-red",
-                                        "CHECK OUT EARLY": "frame-red"
+                                        "CHECK OUT EARLY": "frame-red",
+                                        "EXPIRED": "frame-red"
                                     } %}
                                     <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
                                 {% else %}

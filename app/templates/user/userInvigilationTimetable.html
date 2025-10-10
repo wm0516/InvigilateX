@@ -20,58 +20,19 @@
     </div><br>
 
     <div class="calendar-container">
-        <!-- Time Header Row -->
-        <div class="calendar-row">
-            <div class="calendar-date-label"></div>
-            {% for hour in range(0, 24) %}  
-                <div class="calendar-hour">{{ "%02d:00"|format(hour) }}</div>
-            {% endfor %}
-        </div>
-
-        {% set hour_width = 111 %}
-        {% for date in full_dates %}
-            {% set exams = calendar_data.get(date, []) %}
-            {% set sorted_exams = exams | sort(attribute='start_time') %}
-            {% set positions = [] %}
-            {% for exam in sorted_exams %}
-                {% set overlapping = positions | selectattr("start", "lt", exam.end_time) | selectattr("end", "gt", exam.start_time) | list %}
-                {% set row_index = overlapping | length %}
-                {% set _ = positions.append({'start': exam.start_time, 'end': exam.end_time, 'row': row_index}) %}
-            {% endfor %}
-            {% if positions %}
-                {% set max_row = (positions | map(attribute='row') | max) + 1 %}
-            {% else %}
-                {% set max_row = 1 %}
-            {% endif %}
-
-            <div class="calendar-row" id="date-{{ date.strftime('%Y-%m-%d') }}">
-                <div class="calendar-date-label">{{ date.strftime("%d %b %Y (%A)") }}</div>
-                <div class="calendar-day" style="width: {{ hour_width * 24 }}px; height: {{ 10 + max_row * 70 }}px;">
-                    {% for i in range(sorted_exams|length) %}
-                        {% set exam = sorted_exams[i] %}
-                        {% set pos = positions[i] %}
-                        {% set start_hour = exam.start_time.hour + (exam.start_time.minute / 60) %}
-                        {% set end_hour = exam.end_time.hour + (exam.end_time.minute / 60) %}
-                        {% set left_pos = 10 + start_hour * hour_width %}
-                        {% set width = (end_hour - start_hour) * hour_width %}
-                        {% if width <= 111 %}
-                            {% set width = width - 10 %}
-                        {% endif %}
-                        {% set top_pos = 5 + (pos.row * 70) %}
-
-                        {% if exam.is_overnight %}
-                            {% set block_color = '#dc74f7' %}
-                        {% elif exam.status %}
-                            {% set block_color = '#75bdf9' %}
-                        {% else %}
-                            {% set block_color = 'lightgrey' %}
-                        {% endif %}
-
-                        <div class="exam-block"
-                            style="background-color: {{ block_color }}; left:{{ left_pos }}px; width:{{ width }}px; top:{{ top_pos }}px;">
-                            <strong>{{ exam.course_code }}</strong><br>
-                            {{ exam.course_name }}<br>
-                            <i>{{ exam.venue }}<br>{{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }}</i>
+        {% for date, exams in calendar_data.items() %}
+            <div class="calendar-day">
+                <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }}</h3>
+                <div class="exam-grid">
+                    {% for exam in exams %}
+                        <div class="exam-card"
+                            style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
+                            <strong>{{ exam.course_code }}</strong> - {{ exam.course_name }}<br>
+                            Venue: {{ exam.venue }}<br>
+                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                            {% if exam.is_overnight %}
+                                <span style="font-size: 12px; color: #700;">(Overnight)</span>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -81,27 +42,22 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const todayId = `date-${yyyy}-${mm}-${dd}`;
-    const container = document.querySelector('.calendar-container');
-    const todayRow = document.getElementById(todayId);
+document.addEventListener("DOMContentLoaded", () => {
+  const days = [...document.querySelectorAll(".calendar-day")];
+  if (!days.length) return;
 
-    if (todayRow && container) {
-        // ✅ Smoothly scroll to today's row
-        container.scrollTo({
-            top: todayRow.offsetTop - 40,
-            behavior: 'smooth'
-        });
-    }
+  const today = new Date().setHours(0, 0, 0, 0);
+  let target = null;
+
+  for (const d of days) {
+    const date = new Date(d.querySelector(".calendar-date").textContent);
+    if (!isNaN(date) && date >= today) { target = d; break; }
+  }
+
+  if (!target) target = days[days.length - 1];
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 </script>
 {% endblock %}
-
-
