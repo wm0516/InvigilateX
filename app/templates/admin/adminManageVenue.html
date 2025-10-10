@@ -1,21 +1,11 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
 {% set show_upload = false %}
-{% set show_dashboard = true %}
+{% set show_dashboard = false %}
 {% set show_manual = true %}
 {% set show_edit = true %}
 {% block title %}Admin ManageVenue{% endblock %}
 {% block head_title %}<h2>Manage Venue</h2>{% endblock %}
-
-{% block dashboard_section %}
-<!-- Dashboard Form -->
-<form id="dashboardForm" action="{{ url_for('admin_manageVenue') }}" method="POST">
-    <div id="dashboardSection">
-    </div>
-</form>
-{% endblock %}
-
-
 
 {% block manual_section %}
 <!-- Manual Form -->
