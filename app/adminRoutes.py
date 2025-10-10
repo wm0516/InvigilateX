@@ -1155,7 +1155,7 @@ def admin_manageExam():
                 exam_select.examVenue = None
 
                 db.session.commit()
-                flash("Exam deleted successfully, and all related records were cleared.", "success")
+                flash(f"Exam {exam_select.course.courseCodeSectionIntake} deleted successfully, and all related records were cleared.", "success")
 
             return redirect(url_for('admin_manageExam'))
 
