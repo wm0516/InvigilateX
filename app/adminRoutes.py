@@ -1961,14 +1961,10 @@ def calculate_invigilation_stats():
     }
 
     for row in query:
-        # checkIn is only considered late if it exists and is after examStartTime
         if row.checkIn and row.checkIn > row.examStartTime:
             stats["total_checkInLate"] += 1
-
-        # checkOut is only considered early if it exists and is before examEndTime
         if row.checkOut and row.checkOut < row.examEndTime:
             stats["total_checkOutEarly"] += 1
-
     return stats
 
 

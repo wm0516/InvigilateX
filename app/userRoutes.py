@@ -28,11 +28,14 @@ bcrypt = Bcrypt()
 # -------------------------------
 # Calculate Invigilation Stats (Filtered by User Department or Own Data)
 # -------------------------------
+# -------------------------------
+# Calculate Invigilation Stats (Filtered by User Department or Own Data)
+# -------------------------------
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
 
-    # Base query for invigilator attendance joined with report, exam, and course
-    query = (
+    # Base query: attendance joined with report, exam, and course
+    base_query = (
         db.session.query(
             InvigilatorAttendance.attendanceId,
             InvigilatorAttendance.invigilatorId,
@@ -47,20 +50,27 @@ def calculate_invigilation_stats():
         .join(Course, Course.courseExamId == Exam.examId)
     )
 
-    # Role-based filtering for query and active report
+    # Apply role-based visibility filters
     if user.userLevel == 1:
-        # Own attendance only
-        query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
-        total_active_report = query.filter(Exam.examStatus == True).count()
-        total_report = query.count()
-    else:  # userLevel 2,3,4
-        # Same department
-        query = query.filter(Course.courseDepartment == user.userDepartment)
-        total_active_report = query.filter(Exam.examStatus == True).count()
-        total_report = query.count()
+        # Level 1 → Only own invigilation records
+        filtered_query = base_query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+    else:
+        # Level 2–4 → All records from the same department
+        filtered_query = base_query.filter(Course.courseDepartment == user.userDepartment)
 
-    query = query.filter(InvigilatorAttendance.invigilationStatus == True).all()
+    # Calculate report totals before filtering to specific statuses
+    total_report = filtered_query.count()
+    total_active_report = filtered_query.filter(Exam.examStatus == True).count()
 
+    # Retrieve only active invigilations for detailed time analysis
+    records = (
+        filtered_query
+        .filter(Exam.examStatus == True)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .all()
+    )
+
+    # Initialize statistics
     stats = {
         "total_report": total_report,
         "total_activeReport": total_active_report,
@@ -68,12 +78,13 @@ def calculate_invigilation_stats():
         "total_checkOutEarly": 0,
     }
 
-    for row in query:
-        if row.examStartTime and row.checkIn >= row.examStartTime:
+    for row in records:
+        if row.checkIn and row.checkIn > row.examStartTime:
             stats["total_checkInLate"] += 1
-        if row.examEndTime and row.checkOut <= row.examEndTime:
+        if row.checkOut and row.checkOut < row.examEndTime:
             stats["total_checkOutEarly"] += 1
     return stats
+
 
 
 
