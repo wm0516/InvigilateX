@@ -166,7 +166,6 @@
     </div>
 
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-    {% set week_days = ["MON", "TUE", "WED", "THU", "FRI"] %}
 
     <!-- Timetable Grid -->
     <div class="user-table-container">
@@ -180,9 +179,16 @@
                 </tr>
             </thead>
             <tbody>
-                {% for day in week_days %}
-                    <tr>
-                        <td><strong>{{ day }}</strong></td>
+                {% set day_colors = {
+                    "MON": "#e3f2fd", 
+                    "TUE": "#fce4ec", 
+                    "WED": "#e8f5e9",  
+                    "THU": "#fff3e0",  
+                    "FRI": "#ede7f6" 
+                } %}
+                {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
+                <tr style="background-color: {{ day_colors[day] }}">
+                    <td><strong>{{ day }}</strong><br></td>
                         {% for time in time_slots %}
                             <td>
                                 {% set ns = namespace(displayed=[]) %}
