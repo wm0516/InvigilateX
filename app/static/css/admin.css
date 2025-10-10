@@ -395,16 +395,15 @@ max-height: 1000px;
 
 
 
-
-/* Optional: Time labels on top */
 .time-header {
     display: grid;
-    grid-template-columns: repeat(17, 1fr); /* same 17 equal columns */
+    grid-template-columns: repeat(17, 1fr);
     margin-left: 60px;
     font-size: 0.8em;
     text-align: center;
     margin-bottom: 5px;
     width: calc(100% - 60px);
+    border-left: 1px solid #aaa; /* leftmost border */
 }
 
 .time-header div {

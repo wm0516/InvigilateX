@@ -9,7 +9,7 @@
         <!-- Time axis (x-axis header) -->
         <div class="time-header">
             {% for hour in range(7, 24) %}
-                <div>{{ "%02d00"|format(hour) }}</div>
+                <div><strong>{{ "%02d00"|format(hour) }}</strong></div>
             {% endfor %}
         </div>
 
