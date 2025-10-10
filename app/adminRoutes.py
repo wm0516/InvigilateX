@@ -135,8 +135,6 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         dtype=str
                     )
                     df.columns = [str(col).strip().lower() for col in df.columns]
-                    flash(f"{df.shape}", "success")
-                    flash(f"{df.head(10)}", "success")
 
                     if not set(expected_cols).issubset(df.columns):
                         flash(f"{df.columns}","error")
