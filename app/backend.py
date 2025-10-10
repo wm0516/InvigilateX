@@ -303,11 +303,7 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 # -------------------------------
 # Helper: Check lecturer availability based on their timetable
 # -------------------------------
-def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=90):
-    """
-    Check if the lecturer is available based on their timetable.
-    Returns True if available, False if any class overlaps with exam +/- buffer.
-    """
+def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
     buffer_delta = timedelta(minutes=buffer_minutes)
     start_check = exam_start - buffer_delta
     end_check = exam_end + buffer_delta
@@ -318,21 +314,33 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=90):
 
     for row in timetable.rows:
         try:
-            # Each class time is stored as string, e.g., "09:00-11:00"
-            class_start_str, class_end_str = row.classTime.split('-')
-            # classWeekDate might contain multiple dates separated by commas; check all
-            for class_date_str in row.classWeekDate.split(','):
-                class_start_dt = datetime.strptime(f"{class_date_str.strip()} {class_start_str}", "%Y-%m-%d %H:%M")
-                class_end_dt = datetime.strptime(f"{class_date_str.strip()} {class_end_str}", "%Y-%m-%d %H:%M")
+            # Example: row.classWeekDate = "04/07/2025-07/20/2025"
+            if '-' in row.classWeekDate:
+                start_str, end_str = row.classWeekDate.split('-')
+                class_start_date = datetime.strptime(start_str.strip(), "%m/%d/%Y").date()
+                class_end_date = datetime.strptime(end_str.strip(), "%m/%d/%Y").date()
+            else:
+                class_start_date = class_end_date = datetime.strptime(row.classWeekDate.strip(), "%m/%d/%Y").date()
 
-                # Check overlap with exam + buffer
-                if (class_start_dt < end_check and class_end_dt > start_check):
-                    return False
+            # If exam is after the end date, ignore this class row
+            if exam_start.date() > class_end_date:
+                continue
+
+            # Parse class time
+            class_start_time_str, class_end_time_str = row.classTime.split('-')
+            # Combine with exam date (or actual class date if needed)
+            class_start_dt = datetime.combine(class_start_date, datetime.strptime(class_start_time_str.strip(), "%H:%M").time())
+            class_end_dt = datetime.combine(class_end_date, datetime.strptime(class_end_time_str.strip(), "%H:%M").time())
+
+            # Check overlap with exam period + buffer
+            if class_start_dt < end_check and class_end_dt > start_check:
+                return False
         except Exception as e:
-            print(f"Error parsing timetable row {row.rowId}: {e}")
+            flash(f"Error parsing timetable row {row.rowId}: {e}", "success")
             continue
 
     return True
+
 
 
 # -------------------------------
