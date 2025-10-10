@@ -323,7 +323,6 @@ html, body {
 
 /* Exam block */
 .exam-block {
-    position: absolute;
     border-radius: 6px;
     padding: 6px;
     font-size: 12px;

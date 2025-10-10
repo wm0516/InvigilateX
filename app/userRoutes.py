@@ -111,7 +111,7 @@ def get_all_attendances():
     elif user.userLevel in [2, 3, 4]:
         query = query.filter(Course.courseDepartment == user.userDepartment)
 
-    return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
+    return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.desc()).all()
 
 
 # Lecturer get own
