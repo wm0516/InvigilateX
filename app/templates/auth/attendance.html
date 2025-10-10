@@ -1,0 +1,22 @@
+<head>
+    <title>Attendance Record</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <form method="POST">
+        <h1>Attendance Check In/Out</h1>
+        <br>
+        <div class="form-container">
+            <!-- Frame for Punch Card container -->
+            <div class="input-container" style="width: 60%;">
+                <label>Scan Card</label>
+                <input type="email" name="login_field" value="{{ login_text }}" required>
+            </div><br>
+        </div>
+    </form>
+</body>
+</html>

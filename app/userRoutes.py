@@ -23,6 +23,8 @@ bcrypt = Bcrypt()
 
 
 
+
+
 # -------------------------------
 # Calculate Invigilation Stats (Filtered by User Department or Own Data)
 # -------------------------------
@@ -90,11 +92,6 @@ def calculate_invigilation_stats():
     return stats
 
 
-
-
-
-
-
 def get_all_attendances():
     user = User.query.get(session.get('user_id'))
     query = (
@@ -117,7 +114,6 @@ def get_all_attendances():
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.asc()).all()
 
 
-
 # Lecturer get own
 # DEAN, HOS, HOP get under own
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
@@ -130,10 +126,6 @@ def user_invigilationReport():
     for att in attendances:
         att.group_key = (not att.report.exam.examStatus, att.report.exam.examStartTime)
     return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats)
-
-
-
-
 
 
 
@@ -209,8 +201,6 @@ def get_calendar_data():
 
     return calendar_data, full_dates
 
-
-
 # -------------------------------
 # Function for InviglationTimetable Route
 # -------------------------------
@@ -219,21 +209,6 @@ def get_calendar_data():
 def user_invigilationTimetable():
     calendar_data, full_dates = get_calendar_data()
     return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', calendar_data=calendar_data, full_dates=full_dates)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -274,14 +249,6 @@ def user_ownTimetable():
         merged_timetable.append(item)
 
     return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable, user_name=user_name)
-
-
-
-
-
-
-
-
 
 
 
@@ -346,11 +313,6 @@ def user_mergeTimetable():
         merged_timetable.append(item)
 
     return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, user_department=user_department, lecturers=lecturers, selected_lecturer=selected_lecturer)
-
-
-
-
-
 
 
 @app.route('/user/profile', methods=['GET', 'POST'])

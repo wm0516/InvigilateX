@@ -218,6 +218,11 @@ def logout():
     return redirect(url_for('login')) 
 
 
+@app.route('/attendance', methods=['GET', 'POST'])
+def attendance_record():
+    return render_template('auth/attendance.html')
+
+
 # -------------------------------
 # Function for Auth SaveLoginCredentials 
 # -------------------------------
