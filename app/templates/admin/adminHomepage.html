@@ -16,7 +16,19 @@
             </ul>
         </div>
     </a>
-
+    <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;">
+        <div class="menu-section">
+            <h2>Manage Lecturer</h2>
+            <ul class="submenu">
+                <strong>Purpose:</strong>
+                <ul>    
+                    <li>Manually add new lecturer data</li>
+                    <li>Upload lecturer data in bulk</li>
+                    <li>Edit existing lecturer information</li>
+                </ul>
+            </ul>
+        </div>
+    </a>
     <a href="{{ url_for('admin_manageDepartment')}}" style="text-decoration: none;">
         <div class="menu-section">
             <h2>Manage Department</h2>
@@ -25,19 +37,6 @@
                 <ul>    
                     <li>Manually add new departments</li>
                     <li>Edit existing department details</li>
-                </ul>
-            </ul>
-        </div>
-    </a>
-
-    <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;">
-        <div class="menu-section">
-            <h2>Manage Venue</h2>
-            <ul class="submenu">
-                <strong>Purpose:</strong>
-                <ul>    
-                    <li>Manually add new venues</li>
-                    <li>Edit existing venue information</li>
                 </ul>
             </ul>
         </div>
@@ -57,21 +56,18 @@
             </ul>
         </div>
     </a>
-
-    <a href="{{ url_for('admin_manageStaff')}}" style="text-decoration: none;">
+    <a href="{{ url_for('admin_manageVenue')}}" style="text-decoration: none;">
         <div class="menu-section">
-            <h2>Manage Lecturer</h2>
+            <h2>Manage Venue</h2>
             <ul class="submenu">
                 <strong>Purpose:</strong>
                 <ul>    
-                    <li>Manually add new lecturer data</li>
-                    <li>Upload lecturer data in bulk</li>
-                    <li>Edit existing lecturer information</li>
+                    <li>Manually add new venues</li>
+                    <li>Edit existing venue information</li>
                 </ul>
             </ul>
         </div>
     </a>
-
     <a href="{{ url_for('admin_manageTimetable')}}" style="text-decoration: none;">
         <div class="menu-section">
             <h2>Manage Timetable</h2>
@@ -99,7 +95,6 @@
             </ul>
         </div>
     </a>
-
     <a href="{{ url_for('admin_manageInvigilationReport')}}" style="text-decoration: none;">
         <div class="menu-section">
             <h2>Manage Invigilation Report</h2>
@@ -112,7 +107,6 @@
             </ul>
         </div>
     </a>
-
     <a href="{{ url_for('admin_profile')}}" style="text-decoration: none;">
         <div class="menu-section">
             <h2>Profile</h2>
