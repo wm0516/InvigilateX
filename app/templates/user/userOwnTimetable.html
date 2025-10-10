@@ -1,55 +1,45 @@
 {% extends "user/userBase.html" %}
 {% block title %}Timetable{% endblock %}
-{% block head_title %}<h2>Staff Timetable - {{ user_name }}</h2>{% endblock %}
+{% block head_title %}
+<h2>Staff Timetable - {{ user_name }}</h2>
+{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="user-table-container" style="max-height: None; margin: 0px;">    
-        <table class="user-data-table" border="1">
-            <thead>
-                <tr>
-                    <th>Day / Time</th>
-                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-                        <th>{{ time }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
-                <tr>
-                    <td><strong>{{ day }}</strong></td>
-                    {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-                    <td>
+    <div class="user-table-container" style="max-height: none; margin: 0;">
+        <!-- Time axis (x-axis header) -->
+        <div class="time-header">
+            {% for time in ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
+                <div>{{ time }}</div>
+            {% endfor %}
+        </div>
+
+        <!-- Y-axis days -->
+        <div class="timetable">
+            {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
+                <div class="timetable-row">
+                    <div class="day-label">{{ day }}</div>
+                    <div class="grid-row">
                         {% for row in timetable_rows %}
-                            {% if row.classDay == day %}
-                                {% set start = row.classTime.split('-')[0].strip() %}
-                                {% set end = row.classTime.split('-')[1].strip() %}
-                                {% if time >= start and time < end %}
-                                    <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa;">
-                                        <strong>Course</strong>:<br><i>{{ row.courseName }}</i><br>
-                                        <strong>Class Type</strong>: <i>{{ row.classType }}</i><br>
-                                        <strong>Room</strong>: <i>{{ row.classRoom }}</i><br>
-                                        <strong>Sections</strong>: <br>
-                                        {% for intake, code, section in row.combined %}
-                                            <i>{{ intake }} | {{ code }} | {{ section }};</i><br>
-                                        {% endfor %}
-                                    </div>
-                                {% endif %}
-                            {% endif %}
+                        {% if row.classDay == day %}
+                        {% set start = row.classTime.split('-')[0].strip() %}
+                        {% set end = row.classTime.split('-')[1].strip() %}
+                        {% set start_hour = start.split(':')[0]|int %}
+                        {% set end_hour = end.split(':')[0]|int %}
+                        {% set span = end_hour - start_hour %}
+                        {% set col_start = start_hour - 7 + 1 %} {# 07:00 is column 1 #}
+                            <div class="class-block" style="grid-column: {{ col_start }} / span {{ span }};">
+                                <strong>{{ row.courseName }}</strong><br />
+                                <small>{{ row.classType }} | {{ row.classRoom }}</small><br />
+                                {% for intake, code, section in row.combined %}
+                                <i>{{ intake }} | {{ code }} | {{ section }}</i><br />
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                         {% endfor %}
-                    </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
-
-
-
-
-
-
-
-

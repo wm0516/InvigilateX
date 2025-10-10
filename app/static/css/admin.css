@@ -262,9 +262,11 @@ html, body {
 
 
 
+/*
+overflow: auto;
+max-height: 1000px;
+*/
 .calendar-container {
-    overflow: auto;
-    max-height: 1000px;
     background: #f8f8f8;
     padding: 20px;
     border-radius: 10px;
@@ -388,6 +390,59 @@ html, body {
     white-space: nowrap;
 }
 
+
+
+
+
+
+
+/* Optional: Time labels on top */
+.time-header {
+    display: grid;
+    grid-template-columns: repeat(17, 80px);
+    margin-left: 60px;
+    font-size: 0.8em;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.time-header div {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 4px;
+}
+
+.timetable {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timetable-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.day-label {
+  width: 60px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.grid-row {
+  display: grid;
+  grid-template-columns: repeat(17, 80px); /* 07:00–23:00 (17 hours) */
+  gap: 2px;
+  border-left: 1px solid #ccc;
+}
+
+.class-block {
+  background: #f8f9fa;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.85em;
+}
 
 
 
