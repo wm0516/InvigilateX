@@ -20,22 +20,25 @@
     </div><br>
 
     <div class="calendar-container">
-        {% if calendar_data %}
-            {% for date, exams in calendar_data.items() %}
-                <div class="calendar-day">
-                    <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }}</h3>
+        {% for date, exams in calendar_data.items() %}
+            <div class="calendar-day">
+                <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }}</h3>
+
+                <div class="exam-grid">
                     {% for exam in exams %}
-                        <div class="exam-card" style="background-color: {% if exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
+                        <div class="exam-card"
+                            style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
                             <strong>{{ exam.course_code }}</strong> - {{ exam.course_name }}<br>
                             Venue: {{ exam.venue }}<br>
                             Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                            {% if exam.is_overnight %}
+                                <span style="font-size: 12px; color: #700;">(Overnight)</span>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>No exam data available.</p>
-        {% endif %}
+            </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}

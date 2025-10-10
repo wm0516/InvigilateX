@@ -325,8 +325,6 @@ html, body {
     background: #f8f8f8;
     padding: 20px;
     border-radius: 10px;
-    max-height: 80vh;
-    overflow-y: auto;
 }
 
 .calendar-day {
@@ -344,12 +342,19 @@ html, body {
     color: #333;
 }
 
+/* ✅ Grid inside each day — 4 columns */
+.exam-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
 .exam-card {
     padding: 10px;
     border-radius: 6px;
-    margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     font-size: 14px;
+    background-color: #e8f1ff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 
