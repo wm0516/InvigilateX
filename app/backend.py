@@ -469,8 +469,6 @@ def delete_exam_related(exam_id, commit=True):
 
 
 
-
-
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
