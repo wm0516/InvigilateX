@@ -1864,15 +1864,21 @@ def admin_manageTimetable():
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
+    seen_exams = set()  # ✅ To skip duplicate exam sessions
 
     for att in attendances:
         exam = att.report.exam
+
+        # Skip if this exam already processed
+        if exam.examId in seen_exams:
+            continue
+        seen_exams.add(exam.examId)
+
         start_dt = exam.examStartTime
         end_dt = exam.examEndTime
         start_date = start_dt.date()
         end_date = end_dt.date()
 
-        # Helper: create a dictionary of exam details
         def exam_dict(start, end):
             return {
                 "exam_id": exam.examId,
@@ -1885,24 +1891,21 @@ def get_calendar_data():
                 "is_overnight": start_date != end_date
             }
 
-        # Case 1: Overnight exam — appears on both start and end dates
         if start_date != end_date:
             # Part 1: From start time to 23:59 on start day
             calendar_data[start_date].append(
                 exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59))
             )
-
-            # Part 2: From 00:00 on next day to real end time
+            # Part 2: From 00:00 on next day to end time
             calendar_data[end_date].append(
                 exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt)
             )
         else:
-            # Case 2: Normal same-day exam
+            # Normal same-day exam
             calendar_data[start_date].append(exam_dict(start_dt, end_dt))
-
-    # ✅ Sort by date
     calendar_data = dict(sorted(calendar_data.items()))
     return calendar_data
+
 
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
