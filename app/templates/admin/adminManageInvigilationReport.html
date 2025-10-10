@@ -117,9 +117,11 @@
                             <td>
                                 {% if att and att.invigilationStatus %}
                                     <div class="info-grid">
-                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%Y-%m-%d %H:%M") }}</strong></div>
-                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%Y-%m-%d %H:%M") }}</strong></div>
-                                        <div style="color: green;">Total Invigilation Time</div><div><strong>{{ att.checkIn.strftime("%Y-%m-%d %H:%M") }}</strong></div>
+                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%Y-%m-%d %H:%M") if att.checkIn else "None" }}</strong></div>
+                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%Y-%m-%d %H:%M") if att.checkOut else "None" }}</strong></div>
+                                        {% if att.checkIn and att.checkOut %}
+                                            <div style="color: green;">Total Invigilation Time</div><div><strong>: {{ ((att.checkOut - att.checkIn).total_seconds() / 3600) | round(2) }} hours</strong></div>
+                                        {% endif %}
                                     </div>
                                 {% else %}
                                     <em class="status frame-waiting">IN PROCESSING</em>
