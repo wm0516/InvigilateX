@@ -349,23 +349,24 @@ def open_record():
     # Remove duplicates by exam
     unique_slots = {}
     for slot in slots:
-        exam_id = slot.invigilationReport.examId
+        exam_id = slot.report.examId  
         if exam_id not in unique_slots:
             # Check gender restriction
             assigned_genders = [
-                ia.invigilator.gender
-                for ia in slot.invigilationReport.invigilator_attendances
+                ia.invigilator.userGender 
+                for ia in slot.report.attendances 
                 if ia.invigilationStatus
             ]
             if assigned_genders:
                 # Only allow opposite gender
-                if slot.invigilator.gender not in assigned_genders:
+                if slot.invigilator.userGender not in assigned_genders:
                     unique_slots[exam_id] = slot
             else:
                 # No assigned yet, take first
                 unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 
