@@ -887,23 +887,52 @@ def get_available_venues():
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_invigilators(report, new_count, start_dt, end_dt):
-    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
+    """
+    Adjust invigilators for an exam report.
+    - Recalculate pending hours if time changed.
+    - Add/remove invigilators if count changed.
+    """
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
-    if new_count == current_count:
-        return  # nothing to change
+    # Calculate new pending hours if start/end are provided
+    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0 if start_dt and end_dt else None
 
+    # Recalculate hours if only time changed (or time + same count)
+    if pending_hours is not None and (new_count is None or new_count == current_count):
+        for att in current_attendances:
+            inv = att.invigilator
+            if inv:
+                # Old pending hours based on previous exam period
+                old_hours = 0
+                if att.report.exam.examStartTime and att.report.exam.examEndTime:
+                    old_hours = (att.report.exam.examEndTime - att.report.exam.examStartTime).total_seconds() / 3600.0
+                inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours + pending_hours)
+        db.session.commit()
+        return
+
+    if new_count is None:
+        new_count = current_count
+
+    if new_count == current_count:
+        return  # nothing else to change
+
+    # --- Add invigilators ---
     if new_count > current_count:
         extra_needed = new_count - current_count
         already_assigned_ids = [att.invigilatorId for att in current_attendances]
 
+        # Eligible invigilators: active, level 1, not assigned, and <36 total hours
         eligible_invigilators = User.query.filter(
             User.userLevel == 1,
             User.userStatus == True,
             ~User.userId.in_(already_assigned_ids)
         ).all()
+
+        # Filter those under 36 total hours if possible
+        eligible_invigilators = [inv for inv in eligible_invigilators
+                                 if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36]
 
         if not eligible_invigilators:
             raise ValueError("No eligible invigilators available to add")
@@ -912,7 +941,7 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
         male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
         female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
 
-        # Sort by workload
+        # Sort by workload (lowest total hours first)
         def workload(inv):
             return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
 
@@ -937,15 +966,15 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
 
         # Assign chosen invigilators
         for inv in chosen_invigilators:
-            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
+            inv.userPendingCumulativeHours += pending_hours
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
                 timeCreate=datetime.now(timezone.utc)
             ))
 
+    # --- Remove invigilators ---
     else:
-        # Need to REMOVE invigilators
         remove_count = current_count - new_count
         to_remove = random.sample(current_attendances, remove_count)
         for att in to_remove:
@@ -953,10 +982,11 @@ def adjust_invigilators(report, new_count, start_dt, end_dt):
             if inv:
                 inv.userPendingCumulativeHours = max(
                     0.0,
-                    (inv.userPendingCumulativeHours or 0.0) - pending_hours
+                    (inv.userPendingCumulativeHours or 0.0) - (pending_hours or 0.0)
                 )
             db.session.delete(att)
     db.session.commit()
+
 
 
 # -------------------------------
@@ -1078,6 +1108,8 @@ def admin_manageExam():
 
                     # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                    if existing_report:
+                        adjust_invigilators(existing_report, new_count=int(invigilatorNo), start_dt=start_dt, end_dt=end_dt)
 
                     if not existing_report:
                         create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
