@@ -315,6 +315,7 @@ def waiting_record(user_id):
         .all()
     )
 
+
 def confirm_record(user_id):
     return (
         InvigilatorAttendance.query
@@ -326,12 +327,11 @@ def confirm_record(user_id):
         .all()
     )
 
-
 # cutoff_time = datetime.now() - timedelta(days=2)
 def open_record():
     cutoff_time = datetime.now() - timedelta(hours=5)
-    
-    # Query all unassigned slots
+
+    # Query all unassigned, older than 2 days, and still open slots
     slots = (
         InvigilatorAttendance.query
         .filter(
@@ -346,26 +346,15 @@ def open_record():
         .all()
     )
 
-    # Remove duplicates by exam
+    # Remove duplicates by examId (keep first)
     unique_slots = {}
     for slot in slots:
-        exam_id = slot.report.examId  
+        exam_id = slot.report.examId
         if exam_id not in unique_slots:
-            # Check gender restriction
-            assigned_genders = [
-                ia.invigilator.userGender 
-                for ia in slot.report.attendances 
-                if ia.invigilationStatus
-            ]
-            if assigned_genders:
-                # Only allow opposite gender
-                if slot.invigilator.userGender not in assigned_genders:
-                    unique_slots[exam_id] = slot
-            else:
-                # No assigned yet, take first
-                unique_slots[exam_id] = slot
+            unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 
@@ -378,13 +367,20 @@ def open_record():
 @login_required
 def user_homepage():
     user_id = session.get('user_id')
+    chosen = User.query.filter_by(userId=user_id).first()
+
     waiting = waiting_record(user_id)
     confirm = confirm_record(user_id)
+
+    # Get open slots
     open_slots = open_record()
+
+    # Apply gender filter here
+    if chosen:
+        open_slots = [slot for slot in open_slots if slot.invigilator.userGender == chosen.userGender]
 
     if request.method == 'POST':
         action = request.form.get('action')
-        chosen = User.query.filter_by(userId=user_id).first()
 
         # Handle waiting approval
         waiting_id = request.form.get('w_id')
@@ -403,8 +399,7 @@ def user_homepage():
 
             pending_hours = 0
             if exam and exam.examStartTime and exam.examEndTime:
-                start_dt = exam.examStartTime
-                end_dt = exam.examEndTime
+                start_dt, end_dt = exam.examStartTime, exam.examEndTime
                 if end_dt < start_dt:
                     end_dt += timedelta(days=1)
                 pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
@@ -418,19 +413,16 @@ def user_homepage():
 
             elif action == 'reject':
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
-                if action == 'reject':
-                    waiting_slot.invigilationStatus = False
-                    flash("Exam Invigilation Rejected", "error")
-                else:
-                    db.session.delete(waiting_slot)
-                    flash("Exam Invigilation Deleted", "warning")
+                waiting_slot.invigilationStatus = False
+                flash("Exam Invigilation Rejected", "error")
 
             waiting_slot.timeAction = datetime.now()
             db.session.commit()
 
-        # Handle open public slot selection
+        # Handle open slot accept
         open_id = request.form.get('a_id')
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
+
         if open_slot and action == 'open_accept' and chosen:
             exam = (
                 Exam.query
@@ -438,35 +430,29 @@ def user_homepage():
                 .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
                 .first()
             )
-            
-            # Check already assigned genders
-            assigned_genders = [
-                ia.invigilator.userGender
-                for ia in open_slot.report.attendances
-                if ia.invigilationStatus
-            ]
-            if assigned_genders and chosen.userGender in assigned_genders:
-                flash("Cannot assign: gender already assigned for this exam", "error")
+
+            # Gender check here (must match user)
+            if open_slot.invigilator.userGender != chosen.userGender:
+                flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Otherwise, assign
+            # Assign slot
             open_slot.invigilatorId = user_id
             open_slot.invigilationStatus = True
             open_slot.timeAction = datetime.now()
-            
+
             # Update hours
             hours = 0
             if exam and exam.examStartTime and exam.examEndTime:
-                start_dt = exam.examStartTime
-                end_dt = exam.examEndTime
+                start_dt, end_dt = exam.examStartTime, exam.examEndTime
                 if end_dt < start_dt:
                     end_dt += timedelta(days=1)
                 hours = (end_dt - start_dt).total_seconds() / 3600.0
-            
+
             chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
             db.session.commit()
             flash("Open Slot Accepted Successfully", "success")
 
-
         return redirect(url_for('user_homepage'))
+
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
