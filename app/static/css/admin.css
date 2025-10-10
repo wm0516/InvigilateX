@@ -421,6 +421,7 @@ max-height: 1000px;
 .timetable-row {
     display: flex;
     align-items: flex-start;
+    border-bottom: 1px solid darkgreen;
 }
 
 .day-label {
@@ -444,8 +445,7 @@ max-height: 1000px;
     border: 1px solid #ccc;
     padding: 5px;
     border-radius: 6px;
-    text-align: center;
-    font-size: 0.85em;
+    font-size: 0.75em;
 }
 
 

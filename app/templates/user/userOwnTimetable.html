@@ -28,10 +28,10 @@
                         {% set span = end_hour - start_hour %}
                         {% set col_start = start_hour - 7 + 1 %} {# 07:00 is column 1 #}
                             <div class="class-block" style="grid-column: {{ col_start }} / span {{ span }};">
-                                <strong>{{ row.courseName }}</strong><br />
-                                <small>{{ row.classType }} | {{ row.classRoom }}</small><br />
+                                <strong>{{ row.courseName }}</strong><br>
+                                <i>{{ row.classType }} | {{ row.classRoom }}</i><br>
                                 {% for intake, code, section in row.combined %}
-                                <i>{{ intake }} | {{ code }} | {{ section }}</i><br />
+                                <small>{{ intake }} | {{ code }} | {{ section }}</small><br>
                                 {% endfor %}
                             </div>
                         {% endif %}
