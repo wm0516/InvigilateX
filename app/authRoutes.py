@@ -337,7 +337,7 @@ def open_record():
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.timeCreate < cutoff_time,
+            InvigilatorAttendance.timeCreate < cutoff_time
         )
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
