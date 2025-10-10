@@ -51,21 +51,20 @@
 
 {% block extra_scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    const todayId = `date-${yyyy}-${mm}-${dd}`;
-    const container = document.querySelector('.calendar-container');
-    const todayRow = document.getElementById(todayId);
+document.addEventListener("DOMContentLoaded", () => {
+  const days = [...document.querySelectorAll(".calendar-day")];
+  if (!days.length) return;
 
-    if (todayRow && container) {
-        container.scrollTo({
-            top: todayRow.offsetTop - 40,
-            behavior: 'smooth'
-        });
-    }
+  const today = new Date().setHours(0, 0, 0, 0);
+  let target = null;
+
+  for (const d of days) {
+    const date = new Date(d.querySelector(".calendar-date").textContent);
+    if (!isNaN(date) && date >= today) { target = d; break; }
+  }
+
+  if (!target) target = days[days.length - 1];
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 </script>
 {% endblock %}
