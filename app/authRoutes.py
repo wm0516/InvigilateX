@@ -330,7 +330,7 @@ def confirm_record(user_id):
 # cutoff_time = datetime.now() - timedelta(days=2)
 def open_record():
     cutoff_time = datetime.now() - timedelta(hours=5)
-    return (
+    records = (
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
@@ -343,6 +343,15 @@ def open_record():
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
         .all()
     )
+    
+    unique_exams = {}
+    for r in records:
+        exam_id = r.invigilationReport.examId
+        if exam_id not in unique_exams:
+            unique_exams[exam_id] = r
+    
+    return list(unique_exams.values())
+
 
 
 # -------------------------------
@@ -407,30 +416,51 @@ def user_homepage():
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
 
         if open_slot and action == 'open_accept' and chosen:
-            open_slot.invigilatorId = user_id
-            open_slot.invigilationStatus = True
-            open_slot.timeAction = datetime.now()
-
-            # Get exam to calculate hours
-            exam = (
-                Exam.query
-                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
-                .first()
+            # Get assigned invigilators for this exam
+            assigned_invigilators = (
+                InvigilatorAttendance.query
+                .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+                .filter(
+                    InvigilationReport.examId == open_slot.reportId,  # careful: reportId vs examId
+                    InvigilatorAttendance.invigilationStatus == True
+                )
+                .all()
             )
 
-            hours = 0
-            if exam and exam.examStartTime and exam.examEndTime:
-                start_dt = exam.examStartTime
-                end_dt = exam.examEndTime
-                if end_dt < start_dt:
-                    end_dt += timedelta(days=1)
-                hours = (end_dt - start_dt).total_seconds() / 3600.0
+            assigned_genders = set()
+            for inv in assigned_invigilators:
+                inv_user = User.query.filter_by(userId=inv.invigilatorId).first()
+                if inv_user and inv_user.gender:
+                    assigned_genders.add(inv_user.gender.lower())
 
-            chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
-            db.session.commit()
-            flash("Open Slot Accepted Successfully", "success")
+            chosen_gender = (chosen.gender or "").lower()
 
+            # Check if chosen invigilator's gender is allowed
+            if assigned_genders and chosen_gender in assigned_genders:
+                flash("You cannot accept this slot because an invigilator with the same gender is already assigned.", "error")
+            else:
+                open_slot.invigilatorId = user_id
+                open_slot.invigilationStatus = True
+                open_slot.timeAction = datetime.now()
+
+                # Calculate hours as before
+                exam = (
+                    Exam.query
+                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                    .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
+                    .first()
+                )
+
+                hours = 0
+                if exam and exam.examStartTime and exam.examEndTime:
+                    start_dt = exam.examStartTime
+                    end_dt = exam.examEndTime
+                    if end_dt < start_dt:
+                        end_dt += timedelta(days=1)
+                    hours = (end_dt - start_dt).total_seconds() / 3600.0
+
+                chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
+                db.session.commit()
+                flash("Open Slot Accepted Successfully", "success")
         return redirect(url_for('user_homepage'))
-
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
