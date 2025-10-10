@@ -395,51 +395,44 @@ max-height: 1000px;
 
 
 
-/* ----- TIME HEADER ----- */
+
+/* Optional: Time labels on top */
 .time-header {
     display: grid;
-    grid-template-columns: repeat(17, 1fr); /* 07:00–23:00 (17 equal columns) */
+    grid-template-columns: repeat(17, 1fr); /* same 17 equal columns */
+    margin-left: 60px;
+    font-size: 0.8em;
     text-align: center;
-    font-weight: bold;
-    border-bottom: 2px solid #ccc;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
+    width: calc(100% - 60px);
 }
 
-.time-header .time-cell {
-    border-right: 1px solid #eee;
-    padding: 6px 0;
+.time-header div {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 4px;
 }
 
-.time-header .time-cell:last-child {
-    border-right: none;
-}
-
-/* ----- MAIN TIMETABLE WRAPPER ----- */
 .timetable {
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
 
-/* ----- EACH ROW (DAY) ----- */
 .timetable-row {
     display: flex;
     align-items: flex-start;
     border-bottom: 1px solid darkgreen;
 }
 
-/* ----- DAY LABEL ----- */
 .day-label {
     width: 60px;
     font-weight: bold;
     text-align: center;
-    padding-top: 6px;
 }
 
-/* ----- GRID ROW (TIME CELLS) ----- */
 .grid-row {
     display: grid;
-    grid-template-columns: repeat(17, 1fr); /* same 17 columns as header */
+    grid-template-columns: repeat(17, 1fr); /* 17 equal auto columns */
     gap: 3px;
     border-left: 1px solid #ccc;
     padding: 5px;
@@ -447,22 +440,16 @@ max-height: 1000px;
     width: 100%;
 }
 
-/* ----- CLASS BLOCK ----- */
 .class-block {
-    background-color: #4a90e2;
-    color: white;
+    background: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 5px;
     border-radius: 6px;
-    text-align: center;
-    padding: 6px;
-    font-size: 0.85rem;
-    border: 1px solid #357ab8;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    font-size: 0.8em;
 }
 
-/* Optional hover for clarity */
-.class-block:hover {
-    background-color: #357ab8;
-}
+
+
 
 
 
