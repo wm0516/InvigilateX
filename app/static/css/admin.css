@@ -262,65 +262,6 @@ html, body {
 
 
 
-
-
-.calendar-container {
-    overflow-x: auto;
-    overflow-y: auto;
-    scroll-behavior: smooth; 
-    max-height: 600px;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    background: #f9f9f9;
-}
-
-
-/* Row wrapper for time and day rows 
-.calendar-row {
-    width: 2840px;
-    display: flex;
-    border-bottom: 2px solid #b7bbed;
-    align-items: flex-start;
-}
-
-.calendar-date-label {
-    width: 160px;
-    min-width: 160px;
-    padding: 10px;
-    background: #f0f0f0;
-    font-weight: bold;
-    font-size: 14px;
-    border-right: 1px solid #ccc;
-}
-
-.calendar-hour {
-    width: 110px;
-    min-width: 110px;
-    text-align: center;
-    font-size: 16px;
-    padding: 5px 0;
-    border-right: 1px solid #ccc;
-    background: #fafafa;
-    position: static;
-}
-
-.calendar-day {
-    padding: 5px;
-    position: relative;
-    background: white;
-}
-
-.exam-block {
-    border-radius: 6px;
-    padding: 6px;
-    font-size: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    transition: background 0.2s ease;
-}
-*/
-
-
 .calendar-container {
     background: #f8f8f8;
     padding: 20px;
@@ -545,6 +486,7 @@ input[readonly] {
     gap: 20px; 
     margin-bottom: 20px;
     margin: auto;
+    padding: 1%;
 }
 
 /* Pie chart takes first column and spans 2 rows */
