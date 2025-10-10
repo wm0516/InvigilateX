@@ -326,8 +326,10 @@ def confirm_record(user_id):
         .all()
     )
 
+
+# cutoff_time = datetime.now() - timedelta(days=2)
 def open_record():
-    cutoff_time = datetime.now() - timedelta(days=2)
+    cutoff_time = datetime.now() - timedelta(hours=5)
     return (
         InvigilatorAttendance.query
         .filter(
@@ -341,6 +343,7 @@ def open_record():
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
         .all()
     )
+
 
 # -------------------------------
 # Main User Homepage
