@@ -28,33 +28,33 @@
         <nav class="sidebar" id="sidebar">
             <div class="tab-nav">
                 <a href="{{ url_for('user_homepage') }}" class="tab-link {% if active_tab == 'user_hometab' %}active{% endif %}">
-                    <i class="fas fa-home"></i>
+                    <i class="fas fa-house"></i>
                     <span>Home</span>
                 </a>
                 <a href="{{ url_for('user_ownTimetable') }}" class="tab-link {% if active_tab == 'user_ownTimetabletab' %}active{% endif %}">
-                    <i class="fas fa-table"></i>
+                    <i class="fas fa-calendar-alt"></i>
                     <span>Timetable</span>
                 </a>
                 {% if user_level in [2, 3, 4] %}
                 <a href="{{ url_for('user_mergeTimetable') }}" class="tab-link {% if active_tab == 'user_mergeTimetabletab' %}active{% endif %}">
-                    <i class="fas fa-table"></i>
+                    <i class="fas fa-calendar-check"></i>
                     <span>Merge Timetable</span>
                 </a>
                 {% endif %}
                 <a href="{{ url_for('user_invigilationTimetable') }}" class="tab-link {% if active_tab == 'user_invigilationTimetabletab' %}active{% endif %}">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-user-clock"></i>
                     <span>Invigilation Timetable</span>
                 </a>
                 <a href="{{ url_for('user_invigilationReport') }}" class="tab-link {% if active_tab == 'user_invigilationReporttab' %}active{% endif %}">
-                    <i class="fas fa-users"></i>
+                    <i class="fas fa-file-alt"></i>
                     <span>Invigilation Report</span>
                 </a>
                 <a href="{{ url_for('user_profile') }}" class="tab-link {% if active_tab == 'user_profiletab' %}active{% endif %}">
-                    <i class="fas fa-user"></i>
+                    <i class="fas fa-id-badge"></i>
                     <span>Profile</span>
                 </a>
                 <a href="{{ url_for('logout') }}" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
+                    <i class="fas fa-right-from-bracket"></i>
                     <span>Logout</span>
                 </a>
             </div>
