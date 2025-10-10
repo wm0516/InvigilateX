@@ -996,7 +996,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-    exam_data = exam_data_query.order_by(Exam.examStatus.desc(),Exam.examStartTime.asc(),Exam.examVenue.asc(),Exam.examId.asc()).all()
+    exam_data = exam_data_query.order_by(Exam.examStatus.desc(),Exam.examStartTime.desc(),Exam.examVenue.asc(),Exam.examId.asc()).all()
     total_exam_activated = Exam.query.filter_by(examStatus=1).count()
 
     # For Edit section

@@ -263,6 +263,8 @@ html, body {
 
 
 .calendar-container {
+    overflow: auto;
+    max-height: 1000px;
     background: #f8f8f8;
     padding: 20px;
     border-radius: 10px;
@@ -273,7 +275,7 @@ html, body {
     margin-bottom: 20px;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
 }
 
 .calendar-date {
