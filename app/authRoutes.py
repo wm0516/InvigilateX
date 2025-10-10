@@ -218,9 +218,6 @@ def logout():
     return redirect(url_for('login')) 
 
 
-@app.route('/attendance', methods=['GET', 'POST'])
-def attendance_record():
-    return render_template('auth/attendance.html')
 
 
 # -------------------------------
@@ -362,6 +359,11 @@ def open_record():
 
 
 
+@app.route('/attendance', methods=['GET', 'POST'])
+def attendance_record():
+    user_id = session.get('user_id')
+    confirm = confirm_record(user_id)
+    return render_template('auth/attendance.html', confirm=confirm)
 
 
 

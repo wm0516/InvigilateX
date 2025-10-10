@@ -17,6 +17,41 @@
                 <input type="email" name="login_field" value="{{ login_text }}" required>
             </div><br>
         </div>
+
+        <div class="user-table-container">
+            <table class="user-data-table">
+                <thead>
+                    <tr>
+                        <th>Course Name</th>
+                        <th>Course Code</th>
+                        <th>Exam Date</th>
+                        <th>Exam Day</th>
+                        <th>Exam Time</th>
+                        <th>Exam Period</th>
+                        <th>Exam Venue</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in confirm %}
+                    <tr>
+                        <td>{{ c.report.exam.course.courseName }}</td>
+                        <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
+                        <td>{{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                        <td>{{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</td>
+                        <td>{{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</td>
+                        <td>{{ (c.report.exam.examEndTime - c.report.exam.examStartTime).seconds // 3600 }}h {{ ((c.report.exam.examEndTime - c.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ c.report.exam.examVenue }}</td>
+                        <td>{{ c.checkIn }}</td>
+                        <td>{{ c.checkOut }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        
     </form>
 </body>
 </html>
