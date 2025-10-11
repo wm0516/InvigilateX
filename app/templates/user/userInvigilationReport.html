@@ -87,19 +87,19 @@
                             <!-- Attendance Status -->
                             <td>
                                 {% set remark_classes = {
-                                    "PENDING": "frame-oren",
-                                    "CHECK IN": "frame-green",
-                                    "CHECK OUT": "frame-green",
-                                    "CHECK IN LATE": "frame-red",
-                                    "CHECK OUT EARLY": "frame-red"
+                                    "PENDING": "frame-pending",
+                                    "CHECK IN": "frame-complete",
+                                    "CHECK OUT": "frame-complete",
+                                    "CHECK IN LATE": "frame-expired",
+                                    "CHECK OUT EARLY": "frame-expired"
                                 } %}
                                 <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
                             </td>
                             <td>
                                 {% if att.invigilationStatus == 1 %}
-                                    <span class="status frame-green">[ACCEPTED]</span>
+                                    <span class="status frame-complete">[ACCEPTED]</span>
                                 {% else %}
-                                    <span class="status frame-oren">[PENDING]</span>
+                                    <span class="status frame-expired">[PENDING]</span>
                                 {% endif %}
                             </td>
                         </tr>

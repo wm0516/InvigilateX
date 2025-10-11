@@ -124,7 +124,7 @@
                                         {% endif %}
                                     </div>
                                 {% else %}
-                                    <em class="status frame-waiting">IN PROCESSING</em>
+                                    <em class="status frame-pending">IN PROCESSING</em>
                                 {% endif %}
                             </td>
 
@@ -132,13 +132,11 @@
                             <td>
                                 {% if att and att.invigilationStatus %}
                                     {% set remark_classes = {
-                                        "PENDING": "frame-oren",
-                                        "CHECK IN": "frame-green",
-                                        "CHECK OUT": "frame-green",
-                                        "COMPLETED": "frame-green",
-                                        "CHECK IN LATE": "frame-red",
-                                        "CHECK OUT EARLY": "frame-red",
-                                        "EXPIRED": "frame-red"
+                                        "PENDING": "frame-pending",
+                                        "CHECK IN": "frame-complete",
+                                        "CHECK OUT": "frame-complete",
+                                        "CHECK IN LATE": "frame-expired",
+                                        "CHECK OUT EARLY": "frame-expired"
                                     } %}
                                     <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
                                 {% else %}
@@ -149,9 +147,9 @@
                             <!-- Invigilation Status -->
                             <td>
                                 {% if att and att.invigilationStatus %}
-                                    <span class="status frame-green">ACCEPTED</span>
+                                    <span class="status frame-complete">ACCEPTED</span>
                                 {% else %}
-                                    <em class="status frame-waiting">IN PROCESSING</em>
+                                    <em class="status frame-expired">IN PROCESSING</em>
                                 {% endif %}
                             </td>
                         </tr>

@@ -246,11 +246,11 @@
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.courseStatus %}
-                                <span class="status frame-green">
+                                <span class="status frame-complete">
                                     Activated
                                 </span>
                             {% else %}
-                                <span class="status frame-red">Inactivated</span>
+                                <span class="status frame-expired">Inactivated</span>
                             {% endif %}
                         </td>
                         <td>{{ row.courseCodeSectionIntake }}</td>
@@ -261,13 +261,13 @@
                         <td>
                             <div class="info-grid">
                                 <div>Practical Lecturer</div>
-                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
+                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
                                 <div>Tutorial Lecturer</div>
-                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-red">N/A</span>' | safe }}</strong></div>
+                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
                             </div>
                         </td>
                         <td>
-                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-red">None</span>' | safe }}
+                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
                         </td>
                     </tr>
                 {% endfor %}

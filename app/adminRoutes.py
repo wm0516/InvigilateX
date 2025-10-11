@@ -1724,7 +1724,6 @@ def admin_manageTimetable():
 
     timetable_data = timetable_data_query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
-    flash(f"{lecturers}","success")
     total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()
     

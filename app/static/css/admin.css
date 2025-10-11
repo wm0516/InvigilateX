@@ -261,12 +261,9 @@ html, body {
 
 
 
-
-/*
-overflow: auto;
-max-height: 1000px;
-*/
 .calendar-container {
+    overflow: auto;
+    max-height: 700px;
     background: #f8f8f8;
     padding: 20px;
     border-radius: 10px;
@@ -363,22 +360,20 @@ max-height: 1000px;
     margin-bottom: 3px;
 }
 
-.frame-green {
-    background-color: #00cb2e; /* green */
+.frame-pending {
+    background-color: #ffcc66;  /* amber */
+    color: #222;
 }
 
-.frame-oren {
-    background-color: #f3e792; /* amber/orange */
-    color: black; /* better contrast */
+.frame-completed {
+    background-color: #4CAF50;  /* balanced green */
 }
 
-.frame-red {
-    background-color: #ff7280; /* red */
+.frame-expired {
+    background-color: #e74c3c;  /* calm red */
 }
 
-.frame-waiting {
-    background-color: #f0b2ff;
-}
+
 
 .info-grid {
     display: grid;

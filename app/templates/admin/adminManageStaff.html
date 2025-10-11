@@ -250,11 +250,11 @@
                     <!-- Account Status + Time -->
                     <td>
                         {% if row.userStatus|int == 0 %}
-                            <span class="status frame-oren">[Deactivated]</span>
+                            <span class="status frame-pending">[Deactivated]</span>
                         {% elif row.userStatus|int == 1 %}
-                            <span class="status frame-green">[Activated]</span>
+                            <span class="status frame-complete">[Activated]</span>
                         {% elif row.userStatus|int == 2 %}
-                            <span class="status frame-red">[DELETED]</span>
+                            <span class="status frame-expired">[DELETED]</span>
                         {% endif %}
                     </td>
                     

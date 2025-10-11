@@ -173,9 +173,9 @@
                         <td>{{ loop.index }}</td>
                         <td>
                             {% if row.examStatus %}
-                                <span class="status frame-green">[Activated]</span>
+                                <span class="status frame-complete">[Activated]</span>
                             {% else %}
-                                <span class="status frame-red">[Inactivated]</span>
+                                <span class="status frame-expired">[Inactivated]</span>
                             {% endif %}
                         </td>
                         <td>
@@ -201,7 +201,7 @@
                                     <div>Exam Venue</div><div><strong>: {{ row.examVenue }}</strong></div>
                                 </div>
                             {% else %}
-                                <span class="status frame-red">Exam details not yet assigned</span>
+                                <span class="status frame-expired">Exam details not yet assigned</span>
                             {% endif %}
                         </td>
                         <td>[{{ row.examNoInvigilator }}]</td>
