@@ -136,29 +136,30 @@
 <div class="menu-section">
     <h2>Timetable</h2>
     <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
-    <!-- Filters -->
     <div class="profile-frame">
-        <form method="get" style="display:flex; align-items:center; gap:10px;">
-            <label for="department">Select_Department:</label><br>
-            <select name="department" id="department" onchange="this.form.submit()">
-                <option value="">All Departments</option>
-                {% for dept in department_data %}
-                    <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
-                        {{ dept.departmentName }}
-                    </option>
-                {% endfor %}
-            </select><br>
-            
-            <label for="lecturer">Select_Lecturer:</label><br>
-            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
-                <option value="">All Lecturers</option>
-                {% for lecturer in lecturers %}
-                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                        {{ lecturer }}
-                    </option>
-                {% endfor %}
-            </select>
-
+        <form method="get">
+            <div class="form-left">
+                <label for="department">Select_Department:</label>
+                <select name="department" id="department" onchange="this.form.submit()">
+                    <option value="">All Departments</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
+                            {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-right">
+                <label for="lecturer">Select_Lecturer:</label>
+                <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                    <option value="">All Lecturers</option>
+                    {% for lecturer in lecturers %}
+                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
             {% if selected_lecturer or selected_department %}
                 <button type="button" onclick="window.location.href='{{ url_for('admin_manageTimetable') }}'" style="padding: 4px 8px;">Clear_Filter</button>
             {% endif %}
