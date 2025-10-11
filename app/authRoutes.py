@@ -327,20 +327,16 @@ def waiting_record(user_id):
     )
 
 def confirm_record(user_id):
-    now = datetime.now()
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == True,
-            Exam.examEndTime > now
-        )
-        .all()
+        .filter(InvigilatorAttendance.invigilatorId == user_id)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
     )
+
 
 # cutoff_time = datetime.now() - timedelta(minutes=1)
 def open_record():
@@ -372,8 +368,6 @@ def open_record():
 
 
 
-
-
 # -------------------------------
 # Main User Homepage
 # -------------------------------
@@ -384,10 +378,11 @@ def user_homepage():
     chosen = User.query.filter_by(userId=user_id).first()
 
     waiting = waiting_record(user_id)
-    confirm = confirm_record(user_id) 
+    data = confirm_record(user_id).all()
+    confirm = confirm_record(user_id).filter(Exam.examEndTime > datetime.now()).all()
     total_invigilation_seconds = 0
 
-    for att in confirm:
+    for att in data:
         exam = att.report.exam
         check_in = att.checkIn
         check_out = att.checkOut
