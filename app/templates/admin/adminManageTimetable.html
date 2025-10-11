@@ -136,39 +136,38 @@
 <div class="menu-section">
     <h2>Timetable</h2>
     <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
-    <div class="profile-frame">
-        <div class="form-left">
-            <label for="department">Select Department:</label>
-            <select name="department" id="department">
-                <option value="">All Departments</option>
-                {% for dept in department_data %}
-                    <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
-                        {{ dept.departmentName }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
+    <form>
+        <div class="profile-frame">
+            <div class="form-left">
+                <label for="department">Select Department:</label>
+                <select name="department" id="department">
+                    <option value="">All Departments</option>
+                    {% for dept in department_data %}
+                        <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
+                            {{ dept.departmentName }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-        <div class="form-right">
-            <label for="lecturer">Select Lecturer:</label>
-            <select name="lecturer" id="lecturer">
-                <option value="">All Lecturers</option>
-                {% for lecturer in lecturers %}
-                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                        {{ lecturer }}
-                    </option>
-                {% endfor %}
-            </select>
+            <div class="form-right">
+                <label for="lecturer">Select Lecturer:</label>
+                <select name="lecturer" id="lecturer">
+                    <option value="">All Lecturers</option>
+                    {% for lecturer in lecturers %}
+                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-    </div>
-
-    <div class="button-wrapper">
-        <button type="button" id="clearFilter">Clear Filter</button>
-    </div>
+        <div class="button-wrapper">
+            <button type="button" id="clearFilter">Clear Filter</button>
+        </div>
+    </form>
 
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-
-    <!-- Timetable Grid -->
     <div class="user-table-container">
         <table class="user-data-table" border="1">
             <thead>
