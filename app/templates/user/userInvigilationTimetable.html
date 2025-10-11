@@ -25,8 +25,7 @@
                 <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
                 <div class="exam-grid">
                     {% for exam in exams %}
-                        <div class="exam-card"
-                            style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
+                        <div class="exam-card" style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
                             <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
                             <i>Venue: {{ exam.venue }}</i><br>
                             <i>Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}</i>

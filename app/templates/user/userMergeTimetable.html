@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block content %}
-    <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
     <!-- Lecturer Filter -->
     <div> 
         <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
@@ -26,7 +25,8 @@
             {% endif %}
         </form>
     </div>
-
+    
+    <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     <div class="user-table-container">
         <table class="user-data-table" border="1">
             <thead>
