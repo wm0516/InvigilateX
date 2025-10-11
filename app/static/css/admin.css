@@ -396,30 +396,25 @@ max-height: 1000px;
 
 .time-header {
     display: grid;
-    grid-template-columns: repeat(17, 60px); /* each hour = 60px fixed width */
+    grid-template-columns: repeat(17, 1fr);
     margin-left: 60px;
     font-size: 0.8em;
     text-align: center;
     margin-bottom: 5px;
-    width: calc(60px * 17); /* total width = 17 * 60px */
+    width: calc(100% - 60px);
     border-left: 1px solid #aaa;
     border-bottom: 1px solid #aaa;
-    overflow: hidden;
 }
 
 .time-header div {
     border-right: 1px solid #aaa;
     padding-bottom: 4px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .timetable {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    overflow-x: auto; /* allow scrolling if too wide */
+    gap: 10px;
 }
 
 .timetable-row {
@@ -436,25 +431,27 @@ max-height: 1000px;
 
 .grid-row {
     display: grid;
-    grid-template-columns: repeat(17, 60px); /* fixed column width */
-    gap: 2px;
+    grid-template-columns: repeat(17, 1fr); /* keep full width */
+    gap: 3px;
     border-left: 1px solid #ccc;
-    padding: 3px;
+    padding: 5px;
     position: relative;
-    overflow: hidden;
+    width: 100%;
+    align-items: start; /* ensure items stack at the top */
 }
 
 .class-block {
     background: #fde2fb;
     border: 1px solid #ccc;
+    padding: 5px;
     border-radius: 6px;
-    font-size: 0.75em;
-    padding: 3px;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    white-space: normal; /* allow wrapping */
+    font-size: 0.8em;
+    word-wrap: break-word;        /* break long words */
+    overflow-wrap: break-word;    /* break long lines */
+    white-space: normal;          /* allow text wrapping */
     text-align: center;
-    height: auto; /* allow height to grow with content */
+    height: auto;                 /* grow vertically */
+    max-width: 100%;              /* never overflow horizontally */
     box-sizing: border-box;
 }
 
