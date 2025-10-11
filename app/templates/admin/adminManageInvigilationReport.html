@@ -115,7 +115,7 @@
 
                             <!-- Check-in/out Time -->
                             <td>
-                                {% if att and att.invigilationStatus %}
+                                {% if att %}
                                     <div class="info-grid">
                                         <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%Y-%m-%d %H:%M") if att.checkIn else "None" }}</strong></div>
                                         <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%Y-%m-%d %H:%M") if att.checkOut else "None" }}</strong></div>
@@ -130,7 +130,7 @@
 
                             <!-- Attendance Status -->
                             <td>
-                                {% if att and att.invigilationStatus %}
+                                {% if att %}
                                     {% set remark_classes = {
                                         "PENDING": "frame-pending",
                                         "CHECK IN": "frame-completed",
@@ -148,7 +148,7 @@
 
                             <!-- Invigilation Status -->
                             <td>
-                                {% if att and att.invigilationStatus %}
+                                {% if att %}
                                     <span class="status frame-completed">ACCEPTED</span>
                                 {% else %}
                                     <em class="status frame-expired">IN PROCESSING</em>
