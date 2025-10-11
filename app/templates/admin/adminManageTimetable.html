@@ -136,11 +136,11 @@
 <div class="menu-section">
     <h2>Timetable</h2>
     <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
-    <form>
-        <div class="profile-frame">
+    <form method="get" action="{{ url_for('admin_manageTimetable') }}">
+        <div class="profile-frame" style="margin-top: 1%;">
             <div class="form-left">
                 <label for="department">Select Department:</label>
-                <select name="department" id="department">
+                <select name="department" id="department" onchange="this.form.submit()">
                     <option value="">All Departments</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}" {% if dept.departmentCode == selected_department %}selected{% endif %}>
@@ -152,16 +152,17 @@
 
             <div class="form-right">
                 <label for="lecturer">Select Lecturer:</label>
-                <select name="lecturer" id="lecturer">
+                <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>
                     {% for lecturer in lecturers %}
-                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                            {{ lecturer }}
+                        <option value="{{ lecturer.userId }}" {% if lecturer.userId|string == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer.userName }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
         </div>
+
         <div class="button-wrapper">
             <button type="button" id="clearFilter">Clear Filter</button>
         </div>
@@ -223,6 +224,10 @@
 
 {% block extra_scripts %}
 <script>
+document.getElementById('clearFilter').addEventListener('click', function() {
+    window.location.href = "{{ url_for('admin_manageTimetable') }}";
+});
+
 const days = {
     Monday: '#e3f2fd',
     Tuesday: '#fce4ec',

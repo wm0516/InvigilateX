@@ -1703,21 +1703,23 @@ def admin_manageTimetable():
     # Auto cleanup expired timetable rows
     # cleanup_expired_timetable_rows()
     department_data = Department.query.all()
-    selected_lecturer = request.args.get("lecturer")
     selected_department = request.args.get("department")
-    timetable_data_query = TimetableRow.query \
-        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId) \
-        .join(User, Timetable.user_id == User.userId) \
-        .filter(
-            TimetableRow.timetable_id.isnot(None),
-            User.userStatus == 1
-        )
+    selected_lecturer = request.args.get("lecturer")
 
-    if selected_lecturer:
-        timetable_data_query = timetable_data_query.filter(TimetableRow.lecturerName == selected_lecturer)
+    # Base query
+    timetable_data_query = (
+        TimetableRow.query
+        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
+        .join(User, Timetable.user_id == User.userId)
+        .filter(User.userStatus == True)  # active staff only
+    )
 
+    # Department filter
     if selected_department:
         timetable_data_query = timetable_data_query.filter(User.userDepartment == selected_department)
+    # Lecturer filter (by userId)
+    if selected_lecturer:
+        timetable_data_query = timetable_data_query.filter(Timetable.user_id == selected_lecturer)
 
     timetable_data = timetable_data_query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
