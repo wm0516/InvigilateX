@@ -135,7 +135,6 @@
 {% block content %}
 <div class="menu-section">
     <h2>Timetable</h2>
-    <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
     <form method="get" action="{{ url_for('admin_manageTimetable') }}">
         <div class="profile-frame" style="margin-top: 1%;">
             <div class="form-left">
@@ -166,8 +165,9 @@
         <div class="button-wrapper">
             <button type="button" id="clearFilter">Clear Filter</button>
         </div>
-    </form>
+    </form> 
 
+    <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
     <div class="user-table-container">
         <table class="user-data-table" border="1">
