@@ -394,28 +394,32 @@ max-height: 1000px;
 
 
 
-
 .time-header {
     display: grid;
-    grid-template-columns: repeat(17, 1fr);
+    grid-template-columns: repeat(17, 60px); /* each hour = 60px fixed width */
     margin-left: 60px;
     font-size: 0.8em;
     text-align: center;
     margin-bottom: 5px;
-    width: calc(100% - 60px);
-    border-left: 1px solid #aaa; /* leftmost border */
-    border-bottom: 1px solid #aaa; /* leftmost border */
+    width: calc(60px * 17); /* total width = 17 * 60px */
+    border-left: 1px solid #aaa;
+    border-bottom: 1px solid #aaa;
+    overflow: hidden;
 }
 
 .time-header div {
     border-right: 1px solid #aaa;
     padding-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .timetable {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5px;
+    overflow-x: auto; /* allow scrolling if too wide */
 }
 
 .timetable-row {
@@ -432,21 +436,26 @@ max-height: 1000px;
 
 .grid-row {
     display: grid;
-    grid-template-columns: repeat(17, 1fr); /* 17 equal auto columns */
-    gap: 3px;
+    grid-template-columns: repeat(17, 60px); /* fixed column width */
+    gap: 2px;
     border-left: 1px solid #ccc;
-    padding: 5px;
+    padding: 3px;
     position: relative;
-    width: 100%;
+    overflow: hidden;
 }
 
 .class-block {
-    background: #f8f9fa;
+    background: #fde2fb;
     border: 1px solid #ccc;
-    padding: 5px;
     border-radius: 6px;
-    font-size: 0.8em;
-    background-color: #fde2fb;
+    font-size: 0.75em;
+    padding: 3px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal; /* allow wrapping */
+    text-align: center;
+    height: auto; /* allow height to grow with content */
+    box-sizing: border-box;
 }
 
 
