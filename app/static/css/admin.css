@@ -432,23 +432,32 @@ max-height: 1000px;
 
 .grid-row {
     display: grid;
-    grid-template-columns: repeat(17, 1fr); /* 17 equal auto columns */
+    grid-template-columns: repeat(17, minmax(0, 1fr)); /* 🔒 Prevent column expansion */
     gap: 3px;
     border-left: 1px solid #ccc;
     padding: 5px;
     position: relative;
     width: 100%;
+    max-width: 100%;
+    overflow: hidden; /* optional safety */
+    box-sizing: border-box;
 }
 
 .class-block {
-    background: #f8f9fa;
+    background: #fde2fb;
     border: 1px solid #ccc;
     padding: 5px;
     border-radius: 6px;
     font-size: 0.8em;
-    background-color: #fde2fb;
-}
 
+    /* 🧠 Prevent content from stretching the cell */
+    min-width: 0; /* This is the key line */
+    max-width: 100%;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+}
 
 
 
