@@ -99,10 +99,16 @@ def update_attendanceStatus():
             elif check_out >= exam_end:
                 remark = "CHECK OUT"
 
-        if check_in <= exam_start and check_out >= exam_end:
-            remark = "COMPLETED"
-        else:
-            remark = "EXPIRED"
+        # --- After exam has ended ---
+        if timeNow > exam_end:
+            if check_in and check_out:
+                if check_in <= exam_start and check_out >= exam_end:
+                    remark = "COMPLETED"
+                else:
+                    remark = "EXPIRED"
+            else:
+                # If no check-in or check-out recorded
+                remark = "EXPIRED"
         attendance.remark = remark
     db.session.commit()
 
