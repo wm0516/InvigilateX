@@ -156,7 +156,7 @@
                     <option value="">All Lecturers</option>
                     {% for lecturer in lecturers %}
                         <option value="{{ lecturer.userId }}" {% if lecturer.userId|string == selected_lecturer %}selected{% endif %}>
-                            {{ lecturer.userName }}
+                            {{ lecturer.userId }}
                         </option>
                     {% endfor %}
                 </select>
