@@ -148,7 +148,7 @@
 
                             <!-- Invigilation Status -->
                             <td>
-                                {% if att %}
+                                {% if att and att.invigilationStatus %}
                                     <span class="status frame-completed">ACCEPTED</span>
                                 {% else %}
                                     <em class="status frame-expired">IN PROCESSING</em>
