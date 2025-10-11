@@ -89,26 +89,28 @@ def calculate_invigilation_stats():
 
 
 
-
 def get_all_attendances():
     user = User.query.get(session.get('user_id'))
     query = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)  # ✅ join Course
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # lecturer info
+        .join(Course, Course.courseExamId == Exam.examId)  # ✅ Join Course
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Lecturer info
     )
 
-    # Lecturer (Level 1) — see own only
-    # .filter(InvigilatorAttendance.invigilationStatus == True)
+    # Lecturer (Level 1) — can see only their own invigilation records
     if user.userLevel == 1:
-        query = query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+        query = query.filter(
+            InvigilatorAttendance.invigilatorId == user.userId,
+            InvigilatorAttendance.invigilationStatus == True
+        )
 
-    # Dean, HOS, HOP (Level 2, 3, 4) — see all invigilations for courses under same department
+    # Dean, HOS, HOP (Level 2, 3, 4) — can see all invigilations under same department
     elif user.userLevel in [2, 3, 4]:
         query = query.filter(Course.courseDepartment == user.userDepartment)
 
+    # Order by exam status first (active > done), then by exam start time descending
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.desc()).all()
 
 
