@@ -135,7 +135,7 @@
 {% block content %}
 <div class="menu-section">
     <h2>Timetable</h2>
-
+    <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
     <!-- Filters -->
     <div class="profile-frame" style="margin-bottom: 20px;">
         <form method="get" style="display:flex; align-items:center; gap:10px;">
@@ -223,6 +223,23 @@
 
 {% block extra_scripts %}
 <script>
+const days = {
+    Monday: '#e3f2fd',
+    Tuesday: '#fce4ec',
+    Wednesday: '#e8f5e9',
+    Thursday: '#fff3e0',
+    Friday: '#ede7f6'
+};
+const container = document.getElementById('dayLegend');
+Object.entries(days).forEach(([day, color]) => {
+    const div = document.createElement('div');
+    div.style.display = 'flex';
+    div.style.alignItems = 'center';
+    div.style.gap = '5px';
+    div.innerHTML = `<span style="width:20px; height:20px; background:${color}; display:inline-block; border-radius:4px; border: 1px solid black;"></span><span>${day}</span>`;
+    container.appendChild(div);
+});
+
 $(document).ready(function() {
     $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
 });
