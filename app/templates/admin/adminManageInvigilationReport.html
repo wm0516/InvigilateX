@@ -133,9 +133,9 @@
                                 {% if att and att.invigilationStatus %}
                                     {% set remark_classes = {
                                         "PENDING": "frame-pending",
-                                        "CHECK IN": "frame-complete",
-                                        "CHECK OUT": "frame-complete",
-                                        "COMPLETED": "frame-complete",
+                                        "CHECK IN": "frame-completed",
+                                        "CHECK OUT": "frame-completed",
+                                        "COMPLETED": "frame-completed",
                                         "CHECK IN LATE": "frame-expired",
                                         "CHECK OUT EARLY": "frame-expired",
                                         "EXPIRED": "frame-expired"
@@ -149,7 +149,7 @@
                             <!-- Invigilation Status -->
                             <td>
                                 {% if att and att.invigilationStatus %}
-                                    <span class="status frame-complete">ACCEPTED</span>
+                                    <span class="status frame-completed">ACCEPTED</span>
                                 {% else %}
                                     <em class="status frame-expired">IN PROCESSING</em>
                                 {% endif %}

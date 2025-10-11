@@ -252,7 +252,7 @@
                         {% if row.userStatus|int == 0 %}
                             <span class="status frame-pending">[Deactivated]</span>
                         {% elif row.userStatus|int == 1 %}
-                            <span class="status frame-complete">[Activated]</span>
+                            <span class="status frame-completed">[Activated]</span>
                         {% elif row.userStatus|int == 2 %}
                             <span class="status frame-expired">[DELETED]</span>
                         {% endif %}

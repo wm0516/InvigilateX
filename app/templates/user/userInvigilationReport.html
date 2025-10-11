@@ -88,9 +88,9 @@
                             <td>
                                 {% set remark_classes = {
                                     "PENDING": "frame-pending",
-                                    "CHECK IN": "frame-complete",
-                                    "CHECK OUT": "frame-complete",
-                                    "COMPLETED": "frame-complete",
+                                    "CHECK IN": "frame-completed",
+                                    "CHECK OUT": "frame-completed",
+                                    "COMPLETED": "frame-completed",
                                     "CHECK IN LATE": "frame-expired",
                                     "CHECK OUT EARLY": "frame-expired",
                                     "EXPIRED": "frame-expired"
@@ -99,7 +99,7 @@
                             </td>
                             <td>
                                 {% if att.invigilationStatus == 1 %}
-                                    <span class="status frame-complete">[ACCEPTED]</span>
+                                    <span class="status frame-completed">[ACCEPTED]</span>
                                 {% else %}
                                     <span class="status frame-expired">[PENDING]</span>
                                 {% endif %}
