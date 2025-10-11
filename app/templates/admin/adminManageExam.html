@@ -130,7 +130,24 @@
                     </select>
                     <button type="button" id="addVenueBtn" style="padding: 6px 12px; font-size: 18px; border-radius: 5px; cursor: pointer;">+</button>
                 </div>
-                <div id="extraVenuesContainer" style="margin-top: 10px;"></div>
+
+                <!-- Hidden area that appears when adding a new venue -->
+                <div id="newVenueContainer" style="margin-top: 10px; display: none;">
+                    <select name="venue" id="editVenue" required style="flex: 1;">
+                        <option value="" disabled selected>Select Exam Venue</option>
+                        {% for venue in venue_data %}
+                            <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" id="confirmAddVenueBtn"
+                            style="padding: 6px 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        Add
+                    </button>
+                    <button type="button" id="cancelAddVenueBtn"
+                            style="padding: 6px 10px; background-color: #ccc; color: black; border: none; border-radius: 5px; cursor: pointer;">
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
         <input type="hidden" name="form_type" value="edit">
@@ -364,38 +381,58 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const addVenueBtn = document.getElementById("addVenueBtn");
-    const container = document.getElementById("extraVenuesContainer");
-    let venueCount = 0;
+    const newVenueContainer = document.getElementById("newVenueContainer");
+    const newVenueInput = document.getElementById("newVenueInput");
+    const confirmAddVenueBtn = document.getElementById("confirmAddVenueBtn");
+    const cancelAddVenueBtn = document.getElementById("cancelAddVenueBtn");
+    const venueSelect = document.getElementById("editVenue");
+
+    let addedVenues = 0;
     const maxVenues = 20;
 
+    // Show input field when "+" is clicked
     addVenueBtn.addEventListener("click", function () {
-        if (venueCount >= maxVenues) {
-            alert(`You can only add up to ${maxVenues} venues.`);
+        if (addedVenues >= maxVenues) {
+            alert(`You can only add up to ${maxVenues} new venues.`);
+            return;
+        }
+        newVenueContainer.style.display = "block";
+        newVenueInput.focus();
+    });
+
+    // Cancel adding new venue
+    cancelAddVenueBtn.addEventListener("click", function () {
+        newVenueInput.value = "";
+        newVenueContainer.style.display = "none";
+    });
+
+    // Confirm and add the new venue into dropdown
+    confirmAddVenueBtn.addEventListener("click", function () {
+        const newVenueName = newVenueInput.value.trim();
+        if (!newVenueName) {
+            alert("Please enter a venue name.");
             return;
         }
 
-        venueCount++;
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("extra-venue-row");
-        wrapper.style.display = "flex";
-        wrapper.style.alignItems = "center";
-        wrapper.style.gap = "10px";
-        wrapper.style.marginBottom = "8px";
+        // Check for duplicates
+        const exists = Array.from(venueSelect.options).some(
+            opt => opt.textContent.toLowerCase().includes(newVenueName.toLowerCase())
+        );
+        if (exists) {
+            alert("This venue already exists in the list.");
+            return;
+        }
 
-        wrapper.innerHTML = `
-            <input type="text" name="extraVenue${venueCount}" placeholder="Enter new venue name" 
-                   style="flex: 1; padding: 6px; border-radius: 5px;" required>
-            <button type="button" class="removeVenueBtn" 
-                    style="padding: 6px 10px; font-size: 14px; background-color: #f8d7da; color: #721c24; border: none; border-radius: 5px; cursor: pointer;">✕</button>
-        `;
+        // Add as new <option>
+        const newOption = document.createElement("option");
+        newOption.value = newVenueName;
+        newOption.textContent = newVenueName + " (New)";
+        venueSelect.appendChild(newOption);
+        venueSelect.value = newVenueName; // Auto-select it
 
-        container.appendChild(wrapper);
-
-        // Remove button functionality
-        wrapper.querySelector(".removeVenueBtn").addEventListener("click", function () {
-            container.removeChild(wrapper);
-            venueCount--;
-        });
+        addedVenues++;
+        newVenueInput.value = "";
+        newVenueContainer.style.display = "none";
     });
 });
 </script>
