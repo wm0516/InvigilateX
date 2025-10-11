@@ -28,7 +28,7 @@
 
     <div class="calendar-container">
         {% for date, exams in calendar_data.items() %}
-            <div class="calendar-day">
+            <div class="calendar-day" data-date="{{ date.isoformat() }}">
                 <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }} | <i>[Total Exams: {{ exams|length }}]</i></h3>
                 <div class="exam-grid">
                     {% for exam in exams %}
@@ -52,19 +52,15 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const days = [...document.querySelectorAll(".calendar-day")];
+  const container = document.querySelector(".calendar-container");
+  const days = [...container.querySelectorAll(".calendar-day")];
   if (!days.length) return;
 
-  const today = new Date().setHours(0, 0, 0, 0);
-  let target = null;
+  const today = new Date().setHours(0,0,0,0);
+  let target = days.find(d => new Date(d.dataset.date) >= today) || days.at(-1);
 
-  for (const d of days) {
-    const date = new Date(d.querySelector(".calendar-date").textContent);
-    if (!isNaN(date) && date >= today) { target = d; break; }
-  }
-
-  if (!target) target = days[days.length - 1];
-  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  container.scrollTo({ top: target.offsetTop, behavior: "smooth" });
 });
 </script>
 {% endblock %}
+
