@@ -394,6 +394,7 @@ max-height: 1000px;
 
 
 
+
 .time-header {
     display: grid;
     grid-template-columns: repeat(17, 1fr);
@@ -402,8 +403,8 @@ max-height: 1000px;
     text-align: center;
     margin-bottom: 5px;
     width: calc(100% - 60px);
-    border-left: 1px solid #aaa;
-    border-bottom: 1px solid #aaa;
+    border-left: 1px solid #aaa; /* leftmost border */
+    border-bottom: 1px solid #aaa; /* leftmost border */
 }
 
 .time-header div {
@@ -431,28 +432,21 @@ max-height: 1000px;
 
 .grid-row {
     display: grid;
-    grid-template-columns: repeat(17, 1fr); /* keep full width */
+    grid-template-columns: repeat(17, 1fr); /* 17 equal auto columns */
     gap: 3px;
     border-left: 1px solid #ccc;
     padding: 5px;
     position: relative;
     width: 100%;
-    align-items: start; /* ensure items stack at the top */
 }
 
 .class-block {
-    background: #fde2fb;
+    background: #f8f9fa;
     border: 1px solid #ccc;
     padding: 5px;
     border-radius: 6px;
     font-size: 0.8em;
-    word-wrap: break-word;        /* break long words */
-    overflow-wrap: break-word;    /* break long lines */
-    white-space: normal;          /* allow text wrapping */
-    text-align: center;
-    height: auto;                 /* grow vertically */
-    max-width: 100%;              /* never overflow horizontally */
-    box-sizing: border-box;
+    background-color: #fde2fb;
 }
 
 
