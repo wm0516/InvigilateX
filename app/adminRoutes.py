@@ -1060,7 +1060,7 @@ def admin_manageExam():
            
             start_dt = parse_datetime(start_date_raw, start_time_raw)
             end_dt = parse_datetime(end_date_raw, end_time_raw)
-            venue_text = request.form.get('venue', '').strip()
+            venue_text = request.form.getlist('venue[]')
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
