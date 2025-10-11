@@ -29,7 +29,7 @@
     <div class="calendar-container">
         {% for date, exams in calendar_data.items() %}
             <div class="calendar-day">
-                <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }} | <i>[Total Exams: {{ exams|length }}] |</i></h3>
+                <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }} | <i>[Total Exams: {{ exams|length }}]</i></h3>
                 <div class="exam-grid">
                     {% for exam in exams %}
                         <div class="exam-card"
