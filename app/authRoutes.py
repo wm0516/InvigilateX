@@ -299,6 +299,15 @@ def admin_homepage():
 
 
 
+# -------------------------------
+# Record Attendances function
+# -------------------------------
+@app.route('/attendance', methods=['GET', 'POST'])
+def attendance_record():
+    user_id = session.get('user_id')
+    confirm = confirm_record(user_id)
+    return render_template('auth/attendance.html', confirm=confirm)
+
 
 
 # -------------------------------
@@ -330,9 +339,9 @@ def confirm_record(user_id):
         .all()
     )
 
-# cutoff_time = datetime.now() - timedelta(days=2)
+# cutoff_time = datetime.now() - timedelta(minutes=1)
 def open_record():
-    cutoff_time = datetime.now() - timedelta(minutes=1)
+    cutoff_time = datetime.now() - timedelta(days=2)
 
     slots = (
         InvigilatorAttendance.query
@@ -360,11 +369,6 @@ def open_record():
 
 
 
-@app.route('/attendance', methods=['GET', 'POST'])
-def attendance_record():
-    user_id = session.get('user_id')
-    confirm = confirm_record(user_id)
-    return render_template('auth/attendance.html', confirm=confirm)
 
 
 # -------------------------------
@@ -377,12 +381,37 @@ def user_homepage():
     chosen = User.query.filter_by(userId=user_id).first()
 
     waiting = waiting_record(user_id)
-    confirm = confirm_record(user_id)
+    confirm = confirm_record(user_id) 
+    total_invigilation_seconds = 0
 
-    # Get open slots
+    for att in confirm:
+        exam = att.report.exam
+        check_in = att.timeCheckIn
+        check_out = att.timeCheckOut
+        start = exam.examStartTime
+        end = exam.examEndTime
+
+        # Skip if any field missing
+        if not all([check_in, check_out, start, end]):
+            continue
+
+        # Handle overnight exam
+        if end < start:
+            end += timedelta(days=1)
+
+        # Adjust actual duration within exam window
+        effective_start = max(check_in, start)
+        effective_end = min(check_out, end)
+
+        # Only count valid durations
+        if effective_end > effective_start:
+            duration = (effective_end - effective_start).total_seconds()
+            total_invigilation_seconds += duration
+
+    user_totalInvigilationHour = round(total_invigilation_seconds / 3600, 2)
+
+    # Get open slots + gender filter
     open_slots = open_record()
-
-    # Apply gender filter here
     if chosen:
         open_slots = [slot for slot in open_slots if slot.invigilator.userGender == chosen.userGender]
 
@@ -460,4 +489,4 @@ def user_homepage():
 
         return redirect(url_for('user_homepage'))
 
-    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
+    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, user_totalInvigilationHour=user_totalInvigilationHour)
