@@ -77,7 +77,7 @@
                 <label for="editExamCourseSection">Select Exam Course/Section - Course Name</label>
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course Section</option>
-                    {% for exam in exam_data %}
+                    {% for exam in display_exam_data %}
                         {% if exam.course %}
                             <option value="{{ exam.course.courseCodeSectionIntake }}">
                                 [{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}
