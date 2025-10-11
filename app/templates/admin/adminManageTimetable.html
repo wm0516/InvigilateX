@@ -135,7 +135,7 @@
 {% block content %}
 <div class="menu-section">
     <h2>Timetable</h2>
-    <div id="dayLegend" style="display:flex; gap:15px; align-items:center;"></div>
+    <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
     <div class="profile-frame">
         <div class="form-left">
             <label for="department">Select Department:</label>
@@ -160,12 +160,11 @@
                 {% endfor %}
             </select>
         </div>
-
-        <div class="button-wrapper">
-            <button type="button" id="clearFilter">Clear Filter</button>
-        </div>
     </div>
 
+    <div class="button-wrapper">
+        <button type="button" id="clearFilter">Clear Filter</button>
+    </div>
 
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
 
@@ -240,10 +239,6 @@ Object.entries(days).forEach(([day, color]) => {
     div.style.gap = '5px';
     div.innerHTML = `<span style="width:20px; height:20px; background:${color}; display:inline-block; border-radius:4px; border: 1px solid black;"></span><span>${day}</span>`;
     container.appendChild(div);
-});
-
-$(document).ready(function() {
-    $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
 });
 
 document.addEventListener("DOMContentLoaded", function () {
