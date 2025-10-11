@@ -155,8 +155,8 @@
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>
                     {% for lecturer in lecturers %}
-                        <option value="{{ lecturer.userId }}" {% if lecturer.userId|string == selected_lecturer %}selected{% endif %}>
-                            {{ lecturer.userName }}
+                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer }}
                         </option>
                     {% endfor %}
                 </select>
