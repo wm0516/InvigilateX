@@ -1719,7 +1719,8 @@ def admin_manageTimetable():
         timetable_data_query = timetable_data_query.filter(User.userDepartment == selected_department)
     # Lecturer filter (by userId)
     if selected_lecturer:
-        timetable_data_query = timetable_data_query.filter(Timetable.user_id == selected_lecturer)
+        timetable_data_query = timetable_data_query.filter(TimetableRow.lecturerName == selected_lecturer)
+
 
     timetable_data = timetable_data_query.order_by(TimetableRow.rowId.asc()).all()
     lecturers = sorted({row.lecturerName for row in timetable_data})
