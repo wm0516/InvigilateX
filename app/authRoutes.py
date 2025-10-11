@@ -334,17 +334,17 @@ def confirm_record(user_id):
 def open_record():
     cutoff_time = datetime.now() - timedelta(minutes=1)
 
-    # Query all unassigned, older than 2 days, and still open slots
     slots = (
         InvigilatorAttendance.query
-        .filter(
-            InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.timeCreate < cutoff_time
-        )
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .filter(
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.timeCreate < cutoff_time,
+            Exam.examStartTime > datetime.now()
+        )
         .all()
     )
 
@@ -356,6 +356,7 @@ def open_record():
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 

@@ -66,7 +66,7 @@
                             {% endif %}
 
                             <!-- Invigilator Details (one per row) -->
-                            <td style="border-left: 1px solid #aaa;">
+                            <td>
                                 <div class="info-grid">
                                     <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
                                     <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
@@ -80,7 +80,9 @@
                                 <div class="info-grid">
                                     <div>Check-in Time</div><div><strong>: {{ att.checkIn }}</strong></div> 
                                     <div>Check-out Time</div><div><strong>: {{ att.checkOut }}</strong></div>
-                                    <div style="color: #00b300"><strong>Total Invigilation Hour</div><div>: {{ att.checkIn }}</strong></div>
+                                    {% if att.checkIn and att.checkOut %}
+                                        <div style="color: green;">Total Invigilation Time</div><div><strong>: {{ ((att.checkOut - att.checkIn).total_seconds() / 3600) | round(2) }} hours</strong></div>
+                                    {% endif %}                               
                                 </div>
                             </td>
 
