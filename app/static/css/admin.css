@@ -397,7 +397,7 @@ max-height: 1000px;
 
 .time-header {
     display: grid;
-    grid-template-columns: repeat(17, 90px);
+    grid-template-columns: repeat(17, 1fr);
     margin-left: 60px;
     font-size: 0.8em;
     text-align: center;
@@ -432,7 +432,7 @@ max-height: 1000px;
 
 .grid-row {
     display: grid;
-    grid-template-columns: repeat(17, 90px); /* 17 equal auto columns */
+    grid-template-columns: repeat(17, 1fr); /* 17 equal auto columns */
     gap: 3px;
     border-left: 1px solid #ccc;
     padding: 5px;
