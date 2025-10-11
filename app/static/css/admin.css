@@ -249,7 +249,7 @@ html, body {
 
 .user-data-table td {
     padding: 10px 20px;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid lightgrey;
     color: #333;
     font-size: 0.95em;
     line-height: 1.1;
