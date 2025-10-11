@@ -1891,6 +1891,7 @@ def get_calendar_data():
         end_dt = exam.examEndTime
         start_date = start_dt.date()
         end_date = end_dt.date()
+        is_overnight = start_date != end_date and exam.examStatus == True
 
         def exam_dict(start, end):
             return {
@@ -1901,10 +1902,10 @@ def get_calendar_data():
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,
-                "is_overnight": start_date != end_date
+                "is_overnight": is_overnight
             }
 
-        if start_date != end_date:
+        if is_overnight:
             # Part 1: From start time to 23:59 on start day
             calendar_data[start_date].append(
                 exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59))
@@ -1916,8 +1917,10 @@ def get_calendar_data():
         else:
             # Normal same-day exam
             calendar_data[start_date].append(exam_dict(start_dt, end_dt))
+
     calendar_data = dict(sorted(calendar_data.items()))
     return calendar_data
+
 
 
 # -------------------------------
