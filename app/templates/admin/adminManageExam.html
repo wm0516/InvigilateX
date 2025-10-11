@@ -108,14 +108,6 @@
             </div>
 
             <div class="form-right">
-                <label>Exam Venue</label>
-                <select name="venue" id="editVenue" required>
-                    <option value="" disabled selected>Select Exam Venue</option>
-                    {% for venue in venue_data %}
-                        <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
-                    {% endfor %}
-                </select><br>
-
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="startDate" name="startDate" required>
@@ -126,7 +118,19 @@
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="endDate" name="endDate" required>
                     <input type="time" id="endTime" name="endTime" required>
+                </div><br>
+
+                <label>Exam Venue</label>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <select name="venue" id="editVenue" required style="flex: 1;">
+                        <option value="" disabled selected>Select Exam Venue</option>
+                        {% for venue in venue_data %}
+                            <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" id="addVenueBtn" style="padding: 6px 12px; font-size: 18px; border-radius: 5px; cursor: pointer;">+</button>
                 </div>
+                <div id="extraVenuesContainer" style="margin-top: 10px;"></div>
             </div>
         </div>
         <input type="hidden" name="form_type" value="edit">
@@ -356,6 +360,43 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial restriction setup
     restrictStartTime();
     restrictEndTime();
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const addVenueBtn = document.getElementById("addVenueBtn");
+    const container = document.getElementById("extraVenuesContainer");
+    let venueCount = 0;
+    const maxVenues = 20;
+
+    addVenueBtn.addEventListener("click", function () {
+        if (venueCount >= maxVenues) {
+            alert(`You can only add up to ${maxVenues} venues.`);
+            return;
+        }
+
+        venueCount++;
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("extra-venue-row");
+        wrapper.style.display = "flex";
+        wrapper.style.alignItems = "center";
+        wrapper.style.gap = "10px";
+        wrapper.style.marginBottom = "8px";
+
+        wrapper.innerHTML = `
+            <input type="text" name="extraVenue${venueCount}" placeholder="Enter new venue name" 
+                   style="flex: 1; padding: 6px; border-radius: 5px;" required>
+            <button type="button" class="removeVenueBtn" 
+                    style="padding: 6px 10px; font-size: 14px; background-color: #f8d7da; color: #721c24; border: none; border-radius: 5px; cursor: pointer;">✕</button>
+        `;
+
+        container.appendChild(wrapper);
+
+        // Remove button functionality
+        wrapper.querySelector(".removeVenueBtn").addEventListener("click", function () {
+            container.removeChild(wrapper);
+            venueCount--;
+        });
+    });
 });
 </script>
 {% endblock %}

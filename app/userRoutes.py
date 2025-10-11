@@ -88,9 +88,6 @@ def calculate_invigilation_stats():
 
     return stats
 
-
-
-
 def get_all_attendances():
     user = User.query.get(session.get('user_id'))
     query = (
