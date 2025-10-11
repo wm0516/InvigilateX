@@ -415,12 +415,10 @@ def user_homepage():
                 waiting_slot.timeAction = datetime.now()
                 chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
-                flash("Exam Invigilation Accepted", "success")
 
             elif action == 'reject':
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
-                flash("Exam Invigilation Rejected", "error")
 
             waiting_slot.timeAction = datetime.now()
             db.session.commit()
