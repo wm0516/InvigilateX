@@ -386,8 +386,8 @@ def user_homepage():
 
     for att in confirm:
         exam = att.report.exam
-        check_in = att.timeCheckIn
-        check_out = att.timeCheckOut
+        check_in = att.checkIn
+        check_out = att.checkOut
         start = exam.examStartTime
         end = exam.examEndTime
 
