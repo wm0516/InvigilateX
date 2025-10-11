@@ -28,9 +28,6 @@ bcrypt = Bcrypt()
 # -------------------------------
 # Calculate Invigilation Stats (Filtered by User Department or Own Data)
 # -------------------------------
-# -------------------------------
-# Calculate Invigilation Stats (Filtered by User Department or Own Data)
-# -------------------------------
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
 
@@ -53,10 +50,15 @@ def calculate_invigilation_stats():
     # Apply role-based visibility filters
     if user.userLevel == 1:
         # Level 1 → Only own invigilation records
-        filtered_query = base_query.filter(InvigilatorAttendance.invigilatorId == user.userId)
+        filtered_query = base_query.filter(
+            InvigilatorAttendance.invigilatorId == user.userId,
+            InvigilatorAttendance.invigilationStatus == True
+        )
     else:
         # Level 2–4 → All records from the same department
-        filtered_query = base_query.filter(Course.courseDepartment == user.userDepartment)
+        filtered_query = base_query.filter(
+            Course.courseDepartment == user.userDepartment
+        )
 
     # Calculate report totals before filtering to specific statuses
     total_report = filtered_query.count()
@@ -83,8 +85,8 @@ def calculate_invigilation_stats():
             stats["total_checkInLate"] += 1
         if row.checkOut and row.checkOut < row.examEndTime:
             stats["total_checkOutEarly"] += 1
-    return stats
 
+    return stats
 
 
 

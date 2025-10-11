@@ -2,7 +2,7 @@
 {% set body_class = 'user-homepage' %}
 {% block title %}Homepage{% endblock %}
 {% block content %}
-<h1>Welcome Back - <i>{{ user_name }}</i></h1>
+<h1>Hi <i>{{ user_name }}</i></h1>
 
 {% if user_level in [2, 3, 4] %}
 <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;">
@@ -63,7 +63,7 @@
 {% endif %}
 
 {% if user_level == 1 %}    
-<div class="dashboard-row" style="grid-template-columns: repeat(5, 1fr);">
+<div class="dashboard-row">
     <div class="dashboard-frame">
         <h3>Cumulative Invigilation Hour</h3>
         <p class="dashboard-text" style="color:green;">{{ user_invigilationHour }}</p>
@@ -82,24 +82,25 @@
             <table class="user-data-table">
                 <thead>
                     <tr>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
                         <th>Exam Date</th>
                         <th>Exam Day</th>
                         <th>Exam Time</th>
                         <th>Exam Period</th>
+                        <th>Course Name</th>
+                        <th>Course Code</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for w in waiting %}
                     <tr>
-                        <td>{{ w.report.exam.course.courseName }}</td>
-                        <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
+
                         <td>{{ w.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ w.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                         <td>{{ w.report.exam.examStartTime.strftime("%A") }} - {{ w.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ w.report.exam.examStartTime.strftime("%H:%M") }} - {{ w.report.exam.examEndTime.strftime("%H:%M") }}</td>
                         <td>{{ (w.report.exam.examEndTime - w.report.exam.examStartTime).seconds // 3600 }}h {{ ((w.report.exam.examEndTime - w.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ w.report.exam.course.courseName }}</td>
+                        <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
                         <td>
                             <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
                             <button type="submit" name="action" value="accept" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
@@ -120,25 +121,25 @@
             <table class="user-data-table">
                 <thead>
                     <tr>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
                         <th>Exam Date</th>
                         <th>Exam Day</th>
                         <th>Exam Time</th>
                         <th>Exam Period</th>
                         <th>Exam Venue</th>
+                        <th>Course Name</th>
+                        <th>Course Code</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for c in confirm %}
                     <tr>
-                        <td>{{ c.report.exam.course.courseName }}</td>
-                        <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
                         <td>{{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                         <td>{{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</td>
                         <td>{{ (c.report.exam.examEndTime - c.report.exam.examStartTime).seconds // 3600 }}h {{ ((c.report.exam.examEndTime - c.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
                         <td>{{ c.report.exam.examVenue }}</td>
+                        <td>{{ c.report.exam.course.courseName }}</td>
+                        <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -154,27 +155,24 @@
             <table class="user-data-table">
                 <thead>
                     <tr>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
                         <th>Exam Date</th>
                         <th>Exam Day</th>
                         <th>Exam Time</th>
                         <th>Exam Period</th>
+                        <th>Course Name</th>
+                        <th>Course Code</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for a in open %}
                     <tr>
-                        <td>{{ a.report.exam.course.courseName }}</td>
-                        <td>{{ a.report.exam.course.courseCodeSectionIntake }}</td>
                         <td>{{ a.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ a.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                         <td>{{ a.report.exam.examStartTime.strftime("%A") }} - {{ a.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ a.report.exam.examStartTime.strftime("%H:%M") }} - {{ a.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>
-                            {{ (a.report.exam.examEndTime - a.report.exam.examStartTime).seconds // 3600 }}h 
-                            {{ ((a.report.exam.examEndTime - a.report.exam.examStartTime).seconds % 3600) // 60 }}m
-                        </td>
+                        <td>{{ (a.report.exam.examEndTime - a.report.exam.examStartTime).seconds // 3600 }}h {{ ((a.report.exam.examEndTime - a.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ a.report.exam.course.courseName }}</td>
+                        <td>{{ a.report.exam.course.courseCodeSectionIntake }}</td>
                         <td>
                             <input type="hidden" name="a_id" value="{{ a.attendanceId }}">
                             <button type="submit" name="action" value="open_accept" style="background-color: #d4edda; color: #155724; padding: 5%;">
