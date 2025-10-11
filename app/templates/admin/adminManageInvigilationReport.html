@@ -135,8 +135,10 @@
                                         "PENDING": "frame-pending",
                                         "CHECK IN": "frame-complete",
                                         "CHECK OUT": "frame-complete",
+                                        "COMPLETED": "frame-complete",
                                         "CHECK IN LATE": "frame-expired",
-                                        "CHECK OUT EARLY": "frame-expired"
+                                        "CHECK OUT EARLY": "frame-expired",
+                                        "EXPIRED": "frame-expired"
                                     } %}
                                     <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
                                 {% else %}
