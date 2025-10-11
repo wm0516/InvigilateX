@@ -137,9 +137,9 @@
     <h2>Timetable</h2>
     <div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div><br>
     <!-- Filters -->
-    <div class="profile-frame" style="margin-bottom: 20px;">
+    <div class="profile-frame">
         <form method="get" style="display:flex; align-items:center; gap:10px;">
-            <label for="department">Select Department:</label>
+            <label for="department">Select_Department:</label><br>
             <select name="department" id="department" onchange="this.form.submit()">
                 <option value="">All Departments</option>
                 {% for dept in department_data %}
@@ -149,7 +149,7 @@
                 {% endfor %}
             </select><br>
             
-            <label for="lecturer">Select_Lecturer:</label>
+            <label for="lecturer">Select_Lecturer:</label><br>
             <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                 <option value="">All Lecturers</option>
                 {% for lecturer in lecturers %}
