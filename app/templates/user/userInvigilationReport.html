@@ -81,8 +81,23 @@
                                     <div>Check-in Time</div><div><strong>: {{ att.checkIn }}</strong></div> 
                                     <div>Check-out Time</div><div><strong>: {{ att.checkOut }}</strong></div>
                                     {% if att.checkIn and att.checkOut %}
-                                        <div style="color: green;">Total Invigilation Time</div><div><strong>: {{ ((att.checkOut - att.checkIn).total_seconds() / 3600) | round(2) }} hours</strong></div>
-                                    {% endif %}                               
+                                        {% set exam_start = att.report.exam.examStartTime %}
+                                        {% set exam_end = att.report.exam.examEndTime %}
+                                        {% set check_in = att.checkIn %}
+                                        {% set check_out = att.checkOut %}
+
+                                        {# Clamp actual presence within the exam window #}
+                                        {% set actual_start = [check_in, exam_start] | max %}
+                                        {% set actual_end = [check_out, exam_end] | min %}
+
+                                        {% set total_seconds = (actual_end - actual_start).total_seconds() %}
+                                        {% if total_seconds < 0 %}
+                                            {% set total_seconds = 0 %}
+                                        {% endif %}
+
+                                        <div style="color: green;">Total Invigilation Time</div>
+                                        <div><strong>: {{ (total_seconds / 3600) | round(2) }} hours</strong></div>
+                                    {% endif %}
                                 </div>
                             </td>
 

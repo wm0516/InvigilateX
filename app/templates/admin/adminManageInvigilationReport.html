@@ -117,10 +117,25 @@
                             <td>
                                 {% if att %}
                                     <div class="info-grid">
-                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%Y-%m-%d %H:%M") if att.checkIn else "None" }}</strong></div>
-                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%Y-%m-%d %H:%M") if att.checkOut else "None" }}</strong></div>
+                                        <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%d %b %Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                        <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%d %b %Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
                                         {% if att.checkIn and att.checkOut %}
-                                            <div style="color: green;">Total Invigilation Time</div><div><strong>: {{ ((att.checkOut - att.checkIn).total_seconds() / 3600) | round(2) }} hours</strong></div>
+                                            {% set exam_start = att.report.exam.examStartTime %}
+                                            {% set exam_end = att.report.exam.examEndTime %}
+                                            {% set check_in = att.checkIn %}
+                                            {% set check_out = att.checkOut %}
+
+                                            {# Clamp times to within the exam period #}
+                                            {% set actual_start = [check_in, exam_start] | max %}
+                                            {% set actual_end = [check_out, exam_end] | min %}
+
+                                            {% set total_seconds = (actual_end - actual_start).total_seconds() %}
+                                            {% if total_seconds < 0 %}
+                                                {% set total_seconds = 0 %}
+                                            {% endif %}
+
+                                            <div style="color: green;">Total Invigilation Time</div>
+                                            <div><strong>: {{ (total_seconds / 3600) | round(2) }} hours</strong></div>
                                         {% endif %}
                                     </div>
                                 {% else %}
