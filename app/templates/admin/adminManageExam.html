@@ -121,14 +121,12 @@
                 </div><br>
 
                 <label>Exam Venue</label>
-                <div id="venueContainer" style="margin-top: 5px;">
-                    <div class="venue-row" style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                        <select name="venue[]" class="venue-select" required style="flex: 1; padding: 5px;">
+                <div id="venueContainer">
+                    <div class="venue-row" style="display: flex; align-items: center; gap: 10px;">
+                        <select name="venue[]" class="venue-select" required>
                             <option value="" disabled selected>Select Exam Venue</option>
                             {% for venue in venue_data %}
-                                <option value="{{ venue.venueNumber }}">
-                                    [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
-                                </option>
+                                <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                             {% endfor %}
                         </select>
                         <button type="button" class="addVenueBtn"
@@ -372,12 +370,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const venueContainer = document.getElementById("venueContainer");
     const maxVenues = 20;
 
-    // Listen for click events inside venue container
     venueContainer.addEventListener("click", function (e) {
-        // Add new venue dropdown when "+" is clicked
-        if (e.target.classList.contains("addVenueBtn")) {
-            const currentVenues = venueContainer.querySelectorAll(".venue-row").length;
+        const target = e.target;
 
+        // ✅ Handle Add Button ("+")
+        if (target.classList.contains("addVenueBtn") && target.textContent.trim() === "+") {
+            const currentVenues = venueContainer.querySelectorAll(".venue-row").length;
             if (currentVenues >= maxVenues) {
                 alert(`You can only select up to ${maxVenues} venues.`);
                 return;
@@ -390,19 +388,21 @@ document.addEventListener("DOMContentLoaded", function () {
             const newSelect = newRow.querySelector("select");
             newSelect.value = "";
 
-            // Change "+" button to "−" and make it removable
+            // Convert "+" to "−"
             const newButton = newRow.querySelector(".addVenueBtn");
             newButton.textContent = "−";
-            newButton.style.backgroundColor = "#dc3545"; // red button
+            newButton.style.backgroundColor = "#dc3545"; // red
             newButton.title = "Remove this venue";
 
-            // Remove function for "−" button
-            newButton.addEventListener("click", function () {
-                newRow.remove();
-            });
-
-            // Append new row below existing ones
             venueContainer.appendChild(newRow);
+        }
+
+        // ✅ Handle Remove Button ("−")
+        if (target.classList.contains("addVenueBtn") && target.textContent.trim() === "−") {
+            const row = target.closest(".venue-row");
+            if (row) {
+                row.remove();
+            }
         }
     });
 });
