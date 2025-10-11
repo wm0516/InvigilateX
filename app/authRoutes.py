@@ -326,16 +326,19 @@ def waiting_record(user_id):
         .all()
     )
 
-
 def confirm_record(user_id):
+    now = datetime.now()
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.invigilationStatus == True,
+            Exam.examEndTime > now
+        )
         .all()
     )
 
