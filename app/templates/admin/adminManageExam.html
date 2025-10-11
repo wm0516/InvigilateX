@@ -108,6 +108,14 @@
             </div>
 
             <div class="form-right">
+                <label>Exam Venue</label>
+                <select name="venue" id="editVenue" required>
+                    <option value="" disabled selected>Select Exam Venue</option>
+                    {% for venue in venue_data %}
+                        <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
+                    {% endfor %}
+                </select><br>
+
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="startDate" name="startDate" required>
@@ -118,22 +126,6 @@
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="endDate" name="endDate" required>
                     <input type="time" id="endTime" name="endTime" required>
-                </div><br>
-
-                <label>Exam Venue</label>
-                <div id="venueContainer">
-                    <div class="venue-row" style="display: flex; align-items: center; gap: 10px;">
-                        <select name="venue[]" class="venue-select" required>
-                            <option value="" disabled selected>Select Exam Venue</option>
-                            {% for venue in venue_data %}
-                                <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="button" class="addVenueBtn"
-                                style="padding: 6px 12px; font-size: 18px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            +
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -364,47 +356,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial restriction setup
     restrictStartTime();
     restrictEndTime();
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const venueContainer = document.getElementById("venueContainer");
-    const maxVenues = 20;
-
-    venueContainer.addEventListener("click", function (e) {
-        const target = e.target;
-
-        // ✅ Handle Add Button ("+")
-        if (target.classList.contains("addVenueBtn") && target.textContent.trim() === "+") {
-            const currentVenues = venueContainer.querySelectorAll(".venue-row").length;
-            if (currentVenues >= maxVenues) {
-                alert(`You can only select up to ${maxVenues} venues.`);
-                return;
-            }
-
-            const firstRow = venueContainer.querySelector(".venue-row");
-            const newRow = firstRow.cloneNode(true);
-
-            // Reset dropdown selection
-            const newSelect = newRow.querySelector("select");
-            newSelect.value = "";
-
-            // Convert "+" to "−"
-            const newButton = newRow.querySelector(".addVenueBtn");
-            newButton.textContent = "−";
-            newButton.style.backgroundColor = "#dc3545"; // red
-            newButton.title = "Remove this venue";
-
-            venueContainer.appendChild(newRow);
-        }
-
-        // ✅ Handle Remove Button ("−")
-        if (target.classList.contains("addVenueBtn") && target.textContent.trim() === "−") {
-            const row = target.closest(".venue-row");
-            if (row) {
-                row.remove();
-            }
-        }
-    });
 });
 </script>
 {% endblock %}
