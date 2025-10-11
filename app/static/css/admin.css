@@ -262,6 +262,8 @@ html, body {
 
 
 .calendar-container {
+    overflow: auto;
+    max-height: 700px;
     background: #f8f8f8;
     padding: 20px;
     border-radius: 10px;
@@ -282,6 +284,7 @@ html, body {
     color: #333;
 }
 
+/* ✅ Grid inside each day — 4 columns */
 .exam-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
