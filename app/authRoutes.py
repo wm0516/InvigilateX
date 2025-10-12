@@ -1,28 +1,13 @@
-# -------------------------------
-# Standard library imports
-# -------------------------------
-from datetime import datetime
 
-# -------------------------------
-# Third-party imports
-# -------------------------------
-from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
+from datetime import datetime
+from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
-
-# -------------------------------
-# Local application imports
-# -------------------------------
 from app import app
 from .backend import *
-
-# -------------------------------
-# Flask and application setup
-# -------------------------------
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-
 
 
 # -------------------------------
@@ -218,8 +203,6 @@ def logout():
     return redirect(url_for('login')) 
 
 
-
-
 # -------------------------------
 # Function for Auth SaveLoginCredentials 
 # -------------------------------
@@ -294,11 +277,6 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-
-
-
-
-
 # -------------------------------
 # Record Attendances function
 # -------------------------------
@@ -307,7 +285,6 @@ def attendance_record():
     user_id = session.get('user_id')
     confirm = confirm_record(user_id)
     return render_template('auth/attendance.html', confirm=confirm)
-
 
 
 # -------------------------------
@@ -325,6 +302,7 @@ def waiting_record(user_id):
         )
         .all()
     )
+
 
 def confirm_record(user_id):
     return (
@@ -364,8 +342,6 @@ def open_record():
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
-
-
 
 
 # -------------------------------

@@ -31,7 +31,6 @@ role_map = {
 
 
 
-# Basic User Details Function
 # -------------------------------
 # Basic User Details Function 1: Email Format [End with @newinti.edu.my]
 # -------------------------------
@@ -184,7 +183,6 @@ The InvigilateX Team'''
         return False, f"Failed to Send Email. Error: {str(e)}"
 
 
-
 # -------------------------------
 # Auth Function 5: Check Reset Password [Must with Token(userId), and Both Password Must Be Same]
 # -------------------------------
@@ -210,12 +208,6 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
     user.userPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
     db.session.commit()
     return user, None
-
-
-
-
-
-
 
 
 # Admin Function
@@ -475,8 +467,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     return True, "Exam created/updated successfully"
 
 
-
-
 # -------------------------------
 # Delete All Related Exam after get modify
 # -------------------------------
@@ -509,9 +499,6 @@ def delete_exam_related(exam_id, commit=True):
         db.session.commit()
 
     return True, f"Related data for exam {exam_id} deleted successfully"
-
-
-
 
 
 # -------------------------------
@@ -567,9 +554,6 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
 
     return True, "Staff created successfully"
 
-
-
-
 # -------------------------------
 # Admin Function 5: View and Edit Admin Profile
 # -------------------------------
@@ -601,11 +585,4 @@ def check_profile(id, contact, password1, password2):
         return True, "No Update"
     
     return True, ""
-
-
-
-
-
-
-
 

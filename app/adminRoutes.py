@@ -1,6 +1,4 @@
-# -------------------------------
-# Standard library imports
-# -------------------------------
+
 import os
 import re
 import warnings
@@ -8,10 +6,6 @@ from io import BytesIO
 from collections import defaultdict
 from datetime import datetime
 import random
-
-# -------------------------------
-# Third-party imports
-# -------------------------------
 import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -21,18 +15,11 @@ from flask import render_template, request, redirect, url_for,flash, session, js
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func, and_, or_, case
-
-# -------------------------------
-# Local application imports
-# -------------------------------
 from app import app
 from .authRoutes import login_required
 from .backend import *
 from .database import *
 
-# -------------------------------
-# Flask and application setup
-# -------------------------------
 # Initialize serializer and bcrypt
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
@@ -112,16 +99,6 @@ def update_attendanceStatus():
 
 
 
-
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Function handle file upload
 # -------------------------------
@@ -178,11 +155,6 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
     else:
         flash("No file uploaded", "error")
         return redirect(url_for(redirect_endpoint))
-
-
-
-
-
 
 
 
@@ -459,10 +431,6 @@ def admin_manageCourse():
 
 
 
-
-
-
-
 # -------------------------------
 # Get Department Details for ManageDepartmentEditPage
 # -------------------------------
@@ -655,20 +623,6 @@ def admin_manageVenue():
             return redirect(url_for('admin_manageVenue'))
     # Render template
     return render_template('admin/adminManageVenue.html', active_tab='admin_manageVenuetab', venue_data=venue_data, venue_select=venue_select)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -987,7 +941,6 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
     db.session.commit()
 
 
-
 # -------------------------------
 # Function for Admin ManageExam Route
 # -------------------------------
@@ -1176,24 +1129,6 @@ def admin_manageExam():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Function for Admin User Download Excel Template
 # -------------------------------
@@ -1303,6 +1238,7 @@ def process_staff_row(row):
         gender=str(row['gender']).upper(),
         hashed_pw=hashed_pw
     )
+
 
 # -------------------------------
 # Read All StaffDetails Under The ManageLecturerEditPage
@@ -1470,17 +1406,6 @@ def admin_manageStaff():
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 # -------------------------------
 # Extract Base Name + Timestamp
 # -------------------------------
@@ -1632,7 +1557,6 @@ def parse_date_range(date_range):
         return None, None
 
 
-
 # -------------------------------
 # Get TimetableLink Details for ManageTimetableEditPage
 # -------------------------------
@@ -1711,7 +1635,6 @@ def save_timetable_to_db(structured):
 
     db.session.commit()
     return rows_inserted
-
 
 
 # -------------------------------
@@ -1874,20 +1797,13 @@ def admin_manageTimetable():
 
 
 
-
-
-
-
-
-
-
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
-    seen_exams = set()  # ✅ To skip duplicate exam sessions
+    seen_exams = set()  # To skip duplicate exam sessions
 
     for att in attendances:
         exam = att.report.exam
@@ -1930,7 +1846,6 @@ def get_calendar_data():
 
     calendar_data = dict(sorted(calendar_data.items()))
     return calendar_data
-
 
 
 # -------------------------------
@@ -1992,8 +1907,6 @@ def calculate_invigilation_stats():
         if row.checkOut and row.checkOut < row.examEndTime:
             stats["total_checkOutEarly"] += 1
     return stats
-
-
 
 
 # -------------------------------
@@ -2066,5 +1979,4 @@ def admin_profile():
 
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
                            admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
-
 
