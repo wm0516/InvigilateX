@@ -379,8 +379,6 @@ def user_homepage():
             if action == 'accept':
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now()
-                chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + pending_hours
-                chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
 
             elif action == 'reject':
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
