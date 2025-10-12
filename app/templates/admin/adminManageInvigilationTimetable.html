@@ -9,11 +9,11 @@
 
 {% block content %}
 <div class="menu-section">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2>Invigilation Timetable</h2>
-        <button id="downloadPDF" style="background-color: black; color: white; padding: 5px 10px; border-radius: 4px;">
-            Download PDF
-        </button>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Invigilation Timetable</h3>
+        <div class="button-wrapper">
+            <button id="generatePDF" style="background-color: black;">Download PDF</button>
+        </div>
     </div>
 
     <div style="display: flex; gap: 15px; align-items: center;">
@@ -79,27 +79,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
 });
 
-document.getElementById('downloadPDF')?.addEventListener('click', () => {
+document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
+    // Landscape 'l', mm units, A4 size
+    const doc = new jsPDF('l', 'mm', 'a4');
 
-    // Create a PDF in landscape A4
-    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: 'a4' });
+    // Add first page title
+    doc.setFontSize(22);
+    doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth()/2, 20, { align: "center" });
 
-    // Select the container we want to render
-    const element = document.querySelector(".calendar-container");
+    // Capture the timetable HTML
+    const calendarContainer = document.querySelector(".calendar-container");
+    if (!calendarContainer) return alert("No timetable found!");
 
-    pdf.html(element, {
-        callback: function (pdf) {
-            pdf.save("Invigilation_Timetable.pdf");
-        },
-        x: 10,      // left margin
-        y: 10,      // top margin
-        html2canvas: {
-            scale: 0.8,         // adjust for quality and size
-            useCORS: true,      // allow external images if any
-        },
-        autoPaging: 'text',     // auto split pages if content is long
-    });
+    const canvas = await html2canvas(calendarContainer, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+
+    // PDF page dimensions
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = doc.internal.pageSize.getHeight();
+    const margin = 20; // 20mm margin
+    const imgWidth = pdfWidth - 2 * margin;
+    const imgProps = doc.getImageProperties(imgData);
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+    // Position image below the title
+    let position = 30; 
+    if (imgHeight + position > pdfHeight) {
+        doc.addPage();
+        position = margin;
+    }
+
+    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+
+    doc.save("Invigilation_Timetable.pdf");
 });
 </script>
 {% endblock %}

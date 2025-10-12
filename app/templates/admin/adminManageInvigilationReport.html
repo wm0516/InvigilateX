@@ -8,6 +8,7 @@
 {% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
 
 {% block dashboard_section %}
+<!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
@@ -36,10 +37,12 @@
 {% endblock %}
 
 {% block edit_section %}
+<!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" style="width: 100%; margin:auto;">
         <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%"></div>
+        <div class="form-left" style="width: 100%">
+        </div>
     </div>
 </form>
 {% endblock %}
@@ -76,11 +79,11 @@
                 <tr class="{% if att and not att.report.exam.examStatus %}inactive-row-show
                         {% elif att and att.report.exam.examVenue is none %}error-row-show
                         {% endif %}">
-
+                    
                     {% if i == 0 %}
                         <!-- Exam ID -->
                         <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
-
+                        
                         <!-- Exam Details -->
                         <td rowspan="{{ total_rows }}">
                             <div class="info-grid">
@@ -96,8 +99,8 @@
                             </div>
                         </td>
 
-                        <!-- Invigilator Count -->
-                        <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                        <!-- Number of Invigilators -->
+                        <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
                     {% endif %}
 
                     <!-- Invigilator Details -->
@@ -114,7 +117,7 @@
                         {% endif %}
                     </td>
 
-                    <!-- Check-in/out -->
+                    <!-- Check-in/out Time -->
                     <td>
                         {% if att %}
                             <div class="info-grid">
@@ -137,7 +140,7 @@
                         {% endif %}
                     </td>
 
-                    <!-- Attendance -->
+                    <!-- Attendance Status -->
                     <td>
                         {% if att %}
                             {% set remark_classes = {
@@ -171,6 +174,7 @@
 </div>
 {% endblock %}
 
+
 {% block extra_scripts %}
 <script>
 document.getElementById("generatePDF").addEventListener("click", function () {
@@ -179,12 +183,14 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
 
+    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
 
     const startY = margin + 30;
 
+    // Table headers
     const headers = [
         "Exam ID",
         "Exam Details",
@@ -195,13 +201,26 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         "Invigilation Status"
     ];
 
+    // Collect table data, show **only the text in each column** ignoring rowspan/merged cells
     const rows = [];
     document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        const get = i => (tds[i] ? tds[i].innerText.trim() : "");
-        rows.push([get(0), get(1), get(2), get(3), get(4), get(5), get(6)]);
+        const row = [];
+        for (let i = 0; i < headers.length; i++) {
+            if (tds[i]) {
+                // Grab only the text content of this column
+                let cellText = tds[i].innerText.trim();
+                // Replace multiple whitespaces/newlines with single space
+                cellText = cellText.replace(/\s+/g, ' ');
+                row.push(cellText);
+            } else {
+                row.push(""); // empty if no cell
+            }
+        }
+        rows.push(row);
     });
 
+    // Generate PDF table
     doc.autoTable({
         head: [headers],
         body: rows,
