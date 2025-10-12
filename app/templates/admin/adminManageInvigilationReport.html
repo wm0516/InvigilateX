@@ -196,22 +196,22 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             if (index === 1 || index === 3 || index === 4) {
                 // Replace ": " with ":\n" for readability
                 text = text
-                    .replace(/Course Name\s*:/g, "Course Name :\n")
-                    .replace(/Course Code\/Section\s*:/g, "Course Code/Section :\n")
-                    .replace(/Number of Students\s*:/g, "Number of Students :\n")
-                    .replace(/Program Code\s*:/g, "Program Code :\n")
-                    .replace(/Exam Date\s*:/g, "Exam Date :\n")
-                    .replace(/Exam Day\s*:/g, "Exam Day :\n")
-                    .replace(/Exam Time\s*:/g, "Exam Time :\n")
-                    .replace(/Exam Period\s*:/g, "Exam Period :\n")
-                    .replace(/Exam Venue\s*:/g, "Exam Venue :\n")
-                    .replace(/ID\s*:/g, "ID :\n")
-                    .replace(/Name\s*:/g, "Name :\n")
-                    .replace(/Contact\s*:/g, "Contact :\n")
-                    .replace(/Gender\s*:/g, "Gender :\n")
-                    .replace(/Check-in\s*Time\s*:/g, "Check-in Time :\n")
-                    .replace(/Check-out\s*Time\s*:/g, "Check-out Time :\n");
-            }
+                    .replace(/Course Name\s*:/g, "Course Name :")
+                    .replace(/Course Code\/Section\s*:/g, "\nCourse Code/Section :")
+                    .replace(/Number of Students\s*:/g, "\nNumber of Students :")
+                    .replace(/Program Code\s*:/g, "\nProgram Code :")
+                    .replace(/Exam Date\s*:/g, "\nExam Date :")
+                    .replace(/Exam Day\s*:/g, "\nExam Day :")
+                    .replace(/Exam Time\s*:/g, "\nExam Time :")
+                    .replace(/Exam Period\s*:/g, "\nExam Period :")
+                    .replace(/Exam Venue\s*:/g, "\nExam Venue :")
+                    .replace(/ID\s*:/g, "\nID :")
+                    .replace(/Name\s*:/g, "\nName :")
+                    .replace(/Contact\s*:/g, "\nContact :")
+                    .replace(/Gender\s*:/g, "\nGender :")
+                    .replace(/Check-in\s*Time\s*:/g, "\nCheck-in Time :")
+                    .replace(/Check-out\s*Time\s*:/g, "\nCheck-out Time :");
+                }
 
             return text;
         });
