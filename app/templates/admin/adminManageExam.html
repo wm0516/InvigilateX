@@ -355,75 +355,46 @@ document.addEventListener("DOMContentLoaded", function () {
     restrictEndTime();
 });
 
-document.getElementById('generatePDF')?.addEventListener('click', () => {
+document.getElementById("generatePDF").addEventListener("click", function() {
     const { jsPDF } = window.jspdf;
-    const table = document.querySelector('.user-data-table');
-    const headerText = document.querySelector('h2').textContent || "Manage Exams";
+    const doc = new jsPDF('l', 'pt'); // 'l' = landscape, 'pt' = points
+    const margin = 40;
 
-    if (!table) {
-        alert("Table not found!");
-        return;
-    }
+    // Title on the first page
+    doc.setFontSize(18);
+    doc.text("Manage Exams", doc.internal.pageSize.getWidth() / 2, margin, { align: "center" });
 
-    // Temporarily expand the table for full capture
-    const originalOverflow = document.body.style.overflow;
-    const originalTransform = table.style.transform;
-    document.body.style.overflow = 'visible';
-    table.style.transform = 'scale(1)';
-
-    html2canvas(table, {
-        scale: 2,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        windowWidth: document.body.scrollWidth,
-        windowHeight: document.body.scrollHeight
-    }).then(canvas => {
-        const pdf = new jsPDF({orientation: 'landscape', unit: 'pt',format: 'a4'});
-
-        // Margins (in points)
-        const marginLeft = 40;
-        const marginTop = 60;
-        const marginRight = 40;
-        const marginBottom = 40;
-
-        const pageWidth = pdf.internal.pageSize.getWidth() - marginLeft - marginRight;
-        const pageHeight = pdf.internal.pageSize.getHeight() - marginTop - marginBottom;
-
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = pageWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-        let heightLeft = imgHeight;
-        let position = marginTop;
-
-        // Add header on first page
-        pdf.setFontSize(18);
-        pdf.text(headerText, marginLeft, 40);
-
-        pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-
-        // Add more pages if needed
-        while (heightLeft > 0) {
-            pdf.addPage('a4', 'landscape');
-            pdf.setFontSize(18);
-            pdf.text(headerText, marginLeft, 40);
-            position = marginTop - heightLeft + imgHeight;
-            pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
-
-        // Restore original layout
-        document.body.style.overflow = originalOverflow;
-        table.style.transform = originalTransform;
-
-        // Save file
-        pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
-    }).catch(err => {
-        console.error("Error generating PDF:", err);
-        alert("An error occurred while generating the PDF.");
+    // Extract table data
+    const headers = [];
+    document.querySelectorAll(".user-data-table thead th").forEach(th => {
+        headers.push(th.innerText);
     });
+
+    const data = [];
+    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
+        const row = [];
+        tr.querySelectorAll("td").forEach(td => {
+            row.push(td.innerText.replace(/\s+/g, ' ').trim()); // clean up whitespace
+        });
+        data.push(row);
+    });
+
+    // Add table using autoTable
+    doc.autoTable({
+        startY: margin + 30, // leave space after title
+        head: [headers],
+        body: data,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 10, cellPadding: 4 },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 240, 240] },
+        didDrawPage: function (data) {
+            // Optional: header/footer per page
+        },
+    });
+
+    // Save PDF
+    doc.save("Manage_Exams.pdf");
 });
 
 </script>
