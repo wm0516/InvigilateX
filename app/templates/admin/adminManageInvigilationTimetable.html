@@ -81,90 +81,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
-
-    const calendarContainer = document.querySelector(".calendar-container");
-    if (!calendarContainer) return alert("No timetable found!");
-
-    // Temporary style adjustments
-    const originalStyle = calendarContainer.getAttribute("style") || "";
-    calendarContainer.style.maxHeight = "none";
-    calendarContainer.style.overflow = "visible";
-    calendarContainer.style.height = "auto";
-
-    // Wait for DOM reflow
-    await new Promise(r => setTimeout(r, 300));
-
-    // Capture full image
-    const canvas = await html2canvas(calendarContainer, {
-        scale: 2,
-        useCORS: true,
-        scrollY: 0,
-        backgroundColor: "#ffffff"
+    const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "px",
+        format: "a4"
     });
 
-    // Restore original style
-    calendarContainer.setAttribute("style", originalStyle);
-
-    const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = doc.internal.pageSize.getWidth();   // e.g. 297mm
-    const pdfHeight = doc.internal.pageSize.getHeight(); // e.g. 210mm
     const margin = 20;
-    const imgWidth = pdfWidth - 2 * margin;
-    const imgProps = doc.getImageProperties(imgData);
-    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+    const pdfWidth = pdf.internal.pageSize.getWidth() - margin * 2;
+    const pdfHeight = pdf.internal.pageSize.getHeight() - margin * 2;
 
-    // Pixel to mm conversion for accurate pagination
-    const pxFullHeight = canvas.height;
-    const mmPerPx = imgHeight / pxFullHeight;
+    // Create a clone to adjust layout before rendering
+    const calendarContainer = document.querySelector(".calendar-container");
+    const clone = calendarContainer.cloneNode(true);
 
-    // Effective page height in pixels
-    const pageHeightPx = (pdfHeight - 2 * margin) / mmPerPx;
+    // Force 4 exam cards per row for consistent layout
+    clone.querySelectorAll(".exam-grid").forEach(grid => {
+        grid.style.display = "grid";
+        grid.style.gridTemplateColumns = "repeat(4, 1fr)";
+        grid.style.gap = "10px";
+    });
 
-    // Add header
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("Invigilation Timetable", pdfWidth / 2, margin - 5, { align: "center" });
+    // Temporarily add clone to document for accurate rendering
+    clone.style.width = pdfWidth + "px";
+    clone.style.padding = "10px";
+    clone.style.backgroundColor = "white";
+    document.body.appendChild(clone);
 
-    let remainingHeight = pxFullHeight;
-    let pageOffset = 0;
+    const canvas = await html2canvas(clone, { scale: 2 });
+    const imgData = canvas.toDataURL("image/png");
+
+    const imgWidth = pdfWidth;
+    const imgHeight = canvas.height * (imgWidth / canvas.width);
+
+    let position = margin + 30; // leave space for header
+
+    // Add Header
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    pdf.text("Invigilation Timetable", pdf.internal.pageSize.getWidth() / 2, margin + 10, { align: "center" });
+
+    // Add content with automatic page breaks
+    let remainingHeight = imgHeight;
+    let y = position;
+
+    let pageHeight = pdf.internal.pageSize.getHeight() - margin * 2;
+    const pageRatio = imgWidth / canvas.width;
+
+    const pageCanvas = document.createElement("canvas");
+    const pageCtx = pageCanvas.getContext("2d");
+    const pageHeightPx = canvas.height * (pageHeight / imgHeight);
+    pageCanvas.width = canvas.width;
+    pageCanvas.height = pageHeightPx;
+
+    let renderedHeight = 0;
 
     while (remainingHeight > 0) {
-        const canvasSlice = document.createElement("canvas");
-        canvasSlice.width = canvas.width;
-        canvasSlice.height = Math.min(pageHeightPx, remainingHeight);
-        const ctx = canvasSlice.getContext("2d");
-
-        // Copy only the current page area from full canvas
-        ctx.drawImage(
-            canvas,
-            0,
-            pageOffset,
-            canvas.width,
-            canvasSlice.height,
-            0,
-            0,
-            canvas.width,
-            canvasSlice.height
-        );
-
-        const sliceImg = canvasSlice.toDataURL("image/png");
-        const sliceHeightMm = (canvasSlice.height * mmPerPx);
-
-        const yPos = margin + 10; // add header spacing
-        doc.addImage(sliceImg, 'PNG', margin, yPos, imgWidth, sliceHeightMm);
-
-        remainingHeight -= pageHeightPx;
-        pageOffset += pageHeightPx;
-
-        if (remainingHeight > 0) {
-            doc.addPage();
-        }
+        pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+        pageCtx.drawImage(canvas, 0, renderedHeight * (canvas.height / imgHeight), canvas.width, pageHeightPx, 0, 0, canvas.width, pageHeightPx);
+        const img = pageCanvas.toDataURL("image/png");
+        pdf.addImage(img, "PNG", margin, y, imgWidth, pageHeight);
+        remainingHeight -= pageHeight;
+        renderedHeight += pageHeightPx;
+        if (remainingHeight > 0) pdf.addPage();
     }
 
-    doc.save("Invigilation_Timetable.pdf");
+    pdf.save("Invigilation_Timetable.pdf");
+    clone.remove();
 });
 </script>
-
 {% endblock %}
 
