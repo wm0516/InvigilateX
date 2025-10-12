@@ -144,7 +144,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>List of Departments</h2>
         <div class="button-wrapper">
-            <button id="generatePDF" style="background-color: black;">Download PDF</button>
+            <button id="generatePDF" style="background-color: black;">Download as PDF</button>
         </div>
     </div>
 
@@ -314,18 +314,8 @@ document.addEventListener("DOMContentLoaded", function () {
             body: rows,
             startY: startY,
             theme: "grid",
-            styles: {
-                font: "helvetica",
-                fontSize: 9,
-                cellPadding: 4,
-                overflow: "linebreak",
-                valign: "middle"
-            },
-            headStyles: {
-                fillColor: [33, 37, 41],
-                textColor: [255, 255, 255],
-                halign: "center"
-            },
+            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             // Automatically scale table to fit page width
             tableWidth: pageWidth - 2 * margin,
             margin: { top: margin, left: margin, right: margin, bottom: margin },

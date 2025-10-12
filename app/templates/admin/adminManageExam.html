@@ -150,7 +150,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>List of Exams</h2>
         <div class="button-wrapper">
-            <button id="generatePDF" style="background-color: black;">Download PDF</button>
+            <button id="generatePDF" style="background-color: black;">Download as PDF</button>
         </div>
     </div>
 
@@ -419,18 +419,8 @@ document.addEventListener("DOMContentLoaded", function () {
             startY: startY,
             theme: "grid",
             tableWidth: "auto",
-            styles: {
-                font: "helvetica",
-                fontSize: 9,
-                cellPadding: 4,
-                overflow: "linebreak",
-                valign: "middle"
-            },
-            headStyles: {
-                fillColor: [33, 37, 41],
-                textColor: [255, 255, 255],
-                halign: "center"
-            },
+            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             margin: { top: margin, left: margin, right: margin, bottom: margin },
             didDrawPage: function (data) {
                 const pageCount = doc.internal.getNumberOfPages();
