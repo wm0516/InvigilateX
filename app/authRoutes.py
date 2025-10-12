@@ -277,16 +277,6 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-# -------------------------------
-# Record Attendances function
-# -------------------------------
-@app.route('/attendance', methods=['GET', 'POST'])
-def attendance_record():
-    # user_id = session.get('user_id')
-    # confirm = confirm_record(user_id)
-    confirm = InvigilatorAttendance.query.get(110) 
-    return render_template('auth/attendance.html', confirm=confirm)
-
 
 # -------------------------------
 # Helper functions
@@ -465,3 +455,17 @@ def user_homepage():
         return redirect(url_for('user_homepage'))
 
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, user_totalInvigilationHour=user_totalInvigilationHour)
+
+
+
+# -------------------------------
+# Record Attendances function
+# -------------------------------
+@app.route('/attendance', methods=['GET', 'POST'])
+def attendance_record():
+    # user_id = session.get('user_id')
+    # confirm = confirm_record(user_id)
+    confirm = InvigilatorAttendance.query.get(110) 
+    return render_template('auth/attendance.html', confirm=confirm)
+
+
