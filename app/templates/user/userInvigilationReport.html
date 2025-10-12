@@ -3,6 +3,9 @@
 {% block head_title %}<h2>Invigilation Report</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
+    <div class="button-wrapper">
+        <button id="generatePDF" style="background-color: black;">Download PDF</button>
+    </div>
     <div class="dashboard-row">
         <div class="dashboard-frame">
             <h3>Pending Invigilation Duties</h3>
@@ -125,5 +128,94 @@
         </table>
     </div>
 </div>
+{% endblock %}
 
+
+{% block extra_scripts %}
+<script>
+document.getElementById("generatePDF").addEventListener("click", function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
+
+    const startY = margin + 30;
+
+    // Table headers
+    const headers = ["Exam ID", "Exam Details", "Invigilators", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
+    const rows = [];
+    let lastExamID = "", lastExamDetails = "", lastInvCount = "";
+
+    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
+        const tds = tr.querySelectorAll("td");
+        const tdCount = tds.length;
+
+        // Handle rowspan — fill missing columns from previous values
+        let examID = "";
+        let examDetails = "";
+        let invCount = "";
+        let invDetails = "";
+        let checkTimes = "";
+        let attendance = "";
+        let invStatus = "";
+
+        if (tdCount === 7) {
+            // Normal full row
+            examID = tds[0]?.innerText.trim() || "";
+            examDetails = tds[1]?.innerText.trim() || "";
+            invCount = tds[2]?.innerText.trim() || "";
+            invDetails = tds[3]?.innerText.trim() || "";
+            checkTimes = tds[4]?.innerText.trim() || "";
+            attendance = tds[5]?.innerText.trim() || "";
+            invStatus = tds[6]?.innerText.trim() || "";
+
+            lastExamID = examID;
+            lastExamDetails = examDetails;
+            lastInvCount = invCount;
+
+        } else if (tdCount === 4) {
+            // This is a "continuation row" — missing rowspan columns
+            examID = "";
+            examDetails = "";
+            invCount = "";
+            invDetails = tds[0]?.innerText.trim() || "";
+            checkTimes = tds[1]?.innerText.trim() || "";
+            attendance = tds[2]?.innerText.trim() || "";
+            invStatus = tds[3]?.innerText.trim() || "";
+        }
+
+        // Clean up text formatting
+        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+            text.replace(/\s*:\s*/g, " : ")
+        );
+
+        rows.push([examID, examDetails, invCount, invDetails, checkTimes, attendance, invStatus]);
+    });
+
+    // Generate PDF table
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: startY,
+        theme: "grid",
+        styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left"},
+        headStyles: {fillColor: [33, 37, 41], textColor: 255, fontStyle: "bold" },
+        tableWidth: "auto",
+        margin: { top: margin, left: margin, right: margin, bottom: margin },
+        didDrawPage: function (data) {
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+        }
+    });
+    doc.save("Invigilation_Report.pdf");
+});
+</script>
 {% endblock %}
