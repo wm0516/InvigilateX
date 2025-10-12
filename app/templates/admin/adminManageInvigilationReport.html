@@ -193,7 +193,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     // Table headers
     const headers = [
         "Exam ID",
-        "Exam Details",
+        "Exam Details", 
         "Invigilators",
         "Invigilator Details",
         "Check-in/out Time",
@@ -201,25 +201,83 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         "Invigilation Status"
     ];
 
-    // Collect table data, flatten rowspan
+    // Collect table data with proper rowspan handling
     const rows = [];
-    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
+    const tableRows = document.querySelectorAll(".user-data-table tbody tr");
+    
+    // Track rowspan data across rows
+    let currentExamID = "";
+    let currentExamDetails = "";
+    let currentInvCount = "";
+    let rowspanCount = 0;
+    let currentRowspan = 0;
+
+    tableRows.forEach((tr, index) => {
         const tds = tr.querySelectorAll("td");
+        const rowData = Array(7).fill(""); // Initialize empty array for 7 columns
 
-        let examID = tds[0]?.innerText.trim() || "";
-        let examDetails = tds[1]?.innerText.trim() || "";
-        let invCount = tds[2]?.innerText.trim() || "";
-        let invDetails = tds[3]?.innerText.trim() || "";
-        let checkTimes = tds[4]?.innerText.trim() || "";
-        let attendance = tds[5]?.innerText.trim() || "";
-        let invStatus = tds[6]?.innerText.trim() || "";
+        // Process each cell, handling rowspan
+        tds.forEach((td, colIndex) => {
+            const rowspan = parseInt(td.getAttribute("rowspan")) || 1;
+            const actualColIndex = getActualColumnIndex(rowData);
+            
+            if (rowspan > 1) {
+                // This is a rowspan cell - store its value for subsequent rows
+                if (colIndex === 0) {
+                    currentExamID = td.innerText.trim();
+                    currentRowspan = rowspan;
+                    rowspanCount = rowspan;
+                } else if (colIndex === 1) {
+                    currentExamDetails = td.innerText.trim();
+                } else if (colIndex === 2) {
+                    currentInvCount = td.innerText.trim();
+                }
+            }
+            
+            // Fill the data in the correct column
+            if (actualColIndex < 7) {
+                if (colIndex === 0 && rowspan > 1) {
+                    rowData[0] = currentExamID;
+                } else if (colIndex === 1 && rowspan > 1) {
+                    rowData[1] = currentExamDetails;
+                } else if (colIndex === 2 && rowspan > 1) {
+                    rowData[2] = currentInvCount;
+                } else {
+                    rowData[actualColIndex] = td.innerText.trim();
+                }
+            }
+        });
 
-        // Flatten multi-line formatting
-        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-            text.replace(/\s*:\s*/g, " : ")
-        );
-        rows.push([examID,examDetails,invCount,invDetails,checkTimes,attendance,invStatus]);
+        // Handle rowspan continuation
+        if (rowspanCount > 1) {
+            rowspanCount--;
+            if (rowData[0] === "" && currentExamID) rowData[0] = currentExamID;
+            if (rowData[1] === "" && currentExamDetails) rowData[1] = currentExamDetails;
+            if (rowData[2] === "" && currentInvCount) rowData[2] = currentInvCount;
+        } else {
+            // Reset when rowspan ends
+            currentExamID = "";
+            currentExamDetails = "";
+            currentInvCount = "";
+        }
+
+        // Clean up the data (remove extra spaces and formatting)
+        rowData.forEach((data, idx) => {
+            if (idx === 1 || idx === 3 || idx === 4) { // Exam Details, Invigilator Details, Check-in/out Time
+                rowData[idx] = data.replace(/\s*:\s*/g, " : ").replace(/\n/g, " | ");
+            }
+        });
+
+        rows.push(rowData);
     });
+
+    // Helper function to find the next empty column
+    function getActualColumnIndex(rowData) {
+        for (let i = 0; i < rowData.length; i++) {
+            if (rowData[i] === "") return i;
+        }
+        return rowData.length;
+    }
 
     // Generate PDF table
     doc.autoTable({
@@ -229,8 +287,8 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         theme: "grid",
         styles: {
             font: "helvetica",
-            fontSize: 8,
-            cellPadding: 4,
+            fontSize: 7, // Slightly smaller font to fit better
+            cellPadding: 3,
             overflow: "linebreak",
             valign: "top",
             halign: "left"
@@ -239,6 +297,15 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             fillColor: [33, 37, 41],
             textColor: 255,
             fontStyle: "bold"
+        },
+        columnStyles: {
+            0: { cellWidth: 50 },  // Exam ID
+            1: { cellWidth: 120 }, // Exam Details
+            2: { cellWidth: 40 },  // Invigilators
+            3: { cellWidth: 100 }, // Invigilator Details
+            4: { cellWidth: 90 },  // Check-in/out Time
+            5: { cellWidth: 50 },  // Attendance Status
+            6: { cellWidth: 50 }   // Invigilation Status
         },
         tableWidth: "auto",
         margin: { top: margin, left: margin, right: margin, bottom: margin },
