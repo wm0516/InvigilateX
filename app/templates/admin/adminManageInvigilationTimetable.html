@@ -66,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const d of days) {
         const dateAttr = d.querySelector(".calendar-date").dataset.date;
         const date = new Date(dateAttr);
-
         if (!isNaN(date) && date >= today) { 
             target = d; 
             break; 
@@ -81,40 +80,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    // Landscape 'l', mm units, A4 size
-    const doc = new jsPDF('l', 'mm', 'a4');
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape mode
+    const margin = 15;
+    let y = margin;
 
-    // Add first page title
-    doc.setFontSize(22);
-    doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth()/2, 20, { align: "center" });
+    // Header (first page)
+    doc.setFontSize(20);
+    doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth() / 2, y, { align: "center" });
+    y += 12;
 
-    // Capture the timetable HTML
-    const calendarContainer = document.querySelector(".calendar-container");
-    if (!calendarContainer) return alert("No timetable found!");
+    const days = document.querySelectorAll(".calendar-day");
+    if (!days.length) return alert("No timetable found!");
 
-    const canvas = await html2canvas(calendarContainer, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+    for (const [i, day] of days.entries()) {
+        const dateText = day.querySelector(".calendar-date").innerText;
+        const examList = day.querySelector(".exam-grid");
 
-    // PDF page dimensions
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = doc.internal.pageSize.getHeight();
-    const margin = 20; // 20mm margin
-    const imgWidth = pdfWidth - 2 * margin;
-    const imgProps = doc.getImageProperties(imgData);
-    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+        // Capture this day’s content
+        const canvas = await html2canvas(examList, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
 
-    // Position image below the title
-    let position = 30; 
-    if (imgHeight + position > pdfHeight) {
-        doc.addPage();
-        position = margin;
+        const pdfWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+        const imgProps = doc.getImageProperties(imgData);
+        const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const blockHeight = imgHeight + 15;
+
+        // Add new page if block exceeds available height
+        if (y + blockHeight > doc.internal.pageSize.getHeight() - margin) {
+            doc.addPage();
+            y = margin;
+
+            // Repeat header on new page
+            doc.setFontSize(20);
+            doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth() / 2, y, { align: "center" });
+            y += 12;
+        }
+
+        // Draw border box
+        doc.setDrawColor(0);
+        doc.rect(margin - 3, y - 7, pdfWidth + 6, blockHeight + 5);
+
+        // Day title
+        doc.setFontSize(14);
+        doc.text(dateText, margin, y);
+        y += 5;
+
+        // Add image for exams
+        doc.addImage(imgData, 'PNG', margin, y, pdfWidth, imgHeight);
+
+        // Move down for next section
+        y += imgHeight + 10;
     }
-
-    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
 
     doc.save("Invigilation_Timetable.pdf");
 });
-
 </script>
 {% endblock %}
+
 
