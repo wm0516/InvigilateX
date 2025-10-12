@@ -211,26 +211,32 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
-// Clear edit form fields when course changes
+// -----------------------------
+// Clear edit form fields
+// -----------------------------
 function clearEditFields() {
-    const fieldsToClear = ['editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo', 'startDate', 'startTime', 'endDate', 'endTime', 'editPracticalLecturer', 'editTutorialLecturer'];
+    const fieldsToClear = [
+        'editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo', 
+        'startDate', 'startTime', 'endDate', 'endTime', 
+        'editPracticalLecturer', 'editTutorialLecturer'
+    ];
     fieldsToClear.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
     });
 }
 
-// Populate edit form when course data is loaded
+// -----------------------------
+// Populate edit form
+// -----------------------------
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
     document.getElementById('editVenue').value = data.examVenue || '';
     document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
 
-    // split datetime for inputs
     if (data.examStartTime) {
         const [date, time] = data.examStartTime.split('T');
         document.getElementById('startDate').value = date;
@@ -246,6 +252,9 @@ function populateEditForm(data) {
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 }
 
+// -----------------------------
+// Fetch exam details on course change
+// -----------------------------
 document.addEventListener("DOMContentLoaded", function() {
     const courseSelect = document.getElementById("editExamCourseSection");
 
@@ -253,30 +262,22 @@ document.addEventListener("DOMContentLoaded", function() {
         courseSelect.addEventListener("change", function() {
             const selectedValue = this.value;
             clearEditFields();
-
             if (!selectedValue) return;
 
-            // Fetch exam details from backend
             fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        populateEditForm(data);
-                    }
+                    if (data.error) alert(data.error);
+                    else populateEditForm(data);
                 })
-                .catch(err => {
-                    console.error("Error fetching exam details:", err);
-                });
+                .catch(err => console.error("Error fetching exam details:", err));
         });
     }
 });
 
-
-// ==============================
-// Admin Manage Exam Page: Date/Time Restrictions
-// ==============================
+// -----------------------------
+// Date & Time Restrictions
+// -----------------------------
 document.addEventListener("DOMContentLoaded", function () {
     const startDate = document.getElementById("startDate");
     const startTime = document.getElementById("startTime");
@@ -287,84 +288,55 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const now = new Date();
     const today = now.toISOString().split("T")[0];
-    const nextYear = new Date(now);
-    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const nextYear = new Date(now); nextYear.setFullYear(nextYear.getFullYear() + 1);
     const nextYearDate = nextYear.toISOString().split("T")[0];
 
-    // Restrict date pickers
-    startDate.min = today;
-    startDate.max = nextYearDate;
-    endDate.min = today;
-    endDate.max = nextYearDate;
+    startDate.min = today; startDate.max = nextYearDate;
+    endDate.min = today; endDate.max = nextYearDate;
+    startDate.value = today; endDate.value = today;
 
-    // Default: set both dates to today
-    startDate.value = today;
-    endDate.value = today;
-
-    // Restrict time: disable past times if today is selected
     function restrictStartTime() {
         if (startDate.value === today) {
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
-            startTime.min = hh + ":" + mm;  // from now onwards
-        } else {
-            startTime.min = "00:00";  // full day allowed
-        }
+            startTime.min = `${hh}:${mm}`;
+        } else startTime.min = "00:00";
     }
 
     function restrictEndTime() {
         if (endDate.value === today) {
             let hh = String(now.getHours()).padStart(2, "0");
             let mm = String(now.getMinutes()).padStart(2, "0");
-            endTime.min = hh + ":" + mm;
-        } else {
-            endTime.min = "00:00";
-        }
+            endTime.min = `${hh}:${mm}`;
+        } else endTime.min = "00:00";
     }
 
-    // Adjust end date automatically
     function adjustEndDate() {
         if (!startDate.value || !startTime.value || !endTime.value) return;
-
         const start = new Date(startDate.value + "T" + startTime.value);
         let end = new Date(endDate.value + "T" + endTime.value);
-
-        // If end time is earlier than start time → assume overnight
         if (end < start) {
-            let nextDay = new Date(start);
+            const nextDay = new Date(start);
             nextDay.setDate(nextDay.getDate() + 1);
             endDate.value = nextDay.toISOString().split("T")[0];
-        } else {
-            endDate.value = startDate.value;
-        }
+        } else endDate.value = startDate.value;
     }
 
-    // Bind events
-    startDate.addEventListener("change", () => {
-        endDate.value = startDate.value;
-        restrictStartTime();
-        restrictEndTime();
-    });
-
+    startDate.addEventListener("change", () => { endDate.value = startDate.value; restrictStartTime(); restrictEndTime(); });
     endDate.addEventListener("change", restrictEndTime);
     startTime.addEventListener("change", adjustEndDate);
     endTime.addEventListener("change", adjustEndDate);
 
-    // Initial restriction setup
-    restrictStartTime();
-    restrictEndTime();
+    restrictStartTime(); restrictEndTime();
 });
 
+// -----------------------------
+// PDF Generation
+// -----------------------------
 document.getElementById('generatePDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
-    const tableContainer = document.querySelector('.user-table-container');
     const table = document.querySelector('.user-data-table');
-    const headerText = document.querySelector('h2').textContent || "Manage Exams";
-
-    // Temporarily disable scrolling
-    const originalMaxHeight = tableContainer.style.maxHeight;
-    tableContainer.style.maxHeight = 'none';
-    tableContainer.style.overflow = 'visible';
+    const headerText = document.querySelector('.menu-section h2')?.textContent || "Manage Exams";
 
     html2canvas(table).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -378,21 +350,8 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
 
         pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
         pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
-
-        // Restore scroll settings
-        tableContainer.style.maxHeight = originalMaxHeight;
-        tableContainer.style.overflow = 'auto';
     });
 });
-
 </script>
 {% endblock %}
-
-
-
-
-
-
-
-
 
