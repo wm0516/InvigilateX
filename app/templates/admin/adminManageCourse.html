@@ -225,61 +225,59 @@
         </div>
     </div>
 
-    <div class="user-table-container">
-        <table class="user-data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Course Status</th>
-                    <th>Course Code/Section</th>
-                    <th>Course Name</th>
-                    <th>Credit Hour(s)</th>
-                    <th>Course Department</th>
-                    <th>Number of Students</th>
-                    <th>Lecturer Details</th>
-                    <th>Exam ID</th>
-                </tr>   
-            </thead>
-            <tbody>
-                {% for row in course_data %}
-                    <tr class="
-                        {% if row.courseStatus == 0 %}
-                            inactive-row-show
-                        {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none or row.courseExamId is none %}
-                            error-row-show
+    <table class="user-data-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Course Status</th>
+                <th>Course Code/Section</th>
+                <th>Course Name</th>
+                <th>Credit Hour(s)</th>
+                <th>Course Department</th>
+                <th>Number of Students</th>
+                <th>Lecturer Details</th>
+                <th>Exam ID</th>
+            </tr>   
+        </thead>
+        <tbody>
+            {% for row in course_data %}
+                <tr class="
+                    {% if row.courseStatus == 0 %}
+                        inactive-row-show
+                    {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none or row.courseExamId is none %}
+                        error-row-show
+                    {% endif %}
+                ">
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        {% if row.courseStatus %}
+                            <span class="status frame-completed">
+                                Activated
+                            </span>
+                        {% else %}
+                            <span class="status frame-expired">Inactivated</span>
                         {% endif %}
-                    ">
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            {% if row.courseStatus %}
-                                <span class="status frame-completed">
-                                    Activated
-                                </span>
-                            {% else %}
-                                <span class="status frame-expired">Inactivated</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ row.courseCodeSectionIntake }}</td>
-                        <td>{{ row.courseName }}</td>
-                        <td>{{ row.courseHour }}</td>
-                        <td>{{ row.courseDepartment }}</td>
-                        <td>{{ row.courseStudent }}</td>
-                        <td>
-                            <div class="info-grid">
-                                <div>Practical Lecturer</div>
-                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
-                                <div>Tutorial Lecturer</div>
-                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
-                            </div>
-                        </td>
-                        <td>
-                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </td>
+                    <td>{{ row.courseCodeSectionIntake }}</td>
+                    <td>{{ row.courseName }}</td>
+                    <td>{{ row.courseHour }}</td>
+                    <td>{{ row.courseDepartment }}</td>
+                    <td>{{ row.courseStudent }}</td>
+                    <td>
+                        <div class="info-grid">
+                            <div>Practical Lecturer</div>
+                            <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
+                            <div>Tutorial Lecturer</div>
+                            <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
+                        </div>
+                    </td>
+                    <td>
+                        {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 
@@ -384,30 +382,99 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-document.getElementById('generatePDF')?.addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const table = document.querySelector('.user-data-table');
-    const headerText = document.querySelector('h2').textContent || "Manage Courses";
+document.addEventListener("DOMContentLoaded", function () {
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
 
-    const now = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    const filename = `manageCourses_${dateStr}.pdf`;
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
 
-    html2canvas(table).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
 
-        pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
+        const margin = 40;
+        const pageWidth = doc.internal.pageSize.getWidth();
 
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Courses", pageWidth / 2, margin, { align: "center" });
 
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
-        pdf.save(filename);
+        const startY = margin + 25;
+
+        // ===== Get table =====
+        const table = document.querySelector(".user-data-table");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
+                let text = td.innerText.trim();
+
+                // clean up and format lecturer info readability
+                if (td.cellIndex === 7) {  // Lecturer details column
+                    text = text
+                        .replace(/\s*Practical Lecturer\s*:/g, "\nPractical Lecturer:")
+                        .replace(/\s*Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
+                        .trimStart();
+                }
+
+                text = text.replace(/\s*\n\s*/g, " "); // single-line cleanup
+                return text;
+            });
+            return cells;
+        });
+
+        // ===== Generate table =====
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: startY,
+            theme: "grid",
+            styles: {
+                font: "helvetica",
+                fontSize: 9,
+                cellPadding: 4,
+                overflow: "linebreak",
+                valign: "middle"
+            },
+            headStyles: {
+                fillColor: [33, 37, 41],
+                textColor: [255, 255, 255],
+                halign: "center"
+            },
+            columnStyles: {
+                0: { cellWidth: 30 },   // No
+                1: { cellWidth: 70 },   // Status
+                2: { cellWidth: 90 },   // Code/Section
+                3: { cellWidth: 140 },  // Course Name
+                4: { cellWidth: 60 },   // Credit Hour
+                5: { cellWidth: 80 },   // Department
+                6: { cellWidth: 70 },   // Students
+                7: { cellWidth: 150 },  // Lecturer Details
+                8: { cellWidth: 60 }    // Exam ID
+            },
+            tableWidth: "auto",
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
+        });
+
+        doc.save("Manage_Course_List.pdf");
     });
 });
+
 </script>
 {% endblock %}
 
