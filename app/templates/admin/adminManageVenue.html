@@ -201,51 +201,38 @@ function filterTable() {
     });
 }
 
+// Add event listeners
 document.getElementById('filterVenue').addEventListener('change', filterTable);
 document.getElementById('filterLevel').addEventListener('change', filterTable);
 document.getElementById('filterCapacity').addEventListener('change', filterTable);
 
-// PDF generation
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
 
-    // Clone table and remove dropdowns
-    const table = document.querySelector('.user-data-table');
-    const cloneTable = table.cloneNode(true);
-    cloneTable.querySelectorAll('.header-dropdown').forEach(dropdown => dropdown.remove());
-
-    // Create offscreen container
-    const container = document.createElement('div');
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    container.appendChild(cloneTable);
-    document.body.appendChild(container);
-
-    // Get current date for filename
+    // Get current date
     const now = new Date();
-    const day = String(now.getDate()).padStart(2, '0');
-    const month = now.toLocaleString('en-GB', { month: 'short' }); // e.g., "Oct"
-    const year = now.getFullYear();
-    const filename = `manageVenue_${day}${month}${year}.pdf`;
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
+    
+    // Filename: pageName_Date
+    const filename = `manageVenue_${dateStr}.pdf`;
 
-    // Render to PDF
-    html2canvas(container).then(canvas => {
+    // Get the table element
+    const table = document.querySelector('.user-data-table');
+
+    // Use html2canvas to capture the table
+    html2canvas(table).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
-
-        // Landscape PDF
-        const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' = landscape
-
+        const pdf = new jsPDF('l', 'pt', 'a4');
+        
+        // Calculate width and height
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-        pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight);
+        pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight); // padding 20
         pdf.save(filename);
-
-        // Clean up
-        document.body.removeChild(container);
-    }).catch(err => console.error(err));
+    });
 });
-
 </script>
 {% endblock %}
 
