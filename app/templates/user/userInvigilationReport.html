@@ -182,6 +182,10 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             attendance = tds[2]?.innerText.trim() || "";
             invStatus = tds[3]?.innerText.trim() || "";
         }
+        // Clean up text formatting
+        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+            text.replace(/\s*:\s*/g, " : ")
+        );
 
         // Push row into PDF table
         rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
