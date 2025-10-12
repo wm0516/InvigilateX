@@ -72,3 +72,76 @@
     </table>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
+
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Staff", pageWidth / 2, margin, { align: "center" });
+
+        const startY = margin + 25;
+
+        // ===== Prepare table data manually =====
+        const table = document.getElementById("userTable");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
+                let text = td.innerText.trim();
+
+                // Fix multi-line readability
+                text = text.replace(/\s*\n\s*/g, " ");
+
+                // Handle cumulative and pending hours in Invigilation Time column (td.cellIndex === 9)
+                if (td.cellIndex === 9) {
+                    text = text
+                        .replace(/\s*Cumulative\s*:/g, "\nCumulative:") 
+                        .replace(/\s*Pending\s*:/g, "\nPending:");
+                    text = text.trimStart();
+                }
+
+                return text;
+            });
+            return cells;
+        });
+
+        // ===== Generate AutoTable =====
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: startY,
+            theme: "grid",
+            tableWidth: "auto",
+            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
+        });
+
+        // ===== Save PDF =====
+        doc.save("Admin_Staff_List.pdf");
+    });
+});
+</script>
+{% endblock %}
