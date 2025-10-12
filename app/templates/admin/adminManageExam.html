@@ -363,8 +363,11 @@ document.addEventListener("DOMContentLoaded", function () {
     generateBtn.addEventListener("click", function () {
         const { jsPDF } = window.jspdf;
 
-        // Create PDF document (A4 landscape)
-        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
 
         const margin = 40;
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -376,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const startY = margin + 25;
 
-        // ===== Prepare table data manually (to preserve line breaks) =====
+        // ===== Prepare table data manually (to preserve readable formatting) =====
         const table = document.querySelector(".user-data-table");
         if (!table) {
             alert("No table found to export!");
@@ -388,24 +391,26 @@ document.addEventListener("DOMContentLoaded", function () {
             const cells = Array.from(tr.querySelectorAll("td")).map(td => {
                 let text = td.innerText.trim();
 
-                // Replace multiple spaces and preserve intended newlines
-                text = text.replace(/\s*\n\s*/g, "\n");
+                // Fix multi-line readability
+                text = text.replace(/\s*\n\s*/g, " ");
 
-                // Fix “Course Details” and “Exam Details” columns (2 and 4)
+                // Add newlines before each field label, not after colon
                 if (td.cellIndex === 2 || td.cellIndex === 4) {
-                    // Replace "Label : Value" pattern to insert newline after each
                     text = text
-                        .replace(/Course Name\s*:\s*/g, "Course Name:\n")
-                        .replace(/Course Code\/Section\s*:\s*/g, "Course Code/Section:\n")
-                        .replace(/Program Code\s*:\s*/g, "Program Code:\n")
-                        .replace(/Number of Students\s*:\s*/g, "Number of Students:\n")
-                        .replace(/Practical Lecturer\s*:\s*/g, "Practical Lecturer:\n")
-                        .replace(/Tutorial Lecturer\s*:\s*/g, "Tutorial Lecturer:\n")
-                        .replace(/Exam Date\s*:\s*/g, "Exam Date:\n")
-                        .replace(/Exam Day\s*:\s*/g, "Exam Day:\n")
-                        .replace(/Exam Time\s*:\s*/g, "Exam Time:\n")
-                        .replace(/Exam Period\s*:\s*/g, "Exam Period:\n")
-                        .replace(/Exam Venue\s*:\s*/g, "Exam Venue:\n");
+                        .replace(/\s*Course Name\s*:/g, "\nCourse Name:") 
+                        .replace(/\s*Course Code\/Section\s*:/g, "\nCourse Code/Section:")
+                        .replace(/\s*Program Code\s*:/g, "\nProgram Code:")
+                        .replace(/\s*Number of Students\s*:/g, "\nNumber of Students:")
+                        .replace(/\s*Practical Lecturer\s*:/g, "\nPractical Lecturer:")
+                        .replace(/\s*Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
+                        .replace(/\s*Exam Date\s*:/g, "\nExam Date:")
+                        .replace(/\s*Exam Day\s*:/g, "\nExam Day:")
+                        .replace(/\s*Exam Time\s*:/g, "\nExam Time:")
+                        .replace(/\s*Exam Period\s*:/g, "\nExam Period:")
+                        .replace(/\s*Exam Venue\s*:/g, "\nExam Venue:");
+
+                    // Clean up possible leading newline
+                    text = text.trimStart();
                 }
 
                 return text;
@@ -413,7 +418,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return cells;
         });
 
-        // ===== AutoTable with auto-fit width =====
+        // ===== Generate AutoTable =====
         doc.autoTable({
             head: [headers],
             body: rows,
@@ -442,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
         });
 
-        // ===== Save file =====
+        // ===== Save =====
         doc.save("Manage_Exam_List.pdf");
     });
 });
