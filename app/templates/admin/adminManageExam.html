@@ -357,43 +357,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById("generatePDF").addEventListener("click", function() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'pt'); // 'l' = landscape, 'pt' = points
+    const doc = new jsPDF('l', 'pt');
     const margin = 40;
 
-    // Title on the first page
     doc.setFontSize(18);
     doc.text("Manage Exams", doc.internal.pageSize.getWidth() / 2, margin, { align: "center" });
 
-    // Extract table data
-    const headers = [];
-    document.querySelectorAll(".user-data-table thead th").forEach(th => {
-        headers.push(th.innerText);
-    });
+    const headers = Array.from(document.querySelectorAll(".user-data-table thead th")).map(th => th.innerText);
+    const data = Array.from(document.querySelectorAll(".user-data-table tbody tr")).map(tr => 
+        Array.from(tr.querySelectorAll("td")).map(td => td.innerText.replace(/\s+/g, ' ').trim())
+    );
 
-    const data = [];
-    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
-        const row = [];
-        tr.querySelectorAll("td").forEach(td => {
-            row.push(td.innerText.replace(/\s+/g, ' ').trim()); // clean up whitespace
-        });
-        data.push(row);
-    });
-
-    // Add table using autoTable
     doc.autoTable({
-        startY: margin + 30, // leave space after title
+        startY: margin + 30,
         head: [headers],
         body: data,
         margin: { left: margin, right: margin },
         styles: { fontSize: 10, cellPadding: 4 },
         headStyles: { fillColor: [41, 128, 185], textColor: 255 },
         alternateRowStyles: { fillColor: [240, 240, 240] },
-        didDrawPage: function (data) {
-            // Optional: header/footer per page
-        },
     });
 
-    // Save PDF
     doc.save("Manage_Exams.pdf");
 });
 
