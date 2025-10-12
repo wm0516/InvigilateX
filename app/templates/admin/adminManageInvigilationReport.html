@@ -233,9 +233,9 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
         } else if (tdCount === 4) {
             // This is a "continuation row" — missing rowspan columns
-            examID = lastExamID;
-            examDetails = lastExamDetails;
-            invCount = lastInvCount;
+            examID = "";
+            examDetails = "";
+            invCount = "";
             invDetails = tds[0]?.innerText.trim() || "";
             checkTimes = tds[1]?.innerText.trim() || "";
             attendance = tds[2]?.innerText.trim() || "";
