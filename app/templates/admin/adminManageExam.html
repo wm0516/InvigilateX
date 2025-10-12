@@ -363,23 +363,49 @@ document.getElementById("generatePDF").addEventListener("click", function() {
     doc.setFontSize(18);
     doc.text("Manage Exams", doc.internal.pageSize.getWidth() / 2, margin, { align: "center" });
 
-    const headers = Array.from(document.querySelectorAll(".user-data-table thead th")).map(th => th.innerText);
-    const data = Array.from(document.querySelectorAll(".user-data-table tbody tr")).map(tr => 
-        Array.from(tr.querySelectorAll("td")).map(td => td.innerText.replace(/\s+/g, ' '))
-    );
+    // Table headers
+    const headers = Array.from(document.querySelectorAll(".user-data-table thead th")).map(th => th.innerText.trim());
 
+    // Table data
+    const data = Array.from(document.querySelectorAll(".user-data-table tbody tr")).map(tr => {
+        const cells = Array.from(tr.querySelectorAll("td"));
+        return cells.map((td, i) => {
+            // Special handling for columns containing .info-grid (multi-line data)
+            const infoGrid = td.querySelector(".info-grid");
+            if (infoGrid) {
+                const items = Array.from(infoGrid.querySelectorAll("div"));
+                let formatted = "";
+                for (let j = 0; j < items.length; j += 2) {
+                    const label = items[j]?.innerText.trim() || "";
+                    const value = items[j + 1]?.innerText.trim() || "";
+                    formatted += `${label}: ${value}\n`;
+                }
+                return formatted.trim();
+            } else {
+                // Normal cell text
+                return td.innerText.trim().replace(/\s+/g, " ");
+            }
+        });
+    });
+
+    // Generate PDF table
     doc.autoTable({
         startY: margin + 30,
         head: [headers],
         body: data,
         margin: { left: margin, right: margin },
-        styles: { fontSize: 10, cellPadding: 4 },
+        styles: { fontSize: 9, cellPadding: 4, valign: 'top' },
         headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-        alternateRowStyles: { fillColor: [240, 240, 240] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        columnStyles: {
+            2: { cellWidth: 150 }, // widen Course Details
+            4: { cellWidth: 150 }  // widen Exam Details
+        }
     });
 
     doc.save("Manage_Exams.pdf");
 });
+
 
 </script>
 {% endblock %}
