@@ -365,7 +365,7 @@ document.getElementById("generatePDF").addEventListener("click", function() {
 
     const headers = Array.from(document.querySelectorAll(".user-data-table thead th")).map(th => th.innerText);
     const data = Array.from(document.querySelectorAll(".user-data-table tbody tr")).map(tr => 
-        Array.from(tr.querySelectorAll("td")).map(td => td.innerText.replace(/\s+/g, ' ').trim())
+        Array.from(tr.querySelectorAll("td")).map(td => td.innerText.replace(/\s+/g, ' '))
     );
 
     doc.autoTable({
