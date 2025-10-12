@@ -201,25 +201,23 @@ function filterTable() {
     });
 }
 
+document.getElementById('filterVenue').addEventListener('change', filterTable);
+document.getElementById('filterLevel').addEventListener('change', filterTable);
+document.getElementById('filterCapacity').addEventListener('change', filterTable);
+
+// PDF generation
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
 
-    // Get current date
     const now = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
     const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    
-    // Filename: pageName_Date
     const filename = `manageVenue_${dateStr}.pdf`;
 
-    // Clone the table to modify for PDF
     const table = document.querySelector('.user-data-table');
     const cloneTable = table.cloneNode(true);
-
-    // Remove dropdowns in the cloned table header
     cloneTable.querySelectorAll('.header-dropdown').forEach(dropdown => dropdown.remove());
 
-    // Create a container div to hold header + table
     const container = document.createElement('div');
     const header = document.createElement('h2');
     header.textContent = 'Manage Venue';
@@ -228,7 +226,6 @@ document.getElementById('generatePDF').addEventListener('click', () => {
     container.appendChild(header);
     container.appendChild(cloneTable);
 
-    // Use html2canvas to capture
     html2canvas(container).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'pt', 'a4');
