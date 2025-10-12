@@ -565,13 +565,18 @@ def update_attendanceStatus():
         report = attendance.report
         exam = report.exam if report else None
         if not exam:
-            continue  # skip invalid records
+            continue
 
         check_in = attendance.checkIn
         check_out = attendance.checkOut
-        # localize exam datetimes
+
+        # --- Localize all datetimes consistently ---
         exam_start = mytz.localize(exam.examStartTime) if exam.examStartTime.tzinfo is None else exam.examStartTime
-        exam_end = mytz.localize(exam.examEndTime) if exam.examEndTime.tzinfo is None else exam.examEndTime
+        exam_end   = mytz.localize(exam.examEndTime)   if exam.examEndTime.tzinfo is None else exam.examEndTime
+        if check_in and check_in.tzinfo is None:
+            check_in = mytz.localize(check_in)
+        if check_out and check_out.tzinfo is None:
+            check_out = mytz.localize(check_out)
 
         remark = "PENDING"
 
@@ -607,4 +612,3 @@ def update_attendanceStatus():
 
 
 
-    
