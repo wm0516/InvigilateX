@@ -86,34 +86,58 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const calendarContainer = document.querySelector(".calendar-container");
     if (!calendarContainer) return alert("No timetable found!");
 
-    // Temporarily expand container
+    // Save original styles
     const originalStyle = calendarContainer.getAttribute("style") || "";
+    const originalOverflow = document.body.style.overflow;
+
+    // Temporarily expand the container fully
+    document.body.style.overflow = "hidden"; // prevent scrollbars
     calendarContainer.style.maxHeight = "none";
     calendarContainer.style.overflow = "visible";
+    calendarContainer.style.height = "auto";
 
-    const canvas = await html2canvas(calendarContainer, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
+    // Wait a frame so the DOM updates before snapshot
+    await new Promise(r => setTimeout(r, 300));
 
-    // Restore original style
+    // Use html2canvas with "scrollY: 0" to prevent cutoff
+    const canvas = await html2canvas(calendarContainer, {
+        scale: 2,
+        useCORS: true,
+        scrollY: 0,
+        windowWidth: document.body.scrollWidth,
+        windowHeight: document.body.scrollHeight
+    });
+
+    // Restore styles
     calendarContainer.setAttribute("style", originalStyle);
+    document.body.style.overflow = originalOverflow;
 
+    // Convert to PDF
+    const imgData = canvas.toDataURL("image/png");
     const pdfWidth = doc.internal.pageSize.getWidth();
     const pdfHeight = doc.internal.pageSize.getHeight();
-    const margin = 20;
+    const margin = 10;
     const imgWidth = pdfWidth - 2 * margin;
+
     const imgProps = doc.getImageProperties(imgData);
     const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-    let position = 30; 
-    if (imgHeight + position > pdfHeight) {
+    let heightLeft = imgHeight;
+    let position = 10;
+
+    // ✅ Automatically split into pages if content too long
+    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+    heightLeft -= pdfHeight - margin * 2;
+
+    while (heightLeft > 0) {
+        position = heightLeft - imgHeight + margin;
         doc.addPage();
-        position = margin;
+        doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight - margin * 2;
     }
 
-    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
     doc.save("Invigilation_Timetable.pdf");
 });
-
 </script>
 {% endblock %}
 
