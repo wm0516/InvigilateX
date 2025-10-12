@@ -67,6 +67,7 @@ class User(db.Model):
     userRegisterDateTime = db.Column(db.DateTime, server_default=func.now())                                          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the estimated total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
+    userCardId = db.Column(db.String(15), nullable=True)                                                              # Refer to user card UID
     timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
 
     # Relationship
@@ -85,6 +86,7 @@ class User(db.Model):
         userRegisterDateTime DATETIME DEFAULT CURRENT_TIMESTAMP,
         userCumulativeHours FLOAT DEFAULT 0.0,
         userPendingCumulativeHours FLOAT DEFAULT 0.0,
+        userCardId VARCHAR(15) NULL,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
