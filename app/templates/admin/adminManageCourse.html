@@ -397,6 +397,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
 
         // ===== Title =====
         doc.setFont("helvetica", "bold");
@@ -414,21 +415,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
         const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
+            return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
                 let text = td.innerText.trim();
 
-                // clean up and format lecturer info readability
-                if (td.cellIndex === 7) {  // Lecturer details column
+                if (idx === 7) {  // Lecturer details
                     text = text
                         .replace(/\s*Practical\s*:/g, "Practical:")
-                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")  // <-- ensure line break before Tutorial
+                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")
                         .trim();
                 }
-
-                text = text.replace(/\s*\n\n\s*/g, " "); // single-line cleanup
-                return text;
+                return text.replace(/\s*\n\n\s*/g, " ");
             });
-            return cells;
         });
 
         // ===== Generate table =====
@@ -449,22 +446,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 textColor: [255, 255, 255],
                 halign: "center"
             },
-            columnStyles: {
-                0: { cellWidth: 30 },   // No
-                1: { cellWidth: 70 },   // Status
-                2: { cellWidth: 90 },   // Code/Section
-                3: { cellWidth: 140 },  // Course Name
-                4: { cellWidth: 60 },   // Credit Hour
-                5: { cellWidth: 80 },   // Department
-                6: { cellWidth: 70 },   // Students
-                7: { cellWidth: 150 },  // Lecturer Details
-                8: { cellWidth: 60 }    // Exam ID
-            },
-            tableWidth: "auto",
+            // Automatically calculate table width to fit page
+            tableWidth: pageWidth - 2 * margin,
             margin: { top: margin, left: margin, right: margin, bottom: margin },
             didDrawPage: function (data) {
                 const pageCount = doc.internal.getNumberOfPages();
-                const pageHeight = doc.internal.pageSize.height;
                 doc.setFontSize(9);
                 doc.setTextColor(100);
                 doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
@@ -474,7 +460,6 @@ document.addEventListener("DOMContentLoaded", function () {
         doc.save("Manage_Course_List.pdf");
     });
 });
-
 </script>
 {% endblock %}
 

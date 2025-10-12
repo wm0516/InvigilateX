@@ -280,15 +280,16 @@ document.getElementById('downloadPDF')?.addEventListener('click', () => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' = landscape
 
-        // Add title
+        // Add centered, bold title
+        const pdfWidth = pdf.internal.pageSize.getWidth();
         pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
+        pdf.setFont(undefined, 'bold'); // make it bold
+        pdf.text(headerText, pdfWidth / 2, 40, { align: "center" });
 
         // Calculate image dimensions
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        const pdfHeight = (canvas.height * (pdfWidth - 40)) / canvas.width;
 
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth - 40, pdfHeight);
         pdf.save(filename);
     });
 });

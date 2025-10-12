@@ -206,61 +206,72 @@ document.getElementById('filterLevel').addEventListener('change', filterTable);
 document.getElementById('filterCapacity').addEventListener('change', filterTable);
 
 
-// ===============================
-// PDF EXPORT SECTION (A4 Landscape)
-// ===============================
-document.getElementById("generatePDF").addEventListener("click", async () => {
+document.getElementById("generatePDF").addEventListener("click", function () {
     const { jsPDF } = window.jspdf;
+
     const doc = new jsPDF({
         orientation: "landscape",
         unit: "pt",
         format: "a4"
     });
 
-    // Clone the table to clean it before exporting
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // ===== Title =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("List of Venue", pageWidth / 2, margin, { align: "center" });
+
+    const startY = margin + 30;
+
+    // ===== Prepare table data =====
     const table = document.querySelector(".user-data-table");
-    const clonedTable = table.cloneNode(true);
+    if (!table) {
+        alert("No table found to export!");
+        return;
+    }
 
-    // Remove all <select> dropdowns in the header
-    clonedTable.querySelectorAll("select").forEach(sel => sel.remove());
+    // Headers
+    const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.innerText.trim());
 
-    // Also remove the extra div wrappers so text stays clean
-    clonedTable.querySelectorAll(".dropdown-header").forEach(div => {
-        div.replaceWith(div.childNodes[0]); // keep only the text node ("Venue", etc.)
-    });
+    // Rows (only visible)
+    const rows = Array.from(table.querySelectorAll("tbody tr")).filter(tr => tr.style.display !== "none")
+        .map(tr => Array.from(tr.querySelectorAll("td")).map(td => td.textContent.trim()));
 
-    // Only include visible rows (respect filters)
-    clonedTable.querySelectorAll("tbody tr").forEach(tr => {
-        if (tr.style.display === "none") {
-            tr.remove();
+    // ===== Generate PDF table =====
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: startY,
+        theme: "grid",
+        styles: {
+            font: "helvetica",
+            fontSize: 9,
+            cellPadding: 4,
+            overflow: "linebreak",
+            valign: "middle",
+            halign: "center"
+        },
+        headStyles: {
+            fillColor: [33, 37, 41],
+            textColor: 255,
+            fontStyle: "bold"
+        },
+        tableWidth: "auto", // Auto-adjust columns based on content
+        margin: { top: margin, left: margin, right: margin, bottom: margin },
+        didDrawPage: function (data) {
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
         }
     });
 
-    // Add the cleaned table to the PDF
-    await doc.autoTable({
-        html: clonedTable,
-        startY: 50,
-        theme: "grid",
-        styles: { 
-            fontSize: 8, 
-            cellPadding: 3, 
-            overflow: "linebreak",
-            halign: "center",
-            valign: "middle"
-        },
-        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
-        margin: { left: 20, right: 20 },
-        tableWidth: "auto"
-    });
-
-    // Add title
-    const title = "List of Venue";
-    doc.setFontSize(16);
-    doc.text(title, doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
-
-    // Save file
     doc.save("Venue_List.pdf");
 });
+
 
 </script>
 {% endblock %}

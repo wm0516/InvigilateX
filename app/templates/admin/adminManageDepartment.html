@@ -273,61 +273,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
     generateBtn.addEventListener("click", function () {
         const { jsPDF } = window.jspdf;
-
-        const doc = new jsPDF({
-            orientation: "landscape",
-            unit: "pt",
-            format: "a4"
-        });
+        const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
 
         const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
 
         // ===== Title =====
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
         doc.text("Manage Departments", pageWidth / 2, margin, { align: "center" });
-
         const startY = margin + 25;
 
         // ===== Get table =====
         const table = document.querySelector(".user-data-table");
-        if (!table) {
-            alert("No table found to export!");
-            return;
-        }
+        if (!table) { alert("No table found to export!"); return; }
 
         const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr =>
+            Array.from(tr.querySelectorAll("td")).map((td, idx) => {
                 let text = td.innerText.trim();
 
-                // Format long detail columns (Dean, Hos, Hop)
-                if (td.cellIndex >= 3) {
+                // Format long detail columns
+                if (idx >= 3) {
                     text = text
-                        .replace(/\s*Dean ID\s*:/g, "Dean ID:")
-                        .replace(/\s*Dean Name\s*:/g, "\nDean Name:")
-                        .replace(/\s*Dean Email\s*:/g, "\nDean Email:")
-                        .replace(/\s*Dean Contact\s*:/g, "\nDean Contact:")
-                        .replace(/\s*Dean Department\s*:/g, "\nDean Department:")
-                        .replace(/\s*Hos ID\s*:/g, "Hos ID:")
-                        .replace(/\s*Hos Name\s*:/g, "\nHos Name:")
-                        .replace(/\s*Hos Email\s*:/g, "\nHos Email:")
-                        .replace(/\s*Hos Contact\s*:/g, "\nHos Contact:")
-                        .replace(/\s*Hos Department\s*:/g, "\nHos Department:")
-                        .replace(/\s*Hop ID\s*:/g, "Hop ID:")
-                        .replace(/\s*Hop Name\s*:/g, "\nHop Name:")
-                        .replace(/\s*Hop Email\s*:/g, "\nHop Email:")
-                        .replace(/\s*Hop Contact\s*:/g, "\nHop Contact:")
-                        .replace(/\s*Hop Department\s*:/g, "\nHop Department:")
+                        .replace(/\s*ID\s*:/g, "ID:")
+                        .replace(/\s*Name\s*:/g, "\nName:")
+                        .replace(/\s*Email\s*:/g, "\nEmail:")
+                        .replace(/\s*Contact\s*:/g, "\nContact:")
+                        .replace(/\s*Department\s*:/g, "\nDepartment:")
                         .trim();
                 }
-
-                text = text.replace(/\s*\n\s*/g, "\n"); // cleanup
                 return text;
-            });
-            return cells;
-        });
+            })
+        );
 
         // ===== Generate table =====
         doc.autoTable({
@@ -347,19 +326,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 textColor: [255, 255, 255],
                 halign: "center"
             },
-            columnStyles: {
-                0: { cellWidth: 40 },   // No
-                1: { cellWidth: 80 },   // Department Code
-                2: { cellWidth: 150 },  // Department Name
-                3: { cellWidth: 170 },  // Dean
-                4: { cellWidth: 170 },  // Hos
-                5: { cellWidth: 170 }   // Hop
-            },
-            tableWidth: "auto",
+            // Automatically scale table to fit page width
+            tableWidth: pageWidth - 2 * margin,
             margin: { top: margin, left: margin, right: margin, bottom: margin },
             didDrawPage: function (data) {
                 const pageCount = doc.internal.getNumberOfPages();
-                const pageHeight = doc.internal.pageSize.height;
                 doc.setFontSize(9);
                 doc.setTextColor(100);
                 doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
@@ -369,7 +340,6 @@ document.addEventListener("DOMContentLoaded", function () {
         doc.save("Manage_Department_List.pdf");
     });
 });
-
 </script>
 {% endblock %}
 
