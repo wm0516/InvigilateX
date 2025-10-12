@@ -172,10 +172,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             lastExamID = examID;
             lastExamDetails = examDetails;
         } else {
-            // Continuation row (rowspan)
-            examID = lastExamID;
-            examDetails = lastExamDetails;
-
             // Adjust columns for continuation row
             invDetails = tds[0]?.innerText.trim() || "";
             checkTimes = tds[1]?.innerText.trim() || "";
