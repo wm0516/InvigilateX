@@ -28,37 +28,33 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for c in confirm %}
                     <tr>
                         <td>
                             <div class="info-grid">
-                                <div>Course Name</div><div><strong>: {{ c.report.exam.course.courseName }}</strong></div>
-                                <div>Course Code/Section</div><div><strong>: {{ c.report.exam.course.courseCodeSectionIntake }}</strong></div>
-                                <div>Number of Students</div><div><strong>: {{ c.report.exam.course.courseStudent }}</strong></div>
-                                <div>Exam Date</div><div><strong>: {{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                                <div>Exam Day</div><div><strong>: {{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</strong></div>
-                                <div>Exam Time</div><div><strong>: {{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
-                                <div>Exam Period</div><div><strong>: {{ (c.report.exam.examEndTime - c.report.exam.examStartTime).seconds // 3600 }}h {{ ((c.report.exam.examEndTime - c.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                <div>Exam Venue</div><div><strong>: {{ c.report.exam.examVenue }}</strong></div>
+                                <div>Course Name</div><div><strong>: {{ confirm.report.exam.course.courseName }}</strong></div>
+                                <div>Course Code/Section</div><div><strong>: {{ confirm.report.exam.course.courseCodeSectionIntake }}</strong></div>
+                                <div>Number of Students</div><div><strong>: {{ confirm.report.exam.course.courseStudent }}</strong></div>
+                                <div>Exam Date</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ confirm.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                                <div>Exam Day</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%A") }} - {{ confirm.report.exam.examEndTime.strftime("%A") }}</strong></div>
+                                <div>Exam Time</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%H:%M") }} - {{ confirm.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
+                                <div>Exam Period</div><div><strong>: {{ (confirm.report.exam.examEndTime - confirm.report.exam.examStartTime).seconds // 3600 }}h {{ ((confirm.report.exam.examEndTime - confirm.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                                <div>Exam Venue</div><div><strong>: {{ confirm.report.exam.examVenue }}</strong></div>
                             </div>
                         </td>
                         <td>
                             <div class="info-grid">
-                                <div>Clock In</div><div><strong>: {{ c.report.checkIn }}</strong></div>
+                                <div>Clock In</div><div><strong>: {{ confirm.checkIn }}</strong></div>
                             </div>
                         </td>
                         <td>
                             <div class="info-grid">
-                                <div>Clock Out</div><div><strong>: {{ c.report.checkOut }}</strong></div>
+                                <div>Clock Out</div><div><strong>: {{ confirm.checkOut }}</strong></div>
                             </div>
                         </td>
                     </tr>
-                    {% endfor %}
                 </tbody>
             </table>
         </div>
-
-        
     </form>
 </body>
 </html>
