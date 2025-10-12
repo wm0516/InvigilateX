@@ -218,7 +218,13 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>List of Courses</h2> 
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>List of Courses</h2>
+        <div class="button-wrapper">
+            <button id="generatePDF" style="background-color: black;">Export Table to PDF</button>
+        </div>
+    </div>
+
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -276,6 +282,7 @@
     </div>
 </div>
 {% endblock %}
+
 
 
 {% block extra_scripts %}
@@ -374,6 +381,31 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             }
         }
+    });
+});
+
+document.getElementById('generatePDF')?.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const table = document.querySelector('.user-data-table');
+    const headerText = document.querySelector('h2').textContent || "Manage Courses";
+
+    const now = new Date();
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
+    const filename = `manageCourses_${dateStr}.pdf`;
+
+    html2canvas(table).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'pt', 'a4');
+
+        pdf.setFontSize(18);
+        pdf.text(headerText, 40, 40);
+
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        pdf.save(filename);
     });
 });
 </script>
