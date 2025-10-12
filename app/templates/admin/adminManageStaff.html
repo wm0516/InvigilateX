@@ -225,68 +225,66 @@
         </div>
     </div>
 
-    <div class="user-table-container">
-        <table id="userTable" class="user-data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Account Status</th> 
-                    <th>User ID</th>
-                    <th>Full Name</th>
-                    <th>Gender</th>
-                    <th>Email Address</th>
-                    <th>Contact Number</th>
-                    <th>Role Position</th>
-                    <th>Department</th>
-                    <th>Invigilation Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in user_data %}
-                <tr class="
-                    {% if row.userStatus == 2 %}
-                        inactive-row-show
-                    {% elif row.userStatus == 0 or row.userDepartment is none %}
-                        error-row-show
+    <table id="userTable" class="user-data-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Account Status</th> 
+                <th>User ID</th>
+                <th>Full Name</th>
+                <th>Gender</th>
+                <th>Email Address</th>
+                <th>Contact Number</th>
+                <th>Role Position</th>
+                <th>Department</th>
+                <th>Invigilation Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in user_data %}
+            <tr class="
+                {% if row.userStatus == 2 %}
+                    inactive-row-show
+                {% elif row.userStatus == 0 or row.userDepartment is none %}
+                    error-row-show
+                {% endif %}
+            ">                    
+                <td>{{ loop.index }}</td> 
+                <td>
+                    {% if row.userStatus|int == 0 %}
+                        <span class="status frame-pending">[Deactivated]</span>
+                    {% elif row.userStatus|int == 1 %}
+                        <span class="status frame-completed">[Activated]</span>
+                    {% elif row.userStatus|int == 2 %}
+                        <span class="status frame-expired">[DELETED]</span>
                     {% endif %}
-                ">                    
-                    <td>{{ loop.index }}</td> 
-                    <td>
-                        {% if row.userStatus|int == 0 %}
-                            <span class="status frame-pending">[Deactivated]</span>
-                        {% elif row.userStatus|int == 1 %}
-                            <span class="status frame-completed">[Activated]</span>
-                        {% elif row.userStatus|int == 2 %}
-                            <span class="status frame-expired">[DELETED]</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ row.userId }}</td>
-                    <td>{{ row.userName }}</td>
-                    <td>{{ row.userGender }}</td>
-                    <td>{{ row.userEmail }}</td>
-                    <td>{{ row.userContact }}</td>
-                    <td>
-                        {% if row.userLevel == 1 %}LECTURER
-                        {% elif row.userLevel == 2 %}DEAN
-                        {% elif row.userLevel == 3 %}HOS
-                        {% elif row.userLevel == 4 %}HOP
-                        {% elif row.userLevel == 5 %}ADMIN
-                        {% else %}Unknown{% endif %}
-                    </td>
-                    <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">N/A</span>' | safe }}</td>
-                    <td>
-                        {% if row.userLevel == 1 %}
-                            <div class="info-grid">
-                                <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
-                                <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
-                            </div>
-                        {% else %}---{% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                </td>
+                <td>{{ row.userId }}</td>
+                <td>{{ row.userName }}</td>
+                <td>{{ row.userGender }}</td>
+                <td>{{ row.userEmail }}</td>
+                <td>{{ row.userContact }}</td>
+                <td>
+                    {% if row.userLevel == 1 %}LECTURER
+                    {% elif row.userLevel == 2 %}DEAN
+                    {% elif row.userLevel == 3 %}HOS
+                    {% elif row.userLevel == 4 %}HOP
+                    {% elif row.userLevel == 5 %}ADMIN
+                    {% else %}Unknown{% endif %}
+                </td>
+                <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">N/A</span>' | safe }}</td>
+                <td>
+                    {% if row.userLevel == 1 %}
+                        <div class="info-grid">
+                            <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
+                            <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
+                        </div>
+                    {% else %}---{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 
