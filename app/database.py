@@ -65,7 +65,7 @@ class User(db.Model):
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
     userStatus = db.Column(db.Integer, default=0)                                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
     userRegisterDateTime = db.Column(db.DateTime, server_default=func.now())                                          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
-    userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
+    userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the estimated total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
 

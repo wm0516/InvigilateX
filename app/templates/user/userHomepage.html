@@ -66,11 +66,11 @@
 <div class="dashboard-row" style="grid-template-columns: repeat(3, 1fr);">
     <div class="dashboard-frame">
         <h3>Actual Invigilation Hours</h3>
-        <p class="dashboard-text" style="color:green;">{{ user_totalInvigilationHour }}</p>
+        <p class="dashboard-text" style="color:green;">{{ user_invigilationHour }}</p>
     </div>
     <div class="dashboard-frame">
         <h3>Estimated Invigilation Hours</h3>
-        <p class="dashboard-text" style="color:blue;">{{ user_invigilationHour }}</p>
+        <p class="dashboard-text" style="color:blue;">{{ user_invigilationHour +  user_pendingInvigilationHour}}</p>
     </div>
     <div class="dashboard-frame">
         <h3>Pending Invigilation Hours</h3>

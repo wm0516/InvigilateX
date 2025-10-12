@@ -343,37 +343,8 @@ def open_record():
 def user_homepage():
     user_id = session.get('user_id')
     chosen = User.query.filter_by(userId=user_id).first()
-
     waiting = waiting_record(user_id)
-    data = confirm_record(user_id).all()
     confirm = confirm_record(user_id).filter(Exam.examEndTime > datetime.now()).all()
-    total_invigilation_seconds = 0
-
-    for att in data:
-        exam = att.report.exam
-        check_in = att.checkIn
-        check_out = att.checkOut
-        start = exam.examStartTime
-        end = exam.examEndTime
-
-        # Skip if any field missing
-        if not all([check_in, check_out, start, end]):
-            continue
-
-        # Handle overnight exam
-        if end < start:
-            end += timedelta(days=1)
-
-        # Adjust actual duration within exam window
-        effective_start = max(check_in, start)
-        effective_end = min(check_out, end)
-
-        # Only count valid durations
-        if effective_end > effective_start:
-            duration = (effective_end - effective_start).total_seconds()
-            total_invigilation_seconds += duration
-
-    user_totalInvigilationHour = round(total_invigilation_seconds / 3600, 2)
 
     # Get open slots + gender filter
     open_slots = open_record()
@@ -451,21 +422,89 @@ def user_homepage():
             chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
             db.session.commit()
             flash("Open Slot Accepted Successfully", "success")
-
         return redirect(url_for('user_homepage'))
+    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 
-    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, user_totalInvigilationHour=user_totalInvigilationHour)
 
 
+# -------------------------------
+# Return hours between two datetimes as float
+# -------------------------------
+def hours_diff(start, end):
+    return max(0, (end - start).total_seconds() / 3600.0)
 
 # -------------------------------
 # Record Attendances function
 # -------------------------------
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance_record():
-    # user_id = session.get('user_id')
-    # confirm = confirm_record(user_id)
-    confirm = InvigilatorAttendance.query.get(110) 
-    return render_template('auth/attendance.html', confirm=confirm)
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("User not logged in", "error")
+        return redirect(url_for('login'))
 
+    user = User.query.get(user_id)
+    timeSlots = confirm_record(user_id).all()
 
+    if request.method == 'POST':
+        card_str = request.form.get('cardNumber', '').strip()
+        if not card_str:
+            flash("Card scan missing!", "error")
+            return redirect(url_for('attendance_record'))
+
+        try:
+            scan_time = datetime.strptime(card_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+        except ValueError:
+            flash("Invalid time format!", "error")
+            return redirect(url_for('attendance_record'))
+
+        for att in timeSlots:
+            exam = att.report.exam
+            start, end = exam.examStartTime, exam.examEndTime
+            before, after = start - timedelta(hours=1), end + timedelta(hours=1)
+            before_end_30 = end - timedelta(minutes=30)
+
+            # === Check-in ===
+            if not att.checkIn:
+                if before <= scan_time <= start:
+                    att.checkIn, att.remark = scan_time, "CHECK IN"
+                elif start < scan_time < before_end_30:
+                    att.checkIn, att.remark = scan_time, "CHECK IN LATE"
+                else:
+                    flash("Check-in not allowed now.", "error")
+                    continue
+
+            # === Check-out ===
+            elif not att.checkOut:
+                if end <= scan_time <= after:
+                    att.checkOut, att.remark = scan_time, "CHECK OUT"
+                elif scan_time < end:
+                    att.checkOut, att.remark = scan_time, "CHECK OUT EARLY"
+                else:
+                    flash("Check-out not allowed now.", "error")
+                    continue
+
+            # === Auto check-out ===
+            if not att.checkOut and scan_time > after:
+                att.checkOut, att.remark = after, "CHECK OUT"
+
+            # === When both exist → compute and update user hours ===
+            if att.checkIn and att.checkOut:
+                exam_hours = hours_diff(start, end)
+                actual_hours = hours_diff(att.checkIn, att.checkOut)
+
+                # Only adjust if actual is less (late or early)
+                if att.checkIn > start or att.checkOut < end:
+                    user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
+                # else: both normal → keep full exam hours
+
+                # Mark as completed
+                att.invigilationStatus = True
+            att.timeAction = scan_time
+
+        db.session.commit()
+        flash("Attendance updated!", "success")
+        return redirect(url_for('attendance_record'))
+
+    confirm = timeSlots[0] if timeSlots else None
+    return render_template('attendance.html', timeSlots=timeSlots, confirm=confirm)
