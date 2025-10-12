@@ -301,7 +301,30 @@ html, body {
 
 
 
+/* Header container to show text and dropdown nicely */
+.dropdown-header {
+    position: relative;
+    color: #ffffff; /* Header text color */
+    font-weight: bold;
+}
 
+/* Remove default select styling */
+.header-dropdown {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* invisible but still functional */
+    cursor: pointer;
+}
+
+/* Optional: keep header text visible */
+.dropdown-header::after {
+    content: ' ▼';
+    color: #ffffff; /* white arrow */
+    margin-left: 5px;
+}
 
 
 
