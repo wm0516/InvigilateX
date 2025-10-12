@@ -265,9 +265,9 @@
                     <td>{{ row.courseStudent }}</td>
                     <td>
                         <div class="info-grid">
-                            <div>Practical Lecturer</div>
+                            <div>Practical</div>
                             <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
-                            <div>Tutorial Lecturer</div>
+                            <div>Tutorial</div>
                             <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
                         </div>
                     </td>
@@ -420,8 +420,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 // clean up and format lecturer info readability
                 if (td.cellIndex === 7) {  // Lecturer details column
                     text = text
-                        .replace(/\s*Practical Lecturer\s*:/g, "\nPractical Lecturer:")
-                        .replace(/\s*Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
+                        .replace(/\s*Practical\s*:/g, "\nPractical:")
+                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")
                         .trimStart();
                 }
 
