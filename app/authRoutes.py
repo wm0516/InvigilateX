@@ -1,105 +1,27 @@
 # -------------------------------
 # Standard library imports
 # -------------------------------
-from datetime import datetime, timedelta
-from functools import wraps
+from datetime import datetime
 
 # -------------------------------
 # Third-party imports
 # -------------------------------
-from flask import (
-    render_template, request, redirect, url_for, flash, session, 
-    get_flashed_messages, jsonify
-)
+from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer
 
 # -------------------------------
 # Local application imports
 # -------------------------------
-from app import app, db
+from app import app
 from .backend import *
-from .database import *
 
 # -------------------------------
-# Flask and app setup
+# Flask and application setup
 # -------------------------------
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-
-
-# -------------------------------
-# Context processor for user session
-# -------------------------------
-@app.context_processor
-def inject_user_data():
-    user_id = session.get('user_id')
-    if user_id:
-        user = User.query.get(user_id)
-        if user:
-            return {
-                'user_id': user.userId,
-                'user_name': user.userName,
-                'user_department': user.userDepartment,
-                'user_level': user.userLevel,
-                'user_email': user.userEmail,
-                'user_contact': user.userContact,
-                'user_password': user.userPassword,
-                'user_status': user.userStatus,
-                'user_invigilationHour': user.userCumulativeHours,
-                'user_pendingInvigilationHour': user.userPendingCumulativeHours
-            }
-    return {
-        'user_id': None,
-        'user_name': '',
-        'user_department': '',
-        'user_level': '',
-        'user_email': '',
-        'user_contact': '',
-        'user_password': '',
-        'user_status': '',
-        'user_invigilationHour': '',
-        'user_pendingInvigilationHour': ''
-    }
-
-# -------------------------------
-# Decorators
-# -------------------------------
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash("Please log in first", "error")
-            return redirect(url_for("login"))
-
-        user = User.query.get(session['user_id'])
-        if not user:
-            flash("User not found", "error")
-            return redirect(url_for("login"))
-
-        if user.userStatus == 0:
-            flash("Please activate your account using the link in your email.", "error")
-            return redirect(url_for("login"))
-        elif user.userStatus == 2:
-            flash("This account has been deleted. Please contact support.", "error")
-            return redirect(url_for("login"))
-
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -111,14 +33,18 @@ def index():
     return redirect(url_for('login'))
 
 
+# -------------------------------
+# Function for Auth Login route
+# -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     login_text = ''
     password_text = ''
+
     if request.method == 'POST':
         login_text = request.form.get('login_field', '').strip()
         password_text = request.form.get('password_field', '').strip()
-
+        
         valid, result, role = check_login(login_text, password_text)
         if not valid:
             flash(result, 'login_error')
@@ -136,6 +62,7 @@ def login():
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
+    # Ensure GET request also includes flashed messages
     all_messages = get_flashed_messages(with_categories=True)
     return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
@@ -293,10 +220,69 @@ def logout():
 
 
 
+# -------------------------------
+# Function for Auth SaveLoginCredentials 
+# -------------------------------
+@app.context_processor
+def inject_user_data():
+    userId = session.get('user_id')
+    if userId:
+        user = User.query.get(userId)
+        if user:
+            return {
+                'user_id': userId,
+                'user_name': user.userName,
+                'user_department': user.userDepartment,
+                'user_level': user.userLevel,
+                'user_email': user.userEmail,
+                'user_contact': user.userContact,
+                'user_password': user.userPassword,
+                'user_status': user.userStatus,
+                'user_invigilationHour': user.userCumulativeHours,
+                'user_pendingInvigilationHour': user.userPendingCumulativeHours
+            }
+    return {
+        'user_id': None,
+        'user_name': '',
+        'user_department': '',
+        'user_level': '',
+        'user_email': '',
+        'user_contact': '',
+        'user_password': '',
+        'user_status': '',
+        'user_invigilationHour': '',
+        'user_pendingInvigilationHour': ''
+    }
 
 
+# -------------------------------
+# Function for Auth RequiredLoginForEachPage
+# -------------------------------
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # 1. Check if logged in
+        if 'user_id' not in session:
+            flash("Please log in first", "error")
+            return redirect(url_for("login"))
 
+        # 2. Get user from database
+        user = User.query.get(session['user_id'])
+        if not user:
+            flash("User not found", "error")
+            return redirect(url_for("login"))
 
+        # 3. Check status
+        if user.userStatus == 0:
+            flash("Please activate your account using the link in your email.", "error")
+            return redirect(url_for("login"))
+        elif user.userStatus == 2:
+            flash("This account has been deleted. Please contact support.", "error")
+            return redirect(url_for("login"))
+
+        # 4. Correct status allow in
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 # -------------------------------
