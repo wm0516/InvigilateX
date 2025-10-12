@@ -8,7 +8,6 @@
 {% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
 
 {% block dashboard_section %}
-<!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
@@ -37,12 +36,10 @@
 {% endblock %}
 
 {% block edit_section %}
-<!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" style="width: 100%; margin:auto;">
         <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
-        </div>
+        <div class="form-left" style="width: 100%"></div>
     </div>
 </form>
 {% endblock %}
@@ -79,11 +76,11 @@
                 <tr class="{% if att and not att.report.exam.examStatus %}inactive-row-show
                         {% elif att and att.report.exam.examVenue is none %}error-row-show
                         {% endif %}">
-                    
+
                     {% if i == 0 %}
                         <!-- Exam ID -->
                         <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
-                        
+
                         <!-- Exam Details -->
                         <td rowspan="{{ total_rows }}">
                             <div class="info-grid">
@@ -99,8 +96,8 @@
                             </div>
                         </td>
 
-                        <!-- Number of Invigilators -->
-                        <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                        <!-- Invigilator Count -->
+                        <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
                     {% endif %}
 
                     <!-- Invigilator Details -->
@@ -117,7 +114,7 @@
                         {% endif %}
                     </td>
 
-                    <!-- Check-in/out Time -->
+                    <!-- Check-in/out -->
                     <td>
                         {% if att %}
                             <div class="info-grid">
@@ -140,7 +137,7 @@
                         {% endif %}
                     </td>
 
-                    <!-- Attendance Status -->
+                    <!-- Attendance -->
                     <td>
                         {% if att %}
                             {% set remark_classes = {
@@ -174,7 +171,6 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
 document.getElementById("generatePDF").addEventListener("click", function () {
@@ -183,17 +179,15 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
 
     const startY = margin + 30;
 
-    // Table headers
     const headers = [
         "Exam ID",
-        "Exam Details", 
+        "Exam Details",
         "Invigilators",
         "Invigilator Details",
         "Check-in/out Time",
@@ -201,85 +195,13 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         "Invigilation Status"
     ];
 
-    // Collect table data with proper rowspan handling
     const rows = [];
-    const tableRows = document.querySelectorAll(".user-data-table tbody tr");
-    
-    // Track rowspan data across rows
-    let currentExamID = "";
-    let currentExamDetails = "";
-    let currentInvCount = "";
-    let rowspanCount = 0;
-    let currentRowspan = 0;
-
-    tableRows.forEach((tr, index) => {
+    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        const rowData = Array(7).fill(""); // Initialize empty array for 7 columns
-
-        // Process each cell, handling rowspan
-        tds.forEach((td, colIndex) => {
-            const rowspan = parseInt(td.getAttribute("rowspan")) || 1;
-            const actualColIndex = getActualColumnIndex(rowData);
-            
-            if (rowspan > 1) {
-                // This is a rowspan cell - store its value for subsequent rows
-                if (colIndex === 0) {
-                    currentExamID = td.innerText.trim();
-                    currentRowspan = rowspan;
-                    rowspanCount = rowspan;
-                } else if (colIndex === 1) {
-                    currentExamDetails = td.innerText.trim();
-                } else if (colIndex === 2) {
-                    currentInvCount = td.innerText.trim();
-                }
-            }
-            
-            // Fill the data in the correct column
-            if (actualColIndex < 7) {
-                if (colIndex === 0 && rowspan > 1) {
-                    rowData[0] = currentExamID;
-                } else if (colIndex === 1 && rowspan > 1) {
-                    rowData[1] = currentExamDetails;
-                } else if (colIndex === 2 && rowspan > 1) {
-                    rowData[2] = currentInvCount;
-                } else {
-                    rowData[actualColIndex] = td.innerText.trim();
-                }
-            }
-        });
-
-        // Handle rowspan continuation
-        if (rowspanCount > 1) {
-            rowspanCount--;
-            if (rowData[0] === "" && currentExamID) rowData[0] = currentExamID;
-            if (rowData[1] === "" && currentExamDetails) rowData[1] = currentExamDetails;
-            if (rowData[2] === "" && currentInvCount) rowData[2] = currentInvCount;
-        } else {
-            // Reset when rowspan ends
-            currentExamID = "";
-            currentExamDetails = "";
-            currentInvCount = "";
-        }
-
-        // Clean up the data (remove extra spaces and formatting)
-        rowData.forEach((data, idx) => {
-            if (idx === 1 || idx === 3 || idx === 4) { // Exam Details, Invigilator Details, Check-in/out Time
-                rowData[idx] = data.replace(/\s*:\s*/g, " : ").replace(/\n/g, " | ");
-            }
-        });
-
-        rows.push(rowData);
+        const get = i => (tds[i] ? tds[i].innerText.trim() : "");
+        rows.push([get(0), get(1), get(2), get(3), get(4), get(5), get(6)]);
     });
 
-    // Helper function to find the next empty column
-    function getActualColumnIndex(rowData) {
-        for (let i = 0; i < rowData.length; i++) {
-            if (rowData[i] === "") return i;
-        }
-        return rowData.length;
-    }
-
-    // Generate PDF table
     doc.autoTable({
         head: [headers],
         body: rows,
@@ -287,8 +209,8 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         theme: "grid",
         styles: {
             font: "helvetica",
-            fontSize: 7, // Slightly smaller font to fit better
-            cellPadding: 3,
+            fontSize: 8,
+            cellPadding: 4,
             overflow: "linebreak",
             valign: "top",
             halign: "left"
@@ -297,15 +219,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             fillColor: [33, 37, 41],
             textColor: 255,
             fontStyle: "bold"
-        },
-        columnStyles: {
-            0: { cellWidth: 50 },  // Exam ID
-            1: { cellWidth: 120 }, // Exam Details
-            2: { cellWidth: 40 },  // Invigilators
-            3: { cellWidth: 100 }, // Invigilator Details
-            4: { cellWidth: 90 },  // Check-in/out Time
-            5: { cellWidth: 50 },  // Attendance Status
-            6: { cellWidth: 50 }   // Invigilation Status
         },
         tableWidth: "auto",
         margin: { top: margin, left: margin, right: margin, bottom: margin },
