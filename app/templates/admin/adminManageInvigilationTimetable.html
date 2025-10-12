@@ -80,14 +80,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape mode
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
     const margin = 15;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
     let y = margin;
 
-    // Header (first page)
+    // Title header (first page)
     doc.setFontSize(20);
-    doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth() / 2, y, { align: "center" });
-    y += 12;
+    doc.text("Invigilation Timetable", pageWidth / 2, y, { align: "center" });
+    y += 15;
 
     const days = document.querySelectorAll(".calendar-day");
     if (!days.length) return alert("No timetable found!");
@@ -96,45 +98,48 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         const dateText = day.querySelector(".calendar-date").innerText;
         const examList = day.querySelector(".exam-grid");
 
-        // Capture this day’s content
+        // Capture this day's exam list
         const canvas = await html2canvas(examList, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
 
-        const pdfWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+        const pdfWidth = pageWidth - 2 * margin;
         const imgProps = doc.getImageProperties(imgData);
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        const blockHeight = imgHeight + 15;
 
-        // Add new page if block exceeds available height
-        if (y + blockHeight > doc.internal.pageSize.getHeight() - margin) {
+        // Padding & border calculations
+        const topPadding = 6;
+        const bottomPadding = 10;
+        const totalBlockHeight = imgHeight + topPadding + bottomPadding + 8; // better spacing
+
+        // Add new page if block exceeds height
+        if (y + totalBlockHeight > pageHeight - margin) {
             doc.addPage();
             y = margin;
-
-            // Repeat header on new page
             doc.setFontSize(20);
-            doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth() / 2, y, { align: "center" });
-            y += 12;
+            doc.text("Invigilation Timetable", pageWidth / 2, y, { align: "center" });
+            y += 15;
         }
 
         // Draw border box
         doc.setDrawColor(0);
-        doc.rect(margin - 3, y - 7, pdfWidth + 6, blockHeight + 5);
+        doc.rect(margin - 3, y - 5, pdfWidth + 6, totalBlockHeight);
 
         // Day title
         doc.setFontSize(14);
-        doc.text(dateText, margin, y);
-        y += 5;
+        doc.text(dateText, margin, y + 5);
 
-        // Add image for exams
-        doc.addImage(imgData, 'PNG', margin, y, pdfWidth, imgHeight);
+        // Image (exam content)
+        const imageY = y + topPadding + 8;
+        doc.addImage(imgData, 'PNG', margin, imageY, pdfWidth, imgHeight);
 
-        // Move down for next section
-        y += imgHeight + 10;
+        // Move Y position for next day
+        y += totalBlockHeight + 5;
     }
 
     doc.save("Invigilation_Timetable.pdf");
 });
 </script>
 {% endblock %}
+
 
 
