@@ -100,41 +100,44 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Venue</th>
-                    <th>Level</th>
-                    <th>Venue Capacity</th>
-                </tr>
-                <!-- Filter row -->
-                <tr>
-                    <th></th> <!-- No filter for index -->
                     <th>
-                        <select id="filterVenue">
-                            <option value="">All</option>
-                            {% for v in venue_data|map(attribute='venueNumber')|unique %}
-                                <option value="{{ v }}">{{ v }}</option>
-                            {% endfor %}
-                        </select>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Venue</span>
+                            <select id="filterVenue" style="margin-left: 5px;">
+                                <option value="">All</option>
+                                {% for v in venue_data|map(attribute='venueNumber')|unique %}
+                                    <option value="{{ v }}">{{ v }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </th>
                     <th>
-                        <select id="filterLevel">
-                            <option value="">All</option>
-                            <option value="LEVEL 2">LEVEL 2</option>
-                            <option value="LEVEL 3">LEVEL 3</option>
-                            <option value="LEVEL 4">LEVEL 4</option>
-                            <option value="LEVEL 5">LEVEL 5</option>
-                            <option value="LEVEL 6">LEVEL 6</option>
-                        </select>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Level</span>
+                            <select id="filterLevel" style="margin-left: 5px;">
+                                <option value="">All</option>
+                                <option value="LEVEL 2">LEVEL 2</option>
+                                <option value="LEVEL 3">LEVEL 3</option>
+                                <option value="LEVEL 4">LEVEL 4</option>
+                                <option value="LEVEL 5">LEVEL 5</option>
+                                <option value="LEVEL 6">LEVEL 6</option>
+                            </select>
+                        </div>
                     </th>
                     <th>
-                        <select id="filterCapacity">
-                            <option value="">All</option>
-                            {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
-                                <option value="{{ v }}">{{ v }}</option>
-                            {% endfor %}
-                        </select>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Venue Capacity</span>
+                            <select id="filterCapacity" style="margin-left: 5px;">
+                                <option value="">All</option>
+                                {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
+                                    <option value="{{ v }}">{{ v }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </th>
                 </tr>
             </thead>
+
             <tbody>
                 {% for row in venue_data %}
                 <tr>
