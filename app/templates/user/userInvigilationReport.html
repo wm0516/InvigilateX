@@ -147,7 +147,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const startY = margin + 30;
 
     // Table headers
-    const headers = ["Exam ID", "Exam Details", "Invigilators", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
+    const headers = ["Exam ID", "Exam Details", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
     const rows = [];
     let lastExamID = "", lastExamDetails = "", lastInvCount = "";
 
@@ -158,31 +158,28 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         // Handle rowspan — fill missing columns from previous values
         let examID = "";
         let examDetails = "";
-        let invCount = "";
         let invDetails = "";
         let checkTimes = "";
         let attendance = "";
         let invStatus = "";
 
-        if (tdCount === 7) {
+        if (tdCount === 6) {
             // Normal full row
             examID = tds[0]?.innerText.trim() || "";
             examDetails = tds[1]?.innerText.trim() || "";
-            invCount = tds[2]?.innerText.trim() || "";
-            invDetails = tds[3]?.innerText.trim() || "";
-            checkTimes = tds[4]?.innerText.trim() || "";
-            attendance = tds[5]?.innerText.trim() || "";
-            invStatus = tds[6]?.innerText.trim() || "";
+            invDetails = tds[2]?.innerText.trim() || "";
+            checkTimes = tds[3]?.innerText.trim() || "";
+            attendance = tds[4]?.innerText.trim() || "";
+            invStatus = tds[5]?.innerText.trim() || "";
 
             lastExamID = examID;
             lastExamDetails = examDetails;
             lastInvCount = invCount;
 
-        } else if (tdCount === 4) {
+        } else if (tdCount === 3) {
             // This is a "continuation row" — missing rowspan columns
             examID = "";
             examDetails = "";
-            invCount = "";
             invDetails = tds[0]?.innerText.trim() || "";
             checkTimes = tds[1]?.innerText.trim() || "";
             attendance = tds[2]?.innerText.trim() || "";
@@ -194,7 +191,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             text.replace(/\s*:\s*/g, " : ")
         );
 
-        rows.push([examID, examDetails, invCount, invDetails, checkTimes, attendance, invStatus]);
+        rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
     });
 
     // Generate PDF table

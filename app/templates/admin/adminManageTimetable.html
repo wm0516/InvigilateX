@@ -274,7 +274,7 @@ document.getElementById('downloadPDF')?.addEventListener('click', () => {
     if (!table) return alert("No timetable table found!");
 
     const headerText = document.querySelector('.menu-section h2').textContent || "Timetable";
-    const filename = `Merge_Timetable.pdf`; // removed date string
+    const filename = `Admin_ViewMergeTimetable.pdf`; // removed date string
 
     html2canvas(table, { scale: 2 }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
