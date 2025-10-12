@@ -168,6 +168,27 @@ input, select {
     white-space: nowrap;
 }
 
+.status {
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-flex;
+    margin-bottom: 3px;
+}
+
+.frame-pending {
+    background-color: #ffcc66;  /* amber */
+    color: #222;
+}
+
+.frame-completed {
+    background-color: #4CAF50;  /* balanced green */
+}
+
+.frame-expired {
+    background-color: #e74c3c;  /* calm red */
+}
 
 
 
