@@ -209,22 +209,16 @@ document.getElementById('filterCapacity').addEventListener('change', filterTable
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
 
-    const now = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    const filename = `manageVenue_${dateStr}.pdf`;
-
     const table = document.querySelector('.user-data-table');
     const cloneTable = table.cloneNode(true);
     cloneTable.querySelectorAll('.header-dropdown').forEach(dropdown => dropdown.remove());
 
+    // Create offscreen container
     const container = document.createElement('div');
-    const header = document.createElement('h2');
-    header.textContent = 'Manage Venue';
-    header.style.textAlign = 'center';
-    header.style.marginBottom = '20px';
-    container.appendChild(header);
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
     container.appendChild(cloneTable);
+    document.body.appendChild(container);
 
     html2canvas(container).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -234,9 +228,13 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
         pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight);
-        pdf.save(filename);
-    });
+        pdf.save(`manageVenue.pdf`);
+
+        // Remove offscreen container
+        document.body.removeChild(container);
+    }).catch(err => console.error(err));
 });
+
 </script>
 {% endblock %}
 
