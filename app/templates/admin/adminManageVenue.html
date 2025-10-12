@@ -217,10 +217,28 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         format: "a4"
     });
 
+    // Clone the table to clean it before exporting
     const table = document.querySelector(".user-data-table");
+    const clonedTable = table.cloneNode(true);
 
+    // Remove all <select> dropdowns in the header
+    clonedTable.querySelectorAll("select").forEach(sel => sel.remove());
+
+    // Also remove the extra div wrappers so text stays clean
+    clonedTable.querySelectorAll(".dropdown-header").forEach(div => {
+        div.replaceWith(div.childNodes[0]); // keep only the text node ("Venue", etc.)
+    });
+
+    // Only include visible rows (respect filters)
+    clonedTable.querySelectorAll("tbody tr").forEach(tr => {
+        if (tr.style.display === "none") {
+            tr.remove();
+        }
+    });
+
+    // Add the cleaned table to the PDF
     await doc.autoTable({
-        html: table,
+        html: clonedTable,
         startY: 50,
         theme: "grid",
         styles: { 
@@ -235,11 +253,15 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         tableWidth: "auto"
     });
 
+    // Add title
     const title = "List of Venue";
     doc.setFontSize(16);
     doc.text(title, doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
+
+    // Save file
     doc.save("Venue_List.pdf");
 });
+
 </script>
 {% endblock %}
 
