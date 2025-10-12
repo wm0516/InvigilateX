@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4');
+    const doc = new jsPDF('l', 'mm', 'a4'); // landscape, A4
 
     const calendarContainer = document.querySelector(".calendar-container");
     if (!calendarContainer) return alert("No timetable found!");
@@ -90,16 +90,16 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const originalStyle = calendarContainer.getAttribute("style") || "";
     const originalOverflow = document.body.style.overflow;
 
-    // Temporarily expand the container fully
-    document.body.style.overflow = "hidden"; // prevent scrollbars
+    // Temporarily expand the container fully for full capture
+    document.body.style.overflow = "hidden";
     calendarContainer.style.maxHeight = "none";
     calendarContainer.style.overflow = "visible";
     calendarContainer.style.height = "auto";
 
-    // Wait a frame so the DOM updates before snapshot
+    // Wait for reflow before capturing
     await new Promise(r => setTimeout(r, 300));
 
-    // Use html2canvas with "scrollY: 0" to prevent cutoff
+    // Capture the full timetable as image
     const canvas = await html2canvas(calendarContainer, {
         scale: 2,
         useCORS: true,
@@ -108,27 +108,32 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         windowHeight: document.body.scrollHeight
     });
 
-    // Restore styles
+    // Restore original styles
     calendarContainer.setAttribute("style", originalStyle);
     document.body.style.overflow = originalOverflow;
 
-    // Convert to PDF
+    // Prepare image
     const imgData = canvas.toDataURL("image/png");
     const pdfWidth = doc.internal.pageSize.getWidth();
     const pdfHeight = doc.internal.pageSize.getHeight();
-    const margin = 10;
+    const margin = 20; // ✅ 20mm margin all around
     const imgWidth = pdfWidth - 2 * margin;
-
     const imgProps = doc.getImageProperties(imgData);
     const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
     let heightLeft = imgHeight;
-    let position = 10;
+    let position = margin + 10; // leave room for header
 
-    // ✅ Automatically split into pages if content too long
+    // ✅ Add header on first page
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Invigilation Timetable", pdfWidth / 2, margin - 5, { align: "center" });
+
+    // Add first image
     doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
     heightLeft -= pdfHeight - margin * 2;
 
+    // ✅ Handle page overflow
     while (heightLeft > 0) {
         position = heightLeft - imgHeight + margin;
         doc.addPage();
