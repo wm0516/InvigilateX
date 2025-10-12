@@ -28,6 +28,57 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
 
+# -------------------------------
+# Context processor for user session
+# -------------------------------
+@app.context_processor
+def inject_user_data():
+    user_id = session.get('user_id')
+    if user_id:
+        user = User.query.get(user_id)
+        if user:
+            return {
+                'user_id': user.userId,
+                'user_name': user.userName,
+                'user_department': user.userDepartment,
+                'user_level': user.userLevel,
+                'user_email': user.userEmail,
+                'user_contact': user.userContact,
+                'user_password': user.userPassword,
+                'user_status': user.userStatus,
+                'user_invigilationHour': user.userCumulativeHours,
+                'user_pendingInvigilationHour': user.userPendingCumulativeHours
+            }
+    return {
+        'user_id': None,
+        'user_name': '',
+        'user_department': '',
+        'user_level': '',
+        'user_email': '',
+        'user_contact': '',
+        'user_password': '',
+        'user_status': '',
+        'user_invigilationHour': '',
+        'user_pendingInvigilationHour': ''
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # -------------------------------
 # Function for default route 
@@ -224,59 +275,24 @@ def logout():
 
 
 
-# -------------------------------
-# Function for Auth SaveLoginCredentials 
-# -------------------------------
-@app.context_processor
-def inject_user_data():
-    userId = session.get('user_id')
-    if userId:
-        user = User.query.get(userId)
-        if user:
-            return {
-                'user_id': userId,
-                'user_name': user.userName,
-                'user_department': user.userDepartment,
-                'user_level': user.userLevel,
-                'user_email': user.userEmail,
-                'user_contact': user.userContact,
-                'user_password': user.userPassword,
-                'user_status': user.userStatus,
-                'user_invigilationHour': user.userCumulativeHours,
-                'user_pendingInvigilationHour': user.userPendingCumulativeHours
-            }
-    return {
-        'user_id': None,
-        'user_name': '',
-        'user_department': '',
-        'user_level': '',
-        'user_email': '',
-        'user_contact': '',
-        'user_password': '',
-        'user_status': '',
-        'user_invigilationHour': '',
-        'user_pendingInvigilationHour': ''
-    }
+
 
 
 # -------------------------------
-# Function for Auth RequiredLoginForEachPage
+# Decorators
 # -------------------------------
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # 1. Check if logged in
         if 'user_id' not in session:
             flash("Please log in first", "error")
             return redirect(url_for("login"))
 
-        # 2. Get user from database
         user = User.query.get(session['user_id'])
         if not user:
             flash("User not found", "error")
             return redirect(url_for("login"))
 
-        # 3. Check status
         if user.userStatus == 0:
             flash("Please activate your account using the link in your email.", "error")
             return redirect(url_for("login"))
@@ -284,7 +300,6 @@ def login_required(f):
             flash("This account has been deleted. Please contact support.", "error")
             return redirect(url_for("login"))
 
-        # 4. Correct status allow in
         return f(*args, **kwargs)
     return decorated_function
 
