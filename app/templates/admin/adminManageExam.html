@@ -335,23 +335,35 @@ document.addEventListener("DOMContentLoaded", function () {
 // -----------------------------
 document.getElementById('generatePDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
-    const table = document.querySelector('.user-data-table');
+    const pdf = new jsPDF('l', 'pt', 'a4'); // landscape
     const headerText = document.querySelector('.menu-section h2')?.textContent || "Manage Exams";
 
-    html2canvas(table).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
+    pdf.setFontSize(18);
+    pdf.text(headerText, 40, 40);
 
-        pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
+    // Grab table
+    const table = document.querySelector('.user-data-table');
 
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
-        pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
+    // Convert table to autoTable
+    pdf.autoTable({
+        html: table,
+        startY: 60,           // leave space for header
+        theme: 'grid',
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [0, 0, 0], textColor: 255 },
+        alternateRowStyles: { fillColor: [240, 240, 240] },
+        margin: { left: 20, right: 20 },
+        didDrawPage: function (data) {
+            // Optional: add page numbers
+            const page = pdf.getNumberOfPages();
+            pdf.setFontSize(10);
+            pdf.text(`Page ${page}`, pdf.internal.pageSize.getWidth() - 50, pdf.internal.pageSize.getHeight() - 10);
+        }
     });
+
+    pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
 });
+
 </script>
 {% endblock %}
 
