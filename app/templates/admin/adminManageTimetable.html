@@ -174,56 +174,54 @@
 
     <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
-    <div class="user-table-container">
-        <table class="user-data-table" border="1">
-            <thead>
-                <tr>
-                    <th>Day / Time</th>
+    <table class="user-data-table" border="1">
+        <thead>
+            <tr>
+                <th>Day / Time</th>
+                {% for time in time_slots %}
+                    <th>{{ time }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% set day_colors = {
+                "MON": "#e3f2fd", 
+                "TUE": "#fce4ec", 
+                "WED": "#e8f5e9",  
+                "THU": "#fff3e0",  
+                "FRI": "#ede7f6" 
+            } %}
+            {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
+            <tr style="background-color: {{ day_colors[day] }}">
+                <td><strong>{{ day }}</strong><br></td>
                     {% for time in time_slots %}
-                        <th>{{ time }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% set day_colors = {
-                    "MON": "#e3f2fd", 
-                    "TUE": "#fce4ec", 
-                    "WED": "#e8f5e9",  
-                    "THU": "#fff3e0",  
-                    "FRI": "#ede7f6" 
-                } %}
-                {% for day in ["MON", "TUE", "WED", "THU", "FRI"] %}
-                <tr style="background-color: {{ day_colors[day] }}">
-                    <td><strong>{{ day }}</strong><br></td>
-                        {% for time in time_slots %}
-                            <td>
-                                {% set ns = namespace(displayed=[]) %}
-                                {% for row in timetable_data %}
-                                    {% if (not selected_lecturer or row.lecturerName == selected_lecturer) %}
-                                        {% set class_day = row.classDay %}
-                                        {% set start_time = row.classTime.split('-')[0] %}
-                                        {% set end_time = row.classTime.split('-')[1] %}
-                                        {% if class_day == day and time >= start_time and time < end_time %}
-                                            {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                            {% if key not in ns.displayed %}
-                                                {% set ns.displayed = ns.displayed + [key] %}
-                                                <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
-                                                    <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
-                                                    <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
-                                                    <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
-                                                    <strong>Room:</strong> <i>{{ row.classRoom }}</i>
-                                                </div>
-                                            {% endif %}
+                        <td>
+                            {% set ns = namespace(displayed=[]) %}
+                            {% for row in timetable_data %}
+                                {% if (not selected_lecturer or row.lecturerName == selected_lecturer) %}
+                                    {% set class_day = row.classDay %}
+                                    {% set start_time = row.classTime.split('-')[0] %}
+                                    {% set end_time = row.classTime.split('-')[1] %}
+                                    {% if class_day == day and time >= start_time and time < end_time %}
+                                        {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                        {% if key not in ns.displayed %}
+                                            {% set ns.displayed = ns.displayed + [key] %}
+                                            <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
+                                                <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
+                                                <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
+                                                <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
+                                                <strong>Room:</strong> <i>{{ row.classRoom }}</i>
+                                            </div>
                                         {% endif %}
                                     {% endif %}
-                                {% endfor %}
-                            </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 
@@ -270,7 +268,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById('downloadPDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
-    const table = document.querySelector('.user-table-container table');
+    const table = document.querySelector('.user-data-table');
     if (!table) return alert("No timetable table found!");
 
     const headerText = document.querySelector('.menu-section h2').textContent || "Timetable";

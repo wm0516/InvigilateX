@@ -150,7 +150,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>List of Exams</h2>
         <div class="button-wrapper">
-            <button id="generatePDF" style="background-color: black;">Export Table to PDF</button>
+            <button id="generatePDF" style="background-color: black;">Download PDF</button>
         </div>
     </div>
 
@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
             format: "a4"
         });
 
-        const margin = 40;
+        const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
 
         // ===== Title =====
