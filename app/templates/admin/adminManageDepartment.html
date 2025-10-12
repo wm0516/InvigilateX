@@ -148,62 +148,60 @@
         </div>
     </div>
 
-    <div class="user-table-container">
-        <table class="user-data-table">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Department Code</th>
-                    <th>Department Name</th>
-                    <th>Dean Details</th>
-                    <th>Hos Details</th>
-                    <th>Hop Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in department_data %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ row.departmentCode }}</td>
-                    <td>{{ row.departmentName }}</td>
-                    <td>
-                        {% if row.dean %}
-                            <div class="info-grid">
-                                <div>Dean ID</div><div><strong>: {{ row.dean.userId }}</strong></div>
-                                <div>Dean Name</div><div><strong>: {{ row.dean.userName }}</strong></div>
-                                <div>Dean Email</div><div><strong>: {{ row.dean.userEmail }}</strong></div>
-                                <div>Dean Contact</div><div><strong>: {{ row.dean.userContact }}</strong></div>
-                                <div>Dean Department</div><div><strong>: {{ row.dean.userDepartment }}</strong></div>
-                            </div>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if row.hos %}
-                            <div class="info-grid">
-                                <div>Hos ID</div><div><strong>: {{ row.hos.userId }}</strong></div>
-                                <div>Hos Name</div><div><strong>: {{ row.hos.userName }}</strong></div>
-                                <div>Hos Email</div><div><strong>: {{ row.hos.userEmail }}</strong></div>
-                                <div>Hos Contact</div><div><strong>: {{ row.hos.userContact }}</strong></div>
-                                <div>Hos Department</div><div><strong>: {{ row.hos.userDepartment }}</strong></div>
-                            </div>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if row.hop %}
-                            <div class="info-grid">
-                                <div>Hop ID</div><div><strong>: {{ row.hop.userId }}</strong></div>
-                                <div>Hop Name</div><div><strong>: {{ row.hop.userName }}</strong></div>
-                                <div>Hop Email</div><div><strong>: {{ row.hop.userEmail }}</strong></div>
-                                <div>Hop Contact</div><div><strong>: {{ row.hop.userContact }}</strong></div>
-                                <div>Hop Department</div><div><strong>: {{ row.hop.userDepartment }}</strong></div>
-                            </div>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+    <table class="user-data-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Department Code</th>
+                <th>Department Name</th>
+                <th>Dean Details</th>
+                <th>Hos Details</th>
+                <th>Hop Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in department_data %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.departmentCode }}</td>
+                <td>{{ row.departmentName }}</td>
+                <td>
+                    {% if row.dean %}
+                        <div class="info-grid">
+                            <div>Dean ID</div><div><strong>: {{ row.dean.userId }}</strong></div>
+                            <div>Dean Name</div><div><strong>: {{ row.dean.userName }}</strong></div>
+                            <div>Dean Email</div><div><strong>: {{ row.dean.userEmail }}</strong></div>
+                            <div>Dean Contact</div><div><strong>: {{ row.dean.userContact }}</strong></div>
+                            <div>Dean Department</div><div><strong>: {{ row.dean.userDepartment }}</strong></div>
+                        </div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row.hos %}
+                        <div class="info-grid">
+                            <div>Hos ID</div><div><strong>: {{ row.hos.userId }}</strong></div>
+                            <div>Hos Name</div><div><strong>: {{ row.hos.userName }}</strong></div>
+                            <div>Hos Email</div><div><strong>: {{ row.hos.userEmail }}</strong></div>
+                            <div>Hos Contact</div><div><strong>: {{ row.hos.userContact }}</strong></div>
+                            <div>Hos Department</div><div><strong>: {{ row.hos.userDepartment }}</strong></div>
+                        </div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row.hop %}
+                        <div class="info-grid">
+                            <div>Hop ID</div><div><strong>: {{ row.hop.userId }}</strong></div>
+                            <div>Hop Name</div><div><strong>: {{ row.hop.userName }}</strong></div>
+                            <div>Hop Email</div><div><strong>: {{ row.hop.userEmail }}</strong></div>
+                            <div>Hop Contact</div><div><strong>: {{ row.hop.userContact }}</strong></div>
+                            <div>Hop Department</div><div><strong>: {{ row.hop.userDepartment }}</strong></div>
+                        </div>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
 
@@ -269,30 +267,109 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-document.getElementById('generatePDF')?.addEventListener('click', () => {
-    const { jsPDF } = window.jspdf;
-    const table = document.querySelector('.user-data-table');
-    const headerText = document.querySelector('h2').textContent || "Manage Departments";
+document.addEventListener("DOMContentLoaded", function () {
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
 
-    const now = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    const filename = `manageDepartments_${dateStr}.pdf`;
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
 
-    html2canvas(table).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
 
-        pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
+        const margin = 40;
+        const pageWidth = doc.internal.pageSize.getWidth();
 
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Departments", pageWidth / 2, margin, { align: "center" });
 
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
-        pdf.save(filename);
+        const startY = margin + 25;
+
+        // ===== Get table =====
+        const table = document.querySelector(".user-data-table");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
+                let text = td.innerText.trim();
+
+                // Format long detail columns (Dean, Hos, Hop)
+                if (td.cellIndex >= 3) {
+                    text = text
+                        .replace(/\s*Dean ID\s*:/g, "Dean ID:")
+                        .replace(/\s*Dean Name\s*:/g, "\nDean Name:")
+                        .replace(/\s*Dean Email\s*:/g, "\nDean Email:")
+                        .replace(/\s*Dean Contact\s*:/g, "\nDean Contact:")
+                        .replace(/\s*Dean Department\s*:/g, "\nDean Department:")
+                        .replace(/\s*Hos ID\s*:/g, "Hos ID:")
+                        .replace(/\s*Hos Name\s*:/g, "\nHos Name:")
+                        .replace(/\s*Hos Email\s*:/g, "\nHos Email:")
+                        .replace(/\s*Hos Contact\s*:/g, "\nHos Contact:")
+                        .replace(/\s*Hos Department\s*:/g, "\nHos Department:")
+                        .replace(/\s*Hop ID\s*:/g, "Hop ID:")
+                        .replace(/\s*Hop Name\s*:/g, "\nHop Name:")
+                        .replace(/\s*Hop Email\s*:/g, "\nHop Email:")
+                        .replace(/\s*Hop Contact\s*:/g, "\nHop Contact:")
+                        .replace(/\s*Hop Department\s*:/g, "\nHop Department:")
+                        .trim();
+                }
+
+                text = text.replace(/\s*\n\s*/g, "\n"); // cleanup
+                return text;
+            });
+            return cells;
+        });
+
+        // ===== Generate table =====
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: startY,
+            theme: "grid",
+            styles: {
+                font: "helvetica",
+                fontSize: 9,
+                cellPadding: 4,
+                overflow: "linebreak",
+                valign: "middle"
+            },
+            headStyles: {
+                fillColor: [33, 37, 41],
+                textColor: [255, 255, 255],
+                halign: "center"
+            },
+            columnStyles: {
+                0: { cellWidth: 40 },   // No
+                1: { cellWidth: 80 },   // Department Code
+                2: { cellWidth: 150 },  // Department Name
+                3: { cellWidth: 170 },  // Dean
+                4: { cellWidth: 170 },  // Hos
+                5: { cellWidth: 170 }   // Hop
+            },
+            tableWidth: "auto",
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
+        });
+
+        doc.save("Manage_Department_List.pdf");
     });
 });
+
 </script>
 {% endblock %}
 
