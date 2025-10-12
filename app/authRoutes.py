@@ -62,7 +62,30 @@ def inject_user_data():
         'user_pendingInvigilationHour': ''
     }
 
+# -------------------------------
+# Decorators
+# -------------------------------
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash("Please log in first", "error")
+            return redirect(url_for("login"))
 
+        user = User.query.get(session['user_id'])
+        if not user:
+            flash("User not found", "error")
+            return redirect(url_for("login"))
+
+        if user.userStatus == 0:
+            flash("Please activate your account using the link in your email.", "error")
+            return redirect(url_for("login"))
+        elif user.userStatus == 2:
+            flash("This account has been deleted. Please contact support.", "error")
+            return redirect(url_for("login"))
+
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 
@@ -88,18 +111,14 @@ def index():
     return redirect(url_for('login'))
 
 
-# -------------------------------
-# Function for Auth Login route
-# -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     login_text = ''
     password_text = ''
-
     if request.method == 'POST':
         login_text = request.form.get('login_field', '').strip()
         password_text = request.form.get('password_field', '').strip()
-        
+
         valid, result, role = check_login(login_text, password_text)
         if not valid:
             flash(result, 'login_error')
@@ -117,7 +136,6 @@ def login():
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
-    # Ensure GET request also includes flashed messages
     all_messages = get_flashed_messages(with_categories=True)
     return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
@@ -278,30 +296,7 @@ def logout():
 
 
 
-# -------------------------------
-# Decorators
-# -------------------------------
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            flash("Please log in first", "error")
-            return redirect(url_for("login"))
 
-        user = User.query.get(session['user_id'])
-        if not user:
-            flash("User not found", "error")
-            return redirect(url_for("login"))
-
-        if user.userStatus == 0:
-            flash("Please activate your account using the link in your email.", "error")
-            return redirect(url_for("login"))
-        elif user.userStatus == 2:
-            flash("This account has been deleted. Please contact support.", "error")
-            return redirect(url_for("login"))
-
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 # -------------------------------
