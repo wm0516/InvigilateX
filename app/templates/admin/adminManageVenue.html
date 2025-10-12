@@ -100,64 +100,61 @@
             <button id="generatePDF" style="background-color: black;">Export Table to PDF</button>
         </div>
     </div>
-    <div class="user-table-container">
-        <table class="user-data-table"> 
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>
-                        <div class="dropdown-header">
-                            Venue
-                            <select id="filterVenue" class="header-dropdown">
-                                <option value="">Venue</option>
-                                {% for v in venue_data|map(attribute='venueNumber')|unique %}
-                                    <option value="{{ v }}">{{ v }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </th>
-                    <th>
-                        <div class="dropdown-header">
-                            Level
-                            <select id="filterLevel" class="header-dropdown">
-                                <option value="">Level</option>
-                                <option value="LEVEL 2">LEVEL 2</option>
-                                <option value="LEVEL 3">LEVEL 3</option>
-                                <option value="LEVEL 4">LEVEL 4</option>
-                                <option value="LEVEL 5">LEVEL 5</option>
-                                <option value="LEVEL 6">LEVEL 6</option>
-                            </select>
-                        </div>
-                    </th>
-                    <th>
-                        <div class="dropdown-header">
-                            Venue Capacity
-                            <select id="filterCapacity" class="header-dropdown">
-                                <option value="">Capacity</option>
-                                {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
-                                    <option value="{{ v }}">{{ v }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </th>
-                </tr>
-            </thead>
+    <table class="user-data-table"> 
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>
+                    <div class="dropdown-header">
+                        Venue
+                        <select id="filterVenue" class="header-dropdown">
+                            <option value="">Venue</option>
+                            {% for v in venue_data|map(attribute='venueNumber')|unique %}
+                                <option value="{{ v }}">{{ v }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </th>
+                <th>
+                    <div class="dropdown-header">
+                        Level
+                        <select id="filterLevel" class="header-dropdown">
+                            <option value="">Level</option>
+                            <option value="LEVEL 2">LEVEL 2</option>
+                            <option value="LEVEL 3">LEVEL 3</option>
+                            <option value="LEVEL 4">LEVEL 4</option>
+                            <option value="LEVEL 5">LEVEL 5</option>
+                            <option value="LEVEL 6">LEVEL 6</option>
+                        </select>
+                    </div>
+                </th>
+                <th>
+                    <div class="dropdown-header">
+                        Venue Capacity
+                        <select id="filterCapacity" class="header-dropdown">
+                            <option value="">Capacity</option>
+                            {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
+                                <option value="{{ v }}">{{ v }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </th>
+            </tr>
+        </thead>
 
-            <tbody>
-                {% for row in venue_data %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ row.venueNumber }}</td>
-                    <td>{{ row.venueLevel }}</td>
-                    <td>{{ row.venueCapacity }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <tbody>
+            {% for row in venue_data %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.venueNumber }}</td>
+                <td>{{ row.venueLevel }}</td>
+                <td>{{ row.venueCapacity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
-
 
 {% block extra_scripts %}   
 <script>
@@ -203,49 +200,49 @@ function filterTable() {
     });
 }
 
-// Add event listeners
+// Add event listeners for filtering
 document.getElementById('filterVenue').addEventListener('change', filterTable);
 document.getElementById('filterLevel').addEventListener('change', filterTable);
 document.getElementById('filterCapacity').addEventListener('change', filterTable);
 
-document.getElementById('generatePDF').addEventListener('click', () => {
+
+// ===============================
+// PDF EXPORT SECTION (A4 Landscape)
+// ===============================
+document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-
-    // Get current date
-    const now = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    
-    // Filename: pageName_Date
-    const filename = `manageVenue_${dateStr}.pdf`;
-
-    // Get the table element
-    const table = document.querySelector('.user-data-table');
-
-    // Get header text from head_title block
-    const headerText = document.querySelector('h2').textContent || "Manage Venue";
-
-    html2canvas(table).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' for landscape
-
-        // Add header
-        pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40); // X:40, Y:40
-
-        // Calculate width and height for table image
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40; // leave margin
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        // Add table image slightly below header
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight); // Y:60 to leave space for header
-        pdf.save(filename);
+    const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "pt",
+        format: "a4"
     });
+
+    const table = document.querySelector(".user-data-table");
+
+    await doc.autoTable({
+        html: table,
+        startY: 50,
+        theme: "grid",
+        styles: { 
+            fontSize: 8, 
+            cellPadding: 3, 
+            overflow: "linebreak",
+            halign: "center",
+            valign: "middle"
+        },
+        headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+        margin: { left: 20, right: 20 },
+        tableWidth: "auto"
+    });
+
+    const title = "List of Venue";
+    doc.setFontSize(16);
+    doc.text(title, doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
+    doc.save("Venue_List.pdf");
 });
-
 </script>
-
 {% endblock %}
+
 
 
 
