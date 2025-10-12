@@ -7,7 +7,7 @@
 {% block content %}
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div> 
-            <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
+            <form method="get" style="display:flex; align-items:center; gap:8px;">
                 <label for="lecturer">Select_Lecturer:</label>
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>
@@ -110,24 +110,28 @@ document.getElementById('downloadPDF')?.addEventListener('click', () => {
     const table = document.querySelector('.user-table-container table');
     if (!table) return alert("No timetable table found!");
 
-    const headerText = document.querySelector('.menu-section h2').textContent || "Timetable";
-    const filename = `Admin_ViewMergeTimetable.pdf`; // removed date string
+    const headerText = document.querySelector('main h2')?.textContent || "Timetable";
+    const filename = `MergeTimetable.pdf`;
 
-    html2canvas(table, { scale: 2 }).then(canvas => {
+    html2canvas(table, { scale: 1.5 }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' = landscape
+        const pdf = new jsPDF('l', 'pt', 'a4'); // landscape
 
-        // Add centered, bold title
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        pdf.setFontSize(18);
-        pdf.setFont(undefined, 'bold'); // make it bold
-        pdf.text(headerText, pdfWidth / 2, 40, { align: "center" });
-
-        // Calculate image dimensions
         const pdfHeight = (canvas.height * (pdfWidth - 40)) / canvas.width;
 
+        // Add centered, bold title
+        pdf.setFontSize(18);
+        pdf.setFont(undefined, 'bold');
+        pdf.text(headerText, pdfWidth / 2, 40, { align: "center" });
+
+        // Add the table image
         pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth - 40, pdfHeight);
+
         pdf.save(filename);
+    }).catch(err => {
+        console.error(err);
+        alert("Error generating PDF. Check console.");
     });
 });
 
