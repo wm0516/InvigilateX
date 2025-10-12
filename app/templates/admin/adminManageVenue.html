@@ -209,26 +209,20 @@ document.getElementById('filterCapacity').addEventListener('change', filterTable
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
 
-    // Get current date
     const now = new Date();
     const options = { day: '2-digit', month: 'short', year: 'numeric' };
     const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    
-    // Filename: pageName_Date
     const filename = `manageVenue_${dateStr}.pdf`;
 
-    // Get the table element
     const table = document.querySelector('.user-data-table');
 
-    // Clone table to remove dropdowns
+    // Clone table and clean dropdowns
     const tableClone = table.cloneNode(true);
-    const headerCells = tableClone.querySelectorAll('th .dropdown-header');
-    headerCells.forEach(cell => {
-        // Replace innerHTML with only the text before any <select>
+    tableClone.querySelectorAll('th .dropdown-header').forEach(cell => {
         cell.innerHTML = cell.childNodes[0].textContent.trim();
     });
 
-    // Create a wrapper div to include the header
+    // Create wrapper with header
     const wrapper = document.createElement('div');
     const header = document.createElement('h2');
     header.textContent = "Manage Venue";
@@ -236,19 +230,19 @@ document.getElementById('generatePDF').addEventListener('click', () => {
     wrapper.appendChild(header);
     wrapper.appendChild(tableClone);
 
-    // Use html2canvas to capture the wrapper
+    document.body.appendChild(wrapper); // must be in DOM
+
     html2canvas(wrapper).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
-        
-        // Calculate width and height
+        const pdf = new jsPDF.jsPDF('l', 'pt', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight); // padding 20
+        pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight);
         pdf.save(filename);
-    });
+        document.body.removeChild(wrapper); // cleanup
+    }).catch(err => console.error(err));
 });
+
 </script>
 {% endblock %}
 
