@@ -1,5 +1,6 @@
 
 from datetime import datetime
+import pytz
 from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
@@ -23,6 +24,8 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # cleanup_expired_timetable_rows()
+    update_attendanceStatus()
     login_text = ''
     password_text = ''
 
@@ -506,3 +509,102 @@ def attendance_record():
 
     confirm = timeSlots[0] if timeSlots else None
     return render_template('attendance.html', timeSlots=timeSlots, confirm=confirm)
+
+
+
+
+
+
+
+
+
+
+def parse_date_range(date_range):
+    """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime safely."""
+    if not date_range:
+        return None, None
+    try:
+        # Split only on the last hyphen in case there are others in the string
+        start_str, end_str = date_range.rsplit("-", 1)
+        start = datetime.strptime(start_str.strip(), "%m/%d/%Y")
+        end = datetime.strptime(end_str.strip(), "%m/%d/%Y")
+        return start, end
+    except Exception as e:
+        print(f"Date parse error for '{date_range}': {e}")
+        return None, None
+
+
+# -------------------------------
+# Function run non-stop
+# -------------------------------
+def cleanup_expired_timetable_rows():
+    """Delete timetable rows whose classWeekDate end date has expired."""
+    now = datetime.now()
+    all_rows = TimetableRow.query.all()
+
+    for row in all_rows:
+        if not row.classWeekDate:
+            continue
+
+        start, end = parse_date_range(row.classWeekDate)
+        if end is None:
+            continue  # Skip malformed rows
+
+        if now > end:
+            db.session.delete(row)
+
+    db.session.commit()  # Commit even if 0, or you can add a check
+
+
+def update_attendanceStatus():
+    all_attendance = InvigilatorAttendance.query.all()
+    mytz = pytz.timezone('Asia/Kuala_Lumpur')
+    timeNow = datetime.now(mytz)
+
+    for attendance in all_attendance:
+        report = attendance.report
+        exam = report.exam if report else None
+        if not exam:
+            continue  # skip invalid records
+
+        check_in = attendance.checkIn
+        check_out = attendance.checkOut
+        # localize exam datetimes
+        exam_start = mytz.localize(exam.examStartTime) if exam.examStartTime.tzinfo is None else exam.examStartTime
+        exam_end = mytz.localize(exam.examEndTime) if exam.examEndTime.tzinfo is None else exam.examEndTime
+
+        remark = "PENDING"
+
+        # --- Check-in logic ---
+        if check_in:
+            if check_in <= exam_start:
+                remark = "CHECK IN"
+            else:
+                remark = "CHECK IN LATE"
+
+        # --- Check-out logic ---
+        if check_out:
+            if check_out < exam_end:
+                remark = "CHECK OUT EARLY"
+            else:
+                remark = "CHECK OUT"
+
+        # --- After exam ended ---
+        if timeNow > exam_end:
+            if check_in and check_out:
+                if check_in <= exam_start and check_out >= exam_end:
+                    remark = "COMPLETED"
+                else:
+                    remark = "EXPIRED"
+            else:
+                remark = "EXPIRED"
+
+        attendance.remark = remark
+
+    db.session.commit()
+
+
+
+
+
+    

@@ -1,7 +1,5 @@
-
 import os
 import re
-import pytz
 import warnings
 from io import BytesIO
 from collections import defaultdict
@@ -29,80 +27,6 @@ bcrypt = Bcrypt()
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-
-
-# -------------------------------
-# Function run non-stop
-# -------------------------------
-def cleanup_expired_timetable_rows():
-    """Delete timetable rows whose classWeekDate end date has expired."""
-    now = datetime.now()
-    all_rows = TimetableRow.query.all()
-
-    for row in all_rows:
-        if not row.classWeekDate:
-            continue
-
-        start, end = parse_date_range(row.classWeekDate)
-        if end is None:
-            continue  # Skip malformed rows
-
-        if now > end:
-            db.session.delete(row)
-
-    db.session.commit()  # Commit even if 0, or you can add a check
-
-
-def update_attendanceStatus():
-    all_attendance = InvigilatorAttendance.query.all()
-    mytz = pytz.timezone('Asia/Kuala_Lumpur')
-    timeNow = datetime.now(mytz) 
-
-    for attendance in all_attendance:
-        report = attendance.report
-        exam = report.exam if report else None
-        if not exam:
-            continue  # skip invalid records
-
-        check_in = attendance.checkIn
-        check_out = attendance.checkOut
-        exam_start = exam.examStartTime
-        exam_end = exam.examEndTime
-        remark = "PENDING"
-
-        # --- Check-in logic ---
-        if check_in:
-            if check_in <= exam_start:
-                remark = "CHECK IN"
-            else:
-                remark = "CHECK IN LATE"
-
-        # --- Check-out logic ---
-        if check_out:
-            if check_out < exam_end:
-                remark = "CHECK OUT EARLY"
-            else:
-                remark = "CHECK OUT"
-
-        # --- After exam ended ---
-        if timeNow > exam_end:
-            if check_in and check_out:
-                # Full attendance (normal check-in + normal check-out)
-                if check_in <= exam_start and check_out >= exam_end:
-                    remark = "COMPLETED"
-                else:
-                    remark = "EXPIRED"
-            elif not check_in and not check_out:
-                remark = "EXPIRED"
-            elif check_in and not check_out:
-                remark = "EXPIRED"
-            elif not check_in and check_out:
-                remark = "EXPIRED"
-
-        attendance.remark = remark
-
-    db.session.commit()
 
 
 
@@ -1650,8 +1574,6 @@ def save_timetable_to_db(structured):
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
-    # Auto cleanup expired timetable rows
-    # cleanup_expired_timetable_rows()
     department_data = Department.query.all()
     selected_department = request.args.get("department")
     selected_lecturer = request.args.get("lecturer")
@@ -1934,7 +1856,6 @@ def get_all_attendances():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    update_attendanceStatus()
     attendances = get_all_attendances()
 
     # Add composite group key: (examStatus, examStartTime)
