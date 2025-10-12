@@ -77,7 +77,7 @@
             {% for i in range(total_rows) %}
                 {% set att = grouped[i] if i < inv_count else None %}
                 <tr class="{% if att and not att.report.exam.examStatus %}inactive-row-show
-                        {% elif att and att.report.exam.examVenue is none %}error-row-show
+                        {% elif att and att.report.exam.examStartTime is none %}error-row-show
                         {% endif %}">
                     
                     {% if i == 0 %}
@@ -95,7 +95,7 @@
                                 <div>Exam Day</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%A") }} - {{ grouped[0].report.exam.examEndTime.strftime("%A") }}</strong></div>
                                 <div>Exam Time</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%H:%M") }} - {{ grouped[0].report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
                                 <div>Exam Period</div><div><strong>: {{ (grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds // 3600 }}h {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                <div>Exam Venue</div><div><strong>: {{ grouped[0].report.exam.examVenue }}</strong></div>
+                                <div>Exam Venue</div><div><strong>: None</strong></div>
                             </div>
                         </td>
 

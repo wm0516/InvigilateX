@@ -177,7 +177,7 @@
             {% for row in exam_data %}
             <tr class="
                 {% if not row.examStatus %}inactive-row-show
-                {% elif row.examVenue is none %}error-row-show
+                {% elif row.examStartTime is none %}error-row-show
                 {% endif %}">
                 <td>{{ loop.index }}</td>
                 <td>
@@ -205,7 +205,7 @@
                         <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
                         <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
                         <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                        <div>Exam Venue</div><div><strong>: {{ row.examVenue }}</strong></div>
+                        <div>Exam Venue</div><div><strong>: None</strong></div>
                     </div>
                     {% else %}
                     <span class="status frame-expired">Exam details not yet assigned</span>
@@ -235,7 +235,7 @@ function clearEditFields() {
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
-    document.getElementById('editVenue').value = data.examVenue || '';
+    document.getElementById('editVenue').value = data.courseStudent || '';
     document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
 
     // split datetime for inputs

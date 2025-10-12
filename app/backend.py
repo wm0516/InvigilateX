@@ -266,7 +266,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
     exam_id = None
     if practical_user and tutorial_user:
         new_exam = Exam(
-            examVenue=None,
             examStartTime=None,
             examEndTime=None,
             examNoInvigilator=invigilatorNo
@@ -365,7 +364,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     # Update exam details
     exam.examStartTime = start_dt
     exam.examEndTime = end_dt
-    exam.examVenue = venue_text
     exam.examNoInvigilator = invigilatorNo
 
     # Assign lecturers

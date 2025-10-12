@@ -40,7 +40,7 @@
                                 <div>Exam Day</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%A") }} - {{ confirm.report.exam.examEndTime.strftime("%A") }}</strong></div>
                                 <div>Exam Time</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%H:%M") }} - {{ confirm.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
                                 <div>Exam Period</div><div><strong>: {{ (confirm.report.exam.examEndTime - confirm.report.exam.examStartTime).seconds // 3600 }}h {{ ((confirm.report.exam.examEndTime - confirm.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                <div>Exam Venue</div><div><strong>: {{ confirm.report.exam.examVenue }}</strong></div>
+                                <div>Exam Venue</div><div><strong>: None</strong></div>
                             </div>
                         </td>
                         <td>

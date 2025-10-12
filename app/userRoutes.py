@@ -144,7 +144,6 @@ def get_calendar_data():
                 "exam_id": exam.examId,
                 "course_name": exam.course.courseName,
                 "course_code": exam.course.courseCodeSectionIntake,
-                "venue": exam.examVenue,
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,

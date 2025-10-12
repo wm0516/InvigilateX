@@ -314,7 +314,6 @@ def admin_manageCourse():
                     else:
                         # Create new exam if none exists
                         new_exam = Exam(
-                            examVenue=None,
                             examStartTime=None,
                             examEndTime=None,
                             examNoInvigilator=invigilatorNo
@@ -541,7 +540,6 @@ def admin_manageVenue():
             elif action == 'delete':
                 try:
                     # Set related foreign keys to NULL
-                    Exam.query.filter_by(examVenue=venue_select.venueNumber).update({"examVenue": None})
                     VenueAvailability.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
                     db.session.commit()  # Commit the updates first
 
@@ -596,8 +594,7 @@ def generate_manageexam_template():
                 Course.courseStatus == True,
                 or_(
                     Exam.examStartTime.is_(None),
-                    Exam.examEndTime.is_(None),
-                    Exam.examVenue.is_(None)
+                    Exam.examEndTime.is_(None)
                 )
             )
         )
@@ -715,7 +712,6 @@ def get_exam_details(course_code_section):
         "courseStudent": course.courseStudent or 0,
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
-        "examVenue": exam.examVenue if exam else "",
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
     }
     return jsonify(response_data)
@@ -895,7 +891,6 @@ def admin_manageExam():
             Exam.examStatus.desc(),
             case((Exam.examStartTime == None, 0), else_=1).asc(),  # ✅ NULLs first
             Exam.examStartTime.desc(),
-            Exam.examVenue.asc(),
             Exam.examId.asc()
         )
         .all()
@@ -914,7 +909,6 @@ def admin_manageExam():
         if e.examStatus is True
         and e.examStartTime is None
         and e.examEndTime is None
-        and e.examVenue is None
     ])
 
     complete_exam = len([
@@ -922,7 +916,6 @@ def admin_manageExam():
         if e.examStatus is True
         and e.examStartTime is not None
         and e.examEndTime is not None
-        and e.examVenue is not None
         and e.examNoInvigilator not in (None, 0)
     ])
 
@@ -982,7 +975,6 @@ def admin_manageExam():
                     # Update exam core details
                     exam_select.examStartTime = start_dt
                     exam_select.examEndTime = end_dt
-                    exam_select.examVenue = venue_text
                     exam_select.examNoInvigilator = invigilatorNo_text
 
                     # Ensure VenueAvailability is synced
@@ -1047,7 +1039,6 @@ def admin_manageExam():
                 # Clear exam details (keep examId, examNoInvigilator)
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
-                exam_select.examVenue = None
 
                 db.session.commit()
                 flash(f"Exam {exam_select.course.courseCodeSectionIntake} deleted successfully, and all related records were cleared.", "success")
@@ -1753,7 +1744,6 @@ def get_calendar_data():
                 "exam_id": exam.examId,
                 "course_name": exam.course.courseName,
                 "course_code": exam.course.courseCodeSectionIntake,
-                "venue": exam.examVenue,
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,
