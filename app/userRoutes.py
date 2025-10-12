@@ -287,6 +287,16 @@ def user_mergeTimetable():
     return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, user_department=user_department, lecturers=lecturers, selected_lecturer=selected_lecturer)
 
 
+
+@app.route('/user/viewStaff', methods=['GET'])
+@login_required
+def user_viewStaff():
+    userId = session.get('user_id')
+    lecturer = User.query.filter_by(userDepartment=userId.userDepartment).first()
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab', lecturer=lecturer)
+    
+
+
 # -------------------------------
 # Function for Profile Route
 # -------------------------------

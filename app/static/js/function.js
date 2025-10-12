@@ -84,7 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
     '/user/mergeTimetable': 'user_mergeTimetabletab',
     '/user/invigilationReport': 'user_invigilationReporttab',
     '/user/invigilationTimetable': 'user_invigilationTimetabletab',
-    '/user/profile': 'user_profiletab'
+    '/user/profile': 'user_profiletab',
+    '/user/viewStaff': 'user_viewStafftab'
   };
 
   const currentPath = window.location.pathname;
