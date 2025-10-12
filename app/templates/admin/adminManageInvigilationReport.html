@@ -47,10 +47,15 @@
 </form>
 {% endblock %}
 
-
 {% block content %}
 <div class="menu-section">
-    <h3>List of Lecturer Invigilation Report</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>List of Lecturer Invigilation Report</h3>
+        <div class="button-wrapper">
+            <button id="generatePDF" style="background-color: black;">Export Table to PDF</button>
+        </div>
+    </div>
+
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -72,17 +77,11 @@
                     {% for i in range(total_rows) %}
                         {% set att = grouped[i] if i < inv_count else None %}
                         <tr class="
-                            {% if att and not att.report.exam.examStatus %}
-                                inactive-row-show
-                            {% elif att and att.report.exam.examVenue is none %}
-                                error-row-show
-                            {% endif %}
-                        "> 
+                            {% if att and not att.report.exam.examStatus %}inactive-row-show
+                            {% elif att and att.report.exam.examVenue is none %}error-row-show
+                            {% endif %}">
                             {% if i == 0 %}
-                                <!-- Exam ID -->
                                 <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
-
-                                <!-- Course & Exam Details -->
                                 <td rowspan="{{ total_rows }}">
                                     <div class="info-grid">
                                         <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
@@ -96,13 +95,9 @@
                                         <div>Exam Venue</div><div><strong>: {{ grouped[0].report.exam.examVenue }}</strong></div>
                                     </div>
                                 </td>
-
-                                <!-- Number of Invigilators -->
                                 <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
                             {% endif %}
-
-                            <!-- Invigilator Details -->
-                            <td style="border-left: 1px solid lightgrey;">
+                            <td>
                                 {% if att %}
                                     <div class="info-grid">
                                         <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
@@ -112,8 +107,6 @@
                                     </div>
                                 {% endif %}
                             </td>
-
-                            <!-- Check-in/out Time -->
                             <td>
                                 {% if att %}
                                     <div class="info-grid">
@@ -129,17 +122,13 @@
                                         {% set actual_start = [check_in, exam_start] | max %}
                                         {% set actual_end = [check_out, exam_end] | min %}
                                         {% set total_seconds = (actual_end - actual_start).total_seconds() %}
-                                        {% if total_seconds < 0 %}
-                                            {% set total_seconds = 0 %}
-                                        {% endif %}
+                                        {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
                                         <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours </div>
                                     {% endif %}
                                 {% else %}
                                     <em class="status frame-pending">IN PROCESSING</em>
                                 {% endif %}
                             </td>
-
-                            <!-- Attendance Status -->
                             <td>
                                 {% if att %}
                                     {% set remark_classes = {
@@ -156,8 +145,6 @@
                                     <em class="status frame-pending">IN PROCESSING</em>
                                 {% endif %}
                             </td>
-
-                            <!-- Invigilation Status -->
                             <td>
                                 {% if att and att.invigilationStatus %}
                                     <span class="status frame-completed">ACCEPTED</span>
@@ -172,4 +159,34 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+document.getElementById('generatePDF')?.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const table = document.querySelector('.user-data-table');
+    const headerText = document.querySelector('h3').textContent || "Invigilation Report";
+
+    const now = new Date();
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
+    const filename = `InvigilationReport_${dateStr}.pdf`;
+
+    html2canvas(table).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'pt', 'a4');
+
+        pdf.setFontSize(18);
+        pdf.text(headerText, 40, 40);
+
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        pdf.save(filename);
+    });
+});
+</script>
 {% endblock %}

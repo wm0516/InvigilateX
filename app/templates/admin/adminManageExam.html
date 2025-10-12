@@ -145,10 +145,15 @@
 </form>
 {% endblock %}
 
-
 {% block content %}
 <div class="menu-section">
-    <h2>List of Exams</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>List of Exams</h2>
+        <div class="button-wrapper">
+            <button id="generatePDF" style="background-color: black;">Export Table to PDF</button>
+        </div>
+    </div>
+
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -163,56 +168,50 @@
             </thead>    
             <tbody>
                 {% for row in exam_data %}
-                    <tr class="
-                        {% if not row.examStatus %}
-                            inactive-row-show
-                        {% elif row.examVenue is none %}
-                            error-row-show
+                <tr class="
+                    {% if not row.examStatus %}inactive-row-show
+                    {% elif row.examVenue is none %}error-row-show
+                    {% endif %}">
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        {% if row.examStatus %}
+                            <span class="status frame-completed">[Activated]</span>
+                        {% else %}
+                            <span class="status frame-expired">[Inactivated]</span>
                         {% endif %}
-                    ">      
-                        <td>{{ loop.index }}</td>
-                        <td>
-                            {% if row.examStatus %}
-                                <span class="status frame-completed">[Activated]</span>
-                            {% else %}
-                                <span class="status frame-expired">[Inactivated]</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="info-grid">
-                                <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
-                                <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
-                                <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
-                                <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
-                                <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
-                                <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
-                            </div>
-                        </td>
-                        <td>[{{ row.examId }}]</td>
-
-                        <!-- Exam Details -->
-                        <td>
-                            {% if row.examStartTime and row.examEndTime %}
-                                <div class="info-grid">
-                                    <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                                    <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
-                                    <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
-                                    <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                    <div>Exam Venue</div><div><strong>: {{ row.examVenue }}</strong></div>
-                                </div>
-                            {% else %}
-                                <span class="status frame-expired">Exam details not yet assigned</span>
-                            {% endif %}
-                        </td>
-                        <td>[{{ row.examNoInvigilator }}]</td>
-                    </tr>
+                    </td>
+                    <td>
+                        <div class="info-grid">
+                            <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
+                            <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
+                            <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
+                            <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
+                            <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
+                            <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
+                        </div>
+                    </td>
+                    <td>[{{ row.examId }}]</td>
+                    <td>
+                        {% if row.examStartTime and row.examEndTime %}
+                        <div class="info-grid">
+                            <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                            <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
+                            <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
+                            <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                            <div>Exam Venue</div><div><strong>: {{ row.examVenue }}</strong></div>
+                        </div>
+                        {% else %}
+                        <span class="status frame-expired">Exam details not yet assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>[{{ row.examNoInvigilator }}]</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
 {% endblock %}
-
 
 
 {% block extra_scripts %}
@@ -356,6 +355,31 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial restriction setup
     restrictStartTime();
     restrictEndTime();
+});
+
+document.getElementById('generatePDF')?.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const table = document.querySelector('.user-data-table');
+    const headerText = document.querySelector('h2').textContent || "Manage Exams";
+
+    const now = new Date();
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
+    const filename = `manageExams_${dateStr}.pdf`;
+
+    html2canvas(table).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'pt', 'a4');
+
+        pdf.setFontSize(18);
+        pdf.text(headerText, 40, 40);
+
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        pdf.save(filename);
+    });
 });
 </script>
 {% endblock %}

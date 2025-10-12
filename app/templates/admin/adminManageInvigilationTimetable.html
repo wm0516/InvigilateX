@@ -9,6 +9,13 @@
 
 {% block content %}
 <div class="menu-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h2>Invigilation Timetable</h2>
+        <button id="downloadPDF" style="background-color: black; color: white; padding: 5px 10px; border-radius: 4px;">
+            Download PDF
+        </button>
+    </div>
+
     <div style="display: flex; gap: 15px; align-items: center;">
         <h4>Exam Status:</h4>
         <div style="display: flex; align-items: center; gap: 5px;">
@@ -72,6 +79,28 @@ document.addEventListener("DOMContentLoaded", () => {
         target.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
     }, 100);
 });
+
+document.getElementById("downloadPDF")?.addEventListener("click", () => {
+    const { jsPDF } = window.jspdf;
+
+    const calendarContainer = document.querySelector(".calendar-container");
+    if (!calendarContainer) return alert("No timetable found!");
+
+    html2canvas(calendarContainer, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF('p', 'pt', 'a4');
+
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.setFontSize(18);
+        pdf.text("Invigilation Timetable", 20, 30);
+
+        pdf.addImage(imgData, "PNG", 20, 50, pdfWidth, pdfHeight);
+        pdf.save(`InvigilationTimetable_${new Date().toISOString().split('T')[0]}.pdf`);
+    });
+});
+
 </script>
 {% endblock %}
 

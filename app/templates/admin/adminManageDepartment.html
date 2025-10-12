@@ -141,7 +141,13 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>List of Departments</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>List of Departments</h2>
+        <div class="button-wrapper">
+            <button id="generatePDF" style="background-color: black;">Export Table to PDF</button>
+        </div>
+    </div>
+
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -157,7 +163,7 @@
             <tbody>
                 {% for row in department_data %}
                 <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ loop.index }}</td>
                     <td>{{ row.departmentCode }}</td>
                     <td>{{ row.departmentName }}</td>
                     <td>
@@ -202,65 +208,91 @@
 {% endblock %}
 
 
+
 {% block extra_scripts %}
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const departmentSelect    = document.getElementById("editDepartment");
-        const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
-        const hosSelect           = document.getElementById("hosName");
-        const deanSelect          = document.getElementById("deanName");
-        const hopSelect           = document.getElementById("hopName");
+document.addEventListener("DOMContentLoaded", () => {
+    const departmentSelect    = document.getElementById("editDepartment");
+    const departmentNameInput = document.querySelector("#editForm input[name='departmentName']");
+    const hosSelect           = document.getElementById("hosName");
+    const deanSelect          = document.getElementById("deanName");
+    const hopSelect           = document.getElementById("hopName");
 
-        async function fetchDepartmentData(deptCode) {
-            if (!deptCode) return;
+    async function fetchDepartmentData(deptCode) {
+        if (!deptCode) return;
 
-            try {
-                const resp = await fetch(`/get_department/${encodeURIComponent(deptCode)}`);
-                const dept = await resp.json();
+        try {
+            const resp = await fetch(`/get_department/${encodeURIComponent(deptCode)}`);
+            const dept = await resp.json();
 
-                if (dept.error) {
-                    alert(dept.error);
-                    return;
-                }
-
-                // Fill department name
-                departmentNameInput.value = dept.departmentName || "";
-
-                // Preselect dean & hop & hos if IDs are provided
-                if (dept.deanId && deanSelect) {
-                    deanSelect.value = dept.deanId;
-                } else if (deanSelect) {
-                    deanSelect.value = ""; // reset if none
-                }
-
-                if (dept.hosId && hosSelect) {
-                    hosSelect.value = dept.hosId;
-                } else if (hosSelect) {
-                    hosSelect.value = ""; // reset if none
-                }
-
-                if (dept.hopId && hopSelect) {
-                    hopSelect.value = dept.hopId;
-                } else if (hopSelect) {
-                    hopSelect.value = "";
-                }
-
-            } catch (err) {
-                console.error("Error fetching department:", err);
+            if (dept.error) {
+                alert(dept.error);
+                return;
             }
-        }
 
-        if (departmentSelect) {
-            departmentSelect.addEventListener("change", () => {
-                fetchDepartmentData(departmentSelect.value);
-            });
+            // Fill department name
+            departmentNameInput.value = dept.departmentName || "";
 
-            // Auto-fill on page load if already selected
-            if (departmentSelect.value) {
-                fetchDepartmentData(departmentSelect.value);
+            // Preselect dean & hop & hos if IDs are provided
+            if (dept.deanId && deanSelect) {
+                deanSelect.value = dept.deanId;
+            } else if (deanSelect) {
+                deanSelect.value = ""; // reset if none
             }
+
+            if (dept.hosId && hosSelect) {
+                hosSelect.value = dept.hosId;
+            } else if (hosSelect) {
+                hosSelect.value = ""; // reset if none
+            }
+
+            if (dept.hopId && hopSelect) {
+                hopSelect.value = dept.hopId;
+            } else if (hopSelect) {
+                hopSelect.value = "";
+            }
+
+        } catch (err) {
+            console.error("Error fetching department:", err);
         }
+    }
+
+    if (departmentSelect) {
+        departmentSelect.addEventListener("change", () => {
+            fetchDepartmentData(departmentSelect.value);
+        });
+
+        // Auto-fill on page load if already selected
+        if (departmentSelect.value) {
+            fetchDepartmentData(departmentSelect.value);
+        }
+    }
+});
+
+document.getElementById('generatePDF')?.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const table = document.querySelector('.user-data-table');
+    const headerText = document.querySelector('h2').textContent || "Manage Departments";
+
+    const now = new Date();
+    const options = { day: '2-digit', month: 'short', year: 'numeric' };
+    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
+    const filename = `manageDepartments_${dateStr}.pdf`;
+
+    html2canvas(table).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'pt', 'a4');
+
+        pdf.setFontSize(18);
+        pdf.text(headerText, 40, 40);
+
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        pdf.save(filename);
     });
+});
 </script>
 {% endblock %}
 

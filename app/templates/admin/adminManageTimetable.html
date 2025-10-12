@@ -134,7 +134,12 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>Timetable</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Timetable</h2>
+        <div class="button-wrapper">
+            <button id="downloadPDF" style="background-color: black; color: white;">Download PDF</button>
+        </div>
+    </div>
     <form method="get" action="{{ url_for('admin_manageTimetable') }}">
         <div class="profile-frame" style="margin-top: 1%;">
             <div class="form-left">
@@ -260,6 +265,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 staffSelect.value = data.user_id;
             })
             .catch(err => console.error(err));
+    });
+});
+
+document.getElementById('downloadPDF')?.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const table = document.querySelector('.user-table-container table');
+    if (!table) return alert("No timetable table found!");
+
+    const headerText = document.querySelector('.menu-section h2').textContent || "Timetable";
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB').replace(/\//g, '');
+    const filename = `timetable_${dateStr}.pdf`;
+
+    html2canvas(table, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' = landscape
+
+        // Add title
+        pdf.setFontSize(18);
+        pdf.text(headerText, 40, 40);
+
+        // Calculate image dimensions
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        pdf.save(filename);
     });
 });
 </script>
