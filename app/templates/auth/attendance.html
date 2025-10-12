@@ -1,26 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>Attendance Record</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Record</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
-    <form method="POST" style="width: 60%">
+    <form method="POST" style="width: 60%; margin: auto;">
         <h1>Attendance Check In/Out</h1>
         <h3 class="user-info" id="current-datetime"></h3>
         <br>
+
         <div class="form-container">
-            <!-- Frame for Punch Card container -->
-            <div class="input-container" style="width: 60%; align-items: center;">
+            <div class="input-container" style="width: 60%; display: flex; align-items: center;">
                 <h3>Scan Card</h3>
-                <input style="width: 50%;" type="text" name="cardNumber" value="{{ cardNumber_text }}" required>
+                <input type="text" name="cardNumber" value="{{ cardNumber_text }}" required style="width: 50%; margin-left: 10px;">
             </div>
         </div>
 
         <div class="user-table-container">
-            <table class="user-data-table">
+            <table class="user-data-table" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr>
                         <th>Exam Details</th>
@@ -57,18 +59,18 @@
             </table>
         </div>
     </form>
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit',  minute: '2-digit',  second: '2-digit', hour12: false };
+            const formatted = now.toLocaleString('en-GB', options).replace(',', ':');
+            document.getElementById("current-datetime").textContent = formatted;
+        }
+
+        // Initial run and update every second
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+    </script>
 </body>
-
-<script>
-    function updateDateTime() {
-        const now = new Date();
-        const options = { weekday: 'long',day: '2-digit', month: 'short', year: 'numeric',hour: '2-digit', minute: '2-digit', second: '2-digit',hour12: false };
-        const formatted = now.toLocaleString('en-GB', options).replace(',', ':');
-        document.getElementById("current-datetime").textContent = formatted;
-    }
-    updateDateTime(); // initial run
-    setInterval(updateDateTime, 1000); // update every second
-</script>
-
 </html>
-
