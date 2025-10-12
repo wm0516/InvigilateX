@@ -1,6 +1,7 @@
 
 import os
 import re
+import pytz
 import warnings
 from io import BytesIO
 from collections import defaultdict
@@ -55,7 +56,8 @@ def cleanup_expired_timetable_rows():
 
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
-    timeNow = datetime.now()
+    mytz = pytz.timezone('Asia/Kuala_Lumpur')
+    timeNow = datetime.now(mytz) 
 
     for attendance in all_attendance:
         report = attendance.report
