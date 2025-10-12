@@ -81,29 +81,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    // Landscape 'l', mm units, A4 size
     const doc = new jsPDF('l', 'mm', 'a4');
 
-    // Add first page title
-    doc.setFontSize(22);
-    doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth()/2, 20, { align: "center" });
-
-    // Capture the timetable HTML
     const calendarContainer = document.querySelector(".calendar-container");
     if (!calendarContainer) return alert("No timetable found!");
+
+    // Temporarily expand container
+    const originalStyle = calendarContainer.getAttribute("style") || "";
+    calendarContainer.style.maxHeight = "none";
+    calendarContainer.style.overflow = "visible";
 
     const canvas = await html2canvas(calendarContainer, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
 
-    // PDF page dimensions
+    // Restore original style
+    calendarContainer.setAttribute("style", originalStyle);
+
     const pdfWidth = doc.internal.pageSize.getWidth();
     const pdfHeight = doc.internal.pageSize.getHeight();
-    const margin = 20; // 20mm margin
+    const margin = 20;
     const imgWidth = pdfWidth - 2 * margin;
     const imgProps = doc.getImageProperties(imgData);
     const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-    // Position image below the title
     let position = 30; 
     if (imgHeight + position > pdfHeight) {
         doc.addPage();
@@ -111,9 +111,9 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     }
 
     doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-
     doc.save("Invigilation_Timetable.pdf");
 });
+
 </script>
 {% endblock %}
 
