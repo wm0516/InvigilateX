@@ -408,30 +408,74 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.getElementById('generatePDF')?.addEventListener('click', () => {
+// ===============================
+// PDF EXPORT SECTION (A4 Landscape)
+// ===============================
+document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    const table = document.getElementById('userTable');
-    const headerText = document.querySelector('.menu-section h2').textContent || "Manage Staff";
-
-    const now = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    const filename = `manageStaff_${dateStr}.pdf`;
-
-    html2canvas(table).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
-
-        pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
-
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
-        pdf.save(filename);
+    const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "pt",
+        format: "a4"
     });
+
+    // Clone the user table so we can clean it before exporting
+    const table = document.querySelector(".user-data-table");
+    const clonedTable = table.cloneNode(true);
+
+    // Remove any interactive or hidden elements
+    clonedTable.querySelectorAll("select, button, input").forEach(el => el.remove());
+
+    // Remove empty header wrappers (if any)
+    clonedTable.querySelectorAll(".dropdown-header").forEach(div => {
+        div.replaceWith(...div.childNodes);
+    });
+
+    // Remove invisible rows (respect filters)
+    clonedTable.querySelectorAll("tbody tr").forEach(tr => {
+        if (tr.style.display === "none") tr.remove();
+    });
+
+    // Clean up status span texts (e.g., [Activated])
+    clonedTable.querySelectorAll(".status").forEach(span => {
+        span.outerHTML = span.textContent;
+    });
+
+    // Clean up any HTML tags left inside cells (like <div> in Invigilation Time)
+    clonedTable.querySelectorAll("td").forEach(td => {
+        td.innerHTML = td.textContent.trim();
+    });
+
+    // Add the cleaned table into PDF
+    await doc.autoTable({
+        html: clonedTable,
+        startY: 50,
+        theme: "grid",
+        styles: {
+            fontSize: 7.5,
+            cellPadding: 3,
+            overflow: "linebreak",
+            halign: "center",
+            valign: "middle"
+        },
+        headStyles: {
+            fillColor: [41, 128, 185],
+            textColor: 255,
+            fontStyle: "bold"
+        },
+        margin: { left: 20, right: 20 },
+        tableWidth: "auto"
+    });
+
+    // Add centered title
+    const title = "List of Staff";
+    doc.setFontSize(16);
+    doc.text(title, doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
+
+    // Save as file
+    doc.save("Staff_List.pdf");
 });
+
 </script>
 {% endblock %}
 
