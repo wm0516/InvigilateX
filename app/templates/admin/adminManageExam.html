@@ -365,18 +365,21 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
         return;
     }
 
+    // Temporarily expand the table for full capture
+    const originalOverflow = document.body.style.overflow;
+    const originalTransform = table.style.transform;
+    document.body.style.overflow = 'visible';
+    table.style.transform = 'scale(1)';
+
     html2canvas(table, {
-        scale: 2,          // higher quality
-        useCORS: true,     // handle images safely
+        scale: 2,
+        useCORS: true,
         scrollX: 0,
-        scrollY: 0,
-        windowWidth: document.documentElement.offsetWidth
+        scrollY: -window.scrollY,
+        windowWidth: document.body.scrollWidth,
+        windowHeight: document.body.scrollHeight
     }).then(canvas => {
-        const pdf = new jsPDF({
-            orientation: 'landscape',   // landscape mode
-            unit: 'pt',                 // points
-            format: 'a4'
-        });
+        const pdf = new jsPDF({orientation: 'landscape', unit: 'pt',format: 'a4'});
 
         // Margins (in points)
         const marginLeft = 40;
@@ -394,22 +397,26 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
         let heightLeft = imgHeight;
         let position = marginTop;
 
-        // Add header
+        // Add header on first page
         pdf.setFontSize(18);
         pdf.text(headerText, marginLeft, 40);
 
-        // Draw first page
         pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
         // Add more pages if needed
         while (heightLeft > 0) {
-            pdf.addPage();
+            pdf.addPage('a4', 'landscape');
+            pdf.setFontSize(18);
             pdf.text(headerText, marginLeft, 40);
             position = marginTop - heightLeft + imgHeight;
             pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight);
             heightLeft -= pageHeight;
         }
+
+        // Restore original layout
+        document.body.style.overflow = originalOverflow;
+        table.style.transform = originalTransform;
 
         // Save file
         pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
