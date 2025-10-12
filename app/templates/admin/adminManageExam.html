@@ -355,30 +355,79 @@ document.addEventListener("DOMContentLoaded", function () {
     restrictEndTime();
 });
 
-document.getElementById("generatePDF").addEventListener("click", function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: 'l', // 'l' = landscape
-        unit: 'pt',
-        format: 'a4'
-    });
 
-    const element = document.querySelector(".user-data-table"); // your table
+document.addEventListener("DOMContentLoaded", function () {
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
 
-    doc.html(element, {
-        callback: function (doc) {
-            doc.save("Manage_Exams.pdf");
-        },
-        x: 20, // left margin
-        y: 20, // top margin
-        html2canvas: {
-            scale: 1.5, // higher = better quality
-            useCORS: true // in case of external images
-        },
-        windowWidth: element.scrollWidth // ensures table width fits
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+
+        // Create PDF in landscape mode (A4)
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
+
+        const margin = 40; // spacing from all sides
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // Title section
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Exam", pageWidth / 2, margin, { align: "center" });
+
+        // Small gap before table
+        const startY = margin + 25;
+
+        // Extract table data from the HTML
+        const table = document.querySelector(".user-data-table");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
+
+        // Convert HTML table into PDF with AutoTable
+        doc.autoTable({
+            html: table,
+            startY: startY,
+            theme: "grid",
+            styles: {
+                font: "helvetica",
+                fontSize: 9,
+                cellPadding: 5,
+                overflow: "linebreak"
+            },
+            headStyles: {
+                fillColor: [30, 30, 30],
+                textColor: [255, 255, 255],
+                halign: "center"
+            },
+            columnStyles: {
+                0: { cellWidth: 40 }, // No
+                1: { cellWidth: 80 }, // Status
+                2: { cellWidth: 200 }, // Course Details
+                3: { cellWidth: 60 }, // Exam ID
+                4: { cellWidth: 220 }, // Exam Details
+                5: { cellWidth: 80 } // Invigilators
+            },
+            margin: { top: margin, bottom: margin, left: margin, right: margin },
+            didDrawPage: function (data) {
+                // Add footer
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageSize = doc.internal.pageSize;
+                const pageHeight = pageSize.height;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            }
+        });
+
+        // Save the PDF file
+        doc.save("Manage_Exam_List.pdf");
     });
 });
-
 </script>
 {% endblock %}
 
