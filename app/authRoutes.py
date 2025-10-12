@@ -282,8 +282,9 @@ def admin_homepage():
 # -------------------------------
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance_record():
-    user_id = session.get('user_id')
-    confirm = confirm_record(user_id)
+    # user_id = session.get('user_id')
+    # confirm = confirm_record(user_id)
+    confirm = InvigilatorAttendance.query.get(110) 
     return render_template('auth/attendance.html', confirm=confirm)
 
 
