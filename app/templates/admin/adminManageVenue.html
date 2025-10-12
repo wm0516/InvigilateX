@@ -220,8 +220,24 @@ document.getElementById('generatePDF').addEventListener('click', () => {
     // Get the table element
     const table = document.querySelector('.user-data-table');
 
-    // Use html2canvas to capture the table
-    html2canvas(table).then(canvas => {
+    // Clone table to remove dropdowns
+    const tableClone = table.cloneNode(true);
+    const headerCells = tableClone.querySelectorAll('th .dropdown-header');
+    headerCells.forEach(cell => {
+        // Replace innerHTML with only the text before any <select>
+        cell.innerHTML = cell.childNodes[0].textContent.trim();
+    });
+
+    // Create a wrapper div to include the header
+    const wrapper = document.createElement('div');
+    const header = document.createElement('h2');
+    header.textContent = "Manage Venue";
+    header.style.textAlign = "center";
+    wrapper.appendChild(header);
+    wrapper.appendChild(tableClone);
+
+    // Use html2canvas to capture the wrapper
+    html2canvas(wrapper).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('l', 'pt', 'a4');
         
