@@ -99,7 +99,6 @@ class Venue(db.Model):
 
     # Relationships
     availabilities = db.relationship("VenueAvailability", back_populates="venue")               # One Venue ↔ Many VenueAvailability
-    exams = db.relationship("Exam", back_populates="venue")                                     # One Venue ↔ Many Exams
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
