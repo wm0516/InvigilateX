@@ -10,13 +10,13 @@
 
 <body>
     <form method="POST" style="width: 60%; margin: auto;">
-        <h4 class="user-info" id="current-datetime"></h4><br>
-        <h1>Attendance Check In/Out</h1>
-
-        <div class="form-container">
-            <div class="input-container" style="width: 60%; align-items: center;">
+        <div style="max-width: 500px; margin: 30px auto; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); text-align: center;">
+            <h4 id="current-datetime" style="margin-bottom: 10px;"></h4>
+            <h1 style="margin-bottom: 20px;">Attendance Check In/Out</h1>
+            
+            <div class="input-container" style="margin-bottom: 15px;">
                 <h3>Scan Card</h3>
-                <input type="text" name="cardNumber" value="{{ cardNumber_text }}" required style="width: 50%;">
+                <input type="text" name="cardNumber" value="{{ cardNumber_text }}" required style="width: 100%; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc;">
             </div>
         </div>
 
