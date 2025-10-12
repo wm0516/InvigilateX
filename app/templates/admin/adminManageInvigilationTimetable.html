@@ -81,68 +81,90 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // landscape, A4
+    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
 
     const calendarContainer = document.querySelector(".calendar-container");
     if (!calendarContainer) return alert("No timetable found!");
 
-    // Save original styles
+    // Temporary style adjustments
     const originalStyle = calendarContainer.getAttribute("style") || "";
-    const originalOverflow = document.body.style.overflow;
-
-    // Temporarily expand the container fully for full capture
-    document.body.style.overflow = "hidden";
     calendarContainer.style.maxHeight = "none";
     calendarContainer.style.overflow = "visible";
     calendarContainer.style.height = "auto";
 
-    // Wait for reflow before capturing
+    // Wait for DOM reflow
     await new Promise(r => setTimeout(r, 300));
 
-    // Capture the full timetable as image
+    // Capture full image
     const canvas = await html2canvas(calendarContainer, {
         scale: 2,
         useCORS: true,
         scrollY: 0,
-        windowWidth: document.body.scrollWidth,
-        windowHeight: document.body.scrollHeight
+        backgroundColor: "#ffffff"
     });
 
-    // Restore original styles
+    // Restore original style
     calendarContainer.setAttribute("style", originalStyle);
-    document.body.style.overflow = originalOverflow;
 
-    // Prepare image
     const imgData = canvas.toDataURL("image/png");
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = doc.internal.pageSize.getHeight();
-    const margin = 20; // ✅ 20mm margin all around
+    const pdfWidth = doc.internal.pageSize.getWidth();   // e.g. 297mm
+    const pdfHeight = doc.internal.pageSize.getHeight(); // e.g. 210mm
+    const margin = 20;
     const imgWidth = pdfWidth - 2 * margin;
     const imgProps = doc.getImageProperties(imgData);
     const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-    let heightLeft = imgHeight;
-    let position = margin; // leave room for header
+    // Pixel to mm conversion for accurate pagination
+    const pxFullHeight = canvas.height;
+    const mmPerPx = imgHeight / pxFullHeight;
 
-    // ✅ Add header on first page
+    // Effective page height in pixels
+    const pageHeightPx = (pdfHeight - 2 * margin) / mmPerPx;
+
+    // Add header
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Invigilation Timetable", pdfWidth / 2, margin - 5, { align: "center" });
 
-    // Add first image
-    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-    heightLeft -= pdfHeight - margin * 2;
+    let remainingHeight = pxFullHeight;
+    let pageOffset = 0;
 
-    // ✅ Handle page overflow
-    while (heightLeft > 0) {
-        position = heightLeft - imgHeight + margin;
-        doc.addPage();
-        doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight - margin * 2;
+    while (remainingHeight > 0) {
+        const canvasSlice = document.createElement("canvas");
+        canvasSlice.width = canvas.width;
+        canvasSlice.height = Math.min(pageHeightPx, remainingHeight);
+        const ctx = canvasSlice.getContext("2d");
+
+        // Copy only the current page area from full canvas
+        ctx.drawImage(
+            canvas,
+            0,
+            pageOffset,
+            canvas.width,
+            canvasSlice.height,
+            0,
+            0,
+            canvas.width,
+            canvasSlice.height
+        );
+
+        const sliceImg = canvasSlice.toDataURL("image/png");
+        const sliceHeightMm = (canvasSlice.height * mmPerPx);
+
+        const yPos = margin + 10; // add header spacing
+        doc.addImage(sliceImg, 'PNG', margin, yPos, imgWidth, sliceHeightMm);
+
+        remainingHeight -= pageHeightPx;
+        pageOffset += pageHeightPx;
+
+        if (remainingHeight > 0) {
+            doc.addPage();
+        }
     }
 
     doc.save("Invigilation_Timetable.pdf");
 });
 </script>
+
 {% endblock %}
 
