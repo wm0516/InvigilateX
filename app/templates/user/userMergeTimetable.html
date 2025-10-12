@@ -6,7 +6,7 @@
 
 {% block content %}
     <div class="button-wrapper" style="display: block;">
-        <button id="generatePDF" style="background-color: black;">Download PDF</button>
+        <button id="generatePDF" style="background-color: black;">Download as PDF</button>
     </div>
     <div> 
         <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
@@ -96,13 +96,6 @@ Object.entries(days).forEach(([day, color]) => {
     container.appendChild(div);
 });
 
-$(document).ready(function() {
-    $('#lecturer').select2({
-        placeholder: "Type to search...",
-        allowClear: true
-    });
-});
-
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
     const table = document.querySelector('.user-table-container table');
@@ -125,6 +118,13 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth - 40, pdfHeight);
         pdf.save(filename);
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('lecturer');
+    if (window.jQuery && $(select).select2) {
+        $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
+    }
 });
 </script>
 {% endblock %}
