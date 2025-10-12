@@ -357,35 +357,62 @@ document.addEventListener("DOMContentLoaded", function () {
     restrictEndTime();
 });
 
-document.getElementById('generatePDF')?.addEventListener('click', () => {
+document.getElementById('generatePDF')?.addEventListener('click', async () => {
     const { jsPDF } = window.jspdf;
+
+    // Elements
     const tableContainer = document.querySelector('.user-table-container');
     const table = document.querySelector('.user-data-table');
     const headerText = document.querySelector('h2').textContent || "Manage Exams";
 
-    // Temporarily disable scrolling
-    const originalMaxHeight = tableContainer.style.maxHeight;
-    tableContainer.style.maxHeight = 'none';
-    tableContainer.style.overflow = 'visible';
+    // Clone table to avoid scroll clipping
+    const tempDiv = tableContainer.cloneNode(true);
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.top = '-9999px';
+    tempDiv.style.left = '0';
+    tempDiv.style.width = tableContainer.offsetWidth + 'px';
+    tempDiv.style.maxHeight = 'none';
+    tempDiv.style.overflow = 'visible';
+    document.body.appendChild(tempDiv);
 
-    html2canvas(table).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
+    // Wait for rendering
+    await new Promise(r => setTimeout(r, 150));
 
-        pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
+    // Capture full table image
+    const canvas = await html2canvas(tempDiv, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('l', 'pt', 'a4');
 
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    pdf.setFontSize(18);
+    pdf.text(headerText, 40, 40);
 
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
-        pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
+    // Fit image to page width and manage multi-page height
+    const pageWidth = pdf.internal.pageSize.getWidth() - 40;
+    const pageHeight = pdf.internal.pageSize.getHeight() - 60;
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-        // Restore scroll settings
-        tableContainer.style.maxHeight = originalMaxHeight;
-        tableContainer.style.overflow = 'auto';
-    });
+    let yPos = 60;
+    let remainingHeight = imgHeight;
+    let imgY = 0;
+
+    while (remainingHeight > 0) {
+        pdf.addImage(imgData,'PNG',20,yPos,imgWidth,imgHeight,'','FAST',0,imgY);
+        remainingHeight -= pageHeight;
+        imgY += (pageHeight * canvas.width) / pageWidth;
+
+        if (remainingHeight > 0) {
+            pdf.addPage();
+        }
+    }
+
+    // Save PDF
+    pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    // Clean up
+    document.body.removeChild(tempDiv);
 });
+
 
 </script>
 {% endblock %}
