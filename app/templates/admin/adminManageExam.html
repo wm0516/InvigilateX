@@ -357,31 +357,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById('generatePDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
-    const tableContainer = document.querySelector('.user-table-container');
     const table = document.querySelector('.user-data-table');
     const headerText = document.querySelector('h2').textContent || "Manage Exams";
 
-    // Temporarily disable scrolling
-    const originalMaxHeight = tableContainer.style.maxHeight;
-    tableContainer.style.maxHeight = 'none';
-    tableContainer.style.overflow = 'visible';
+    if (!table) {
+        alert("Table not found!");
+        return;
+    }
 
-    html2canvas(table).then(canvas => {
+    html2canvas(table, {
+        scale: 2,          // higher quality
+        useCORS: true,     // handle images safely
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: document.documentElement.offsetWidth
+    }).then(canvas => {
+        const pdf = new jsPDF({
+            orientation: 'landscape',   // landscape mode
+            unit: 'pt',                 // points
+            format: 'a4'
+        });
+
+        // Margins (in points)
+        const marginLeft = 40;
+        const marginTop = 60;
+        const marginRight = 40;
+        const marginBottom = 40;
+
+        const pageWidth = pdf.internal.pageSize.getWidth() - marginLeft - marginRight;
+        const pageHeight = pdf.internal.pageSize.getHeight() - marginTop - marginBottom;
+
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('l', 'pt', 'a4');
+        const imgWidth = pageWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
+        let heightLeft = imgHeight;
+        let position = marginTop;
+
+        // Add header
         pdf.setFontSize(18);
-        pdf.text(headerText, 40, 40);
+        pdf.text(headerText, marginLeft, 40);
 
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        // Draw first page
+        pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
 
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
+        // Add more pages if needed
+        while (heightLeft > 0) {
+            pdf.addPage();
+            pdf.text(headerText, marginLeft, 40);
+            position = marginTop - heightLeft + imgHeight;
+            pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        // Save file
         pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
-
-        // Restore scroll settings
-        tableContainer.style.maxHeight = originalMaxHeight;
-        tableContainer.style.overflow = 'auto';
+    }).catch(err => {
+        console.error("Error generating PDF:", err);
+        alert("An error occurred while generating the PDF.");
     });
 });
 
