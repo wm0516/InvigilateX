@@ -477,7 +477,7 @@ def attendance_record():
             # === Check-out ===
             elif not att.checkOut:
                 if end <= scan_time <= after:
-                    att.checkOut, att.remark = scan_time, "CHECK OUT"
+                    att.checkOut, att.remark = scan_time, "COMPLETE"
                 elif scan_time < end:
                     att.checkOut, att.remark = scan_time, "CHECK OUT EARLY"
                 else:
@@ -486,7 +486,7 @@ def attendance_record():
 
             # === Auto check-out ===
             if not att.checkOut and scan_time > after:
-                att.checkOut, att.remark = after, "CHECK OUT"
+                att.checkOut, att.remark = after, "COMPLETE"
 
             # === When both exist → compute and update user hours ===
             if att.checkIn and att.checkOut:
@@ -590,7 +590,7 @@ def update_attendanceStatus():
             if check_out < exam_end:
                 remark = "CHECK OUT EARLY"
             else:
-                remark = "CHECK OUT"
+                remark = "COMPLETE"
 
         # --- After exam ended ---
         if timeNow > exam_end:
