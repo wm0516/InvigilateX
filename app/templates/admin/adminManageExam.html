@@ -341,20 +341,64 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
     pdf.setFontSize(18);
     pdf.text(headerText, 40, 40);
 
-    // Grab table
+    // Create a simplified table for PDF export
     const table = document.querySelector('.user-data-table');
+    const simplifiedTable = table.cloneNode(true);
+    
+    // Remove complex HTML structure from table cells
+    const rows = simplifiedTable.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+            // Replace complex div structures with plain text
+            if (cell.querySelector('.info-grid')) {
+                const infoGrid = cell.querySelector('.info-grid');
+                const lines = [];
+                const divs = infoGrid.querySelectorAll('div');
+                
+                divs.forEach((div, index) => {
+                    if (index % 2 === 1) { // Only take the content divs (the ones with strong text)
+                        lines.push(div.textContent.trim());
+                    }
+                });
+                
+                cell.textContent = lines.join(' | ');
+            }
+            
+            // Clean up status frames
+            if (cell.querySelector('.status')) {
+                cell.textContent = cell.querySelector('.status').textContent;
+            }
+        });
+    });
 
-    // Convert table to autoTable
+    // Convert simplified table to autoTable
     pdf.autoTable({
-        html: table,
-        startY: 60,           // leave space for header
+        html: simplifiedTable,
+        startY: 60,
         theme: 'grid',
-        styles: { fontSize: 10 },
-        headStyles: { fillColor: [0, 0, 0], textColor: 255 },
+        styles: { 
+            fontSize: 8, // Smaller font to fit more content
+            cellPadding: 3,
+            overflow: 'linebreak'
+        },
+        headStyles: { 
+            fillColor: [0, 0, 0], 
+            textColor: 255,
+            fontSize: 9
+        },
         alternateRowStyles: { fillColor: [240, 240, 240] },
         margin: { left: 20, right: 20 },
+        tableWidth: 'auto',
+        columnStyles: {
+            0: { cellWidth: 40 },  // No
+            1: { cellWidth: 80 },  // Exam Status
+            2: { cellWidth: 180 }, // Course Details
+            3: { cellWidth: 60 },  // Exam ID
+            4: { cellWidth: 180 }, // Exam Details
+            5: { cellWidth: 80 }   // Number of Invigilators
+        },
         didDrawPage: function (data) {
-            // Optional: add page numbers
             const page = pdf.getNumberOfPages();
             pdf.setFontSize(10);
             pdf.text(`Page ${page}`, pdf.internal.pageSize.getWidth() - 50, pdf.internal.pageSize.getHeight() - 10);
