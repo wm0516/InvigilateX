@@ -104,16 +104,46 @@
                     <th>Level</th>
                     <th>Venue Capacity</th>
                 </tr>
+                <!-- Filter row -->
+                <tr>
+                    <th></th> <!-- No filter for index -->
+                    <th>
+                        <select id="filterVenue">
+                            <option value="">All</option>
+                            {% for v in venue_data|map(attribute='venueNumber')|unique %}
+                                <option value="{{ v }}">{{ v }}</option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                    <th>
+                        <select id="filterLevel">
+                            <option value="">All</option>
+                            <option value="LEVEL 2">LEVEL 2</option>
+                            <option value="LEVEL 3">LEVEL 3</option>
+                            <option value="LEVEL 4">LEVEL 4</option>
+                            <option value="LEVEL 5">LEVEL 5</option>
+                            <option value="LEVEL 6">LEVEL 6</option>
+                        </select>
+                    </th>
+                    <th>
+                        <select id="filterCapacity">
+                            <option value="">All</option>
+                            {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
+                                <option value="{{ v }}">{{ v }}</option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                </tr>
             </thead>
             <tbody>
                 {% for row in venue_data %}
                 <tr>
-                    <td>{{ loop.index }}</td> <!-- Display index starting from 1 -->
+                    <td>{{ loop.index }}</td>
                     <td>{{ row.venueNumber }}</td>
                     <td>{{ row.venueLevel }}</td>
-                    <td>[{{ row.venueCapacity }}]</td>
-                {% endfor %}  
+                    <td>{{ row.venueCapacity }}</td>
                 </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -121,7 +151,7 @@
 {% endblock %}
 
 
-{% block extra_scripts %}
+{% block extra_scripts %}   
 <script>
 // Function for edit ManageVenue
 document.getElementById('editVenueNumber').addEventListener('change', function() {
@@ -141,6 +171,34 @@ document.getElementById('editVenueNumber').addEventListener('change', function()
         })
         .catch(err => console.error(err));
 });
+
+// Filter function
+function filterTable() {
+    const venueFilter = document.getElementById('filterVenue').value.toLowerCase();
+    const levelFilter = document.getElementById('filterLevel').value.toLowerCase();
+    const capacityFilter = document.getElementById('filterCapacity').value.toLowerCase();
+
+    const table = document.querySelector('.user-data-table tbody');
+    const rows = table.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const venue = row.cells[1].textContent.toLowerCase();
+        const level = row.cells[2].textContent.toLowerCase();
+        const capacity = row.cells[3].textContent.toLowerCase();
+
+        const show = 
+            (venueFilter === "" || venue.includes(venueFilter)) &&
+            (levelFilter === "" || level.includes(levelFilter)) &&
+            (capacityFilter === "" || capacity.includes(capacityFilter));
+
+        row.style.display = show ? "" : "none";
+    });
+}
+
+// Add event listeners
+document.getElementById('filterVenue').addEventListener('change', filterTable);
+document.getElementById('filterLevel').addEventListener('change', filterTable);
+document.getElementById('filterCapacity').addEventListener('change', filterTable);
 </script>
 {% endblock %}
 
