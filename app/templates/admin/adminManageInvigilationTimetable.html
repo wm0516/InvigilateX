@@ -88,7 +88,7 @@ document.getElementById("downloadPDF")?.addEventListener("click", () => {
 
     html2canvas(calendarContainer, { scale: 2 }).then(canvas => {
         const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF('p', 'pt', 'a4');
+        const pdf = new jsPDF('l', 'pt', 'a4');
 
         const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;

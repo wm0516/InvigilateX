@@ -359,13 +359,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.getElementById('generatePDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
+    const tableContainer = document.querySelector('.user-table-container');
     const table = document.querySelector('.user-data-table');
     const headerText = document.querySelector('h2').textContent || "Manage Exams";
 
-    const now = new Date();
-    const options = { day: '2-digit', month: 'short', year: 'numeric' };
-    const dateStr = now.toLocaleDateString('en-GB', options).replace(/ /g, '');
-    const filename = `manageExams_${dateStr}.pdf`;
+    // Temporarily disable scrolling
+    const originalMaxHeight = tableContainer.style.maxHeight;
+    tableContainer.style.maxHeight = 'none';
+    tableContainer.style.overflow = 'visible';
 
     html2canvas(table).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
@@ -378,9 +379,14 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
         pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth, pdfHeight);
-        pdf.save(filename);
+        pdf.save(`manageExams_${new Date().toISOString().split('T')[0]}.pdf`);
+
+        // Restore scroll settings
+        tableContainer.style.maxHeight = originalMaxHeight;
+        tableContainer.style.overflow = 'auto';
     });
 });
+
 </script>
 {% endblock %}
 
