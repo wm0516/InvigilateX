@@ -122,7 +122,7 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
     let heightLeft = imgHeight;
-    let position = margin + 10; // leave room for header
+    let position = 10;
 
     // ✅ Add header on first page
     doc.setFont("helvetica", "bold");
