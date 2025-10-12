@@ -1,6 +1,5 @@
 
 from datetime import datetime
-import pytz
 from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
@@ -558,8 +557,7 @@ def cleanup_expired_timetable_rows():
 
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
-    mytz = pytz.timezone('Asia/Kuala_Lumpur')
-    timeNow = datetime.now(mytz)
+    timeNow = datetime.now()
 
     for attendance in all_attendance:
         report = attendance.report
@@ -571,12 +569,12 @@ def update_attendanceStatus():
         check_out = attendance.checkOut
 
         # --- Localize all datetimes consistently ---
-        exam_start = mytz.localize(exam.examStartTime) if exam.examStartTime.tzinfo is None else exam.examStartTime
-        exam_end   = mytz.localize(exam.examEndTime)   if exam.examEndTime.tzinfo is None else exam.examEndTime
-        if check_in and check_in.tzinfo is None:
-            check_in = mytz.localize(check_in)
-        if check_out and check_out.tzinfo is None:
-            check_out = mytz.localize(check_out)
+        exam_start = exam.examStartTime if exam.examStartTime is None else exam.examStartTime
+        exam_end   = exam.examEndTime   if exam.examEndTime is None else exam.examEndTime
+        if check_in and check_in is None:
+            check_in = check_in
+        if check_out and check_out is None:
+            check_out = check_out
 
         remark = "PENDING"
 
