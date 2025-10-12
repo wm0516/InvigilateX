@@ -5,27 +5,31 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Lecturer Filter -->
-    <div> 
-        <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
-            <label for="lecturer">Select_Lecturer:</label>
-            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
-                <option value="">All Lecturers</option>
-                {% for lecturer in lecturers %}
-                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                        {{ lecturer }}
-                    </option>
-                {% endfor %}
-            </select>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div> 
+            <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
+                <label for="lecturer">Select_Lecturer:</label>
+                <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                    <option value="">All Lecturers</option>
+                    {% for lecturer in lecturers %}
+                        <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                            {{ lecturer }}
+                        </option>
+                    {% endfor %}
+                </select>
 
-            {% if selected_lecturer %}
-                <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'" style="padding: 1%; background-color: #edd5ff;">
-                    Clear_Filter
-                </button>
-            {% endif %}
-        </form>
+                {% if selected_lecturer %}
+                    <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'" style="padding: 1%; background-color: #edd5ff;">
+                        Clear_Filter
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+        <div class="button-wrapper">
+            <button id="downloadPDF" style="background-color: black; color: white;">Download as PDF</button>
+        </div>
     </div>
-    
+
     <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     <div class="user-table-container">
         <table class="user-data-table" border="1">
@@ -100,5 +104,32 @@ $(document).ready(function() {
         allowClear: true
     });
 });
+
+document.getElementById('downloadPDF')?.addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const table = document.querySelector('.user-table-container table');
+    if (!table) return alert("No timetable table found!");
+
+    const headerText = document.querySelector('.menu-section h2').textContent || "Timetable";
+    const filename = `Admin_ViewMergeTimetable.pdf`; // removed date string
+
+    html2canvas(table, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' = landscape
+
+        // Add centered, bold title
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        pdf.setFontSize(18);
+        pdf.setFont(undefined, 'bold'); // make it bold
+        pdf.text(headerText, pdfWidth / 2, 40, { align: "center" });
+
+        // Calculate image dimensions
+        const pdfHeight = (canvas.height * (pdfWidth - 40)) / canvas.width;
+
+        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth - 40, pdfHeight);
+        pdf.save(filename);
+    });
+});
+
 </script>
 {% endblock %}
