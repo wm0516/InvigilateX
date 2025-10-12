@@ -81,74 +81,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "px",
-        format: "a4"
-    });
+    // Landscape 'l', mm units, A4 size
+    const doc = new jsPDF('l', 'mm', 'a4');
 
-    const margin = 20;
-    const pdfWidth = pdf.internal.pageSize.getWidth() - margin * 2;
-    const pdfHeight = pdf.internal.pageSize.getHeight() - margin * 2;
+    // Add first page title
+    doc.setFontSize(22);
+    doc.text("Invigilation Timetable", doc.internal.pageSize.getWidth()/2, 20, { align: "center" });
 
-    // Create a clone to adjust layout before rendering
+    // Capture the timetable HTML
     const calendarContainer = document.querySelector(".calendar-container");
-    const clone = calendarContainer.cloneNode(true);
+    if (!calendarContainer) return alert("No timetable found!");
 
-    // Force 4 exam cards per row for consistent layout
-    clone.querySelectorAll(".exam-grid").forEach(grid => {
-        grid.style.display = "grid";
-        grid.style.gridTemplateColumns = "repeat(4, 1fr)";
-        grid.style.gap = "10px";
-    });
-
-    // Temporarily add clone to document for accurate rendering
-    clone.style.width = pdfWidth + "px";
-    clone.style.padding = "10px";
-    clone.style.backgroundColor = "white";
-    document.body.appendChild(clone);
-
-    const canvas = await html2canvas(clone, { scale: 2 });
+    const canvas = await html2canvas(calendarContainer, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
 
-    const imgWidth = pdfWidth;
-    const imgHeight = canvas.height * (imgWidth / canvas.width);
+    // PDF page dimensions
+    const pdfWidth = doc.internal.pageSize.getWidth();
+    const pdfHeight = doc.internal.pageSize.getHeight();
+    const margin = 20; // 20mm margin
+    const imgWidth = pdfWidth - 2 * margin;
+    const imgProps = doc.getImageProperties(imgData);
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-    let position = margin + 30; // leave space for header
-
-    // Add Header
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(20);
-    pdf.text("Invigilation Timetable", pdf.internal.pageSize.getWidth() / 2, margin + 10, { align: "center" });
-
-    // Add content with automatic page breaks
-    let remainingHeight = imgHeight;
-    let y = position;
-
-    let pageHeight = pdf.internal.pageSize.getHeight() - margin * 2;
-    const pageRatio = imgWidth / canvas.width;
-
-    const pageCanvas = document.createElement("canvas");
-    const pageCtx = pageCanvas.getContext("2d");
-    const pageHeightPx = canvas.height * (pageHeight / imgHeight);
-    pageCanvas.width = canvas.width;
-    pageCanvas.height = pageHeightPx;
-
-    let renderedHeight = 0;
-
-    while (remainingHeight > 0) {
-        pageCtx.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
-        pageCtx.drawImage(canvas, 0, renderedHeight * (canvas.height / imgHeight), canvas.width, pageHeightPx, 0, 0, canvas.width, pageHeightPx);
-        const img = pageCanvas.toDataURL("image/png");
-        pdf.addImage(img, "PNG", margin, y, imgWidth, pageHeight);
-        remainingHeight -= pageHeight;
-        renderedHeight += pageHeightPx;
-        if (remainingHeight > 0) pdf.addPage();
+    // Position image below the title
+    let position = 30; 
+    if (imgHeight + position > pdfHeight) {
+        doc.addPage();
+        position = margin;
     }
 
-    pdf.save("Invigilation_Timetable.pdf");
-    clone.remove();
+    doc.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+
+    doc.save("Invigilation_Timetable.pdf");
 });
+
 </script>
 {% endblock %}
 
