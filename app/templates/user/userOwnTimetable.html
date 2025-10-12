@@ -75,7 +75,7 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         const imgHeight = imgProps.height * ratio;
 
         pdf.addImage(imgData, 'PNG', margin, 40, imgWidth, imgHeight);
-        pdf.save('timetable.pdf');
+        pdf.save(`{{ user_name }}'s Timetable.pdf`);
     });
 });
 </script>
