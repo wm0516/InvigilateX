@@ -1,26 +1,15 @@
-# -------------------------------
-# Third-party imports
-# -------------------------------
+
 from flask import render_template, request, redirect, url_for, flash, session
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from collections import defaultdict
-
-# -------------------------------
-# Local application imports
-# -------------------------------
 from app import app
 from .authRoutes import login_required
 from .backend import *
 from .database import * 
 
-# -------------------------------
-# Flask and application setup
-# -------------------------------
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-
-
 
 
 
@@ -191,7 +180,9 @@ def user_invigilationTimetable():
 
 
 
-
+# -------------------------------
+# Function for ViewOwnTimetable Route
+# -------------------------------
 @app.route('/user/ownTimetable', methods=['GET'])
 @login_required
 def user_ownTimetable():
@@ -230,7 +221,9 @@ def user_ownTimetable():
     return render_template('user/userOwnTimetable.html', active_tab='user_ownTimetabletab', timetable_rows=merged_timetable, user_name=user_name)
 
 
-
+# -------------------------------
+# Function for MergeTimetable Route
+# -------------------------------
 @app.route('/user/mergeTimetable', methods=['GET'])
 @login_required
 def user_mergeTimetable():
@@ -294,6 +287,9 @@ def user_mergeTimetable():
     return render_template('user/userMergeTimetable.html', active_tab='user_mergeTimetabletab', timetable_rows=merged_timetable, user_department=user_department, lecturers=lecturers, selected_lecturer=selected_lecturer)
 
 
+# -------------------------------
+# Function for Profile Route
+# -------------------------------
 @app.route('/user/profile', methods=['GET', 'POST'])
 @login_required
 def user_profile():
