@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (td.cellIndex === 7) {  // Lecturer details column
                     text = text
                         .replace(/\s*Practical\s*:/g, "Practical:")
-                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")  // <-- ensure line break before Tutorial
+                        .replace(/\s*Tutorial\s*:/g, "\n\nTutorial:")  // <-- ensure line break before Tutorial
                         .trim();
                 }
 
