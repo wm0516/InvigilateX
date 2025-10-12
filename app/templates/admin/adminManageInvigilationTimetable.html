@@ -80,77 +80,54 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
 });
 
-document.getElementById("downloadPDF").addEventListener("click", async () => {
+document.getElementById('downloadPDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: 'a4' });
 
-    // Select the calendar container
-    const calendar = document.querySelector(".calendar-container");
-    if (!calendar) return alert("No calendar data to download!");
+    const margin = 20; // 20px margin
+    let y = margin; // starting y position
 
-    // Use html2canvas to render the div as a canvas
-    const canvas = await html2canvas(calendar, {
-        scale: 2, // increase for better quality
-        useCORS: true,
-        allowTaint: true,
-        logging: true
-    });
+    // Add header
+    pdf.setFontSize(18);
+    pdf.text("Invigilation Timetable", pdf.internal.pageSize.getWidth() / 2, y, { align: 'center' });
+    y += 30; // space after header
 
-    const imgData = canvas.toDataURL("image/png");
+    const days = [...document.querySelectorAll(".calendar-day")];
+    pdf.setFontSize(12);
 
-    // Create PDF
-    const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "pt",
-        format: "a4"
-    });
+    days.forEach(day => {
+        const dateText = day.querySelector(".calendar-date").textContent;
+        const exams = [...day.querySelectorAll(".exam-card")];
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
+        // Add date
+        pdf.setFont(undefined, 'bold');
+        pdf.text(dateText, margin, y);
+        y += 20;
+        pdf.setFont(undefined, 'normal');
 
-    // Calculate image dimensions to fit PDF
-    const imgWidth = pdfWidth - 40; // margin
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        exams.forEach(exam => {
+            // Get exam text
+            const examText = exam.innerText.replace(/\n/g, ' | ');
+            // Add exam text to PDF
+            pdf.text(examText, margin + 10, y);
+            y += 18;
 
-    let position = 20;
+            // Check for page break
+            if (y > pdf.internal.pageSize.getHeight() - margin) {
+                pdf.addPage();
+                y = margin; // reset y for new page
+            }
+        });
 
-    if (imgHeight < pdfHeight - 40) {
-        // Single page
-        pdf.addImage(imgData, "PNG", 20, position, imgWidth, imgHeight);
-    } else {
-        // Multi-page
-        let remainingHeight = imgHeight;
-        let pageCanvasHeight = ((pdfHeight - 40) * canvas.width) / imgWidth;
-        let page = 0;
-
-        while (remainingHeight > 0) {
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = pageCanvasHeight;
-
-            const ctx = tempCanvas.getContext("2d");
-            ctx.drawImage(
-                canvas,
-                0,
-                page * pageCanvasHeight,
-                canvas.width,
-                pageCanvasHeight,
-                0,
-                0,
-                canvas.width,
-                pageCanvasHeight
-            );
-
-            const imgPageData = tempCanvas.toDataURL("image/png");
-            if (page > 0) pdf.addPage();
-            pdf.addImage(imgPageData, "PNG", 20, position, imgWidth, ((pageCanvasHeight * imgWidth) / canvas.width));
-            remainingHeight -= pageCanvasHeight;
-            page++;
+        y += 10; // space between days
+        if (y > pdf.internal.pageSize.getHeight() - margin) {
+            pdf.addPage();
+            y = margin;
         }
-    }
+    });
 
     pdf.save("Invigilation_Timetable.pdf");
 });
-
 </script>
 {% endblock %}
 

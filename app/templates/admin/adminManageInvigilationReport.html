@@ -200,19 +200,10 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         let invStatus = tds[6]?.innerText.trim() || "";
 
         // Flatten multi-line formatting
-        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text => 
-            text.replace(/:/g, ":\n")
+        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+            text.replace(/\s*:\s*/g, " : ")
         );
-
-        rows.push([
-            examID,
-            examDetails,
-            invCount,
-            invDetails,
-            checkTimes,
-            attendance,
-            invStatus
-        ]);
+        rows.push([examID,examDetails,invCount,invDetails,checkTimes,attendance,invStatus]);
     });
 
     // Generate PDF table
