@@ -227,8 +227,9 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     }
 
     // Headers
-    const headers = Array.from(table.querySelectorAll("thead th .dropdown-header")).map(div => {
-        return div.childNodes[0].textContent.trim();
+    const headers = Array.from(table.querySelectorAll("thead th")).map(th => {
+        const div = th.querySelector(".dropdown-header");
+        return div ? div.childNodes[0].textContent.trim() : th.textContent.trim();
     });
     
     // Rows (only visible)

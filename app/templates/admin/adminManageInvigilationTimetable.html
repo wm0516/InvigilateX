@@ -80,25 +80,75 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
 });
 
-document.getElementById("downloadPDF")?.addEventListener("click", () => {
+document.getElementById("downloadPDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
 
-    const calendarContainer = document.querySelector(".calendar-container");
-    if (!calendarContainer) return alert("No timetable found!");
+    // Select the calendar container
+    const calendar = document.querySelector(".calendar-container");
+    if (!calendar) return alert("No calendar data to download!");
 
-    html2canvas(calendarContainer, { scale: 2 }).then(canvas => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF('l', 'pt', 'a4');
-
-        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-        pdf.setFontSize(18);
-        pdf.text("Invigilation Timetable", 20, 30);
-
-        pdf.addImage(imgData, "PNG", 20, 50, pdfWidth, pdfHeight);
-        pdf.save(`InvigilationTimetable_${new Date().toISOString().split('T')[0]}.pdf`);
+    // Use html2canvas to render the div as a canvas
+    const canvas = await html2canvas(calendar, {
+        scale: 2, // increase for better quality
+        useCORS: true,
+        allowTaint: true,
+        logging: true
     });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    // Create PDF
+    const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "pt",
+        format: "a4"
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // Calculate image dimensions to fit PDF
+    const imgWidth = pdfWidth - 40; // margin
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let position = 20;
+
+    if (imgHeight < pdfHeight - 40) {
+        // Single page
+        pdf.addImage(imgData, "PNG", 20, position, imgWidth, imgHeight);
+    } else {
+        // Multi-page
+        let remainingHeight = imgHeight;
+        let pageCanvasHeight = ((pdfHeight - 40) * canvas.width) / imgWidth;
+        let page = 0;
+
+        while (remainingHeight > 0) {
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = pageCanvasHeight;
+
+            const ctx = tempCanvas.getContext("2d");
+            ctx.drawImage(
+                canvas,
+                0,
+                page * pageCanvasHeight,
+                canvas.width,
+                pageCanvasHeight,
+                0,
+                0,
+                canvas.width,
+                pageCanvasHeight
+            );
+
+            const imgPageData = tempCanvas.toDataURL("image/png");
+            if (page > 0) pdf.addPage();
+            pdf.addImage(imgPageData, "PNG", 20, position, imgWidth, ((pageCanvasHeight * imgWidth) / canvas.width));
+            remainingHeight -= pageCanvasHeight;
+            page++;
+        }
+    }
+
+    pdf.save("Invigilation_Timetable.pdf");
 });
 
 </script>
