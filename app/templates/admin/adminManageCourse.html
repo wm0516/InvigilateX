@@ -420,9 +420,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 // clean up and format lecturer info readability
                 if (td.cellIndex === 7) {  // Lecturer details column
                     text = text
-                        .replace(/\s*Practical\s*:/g, "\nPractical:")
-                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")
-                        .trimStart();
+                        .replace(/\s*Practical\s*:/g, "Practical:")
+                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")  // <-- ensure line break before Tutorial
+                        .trim();
                 }
 
                 text = text.replace(/\s*\n\s*/g, " "); // single-line cleanup
