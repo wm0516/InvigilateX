@@ -220,6 +220,13 @@ html, body {
 
 
 
+.user-table-container {
+    margin: 20px 0;
+    max-height: 700px;    
+    overflow-y: auto;    
+    overflow-x: auto;     
+}
+
 .user-data-table {
     width: 100%;
     border-collapse: collapse;

@@ -413,13 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     generateBtn.addEventListener("click", function () {
         const { jsPDF } = window.jspdf;
-
-        const doc = new jsPDF({
-            orientation: "landscape",
-            unit: "pt",
-            format: "a4"
-        });
-
+        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
         const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
 

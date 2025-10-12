@@ -208,13 +208,7 @@ document.getElementById('filterCapacity').addEventListener('change', filterTable
 
 document.getElementById("generatePDF").addEventListener("click", function () {
     const { jsPDF } = window.jspdf;
-
-    const doc = new jsPDF({
-        orientation: "landscape",
-        unit: "pt",
-        format: "a4"
-    });
-
+    const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
 
@@ -233,8 +227,11 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     }
 
     // Headers
-    const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.innerText.trim());
-
+    const headers = Array.from(table.querySelectorAll("thead th")).map(th => {
+        // Only take the first text node (the visible header title)
+        return th.childNodes[0].nodeValue.trim();
+    });
+    
     // Rows (only visible)
     const rows = Array.from(table.querySelectorAll("tbody tr")).filter(tr => tr.style.display !== "none")
         .map(tr => Array.from(tr.querySelectorAll("td")).map(td => td.textContent.trim()));

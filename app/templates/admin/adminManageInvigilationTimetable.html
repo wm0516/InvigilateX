@@ -80,6 +80,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 100);
 });
 
+document.getElementById("downloadPDF")?.addEventListener("click", () => {
+    const { jsPDF } = window.jspdf;
+
+    const calendarContainer = document.querySelector(".calendar-container");
+    if (!calendarContainer) return alert("No timetable found!");
+
+    html2canvas(calendarContainer, { scale: 2 }).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF('l', 'pt', 'a4');
+
+        const pdfWidth = pdf.internal.pageSize.getWidth() - 40;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+        pdf.setFontSize(18);
+        pdf.text("Invigilation Timetable", 20, 30);
+
+        pdf.addImage(imgData, "PNG", 20, 50, pdfWidth, pdfHeight);
+        pdf.save(`InvigilationTimetable_${new Date().toISOString().split('T')[0]}.pdf`);
+    });
+});
 
 </script>
 {% endblock %}
