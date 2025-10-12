@@ -209,6 +209,7 @@ document.getElementById('filterCapacity').addEventListener('change', filterTable
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
 
+    // Clone table and remove dropdowns
     const table = document.querySelector('.user-data-table');
     const cloneTable = table.cloneNode(true);
     cloneTable.querySelectorAll('.header-dropdown').forEach(dropdown => dropdown.remove());
@@ -220,17 +221,27 @@ document.getElementById('generatePDF').addEventListener('click', () => {
     container.appendChild(cloneTable);
     document.body.appendChild(container);
 
+    // Get current date for filename
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = now.toLocaleString('en-GB', { month: 'short' }); // e.g., "Oct"
+    const year = now.getFullYear();
+    const filename = `manageVenue_${day}${month}${year}.pdf`;
+
+    // Render to PDF
     html2canvas(container).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'pt', 'a4');
+
+        // Landscape PDF
+        const pdf = new jsPDF('l', 'pt', 'a4'); // 'l' = landscape
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
         pdf.addImage(imgData, 'PNG', 20, 20, pdfWidth - 40, pdfHeight);
-        pdf.save(`manageVenue.pdf`);
+        pdf.save(filename);
 
-        // Remove offscreen container
+        // Clean up
         document.body.removeChild(container);
     }).catch(err => console.error(err));
 });
