@@ -288,7 +288,6 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -325,155 +324,104 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // === Default chart colors ===
-    const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C7C7C7', '#5366FF', '#FF66FF', '#66FFB2', '#FFB266', '#66B2FF'];
-    const defaultBorders = ['#FF0033', '#0033FF', '#FFCC00', '#009999', '#6600FF', '#FF6600', '#999999', '#0033CC', '#CC00CC', '#00CC66', '#FF9966', '#3399FF'];
-
-    // === Auto-generate colors if dataset exceeds defaults ===
-    function generateColors(count) {
-        const colors = [];
-        for (let i = 0; i < count; i++) {
-            const hue = Math.floor((360 / count) * i);
-            colors.push(`hsl(${hue}, 70%, 60%)`);
-        }
-        return colors;
-    }
-
-    // === Reusable function to build pie charts ===
-    function createPieChart(canvasId, labels, data, colors = defaultColors, borders = defaultBorders, chartLabel = '') {
-        // Auto-extend colors if needed
-        if (labels.length > colors.length) {
-            colors = generateColors(labels.length);
-            borders = colors.map(c => c.replace("60%", "40%")); // darker borders
-        }
-
-        return new Chart(document.getElementById(canvasId).getContext('2d'), {
-            type: 'pie',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: chartLabel,
-                    data: data,
-                    backgroundColor: colors,
-                    borderColor: borders,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: 'right' },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context) {
-                                let dataArr = context.dataset.data;
-                                let sum = dataArr.reduce((a, b) => a + b, 0);
-                                let value = context.parsed;
-                                let percentage = ((value / sum) * 100).toFixed(1) + "%";
-                                return context.label + ": " + value + " (" + percentage + ")";
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // === Chart configurations ===
-    const charts = [
-        {
-            id: 'staffPieChart',
-            labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer'],
-            data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}],
-            label: 'Staff Distribution'
-        },
-        {
-            id: 'genderPieChart',
-            labels: ['Male', 'Female'],
-            data: [{{ total_male_staff }}, {{ total_female_staff }}],
-            label: 'Gender Distribution'
-        },
-        {
-            id: 'statusPieChart',
-            labels: ['Activated', 'Deactivated', 'Deleted'],
-            data: [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
-            label: 'Account Status'
-        }
+    const defaultColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#C7C7C7', '#5366FF', '#FF66FF', '#66FFB2',
+        '#FFB266', '#66B2FF'
     ];
 
-    // === Render all charts ===
-    charts.forEach(c => {
-        createPieChart(c.id, c.labels, c.data, defaultColors, defaultBorders, c.label);
+    // === PDF Export ===
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
+
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4"
+        });
+
+        const margin = 40;
+        const pageWidth = doc.internal.pageSize.getWidth();
+
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Staff List", pageWidth / 2, margin, { align: "center" });
+
+        const startY = margin + 25;
+
+        // ===== Get table =====
+        const table = document.querySelector("#userTable");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+            return Array.from(tr.querySelectorAll("td")).map(td => {
+                let text = td.innerText.trim();
+
+                // Format cumulative hours nicely
+                if (td.cellIndex === 9) { 
+                    text = text
+                        .replace(/\s*Cumulative\s*:/g, "Cumulative:")
+                        .replace(/\s*Pending\s*:/g, "\nPending:")
+                        .replace(/\s*---\s*/g, "---")
+                        .trim();
+                }
+
+                text = text.replace(/\n\n/g, "\n"); 
+                return text;
+            });
+        });
+
+        // ===== Generate table =====
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: startY,
+            theme: "grid",
+            styles: {
+                font: "helvetica",
+                fontSize: 9,
+                cellPadding: 4,
+                overflow: "linebreak",
+                valign: "middle"
+            },
+            headStyles: {
+                fillColor: [33, 37, 41],
+                textColor: [255, 255, 255],
+                halign: "center"
+            },
+            columnStyles: {
+                0: { cellWidth: 30 },   // No
+                1: { cellWidth: 70 },   // Status
+                2: { cellWidth: 70 },   // ID
+                3: { cellWidth: 100 },  // Name
+                4: { cellWidth: 60 },   // Gender
+                5: { cellWidth: 120 },  // Email
+                6: { cellWidth: 80 },   // Contact
+                7: { cellWidth: 90 },   // Role
+                8: { cellWidth: 90 },   // Department
+                9: { cellWidth: 100 }   // Invigilation
+            },
+            tableWidth: "auto",
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
+        });
+
+        doc.save("Manage_Staff_List.pdf");
     });
 });
-
-// ===============================
-// PDF EXPORT SECTION (A4 Landscape)
-// ===============================
-document.getElementById("generatePDF").addEventListener("click", async () => {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-        orientation: "landscape",
-        unit: "pt",
-        format: "a4"
-    });
-
-    // Clone the user table so we can clean it before exporting
-    const table = document.querySelector(".user-data-table");
-    const clonedTable = table.cloneNode(true);
-
-    // Remove any interactive or hidden elements
-    clonedTable.querySelectorAll("select, button, input").forEach(el => el.remove());
-
-    // Remove empty header wrappers (if any)
-    clonedTable.querySelectorAll(".dropdown-header").forEach(div => {
-        div.replaceWith(...div.childNodes);
-    });
-
-    // Remove invisible rows (respect filters)
-    clonedTable.querySelectorAll("tbody tr").forEach(tr => {
-        if (tr.style.display === "none") tr.remove();
-    });
-
-    // Clean up status span texts (e.g., [Activated])
-    clonedTable.querySelectorAll(".status").forEach(span => {
-        span.outerHTML = span.textContent;
-    });
-
-    // Clean up any HTML tags left inside cells (like <div> in Invigilation Time)
-    clonedTable.querySelectorAll("td").forEach(td => {
-        td.innerHTML = td.textContent.trim();
-    });
-
-    // Add the cleaned table into PDF
-    await doc.autoTable({
-        html: clonedTable,
-        startY: 50,
-        theme: "grid",
-        styles: {
-            fontSize: 7.5,
-            cellPadding: 3,
-            overflow: "linebreak",
-            halign: "center",
-            valign: "middle"
-        },
-        headStyles: {
-            fillColor: [41, 128, 185],
-            textColor: 255,
-            fontStyle: "bold"
-        },
-        margin: { left: 20, right: 20 },
-        tableWidth: "auto"
-    });
-
-    // Add centered title
-    const title = "List of Staff";
-    doc.setFontSize(16);
-    doc.text(title, doc.internal.pageSize.getWidth() / 2, 30, { align: "center" });
-
-    // Save as file
-    doc.save("Staff_List.pdf");
-});
-
 </script>
 {% endblock %}
-
