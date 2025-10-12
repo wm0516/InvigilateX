@@ -20,8 +20,7 @@ import PyPDF2
 from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
-from sqlalchemy import func
-from sqlalchemy import and_, or_
+from sqlalchemy import func, and_, or_, desc
 
 # -------------------------------
 # Local application imports
@@ -1006,7 +1005,7 @@ def admin_manageExam():
 
     # Base query: only exams whose course is active
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
-    exam_data = exam_data_query.order_by(Exam.examStatus.desc(),Exam.examStartTime.desc(),Exam.examVenue.asc(),Exam.examId.asc()).all()
+    exam_data = exam_data_query.order_by(Exam.examStatus.desc(),desc(Exam.examStartTime).nullsfirst(),Exam.examVenue.asc(),Exam.examId.asc()).all()
     display_exam_data = [exam for exam in exam_data if exam.examStatus == True]
     total_exam_activated = Exam.query.filter_by(examStatus=1).count()
 
