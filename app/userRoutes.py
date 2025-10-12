@@ -292,9 +292,16 @@ def user_mergeTimetable():
 @login_required
 def user_viewStaff():
     userId = session.get('user_id')
-    lecturer = User.query.filter_by(userDepartment=userId.userDepartment).first()
-    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab', lecturer=lecturer)
-    
+    current_user = User.query.filter_by(userId=userId).first()
+
+    if not current_user:
+        flash("User not found.", "danger")
+        return redirect(url_for('user_dashboard'))
+
+    # Get all staff from the same department
+    lecturers = User.query.filter_by(userDepartment=current_user.userDepartment).all()
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers)
+
 
 
 # -------------------------------
