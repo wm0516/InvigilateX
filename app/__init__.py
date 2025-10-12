@@ -25,8 +25,6 @@ app.config['MAIL_USERNAME'] = 'minglw04@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jsco bvwc qpor fvku'
 app.config['MAIL_DEFAULT_SENDER'] = 'minglw04@gmail.com'
 
-
-
 # Initialize extensions
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -39,11 +37,10 @@ with app.app_context():
     db.session.remove()
     db.engine.dispose()
 
-
 # Import routes (must be after app creation to avoid circular imports)
 try:
     from app import adminRoutes, userRoutes, authRoutes
-    print("Routes imported successfully")  # Debug point 11
+    print("Routes imported successfully")
 except ImportError as e:
     print(f"Failed to import routes: {e}")  
 

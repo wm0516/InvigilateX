@@ -1,24 +1,28 @@
 # -------------------------------
 # Standard library imports
 # -------------------------------
-from datetime import datetime
+from datetime import datetime, timedelta
+from functools import wraps
 
 # -------------------------------
 # Third-party imports
 # -------------------------------
-from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
+from flask import (
+    render_template, request, redirect, url_for, flash, session, 
+    get_flashed_messages, jsonify
+)
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
-from itsdangerous import URLSafeTimedSerializer
 
 # -------------------------------
 # Local application imports
 # -------------------------------
-from app import app
+from app import app, db
 from .backend import *
+from .database import *
 
 # -------------------------------
-# Flask and application setup
+# Flask and app setup
 # -------------------------------
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
