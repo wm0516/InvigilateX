@@ -984,6 +984,7 @@ def admin_manageExam():
                         existing_va.startDateTime = start_dt
                         existing_va.endDateTime = end_dt
                     else:
+                        flash(f"Course capacity (students enrolled): {course.courseStudent}", "success")
                         new_va = VenueAvailability(
                             venueNumber=venue_text,
                             startDateTime=start_dt,
