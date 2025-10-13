@@ -182,9 +182,9 @@
                 <td>{{ loop.index }}</td>
                 <td>
                     {% if row.examStatus %}
-                        <span class="status frame-completed">[Activated]</span>
+                        <span class="status frame-completed">ONGOING</span>
                     {% else %}
-                        <span class="status frame-expired">[Inactivated]</span>
+                        <span class="status frame-expired">EXPIRED</span>
                     {% endif %}
                 </td>
                 <td>
@@ -197,7 +197,7 @@
                         <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                     </div>
                 </td>
-                <td>[{{ row.examId }}]</td>
+                <td>{{ row.examId }}</td>
                 <td>
                     {% if row.examStartTime and row.examEndTime %}
                     <div class="info-grid">
@@ -220,7 +220,7 @@
                     <span class="status frame-expired">Exam details not yet assigned</span>
                     {% endif %}
                 </td>
-                <td>[{{ row.examNoInvigilator }}]</td>
+                <td>{{ row.examNoInvigilator }}</td>
             </tr>
             {% endfor %}
         </tbody>
