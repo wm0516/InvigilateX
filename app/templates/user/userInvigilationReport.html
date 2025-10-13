@@ -65,8 +65,8 @@
                                     <div>Exam Period</div><div><strong>: {{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
                                     <div>Exam Venue(s)</div>
                                     <div>
-                                        {% if row.venue_availabilities %}
-                                            {% for va in row.venue_availabilities %}
+                                        {% if att.venue_availabilities %}
+                                            {% for va in att.venue_availabilities %}
                                                 <strong>: {{ va.venueNumber }} (Capacity Use: {{ va.capacity }})</strong><br>
                                             {% endfor %}
                                         {% else %}
