@@ -903,8 +903,9 @@ def admin_manageExam():
     course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
-    flash(f"Course capacity (students enrolled): {course.courseStudent}", "success")
 
+    if course:
+        flash(f"Course capacity (students enrolled): {course.courseStudent}", "success")
 
     unassigned_exam = len([
         e for e in exam_data
