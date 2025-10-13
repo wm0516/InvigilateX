@@ -985,9 +985,12 @@ def admin_manageExam():
                         db.session.delete(record)
                     flash(f"Removed {len(old_records)} old VenueExam record(s) for re-insertion.", "info")
 
-                # 4️⃣ Insert new venue records
+                # 4️⃣ Insert new venue records with smart seat allocation
+                remaining_students = exam_select.course.courseStudent
+
                 for venue_obj in venue_objects:
                     venue_number = venue_obj.venueNumber
+                    venue_capacity = venue_obj.venueCapacity
 
                     # Check conflict for this venue (excluding current exam)
                     conflict = VenueExam.query.filter(
@@ -1003,15 +1006,29 @@ def admin_manageExam():
                             f"{conflict.endDateTime.strftime('%d/%b/%Y %H:%M')}. Skipped this venue.", "error")
                         continue
 
+                    # Determine how many students to allocate to this venue
+                    if remaining_students <= 0:
+                        flash(f"No remaining students to assign for {venue_number}. Skipping.", "info")
+                        continue
+
+                    allocated = min(venue_capacity, remaining_students)
+                    remaining_students -= allocated
+
                     new_va = VenueExam(
                         venueNumber=venue_number,
                         startDateTime=start_dt,
                         endDateTime=end_dt,
                         examId=exam_select.examId,
-                        capacity=exam_select.course.courseStudent
+                        capacity=allocated  # ✅ assign only allocated count
                     )
                     db.session.add(new_va)
-                    flash(f"Inserted new VenueExam for {venue_number}", "success")
+                    flash(f"Inserted VenueExam for {venue_number} with {allocated} student(s) assigned.", "success")
+
+                # Check if all students have been assigned
+                if remaining_students > 0:
+                    flash(f"Warning: {remaining_students} student(s) could not be seated due to insufficient total capacity.", "error")
+                else:
+                    flash("All students successfully allocated across venues.", "success")
 
                 # 5️⃣ Manage related InvigilationReport + Attendances (only once per exam)
                 flash("debug 5", "success")
