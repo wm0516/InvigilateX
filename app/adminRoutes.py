@@ -737,10 +737,10 @@ def parse_datetime(date_str, time_str):
 @app.route('/get_available_venues', methods=['POST'])
 @login_required
 def get_available_venues():
-    start_date = request.form.get('startDate')
-    start_time = request.form.get('startTime')
-    end_date = request.form.get('endDate')
-    end_time = request.form.get('endTime')
+    start_date = request.form.get('startDate', '').strip()
+    start_time = request.form.get('startTime', '').strip()
+    end_date = request.form.get('endDate', '').strip()
+    end_time = request.form.get('endTime', '').strip()
 
     if not all([start_date, start_time, end_date, end_time]):
         return jsonify({'venues': []})
@@ -941,6 +941,7 @@ def admin_manageExam():
 
         # --------------------- EDIT EXAM FORM ---------------------
         elif form_type == 'edit' and exam_select:
+            get_available_venues()
             action = request.form.get('action')
             start_date_raw = request.form.get('startDate', '').strip()
             start_time_raw = request.form.get('startTime', '').strip()
@@ -971,10 +972,8 @@ def admin_manageExam():
                     ).first()
 
                     if conflict:
-                        flash(f"Venue '{venue_text}' is already booked between "
-                            f"{conflict.startDateTime.strftime('%Y-%m-%d %H:%M')} and "
-                            f"{conflict.endDateTime.strftime('%Y-%m-%d %H:%M')}. "
-                            f"Please choose a different time or venue.", "error")
+                        flash(f"Venue '{venue_text}' is already booked between {conflict.startDateTime.strftime('%Y-%m-%d %H:%M')} and "
+                            f"{conflict.endDateTime.strftime('%Y-%m-%d %H:%M')}. Please choose a different time or venue.", "error")
                         return redirect(url_for('admin_manageExam'))
 
                     # Update exam core details
