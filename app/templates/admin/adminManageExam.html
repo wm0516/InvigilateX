@@ -246,43 +246,8 @@ function clearEditFields() {
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
+    document.getElementById('editVenue').value = data.examVenues || '';
     document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
-
-    // Extract venue numbers
-    const venueDropdowns = document.querySelectorAll('.venue-dropdown');
-    if (data.examVenues && data.examVenues.length > 0 && venueDropdowns.length > 0) {
-        // Get first venue number
-        const firstVenue = data.examVenues[0].split(' ')[0]; // e.g. "A101 (Capacity: 30)" → "A101"
-        venueDropdowns[0].value = firstVenue;
-
-        // Add additional venues if >1
-        for (let i = 1; i < data.examVenues.length; i++) {
-            const newVenueDiv = document.createElement('div');
-            newVenueDiv.classList.add('venue-item');
-            newVenueDiv.style.display = 'flex';
-            newVenueDiv.style.alignItems = 'center';
-            newVenueDiv.style.gap = '8px';
-            newVenueDiv.style.marginBottom = '5px';
-
-            const venueNum = data.examVenues[i].split(' ')[0];
-
-            newVenueDiv.innerHTML = `
-                <select name="venue[]" class="venue-dropdown" required>
-                    <option value="" disabled>Select Exam Venue</option>
-                    ${Array.from(venueDropdowns[0].options)
-                        .map(opt => `<option value="${opt.value}" ${opt.value === venueNum ? 'selected' : ''}>${opt.textContent}</option>`)
-                        .join('')}
-                </select>
-                <button type="button" class="removeVenueBtn" 
-                        style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px;">
-                    &times;
-                </button>
-            `;
-
-            document.getElementById('venueContainer').appendChild(newVenueDiv);
-            newVenueDiv.querySelector('.removeVenueBtn').addEventListener('click', () => newVenueDiv.remove());
-        }
-    }
 
     // split datetime for inputs
     if (data.examStartTime) {
@@ -300,6 +265,32 @@ function populateEditForm(data) {
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    const courseSelect = document.getElementById("editExamCourseSection");
+
+    if (courseSelect) {
+        courseSelect.addEventListener("change", function() {
+            const selectedValue = this.value;
+            clearEditFields();
+
+            if (!selectedValue) return;
+
+            // Fetch exam details from backend
+            fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        populateEditForm(data);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching exam details:", err);
+                });
+        });
+    }
+});
 
 
 // ==============================
