@@ -244,10 +244,9 @@ function clearEditFields() {
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
-    document.getElementById('editVenue').value = data.examVenueCapacity || '';
     document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
 
-    // split datetime for inputs
+    // Split datetime for inputs
     if (data.examStartTime) {
         const [date, time] = data.examStartTime.split('T');
         document.getElementById('startDate').value = date;
@@ -261,34 +260,90 @@ function populateEditForm(data) {
 
     document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
+
+    // ===== Populate venue dropdown(s) =====
+    const venueContainer = document.getElementById('venueContainer');
+    venueContainer.innerHTML = ''; // Clear previous entries
+
+    if (data.examVenues && data.examVenues.length > 0) {
+        data.examVenues.forEach((v, index) => {
+            const div = document.createElement('div');
+            div.classList.add('venue-item');
+            div.style.display = 'flex';
+            div.style.alignItems = 'center';
+            div.style.gap = '8px';
+            div.style.marginBottom = '5px';
+
+            div.innerHTML = `
+                <select name="venue[]" class="venue-dropdown" required>
+                    <option value="" disabled>Select Exam Venue</option>
+                    ${Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
+                        .map(opt => `<option value="${opt.value}" ${opt.value === v.venueNumber ? 'selected' : ''}>
+                                        ${opt.textContent}
+                                    </option>`).join('')}
+                </select>
+                ${index === 0 
+                    ? `<button type="button" id="addVenueBtn" class="add-btn">+</button>` 
+                    : `<button type="button" class="removeVenueBtn">&times;</button>`}
+            `;
+            venueContainer.appendChild(div);
+
+            // Remove functionality
+            const removeBtn = div.querySelector('.removeVenueBtn');
+            if (removeBtn) removeBtn.addEventListener('click', () => div.remove());
+        });
+
+        // Rebind add button
+        const addBtn = document.getElementById('addVenueBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', function () {
+                const currentVenues = venueContainer.querySelectorAll(".venue-item");
+                if (currentVenues.length >= 20) {
+                    alert("You can only add up to 20 venues.");
+                    return;
+                }
+
+                const newDiv = document.createElement('div');
+                newDiv.classList.add('venue-item');
+                newDiv.style.display = 'flex';
+                newDiv.style.alignItems = 'center';
+                newDiv.style.gap = '8px';
+                newDiv.style.marginBottom = '5px';
+
+                newDiv.innerHTML = `
+                    <select name="venue[]" class="venue-dropdown" required>
+                        <option value="" disabled selected>Select Exam Venue</option>
+                        ${Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
+                            .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join('')}
+                    </select>
+                    <button type="button" class="removeVenueBtn">&times;</button>
+                `;
+                venueContainer.appendChild(newDiv);
+
+                const removeBtn = newDiv.querySelector('.removeVenueBtn');
+                removeBtn.addEventListener('click', () => newDiv.remove());
+            });
+        }
+    } else {
+        // No venue yet → add empty dropdown
+        const emptyDiv = document.createElement('div');
+        emptyDiv.classList.add('venue-item');
+        emptyDiv.style.display = 'flex';
+        emptyDiv.style.alignItems = 'center';
+        emptyDiv.style.gap = '8px';
+        emptyDiv.style.marginBottom = '5px';
+        emptyDiv.innerHTML = `
+            <select name="venue[]" class="venue-dropdown" required>
+                <option value="" disabled selected>Select Exam Venue</option>
+                ${Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
+                    .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join('')}
+            </select>
+            <button type="button" id="addVenueBtn" class="add-btn">+</button>
+        `;
+        venueContainer.appendChild(emptyDiv);
+    }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    const courseSelect = document.getElementById("editExamCourseSection");
-
-    if (courseSelect) {
-        courseSelect.addEventListener("change", function() {
-            const selectedValue = this.value;
-            clearEditFields();
-
-            if (!selectedValue) return;
-
-            // Fetch exam details from backend
-            fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        populateEditForm(data);
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching exam details:", err);
-                });
-        });
-    }
-});
 
 
 // ==============================

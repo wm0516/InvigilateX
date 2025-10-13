@@ -702,7 +702,7 @@ def get_exam_details(course_code_section):
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
-    venue = VenueAvailability.query.filter_by(examId=exam.examId).first() if exam else None
+    venues = VenueAvailability.query.filter_by(examId=exam.examId).all() if exam else []
 
     response_data = {
         "courseCodeSection": course.courseCodeSectionIntake,
@@ -711,12 +711,13 @@ def get_exam_details(course_code_section):
         "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
         "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
         "courseStudent": course.courseStudent or 0,
-        "examVenueCapacity": venue.capacity if venue else 0,
+        "examVenues": [{"venueNumber": v.venueNumber, "capacity": v.capacity} for v in venues],
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
     }
     return jsonify(response_data)
+
 
 # -------------------------------
 # Reformat the datetime for ManageExamEditPage
