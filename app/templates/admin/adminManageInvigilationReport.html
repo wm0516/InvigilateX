@@ -96,7 +96,16 @@
                                     <div>Exam Day</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%A") }} - {{ grouped[0].report.exam.examEndTime.strftime("%A") }}</strong></div>
                                     <div>Exam Time</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%H:%M") }} - {{ grouped[0].report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
                                     <div>Exam Period</div><div><strong>: {{ (grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds // 3600 }}h {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                    <div>Exam Venue</div><div><strong>: None</strong></div>
+                                    <div>Exam Venue(s)</div>
+                                    <div>
+                                        {% if row.venue_availabilities %}
+                                            {% for va in row.venue_availabilities %}
+                                                <strong>: {{ va.venueNumber }} (Capacity Use: {{ va.capacity }})</strong><br>
+                                            {% endfor %}
+                                        {% else %}
+                                            <strong>: None</strong>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </td>
 

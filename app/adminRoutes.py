@@ -1069,7 +1069,7 @@ def admin_manageExam():
                     return redirect(request.url)
 
                 except Exception as e:
-                    db.session.rollback()
+                    db.session.rollback()   
                     flash(f"⚠️ Unexpected error: {str(e)}", "error")
                     flash("❌ Please reselect venues and try again.", "error")
                     return redirect(request.url)

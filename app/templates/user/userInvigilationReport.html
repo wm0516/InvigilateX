@@ -63,7 +63,16 @@
                                     <div>Exam Day</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%A") }} - {{ att.report.exam.examEndTime.strftime("%A") }}</strong></div>
                                     <div>Exam Time</div><div><strong>: {{ att.report.exam.examStartTime.strftime("%H:%M") }} - {{ att.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
                                     <div>Exam Period</div><div><strong>: {{ (att.report.exam.examEndTime - att.report.exam.examStartTime).seconds // 3600 }}h {{ ((att.report.exam.examEndTime - att.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                    <div>Exam Venue</div><div><strong>: None</strong></div>
+                                    <div>Exam Venue(s)</div>
+                                    <div>
+                                        {% if row.venue_availabilities %}
+                                            {% for va in row.venue_availabilities %}
+                                                <strong>: {{ va.venueNumber }} (Capacity Use: {{ va.capacity }})</strong><br>
+                                            {% endfor %}
+                                        {% else %}
+                                            <strong>: None</strong>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </td>
                             {% endif %}
