@@ -152,7 +152,7 @@
                                 "CHECK OUT EARLY": "frame-expired",
                                 "EXPIRED": "frame-expired"
                             } %}
-                            <span class="status {{ remark_classes.get(att.remark, '') }}">[{{ att.remark }}]</span>
+                            <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
                         {% else %}
                             <em class="status frame-pending">IN PROCESSING</em>
                         {% endif %}
