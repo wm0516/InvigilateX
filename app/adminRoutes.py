@@ -903,7 +903,7 @@ def admin_manageExam():
     course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
-    
+
     unassigned_exam = len([
         e for e in exam_data
         if e.examStatus is True
@@ -950,6 +950,7 @@ def admin_manageExam():
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
+                flash("debug 1","success")
                 venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
 
                 if not venue_obj:
@@ -957,6 +958,7 @@ def admin_manageExam():
                 elif venue_obj.venueCapacity < exam_select.course.courseStudent:
                     flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
                 else:
+                    flash("debug 2","success")
                     # Check for venue time conflict before saving
                     conflict = VenueAvailability.query.filter(
                         VenueAvailability.venueNumber == venue_text,
@@ -980,10 +982,12 @@ def admin_manageExam():
                     # Ensure VenueAvailability is synced
                     existing_va = VenueAvailability.query.filter_by(examId=exam_select.examId).first()
                     if existing_va:
+                        flash("debug 3","success")
                         existing_va.venueNumber = venue_text
                         existing_va.startDateTime = start_dt
                         existing_va.endDateTime = end_dt
                     else:
+                        flash("debug 4","success")
                         new_va = VenueAvailability(
                             venueNumber=venue_text,
                             startDateTime=start_dt,
@@ -994,6 +998,7 @@ def admin_manageExam():
                         db.session.add(new_va)
 
                     # Manage related InvigilationReport + Attendances
+                    flash("debug 5","success")
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                     if existing_report:
                         adjust_invigilators(existing_report, int(invigilatorNo_text), start_dt=start_dt, end_dt=end_dt)
