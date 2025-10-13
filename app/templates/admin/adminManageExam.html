@@ -477,13 +477,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         newVenueDiv.innerHTML = `
             <select name="venue[]" class="venue-dropdown" required>
-                <option value="" disabled selected></option>
+                <option value="" disabled selected>Select Exam Venue</option>
                 ${Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
                     .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`)
                     .join("")}
             </select>
             <button type="button" class="removeVenueBtn" 
-                    style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 5px 10px;">
+                    style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px;">
                 &times;
             </button>
         `;

@@ -947,76 +947,80 @@ def admin_manageExam():
             start_time_raw = request.form.get('startTime', '').strip()
             end_date_raw = request.form.get('endDate', '').strip()
             end_time_raw = request.form.get('endTime', '').strip()
-           
+
             start_dt = parse_datetime(start_date_raw, start_time_raw)
             end_dt = parse_datetime(end_date_raw, end_time_raw)
-            venue_text = request.form.getlist("venue[]")
+            venue_list = request.form.getlist("venue[]")  # multiple venues
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
-                flash("debug 1","success")
-                venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
+                flash("debug 1", "success")
 
-                if not venue_obj:
-                    flash(f"Selected venue {venue_text} does not exist", "error")
-                elif venue_obj.venueCapacity < exam_select.course.courseStudent:
-                    flash(f"Venue capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
-                else:
-                    flash("debug 2","success")
-                    # Check for venue time conflict before saving
+                # 1️⃣ Update exam core details (only once)
+                exam_select.examStartTime = start_dt
+                exam_select.examEndTime = end_dt
+                exam_select.examNoInvigilator = invigilatorNo_text
+
+                # 2️⃣ Process each venue individually
+                for venue_number in venue_list:
+                    flash(f"Processing venue {venue_number}", "info")
+
+                    venue_obj = Venue.query.filter_by(venueNumber=venue_number).first()
+                    if not venue_obj:
+                        flash(f"Selected venue {venue_number} does not exist", "error")
+                        continue
+
+                    if venue_obj.venueCapacity < exam_select.course.courseStudent:
+                        flash(f"Venue {venue_number} capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
+                        continue
+
+                    # Check conflict for this venue
                     conflict = VenueExam.query.filter(
-                        VenueExam.venueNumber == venue_text,
+                        VenueExam.venueNumber == venue_number,
                         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
                         VenueExam.endDateTime > start_dt - timedelta(minutes=30),
-                        VenueExam.examId != exam_select.examId  # exclude same exam
+                        VenueExam.examId != exam_select.examId
                     ).first()
 
                     if conflict:
-                        flash(f"Venue '{venue_text}' is already booked between {conflict.startDateTime.strftime('%Y-%m-%d %H:%M')} and "
-                            f"{conflict.endDateTime.strftime('%Y-%m-%d %H:%M')}. Please choose a different time or venue.", "error")
-                        return redirect(url_for('admin_manageExam'))
+                        flash(f"Venue '{venue_number}' is already booked between "
+                            f"{conflict.startDateTime.strftime('%d/%b/%Y %H:%M')} and "
+                            f"{conflict.endDateTime.strftime('%d/%b/%Y %H:%M')}. Skipped this venue.", "error")
+                        continue
 
-                    # Update exam core details
-                    exam_select.examStartTime = start_dt
-                    exam_select.examEndTime = end_dt
-                    exam_select.examNoInvigilator = invigilatorNo_text
+                    # Update or create VenueExam for this venue
+                    existing_va = VenueExam.query.filter_by(
+                        examId=exam_select.examId,
+                        venueNumber=venue_number
+                    ).first()
 
-                    # Ensure VenueExam is synced
-                    existing_va = VenueExam.query.filter_by(examId=exam_select.examId).first()
                     if existing_va:
-                        flash("debug 3","success")
-                        existing_va.venueNumber = venue_text
+                        flash(f"Updating VenueExam for {venue_number}", "success")
                         existing_va.startDateTime = start_dt
                         existing_va.endDateTime = end_dt
                         existing_va.capacity = exam_select.course.courseStudent
                     else:
-                        flash("debug 4","success")
+                        flash(f"Creating VenueExam for {venue_number}", "success")
                         new_va = VenueExam(
-                            venueNumber=venue_text,
+                            venueNumber=venue_number,
                             startDateTime=start_dt,
                             endDateTime=end_dt,
                             examId=exam_select.examId,
-                            capacity=exam_select.course.courseStudent  # ✅ Safe to access now
+                            capacity=exam_select.course.courseStudent
                         )
                         db.session.add(new_va)
 
-                    # Manage related InvigilationReport + Attendances
-                    flash("debug 5","success")
-                    existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
-                    if existing_report:
-                        adjust_invigilators(existing_report, int(invigilatorNo_text), start_dt=start_dt, end_dt=end_dt)
+                # 3️⃣ Manage related InvigilationReport + Attendances (only once per exam)
+                flash("debug 5", "success")
+                existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                if existing_report:
+                    adjust_invigilators(existing_report, int(invigilatorNo_text),
+                                        start_dt=start_dt, end_dt=end_dt)
+                else:
+                    create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,', '.join(venue_list), exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
 
-                    if not existing_report:
-                        create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
-                    elif exam_select.examNoInvigilator != int(invigilatorNo_text):
-                        report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
-                        if report:
-                            adjust_invigilators(report, int(invigilatorNo_text), start_dt, end_dt)
-                        else:
-                            create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake, venue_text, exam_select.course.coursePractical, exam_select.course.courseTutorial, invigilatorNo_text)
-
-                    db.session.commit()
-                    flash(f"{exam_select.course.courseCodeSectionIntake} updated successfully", "success")
+                db.session.commit()
+                flash(f"{exam_select.course.courseCodeSectionIntake} updated successfully with {len(venue_list)} venues.", "success")
 
             elif action == 'delete':
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
