@@ -98,14 +98,15 @@
         <h2>List of Venue</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="search_venue" name="search_venue" placeholder="Search..." value="{{ search_venue }}" style="border-radius: 6px; width: 100%;">
-                <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
+                <input type="text" id="searchInput" name="search_venue" placeholder="Search..." value="{{ search_venue }}" style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
             </div>
             <div class="button-wrapper">
                 <button id="generatePDF" style="background-color: black;">Download as PDF</button>
             </div>
         </div>
     </div>
+    <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
 
     <div class="user-table-container">
         <table class="user-data-table" id="manageVenue"> 
