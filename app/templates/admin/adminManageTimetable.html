@@ -154,7 +154,7 @@
                 </select>
             </div>
 
-            <div class="form-right">
+            <div class="form-middle">
                 <label for="lecturer">Select Lecturer:</label>
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>
@@ -165,10 +165,12 @@
                     {% endfor %}
                 </select>
             </div>
-        </div>
 
-        <div class="button-wrapper">
-            <button type="button" id="clearFilter">Clear Filter</button>
+            <div class="form-right">
+                <div class="button-wrapper">
+                    <button type="button" id="clearFilter">Clear Filter</button>
+                </div>
+            </div>
         </div>
     </form> 
 
