@@ -122,18 +122,45 @@
 
                 <label>Exam Venue(s)</label>
                 <div id="venueContainer">
-                    <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                        <select name="venue[]" id="editVenue" class="venue-dropdown" required>
-                            <option value="" disabled selected>Select Exam Venue</option>
-                            {% for venue in venue_data %}
-                                <option value="{{ venue.venueNumber }}">{{ venue.venueNumber }} ({{ venue.capacity }}){% if not loop.last %}, {% endif %}</option>
-                            {% endfor %}
-                        </select>
-                        <button type="button" id="addVenueBtn" class="add-btn" 
-                                style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
-                            +
-                        </button>
-                    </div>
+                    {% if exam_venues %}
+                        {% for v in exam_venues %}
+                        <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                            <select name="venue[]" class="venue-dropdown" required>
+                                <option value="" disabled>Select Exam Venue</option>
+                                {% for venue in venue_data %}
+                                    <option value="{{ venue.venueNumber }}" 
+                                        {% if venue.venueNumber == v.venueNumber %}selected{% endif %}>
+                                        [Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if loop.first %}
+                            <button type="button" id="addVenueBtn" class="add-btn" 
+                                    style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+                                +
+                            </button>
+                            {% else %}
+                            <button type="button" class="remove-btn"
+                                    style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+                                -
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                            <select name="venue[]" class="venue-dropdown" required>
+                                <option value="" disabled selected>Select Exam Venue</option>
+                                {% for venue in venue_data %}
+                                    <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" id="addVenueBtn" class="add-btn" 
+                                    style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+                                +
+                            </button>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -455,44 +482,38 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const venueContainer = document.getElementById("venueContainer");
-    const addVenueBtn = document.getElementById("addVenueBtn");
+document.addEventListener("DOMContentLoaded", function() {
+    const container = document.getElementById("venueContainer");
 
-    if (!venueContainer || !addVenueBtn) return;
+    // Add venue button logic
+    container.addEventListener("click", function(e) {
+        if (e.target && e.target.id === "addVenueBtn") {
+            const newVenue = document.createElement("div");
+            newVenue.classList.add("venue-item");   
+            newVenue.style.display = "flex";
+            newVenue.style.alignItems = "center";
+            newVenue.style.gap = "8px";
+            newVenue.style.marginBottom = "5px";
 
-    addVenueBtn.addEventListener("click", function () {
-        const currentVenues = venueContainer.querySelectorAll(".venue-item");
-        if (currentVenues.length >= 20) {
-            alert("You can only add up to 20 venues.");
-            return;
+            newVenue.innerHTML = `
+                <select name="venue[]" class="venue-dropdown" required>
+                    <option value="" disabled selected>Select Exam Venue</option>
+                    {% for venue in venue_data %}
+                        <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="remove-btn"
+                        style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+                    -
+                </button>
+            `;
+            container.appendChild(newVenue);
         }
 
-        const newVenueDiv = document.createElement("div");
-        newVenueDiv.classList.add("venue-item");
-        newVenueDiv.style.display = "flex";
-        newVenueDiv.style.alignItems = "center";
-        newVenueDiv.style.gap = "8px";
-        newVenueDiv.style.marginBottom = "5px";
-
-        newVenueDiv.innerHTML = `
-            <select name="venue[]" class="venue-dropdown" required>
-                <option value="" disabled selected>Select Exam Venue</option>
-                ${Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
-                    .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`)
-                    .join("")}
-            </select>
-            <button type="button" class="removeVenueBtn" 
-                    style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
-                &times;
-            </button>
-        `;
-
-        venueContainer.appendChild(newVenueDiv);
-
-        // Add remove functionality
-        const removeBtn = newVenueDiv.querySelector(".removeVenueBtn");
-        removeBtn.addEventListener("click", () => newVenueDiv.remove());
+        // Remove venue button logic
+        if (e.target && e.target.classList.contains("remove-btn")) {
+            e.target.closest(".venue-item").remove();
+        }
     });
 });
 </script>
