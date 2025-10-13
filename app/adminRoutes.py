@@ -906,6 +906,9 @@ def admin_manageExam():
     course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
+    exam_venues = []
+    if exam_select:
+        exam_venues = VenueExam.query.filter_by(examId=exam_select.examId).all()
 
     # Exam summary counters
     unassigned_exam = len([
@@ -1101,7 +1104,7 @@ def admin_manageExam():
             return redirect(url_for('admin_manageExam'))
 
     return render_template('admin/adminManageExam.html',active_tab='admin_manageExamtab',exam_data=exam_data,unassigned_exam=unassigned_exam,display_exam_data=display_exam_data,
-                           venue_data=venue_data,department_data=department_data,complete_exam=complete_exam,exam_select=exam_select,total_exam_activated=total_exam_activated)
+                           venue_data=venue_data,department_data=department_data,complete_exam=complete_exam,exam_select=exam_select,total_exam_activated=total_exam_activated, exam_venues=exam_venues)
 
 
 
