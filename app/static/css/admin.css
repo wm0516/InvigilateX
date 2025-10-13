@@ -609,12 +609,11 @@ input[readonly] {
     margin: 0 auto;
 }
 
-/* Main menu container layout (frame divide in the big frame) */
 .menu-grid {
-    width: 100%;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1%;
+    grid-auto-rows: 1fr; /* all rows same height */
 }
 
 /* Each activity styled as a card */
@@ -626,17 +625,13 @@ input[readonly] {
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-/* Main menu container layout (small frame that divide in the big frame) */
+
 .menu-section {
-    background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    /* Extra */
-    border: 1px solid #ddd;
-    box-sizing: border-box;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
+
 
 .admin-homepage .menu-section:hover,
 .user-homepage .menu-section:hover {
