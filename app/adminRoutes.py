@@ -1039,21 +1039,23 @@ def admin_manageExam():
                         rec.startDateTime = None
                         rec.endDateTime = None
 
+                # 5️⃣ Check remaining students
                 if remaining > 0:
                     flash(f"⚠️ {remaining} student(s) could not be seated (insufficient capacity).", "warning")
                 else:
                     flash("✅ All students seated successfully across venues.", "success")
-                db.session.commit()
 
-                # 5️⃣ Manage InvigilationReport + Attendance
+                # 6️⃣ Manage InvigilationReport + Attendance
                 existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                 if existing_report:
-                    adjust_invigilators(existing_report, int(invigilatorNo_text),start_dt=start_dt, end_dt=end_dt)
+                    adjust_invigilators(existing_report,int(invigilatorNo_text),start_dt=start_dt,end_dt=end_dt)
                 else:
-                    create_exam_and_related(start_dt, end_dt,exam_select.course.courseCodeSectionIntake,', '.join(venue_list),exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
+                    create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSectionIntake,', '.join(venue_list),exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
+                # 7️⃣ Final commit for all updates
                 db.session.commit()
                 flash(f"💾 {exam_select.course.courseCodeSectionIntake} updated with {len(venue_list)} venues.", "success")
+
 
             elif action == 'delete':
                 # Handle delete logic (same as your original)
