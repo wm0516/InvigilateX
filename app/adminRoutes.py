@@ -903,6 +903,8 @@ def admin_manageExam():
     course = Course.query.filter_by(courseCodeSectionIntake=exam_selected).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
+    flash(f"Course capacity (students enrolled): {course.courseStudent}", "success")
+
 
     unassigned_exam = len([
         e for e in exam_data
@@ -984,7 +986,6 @@ def admin_manageExam():
                         existing_va.startDateTime = start_dt
                         existing_va.endDateTime = end_dt
                     else:
-                        flash(f"Course capacity (students enrolled): {course.courseStudent}", "success")
                         new_va = VenueAvailability(
                             venueNumber=venue_text,
                             startDateTime=start_dt,
@@ -993,6 +994,7 @@ def admin_manageExam():
                             capacity=course.courseStudent
                         )
                         db.session.add(new_va)
+
 
                     # Manage related InvigilationReport + Attendances
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
