@@ -244,7 +244,7 @@ function clearEditFields() {
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
-    document.getElementById('editVenue').value = data.venue_availabilities.venueNumber || '';
+    document.getElementById('editVenue').value = data.examVenueCapacity || '';
     document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
 
     // split datetime for inputs
