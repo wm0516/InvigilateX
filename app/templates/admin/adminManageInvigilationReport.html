@@ -223,16 +223,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             // Normal full row
             examID = tds[0]?.innerText.trim() || "";
             examDetails = tds[1]?.innerText.trim() || "";
-            if (examDetails.includes(":")) {
-                // Split by ":" but rejoin properly with line breaks for venue sections
-                examDetails = examDetails
-                    .replace(/\n+/g, "\n") // preserve existing line breaks
-                    .replace(/ : /g, " : ") // normalize spacing
-                    .split("\n")            // convert text to array lines
-                    .map(line => line.trim())
-                    .filter(line => line.length > 0); // remove empty lines
-            }
-            
             invCount = tds[2]?.innerText.trim() || "";
             invDetails = tds[3]?.innerText.trim() || "";
             checkTimes = tds[4]?.innerText.trim() || "";
