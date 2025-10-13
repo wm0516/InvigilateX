@@ -711,7 +711,7 @@ def get_exam_details(course_code_section):
         "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
         "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
         "courseStudent": course.courseStudent or 0,
-        "examVenues": [f"{v.venueNumber} (Capacity Use: {v.capacity})" for v in venues],
+        "examVenues": [f"{v.venueNumber} (Capacity: {v.capacity})" for v in venues],
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
         "examNoInvigilator": exam.examNoInvigilator if exam else 0
