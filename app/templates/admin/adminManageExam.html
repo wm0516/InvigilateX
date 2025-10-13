@@ -162,69 +162,71 @@
         </div>
     </div>
 
-    <table class="user-data-table">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Exam Status</th>
-                <th>Course Details</th>
-                <th>Exam ID</th>
-                <th>Exam Details</th>
-                <th>Number of Invigilators</th>
-            </tr>
-        </thead>    
-        <tbody>
-            {% for row in exam_data %}
-            <tr class="
-                {% if not row.examStatus %}inactive-row-show
-                {% elif row.examStartTime is none %}error-row-show
-                {% endif %}">
-                <td>{{ loop.index }}</td>
-                <td>
-                    {% if row.examStatus %}
-                        <span class="status frame-completed">ONGOING</span>
-                    {% else %}
-                        <span class="status frame-expired">EXPIRED</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <div class="info-grid">
-                        <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
-                        <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
-                        <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
-                        <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
-                        <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
-                        <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
-                    </div>
-                </td>
-                <td>{{ row.examId }}</td>
-                <td>
-                    {% if row.examStartTime and row.examEndTime %}
-                    <div class="info-grid">
-                        <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                        <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
-                        <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
-                        <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                        <div>Exam Venue(s)</div>
-                        <div>
-                            {% if row.venue_availabilities %}
-                                {% for va in row.venue_availabilities %}
-                                    <strong>: {{ va.venueNumber }} (Capacity: {{ va.capacity }})</strong><br>
-                                {% endfor %}
-                            {% else %}
-                                <strong>: N/A</strong>
-                            {% endif %}
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Exam Status</th>
+                    <th>Course Details</th>
+                    <th>Exam ID</th>
+                    <th>Exam Details</th>
+                    <th>Number of Invigilators</th>
+                </tr>
+            </thead>    
+            <tbody>
+                {% for row in exam_data %}
+                <tr class="
+                    {% if not row.examStatus %}inactive-row-show
+                    {% elif row.examStartTime is none %}error-row-show
+                    {% endif %}">
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        {% if row.examStatus %}
+                            <span class="status frame-completed">ONGOING</span>
+                        {% else %}
+                            <span class="status frame-expired">EXPIRED</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="info-grid">
+                            <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
+                            <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
+                            <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
+                            <div>Number of Students</div><div><strong>: {{ row.course.courseStudent }}</strong></div>
+                            <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
+                            <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                         </div>
-                    </div>
-                    {% else %}
-                    <span class="status frame-expired">Exam details not yet assigned</span>
-                    {% endif %}
-                </td>
-                <td>{{ row.examNoInvigilator }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </td>
+                    <td>{{ row.examId }}</td>
+                    <td>
+                        {% if row.examStartTime and row.examEndTime %}
+                        <div class="info-grid">
+                            <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                            <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
+                            <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
+                            <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                            <div>Exam Venue(s)</div>
+                            <div>
+                                {% if row.venue_availabilities %}
+                                    {% for va in row.venue_availabilities %}
+                                        <strong>: {{ va.venueNumber }} (Capacity: {{ va.capacity }})</strong><br>
+                                    {% endfor %}
+                                {% else %}
+                                    <strong>: N/A</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <span class="status frame-expired">Exam details not yet assigned</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ row.examNoInvigilator }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 

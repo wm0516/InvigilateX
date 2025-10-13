@@ -225,59 +225,61 @@
         </div>
     </div>
 
-    <table class="user-data-table">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Course Status</th>
-                <th>Course Code/Section</th>
-                <th>Course Name</th>
-                <th>Credit Hour(s)</th>
-                <th>Course Department</th>
-                <th>Number of Students</th>
-                <th>Lecturer Details</th>
-                <th>Exam ID</th>
-            </tr>   
-        </thead>
-        <tbody>
-            {% for row in course_data %}
-                <tr class="
-                    {% if row.courseStatus == 0 %}
-                        inactive-row-show
-                    {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none or row.courseExamId is none %}
-                        error-row-show
-                    {% endif %}
-                ">
-                    <td>{{ loop.index }}</td>
-                    <td>
-                        {% if row.courseStatus %}
-                            <span class="status frame-completed">
-                                Activated
-                            </span>
-                        {% else %}
-                            <span class="status frame-expired">Inactivated</span>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Course Status</th>
+                    <th>Course Code/Section</th>
+                    <th>Course Name</th>
+                    <th>Credit Hour(s)</th>
+                    <th>Course Department</th>
+                    <th>Number of Students</th>
+                    <th>Lecturer Details</th>
+                    <th>Exam ID</th>
+                </tr>   
+            </thead>
+            <tbody>
+                {% for row in course_data %}
+                    <tr class="
+                        {% if row.courseStatus == 0 %}
+                            inactive-row-show
+                        {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none or row.courseExamId is none %}
+                            error-row-show
                         {% endif %}
-                    </td>
-                    <td>{{ row.courseCodeSectionIntake }}</td>
-                    <td>{{ row.courseName }}</td>
-                    <td>{{ row.courseHour }}</td>
-                    <td>{{ row.courseDepartment }}</td>
-                    <td>{{ row.courseStudent }}</td>
-                    <td>
-                        <div class="info-grid">
-                            <div>Practical</div>
-                            <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
-                            <div>Tutorial</div>
-                            <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
-                        </div>
-                    </td>
-                    <td>
-                        {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    ">
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            {% if row.courseStatus %}
+                                <span class="status frame-completed">
+                                    Activated
+                                </span>
+                            {% else %}
+                                <span class="status frame-expired">Inactivated</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ row.courseCodeSectionIntake }}</td>
+                        <td>{{ row.courseName }}</td>
+                        <td>{{ row.courseHour }}</td>
+                        <td>{{ row.courseDepartment }}</td>
+                        <td>{{ row.courseStudent }}</td>
+                        <td>
+                            <div class="info-grid">
+                                <div>Practical</div>
+                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
+                                <div>Tutorial</div>
+                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
+                            </div>
+                        </td>
+                        <td>
+                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 

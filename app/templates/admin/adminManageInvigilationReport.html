@@ -197,7 +197,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const rows = [];
     let lastExamID = "", lastExamDetails = "", lastInvCount = "";
 
-    document.querySelectorAll(".user-table-container .user-data-table tbody tr").forEach(tr => {
+    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
         const tdCount = tds.length;
 
