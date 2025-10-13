@@ -138,7 +138,7 @@
         <h2>Timetable</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="search_timetable" name="search_timetable" placeholder="Search Timetable..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
+                <input type="text" id="search_timetable" name="search_timetable" placeholder="Search..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
                 <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
             </div>
             <div class="button-wrapper">
@@ -182,7 +182,7 @@
     <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     {% set time_slots = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"] %}
     <div class="user-table-container">
-        <table class="user-data-table" border="1">
+        <table class="user-data-table" id="manageTimetable" border="1">
             <thead>
                 <tr>
                     <th>Day / Time</th>

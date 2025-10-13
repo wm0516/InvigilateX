@@ -222,7 +222,7 @@
         <h2>List of Staff</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="search_staff" name="search_staff" placeholder="Search Staff..." value="{{ search_staff }}" style="border-radius: 6px; width: 100%;">
+                <input type="text" id="search_staff" name="search_staff" placeholder="Search..." value="{{ search_staff }}" style="border-radius: 6px; width: 100%;">
                 <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
             </div>
             <div class="button-wrapper">
@@ -232,7 +232,7 @@
     </div>
 
     <div class="user-table-container">
-        <table id="userTable" class="user-data-table">
+        <table class="user-data-table" id="manageStaff">
             <thead>
                 <tr>
                     <th>No</th>
@@ -433,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const startY = margin + 25;
 
         // ===== Prepare table data manually =====
-        const table = document.getElementById("userTable");
+        const table = document.getElementById("ManageStaff");
         if (!table) {
             alert("No table found to export!");
             return;

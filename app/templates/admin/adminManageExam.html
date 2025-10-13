@@ -159,7 +159,7 @@
         <h2>List of Exams</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="search_exams" name="search_exams" placeholder="Search Exams..." value="{{ search_exams }}" style="border-radius: 6px; width: 100%;">
+                <input type="text" id="search_exams" name="search_exams" placeholder="Search..." value="{{ search_exams }}" style="border-radius: 6px; width: 100%;">
                 <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
             </div>
             <div class="button-wrapper">
@@ -169,7 +169,7 @@
     </div>
 
     <div class="user-table-container">
-        <table class="user-data-table">
+        <table class="user-data-table" id="manageExam">
             <thead>
                 <tr>
                     <th>No</th>

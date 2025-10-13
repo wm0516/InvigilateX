@@ -13,7 +13,8 @@
         <h3>Invigilation Timetable</h3>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="search_Invigilationtimetable" name="search_Invigilationtimetable" placeholder="Search Invigilation Timetable..." value="{{ search_Invigilationtimetable }}" style="border-radius: 6px; width: 100%;">
+                <input type="text" id="searchInput" placeholder="Search..." style="border-radius: 6px; width: 100%;">
+                <button id="searchBtn" style="background-color: black; color: white; padding: 6px 12px; border: none; border-radius: 5px;">Search</button>
                 <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
             </div>
             <div class="button-wrapper">
@@ -21,6 +22,7 @@
             </div>
         </div>
     </div>
+
 
     <div style="display: flex; gap: 15px; align-items: center;">
         <h4>Exam Status:</h4>

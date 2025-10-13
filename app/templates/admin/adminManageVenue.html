@@ -98,7 +98,7 @@
         <h2>List of Venue</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="search_venue" name="search_venue" placeholder="Search Venue..." value="{{ search_venue }}" style="border-radius: 6px; width: 100%;">
+                <input type="text" id="search_venue" name="search_venue" placeholder="Search..." value="{{ search_venue }}" style="border-radius: 6px; width: 100%;">
                 <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
             </div>
             <div class="button-wrapper">
@@ -107,59 +107,61 @@
         </div>
     </div>
 
-    <table class="user-data-table"> 
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>
-                    <div class="dropdown-header">
-                        Venue
-                        <select id="filterVenue" class="header-dropdown">
-                            <option value="">Venue</option>
-                            {% for v in venue_data|map(attribute='venueNumber')|unique %}
-                                <option value="{{ v }}">{{ v }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </th>
-                <th>
-                    <div class="dropdown-header">
-                        Level
-                        <select id="filterLevel" class="header-dropdown">
-                            <option value="">Level</option>
-                            <option value="LEVEL 2">LEVEL 2</option>
-                            <option value="LEVEL 3">LEVEL 3</option>
-                            <option value="LEVEL 4">LEVEL 4</option>
-                            <option value="LEVEL 5">LEVEL 5</option>
-                            <option value="LEVEL 6">LEVEL 6</option>
-                        </select>
-                    </div>
-                </th>
-                <th>
-                    <div class="dropdown-header">
-                        Venue Capacity
-                        <select id="filterCapacity" class="header-dropdown">
-                            <option value="">Capacity</option>
-                            {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
-                                <option value="{{ v }}">{{ v }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </th>
-            </tr>
-        </thead>
+    <div class="user-table-container">
+        <table class="user-data-table" id="manageVenue"> 
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>
+                        <div class="dropdown-header">
+                            Venue
+                            <select id="filterVenue" class="header-dropdown">
+                                <option value="">Venue</option>
+                                {% for v in venue_data|map(attribute='venueNumber')|unique %}
+                                    <option value="{{ v }}">{{ v }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="dropdown-header">
+                            Level
+                            <select id="filterLevel" class="header-dropdown">
+                                <option value="">Level</option>
+                                <option value="LEVEL 2">LEVEL 2</option>
+                                <option value="LEVEL 3">LEVEL 3</option>
+                                <option value="LEVEL 4">LEVEL 4</option>
+                                <option value="LEVEL 5">LEVEL 5</option>
+                                <option value="LEVEL 6">LEVEL 6</option>
+                            </select>
+                        </div>
+                    </th>
+                    <th>
+                        <div class="dropdown-header">
+                            Venue Capacity
+                            <select id="filterCapacity" class="header-dropdown">
+                                <option value="">Capacity</option>
+                                {% for v in venue_data|map(attribute='venueCapacity')|unique|sort %}
+                                    <option value="{{ v }}">{{ v }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
 
-        <tbody>
-            {% for row in venue_data %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>{{ row.venueNumber }}</td>
-                <td>{{ row.venueLevel }}</td>
-                <td>{{ row.venueCapacity }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            <tbody>
+                {% for row in venue_data %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ row.venueNumber }}</td>
+                    <td>{{ row.venueLevel }}</td>
+                    <td>{{ row.venueCapacity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 

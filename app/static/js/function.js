@@ -206,7 +206,66 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// Universal Admin Search Utility
+// Works for tables (multiple IDs) + card layouts
+function searchContent() {
+    const input = document.getElementById("searchInput");
+    if (!input) return;
+    const filter = input.value.toLowerCase();
+    let anyVisible = false;
 
+    // TABLE SEARCH (for common admin pages)
+    const tables = ["manageCourse","manageTimetable","manageDepartment","manageVenue","manageExam","manageInvigilationReport","manageStaff"];
+
+    for (const tableId of tables) {
+        const table = document.getElementById(tableId);
+        if (!table) continue;
+
+        const rows = table.getElementsByTagName("tr");
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName("td");
+            let match = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                const text = cells[j].textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    match = true;
+                    break;
+                }
+            }
+
+            rows[i].style.display = match ? "" : "none";
+            if (match) anyVisible = true;
+        }
+    }
+
+    // CARD SEARCH (e.g., ManageInvigilationTimetable calendar view)
+    const cards = document.querySelectorAll(".exam-card");
+    if (cards.length > 0) {
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            const visible = text.includes(filter);
+            card.style.display = visible ? "" : "none";
+            if (visible) anyVisible = true;
+        });
+    }
+
+    // Show or hide "No Results" message if available
+    const noResults = document.getElementById("noResults");
+    if (noResults) noResults.style.display = anyVisible ? "none" : "block";
+}
+
+// Setup Function: Runs once per page
+function setupSearch() {
+    const input = document.getElementById("searchInput");
+    const btn = document.getElementById("searchBtn");
+
+    if (btn) btn.addEventListener("click", searchContent);
+    if (input) input.addEventListener("keyup", searchContent);
+}
+
+// Auto-Initialize
+document.addEventListener("DOMContentLoaded", setupSearch);
 
 
 
