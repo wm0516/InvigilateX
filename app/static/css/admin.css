@@ -574,6 +574,7 @@ input[readonly] {
     margin-bottom: 20px;
     margin: auto;
     padding: 1%;
+    overflow: auto;
 }
 
 /* Pie chart takes first column and spans 2 rows */
