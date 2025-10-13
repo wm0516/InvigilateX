@@ -988,7 +988,8 @@ def admin_manageExam():
                             venueNumber=venue_text,
                             startDateTime=start_dt,
                             endDateTime=end_dt,
-                            examId=exam_select.examId
+                            examId=exam_select.examId,
+                            capacity=course.courseStudent
                         )
                         db.session.add(new_va)
 

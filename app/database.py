@@ -131,11 +131,12 @@ class Exam(db.Model):
 
 class VenueAvailability(db.Model):
     __tablename__ = 'VenueAvailability'
-    examVenueId = db.Column(db.Integer, primary_key=True, autoincrement=True)                 # [PK] Availability ID
-    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                 # [FK] Exam ID
+    examVenueId = db.Column(db.Integer, primary_key=True, autoincrement=True)                   # [PK] Availability ID
+    examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                # [FK] Exam ID
     venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)   # [FK] Venue Number
-    startDateTime = db.Column(db.DateTime, nullable=False)                                       # Start DateTime
-    endDateTime = db.Column(db.DateTime, nullable=False)                                         # End DateTime
+    startDateTime = db.Column(db.DateTime, nullable=False)                                      # Start DateTime
+    endDateTime = db.Column(db.DateTime, nullable=False)                                        # End DateTime
+    capacity = db.Column(db.Integer, nullable=False)                                            # Capacity use
 
     # Relationships
     exam = db.relationship("Exam", back_populates="venue_availabilities")
@@ -147,6 +148,7 @@ class VenueAvailability(db.Model):
         venueNumber VARCHAR(10) NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
+        capacity INT NOT NULL,
         FOREIGN KEY (examId) REFERENCES Exam(examId),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
     );
