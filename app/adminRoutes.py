@@ -540,7 +540,7 @@ def admin_manageVenue():
             elif action == 'delete':
                 try:
                     # Set related foreign keys to NULL
-                    VenueAvailability.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
+                    VenueExam.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
                     db.session.commit()  # Commit the updates first
 
                     db.session.delete(venue_select)  # Delete the venue
@@ -677,10 +677,10 @@ def process_exam_row(row):
     venue = str(row['room']).upper()
 
     # Conflict check before saving
-    conflict = VenueAvailability.query.filter(
-        VenueAvailability.venueNumber == venue,
-        VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
-        VenueAvailability.endDateTime > start_dt - timedelta(minutes=30)
+    conflict = VenueExam.query.filter(
+        VenueExam.venueNumber == venue,
+        VenueExam.startDateTime < end_dt + timedelta(minutes=30),
+        VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).first()
 
     if conflict:
@@ -702,7 +702,7 @@ def get_exam_details(course_code_section):
         return jsonify({"error": "Course not found"}), 404
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
-    venues = VenueAvailability.query.filter_by(examId=exam.examId).all() if exam else []
+    venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
 
     response_data = {
         "courseCodeSection": course.courseCodeSectionIntake,
@@ -756,11 +756,11 @@ def get_available_venues():
     available_venues = []
 
     for venue in all_venues:
-        # Check for any conflict in VenueAvailability
-        conflict = VenueAvailability.query.filter(
-            VenueAvailability.venueNumber == venue.venueNumber,
-            VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
-            VenueAvailability.endDateTime > start_dt - timedelta(minutes=30),
+        # Check for any conflict in VenueExam
+        conflict = VenueExam.query.filter(
+            VenueExam.venueNumber == venue.venueNumber,
+            VenueExam.startDateTime < end_dt + timedelta(minutes=30),
+            VenueExam.endDateTime > start_dt - timedelta(minutes=30),
         ).first()
 
         if not conflict:
@@ -963,11 +963,11 @@ def admin_manageExam():
                 else:
                     flash("debug 2","success")
                     # Check for venue time conflict before saving
-                    conflict = VenueAvailability.query.filter(
-                        VenueAvailability.venueNumber == venue_text,
-                        VenueAvailability.startDateTime < end_dt + timedelta(minutes=30),
-                        VenueAvailability.endDateTime > start_dt - timedelta(minutes=30),
-                        VenueAvailability.examId != exam_select.examId  # exclude same exam
+                    conflict = VenueExam.query.filter(
+                        VenueExam.venueNumber == venue_text,
+                        VenueExam.startDateTime < end_dt + timedelta(minutes=30),
+                        VenueExam.endDateTime > start_dt - timedelta(minutes=30),
+                        VenueExam.examId != exam_select.examId  # exclude same exam
                     ).first()
 
                     if conflict:
@@ -982,8 +982,8 @@ def admin_manageExam():
                     exam_select.examEndTime = end_dt
                     exam_select.examNoInvigilator = invigilatorNo_text
 
-                    # Ensure VenueAvailability is synced
-                    existing_va = VenueAvailability.query.filter_by(examId=exam_select.examId).first()
+                    # Ensure VenueExam is synced
+                    existing_va = VenueExam.query.filter_by(examId=exam_select.examId).first()
                     if existing_va:
                         flash("debug 3","success")
                         existing_va.venueNumber = venue_text
@@ -992,7 +992,7 @@ def admin_manageExam():
                         existing_va.capacity = exam_select.course.courseStudent
                     else:
                         flash("debug 4","success")
-                        new_va = VenueAvailability(
+                        new_va = VenueExam(
                             venueNumber=venue_text,
                             startDateTime=start_dt,
                             endDateTime=end_dt,
@@ -1042,7 +1042,7 @@ def admin_manageExam():
                     db.session.delete(report)
 
                 #  Delete venue availability
-                venue_availabilities = VenueAvailability.query.filter_by(examId=exam_select.examId).all()
+                venue_availabilities = VenueExam.query.filter_by(examId=exam_select.examId).all()
                 for va in venue_availabilities:
                     db.session.delete(va)
 

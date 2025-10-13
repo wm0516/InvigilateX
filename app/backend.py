@@ -335,7 +335,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 
 
 # -------------------------------
-# Admin Function 2: Fill in Exam details and Automatically VenueAvailability, InvigilationReport, InvigilatorAttendance
+# Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
@@ -394,7 +394,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
 
     # Create new venue availability
     if venue_text:
-        new_availability = VenueAvailability(
+        new_availability = VenueExam(
             venueNumber=venue_text,
             startDateTime=start_dt,
             endDateTime=adj_end_dt,
@@ -492,7 +492,7 @@ def delete_exam_related(exam_id, commit=True):
 
     # Delete reports and venue availability
     InvigilationReport.query.filter_by(examId=exam.examId).delete()
-    VenueAvailability.query.filter_by(examId=exam.examId).delete()
+    VenueExam.query.filter_by(examId=exam.examId).delete()
 
     if commit:
         db.session.commit()

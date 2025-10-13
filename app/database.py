@@ -98,7 +98,7 @@ class Venue(db.Model):
     venueCapacity = db.Column(db.Integer, nullable=False)                                        # Capacity of venue
 
     # Relationships
-    availabilities = db.relationship("VenueAvailability", back_populates="venue")               # One Venue ↔ Many VenueAvailability
+    availabilities = db.relationship("VenueExam", back_populates="venue")                        # One Venue ↔ Many VenueExam
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -117,7 +117,7 @@ class Exam(db.Model):
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
-    venue_availabilities = db.relationship("VenueAvailability", back_populates="exam")           # One Exam ↔ Many VenueAvailability
+    venue_availabilities = db.relationship("VenueExam", back_populates="exam")                   # One Exam ↔ Many VenueExam
     invigilation_reports = db.relationship("InvigilationReport", backref="exam")                 # One Exam ↔ Many InvigilationReport
     '''
     CREATE TABLE Exam (
@@ -129,8 +129,8 @@ class Exam(db.Model):
     );
     '''
 
-class VenueAvailability(db.Model):
-    __tablename__ = 'VenueAvailability'
+class VenueExam(db.Model):
+    __tablename__ = 'VenueExam'
     examVenueId = db.Column(db.Integer, primary_key=True, autoincrement=True)                   # [PK] Availability ID
     examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                # [FK] Exam ID
     venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)   # [FK] Venue Number
@@ -142,7 +142,7 @@ class VenueAvailability(db.Model):
     exam = db.relationship("Exam", back_populates="venue_availabilities")
     venue = db.relationship("Venue", back_populates="availabilities")
     '''
-    CREATE TABLE VenueAvailability (
+    CREATE TABLE VenueExam (
         examVenueId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         examId INT NOT NULL,
         venueNumber VARCHAR(10) NULL,
