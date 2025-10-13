@@ -975,21 +975,16 @@ def admin_manageExam():
                     flash(f"❌ Total capacity ({total_capacity}) insufficient for {required_students} students.", "error")
                     return redirect(request.url)
 
-                # 3️⃣ Remove old VenueExam entries
-                old_records = VenueExam.query.filter_by(examId=exam_select.examId).all()
-                for rec in old_records:
-                    db.session.delete(rec)
-                db.session.commit()
-                flash(f"🧹 Cleared {len(old_records)} previous VenueExam entries.", "info")
-
-                # 4️⃣ Allocate students smartly across venues
+                # 3️⃣ Adjust old VenueExam entries instead of deleting
+                old_records = {rec.venueNumber: rec for rec in VenueExam.query.filter_by(examId=exam_select.examId).all()}
+                used_venues = set()
                 remaining = required_students
 
                 for venue_obj in venue_objects:
                     if remaining <= 0:
                         break
 
-                    # Check time conflicts
+                    # Check for time conflict
                     conflict = VenueExam.query.filter(
                         VenueExam.venueNumber == venue_obj.venueNumber,
                         VenueExam.examId != exam_select.examId,
@@ -1001,35 +996,54 @@ def admin_manageExam():
                         flash(f"⚠️ {venue_obj.venueNumber} conflict ({conflict.startDateTime.strftime('%d/%b/%Y %H:%M')} - {conflict.endDateTime.strftime('%d/%b/%Y %H:%M')}). Skipped.", "error")
                         continue
 
-                    # Calculate used capacity (active overlaps)
+                    # Calculate available capacity
                     used_capacity = db.session.query(func.sum(VenueExam.capacity)).filter(
                         VenueExam.venueNumber == venue_obj.venueNumber,
                         VenueExam.startDateTime < end_dt,
                         VenueExam.endDateTime > start_dt
                     ).scalar() or 0
-
                     available_capacity = venue_obj.venueCapacity - used_capacity
+
                     if available_capacity <= 0:
                         flash(f"{venue_obj.venueNumber} has no available seats (used={used_capacity}). Skipped.", "error")
                         continue
 
                     allocated = min(available_capacity, remaining)
                     remaining -= allocated
+                    used_venues.add(venue_obj.venueNumber)
 
-                    new_va = VenueExam(
-                        examId=exam_select.examId,
-                        venueNumber=venue_obj.venueNumber,
-                        startDateTime=start_dt,
-                        endDateTime=end_dt,
-                        capacity=allocated
-                    )
-                    db.session.add(new_va)
-                    flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
+                    # 🔹 Update existing record if found
+                    if venue_obj.venueNumber in old_records:
+                        rec = old_records[venue_obj.venueNumber]
+                        rec.startDateTime = start_dt
+                        rec.endDateTime = end_dt
+                        rec.capacity = allocated
+                        flash(f"🔄 Updated {venue_obj.venueNumber} with new capacity {allocated}.", "info")
+                    else:
+                        # 🔹 Create new record
+                        new_va = VenueExam(
+                            examId=exam_select.examId,
+                            venueNumber=venue_obj.venueNumber,
+                            startDateTime=start_dt,
+                            endDateTime=end_dt,
+                            capacity=allocated
+                        )
+                        db.session.add(new_va)
+                        flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
+
+                # 4️⃣ Handle old venues no longer used
+                for old_venue, rec in old_records.items():
+                    if old_venue not in used_venues:
+                        flash(f"🧹 Venue {old_venue} no longer used — set capacity to 0.", "warning")
+                        rec.capacity = 0
+                        rec.startDateTime = None
+                        rec.endDateTime = None
 
                 if remaining > 0:
                     flash(f"⚠️ {remaining} student(s) could not be seated (insufficient capacity).", "warning")
                 else:
                     flash("✅ All students seated successfully across venues.", "success")
+                db.session.commit()
 
                 # 5️⃣ Manage InvigilationReport + Attendance
                 existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
