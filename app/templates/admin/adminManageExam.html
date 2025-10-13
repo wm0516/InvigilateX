@@ -205,7 +205,16 @@
                         <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
                         <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
                         <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                        <div>Exam Venue</div><div><strong>: {{ row.venue_availabilities.capacity }}</strong></div>
+                        <div>Exam Venue(s)</div>
+                        <div>
+                            {% if row.venue_availabilities %}
+                                {% for va in row.venue_availabilities %}
+                                    <strong>: {{ va.venueNumber }} (Capacity: {{ va.capacity }})</strong><br>
+                                {% endfor %}
+                            {% else %}
+                                <strong>: N/A</strong>
+                            {% endif %}
+                        </div>
                     </div>
                     {% else %}
                     <span class="status frame-expired">Exam details not yet assigned</span>
