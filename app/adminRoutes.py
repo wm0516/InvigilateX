@@ -962,17 +962,27 @@ def admin_manageExam():
                 exam_select.examNoInvigilator = invigilatorNo_text
 
                 # 2️⃣ Process each venue individually
-                for venue_number in venue_list:
-                    flash(f"Processing venue {venue_number}", "info")
+                total_capacity = 0
+                venue_objects = []
 
+                # First pass: validate all venues exist and sum their capacities
+                for venue_number in venue_list:
                     venue_obj = Venue.query.filter_by(venueNumber=venue_number).first()
                     if not venue_obj:
                         flash(f"Selected venue {venue_number} does not exist", "error")
                         continue
+                    total_capacity += venue_obj.venueCapacity
+                    venue_objects.append(venue_obj)
 
-                    if venue_obj.venueCapacity < exam_select.course.courseStudent:
-                        flash(f"Venue {venue_number} capacity ({venue_obj.venueCapacity}) cannot fit {exam_select.course.courseStudent} student(s)", "error")
-                        continue
+                # Capacity check across all selected venues
+                required_students = exam_select.course.courseStudent
+                if total_capacity < required_students:
+                    flash(f"Total venue capacity ({total_capacity}) cannot fit {required_students} student(s). Update failed.", "error")
+                    return redirect(request.url)  # stop processing if not enough capacity
+
+                # Second pass: now process each venue safely
+                for venue_obj in venue_objects:
+                    venue_number = venue_obj.venueNumber
 
                     # Check conflict for this venue
                     conflict = VenueExam.query.filter(
@@ -998,7 +1008,7 @@ def admin_manageExam():
                         flash(f"Updating VenueExam for {venue_number}", "success")
                         existing_va.startDateTime = start_dt
                         existing_va.endDateTime = end_dt
-                        existing_va.capacity = exam_select.course.courseStudent
+                        existing_va.capacity = required_students
                     else:
                         flash(f"Creating VenueExam for {venue_number}", "success")
                         new_va = VenueExam(
@@ -1006,7 +1016,7 @@ def admin_manageExam():
                             startDateTime=start_dt,
                             endDateTime=end_dt,
                             examId=exam_select.examId,
-                            capacity=exam_select.course.courseStudent
+                            capacity=required_students
                         )
                         db.session.add(new_va)
 
