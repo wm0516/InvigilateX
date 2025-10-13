@@ -907,13 +907,13 @@ def admin_manageExam():
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
 
+    # Exam summary counters
     unassigned_exam = len([
         e for e in exam_data
         if e.examStatus is True
         and e.examStartTime is None
         and e.examEndTime is None
     ])
-
     complete_exam = len([
         e for e in exam_data
         if e.examStatus is True
@@ -954,133 +954,120 @@ def admin_manageExam():
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
 
             if action == 'update':
-                flash("debug 1", "success")
-
-                # 1️⃣ Update exam core details (only once)
+                # 1️⃣ Update exam core details
                 exam_select.examStartTime = start_dt
                 exam_select.examEndTime = end_dt
                 exam_select.examNoInvigilator = invigilatorNo_text
 
-                # 2️⃣ Validate and process selected venues
-                total_capacity = 0
+                # 2️⃣ Get venue objects & total capacity
                 venue_objects = []
-
-                for venue_number in venue_list:
-                    venue_obj = Venue.query.filter_by(venueNumber=venue_number).first()
+                total_capacity = 0
+                for v in venue_list:
+                    venue_obj = Venue.query.filter_by(venueNumber=v).first()
                     if not venue_obj:
-                        flash(f"Selected venue {venue_number} does not exist", "error")
+                        flash(f"Venue {v} not found.", "error")
                         continue
                     total_capacity += venue_obj.venueCapacity
                     venue_objects.append(venue_obj)
 
                 required_students = exam_select.course.courseStudent
                 if total_capacity < required_students:
-                    flash(f"Total venue capacity ({total_capacity}) cannot fit {required_students} student(s). Update cancelled.", "error")
+                    flash(f"❌ Total capacity ({total_capacity}) insufficient for {required_students} students.", "error")
                     return redirect(request.url)
 
-                # 3️⃣ Remove all previous VenueExam entries for this exam
+                # 3️⃣ Remove old VenueExam entries
                 old_records = VenueExam.query.filter_by(examId=exam_select.examId).all()
-                if old_records:
-                    for record in old_records:
-                        db.session.delete(record)
-                    flash(f"Removed {len(old_records)} old VenueExam record(s) for re-insertion.", "info")
+                for rec in old_records:
+                    db.session.delete(rec)
+                db.session.commit()
+                flash(f"🧹 Cleared {len(old_records)} previous VenueExam entries.", "info")
 
-                # 4️⃣ Insert new venue records with smart seat allocation
-                remaining_students = exam_select.course.courseStudent
+                # 4️⃣ Allocate students smartly across venues
+                remaining = required_students
 
                 for venue_obj in venue_objects:
-                    venue_number = venue_obj.venueNumber
-                    venue_capacity = venue_obj.venueCapacity
+                    if remaining <= 0:
+                        break
 
-                    # Check conflict for this venue (excluding current exam)
+                    # Check time conflicts
                     conflict = VenueExam.query.filter(
-                        VenueExam.venueNumber == venue_number,
-                        VenueExam.startDateTime < end_dt + timedelta(minutes=30),
-                        VenueExam.endDateTime > start_dt - timedelta(minutes=30),
-                        VenueExam.examId != exam_select.examId
+                        VenueExam.venueNumber == venue_obj.venueNumber,
+                        VenueExam.examId != exam_select.examId,
+                        VenueExam.startDateTime < end_dt,
+                        VenueExam.endDateTime > start_dt
                     ).first()
 
                     if conflict:
-                        flash(f"Venue '{venue_number}' is already booked between "
-                            f"{conflict.startDateTime.strftime('%d/%b/%Y %H:%M')} and "
-                            f"{conflict.endDateTime.strftime('%d/%b/%Y %H:%M')}. Skipped this venue.", "error")
+                        flash(f"⚠️ {venue_obj.venueNumber} conflict ({conflict.startDateTime.strftime('%d/%b/%Y %H:%M')} - {conflict.endDateTime.strftime('%d/%b/%Y %H:%M')}). Skipped.", "error")
                         continue
 
-                    # Determine how many students to allocate to this venue
-                    if remaining_students <= 0:
-                        flash(f"No remaining students to assign for {venue_number}. Skipping.", "info")
+                    # Calculate used capacity (active overlaps)
+                    used_capacity = db.session.query(func.sum(VenueExam.capacity)).filter(
+                        VenueExam.venueNumber == venue_obj.venueNumber,
+                        VenueExam.startDateTime < end_dt,
+                        VenueExam.endDateTime > start_dt
+                    ).scalar() or 0
+
+                    available_capacity = venue_obj.venueCapacity - used_capacity
+                    if available_capacity <= 0:
+                        flash(f"{venue_obj.venueNumber} has no available seats (used={used_capacity}). Skipped.", "error")
                         continue
 
-                    allocated = min(venue_capacity, remaining_students)
-                    remaining_students -= allocated
+                    allocated = min(available_capacity, remaining)
+                    remaining -= allocated
 
                     new_va = VenueExam(
-                        venueNumber=venue_number,
+                        examId=exam_select.examId,
+                        venueNumber=venue_obj.venueNumber,
                         startDateTime=start_dt,
                         endDateTime=end_dt,
-                        examId=exam_select.examId,
-                        capacity=allocated  # ✅ assign only allocated count
+                        capacity=allocated
                     )
                     db.session.add(new_va)
-                    flash(f"Inserted VenueExam for {venue_number} with {allocated} student(s) assigned.", "success")
+                    flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
 
-                # Check if all students have been assigned
-                if remaining_students > 0:
-                    flash(f"Warning: {remaining_students} student(s) could not be seated due to insufficient total capacity.", "error")
+                if remaining > 0:
+                    flash(f"⚠️ {remaining} student(s) could not be seated (insufficient capacity).", "warning")
                 else:
-                    flash("All students successfully allocated across venues.", "success")
+                    flash("✅ All students seated successfully across venues.", "success")
 
-                # 5️⃣ Manage related InvigilationReport + Attendances (only once per exam)
-                flash("debug 5", "success")
+                # 5️⃣ Manage InvigilationReport + Attendance
                 existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                 if existing_report:
-                    adjust_invigilators(existing_report, int(invigilatorNo_text),
-                                        start_dt=start_dt, end_dt=end_dt)
+                    adjust_invigilators(existing_report, int(invigilatorNo_text),start_dt=start_dt, end_dt=end_dt)
                 else:
-                    create_exam_and_related(start_dt, end_dt, exam_select.course.courseCodeSectionIntake,', '.join(venue_list),exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
+                    create_exam_and_related(start_dt, end_dt,exam_select.course.courseCodeSectionIntake,', '.join(venue_list),exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
                 db.session.commit()
-                flash(f"{exam_select.course.courseCodeSectionIntake} updated successfully with {len(venue_list)} venues.", "success")
-
+                flash(f"💾 {exam_select.course.courseCodeSectionIntake} updated with {len(venue_list)} venues.", "success")
 
             elif action == 'delete':
+                # Handle delete logic (same as your original)
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
-
                 for report in reports:
                     attendances = InvigilatorAttendance.query.filter_by(reportId=report.invigilationReportId).all()
-
                     for attendance in attendances:
-                        # Calculate duration to revert pending hours
                         if exam_select.examStartTime and exam_select.examEndTime:
                             duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
                             user = User.query.get(attendance.invigilatorId)
                             if user:
-                                user.userPendingCumulativeHours -= duration
-                                if user.userPendingCumulativeHours < 0:
-                                    user.userPendingCumulativeHours = 0
-
-                        # Delete attendance
+                                user.userPendingCumulativeHours = max(0, user.userPendingCumulativeHours - duration)
                         db.session.delete(attendance)
-
-                    # Delete invigilation report
                     db.session.delete(report)
 
-                #  Delete venue availability
                 venue_availabilities = VenueExam.query.filter_by(examId=exam_select.examId).all()
                 for va in venue_availabilities:
                     db.session.delete(va)
 
-                # Clear exam details (keep examId, examNoInvigilator)
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
-
                 db.session.commit()
-                flash(f"Exam {exam_select.course.courseCodeSectionIntake} deleted successfully, and all related records were cleared.", "success")
+                flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} and all related records deleted.", "success")
 
             return redirect(url_for('admin_manageExam'))
 
-    return render_template('admin/adminManageExam.html', active_tab='admin_manageExamtab', exam_data=exam_data, unassigned_exam=unassigned_exam, display_exam_data=display_exam_data,
-                           venue_data=venue_data, department_data=department_data, complete_exam=complete_exam, exam_select=exam_select, total_exam_activated=total_exam_activated)
+    return render_template('admin/adminManageExam.html',active_tab='admin_manageExamtab',exam_data=exam_data,unassigned_exam=unassigned_exam,display_exam_data=display_exam_data,
+                           venue_data=venue_data,department_data=department_data,complete_exam=complete_exam,exam_select=exam_select,total_exam_activated=total_exam_activated)
 
 
 
