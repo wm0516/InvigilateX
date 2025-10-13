@@ -140,20 +140,15 @@
 
 {% block content %}
 <div class="menu-section">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>List of Departments</h2>
-
         <div style="display: flex; align-items: center; gap: 10px;">
-            <!-- Search Box -->
             <div style="position: relative;">
-                <input type="text" id="search_department" name="search_department" placeholder="Search department..." value="{{ search_department }}" style="padding: 8px 35px 8px 12px; border-radius: 6px; border: 1px solid #ccc; width: 200px;">
-                <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #777;"></i>
+                <input type="text" id="search_department" name="search_department" placeholder="Search department..." value="{{ search_department }}" style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
             </div>
-
             <div class="button-wrapper">
-                <button id="generatePDF" style="background-color: black; color: white; padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer;">
-                    Download as PDF
-                </button>
+                <button id="generatePDF" style="background-color: black;">Download as PDF</button>
             </div>
         </div>
     </div>

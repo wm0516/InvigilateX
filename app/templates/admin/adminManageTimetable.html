@@ -136,10 +136,17 @@
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>Timetable</h2>
-        <div class="button-wrapper">
-            <button id="downloadPDF" style="background-color: black; color: white;">Download as PDF</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="position: relative;">
+                <input type="text" id="search_timetable" name="search_timetable" placeholder="Search Timetable..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
+            </div>
+            <div class="button-wrapper">
+                <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+            </div>
         </div>
     </div>
+
     <form method="get" action="{{ url_for('admin_manageTimetable') }}">
         <div class="profile-frame" style="margin-top: 1%;">
             <div class="form-left">

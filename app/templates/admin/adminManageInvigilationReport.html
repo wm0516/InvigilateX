@@ -51,8 +51,14 @@
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>List of Lecturer Invigilation Report</h3>
-        <div class="button-wrapper">
-            <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="position: relative;">
+                <input type="text" id="search_report" name="search_report" placeholder="Search Invigilation Report..." value="{{ search_report }}" style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%);"></i>
+            </div>
+            <div class="button-wrapper">
+                <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+            </div>
         </div>
     </div>
 
