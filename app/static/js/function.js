@@ -215,7 +215,7 @@ function searchContent() {
     let anyVisible = false;
 
     // TABLE SEARCH (for common admin pages)
-    const tables = ["manageCourse","manageTimetable","manageDepartment","manageVenue","manageExam","manageInvigilationReport","manageStaff"];
+    const tables = ["manageCourse","manageTimetable","manageDepartment","manageVenue","manageExam","manageStaff"];
 
     for (const tableId of tables) {
         const table = document.getElementById(tableId);
