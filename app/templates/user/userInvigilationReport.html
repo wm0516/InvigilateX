@@ -161,39 +161,63 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
     const searchInput = document.getElementById("searchInput");
     const noResults = document.getElementById("noResults");
-    const allGroups = document.querySelectorAll("#viewInvigilationReport tbody");
+    const table = document.getElementById("viewInvigilationReport");
 
     // -----------------------------
-    // 🔍 Filter Table by Search Input
+    // 🔍 Enhanced Search Filtering
     // -----------------------------
     searchInput.addEventListener("input", function () {
         const filter = this.value.toLowerCase().trim();
+        const allGroups = table.querySelectorAll("tbody");
         let foundAny = false;
 
         allGroups.forEach(tbody => {
             const rows = tbody.querySelectorAll("tr");
-            let matchFound = false;
+            let groupMatch = false;
+            let visibleCount = 0;
 
-            // check each row's text
-            rows.forEach(row => {
+            // Always show the first row (exam info)
+            const firstRow = rows[0];
+            firstRow.style.display = "";
+
+            // Start from row 1 (skip the exam detail row)
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
                 const text = row.innerText.toLowerCase();
-                if (text.includes(filter)) matchFound = true;
-            });
 
-            // show or hide whole tbody group
-            tbody.style.display = matchFound ? "" : "none";
-            if (matchFound) foundAny = true;
+                if (!filter || text.includes(filter)) {
+                    row.style.display = ""; // show row if matches
+                    groupMatch = true;
+                    visibleCount++;
+                } else {
+                    row.style.display = "none"; // hide non-matching invigilator
+                }
+            }
+
+            // If filter is empty → show everything
+            if (!filter) {
+                tbody.style.display = "";
+                rows.forEach(r => (r.style.display = ""));
+                foundAny = true;
+                return;
+            }
+
+            // Handle visibility of whole exam group
+            if (groupMatch) {
+                tbody.style.display = "";
+                foundAny = true;
+            } else {
+                tbody.style.display = "none";
+            }
         });
 
-        // toggle "No results found" message
         noResults.style.display = foundAny ? "none" : "block";
     });
 
     // -----------------------------
-    // 📄 Generate PDF (already in your code)
+    // 📄 Generate PDF (same as before)
     // -----------------------------
     document.getElementById("generatePDF").addEventListener("click", function () {
         const { jsPDF } = window.jspdf;
@@ -201,7 +225,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
 
-        // Title
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
         doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
@@ -212,36 +235,41 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let lastExamID = "", lastExamDetails = "";
 
-        document.querySelectorAll("#viewInvigilationReport tbody:visible tr").forEach(tr => {
-            const tds = tr.querySelectorAll("td");
+        // ✅ Only export visible rows (respect search filter)
+        document.querySelectorAll("#viewInvigilationReport tbody").forEach(tbody => {
+            if (tbody.style.display === "none") return; // skip hidden exam groups
 
-            let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
+            const trs = tbody.querySelectorAll("tr");
+            trs.forEach(tr => {
+                if (tr.style.display === "none") return; // skip hidden invigilator rows
 
-            if (tds.length === 6) {
-                // First row of exam group
-                examID = tds[0].innerText.trim();
-                examDetails = tds[1].innerText.trim();
-                invDetails = tds[2].innerText.trim();
-                checkTimes = tds[3].innerText.trim();
-                attendance = tds[4].innerText.trim();
-                invStatus = tds[5].innerText.trim();
-                lastExamID = examID;
-                lastExamDetails = examDetails;
-            } else {
-                // Subsequent rows
-                invDetails = tds[0]?.innerText.trim() || "";
-                checkTimes = tds[1]?.innerText.trim() || "";
-                attendance = tds[2]?.innerText.trim() || "";
-                invStatus = tds[3]?.innerText.trim() || "";
-                examID = lastExamID;
-                examDetails = lastExamDetails;
-            }
+                const tds = tr.querySelectorAll("td");
+                let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
 
-            [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-                text.replace(/\s*:\s*/g, " : ")
-            );
+                if (tds.length === 6) {
+                    examID = tds[0].innerText.trim();
+                    examDetails = tds[1].innerText.trim();
+                    invDetails = tds[2].innerText.trim();
+                    checkTimes = tds[3].innerText.trim();
+                    attendance = tds[4].innerText.trim();
+                    invStatus = tds[5].innerText.trim();
+                    lastExamID = examID;
+                    lastExamDetails = examDetails;
+                } else {
+                    invDetails = tds[0]?.innerText.trim() || "";
+                    checkTimes = tds[1]?.innerText.trim() || "";
+                    attendance = tds[2]?.innerText.trim() || "";
+                    invStatus = tds[3]?.innerText.trim() || "";
+                    examID = lastExamID;
+                    examDetails = lastExamDetails;
+                }
 
-            rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
+                [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+                    text.replace(/\s*:\s*/g, " : ")
+                );
+
+                rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
+            });
         });
 
         doc.autoTable({
@@ -267,4 +295,5 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% endblock %}
+
 
