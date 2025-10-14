@@ -20,6 +20,7 @@
             </div>
         </div>
 
+        {% if confirm %}
         <div class="user-table-container">
             <table class="user-data-table">
                 <thead>
@@ -80,6 +81,9 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+            <p>No attendance records available.</p>
+        {% endif %}
     </form>
 
     <script>
