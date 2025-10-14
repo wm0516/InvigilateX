@@ -9,20 +9,20 @@
 </head>
 
 <body>
-    <form method="POST" style="width: 60%;">
-        <div style="max-width: 500px; margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
-            <h4 id="current-datetime"></h4>
-            <h1>Attendance Check In/Out</h1>
-            
-            <div class="input-container">
-                <h3>Scan Card</h3>
-                <input type="text" id="cardNumber" name="cardNumber" value="{{ cardNumber_text }}" required style="font-size: 16px;" autofocus>
-            </div>
+    <div style="width: 60%; max-width: 600px; margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+        <h4 id="current-datetime"></h4>
+        <h1>Attendance Check In/Out</h1>
+        
+        <div class="input-container">
+            <h3>Scan Card</h3>
+            <input type="text" id="cardNumber" placeholder="Scan your card" autofocus style="font-size: 16px; width: 100%; padding: 10px;">
         </div>
+    </div>
 
+    <div id="attendanceResult" style="margin-top:20px;">
         {% if confirm %}
         <div class="user-table-container">
-            <table class="user-data-table">
+            <table class="user-data-table" id="attendanceTable">
                 <thead>
                     <tr>
                         <th>Exam Details</th>
@@ -31,9 +31,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr id="attendanceRow">
                         <td>
-                            <div class="info-grid">
+                            <div class="info-grid" id="examDetails">
                                 <div>Course Name</div><div><strong>: {{ confirm.report.exam.course.courseName }}</strong></div>
                                 <div>Course Code/Section</div><div><strong>: {{ confirm.report.exam.course.courseCodeSectionIntake }}</strong></div>
                                 <div>Number of Students</div><div><strong>: {{ confirm.report.exam.course.courseStudent }}</strong></div>
@@ -45,7 +45,7 @@
                             </div>
                         </td>
                         <td>
-                            <div class="info-grid">
+                            <div class="info-grid" id="attendanceTimes">
                                 <div>Check-in Time</div><div><strong>: {{ confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None" }}</strong></div>
                                 <div>Check-out Time</div><div><strong>: {{ confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None" }}</strong></div>
                             </div>
@@ -54,15 +54,13 @@
                                 {% set exam_end = confirm.report.exam.examEndTime %}
                                 {% set check_in = confirm.checkIn %}
                                 {% set check_out = confirm.checkOut %}
-
                                 {% set actual_start = [check_in, exam_start] | max %}
                                 {% set actual_end = [check_out, exam_end] | min %}
                                 {% set total_seconds = (actual_end - actual_start).total_seconds() %}
                                 {% if total_seconds < 0 %}
                                     {% set total_seconds = 0 %}
                                 {% endif %}
-
-                                <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours</div>
+                                <div id="totalTime" style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours</div>
                             {% endif %}
                         </td>
                         <td>
@@ -75,36 +73,34 @@
                                 "CHECK OUT EARLY": "frame-expired",
                                 "EXPIRED": "frame-expired"
                             } %}
-                            <span class="status {{ remark_classes.get(confirm.remark, '') }}">[{{ confirm.remark }}]</span>
+                            <span class="status" id="attendanceRemark" class="{{ remark_classes.get(confirm.remark, '') }}">[{{ confirm.remark }}]</span>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
         {% else %}
-            <p>No attendance records available.</p>
+            <p id="noAttendance">No attendance records available.</p>
         {% endif %}
-    </form>
+    </div>
 
     <script>
+        // --- Update current datetime every second ---
         function updateDateTime() {
             const now = new Date();
             const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit',  minute: '2-digit',  second: '2-digit', hour12: false };
             const formatted = now.toLocaleString('en-GB', options).replace(',', ':');
             document.getElementById("current-datetime").textContent = formatted;
         }
-
-        // Initial run and update every second
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
+        // --- Auto-submit card scan ---
         const cardInput = document.getElementById('cardNumber');
         cardInput.addEventListener('input', function() {
             const cardValue = this.value.trim();
             if (cardValue.length > 0) {
-                // Send to server automatically
                 submitCard(cardValue);
-                // Clear input after sending
                 this.value = '';
             }
         });
@@ -114,20 +110,51 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token() }}'  // if using CSRF protection
+                    'X-CSRFToken': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ cardNumber: cardNumber })
             })
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    // Optionally refresh the table or show confirmation
-                    location.reload(); 
+                    const d = data.data;
+
+                    // Update exam details
+                    const examDetails = document.getElementById("examDetails");
+                    if (examDetails) {
+                        examDetails.innerHTML = `
+                            <div>Course Name</div><div><strong>: ${d.courseName}</strong></div>
+                            <div>Course Code/Section</div><div><strong>: ${d.courseCode}</strong></div>
+                            <div>Number of Students</div><div><strong>: ${d.students}</strong></div>
+                            <div>Exam Start</div><div><strong>: ${d.examStart}</strong></div>
+                            <div>Exam End</div><div><strong>: ${d.examEnd}</strong></div>
+                        `;
+                    }
+
+                    // Update check-in/out times
+                    const attendanceTimes = document.getElementById("attendanceTimes");
+                    if (attendanceTimes) {
+                        attendanceTimes.innerHTML = `
+                            <div>Check-in Time</div><div><strong>: ${d.checkIn}</strong></div>
+                            <div>Check-out Time</div><div><strong>: ${d.checkOut}</strong></div>
+                        `;
+                    }
+
+                    // Update remark
+                    const remarkEl = document.getElementById("attendanceRemark");
+                    if (remarkEl) {
+                        remarkEl.textContent = `[${d.remark}]`;
+                    }
+
+                    // Remove "No attendance" message if present
+                    const noAtt = document.getElementById("noAttendance");
+                    if (noAtt) noAtt.remove();
+
                 } else {
                     alert(data.message || "Error updating attendance!");
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(err => console.error('Error:', err));
         }
     </script>
 </body>

@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages
+from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
@@ -426,7 +426,6 @@ def user_homepage():
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 
 
-
 # -------------------------------
 # Helper function: calculate hours
 # -------------------------------
@@ -438,38 +437,34 @@ def hours_diff(start, end):
 # -------------------------------
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance_record():
-    card_input = request.form.get('cardNumber', '').strip()
-    if not card_input:
-        flash("Card scan missing!", "error")
-        return redirect(url_for('attendance_record'))
-
-    # Lookup user by card
-    user = User.query.filter_by(userCardId=card_input).first()
-    if not user:
-        flash("Card not recognized!", "error")
-        return redirect(url_for('attendance_record'))
-
-    user_id = user.userId  # now use this for attendance queries
-    timeSlots = InvigilatorAttendance.query.filter_by(user_id=user_id).all()
-    confirm = None
-
     if request.method == 'POST':
-        try:
-            # If your card scanner sends datetime string, parse it
-            scan_time = datetime.strptime(card_input, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
-        except ValueError:
-            # Otherwise, just use current time
-            scan_time = datetime.now(timezone.utc)
+        # Accept JSON (AJAX)
+        data = request.get_json()
+        card_input = data.get('cardNumber', '').strip()
+        if not card_input:
+            return jsonify({"success": False, "message": "Card scan missing!"})
 
-        # --- Find nearest exam and update attendance as before ---
+        # Find user by card
+        user = User.query.filter_by(userCardId=card_input).first()
+        if not user:
+            return jsonify({"success": False, "message": "Card not recognized!"})
+
+        user_id = user.userId
+        timeSlots = InvigilatorAttendance.query.filter_by(user_id=user_id).all()
+        if not timeSlots:
+            return jsonify({"success": False, "message": "No exam assigned!"})
+
+        # Use current UTC time for scan
+        scan_time = datetime.now(timezone.utc)
+
+        # Find nearest exam
         def exam_proximity(att):
             start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
             return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
+        timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
+        confirm = timeSlots_sorted[0]
 
-        if timeSlots:
-            timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
-            confirm = timeSlots_sorted[0]
-
+        # Update attendance
         for att in timeSlots:
             exam = att.report.exam
             start, end = exam.examStartTime, exam.examEndTime
@@ -509,24 +504,23 @@ def attendance_record():
             att.timeAction = scan_time
 
         db.session.commit()
-        flash("Attendance updated!", "success")
-        return redirect(url_for('attendance_record'))
 
-    # GET: pick nearest upcoming/ongoing exam
-    if not confirm and timeSlots:
-        now = datetime.now(timezone.utc)
-        def time_diff(att):
-            start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
-            if start <= now <= end:
-                return 0
-            elif now < start:
-                return (start - now).total_seconds()
-            else:
-                return float('inf')
-        timeSlots_sorted = sorted(timeSlots, key=time_diff)
-        confirm = timeSlots_sorted[0] if timeSlots_sorted else None
+        # Prepare response data to update table dynamically
+        response_data = {
+            "courseName": confirm.report.exam.course.courseName,
+            "courseCode": confirm.report.exam.course.courseCodeSectionIntake,
+            "students": confirm.report.exam.course.courseStudent,
+            "examStart": confirm.report.exam.examStartTime.strftime("%d/%b/%Y %H:%M"),
+            "examEnd": confirm.report.exam.examEndTime.strftime("%d/%b/%Y %H:%M"),
+            "checkIn": confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None",
+            "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
+            "remark": confirm.remark
+        }
 
-    return render_template('auth/attendance.html', timeSlots=timeSlots, confirm=confirm, cardNumber_text='')
+        return jsonify({"success": True, "data": response_data})
+
+    # GET request: render page
+    return render_template('auth/attendance.html')
 
 
 
