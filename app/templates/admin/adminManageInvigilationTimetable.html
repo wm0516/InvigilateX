@@ -145,6 +145,40 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
 
     doc.save("Admin_ViewInvigilationTimetable.pdf");
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("searchInput");
+    const noResults = document.getElementById("noResults");
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener("input", () => {
+        const filter = searchInput.value.toLowerCase();
+        let anyVisible = false;
+
+        const days = document.querySelectorAll(".calendar-day");
+        days.forEach(day => {
+            let dayHasVisible = false;
+            const cards = day.querySelectorAll(".exam-card");
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    card.style.display = "block";
+                    dayHasVisible = true;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Hide entire day if no cards are visible
+            day.style.display = dayHasVisible ? "block" : "none";
+            if (dayHasVisible) anyVisible = true;
+        });
+
+        noResults.style.display = anyVisible ? "none" : "block";
+    });
+});
 </script>
 {% endblock %}
 

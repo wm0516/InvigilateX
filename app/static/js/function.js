@@ -206,8 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// Universal Admin Search Utility
-// Works for tables (multiple IDs) + card layouts
+// Universal Admin Search Utility (Tables Only)
 function searchContent() {
     const input = document.getElementById("searchInput");
     if (!input) return;
@@ -222,7 +221,7 @@ function searchContent() {
         if (!table) continue;
 
         const rows = table.getElementsByTagName("tr");
-        for (let i = 1; i < rows.length; i++) {
+        for (let i = 1; i < rows.length; i++) {  // skip header row
             const cells = rows[i].getElementsByTagName("td");
             let match = false;
 
@@ -237,17 +236,6 @@ function searchContent() {
             rows[i].style.display = match ? "" : "none";
             if (match) anyVisible = true;
         }
-    }
-
-    // CARD SEARCH (e.g., ManageInvigilationTimetable calendar view)
-    const cards = document.querySelectorAll(".exam-card");
-    if (cards.length > 0) {
-        cards.forEach(card => {
-            const text = card.textContent.toLowerCase();
-            const visible = text.includes(filter);
-            card.style.display = visible ? "" : "none";
-            if (visible) anyVisible = true;
-        });
     }
 
     // Show or hide "No Results" message if available
@@ -266,7 +254,6 @@ function setupSearch() {
 
 // Auto-Initialize
 document.addEventListener("DOMContentLoaded", setupSearch);
-
 
 
 
