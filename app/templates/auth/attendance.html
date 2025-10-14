@@ -16,7 +16,7 @@
             
             <div class="input-container">
                 <h3>Scan Card</h3>
-                <input type="text" name="cardNumber" value="{{ cardNumber_text }}" required style="font-size: 16px;">
+                <input type="text" id="cardNumber" name="cardNumber" value="{{ cardNumber_text }}" required style="font-size: 16px;" autofocus>
             </div>
         </div>
 
@@ -97,6 +97,38 @@
         // Initial run and update every second
         updateDateTime();
         setInterval(updateDateTime, 1000);
+
+        const cardInput = document.getElementById('cardNumber');
+        cardInput.addEventListener('input', function() {
+            const cardValue = this.value.trim();
+            if (cardValue.length > 0) {
+                // Send to server automatically
+                submitCard(cardValue);
+                // Clear input after sending
+                this.value = '';
+            }
+        });
+
+        function submitCard(cardNumber) {
+            fetch('{{ url_for("attendance_record") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'  // if using CSRF protection
+                },
+                body: JSON.stringify({ cardNumber: cardNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Optionally refresh the table or show confirmation
+                    location.reload(); 
+                } else {
+                    alert(data.message || "Error updating attendance!");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
     </script>
 </body>
 </html>

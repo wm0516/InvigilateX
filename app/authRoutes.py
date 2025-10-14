@@ -428,13 +428,13 @@ def user_homepage():
 
 
 # -------------------------------
-# Return hours between two datetimes as float
+# Helper function: calculate hours
 # -------------------------------
 def hours_diff(start, end):
     return max(0, (end - start).total_seconds() / 3600.0)
 
 # -------------------------------
-# Record Attendances function
+# Attendance route
 # -------------------------------
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance_record():
@@ -444,90 +444,90 @@ def attendance_record():
         return redirect(url_for('login'))
 
     user = User.query.get(user_id)
-    timeSlots = confirm_record(user_id).all()  # all attendance records for this user
-
-    confirm = None  # nearest exam to show
+    timeSlots = InvigilatorAttendance.query.filter_by(user_id=user_id).all()  # all attendance records
+    confirm = None
 
     if request.method == 'POST':
-        card_str = request.form.get('cardNumber', '').strip()
+        # Detect if it's JSON (AJAX) or normal form
+        data = request.get_json(silent=True)
+        card_str = data.get('cardNumber') if data else request.form.get('cardNumber', '').strip()
+        
         if not card_str:
-            flash("Card scan missing!", "error")
             return redirect(url_for('attendance_record'))
 
         try:
+            # Expecting card scan to provide datetime as string
             scan_time = datetime.strptime(card_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
         except ValueError:
-            flash("Invalid time format!", "error")
             return redirect(url_for('attendance_record'))
 
-        # Find the nearest exam slot (active) for this scan time
+        # --- Find nearest exam ---
         def exam_proximity(att):
             start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
-            # before = 1 hour before start, after = 1 hour after end
             return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
 
         if timeSlots:
-            # sort by proximity to scan_time
             timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
-            confirm = timeSlots_sorted[0]  # pick the nearest
+            confirm = timeSlots_sorted[0]
 
+        # --- Update attendance records ---
         for att in timeSlots:
             exam = att.report.exam
             start, end = exam.examStartTime, exam.examEndTime
             before, after = start - timedelta(hours=1), end + timedelta(hours=1)
             before_end_30 = end - timedelta(minutes=30)
 
-            # === Check-in ===
+            # Check-in
             if not att.checkIn:
                 if before <= scan_time <= start:
                     att.checkIn, att.remark = scan_time, "CHECK IN"
                 elif start < scan_time < before_end_30:
                     att.checkIn, att.remark = scan_time, "CHECK IN LATE"
                 else:
-                    continue  # not allowed
+                    continue
 
-            # === Check-out ===
+            # Check-out
             elif not att.checkOut:
                 if end <= scan_time <= after:
                     att.checkOut, att.remark = scan_time, "COMPLETED"
                 elif scan_time < end:
                     att.checkOut, att.remark = scan_time, "CHECK OUT EARLY"
                 else:
-                    continue  # not allowed
+                    continue
 
-            # === Auto check-out if missed ===
+            # Auto check-out if missed
             if not att.checkOut and scan_time > after:
                 att.checkOut, att.remark = after, "COMPLETED"
 
-            # Update user hours if both exist
+            # Update user cumulative hours
             if att.checkIn and att.checkOut:
                 exam_hours = hours_diff(start, end)
                 actual_hours = hours_diff(att.checkIn, att.checkOut)
                 if att.checkIn > start or att.checkOut < end:
                     user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
                 att.invigilationStatus = True
+
             att.timeAction = scan_time
 
         db.session.commit()
         flash("Attendance updated!", "success")
         return redirect(url_for('attendance_record'))
-
-    # If GET, pick the nearest upcoming or ongoing exam
+    
+    # GET request: pick nearest upcoming/ongoing exam
     if not confirm and timeSlots:
         now = datetime.now(timezone.utc)
         def time_diff(att):
             start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
-            if start <= now <= end:  # ongoing exam
-                return 0
-            elif now < start:  # future exam
-                return (start - now).total_seconds()
-            else:  # past exam
-                return float('inf')
+            if start <= now <= end:
+                return 0  # ongoing
+            elif now < start:
+                return (start - now).total_seconds()  # future
+            else:
+                return float('inf')  # past
         timeSlots_sorted = sorted(timeSlots, key=time_diff)
         confirm = timeSlots_sorted[0] if timeSlots_sorted else None
 
     return render_template('auth/attendance.html', timeSlots=timeSlots, confirm=confirm, cardNumber_text='')
-
 
 
 
