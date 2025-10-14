@@ -588,6 +588,33 @@ input[readonly] {
 }
 
 
+.invigilation-frame {
+    display: flex;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    padding: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.exam-details {
+    flex: 0 0 30%; /* Left column width */
+    border-right: 1px solid #ddd;
+    padding-right: 10px;
+}
+
+.invigilators-details {
+    flex: 1; /* Right column takes remaining space */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.invigilator-card {
+    border: 1px solid #aaa;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
 
 
 
