@@ -158,66 +158,44 @@
 </div>
 {% endblock %}
 
-{% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
     const searchInput = document.getElementById("searchInput");
     const noResults = document.getElementById("noResults");
-    const table = document.getElementById("viewInvigilationReport");
+    const allGroups = document.querySelectorAll("#viewInvigilationReport tbody");
 
     // -----------------------------
-    // 🔍 Enhanced Search Filtering
+    // 🔍 Filter by Invigilator or Any Text
     // -----------------------------
     searchInput.addEventListener("input", function () {
         const filter = this.value.toLowerCase().trim();
-        const allGroups = table.querySelectorAll("tbody");
         let foundAny = false;
 
         allGroups.forEach(tbody => {
             const rows = tbody.querySelectorAll("tr");
-            let groupMatch = false;
-            let visibleCount = 0;
+            let visibleRowCount = 0;
 
-            // Always show the first row (exam info)
-            const firstRow = rows[0];
-            firstRow.style.display = "";
-
-            // Start from row 1 (skip the exam detail row)
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
+            rows.forEach(row => {
                 const text = row.innerText.toLowerCase();
-
-                if (!filter || text.includes(filter)) {
-                    row.style.display = ""; // show row if matches
-                    groupMatch = true;
-                    visibleCount++;
+                if (filter === "" || text.includes(filter)) {
+                    row.style.display = "";
+                    visibleRowCount++;
                 } else {
-                    row.style.display = "none"; // hide non-matching invigilator
+                    row.style.display = "none";
                 }
-            }
+            });
 
-            // If filter is empty → show everything
-            if (!filter) {
-                tbody.style.display = "";
-                rows.forEach(r => (r.style.display = ""));
-                foundAny = true;
-                return;
-            }
-
-            // Handle visibility of whole exam group
-            if (groupMatch) {
-                tbody.style.display = "";
-                foundAny = true;
-            } else {
-                tbody.style.display = "none";
-            }
+            // Hide entire exam group if no row matched
+            tbody.style.display = visibleRowCount > 0 ? "" : "none";
+            if (visibleRowCount > 0) foundAny = true;
         });
 
         noResults.style.display = foundAny ? "none" : "block";
     });
 
     // -----------------------------
-    // 📄 Generate PDF (same as before)
+    // 📄 Generate PDF
     // -----------------------------
     document.getElementById("generatePDF").addEventListener("click", function () {
         const { jsPDF } = window.jspdf;
@@ -235,41 +213,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
         let lastExamID = "", lastExamDetails = "";
 
-        // ✅ Only export visible rows (respect search filter)
-        document.querySelectorAll("#viewInvigilationReport tbody").forEach(tbody => {
-            if (tbody.style.display === "none") return; // skip hidden exam groups
+        // Use visible rows only
+        document.querySelectorAll("#viewInvigilationReport tbody tr").forEach(tr => {
+            if (tr.style.display === "none") return; // skip hidden rows
 
-            const trs = tbody.querySelectorAll("tr");
-            trs.forEach(tr => {
-                if (tr.style.display === "none") return; // skip hidden invigilator rows
+            const tds = tr.querySelectorAll("td");
+            let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
 
-                const tds = tr.querySelectorAll("td");
-                let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
+            if (tds.length === 6) {
+                examID = tds[0].innerText.trim();
+                examDetails = tds[1].innerText.trim();
+                invDetails = tds[2].innerText.trim();
+                checkTimes = tds[3].innerText.trim();
+                attendance = tds[4].innerText.trim();
+                invStatus = tds[5].innerText.trim();
+            } else {
+                invDetails = tds[0]?.innerText.trim() || "";
+                checkTimes = tds[1]?.innerText.trim() || "";
+                attendance = tds[2]?.innerText.trim() || "";
+                invStatus = tds[3]?.innerText.trim() || "";
+            }
 
-                if (tds.length === 6) {
-                    examID = tds[0].innerText.trim();
-                    examDetails = tds[1].innerText.trim();
-                    invDetails = tds[2].innerText.trim();
-                    checkTimes = tds[3].innerText.trim();
-                    attendance = tds[4].innerText.trim();
-                    invStatus = tds[5].innerText.trim();
-                    lastExamID = examID;
-                    lastExamDetails = examDetails;
-                } else {
-                    invDetails = tds[0]?.innerText.trim() || "";
-                    checkTimes = tds[1]?.innerText.trim() || "";
-                    attendance = tds[2]?.innerText.trim() || "";
-                    invStatus = tds[3]?.innerText.trim() || "";
-                    examID = lastExamID;
-                    examDetails = lastExamDetails;
-                }
+            [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+                text.replace(/\s*:\s*/g, " : ")
+            );
 
-                [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-                    text.replace(/\s*:\s*/g, " : ")
-                );
-
-                rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
-            });
+            rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
         });
 
         doc.autoTable({
@@ -294,6 +263,5 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
-{% endblock %}
 
 
