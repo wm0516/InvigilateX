@@ -438,30 +438,30 @@ def hours_diff(start, end):
 # -------------------------------
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance_record():
-    user_id = session.get('user_id')
-    if not user_id:
-        flash("User not logged in", "error")
-        return redirect(url_for('login'))
+    card_input = request.form.get('cardNumber', '').strip()
+    if not card_input:
+        flash("Card scan missing!", "error")
+        return redirect(url_for('attendance_record'))
 
-    user = User.query.get(user_id)
-    timeSlots = InvigilatorAttendance.query.filter_by(user_id=user_id).all()  # all attendance records
+    # Lookup user by card
+    user = User.query.filter_by(userCardId=card_input).first()
+    if not user:
+        flash("Card not recognized!", "error")
+        return redirect(url_for('attendance_record'))
+
+    user_id = user.userId  # now use this for attendance queries
+    timeSlots = InvigilatorAttendance.query.filter_by(user_id=user_id).all()
     confirm = None
 
     if request.method == 'POST':
-        # Detect if it's JSON (AJAX) or normal form
-        data = request.get_json(silent=True)
-        card_str = data.get('cardNumber') if data else request.form.get('cardNumber', '').strip()
-        
-        if not card_str:
-            return redirect(url_for('attendance_record'))
-
         try:
-            # Expecting card scan to provide datetime as string
-            scan_time = datetime.strptime(card_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+            # If your card scanner sends datetime string, parse it
+            scan_time = datetime.strptime(card_input, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
         except ValueError:
-            return redirect(url_for('attendance_record'))
+            # Otherwise, just use current time
+            scan_time = datetime.now(timezone.utc)
 
-        # --- Find nearest exam ---
+        # --- Find nearest exam and update attendance as before ---
         def exam_proximity(att):
             start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
             return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
@@ -470,7 +470,6 @@ def attendance_record():
             timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
             confirm = timeSlots_sorted[0]
 
-        # --- Update attendance records ---
         for att in timeSlots:
             exam = att.report.exam
             start, end = exam.examStartTime, exam.examEndTime
@@ -512,18 +511,18 @@ def attendance_record():
         db.session.commit()
         flash("Attendance updated!", "success")
         return redirect(url_for('attendance_record'))
-    
-    # GET request: pick nearest upcoming/ongoing exam
+
+    # GET: pick nearest upcoming/ongoing exam
     if not confirm and timeSlots:
         now = datetime.now(timezone.utc)
         def time_diff(att):
             start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
             if start <= now <= end:
-                return 0  # ongoing
+                return 0
             elif now < start:
-                return (start - now).total_seconds()  # future
+                return (start - now).total_seconds()
             else:
-                return float('inf')  # past
+                return float('inf')
         timeSlots_sorted = sorted(timeSlots, key=time_diff)
         confirm = timeSlots_sorted[0] if timeSlots_sorted else None
 
