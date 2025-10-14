@@ -507,7 +507,7 @@ def attendance_record():
         return redirect(url_for('attendance_record'))
 
     confirm = timeSlots[0] if timeSlots else None
-    return render_template('attendance.html', timeSlots=timeSlots, confirm=confirm)
+    return render_template('auth/attendance.html', timeSlots=timeSlots, confirm=confirm)
 
 
 
