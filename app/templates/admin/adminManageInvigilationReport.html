@@ -273,53 +273,5 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.save("Admin_ViewInvigilationReport.pdf");
 });
 
-
-function searchInvigilationReport() {
-    const input = document.getElementById("searchInput");
-    if (!input) return;
-    const filter = input.value.toLowerCase();
-    const table = document.getElementById("manageInvigilationReport");
-    const noResults = document.getElementById("noResults");
-    let anyVisible = false;
-
-    if (!table) return;
-
-    table.querySelectorAll("tbody").forEach(tbody => {
-        let tbodyVisible = false;
-
-        tbody.querySelectorAll("tr").forEach(tr => {
-            // Only check invigilator-related columns: 4th, 5th, 6th, 7th
-            const invCells = Array.from(tr.querySelectorAll("td")).slice(3);
-            const match = invCells.some(td => td.innerText.toLowerCase().includes(filter));
-
-            // Hide or show invigilator-specific cells only
-            invCells.forEach(td => {
-                td.style.display = match ? "" : "none";
-            });
-
-            if (match) tbodyVisible = true;
-        });
-
-        // Show/hide entire tbody if no invigilator matches
-        tbody.style.display = tbodyVisible ? "" : "none";
-        if (tbodyVisible) anyVisible = true;
-    });
-
-    // Show or hide "No Results"
-    if (noResults) noResults.style.display = anyVisible ? "none" : "block";
-}
-
-// Setup event listeners
-function setupInvigilationSearch() {
-    const input = document.getElementById("searchInput");
-    const btn = document.getElementById("searchBtn");
-
-    if (btn) btn.addEventListener("click", searchInvigilationReport);
-    if (input) input.addEventListener("keyup", searchInvigilationReport);
-}
-
-// Initialize on page load
-document.addEventListener("DOMContentLoaded", setupInvigilationSearch);
-
 </script>
 {% endblock %}
