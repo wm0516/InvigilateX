@@ -76,17 +76,18 @@
                     <th>Invigilation Status</th>
                 </tr>
             </thead>
-            <tbody>
             {% for (status, start_time), grouped in attendances|groupby("group_key") %}
+            <tbody data-exam="{{ grouped[0].report.exam.examId }}">
                 {% set inv_count = grouped|length %}
                 {% set expected_count = grouped[0].report.exam.examNoInvigilator %}
                 {% set total_rows = expected_count %}
 
                 {% for i in range(total_rows) %}
                     {% set att = grouped[i] if i < inv_count else None %}
-                    <tr class="{% if att and not att.report.exam.examStatus %}inactive-row-show
-                            {% elif att and att.report.exam.examStartTime is none %}error-row-show
-                            {% endif %}">
+                    <tr data-exam="{{ grouped[0].report.exam.examId }}" 
+                        class="{% if att and not att.report.exam.examStatus %}inactive-row-show
+                                {% elif att and att.report.exam.examStartTime is none %}error-row-show
+                                {% endif %}">
                         
                         {% if i == 0 %}
                             <!-- Exam ID -->
@@ -188,6 +189,7 @@
             {% endfor %}
             </tbody>
         </table>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
