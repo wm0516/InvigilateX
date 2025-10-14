@@ -444,7 +444,9 @@ def attendance_record():
         return redirect(url_for('login'))
 
     user = User.query.get(user_id)
-    timeSlots = confirm_record(user_id).all()
+    timeSlots = confirm_record(user_id).all()  # all attendance records for this user
+
+    confirm = None  # nearest exam to show
 
     if request.method == 'POST':
         card_str = request.form.get('cardNumber', '').strip()
@@ -457,6 +459,17 @@ def attendance_record():
         except ValueError:
             flash("Invalid time format!", "error")
             return redirect(url_for('attendance_record'))
+
+        # Find the nearest exam slot (active) for this scan time
+        def exam_proximity(att):
+            start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
+            # before = 1 hour before start, after = 1 hour after end
+            return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
+
+        if timeSlots:
+            # sort by proximity to scan_time
+            timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
+            confirm = timeSlots_sorted[0]  # pick the nearest
 
         for att in timeSlots:
             exam = att.report.exam
@@ -471,8 +484,7 @@ def attendance_record():
                 elif start < scan_time < before_end_30:
                     att.checkIn, att.remark = scan_time, "CHECK IN LATE"
                 else:
-                    flash("Check-in not allowed now.", "error")
-                    continue
+                    continue  # not allowed
 
             # === Check-out ===
             elif not att.checkOut:
@@ -481,24 +493,18 @@ def attendance_record():
                 elif scan_time < end:
                     att.checkOut, att.remark = scan_time, "CHECK OUT EARLY"
                 else:
-                    flash("Check-out not allowed now.", "error")
-                    continue
+                    continue  # not allowed
 
-            # === Auto check-out ===
+            # === Auto check-out if missed ===
             if not att.checkOut and scan_time > after:
                 att.checkOut, att.remark = after, "COMPLETED"
 
-            # === When both exist → compute and update user hours ===
+            # Update user hours if both exist
             if att.checkIn and att.checkOut:
                 exam_hours = hours_diff(start, end)
                 actual_hours = hours_diff(att.checkIn, att.checkOut)
-
-                # Only adjust if actual is less (late or early)
                 if att.checkIn > start or att.checkOut < end:
                     user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
-                # else: both normal → keep full exam hours
-
-                # Mark as completed
                 att.invigilationStatus = True
             att.timeAction = scan_time
 
@@ -506,9 +512,21 @@ def attendance_record():
         flash("Attendance updated!", "success")
         return redirect(url_for('attendance_record'))
 
-    confirm = timeSlots[0] if timeSlots else None
-    return render_template('auth/attendance.html', timeSlots=timeSlots, confirm=confirm)
+    # If GET, pick the nearest upcoming or ongoing exam
+    if not confirm and timeSlots:
+        now = datetime.now(timezone.utc)
+        def time_diff(att):
+            start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
+            if start <= now <= end:  # ongoing exam
+                return 0
+            elif now < start:  # future exam
+                return (start - now).total_seconds()
+            else:  # past exam
+                return float('inf')
+        timeSlots_sorted = sorted(timeSlots, key=time_diff)
+        confirm = timeSlots_sorted[0] if timeSlots_sorted else None
 
+    return render_template('auth/attendance.html', timeSlots=timeSlots, confirm=confirm, cardNumber_text='')
 
 
 
