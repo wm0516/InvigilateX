@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.getElementById('downloadPDF')?.addEventListener('click', () => {
+document.getElementById('generatePDF')?.addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
     const table = document.querySelector('.user-table-container table');
     if (!table) return alert("No timetable table found!");

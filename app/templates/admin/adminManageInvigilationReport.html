@@ -85,15 +85,20 @@
                 {% for i in range(total_rows) %}
                     {% set att = grouped[i] if i < inv_count else None %}
                     <tr class="{% if att and not att.report.exam.examStatus %}inactive-row-show
-                            {% elif att and att.report.exam.examStartTime is none %}error-row-show
-                            {% endif %}">
+                                {% elif att and att.report.exam.examStartTime is none %}error-row-show
+                                {% endif %}"
+                        data-exam-id="{{ grouped[0].report.exam.examId }}">
                         
+                        {# === EXAM ID column: show value on first row, empty on following rows === #}
                         {% if i == 0 %}
-                            <!-- Exam ID -->
-                            <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
-                            
-                            <!-- Exam Details -->
-                            <td rowspan="{{ total_rows }}">
+                            <td style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
+                        {% else %}
+                            <td class="placeholder-cell" aria-hidden="true"></td>
+                        {% endif %}
+
+                        {# === EXAM DETAILS column: full details on first row, empty on others === #}
+                        {% if i == 0 %}
+                            <td>
                                 <div class="info-grid">
                                     <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
                                     <div>Course Code/Section</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</strong></div>
@@ -115,12 +120,18 @@
                                     </div>
                                 </div>
                             </td>
-
-                            <!-- Number of Invigilators -->
-                            <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                        {% else %}
+                            <td class="placeholder-cell" aria-hidden="true"></td>
                         {% endif %}
 
-                        <!-- Invigilator Details -->
+                        {# === Invigilator Count column: show on first row, empty on others === #}
+                        {% if i == 0 %}
+                            <td>[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                        {% else %}
+                            <td class="placeholder-cell" aria-hidden="true"></td>
+                        {% endif %}
+
+                        {# === Invigilator Details (always present per row) === #}
                         <td>
                             {% if att %}
                                 <div class="info-grid">
@@ -134,7 +145,7 @@
                             {% endif %}
                         </td>
 
-                        <!-- Check-in/out Time -->
+                        {# === Check-in/out Time (always present per row) === #}
                         <td>
                             {% if att %}
                                 <div class="info-grid">
@@ -157,7 +168,7 @@
                             {% endif %}
                         </td>
 
-                        <!-- Attendance Status -->
+                        {# === Attendance Status === #}
                         <td>
                             {% if att %}
                                 {% set remark_classes = {
@@ -175,7 +186,7 @@
                             {% endif %}
                         </td>
 
-                        <!-- Invigilation Status -->
+                        {# === Invigilation Status === #}
                         <td>
                             {% if att and att.invigilationStatus %}
                                 <span class="status frame-completed">ACCEPTED</span>
