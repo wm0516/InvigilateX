@@ -206,7 +206,8 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// Universal Admin Search Utility (Tables Only)
+// Universal Admin Search Utility
+// Works for tables (multiple IDs) + card layouts
 function searchContent() {
     const input = document.getElementById("searchInput");
     if (!input) return;
@@ -221,7 +222,7 @@ function searchContent() {
         if (!table) continue;
 
         const rows = table.getElementsByTagName("tr");
-        for (let i = 1; i < rows.length; i++) {  // skip header row
+        for (let i = 1; i < rows.length; i++) {
             const cells = rows[i].getElementsByTagName("td");
             let match = false;
 
@@ -237,10 +238,6 @@ function searchContent() {
             if (match) anyVisible = true;
         }
     }
-
-    // Show or hide "No Results" message if available
-    const noResults = document.getElementById("noResults");
-    if (noResults) noResults.style.display = anyVisible ? "none" : "block";
 }
 
 // Setup Function: Runs once per page
@@ -254,6 +251,7 @@ function setupSearch() {
 
 // Auto-Initialize
 document.addEventListener("DOMContentLoaded", setupSearch);
+
 
 
 
