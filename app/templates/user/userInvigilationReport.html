@@ -158,110 +158,82 @@
 </div>
 {% endblock %}
 
+{% block extra_scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+document.getElementById("generatePDF").addEventListener("click", function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    const searchInput = document.getElementById("searchInput");
-    const noResults = document.getElementById("noResults");
-    const allGroups = document.querySelectorAll("#viewInvigilationReport tbody");
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
 
-    // -----------------------------
-    // 🔍 Filter by Invigilator or Any Text
-    // -----------------------------
-    searchInput.addEventListener("input", function () {
-        const filter = this.value.toLowerCase().trim();
-        let foundAny = false;
+    const startY = margin + 30;
 
-        allGroups.forEach(tbody => {
-            const rows = tbody.querySelectorAll("tr");
-            let visibleRowCount = 0;
+    // Table headers
+    const headers = ["Exam ID", "Exam Details", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
+    const rows = [];
 
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                if (filter === "" || text.includes(filter)) {
-                    row.style.display = "";
-                    visibleRowCount++;
-                } else {
-                    row.style.display = "none";
-                }
-            });
+    // Variables to store previous rowspan values
+    let lastExamID = "";
+    let lastExamDetails = "";
 
-            // Hide entire exam group if no row matched
-            tbody.style.display = visibleRowCount > 0 ? "" : "none";
-            if (visibleRowCount > 0) foundAny = true;
-        });
+    // Loop through table rows
+    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
+        const tds = tr.querySelectorAll("td");
 
-        noResults.style.display = foundAny ? "none" : "block";
+        let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
+
+        if (tds.length === 6) {
+            // Full row (first row of exam group)
+            examID = tds[0].innerText.trim();
+            examDetails = tds[1].innerText.trim();
+            invDetails = tds[2].innerText.trim();
+            checkTimes = tds[3].innerText.trim();
+            attendance = tds[4].innerText.trim();
+            invStatus = tds[5].innerText.trim();
+        } else {
+            // Adjust columns for continuation row
+            invDetails = tds[0]?.innerText.trim() || "";
+            checkTimes = tds[1]?.innerText.trim() || "";
+            attendance = tds[2]?.innerText.trim() || "";
+            invStatus = tds[3]?.innerText.trim() || "";
+        }
+        // Clean up text formatting
+        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+            text.replace(/\s*:\s*/g, " : ")
+        );
+
+        // Push row into PDF table
+        rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
     });
 
-    // -----------------------------
-    // 📄 Generate PDF
-    // -----------------------------
-    document.getElementById("generatePDF").addEventListener("click", function () {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-        const margin = 20;
-        const pageWidth = doc.internal.pageSize.getWidth();
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
-
-        const startY = margin + 30;
-        const headers = ["Exam ID", "Exam Details", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
-        const rows = [];
-
-        let lastExamID = "", lastExamDetails = "";
-
-        // Use visible rows only
-        document.querySelectorAll("#viewInvigilationReport tbody tr").forEach(tr => {
-            if (tr.style.display === "none") return; // skip hidden rows
-
-            const tds = tr.querySelectorAll("td");
-            let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
-
-            if (tds.length === 6) {
-                examID = tds[0].innerText.trim();
-                examDetails = tds[1].innerText.trim();
-                invDetails = tds[2].innerText.trim();
-                checkTimes = tds[3].innerText.trim();
-                attendance = tds[4].innerText.trim();
-                invStatus = tds[5].innerText.trim();
-            } else {
-                invDetails = tds[0]?.innerText.trim() || "";
-                checkTimes = tds[1]?.innerText.trim() || "";
-                attendance = tds[2]?.innerText.trim() || "";
-                invStatus = tds[3]?.innerText.trim() || "";
-            }
-
-            [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-                text.replace(/\s*:\s*/g, " : ")
-            );
-
-            rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
-        });
-
-        doc.autoTable({
-            head: [headers],
-            body: rows,
-            startY: startY,
-            theme: "grid",
-            styles: { font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left" },
-            headStyles: { fillColor: [33, 37, 41], textColor: 255, fontStyle: "bold" },
-            tableWidth: "auto",
-            margin: { top: margin, left: margin, right: margin, bottom: margin },
-            didDrawPage: function (data) {
-                const pageCount = doc.internal.getNumberOfPages();
-                const pageHeight = doc.internal.pageSize.height;
-                doc.setFontSize(9);
-                doc.setTextColor(100);
-                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
-            }
-        });
-
-        doc.save("Invigilation_Report.pdf");
+    // Generate PDF table
+    doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: startY,
+        theme: "grid",
+        styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left"},
+        headStyles: {fillColor: [33, 37, 41], textColor: 255, fontStyle: "bold"},
+        tableWidth: "auto",
+        margin: { top: margin, left: margin, right: margin, bottom: margin },
+        didDrawPage: function (data) {
+            // Page numbers
+            const pageCount = doc.internal.getNumberOfPages();
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+        }
     });
+
+    // Save PDF
+    doc.save("Invigilation_Report.pdf");
 });
 </script>
 
-
+{% endblock %}
