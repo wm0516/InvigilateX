@@ -1,6 +1,7 @@
 {% extends "user/userBase.html" %}
 {% block title %}InvigilationReport{% endblock %}
 {% block head_title %}<h2>Invigilation Report</h2>{% endblock %}
+
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; align-items: center; gap: 10px;">
@@ -33,127 +34,76 @@
         </div>
     </div>
 
-    <div class="user-table-container">
-        <table class="user-data-table" id="viewInvigilationReport">
-            <thead>
-                <tr>
-                    <th>Exam ID</th>
-                    <th>Exam Details</th>
-                    <th>Invigilator Details</th>
-                    <th>Check-in/out Time</th>
-                    <th>Attendance Status</th>
-                    <th>Invigilation Status</th>
-                </tr>
-            </thead>
+    <div class="invigilation-container">
+        {% for (status, start_time), grouped in attendances|groupby("group_key") %}
+        <div class="invigilation-frame" data-exam="{{ grouped[0].report.exam.examId }}">
+            <!-- Exam Details -->
+            <div class="exam-details">
+                <div><strong>Exam ID:</strong> [{{ grouped[0].report.exam.examId }}]</div>
+                <div><strong>Course Name:</strong> {{ grouped[0].report.exam.course.courseName }}</div>
+                <div><strong>Course Code/Section:</strong> {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</div>
+                <div><strong>Number of Students:</strong> {{ grouped[0].report.exam.course.courseStudent }}</div>
+                <div><strong>Program Code:</strong> {{ grouped[0].report.exam.course.courseDepartment }}</div>
+                <div><strong>Exam Date:</strong> {{ grouped[0].report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ grouped[0].report.exam.examEndTime.strftime("%d/%b/%Y") }}</div>
+                <div><strong>Exam Day:</strong> {{ grouped[0].report.exam.examStartTime.strftime("%A") }} - {{ grouped[0].report.exam.examEndTime.strftime("%A") }}</div>
+                <div><strong>Exam Time:</strong> {{ grouped[0].report.exam.examStartTime.strftime("%H:%M") }} - {{ grouped[0].report.exam.examEndTime.strftime("%H:%M") }}</div>
+                <div><strong>Exam Period:</strong> {{ (grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds // 3600 }}h {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds % 3600) // 60 }}m</div>
+                <div><strong>Exam Venue(s):</strong><br>
+                    {% if grouped[0].report.exam.venue_availabilities %}
+                        {% for va in grouped[0].report.exam.venue_availabilities %}
+                            {{ va.venueNumber }} (Capacity: {{ va.capacity }})<br>
+                        {% endfor %}
+                    {% else %}
+                        None
+                    {% endif %}
+                </div>
+            </div>
 
-            {% for (status, start_time), grouped in attendances|groupby("group_key") %}
-            <tbody data-exam="{{ grouped[0].report.exam.examId }}">
-                {% set inv_count = grouped|length %}
-                {% set expected_count = grouped[0].report.exam.examNoInvigilator %}
-                {% set total_rows = expected_count %}
-
-                {% for i in range(total_rows) %}
-                    {% set att = grouped[i] if i < inv_count else None %}
-                    <tr data-exam="{{ grouped[0].report.exam.examId }}" 
-                    class="{% if att and not att.report.exam.examStatus %}inactive-row-show{% elif att and att.report.exam.examStartTime is none %}error-row-show{% endif %}">
-                        
-                        {% if i == 0 %}
-                            <!-- Exam ID -->
-                            <td rowspan="{{ total_rows }}" style="text-align:center;">[{{ grouped[0].report.exam.examId }}]</td>
-                            
-                            <!-- Exam Details -->
-                            <td rowspan="{{ total_rows }}">
-                                <div class="info-grid">
-                                    <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
-                                    <div>Course Code/Section</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</strong></div>
-                                    <div>Number of Students</div><div><strong>: {{ grouped[0].report.exam.course.courseStudent }}</strong></div>
-                                    <div>Program Code</div><div><strong>: {{ grouped[0].report.exam.course.courseDepartment }}</strong></div>
-                                    <div>Exam Date</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ grouped[0].report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                                    <div>Exam Day</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%A") }} - {{ grouped[0].report.exam.examEndTime.strftime("%A") }}</strong></div>
-                                    <div>Exam Time</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%H:%M") }} - {{ grouped[0].report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
-                                    <div>Exam Period</div><div><strong>: {{ (grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds // 3600 }}h {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                    <div>Exam Venue(s)</div>
-                                    <div>
-                                        {% if grouped[0].report.exam.venue_availabilities %}
-                                            {% for va in grouped[0].report.exam.venue_availabilities %}
-                                                <strong>: {{ va.venueNumber }} (Capacity Use: {{ va.capacity }})</strong><br>
-                                            {% endfor %}
-                                        {% else %}
-                                            <strong>: None</strong>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </td>
+            <!-- Invigilators -->
+            <div class="invigilators-details">
+                {% for att in grouped %}
+                <div class="invigilator-card {% if not att.report.exam.examStatus %}inactive-row-show{% elif att.report.exam.examStartTime is none %}error-row-show{% endif %}">
+                    <div><strong>ID:</strong> {{ att.invigilator.userId }}</div>
+                    <div><strong>Name:</strong> {{ att.invigilator.userName }}</div>
+                    <div><strong>Contact:</strong> {{ att.invigilator.userContact }}</div>
+                    <div><strong>Gender:</strong> {{ att.invigilator.userGender }}</div>
+                    <div><strong>Check-in:</strong> {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</div>
+                    <div><strong>Check-out:</strong> {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</div>
+                    {% if att.checkIn and att.checkOut %}
+                        {% set exam_start = att.report.exam.examStartTime %}
+                        {% set exam_end = att.report.exam.examEndTime %}
+                        {% set check_in = att.checkIn %}
+                        {% set check_out = att.checkOut %}
+                        {% set actual_start = [check_in, exam_start] | max %}
+                        {% set actual_end = [check_out, exam_end] | min %}
+                        {% set total_seconds = (actual_end - actual_start).total_seconds() %}
+                        {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
+                        <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours </div>
+                    {% endif %}
+                    <div><strong>Attendance Status:</strong>
+                        {% set remark_classes = {
+                            "PENDING": "frame-pending",
+                            "CHECK IN": "frame-completed",
+                            "CHECK OUT": "frame-completed",
+                            "COMPLETED": "frame-completed",
+                            "CHECK IN LATE": "frame-expired",
+                            "CHECK OUT EARLY": "frame-expired",
+                            "EXPIRED": "frame-expired"
+                        } %}
+                        <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
+                    </div>
+                    <div><strong>Invigilation Status:</strong>
+                        {% if att.invigilationStatus %}
+                            <span class="status frame-completed">ACCEPTED</span>
+                        {% else %}
+                            <em class="status frame-pending">PENDING</em>
                         {% endif %}
-
-                        <!-- Invigilator Details -->
-                        <td>
-                            {% if att %}
-                                <div class="info-grid">
-                                    <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
-                                    <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
-                                    <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
-                                    <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
-                                </div>
-                            {% else %}
-                                <em class="status frame-pending">IN PROCESSING</em>
-                            {% endif %}
-                        </td>
-
-                        <!-- Check-in/out Time -->
-                        <td>
-                            {% if att %}
-                                <div class="info-grid">
-                                    <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                                    <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
-                                </div>
-                                {% if att.checkIn and att.checkOut %}
-                                    {% set exam_start = att.report.exam.examStartTime %}
-                                    {% set exam_end = att.report.exam.examEndTime %}
-                                    {% set check_in = att.checkIn %}
-                                    {% set check_out = att.checkOut %}
-                                    {% set actual_start = [check_in, exam_start] | max %}
-                                    {% set actual_end = [check_out, exam_end] | min %}
-                                    {% set total_seconds = (actual_end - actual_start).total_seconds() %}
-                                    {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
-                                    <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours </div>
-                                {% endif %}
-                            {% else %}
-                                <em class="status frame-pending">IN PROCESSING</em>
-                            {% endif %}
-                        </td>
-
-                        <!-- Attendance Status -->
-                        <td>
-                            {% if att %}
-                                {% set remark_classes = {
-                                    "PENDING": "frame-pending",
-                                    "CHECK IN": "frame-completed",
-                                    "CHECK OUT": "frame-completed",
-                                    "COMPLETED": "frame-completed",
-                                    "CHECK IN LATE": "frame-expired",
-                                    "CHECK OUT EARLY": "frame-expired",
-                                    "EXPIRED": "frame-expired"
-                                } %}
-                                <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
-                            {% else %}
-                                <em class="status frame-pending">IN PROCESSING</em>
-                            {% endif %}
-                        </td>
-
-                        <!-- Invigilation Status -->
-                        <td>
-                            {% if att and att.invigilationStatus %}
-                                <span class="status frame-completed">ACCEPTED</span>
-                            {% else %}
-                                <em class="status frame-pending">PENDING</em>
-                            {% endif %}
-                        </td>
-                    </tr>
+                    </div>
+                </div>
                 {% endfor %}
-            </tbody>
-            {% endfor %}
-        </table>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
@@ -166,55 +116,22 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
 
     const startY = margin + 30;
-
-    // Table headers
     const headers = ["Exam ID", "Exam Details", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
     const rows = [];
 
-    // Variables to store previous rowspan values
-    let lastExamID = "";
-    let lastExamDetails = "";
-
-    // Loop through table rows
-    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
-        const tds = tr.querySelectorAll("td");
-
-        let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
-
-        if (tds.length === 6) {
-            // Full row (first row of exam group)
-            examID = tds[0].innerText.trim();
-            examDetails = tds[1].innerText.trim();
-            invDetails = tds[2].innerText.trim();
-            checkTimes = tds[3].innerText.trim();
-            attendance = tds[4].innerText.trim();
-            invStatus = tds[5].innerText.trim();
-
-            lastExamID = examID;
-            lastExamDetails = examDetails;
-        } else {
-            // Adjust columns for continuation row
-            invDetails = tds[0]?.innerText.trim() || "";
-            checkTimes = tds[1]?.innerText.trim() || "";
-            attendance = tds[2]?.innerText.trim() || "";
-            invStatus = tds[3]?.innerText.trim() || "";
-        }
-        // Clean up text formatting
-        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-            text.replace(/\s*:\s*/g, " : ")
-        );
-
-        // Push row into PDF table
-        rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
+    document.querySelectorAll(".invigilation-frame").forEach(frame => {
+        const examText = Array.from(frame.querySelector(".exam-details").children).map(c => c.innerText).join("\n");
+        frame.querySelectorAll(".invigilator-card").forEach(card => {
+            const invText = Array.from(card.children).map(c => c.innerText).join("\n");
+            rows.push([frame.dataset.exam, examText, invText, "", "", ""]);
+        });
     });
 
-    // Generate PDF table
     doc.autoTable({
         head: [headers],
         body: rows,
@@ -225,7 +142,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         tableWidth: "auto",
         margin: { top: margin, left: margin, right: margin, bottom: margin },
         didDrawPage: function (data) {
-            // Page numbers
             const pageCount = doc.internal.getNumberOfPages();
             const pageHeight = doc.internal.pageSize.height;
             doc.setFontSize(9);
@@ -234,9 +150,15 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         }
     });
 
-    // Save PDF
     doc.save("Invigilation_Report.pdf");
 });
 </script>
 
+<style>
+.invigilation-container { display: flex; flex-direction: column; gap: 15px; }
+.invigilation-frame { display: flex; border: 1px solid #ccc; padding: 10px; gap: 20px; flex-wrap: wrap; }
+.exam-details { flex: 0 0 30%; border-right: 1px solid #ddd; padding-right: 10px; }
+.invigilators-details { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.invigilator-card { border: 1px solid #aaa; padding: 5px 10px; border-radius: 4px; }
+</style>
 {% endblock %}
