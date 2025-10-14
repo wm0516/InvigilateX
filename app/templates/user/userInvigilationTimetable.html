@@ -3,9 +3,16 @@
 {% block head_title %}<h2>Invigilation Timetable</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div class="button-wrapper" style="display: block;">
-        <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="position: relative;">
+            <input type="text" id="searchInput" name="search_InvigilationTimetable" placeholder="Search..." value="{{ search_InvigilationTimetable }}" style="border-radius: 6px; width: 100%;">
+            <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+        </div>
+        <div class="button-wrapper">
+            <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+        </div>
     </div>
+    <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
 
     <div style="display: flex; gap: 15px; align-items: center;">
         <h4>Exam Status:</h4>
@@ -130,6 +137,40 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     }
 
     doc.save("Invigilation_Timetable.pdf");
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById("searchInput");
+    const noResults = document.getElementById("noResults");
+
+    if (!searchInput) return;
+
+    searchInput.addEventListener("input", () => {
+        const filter = searchInput.value.toLowerCase();
+        let anyVisible = false;
+
+        const days = document.querySelectorAll(".calendar-day");
+        days.forEach(day => {
+            let dayHasVisible = false;
+            const cards = day.querySelectorAll(".exam-card");
+
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(filter)) {
+                    card.style.display = "block";
+                    dayHasVisible = true;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            // Hide entire day if no cards are visible
+            day.style.display = dayHasVisible ? "block" : "none";
+            if (dayHasVisible) anyVisible = true;
+        });
+
+        noResults.style.display = anyVisible ? "none" : "block";
+    });
 });
 </script>
 {% endblock %}
