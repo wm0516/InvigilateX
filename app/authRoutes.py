@@ -450,7 +450,7 @@ def attendance_record():
             return jsonify({"success": False, "message": "Card not recognized!"})
 
         user_id = user.userId
-        timeSlots = InvigilatorAttendance.query.filter_by(user_id=user_id).all()
+        timeSlots = InvigilatorAttendance.query.filter_by(invigilatorId=user_id).all()
         if not timeSlots:
             return jsonify({"success": False, "message": "No exam assigned!"})
 
