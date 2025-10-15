@@ -304,8 +304,11 @@ def confirm_record(user_id):
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.invigilationStatus == True,
+            InvigilatorAttendance.checkOut.is_(None)
+        ).all()
     )
 
 
