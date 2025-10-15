@@ -426,6 +426,13 @@ def user_homepage():
             flash("Open Slot Accepted Successfully", "success")
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
+
+
+
+
+
+
+
 # -------------------------------
 # Helper functions
 # -------------------------------
@@ -550,6 +557,10 @@ def attendance_record():
             report = getattr(confirm, "report", None)
             exam = getattr(report, "exam", None)
             course = getattr(exam, "course", None)
+            venues = []
+            if exam and getattr(exam, "venue_availabilities", None):
+                venues = [v.venueNumber for v in exam.venue_availabilities]
+            venue_list = ", ".join(venues) if venues else "N/A"
 
             response_data = {
                 "courseName": getattr(course, "courseName", "N/A"),
@@ -559,7 +570,8 @@ def attendance_record():
                 "examEnd": exam.examEndTime.strftime("%d/%b/%Y %H:%M") if exam and exam.examEndTime else "N/A",
                 "checkIn": confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None",
                 "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
-                "remark": confirm.remark or ""
+                "remark": confirm.remark or "",
+                "examVenue": venue_list
             }
 
             return jsonify({"success": True, "data": response_data})
@@ -571,6 +583,13 @@ def attendance_record():
 
     # GET request: render page
     return render_template('auth/attendance.html')
+
+
+
+
+
+
+
 
 def parse_date_range(date_range):
     """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime safely."""
