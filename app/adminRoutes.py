@@ -1087,8 +1087,6 @@ def admin_manageExam():
                     flash("❌ Please reselect venues and try again.", "error")
                     return redirect(request.url)
 
-
-
             elif action == 'delete':
                 # Handle delete logic (same as your original)
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
@@ -1792,7 +1790,7 @@ def admin_manageTimetable():
 def get_calendar_data():
     attendances = get_all_attendances()
     calendar_data = defaultdict(list)
-    seen_exams = set()  # To skip duplicate exam sessions
+    seen_exams = set()  # ✅ To skip duplicate exam sessions
 
     for att in attendances:
         exam = att.report.exam
@@ -1807,6 +1805,8 @@ def get_calendar_data():
         start_date = start_dt.date()
         end_date = end_dt.date()
         is_overnight = start_date != end_date and exam.examStatus == True
+        venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
+
 
         def exam_dict(start, end):
             return {
@@ -1816,7 +1816,8 @@ def get_calendar_data():
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,
-                "is_overnight": is_overnight
+                "is_overnight": is_overnight,
+                "venue": [v.venueNumber for v in venues],
             }
 
         if is_overnight:
@@ -1844,8 +1845,6 @@ def get_calendar_data():
 def admin_manageInvigilationTimetable():
     calendar_data = get_calendar_data()
     return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
-
-
 
 
 
