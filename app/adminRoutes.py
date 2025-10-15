@@ -989,10 +989,20 @@ def admin_manageExam():
                         if remaining <= 0:
                             break
 
-                        # Check for time conflict
+                        # Skip conflict check if this venue is already used for this exam
+                        if venue_obj.venueNumber in old_records:
+                            rec = old_records[venue_obj.venueNumber]
+                            rec.startDateTime = start_dt
+                            rec.endDateTime = end_dt
+                            rec.capacity = min(rec.capacity, remaining)  # adjust capacity if needed
+                            remaining -= rec.capacity
+                            used_venues.add(venue_obj.venueNumber)
+                            continue
+
+                        # Check for time conflict with other exams
                         conflict = VenueExam.query.filter(
                             VenueExam.venueNumber == venue_obj.venueNumber,
-                            VenueExam.examId != exam_select.examId,
+                            VenueExam.examId != exam_select.examId,  # ignore same exam
                             VenueExam.startDateTime < end_dt,
                             VenueExam.endDateTime > start_dt
                         ).first()
@@ -1020,29 +1030,20 @@ def admin_manageExam():
                         remaining -= allocated
                         used_venues.add(venue_obj.venueNumber)
 
-                        # 🔹 Update existing record if found
-                        if venue_obj.venueNumber in old_records:
-                            rec = old_records[venue_obj.venueNumber]
-                            rec.startDateTime = start_dt
-                            rec.endDateTime = end_dt
-                            rec.capacity = allocated
-                            flash(f"🔄 Updated {venue_obj.venueNumber} with new capacity {allocated}.", "info")
-                        else:
-                            # 🔹 Create new record
-                            new_va = VenueExam(
-                                examId=exam_select.examId,
-                                venueNumber=venue_obj.venueNumber,
-                                startDateTime=start_dt,
-                                endDateTime=end_dt,
-                                capacity=allocated
-                            )
-                            db.session.add(new_va)
-                            flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
+                        # 🔹 Create new record
+                        new_va = VenueExam(
+                            examId=exam_select.examId,
+                            venueNumber=venue_obj.venueNumber,
+                            startDateTime=start_dt,
+                            endDateTime=end_dt,
+                            capacity=allocated
+                        )
+                        db.session.add(new_va)
+                        flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
 
                     # 4️⃣ Handle old venues no longer used
                     for old_venue, rec in old_records.items():
                         if old_venue not in used_venues:
-                            flash(f"🧹 Venue {old_venue} no longer used — set capacity to 0.", "warning")
                             rec.capacity = 0
                             rec.startDateTime = None
                             rec.endDateTime = None
