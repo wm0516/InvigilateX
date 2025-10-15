@@ -112,7 +112,7 @@
                             </div>
                         </div>
                     </td>
-                    <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                    <td rowspan="{{ grouped|length }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
                     {% endif %}
 
                     <!-- Invigilator Details -->
