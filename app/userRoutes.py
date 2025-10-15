@@ -292,16 +292,24 @@ def user_mergeTimetable():
 def user_viewStaff():
     userId = session.get('user_id')
     current_user = User.query.filter_by(userId=userId).first()
-
     if not current_user:
         flash("User not found.", "danger")
         return redirect(url_for('user_dashboard'))
 
     # Get all staff from the same department
     lecturers = User.query.filter_by(userDepartment=current_user.userDepartment).all()
-    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers)
-
-
+    total_admin = User.query.filter_by(userLevel=5).count()
+    total_hop = User.query.filter_by(userLevel=4).count()
+    total_hos = User.query.filter_by(userLevel=3).count()
+    total_dean = User.query.filter_by(userLevel=2).count()
+    total_lecturer = User.query.filter_by(userLevel=1).count()
+    total_male_staff = User.query.filter_by(userGender="MALE").count()
+    total_female_staff = User.query.filter_by(userGender="FEMALE").count()
+    total_activated = User.query.filter_by(userStatus=1).count()
+    total_deactivate = User.query.filter_by(userStatus=0).count()
+    total_deleted = User.query.filter_by(userStatus=2).count()
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,
+                           total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
 
 # -------------------------------
 # Function for Profile Route

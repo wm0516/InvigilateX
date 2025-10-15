@@ -16,6 +16,25 @@
         </div>
     </div>
     <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
+    
+    <div class="dashboard-row">
+        <div class="dashboard-frame pie">
+            <h3>Staff Distribution</h3>
+            <canvas id="staffPieChart"></canvas>
+        </div>
+        <div class="dashboard-frame pie">
+            <h3>Gender Distribution</h3>
+            <canvas id="genderPieChart"></canvas>
+        </div>
+        <div class="dashboard-frame pie">
+            <h3>Account Status</h3>
+            <canvas id="statusPieChart"></canvas>
+        </div>
+        <div class="dashboard-frame">
+            <h3>Incompleted Data Rows</h3>
+            <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
+        </div>
+    </div>
 
     <table class="user-data-table" id="viewStaff">
         <thead>
@@ -148,6 +167,89 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // ===== Save PDF =====
         doc.save("Staff_List.pdf");
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    // === Default chart colors ===
+    const defaultColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C7C7C7', '#5366FF', '#FF66FF', '#66FFB2', '#FFB266', '#66B2FF'];
+    const defaultBorders = ['#FF0033', '#0033FF', '#FFCC00', '#009999', '#6600FF', '#FF6600', '#999999', '#0033CC', '#CC00CC', '#00CC66', '#FF9966', '#3399FF'];
+
+    // === Auto-generate colors if dataset exceeds defaults ===
+    function generateColors(count) {
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            const hue = Math.floor((360 / count) * i);
+            colors.push(`hsl(${hue}, 70%, 60%)`);
+        }
+        return colors;
+    }
+
+    // === Reusable function to build pie charts ===
+    function createPieChart(canvasId, labels, data, colors = defaultColors, borders = defaultBorders, chartLabel = '') {
+        // Auto-extend colors if needed
+        if (labels.length > colors.length) {
+            colors = generateColors(labels.length);
+            borders = colors.map(c => c.replace("60%", "40%")); // darker borders
+        }
+
+        return new Chart(document.getElementById(canvasId).getContext('2d'), {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: chartLabel,
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: borders,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'right' },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                let dataArr = context.dataset.data;
+                                let sum = dataArr.reduce((a, b) => a + b, 0);
+                                let value = context.parsed;
+                                let percentage = ((value / sum) * 100).toFixed(1) + "%";
+                                return context.label + ": " + value + " (" + percentage + ")";
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // === Chart configurations ===
+    const charts = [
+        {
+            id: 'staffPieChart',
+            labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer'],
+            data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}],
+            label: 'Staff Distribution'
+        },
+        {
+            id: 'genderPieChart',
+            labels: ['Male', 'Female'],
+            data: [{{ total_male_staff }}, {{ total_female_staff }}],
+            label: 'Gender Distribution'
+        },
+        {
+            id: 'statusPieChart',
+            labels: ['Activated', 'Deactivated', 'Deleted'],
+            data: [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
+            label: 'Account Status'
+        }
+    ];
+
+    // === Render all charts ===
+    charts.forEach(c => {
+        createPieChart(c.id, c.labels, c.data, defaultColors, defaultBorders, c.label);
     });
 });
 </script>
