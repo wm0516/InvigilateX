@@ -421,7 +421,7 @@ def user_homepage():
                     end_dt += timedelta(days=1)
                 hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-            chosen.userCumulativeHours = (chosen.userCumulativeHours or 0) + hours
+            chosen.userPendingCumulativeHours  = (chosen.userPendingCumulativeHours or 0) + hours
             db.session.commit()
             flash("Open Slot Accepted Successfully", "success")
         return redirect(url_for('user_homepage'))
