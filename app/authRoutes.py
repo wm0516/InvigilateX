@@ -442,13 +442,11 @@ def hours_diff(start, end):
 def attendance_record():
     if request.method == 'POST':
         try:
-            # Accept JSON (AJAX)
             data = request.get_json()
             card_input = data.get('cardNumber', '').strip()
             if not card_input:
                 return jsonify({"success": False, "message": "Card scan missing!"})
 
-            # Find user by card
             user = User.query.filter_by(userCardId=card_input).first()
             if not user:
                 return jsonify({"success": False, "message": "Card not recognized!"})
@@ -458,29 +456,33 @@ def attendance_record():
             if not timeSlots:
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
-            # Use current UTC time for scan
+            # Malaysia time for scan
             scan_time = datetime.now(MYTZ)
 
-            # Find nearest exam
             def exam_proximity(att):
-                start, end = att.report.exam.examStartTime, att.report.exam.examEndTime
+                exam = att.report.exam
+                start, end = exam.examStartTime, exam.examEndTime
+                if start.tzinfo is None:
+                    start = MYTZ.localize(start)
+                if end.tzinfo is None:
+                    end = MYTZ.localize(end)
                 return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
 
             timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
             confirm = timeSlots_sorted[0]
 
-            # ----------------------------
-            # Check if scan is within ±1 hr window
-            # ----------------------------
             exam = getattr(confirm.report, "exam", None)
             if not exam:
                 return jsonify({"success": False, "message": "Exam details missing!"})
 
-            start = MYTZ.localize(exam.examStartTime)
-            end = MYTZ.localize(exam.examEndTime)
+            start, end = exam.examStartTime, exam.examEndTime
+            if start.tzinfo is None:
+                start = MYTZ.localize(start)
+            if end.tzinfo is None:
+                end = MYTZ.localize(end)
+
             before, after = start - timedelta(hours=1), end + timedelta(hours=1)
 
-            # If current time is not within 1 hour before or after any exam → ignore old data
             if not (before <= scan_time <= after):
                 return jsonify({
                     "success": False,
