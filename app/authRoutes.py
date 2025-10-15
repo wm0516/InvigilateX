@@ -6,6 +6,8 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from app import app
 from .backend import *
+import pytz
+MYTZ = pytz.timezone("Asia/Kuala_Lumpur")
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -457,7 +459,7 @@ def attendance_record():
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
             # Use current UTC time for scan
-            scan_time = datetime.now()
+            scan_time = datetime.now(MYTZ)
 
             # Find nearest exam
             def exam_proximity(att):
@@ -474,7 +476,8 @@ def attendance_record():
             if not exam:
                 return jsonify({"success": False, "message": "Exam details missing!"})
 
-            start, end = exam.examStartTime, exam.examEndTime
+            start = MYTZ.localize(exam.examStartTime)
+            end = MYTZ.localize(exam.examEndTime)
             before, after = start - timedelta(hours=1), end + timedelta(hours=1)
 
             # If current time is not within 1 hour before or after any exam → ignore old data
