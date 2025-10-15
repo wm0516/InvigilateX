@@ -9,94 +9,103 @@
 </head>
 
 <body>
-    <form method="POST" style="width: 60%;">
-        <div style="max-width: 500px; margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
-            <h4 id="current-datetime"></h4>
-            <h1>Attendance Check In/Out</h1>
-            
-            <div class="input-container">
-                <h3>Scan Card</h3>
-                <input type="text" id="cardNumber" name="cardNumber" value="{{ cardNumber_text }}" required style="font-size: 16px;" autofocus>
-            </div>
+    <div style="max-width: 500px; margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+        <h4 id="current-datetime"></h4>
+        <h1>Attendance Check In/Out</h1>
+        <div class="input-container">
+            <h3>Scan Card</h3>
+            <input type="text" id="cardNumber" name="cardNumber" style="font-size: 16px;" autofocus autocomplete="off">
         </div>
+        <p id="status-message" style="text-align:center; color:gray;"></p>
+    </div>
 
-        {% if confirm %}
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Exam Details</th>
-                        <th>Attendance Record</th>
-                        <th>Attendance Remark</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="info-grid">
-                                <div>Course Name</div><div><strong>: {{ confirm.report.exam.course.courseName }}</strong></div>
-                                <div>Course Code/Section</div><div><strong>: {{ confirm.report.exam.course.courseCodeSectionIntake }}</strong></div>
-                                <div>Number of Students</div><div><strong>: {{ confirm.report.exam.course.courseStudent }}</strong></div>
-                                <div>Exam Date</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ confirm.report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                                <div>Exam Day</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%A") }} - {{ confirm.report.exam.examEndTime.strftime("%A") }}</strong></div>
-                                <div>Exam Time</div><div><strong>: {{ confirm.report.exam.examStartTime.strftime("%H:%M") }} - {{ confirm.report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
-                                <div>Exam Period</div><div><strong>: {{ (confirm.report.exam.examEndTime - confirm.report.exam.examStartTime).seconds // 3600 }}h {{ ((confirm.report.exam.examEndTime - confirm.report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                                <div>Exam Venue</div><div><strong>: None</strong></div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="info-grid">
-                                <div>Check-in Time</div><div><strong>: {{ confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None" }}</strong></div>
-                                <div>Check-out Time</div><div><strong>: {{ confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None" }}</strong></div>
-                            </div>
-                            {% if confirm.checkIn and confirm.checkOut %}
-                                {% set exam_start = confirm.report.exam.examStartTime %}
-                                {% set exam_end = confirm.report.exam.examEndTime %}
-                                {% set check_in = confirm.checkIn %}
-                                {% set check_out = confirm.checkOut %}
-
-                                {% set actual_start = [check_in, exam_start] | max %}
-                                {% set actual_end = [check_out, exam_end] | min %}
-                                {% set total_seconds = (actual_end - actual_start).total_seconds() %}
-                                {% if total_seconds < 0 %}
-                                    {% set total_seconds = 0 %}
-                                {% endif %}
-
-                                <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours</div>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% set remark_classes = {
-                                "PENDING": "frame-pending",
-                                "CHECK IN": "frame-completed",
-                                "CHECK OUT": "frame-completed",
-                                "COMPLETED": "frame-completed",
-                                "CHECK IN LATE": "frame-expired",
-                                "CHECK OUT EARLY": "frame-expired",
-                                "EXPIRED": "frame-expired"
-                            } %}
-                            <span class="status {{ remark_classes.get(confirm.remark, '') }}">[{{ confirm.remark }}]</span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-            <p>No attendance records available.</p>
-        {% endif %}
-    </form>
+    <div id="result-section" class="user-table-container hidden">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Exam Details</th>
+                    <th>Attendance Record</th>
+                    <th>Attendance Remark</th>
+                </tr>
+            </thead>
+            <tbody id="attendance-table-body"></tbody>
+        </table>
+    </div>
 
     <script>
+        // Update live date-time
         function updateDateTime() {
             const now = new Date();
-            const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit',  minute: '2-digit',  second: '2-digit', hour12: false };
+            const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             const formatted = now.toLocaleString('en-GB', options).replace(',', ':');
             document.getElementById("current-datetime").textContent = formatted;
         }
-
-        // Initial run and update every second
         updateDateTime();
         setInterval(updateDateTime, 1000);
+
+        // Auto-submit when card is scanned
+        const cardInput = document.getElementById('cardNumber');
+        const resultSection = document.getElementById('result-section');
+        const statusMessage = document.getElementById('status-message');
+        const tableBody = document.getElementById('attendance-table-body');
+
+        cardInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const cardNumber = cardInput.value.trim();
+                if (!cardNumber) return;
+
+                statusMessage.textContent = "Processing...";
+                fetch('/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cardNumber })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const d = data.data;
+                        resultSection.classList.remove('hidden');
+                        statusMessage.textContent = "Scan successful!";
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td>
+                                    <div><strong>Course:</strong> ${d.courseName}</div>
+                                    <div><strong>Code/Section:</strong> ${d.courseCode}</div>
+                                    <div><strong>Students:</strong> ${d.students}</div>
+                                    <div><strong>Exam Start:</strong> ${d.examStart}</div>
+                                    <div><strong>Exam End:</strong> ${d.examEnd}</div>
+                                </td>
+                                <td>
+                                    <div><strong>Check-in:</strong> ${d.checkIn}</div>
+                                    <div><strong>Check-out:</strong> ${d.checkOut}</div>
+                                </td>
+                                <td><span class="frame-${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
+                            </tr>`;
+                    } else {
+                        resultSection.classList.add('hidden');
+                        statusMessage.textContent = data.message;
+                    }
+                })
+                .catch(err => {
+                    resultSection.classList.add('hidden');
+                    statusMessage.textContent = "Error connecting to server.";
+                    console.error(err);
+                })
+                .finally(() => {
+                    cardInput.value = "";
+                    cardInput.focus();
+                });
+            }
+        });
+
+        // Helper: remark color class
+        function getRemarkClass(remark) {
+            remark = remark.toUpperCase();
+            if (remark.includes("LATE") || remark.includes("EARLY") || remark.includes("EXPIRED")) return "expired";
+            if (remark.includes("COMPLETED") || remark.includes("CHECK IN") || remark.includes("CHECK OUT")) return "completed";
+            return "pending";
+        }
     </script>
 </body>
 </html>
