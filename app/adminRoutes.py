@@ -768,48 +768,43 @@ def get_available_venues():
 
     return jsonify({'venues': available_venues})
 
+
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None, old_start=None, old_end=None):
+def adjust_invigilators(report, new_count=None, new_examTime=0, old_examTime=0):
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
-    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0 if start_dt and end_dt else None
-    old_hours = (old_end - old_start).total_seconds() / 3600.0 if old_start and old_end else 0
+    # 1️⃣ Update existing invigilators' pending hours
+    for att in current_attendances:
+        inv = att.invigilator
+        if inv:
+            inv.userPendingCumulativeHours = max(
+                0,
+                (inv.userPendingCumulativeHours or 0) - old_examTime + new_examTime
+            )
 
-    if pending_hours is not None and (new_count is None or new_count == current_count):
-        for att in current_attendances:
-            inv = att.invigilator
-            if inv:
-                inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours + pending_hours)
+    # 2️⃣ If invigilator count unchanged or not provided, commit and exit
+    if new_count is None or new_count == current_count:
         db.session.commit()
         return
-
-    if new_count is None:
-        new_count = current_count
-
-    if new_count == current_count:
-        return  # nothing else to change
 
     # --- Add invigilators ---
     if new_count > current_count:
         extra_needed = new_count - current_count
         already_assigned_ids = [att.invigilatorId for att in current_attendances]
 
-        # Eligible invigilators: active, level 1, not assigned, and <36 total hours
         eligible_invigilators = User.query.filter(
             User.userLevel == 1,
             User.userStatus == True,
             ~User.userId.in_(already_assigned_ids)
         ).all()
 
-        # Filter those under 36 total hours if possible
-        # When filtering eligible invigilators
+        # Filter those under 36 total hours
         eligible_invigilators = [
             inv for inv in eligible_invigilators
             if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
-            and is_lecturer_available(inv.userId, start_dt, end_dt)
         ]
 
         if not eligible_invigilators:
@@ -825,6 +820,7 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None, old_
 
         male_invigilators.sort(key=workload)
         female_invigilators.sort(key=workload)
+
         chosen_invigilators = []
 
         if new_count >= 2:
@@ -844,7 +840,7 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None, old_
 
         # Assign chosen invigilators
         for inv in chosen_invigilators:
-            inv.userPendingCumulativeHours += pending_hours
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + new_examTime
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
@@ -860,10 +856,12 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None, old_
             if inv:
                 inv.userPendingCumulativeHours = max(
                     0.0,
-                    (inv.userPendingCumulativeHours or 0.0) - (pending_hours or 0.0)
+                    (inv.userPendingCumulativeHours or 0.0) - new_examTime
                 )
             db.session.delete(att)
+
     db.session.commit()
+
 
 
 # -------------------------------
@@ -947,12 +945,18 @@ def admin_manageExam():
             end_dt = parse_datetime(end_date_raw, end_time_raw)
             venue_list = request.form.getlist("venue[]")  # multiple venues
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
+            new_examTime = 0
+            if start_dt and end_dt:
+                new_examTime = (end_dt - start_dt).total_seconds() / 3600.0
 
             if action == 'update':
                 try:
                     # 1️⃣ Capture old exam times BEFORE updating
                     old_start = exam_select.examStartTime
                     old_end = exam_select.examEndTime
+                    old_examTime = 0
+                    if old_start and old_end:
+                        old_examTime = (old_end - old_start).total_seconds() / 3600.0
 
                     # 2️⃣ Update exam core details
                     exam_select.examStartTime = start_dt
@@ -1055,10 +1059,8 @@ def admin_manageExam():
                         adjust_invigilators(
                             existing_report,
                             int(invigilatorNo_text),
-                            start_dt=start_dt,
-                            end_dt=end_dt,
-                            old_start=old_start,
-                            old_end=old_end
+                            new_examTime=new_examTime,
+                            old_examTime=old_examTime
                         )
                     else:
                         create_exam_and_related(
