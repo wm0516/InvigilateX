@@ -456,7 +456,7 @@ def attendance_record():
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
             # Use current UTC time for scan
-            scan_time = datetime.now(timezone.utc)
+            scan_time = datetime.now()
 
             # Find nearest exam
             def exam_proximity(att):
