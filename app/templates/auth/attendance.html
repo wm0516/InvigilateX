@@ -90,6 +90,14 @@
                             </td>
                             <td><span class="status frame-${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
                         </tr>`;
+
+                    // Auto-clear table after 5 seconds
+                    setTimeout(() => {
+                        tableBody.innerHTML = "";
+                        resultSection.classList.add('hidden');
+                        statusMessage.textContent = "";
+                    }, 5000);
+
                 } else {
                     resultSection.classList.add('hidden');
                     statusMessage.textContent = data.message;
