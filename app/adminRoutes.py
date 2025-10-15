@@ -771,24 +771,19 @@ def get_available_venues():
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
+def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None, old_start_dt=None, old_end_dt=None):
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
-    # Calculate new pending hours if start/end are provided
+    # Calculate new and old exam hours
     pending_hours = (end_dt - start_dt).total_seconds() / 3600.0 if start_dt and end_dt else None
+    old_hours = (old_end_dt - old_start_dt).total_seconds() / 3600.0 if old_start_dt and old_end_dt else 0
 
     # Recalculate pending hours for all current invigilators if time changed
     if pending_hours is not None:
         for att in current_attendances:
             inv = att.invigilator
             if inv:
-                # Old exam hours
-                old_hours = 0
-                if att.report.exam.examStartTime and att.report.exam.examEndTime:
-                    old_hours = (att.report.exam.examEndTime - att.report.exam.examStartTime).total_seconds() / 3600.0
-
-                # Update pending cumulative hours
                 inv.userPendingCumulativeHours = max(
                     0.0,
                     (inv.userPendingCumulativeHours or 0.0) - old_hours + pending_hours
@@ -953,12 +948,38 @@ def admin_manageExam():
 
             if action == 'update':
                 try:
-                    # 1️⃣ Update exam core details
+                    # 1️⃣ Store old exam times before updating
+                    old_start_dt = exam_select.examStartTime
+                    old_end_dt = exam_select.examEndTime
+
+                    # 2️⃣ Update exam times and number of invigilators
                     exam_select.examStartTime = start_dt
                     exam_select.examEndTime = end_dt
                     exam_select.examNoInvigilator = invigilatorNo_text
 
-                    # 2️⃣ Get venue objects & total capacity
+                    # 3️⃣ Handle InvigilationReport + Attendance hours
+                    existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
+                    if existing_report:
+                        adjust_invigilators(
+                            existing_report,
+                            new_count=int(invigilatorNo_text),
+                            start_dt=start_dt,
+                            end_dt=end_dt,
+                            old_start_dt=old_start_dt,
+                            old_end_dt=old_end_dt
+                        )
+                    else:
+                        create_exam_and_related(
+                            start_dt,
+                            end_dt,
+                            exam_select.course.courseCodeSectionIntake,
+                            ', '.join(venue_list),
+                            exam_select.course.coursePractical,
+                            exam_select.course.courseTutorial,
+                            invigilatorNo_text
+                        )
+
+                    # 4️⃣ Get venue objects & total capacity
                     venue_objects = []
                     total_capacity = 0
                     for v in venue_list:
@@ -975,7 +996,7 @@ def admin_manageExam():
                             f"❌ Total capacity ({total_capacity}) insufficient for {required_students} students."
                         )
 
-                    # 3️⃣ Adjust old VenueExam entries instead of deleting
+                    # 5️⃣ Adjust old VenueExam entries instead of deleting
                     old_records = {
                         rec.venueNumber: rec
                         for rec in VenueExam.query.filter_by(examId=exam_select.examId).all()
@@ -1000,7 +1021,7 @@ def admin_manageExam():
                         # Check for time conflict with other exams
                         conflict = VenueExam.query.filter(
                             VenueExam.venueNumber == venue_obj.venueNumber,
-                            VenueExam.examId != exam_select.examId,  # ignore same exam
+                            VenueExam.examId != exam_select.examId,
                             VenueExam.startDateTime < end_dt,
                             VenueExam.endDateTime > start_dt
                         ).first()
@@ -1028,7 +1049,7 @@ def admin_manageExam():
                         remaining -= allocated
                         used_venues.add(venue_obj.venueNumber)
 
-                        # 🔹 Create new record
+                        # 🔹 Create new VenueExam record
                         new_va = VenueExam(
                             examId=exam_select.examId,
                             venueNumber=venue_obj.venueNumber,
@@ -1039,23 +1060,16 @@ def admin_manageExam():
                         db.session.add(new_va)
                         flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
 
-                    # 4️⃣ Handle old venues no longer used
+                    # 6️⃣ Handle old venues no longer used
                     for old_venue, rec in old_records.items():
                         if old_venue not in used_venues:
                             rec.capacity = 0
                             rec.startDateTime = None
                             rec.endDateTime = None
 
-                    # 5️⃣ Check remaining students
+                    # 7️⃣ Check remaining students
                     if remaining > 0:
                         raise ValueError(f"⚠️ {remaining} student(s) could not be seated (insufficient capacity).")
-
-                    # 6️⃣ Manage InvigilationReport + Attendance
-                    existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
-                    if existing_report:
-                        adjust_invigilators(existing_report,int(invigilatorNo_text),start_dt=start_dt,end_dt=end_dt)
-                    else:
-                        create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSectionIntake,', '.join(venue_list),exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
                     # ✅ Commit only if everything successful
                     db.session.commit()
@@ -1072,6 +1086,7 @@ def admin_manageExam():
                     flash(f"⚠️ Unexpected error: {str(e)}", "error")
                     flash("❌ Please reselect venues and try again.", "error")
                     return redirect(request.url)
+
 
 
             elif action == 'delete':
