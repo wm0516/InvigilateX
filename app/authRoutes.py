@@ -429,7 +429,6 @@ def user_homepage():
 
 
 
-
 # -------------------------------
 # Helper functions
 # -------------------------------
@@ -463,8 +462,8 @@ def attendance_record():
             if not timeSlots:
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
-            # Capture device local time
-            scan_time = datetime.now()
+            # Capture device time shifted to Malaysia Time (+8 hours)
+            scan_time = datetime.utcnow() + timedelta(hours=8)
 
             # Find nearest exam session by time proximity
             def exam_proximity(att):
@@ -485,11 +484,12 @@ def attendance_record():
 
             start, end = exam.examStartTime, exam.examEndTime
 
-            # Define check-in/check-out windows
+            # Define check-in and check-out windows
             checkin_start = start - timedelta(hours=1)   # 1 hour before exam
-            checkin_end = end                             # until exam ends
+            checkin_end = end                             # until exam end
             checkout_start = end                          # check-out starts at exam end
             checkout_end = end + timedelta(hours=1)       # optional buffer after exam
+            checkout_auto = end + timedelta(hours=1)      # auto check-out if missed
 
             # Update attendance
             for att in timeSlots:
@@ -506,24 +506,25 @@ def attendance_record():
                 # --- Check-in logic ---
                 if not att.checkIn:
                     if checkin_start <= scan_time <= start:
-                        att.checkIn, att.remark = scan_time, "CHECK IN"
+                        att.checkIn = scan_time
+                        att.remark = "CHECK IN"
                     elif start < scan_time <= checkin_end:
-                        att.checkIn, att.remark = scan_time, "CHECK IN LATE"
-                    else:
-                        continue
+                        att.checkIn = scan_time
+                        att.remark = "CHECK IN LATE"
 
                 # --- Check-out logic ---
                 elif not att.checkOut:
                     if checkout_start <= scan_time <= checkout_end:
-                        att.checkOut, att.remark = scan_time, "COMPLETED"
+                        att.checkOut = scan_time
+                        att.remark = "COMPLETED"
                     elif scan_time < end:
-                        att.checkOut, att.remark = scan_time, "CHECK OUT EARLY"
-                    else:
-                        continue
+                        att.checkOut = scan_time
+                        att.remark = "CHECK OUT EARLY"
 
                 # --- Auto check-out if missed ---
                 if not att.checkOut and scan_time > checkout_auto:
-                    att.checkOut, att.remark = checkout_auto, "COMPLETED"
+                    att.checkOut = checkout_auto
+                    att.remark = "COMPLETED"
 
                 # --- Update user cumulative hours ---
                 if att.checkIn and att.checkOut:
@@ -533,6 +534,7 @@ def attendance_record():
                         user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
                     att.invigilationStatus = True
 
+                # Record the action time
                 att.timeAction = scan_time
 
             db.session.commit()
@@ -567,7 +569,6 @@ def attendance_record():
 
     # GET request: render attendance page
     return render_template('auth/attendance.html')
-
 
 
 
