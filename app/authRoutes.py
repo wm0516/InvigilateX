@@ -425,6 +425,7 @@ def user_homepage():
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 
+
 # -------------------------------
 # Helper function: calculate hours
 # -------------------------------
@@ -465,6 +466,23 @@ def attendance_record():
 
             timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
             confirm = timeSlots_sorted[0]
+
+            # ----------------------------
+            # Check if scan is within ±1 hr window
+            # ----------------------------
+            exam = getattr(confirm.report, "exam", None)
+            if not exam:
+                return jsonify({"success": False, "message": "Exam details missing!"})
+
+            start, end = exam.examStartTime, exam.examEndTime
+            before, after = start - timedelta(hours=1), end + timedelta(hours=1)
+
+            # If current time is not within 1 hour before or after any exam → ignore old data
+            if not (before <= scan_time <= after):
+                return jsonify({
+                    "success": False,
+                    "message": "No ongoing or nearby exam found within 1 hour window!"
+                })
 
             # Update attendance
             for att in timeSlots:
@@ -536,10 +554,6 @@ def attendance_record():
 
     # GET request: render page
     return render_template('auth/attendance.html')
-
-
-
-
 
 
 
