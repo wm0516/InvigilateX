@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <div style="max-width: 500px; margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+    <div style="margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
         <div class="input-container">
@@ -43,63 +43,67 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // Auto-submit when card is scanned
+        // Auto-detect card scan (no Enter key)
         const cardInput = document.getElementById('cardNumber');
         const resultSection = document.getElementById('result-section');
         const statusMessage = document.getElementById('status-message');
         const tableBody = document.getElementById('attendance-table-body');
 
-        cardInput.addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                const cardNumber = cardInput.value.trim();
-                if (!cardNumber) return;
+        cardInput.focus();
 
-                statusMessage.textContent = "Processing...";
-                fetch('/attendance', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cardNumber })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const d = data.data;
-                        resultSection.classList.remove('hidden');
-                        statusMessage.textContent = "Scan successful!";
-                        tableBody.innerHTML = `
-                            <tr>
-                                <td>
-                                    <div><strong>Course:</strong> ${d.courseName}</div>
-                                    <div><strong>Code/Section:</strong> ${d.courseCode}</div>
-                                    <div><strong>Students:</strong> ${d.students}</div>
-                                    <div><strong>Exam Start:</strong> ${d.examStart}</div>
-                                    <div><strong>Exam End:</strong> ${d.examEnd}</div>
-                                </td>
-                                <td>
-                                    <div><strong>Check-in:</strong> ${d.checkIn}</div>
-                                    <div><strong>Check-out:</strong> ${d.checkOut}</div>
-                                </td>
-                                <td><span class="frame-${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
-                            </tr>`;
-                    } else {
-                        resultSection.classList.add('hidden');
-                        statusMessage.textContent = data.message;
-                    }
-                })
-                .catch(err => {
-                    resultSection.classList.add('hidden');
-                    statusMessage.textContent = "Error connecting to server.";
-                    console.error(err);
-                })
-                .finally(() => {
+        cardInput.addEventListener('input', function () {
+            const value = cardInput.value.trim();
+            if (value.length >= 3) { // Adjust if your card UID has a fixed length
+                setTimeout(() => {
+                    sendCard(value);
                     cardInput.value = "";
-                    cardInput.focus();
-                });
+                }, 100);
             }
         });
 
-        // Helper: remark color class
+        function sendCard(cardNumber) {
+            statusMessage.textContent = "Processing...";
+            fetch('/attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cardNumber })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const d = data.data;
+                    resultSection.classList.remove('hidden');
+                    statusMessage.textContent = "Scan successful!";
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td>
+                                <div><strong>Course:</strong> ${d.courseName}</div>
+                                <div><strong>Code/Section:</strong> ${d.courseCode}</div>
+                                <div><strong>Students:</strong> ${d.students}</div>
+                                <div><strong>Exam Start:</strong> ${d.examStart}</div>
+                                <div><strong>Exam End:</strong> ${d.examEnd}</div>
+                            </td>
+                            <td>
+                                <div><strong>Check-in:</strong> ${d.checkIn}</div>
+                                <div><strong>Check-out:</strong> ${d.checkOut}</div>
+                            </td>
+                            <td><span class="frame-${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
+                        </tr>`;
+                } else {
+                    resultSection.classList.add('hidden');
+                    statusMessage.textContent = data.message;
+                }
+            })
+            .catch(err => {
+                resultSection.classList.add('hidden');
+                statusMessage.textContent = "Error connecting to server.";
+                console.error(err);
+            })
+            .finally(() => {
+                cardInput.focus();
+            });
+        }
+
         function getRemarkClass(remark) {
             remark = remark.toUpperCase();
             if (remark.includes("LATE") || remark.includes("EARLY") || remark.includes("EXPIRED")) return "expired";
