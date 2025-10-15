@@ -138,8 +138,7 @@ def get_calendar_data():
         start_date = start_dt.date()
         end_date = end_dt.date()
         is_overnight = start_date != end_date and exam.examStatus == True
-        venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
-
+        venues = exam.venue_availabilities
 
         def exam_dict(start, end):
             return {
@@ -150,7 +149,7 @@ def get_calendar_data():
                 "end_time": end,
                 "status": exam.examStatus,
                 "is_overnight": is_overnight,
-                "venue": [v.venueNumber for v in venues],
+                "venue": [{"venueNumber": v.venueNumber, "capacity": v.capacity} for v in venues],
             }
 
         if is_overnight:
