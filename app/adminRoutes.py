@@ -976,26 +976,35 @@ def admin_manageExam():
                             f"❌ Total capacity ({total_capacity}) insufficient for {required_students} students."
                         )
 
-                    # 4️⃣ Adjust old VenueExam entries instead of deleting
+                    # Map of old venue records
                     old_records = {
                         rec.venueNumber: rec
                         for rec in VenueExam.query.filter_by(examId=exam_select.examId).all()
                     }
+
                     used_venues = set()
                     remaining = required_students
 
                     for venue_obj in venue_objects:
-                        if remaining <= 0:
-                            break
+                        # 1️⃣ Check if this venue was already assigned
+                        if venue_obj.venueNumber in old_records:
+                            rec = old_records[venue_obj.venueNumber]
+                            # Update existing record
+                            rec.startDateTime = start_dt
+                            rec.endDateTime = end_dt
+                            rec.capacity = min(venue_obj.venueCapacity, remaining)
+                            remaining -= rec.capacity
+                            used_venues.add(venue_obj.venueNumber)
+                            flash(f"🔄 Updated {venue_obj.venueNumber} with new capacity {rec.capacity}.", "info")
+                            continue  # skip conflict checks, because it's the same record
 
-                        # Check for time conflict
+                        # 2️⃣ Check for conflicts with other exams
                         conflict = VenueExam.query.filter(
                             VenueExam.venueNumber == venue_obj.venueNumber,
                             VenueExam.examId != exam_select.examId,
                             VenueExam.startDateTime < end_dt,
                             VenueExam.endDateTime > start_dt
                         ).first()
-
                         if conflict:
                             raise ValueError(
                                 f"⚠️ {venue_obj.venueNumber} conflict with another exam "
@@ -1003,14 +1012,13 @@ def admin_manageExam():
                                 f"{conflict.endDateTime.strftime('%d/%b/%Y %H:%M')})."
                             )
 
-                        # Calculate available capacity
+                        # 3️⃣ Calculate available capacity
                         used_capacity = db.session.query(func.sum(VenueExam.capacity)).filter(
                             VenueExam.venueNumber == venue_obj.venueNumber,
                             VenueExam.startDateTime < end_dt,
                             VenueExam.endDateTime > start_dt
                         ).scalar() or 0
                         available_capacity = venue_obj.venueCapacity - used_capacity
-
                         if available_capacity <= 0:
                             flash(f"{venue_obj.venueNumber} has no available seats. Skipped.", "error")
                             continue
@@ -1019,32 +1027,22 @@ def admin_manageExam():
                         remaining -= allocated
                         used_venues.add(venue_obj.venueNumber)
 
-                        # 🔹 Update existing record if found
-                        if venue_obj.venueNumber in old_records:
-                            rec = old_records[venue_obj.venueNumber]
-                            rec.startDateTime = start_dt
-                            rec.endDateTime = end_dt
-                            rec.capacity = allocated
-                            flash(f"🔄 Updated {venue_obj.venueNumber} with new capacity {allocated}.", "info")
-                        else:
-                            # 🔹 Create new record
-                            new_va = VenueExam(
-                                examId=exam_select.examId,
-                                venueNumber=venue_obj.venueNumber,
-                                startDateTime=start_dt,
-                                endDateTime=end_dt,
-                                capacity=allocated
-                            )
-                            db.session.add(new_va)
-                            flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
+                        # 4️⃣ Create new VenueExam
+                        new_va = VenueExam(
+                            examId=exam_select.examId,
+                            venueNumber=venue_obj.venueNumber,
+                            startDateTime=start_dt,
+                            endDateTime=end_dt,
+                            capacity=allocated
+                        )
+                        db.session.add(new_va)
+                        flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
 
-                    # 5️⃣ Handle old venues no longer used
+                    # 5️⃣ Remove old venues no longer used
                     for old_venue, rec in old_records.items():
                         if old_venue not in used_venues:
-                            flash(f"🧹 Venue {old_venue} no longer used — set capacity to 0.", "warning")
-                            rec.capacity = 0
-                            rec.startDateTime = None
-                            rec.endDateTime = None
+                            flash(f"🧹 Venue {old_venue} no longer used — removed.", "warning")
+                            db.session.delete(rec)  # delete unused venue
 
                     # 6️⃣ Check remaining students
                     if remaining > 0:
