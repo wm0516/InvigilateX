@@ -768,43 +768,53 @@ def get_available_venues():
 
     return jsonify({'venues': available_venues})
 
-
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_invigilators(report, new_count=None, new_examTime=0, old_examTime=0):
+def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
     current_attendances = list(report.attendances)
     current_count = len(current_attendances)
 
-    # 1️⃣ Update existing invigilators' pending hours
-    for att in current_attendances:
-        inv = att.invigilator
-        if inv:
-            inv.userPendingCumulativeHours = max(
-                0,
-                (inv.userPendingCumulativeHours or 0) - old_examTime + new_examTime
-            )
+    # Calculate new pending hours if start/end are provided
+    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0 if start_dt and end_dt else None
 
-    # 2️⃣ If invigilator count unchanged or not provided, commit and exit
-    if new_count is None or new_count == current_count:
+    # Recalculate hours if only time changed (or time + same count)
+    if pending_hours is not None and (new_count is None or new_count == current_count):
+        for att in current_attendances:
+            inv = att.invigilator
+            if inv:
+                # Old pending hours based on previous exam period
+                old_hours = 0
+                if att.report.exam.examStartTime and att.report.exam.examEndTime:
+                    old_hours = (att.report.exam.examEndTime - att.report.exam.examStartTime).total_seconds() / 3600.0
+                inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours + pending_hours)
         db.session.commit()
         return
+
+    if new_count is None:
+        new_count = current_count
+
+    if new_count == current_count:
+        return  # nothing else to change
 
     # --- Add invigilators ---
     if new_count > current_count:
         extra_needed = new_count - current_count
         already_assigned_ids = [att.invigilatorId for att in current_attendances]
 
+        # Eligible invigilators: active, level 1, not assigned, and <36 total hours
         eligible_invigilators = User.query.filter(
             User.userLevel == 1,
             User.userStatus == True,
             ~User.userId.in_(already_assigned_ids)
         ).all()
 
-        # Filter those under 36 total hours
+        # Filter those under 36 total hours if possible
+        # When filtering eligible invigilators
         eligible_invigilators = [
             inv for inv in eligible_invigilators
             if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
+            and is_lecturer_available(inv.userId, start_dt, end_dt)
         ]
 
         if not eligible_invigilators:
@@ -820,7 +830,6 @@ def adjust_invigilators(report, new_count=None, new_examTime=0, old_examTime=0):
 
         male_invigilators.sort(key=workload)
         female_invigilators.sort(key=workload)
-
         chosen_invigilators = []
 
         if new_count >= 2:
@@ -840,7 +849,7 @@ def adjust_invigilators(report, new_count=None, new_examTime=0, old_examTime=0):
 
         # Assign chosen invigilators
         for inv in chosen_invigilators:
-            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + new_examTime
+            inv.userPendingCumulativeHours += pending_hours
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
@@ -856,12 +865,10 @@ def adjust_invigilators(report, new_count=None, new_examTime=0, old_examTime=0):
             if inv:
                 inv.userPendingCumulativeHours = max(
                     0.0,
-                    (inv.userPendingCumulativeHours or 0.0) - new_examTime
+                    (inv.userPendingCumulativeHours or 0.0) - (pending_hours or 0.0)
                 )
             db.session.delete(att)
-
     db.session.commit()
-
 
 
 # -------------------------------
@@ -945,25 +952,15 @@ def admin_manageExam():
             end_dt = parse_datetime(end_date_raw, end_time_raw)
             venue_list = request.form.getlist("venue[]")  # multiple venues
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
-            new_examTime = 0
-            if start_dt and end_dt:
-                new_examTime = (end_dt - start_dt).total_seconds() / 3600.0
 
             if action == 'update':
                 try:
-                    # 1️⃣ Capture old exam times BEFORE updating
-                    old_start = exam_select.examStartTime
-                    old_end = exam_select.examEndTime
-                    old_examTime = 0
-                    if old_start and old_end:
-                        old_examTime = (old_end - old_start).total_seconds() / 3600.0
-
-                    # 2️⃣ Update exam core details
+                    # 1️⃣ Update exam core details
                     exam_select.examStartTime = start_dt
                     exam_select.examEndTime = end_dt
                     exam_select.examNoInvigilator = invigilatorNo_text
 
-                    # 3️⃣ Get venue objects & total capacity
+                    # 2️⃣ Get venue objects & total capacity
                     venue_objects = []
                     total_capacity = 0
                     for v in venue_list:
@@ -980,35 +977,26 @@ def admin_manageExam():
                             f"❌ Total capacity ({total_capacity}) insufficient for {required_students} students."
                         )
 
-                    # Map of old venue records
+                    # 3️⃣ Adjust old VenueExam entries instead of deleting
                     old_records = {
                         rec.venueNumber: rec
                         for rec in VenueExam.query.filter_by(examId=exam_select.examId).all()
                     }
-
                     used_venues = set()
                     remaining = required_students
 
                     for venue_obj in venue_objects:
-                        # 1️⃣ Check if this venue was already assigned
-                        if venue_obj.venueNumber in old_records:
-                            rec = old_records[venue_obj.venueNumber]
-                            # Update existing record
-                            rec.startDateTime = start_dt
-                            rec.endDateTime = end_dt
-                            rec.capacity = min(venue_obj.venueCapacity, remaining)
-                            remaining -= rec.capacity
-                            used_venues.add(venue_obj.venueNumber)
-                            flash(f"🔄 Updated {venue_obj.venueNumber} with new capacity {rec.capacity}.", "info")
-                            continue  # skip conflict checks, because it's the same record
+                        if remaining <= 0:
+                            break
 
-                        # 2️⃣ Check for conflicts with other exams
+                        # Check for time conflict
                         conflict = VenueExam.query.filter(
                             VenueExam.venueNumber == venue_obj.venueNumber,
                             VenueExam.examId != exam_select.examId,
                             VenueExam.startDateTime < end_dt,
                             VenueExam.endDateTime > start_dt
                         ).first()
+
                         if conflict:
                             raise ValueError(
                                 f"⚠️ {venue_obj.venueNumber} conflict with another exam "
@@ -1016,13 +1004,14 @@ def admin_manageExam():
                                 f"{conflict.endDateTime.strftime('%d/%b/%Y %H:%M')})."
                             )
 
-                        # 3️⃣ Calculate available capacity
+                        # Calculate available capacity
                         used_capacity = db.session.query(func.sum(VenueExam.capacity)).filter(
                             VenueExam.venueNumber == venue_obj.venueNumber,
                             VenueExam.startDateTime < end_dt,
                             VenueExam.endDateTime > start_dt
                         ).scalar() or 0
                         available_capacity = venue_obj.venueCapacity - used_capacity
+
                         if available_capacity <= 0:
                             flash(f"{venue_obj.venueNumber} has no available seats. Skipped.", "error")
                             continue
@@ -1031,47 +1020,43 @@ def admin_manageExam():
                         remaining -= allocated
                         used_venues.add(venue_obj.venueNumber)
 
-                        # 4️⃣ Create new VenueExam
-                        new_va = VenueExam(
-                            examId=exam_select.examId,
-                            venueNumber=venue_obj.venueNumber,
-                            startDateTime=start_dt,
-                            endDateTime=end_dt,
-                            capacity=allocated
-                        )
-                        db.session.add(new_va)
-                        flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
+                        # 🔹 Update existing record if found
+                        if venue_obj.venueNumber in old_records:
+                            rec = old_records[venue_obj.venueNumber]
+                            rec.startDateTime = start_dt
+                            rec.endDateTime = end_dt
+                            rec.capacity = allocated
+                            flash(f"🔄 Updated {venue_obj.venueNumber} with new capacity {allocated}.", "info")
+                        else:
+                            # 🔹 Create new record
+                            new_va = VenueExam(
+                                examId=exam_select.examId,
+                                venueNumber=venue_obj.venueNumber,
+                                startDateTime=start_dt,
+                                endDateTime=end_dt,
+                                capacity=allocated
+                            )
+                            db.session.add(new_va)
+                            flash(f"✅ Assigned {allocated}/{venue_obj.venueCapacity} to {venue_obj.venueNumber}.", "success")
 
-                    # 5️⃣ Remove old venues no longer used
+                    # 4️⃣ Handle old venues no longer used
                     for old_venue, rec in old_records.items():
                         if old_venue not in used_venues:
-                            flash(f"🧹 Venue {old_venue} no longer used — removed.", "warning")
-                            db.session.delete(rec)  # delete unused venue
+                            flash(f"🧹 Venue {old_venue} no longer used — set capacity to 0.", "warning")
+                            rec.capacity = 0
+                            rec.startDateTime = None
+                            rec.endDateTime = None
 
-                    # 6️⃣ Check remaining students
+                    # 5️⃣ Check remaining students
                     if remaining > 0:
                         raise ValueError(f"⚠️ {remaining} student(s) could not be seated (insufficient capacity).")
 
-                    # 7️⃣ Manage InvigilationReport + Attendance
+                    # 6️⃣ Manage InvigilationReport + Attendance
                     existing_report = InvigilationReport.query.filter_by(examId=exam_select.examId).first()
                     if existing_report:
-                        # Pass old start/end times to adjust_invigilators
-                        adjust_invigilators(
-                            existing_report,
-                            int(invigilatorNo_text),
-                            new_examTime=new_examTime,
-                            old_examTime=old_examTime
-                        )
+                        adjust_invigilators(existing_report,int(invigilatorNo_text),start_dt=start_dt,end_dt=end_dt)
                     else:
-                        create_exam_and_related(
-                            start_dt,
-                            end_dt,
-                            exam_select.course.courseCodeSectionIntake,
-                            ', '.join(venue_list),
-                            exam_select.course.coursePractical,
-                            exam_select.course.courseTutorial,
-                            invigilatorNo_text
-                        )
+                        create_exam_and_related(start_dt,end_dt,exam_select.course.courseCodeSectionIntake,', '.join(venue_list),exam_select.course.coursePractical,exam_select.course.courseTutorial,invigilatorNo_text)
 
                     # ✅ Commit only if everything successful
                     db.session.commit()
@@ -1084,11 +1069,10 @@ def admin_manageExam():
                     return redirect(request.url)
 
                 except Exception as e:
-                    db.session.rollback()
+                    db.session.rollback()   
                     flash(f"⚠️ Unexpected error: {str(e)}", "error")
                     flash("❌ Please reselect venues and try again.", "error")
                     return redirect(request.url)
-
 
 
             elif action == 'delete':
