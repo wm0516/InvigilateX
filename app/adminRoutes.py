@@ -778,39 +778,41 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
     # Calculate new pending hours if start/end are provided
     pending_hours = (end_dt - start_dt).total_seconds() / 3600.0 if start_dt and end_dt else None
 
-    # Recalculate hours if only time changed (or time + same count)
-    if pending_hours is not None and (new_count is None or new_count == current_count):
+    # Recalculate pending hours for all current invigilators if time changed
+    if pending_hours is not None:
         for att in current_attendances:
             inv = att.invigilator
             if inv:
-                # Old pending hours based on previous exam period
+                # Old exam hours
                 old_hours = 0
                 if att.report.exam.examStartTime and att.report.exam.examEndTime:
                     old_hours = (att.report.exam.examEndTime - att.report.exam.examStartTime).total_seconds() / 3600.0
-                inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours + pending_hours)
+
+                # Update pending cumulative hours
+                inv.userPendingCumulativeHours = max(
+                    0.0,
+                    (inv.userPendingCumulativeHours or 0.0) - old_hours + pending_hours
+                )
         db.session.commit()
-        return
 
     if new_count is None:
         new_count = current_count
 
+    # If count didn't change, nothing else to do
     if new_count == current_count:
-        return  # nothing else to change
+        return
 
     # --- Add invigilators ---
     if new_count > current_count:
         extra_needed = new_count - current_count
         already_assigned_ids = [att.invigilatorId for att in current_attendances]
 
-        # Eligible invigilators: active, level 1, not assigned, and <36 total hours
         eligible_invigilators = User.query.filter(
             User.userLevel == 1,
             User.userStatus == True,
             ~User.userId.in_(already_assigned_ids)
         ).all()
 
-        # Filter those under 36 total hours if possible
-        # When filtering eligible invigilators
         eligible_invigilators = [
             inv for inv in eligible_invigilators
             if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
@@ -820,11 +822,10 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
         if not eligible_invigilators:
             raise ValueError("No eligible invigilators available to add")
 
-        # Split by gender
+        # Split by gender and sort by workload
         male_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "MALE"]
         female_invigilators = [inv for inv in eligible_invigilators if inv.userGender == "FEMALE"]
 
-        # Sort by workload (lowest total hours first)
         def workload(inv):
             return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
 
@@ -833,23 +834,20 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
         chosen_invigilators = []
 
         if new_count >= 2:
-            # Ensure at least one male and one female if possible
             if male_invigilators:
                 chosen_invigilators.append(male_invigilators.pop(0))
             if female_invigilators and len(chosen_invigilators) < extra_needed:
                 chosen_invigilators.append(female_invigilators.pop(0))
             extra_needed -= len(chosen_invigilators)
 
-        # Fill remaining slots with lowest workload invigilators
         pool = sorted(male_invigilators + female_invigilators, key=workload)
         chosen_invigilators += pool[:extra_needed]
 
         if len(chosen_invigilators) < new_count - current_count:
             raise ValueError("Not enough eligible invigilators to increase")
 
-        # Assign chosen invigilators
         for inv in chosen_invigilators:
-            inv.userPendingCumulativeHours += pending_hours
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + (pending_hours or 0.0)
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
@@ -868,8 +866,8 @@ def adjust_invigilators(report, new_count=None, start_dt=None, end_dt=None):
                     (inv.userPendingCumulativeHours or 0.0) - (pending_hours or 0.0)
                 )
             db.session.delete(att)
-    db.session.commit()
 
+    db.session.commit()
 
 # -------------------------------
 # Function for Admin ManageExam Route
