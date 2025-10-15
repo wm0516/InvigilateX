@@ -77,7 +77,6 @@
                 </tr>
             </thead>
 
-
             {% for (status, start_time), grouped in attendances|groupby("group_key") %}
             <tbody data-exam="{{ grouped[0].report.exam.examId }}">
                 {% for att in grouped %}
@@ -113,6 +112,7 @@
                             </div>
                         </div>
                     </td>
+                    <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
                     {% endif %}
 
                     <!-- Invigilator Details -->
