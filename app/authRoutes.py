@@ -6,8 +6,6 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from app import app
 from .backend import *
-import pytz
-MYTZ = pytz.timezone("Asia/Kuala_Lumpur")
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 
@@ -432,22 +430,14 @@ def user_homepage():
 
 
 
-
 # -------------------------------
 # Helper functions
 # -------------------------------
 def hours_diff(start, end):
+    """Calculate hours difference between two naive datetimes."""
     if not start or not end:
         return 0
     return max(0, (end - start).total_seconds() / 3600.0)
-
-def make_aware(dt):
-    """Ensure datetime is timezone-aware in MYTZ."""
-    if not dt:
-        return None
-    if dt.tzinfo is None:
-        return MYTZ.localize(dt)
-    return dt.astimezone(MYTZ)
 
 # -------------------------------
 # Attendance route
@@ -461,24 +451,27 @@ def attendance_record():
             if not card_input:
                 return jsonify({"success": False, "message": "Card scan missing!"})
 
+            # Find user by card
             user = User.query.filter_by(userCardId=card_input).first()
             if not user:
                 return jsonify({"success": False, "message": "Card not recognized!"})
 
             user_id = user.userId
+
+            # Get all assigned time slots for this user
             timeSlots = InvigilatorAttendance.query.filter_by(invigilatorId=user_id).all()
             if not timeSlots:
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
-            # Malaysia time for scan
-            scan_time = datetime.now(MYTZ)
+            # Capture device local time
+            scan_time = datetime.now()
 
             # Find nearest exam session by time proximity
             def exam_proximity(att):
                 exam = getattr(att.report, "exam", None)
                 if not exam:
                     return float("inf")
-                start, end = make_aware(exam.examStartTime), make_aware(exam.examEndTime)
+                start, end = exam.examStartTime, exam.examEndTime
                 if not start or not end:
                     return float("inf")
                 return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
@@ -487,48 +480,41 @@ def attendance_record():
             confirm = timeSlots_sorted[0]
 
             exam = getattr(confirm.report, "exam", None)
-            if not exam:
+            if not exam or not exam.examStartTime or not exam.examEndTime:
                 return jsonify({"success": False, "message": "Exam details missing!"})
 
-            start, end = make_aware(exam.examStartTime), make_aware(exam.examEndTime)
-            if not start or not end:
-                return jsonify({"success": False, "message": "Exam start or end time missing!"})
+            start, end = exam.examStartTime, exam.examEndTime
 
-            before, after = start - timedelta(hours=1), end + timedelta(hours=1)
-
-            # Verify valid scan window
-            if not (before <= scan_time <= after):
-                return jsonify({
-                    "success": False,
-                    "message": "No ongoing or nearby exam found within 1-hour window!"
-                })
+            # Define check-in/check-out windows
+            checkin_start = start - timedelta(hours=1)   # 1 hour before exam
+            checkin_end = end                             # until exam ends
+            checkout_start = end                          # check-out starts at exam end
+            checkout_end = end + timedelta(hours=1)       # optional buffer after exam
 
             # Update attendance
             for att in timeSlots:
                 report = getattr(att, "report", None)
                 exam = getattr(report, "exam", None)
-                if not exam:
+                if not exam or not exam.examStartTime or not exam.examEndTime:
                     continue
 
-                start, end = make_aware(exam.examStartTime), make_aware(exam.examEndTime)
-                if not start or not end:
-                    continue
-
-                before, after = start - timedelta(hours=1), end + timedelta(hours=1)
-                before_end_30 = end - timedelta(minutes=30)
+                start, end = exam.examStartTime, exam.examEndTime
+                checkin_start, checkin_end = start - timedelta(hours=1), end
+                checkout_start, checkout_end = end, end + timedelta(hours=1)
+                checkout_auto = end + timedelta(hours=1)
 
                 # --- Check-in logic ---
                 if not att.checkIn:
-                    if before <= scan_time <= start:
+                    if checkin_start <= scan_time <= start:
                         att.checkIn, att.remark = scan_time, "CHECK IN"
-                    elif start < scan_time < before_end_30:
+                    elif start < scan_time <= checkin_end:
                         att.checkIn, att.remark = scan_time, "CHECK IN LATE"
                     else:
                         continue
 
                 # --- Check-out logic ---
                 elif not att.checkOut:
-                    if end <= scan_time <= after:
+                    if checkout_start <= scan_time <= checkout_end:
                         att.checkOut, att.remark = scan_time, "COMPLETED"
                     elif scan_time < end:
                         att.checkOut, att.remark = scan_time, "CHECK OUT EARLY"
@@ -536,17 +522,15 @@ def attendance_record():
                         continue
 
                 # --- Auto check-out if missed ---
-                if not att.checkOut and scan_time > after:
-                    att.checkOut, att.remark = after, "COMPLETED"
+                if not att.checkOut and scan_time > checkout_auto:
+                    att.checkOut, att.remark = checkout_auto, "COMPLETED"
 
                 # --- Update user cumulative hours ---
                 if att.checkIn and att.checkOut:
                     exam_hours = hours_diff(start, end)
                     actual_hours = hours_diff(att.checkIn, att.checkOut)
                     if att.checkIn > start or att.checkOut < end:
-                        user.userCumulativeHours = (
-                            user.userCumulativeHours - exam_hours + actual_hours
-                        )
+                        user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
                     att.invigilationStatus = True
 
                 att.timeAction = scan_time
@@ -566,8 +550,8 @@ def attendance_record():
                 "courseName": getattr(course, "courseName", "N/A"),
                 "courseCode": getattr(course, "courseCodeSectionIntake", "N/A"),
                 "students": getattr(course, "courseStudent", "N/A"),
-                "examStart": exam.examStartTime.strftime("%d/%b/%Y %H:%M") if exam and exam.examStartTime else "N/A",
-                "examEnd": exam.examEndTime.strftime("%d/%b/%Y %H:%M") if exam and exam.examEndTime else "N/A",
+                "examStart": exam.examStartTime.strftime("%d/%b/%Y %H:%M") if exam else "N/A",
+                "examEnd": exam.examEndTime.strftime("%d/%b/%Y %H:%M") if exam else "N/A",
                 "checkIn": confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None",
                 "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
                 "remark": confirm.remark or "",
@@ -581,8 +565,11 @@ def attendance_record():
             print(f"[ERROR] Attendance record failed: {e}")
             return jsonify({"success": False, "message": f"Server error: {str(e)}"})
 
-    # GET request: render page
+    # GET request: render attendance page
     return render_template('auth/attendance.html')
+
+
+
 
 
 
