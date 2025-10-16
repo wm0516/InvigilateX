@@ -615,6 +615,7 @@ def cleanup_expired_timetable_rows():
 
     db.session.commit()  # Commit even if 0, or you can add a check
 
+from datetime import datetime, timedelta
 
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
@@ -629,43 +630,55 @@ def update_attendanceStatus():
         check_in = attendance.checkIn
         check_out = attendance.checkOut
 
-        # --- Localize all datetimes consistently ---
-        exam_start = exam.examStartTime if exam.examStartTime is None else exam.examStartTime
-        exam_end   = exam.examEndTime   if exam.examEndTime is None else exam.examEndTime
-        if check_in and check_in is None:
-            check_in = check_in
-        if check_out and check_out is None:
-            check_out = check_out
+        exam_start = exam.examStartTime
+        exam_end = exam.examEndTime
 
         remark = "PENDING"
 
-        # --- Check-in logic ---
-        if check_in:
-            if check_in <= exam_start:
-                remark = "CHECK IN"
-            else:
-                remark = "CHECK IN LATE"
+        # -----------------------------
+        # 1️⃣ Handle missing check-out after 30 minutes of exam end
+        # -----------------------------
+        if check_in and not check_out and timeNow > exam_end + timedelta(minutes=30):
+            attendance.checkOut = exam_end + timedelta(minutes=30)
+            check_out = attendance.checkOut
 
-        # --- Check-out logic ---
-        if check_out:
-            if check_out < exam_end:
+        # -----------------------------
+        # 2️⃣ Determine remark logic
+        # -----------------------------
+        if not check_in and not check_out:
+            remark = "EXPIRED"
+
+        elif check_in and not check_out:
+            # Checked in but never checked out (still before auto-assign threshold)
+            if timeNow <= exam_end + timedelta(minutes=30):
+                remark = "ONGOING"
+            else:
+                remark = "EXPIRED"
+
+        elif check_in and check_out:
+            # Check-in & Check-out both exist — evaluate timing
+            if check_in <= exam_start and check_out >= exam_end:
+                remark = "COMPLETED"
+            elif check_in > exam_start and check_out >= exam_end:
+                remark = "CHECK IN LATE"
+            elif check_in <= exam_start and check_out < exam_end:
                 remark = "CHECK OUT EARLY"
+            elif check_in > exam_start and check_out < exam_end:
+                remark = "CHECK IN LATE & CHECK OUT EARLY"
             else:
                 remark = "COMPLETED"
 
-        # --- After exam ended ---
-        if timeNow > exam_end:
-            if check_in and check_out:
-                if check_in <= exam_start and check_out >= exam_end:
-                    remark = "COMPLETED"
-                else:
-                    remark = "EXPIRED"
-            else:
+        # -----------------------------
+        # 3️⃣ Auto-expire logic (after exam + 30min)
+        # -----------------------------
+        if timeNow > exam_end + timedelta(minutes=30):
+            if not check_in and not check_out:
                 remark = "EXPIRED"
 
         attendance.remark = remark
 
     db.session.commit()
+
 
 
 
