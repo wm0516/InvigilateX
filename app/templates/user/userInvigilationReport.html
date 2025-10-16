@@ -226,43 +226,29 @@ document.addEventListener("DOMContentLoaded", function () {
     const noResults = document.getElementById("noResults");
     const allGroups = document.querySelectorAll("#viewInvigilationReport tbody");
 
-    // Filter Table by Search Input
     searchInput.addEventListener("input", function () {
         const filter = this.value.toLowerCase().trim();
         let foundAny = false;
 
         allGroups.forEach(tbody => {
-            const rows = tbody.querySelectorAll("tr");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
             let groupMatch = false;
 
-            // Always show the first row (exam info)
-            const firstRow = rows[0];
-            firstRow.style.display = "";
-
-            // Loop through invigilator rows (skip first row)
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
+            // Check if any row matches the filter
+            rows.forEach(row => {
                 const text = row.innerText.toLowerCase();
-
                 if (!filter || text.includes(filter)) {
-                    row.style.display = "";
                     groupMatch = true;
-                } else {
-                    row.style.display = "none";
                 }
-            }
+            });
 
-            // Show/hide entire exam group
-            if (!filter) {
-                // Show all when no filter
-                tbody.style.display = "";
-                rows.forEach(r => r.style.display = "");
-                foundAny = true;
-            } else if (groupMatch) {
-                tbody.style.display = "";
+            if (groupMatch) {
+                // Show all rows in the group, so rowspan cells are preserved
+                rows.forEach(row => row.style.display = "");
                 foundAny = true;
             } else {
-                tbody.style.display = "none";
+                // Hide all rows in the group
+                rows.forEach(row => row.style.display = "none");
             }
         });
 

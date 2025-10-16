@@ -259,30 +259,38 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
-    const table = document.getElementById("manageExam");
     const noResults = document.getElementById("noResults");
-
-    if (!searchInput || !table) return;
+    const allGroups = document.querySelectorAll("#manageInvigilationReport tbody");
 
     searchInput.addEventListener("input", function () {
-        const filter = searchInput.value.toLowerCase();
-        const rows = table.querySelectorAll("tbody tr");
-        let matchCount = 0;
+        const filter = this.value.toLowerCase().trim();
+        let foundAny = false;
 
-        rows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            if (text.includes(filter)) {
-                row.style.display = ""; // show
-                matchCount++;
+        allGroups.forEach(tbody => {
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+            let groupMatch = false;
+
+            // Check if any row matches the filter
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (!filter || text.includes(filter)) {
+                    groupMatch = true;
+                }
+            });
+
+            if (groupMatch) {
+                // Show all rows in the group, so rowspan cells are preserved
+                rows.forEach(row => row.style.display = "");
+                foundAny = true;
             } else {
-                row.style.display = "none"; // hide
+                // Hide all rows in the group
+                rows.forEach(row => row.style.display = "none");
             }
         });
 
-        // Show "No results found" message if nothing matches
-        noResults.style.display = matchCount === 0 ? "block" : "none";
+        // Toggle "No results found"
+        noResults.style.display = foundAny ? "none" : "block";
     });
 });
-
 </script>
 {% endblock %}
