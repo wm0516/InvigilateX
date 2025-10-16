@@ -279,7 +279,6 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-
 # -------------------------------
 # Helper functions
 # -------------------------------
@@ -296,7 +295,6 @@ def waiting_record(user_id):
         .all()
     )
 
-
 def confirm_record(user_id):
     return (
         InvigilatorAttendance.query
@@ -308,10 +306,9 @@ def confirm_record(user_id):
         .filter(InvigilatorAttendance.invigilationStatus == True)
     )
 
-
-# cutoff_time = datetime.now() - timedelta(minutes=1)
+# cutoff_time = datetime.now() - timedelta(minutes=1)days=2
 def open_record():
-    cutoff_time = datetime.now() - timedelta(days=2)
+    cutoff_time = datetime.now() - timedelta(minutes=1)
 
     slots = (
         InvigilatorAttendance.query
@@ -615,7 +612,6 @@ def cleanup_expired_timetable_rows():
 
     db.session.commit()  # Commit even if 0, or you can add a check
 
-from datetime import datetime, timedelta
 
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
