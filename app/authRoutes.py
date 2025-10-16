@@ -441,6 +441,9 @@ def hours_diff(start, end):
     """Calculate hours difference between two naive datetimes."""
     if not start or not end:
         return 0
+    # Force both to naive for safety
+    start = start.replace(tzinfo=None)
+    end = end.replace(tzinfo=None)
     return max(0, (end - start).total_seconds() / 3600.0)
 
 # -------------------------------
@@ -471,23 +474,26 @@ def attendance_record():
             if not timeSlots:
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
-            # Convert to Malaysia Time (UTC+8)
+            # Malaysia local time (UTC +8)
             scan_time = datetime.utcnow() + timedelta(hours=8)
 
-            # Optional: Use click_time if provided from browser (parsed safely)
+            # Optional: use click time from browser if provided
             if click_time_str:
                 try:
                     click_time = datetime.fromisoformat(click_time_str.replace("Z", "+00:00")) + timedelta(hours=8)
-                    scan_time = click_time
+                    scan_time = click_time.replace(tzinfo=None)
                 except Exception:
                     pass
+            else:
+                scan_time = scan_time.replace(tzinfo=None)
 
-            # Helper: Find the exam nearest to scan_time
+            # Helper: find the exam nearest to scan_time
             def exam_proximity(att):
                 exam = getattr(att.report, "exam", None)
                 if not exam or not exam.examStartTime:
                     return float("inf")
-                return abs((exam.examStartTime - scan_time).total_seconds())
+                exam_start = exam.examStartTime.replace(tzinfo=None)
+                return abs((exam_start - scan_time).total_seconds())
 
             # Find the closest exam slot
             confirm = sorted(timeSlots, key=exam_proximity)[0]
@@ -496,7 +502,9 @@ def attendance_record():
             if not exam or not exam.examStartTime or not exam.examEndTime:
                 return jsonify({"success": False, "message": "Exam details missing!"})
 
-            start, end = exam.examStartTime, exam.examEndTime
+            # Convert to naive Malaysia time
+            start = exam.examStartTime.replace(tzinfo=None)
+            end = exam.examEndTime.replace(tzinfo=None)
             one_hour_before = start - timedelta(hours=1)
 
             # Only valid if scan is within 1 hour before start
@@ -565,8 +573,8 @@ def attendance_record():
                 "courseName": getattr(course, "courseName", "N/A"),
                 "courseCode": getattr(course, "courseCodeSectionIntake", "N/A"),
                 "students": getattr(course, "courseStudent", "N/A"),
-                "examStart": exam.examStartTime.strftime("%d/%b/%Y %H:%M"),
-                "examEnd": exam.examEndTime.strftime("%d/%b/%Y %H:%M"),
+                "examStart": start.strftime("%d/%b/%Y %H:%M"),
+                "examEnd": end.strftime("%d/%b/%Y %H:%M"),
                 "examVenue": venue_list,
                 "checkIn": confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None",
                 "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
@@ -574,10 +582,12 @@ def attendance_record():
             }
 
             return jsonify({"success": True, "data": response_data})
+
         except Exception as e:
             db.session.rollback()
             print(f"[ERROR] Attendance record failed: {e}")
             return jsonify({"success": False, "message": f"Server error: {str(e)}"})
+
     return render_template('auth/attendance.html')
 
 
