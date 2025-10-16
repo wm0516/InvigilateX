@@ -1008,6 +1008,7 @@ def admin_manageExam():
 
             elif action == 'delete':
                 # Delete all invigilators and reports
+                noInvigilator = exam_select.course.courseStudent
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
                 for report in reports:
                     for att in report.attendances:
@@ -1025,7 +1026,10 @@ def admin_manageExam():
 
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
-                exam_select.examNoInvigilator = 0
+                if noInvigilator > 32:
+                    exam_select.examNoInvigilator = 3
+                else:
+                    exam_select.examNoInvigilator = 2
                 db.session.commit()
                 flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
 
