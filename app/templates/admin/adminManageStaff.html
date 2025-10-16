@@ -261,17 +261,17 @@
                     <td>{{ loop.index }}</td> 
                     <td>
                         {% if row.userStatus|int == 0 %}
-                            <span class="status frame-pending">[Deactivated]</span>
+                            <span class="status frame-pending">Deactivated</span>
                         {% elif row.userStatus|int == 1 %}
-                            <span class="status frame-completed">[Activated]</span>
+                            <span class="status frame-completed">Activated</span>
                         {% elif row.userStatus|int == 2 %}
-                            <span class="status frame-expired">[DELETED]</span>
+                            <span class="status frame-expired">DELETED</span>
                         {% endif %}
                     </td>
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userCardId or '---' }}</td>
                     <td>{{ row.userName }}</td>
-                    <td>{{ row.userGender }}</td>
+                    <td>{{ row.userGender[:1] }}</td>
                     <td>{{ row.userEmail }}</td>
                     <td>{{ row.userContact }}</td>
                     <td>
@@ -436,7 +436,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const startY = margin + 25;
 
         // ===== Prepare table data manually =====
-        const table = document.getElementById("ManageStaff");
+        const table = document.getElementById("manageStaff");
         if (!table) {
             alert("No table found to export!");
             return;
