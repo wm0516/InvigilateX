@@ -1,12 +1,14 @@
-from datetime import datetime, timezone
-from flask import render_template, request, redirect, url_for, flash, session, jsonify, current_app, get_flashed_messages
+
+from datetime import datetime, timedelta, timezone
+from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer
+from app import app
 from .backend import *
-from . import db
-
-serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
+
 
 # -------------------------------
 # Function for default route 
@@ -21,6 +23,7 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # cleanup_expired_timetable_rows()
     update_attendanceStatus()
     login_text = ''
     password_text = ''
