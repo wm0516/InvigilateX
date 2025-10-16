@@ -3,12 +3,11 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from apscheduler.schedulers.background import BackgroundScheduler
-from .authRoutes import *
 
 # Create the Flask application
 app = Flask(__name__)
 
-# database password: Pythonanywhere 
+# Database configuration
 app.config['SECRET_KEY'] = '0efa50f2ad0a21e3fd7e7344d3e48380'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://WM05:Pythonanywhere@WM05.mysql.pythonanywhere-services.com/WM05$InvigilateX'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -17,9 +16,10 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_recycle': 200,
     'pool_pre_ping': True,
     'pool_size': 10,
-    'max_overflow': 5
+    'max_overflow': 5,
 }
 
+# Mail config
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -32,27 +32,18 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 mail = Mail(app)
 
-# Test the connection when starting the app
-# if __name__ == '__main__':
-with app.app_context():
-    # Clean up connections
-    db.session.remove()
-    db.engine.dispose()
-
-# Import routes (must be after app creation to avoid circular imports)
-try:
-    from app import adminRoutes, userRoutes, authRoutes
-    print("Routes imported successfully")
-except ImportError as e:
-    print(f"Failed to import routes: {e}")  
-
-
+# Background Scheduler
 scheduler = BackgroundScheduler()
+
 def scheduled_attendance_update():
-    with app.app_context():  # Important for DB access
-        # cleanup_expired_timetable_rows()
+    with app.app_context():
+        # Import inside the function to avoid circular import
+        from .authRoutes import update_attendanceStatus
         update_attendanceStatus()
 
-# Run every 5sec
+# Schedule every 5 seconds
 scheduler.add_job(func=scheduled_attendance_update, trigger='interval', seconds=5)
 scheduler.start()
+
+# Import routes AFTER app is created
+from . import authRoutes, adminRoutes, userRoutes
