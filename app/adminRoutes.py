@@ -1841,7 +1841,6 @@ def calculate_invigilation_stats():
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(InvigilatorAttendance.invigilationStatus == True)
-        .filter(Exam.examStatus == True)
         .all()
     )
 
