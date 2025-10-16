@@ -3,44 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Record</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Attendance Check In/Out</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f6f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            width: 700px;
+            text-align: center;
+        }
+        h1 { margin-bottom: 10px; color: #333; }
+        #current-datetime { font-weight: bold; color: #555; margin-bottom: 20px; }
+        .btn {
+            padding: 10px 25px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+        }
+        #btn-checkin { background: #28a745; }
+        #btn-checkout { background: #007bff; }
+        .btn:hover { opacity: 0.8; cursor: pointer; }
+        #cardNumber {
+            width: 60%;
+            padding: 8px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        #status-message {
+            margin-top: 15px;
+            color: #555;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th { background-color: #f2f2f2; }
+        .status.completed { color: green; font-weight: bold; }
+        .status.expired { color: red; font-weight: bold; }
+        .status.pending { color: orange; font-weight: bold; }
+    </style>
 </head>
 
 <body>
-    <div style="margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3); max-width: 700px;">
+    <div class="container">
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
 
-        <!-- Step 1: Action Buttons -->
-        <div id="action-buttons" style="text-align:center; margin: 10px 0;">
-            <button id="btn-checkin" class="btn" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px;">Check In</button>
-            <button id="btn-checkout" class="btn" style="background:#007bff; color:white; padding:10px 20px; border:none; border-radius:5px;">Check Out</button>
-        </div>
-        <p id="selected-action" style="text-align:center; font-weight:bold; color:#444;"></p>
+        <input type="text" id="cardNumber" placeholder="Scan your card here..." autofocus autocomplete="off">
+        <br>
+        <button id="btn-checkin" class="btn">Check In</button>
+        <button id="btn-checkout" class="btn">Check Out</button>
 
-        <!-- Step 2: Scan Input (Hidden until a button is clicked) -->
-        <div id="scan-section" class="input-container hidden">
-            <h3>Scan Card</h3>
-            <input type="text" id="cardNumber" name="cardNumber" style="font-size: 16px;" autofocus autocomplete="off">
-        </div>
+        <p id="status-message"></p>
 
-        <p id="status-message" style="text-align:center; color:gray;"></p>
-
-        <!-- Step 3: Result Section -->
-        <div id="result-section" class="user-table-container hidden">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Exam Details</th>
-                        <th>Attendance Record</th>
-                        <th>Attendance Remark</th>
-                    </tr>
-                </thead>
-                <tbody id="attendance-table-body"></tbody>
-            </table>
-        </div>
+        <table id="attendance-table" class="hidden">
+            <thead>
+                <tr>
+                    <th>Exam Details</th>
+                    <th>Attendance Record</th>
+                    <th>Attendance Remark</th>
+                </tr>
+            </thead>
+            <tbody id="attendance-table-body"></tbody>
+        </table>
     </div>
 
     <script>
@@ -52,46 +95,22 @@
                 day: '2-digit', month: 'short', year: 'numeric',
                 hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
             };
-            document.getElementById("current-datetime").textContent = now.toLocaleString('en-GB', options).replace(',', ':');
+            document.getElementById("current-datetime").textContent =
+                now.toLocaleString('en-GB', options).replace(',', ':');
         }
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // Variables
         const cardInput = document.getElementById('cardNumber');
-        const scanSection = document.getElementById('scan-section');
-        const actionButtons = document.getElementById('action-buttons');
-        const selectedAction = document.getElementById('selected-action');
-        const resultSection = document.getElementById('result-section');
+        const table = document.getElementById('attendance-table');
         const tableBody = document.getElementById('attendance-table-body');
         const statusMessage = document.getElementById('status-message');
-
         let currentAction = null;
-        let clickTime = null;
 
-        // Action Button Clicks
-        document.getElementById('btn-checkin').addEventListener('click', () => {
-            prepareScan('checkin');
-        });
+        document.getElementById('btn-checkin').addEventListener('click', () => currentAction = 'checkin');
+        document.getElementById('btn-checkout').addEventListener('click', () => currentAction = 'checkout');
 
-        document.getElementById('btn-checkout').addEventListener('click', () => {
-            prepareScan('checkout');
-        });
-
-        function prepareScan(action) {
-            currentAction = action;
-            clickTime = new Date();
-            selectedAction.textContent = `Action: ${action.toUpperCase()} (Clicked at ${clickTime.toLocaleTimeString()})`;
-
-            // Hide buttons, show scan box
-            actionButtons.classList.add('hidden');
-            scanSection.classList.remove('hidden');
-            statusMessage.textContent = "Please scan your card...";
-            cardInput.value = "";
-            cardInput.focus();
-        }
-
-        // Scan Detection
+        // Simulate scanning
         cardInput.addEventListener('input', function () {
             const value = cardInput.value.trim();
             if (!currentAction) {
@@ -100,77 +119,60 @@
                 return;
             }
             if (value.length >= 3) {
+                statusMessage.textContent = "Processing...";
                 setTimeout(() => {
-                    sendCard(value, currentAction, clickTime);
+                    sendCard(value, currentAction);
                     cardInput.value = "";
-                }, 100);
+                }, 200);
             }
         });
 
-        // Send Data to Flask
-        function sendCard(cardNumber, actionType, clickTime) {
-            statusMessage.textContent = "Processing...";
+        // Send data to Flask
+        function sendCard(cardNumber, actionType) {
             fetch('/attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cardNumber, actionType, clickTime })
+                body: JSON.stringify({ cardNumber, actionType })
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     const d = data.data;
-                    resultSection.classList.remove('hidden');
+                    table.classList.remove('hidden');
                     statusMessage.textContent = "Scan successful!";
                     tableBody.innerHTML = `
                         <tr>
                             <td>
-                                <div><strong>Course:</strong> ${d.courseName}</div>
-                                <div><strong>Code/Section:</strong> ${d.courseCode}</div>
-                                <div><strong>Students:</strong> ${d.students}</div>
-                                <div><strong>Exam Start:</strong> ${d.examStart}</div>
-                                <div><strong>Exam End:</strong> ${d.examEnd}</div>
-                                <div><strong>Exam Venue:</strong> ${d.examVenue}</div>
+                                <strong>Course:</strong> ${d.courseName}<br>
+                                <strong>Code/Section:</strong> ${d.courseCode}<br>
+                                <strong>Students:</strong> ${d.students}<br>
+                                <strong>Exam Start:</strong> ${d.examStart}<br>
+                                <strong>Exam End:</strong> ${d.examEnd}<br>
+                                <strong>Exam Venue:</strong> ${d.examVenue}
                             </td>
                             <td>
-                                <div><strong>Check-in:</strong> ${d.checkIn}</div>
-                                <div><strong>Check-out:</strong> ${d.checkOut}</div>
+                                <strong>Check-in:</strong> ${d.checkIn}<br>
+                                <strong>Check-out:</strong> ${d.checkOut}
                             </td>
-                            <td><span class="status frame-${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
+                            <td><span class="status ${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
                         </tr>`;
-
-                    // Reset UI after 5s
-                    setTimeout(() => {
-                        tableBody.innerHTML = "";
-                        resultSection.classList.add('hidden');
-                        statusMessage.textContent = "";
-                        selectedAction.textContent = "";
-                        scanSection.classList.add('hidden');
-                        actionButtons.classList.remove('hidden');
-                        currentAction = null;
-                    }, 5000);
                 } else {
-                    resultSection.classList.add('hidden');
+                    table.classList.add('hidden');
                     statusMessage.textContent = data.message;
                 }
             })
-            .catch(err => {
-                resultSection.classList.add('hidden');
+            .catch(() => {
+                table.classList.add('hidden');
                 statusMessage.textContent = "Error connecting to server.";
-                console.error(err);
             });
         }
 
         function getRemarkClass(remark) {
             remark = remark.toUpperCase();
             if (remark.includes("LATE") || remark.includes("EARLY") || remark.includes("EXPIRED")) return "expired";
-            if (remark.includes("COMPLETED") || remark.includes("CHECK IN") || remark.includes("CHECK OUT")) return "completed";
+            if (remark.includes("COMPLETED") || remark.includes("CHECK")) return "completed";
             return "pending";
         }
     </script>
-
-    <style>
-        .hidden { display: none; }
-        .btn:hover { opacity: 0.8; cursor: pointer; }
-    </style>
 </body>
 </html>
