@@ -307,14 +307,14 @@ def confirm_record(user_id):
     )
 
 # cutoff_time = datetime.now() - timedelta(minutes=1)days=2
-def open_record(current_user_id):
-    cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=1)
+def open_record(user_id):
+    cutoff_time = datetime.now() - timedelta(minutes=1)
 
     # Get all invigilator attendance for the current user
     user_assigned_exam_ids = (
         db.session.query(InvigilationReport.examId)
         .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
-        .filter(InvigilatorAttendance.invigilatorId == current_user_id)
+        .filter(InvigilatorAttendance.invigilatorId == user_id)
         .subquery()
     )
 
@@ -327,7 +327,7 @@ def open_record(current_user_id):
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.timeCreate < cutoff_time,
-            Exam.examStartTime > datetime.now(timezone.utc),
+            Exam.examStartTime > datetime.now(),
             ~InvigilationReport.examId.in_(user_assigned_exam_ids)   # Exclude exams the user is already assigned to
         )
         .all()
@@ -354,7 +354,7 @@ def user_homepage():
     confirm = confirm_record(user_id).filter(Exam.examEndTime > datetime.now()).all()
 
     # Get open slots + gender filter
-    open_slots = open_record()
+    open_slots = open_record(user_id)
     if chosen:
         open_slots = [slot for slot in open_slots if slot.invigilator.userGender == chosen.userGender]
 
