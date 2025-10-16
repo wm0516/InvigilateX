@@ -133,7 +133,7 @@ class VenueExam(db.Model):
     __tablename__ = 'VenueExam'
     examVenueId = db.Column(db.Integer, primary_key=True, autoincrement=True)                   # [PK] Availability ID
     examId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                # [FK] Exam ID
-    venueNumber = db.Column(db.String(10), db.ForeignKey('Venue.venueNumber'), nullable=True)   # [FK] Venue Number
+    venueNumber = db.Column(db.String(20), db.ForeignKey('Venue.venueNumber'), nullable=True)   # [FK] Venue Number
     startDateTime = db.Column(db.DateTime, nullable=False)                                      # Start DateTime
     endDateTime = db.Column(db.DateTime, nullable=False)                                        # End DateTime
     capacity = db.Column(db.Integer, nullable=False)                                            # Capacity use
@@ -145,7 +145,7 @@ class VenueExam(db.Model):
     CREATE TABLE VenueExam (
         examVenueId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         examId INT NOT NULL,
-        venueNumber VARCHAR(10) NULL,
+        venueNumber VARCHAR(20) NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
         capacity INT NOT NULL,

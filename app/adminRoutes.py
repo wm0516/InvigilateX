@@ -72,13 +72,11 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                                 records_added += 1
                             else:
                                 records_failed += 1
-                                flash(f"Row {_+1} failed: {message}", "error")
                         except Exception as row_err:
                             records_failed += 1
-                            flash(f"Row {_+1} processing error: {str(row_err)}", "error")
 
                 except Exception as sheet_err:
-                    flash(f"Sheet {sheet_name} processing error: {str(sheet_err)}", "error")
+                    pass
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
@@ -88,16 +86,12 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                 flash("No data uploaded", "error")
 
             return redirect(url_for(redirect_endpoint))
-
         except Exception as e:
             flash("File processing error: File upload in wrong format", "error")
             return redirect(url_for(redirect_endpoint))
     else:
         flash("No file uploaded", "error")
         return redirect(url_for(redirect_endpoint))
-
-
-
 
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Format 
