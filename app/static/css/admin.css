@@ -476,6 +476,27 @@ html, body {
 }
 
 
+.edit-btn, .cancel-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    color: #007bff;
+    transition: color 0.2s ease;
+}
+
+.edit-btn:hover i {
+    color: #0056b3;
+}
+
+.cancel-btn {
+    color: #dc3545;
+    margin-left: 6px;
+}
+
+.cancel-btn:hover {
+    color: #a71d2a;
+}
 
 
 

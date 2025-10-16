@@ -127,7 +127,7 @@
                     </td>
 
                     <!-- Action -->
-                    <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}">Edit</button></td>
+                    <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
 
                     <!-- Check-in/out Time -->
                     <td>
@@ -290,12 +290,12 @@ document.addEventListener("DOMContentLoaded", function() {
             checkoutText.innerHTML = `<input type="datetime-local" value="${parseDate(origCheckout)}" class="checkout-input">`;
 
             // Change button to Save/Cancel
-            editBtn.textContent = "Save";
+            editBtn.innerHTML = '<i class="fa fa-save"></i>';
             editBtn.classList.add("editing");
 
             // Add cancel button
             const cancelBtn = document.createElement("button");
-            cancelBtn.textContent = "Cancel";
+            cancelBtn.innerHTML = '<i class="fa fa-times"></i>';
             cancelBtn.className = "cancel-btn";
             editBtn.insertAdjacentElement("afterend", cancelBtn);
 
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", function() {
             cancelBtn.addEventListener("click", function() {
                 checkinText.textContent = origCheckin;
                 checkoutText.textContent = origCheckout;
-                editBtn.textContent = "Edit";
+                editBtn.innerHTML = '<i class="fa fa-edit"></i>';
                 editBtn.classList.remove("editing");
                 cancelBtn.remove();
             });
