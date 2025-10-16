@@ -585,15 +585,6 @@ def attendance_record():
     return render_template('auth/attendance.html')
 
 
-
-
-
-
-
-
-
-
-
 def parse_date_range(date_range):
     """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime safely."""
     if not date_range:
