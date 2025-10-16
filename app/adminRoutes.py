@@ -33,6 +33,9 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # -------------------------------
 # Function handle file upload
 # -------------------------------
+# -------------------------------
+# Function handle file upload
+# -------------------------------
 def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
     file = request.files.get(file_key)
     if file and file.filename:
@@ -47,8 +50,8 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                         excel_file,
                         sheet_name=sheet_name,
                         usecols=usecols,
-                        skiprows=1,      # skip the first row
-                        header=0,        # take the next row as header
+                        skiprows=skiprows,      # skip the first row(s)
+                        header=0,               # take the next row as header
                         dtype=str
                     )
                     df.columns = [str(col).strip().lower() for col in df.columns]
@@ -63,13 +66,19 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 
                     # process each row using the provided callback
                     for _, row in df.iterrows():
-                        success, message = process_row_fn(row)
-                        if success:
-                            records_added += 1
-                        else:
+                        try:
+                            success, message = process_row_fn(row)
+                            if success:
+                                records_added += 1
+                            else:
+                                records_failed += 1
+                                flash(f"Row {_+1} failed: {message}", "error")
+                        except Exception as row_err:
                             records_failed += 1
+                            flash(f"Row {_+1} processing error: {str(row_err)}", "error")
+
                 except Exception as sheet_err:
-                    pass
+                    flash(f"Sheet {sheet_name} processing error: {str(sheet_err)}", "error")
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
@@ -86,6 +95,7 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
     else:
         flash("No file uploaded", "error")
         return redirect(url_for(redirect_endpoint))
+
 
 
 
