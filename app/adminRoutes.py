@@ -1894,6 +1894,64 @@ def admin_manageInvigilationReport():
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 
+# -------------------------------
+# Update attendance datetime (AJAX endpoint)
+# -------------------------------
+@app.route('/admin/updateAttendance/<int:attendance_id>', methods=['POST'])
+@login_required
+def update_attendance(attendance_id):
+    data = request.get_json()
+
+    # Extract new datetimes
+    new_checkin = data.get('checkIn')
+    new_checkout = data.get('checkOut')
+
+    try:
+        attendance = InvigilatorAttendance.query.get(attendance_id)
+        if not attendance:
+            return jsonify({'error': 'Attendance not found'}), 404
+
+        # Convert ISO datetime string (from JS datetime-local) to Python datetime
+        fmt = "%Y-%m-%dT%H:%M"
+        if new_checkin:
+            attendance.checkIn = datetime.strptime(new_checkin, fmt)
+        else:
+            attendance.checkIn = None
+
+        if new_checkout:
+            attendance.checkOut = datetime.strptime(new_checkout, fmt)
+        else:
+            attendance.checkOut = None
+
+        attendance.timeAction = datetime.now()
+
+        # Auto-update remark based on timing comparison
+        exam = (
+            db.session.query(Exam)
+            .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+            .filter(InvigilationReport.invigilationReportId == attendance.reportId)
+            .first()
+        )
+
+        if exam:
+            # Default remark
+            remark = "COMPLETED"
+            if attendance.checkIn and attendance.checkIn > exam.examStartTime:
+                remark = "CHECK IN LATE"
+            elif attendance.checkOut and attendance.checkOut < exam.examEndTime:
+                remark = "CHECK OUT EARLY"
+            elif not attendance.checkIn and not attendance.checkOut:
+                remark = "PENDING"
+
+            attendance.remark = remark
+
+        db.session.commit()
+        return jsonify({'message': 'Attendance updated successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("Error:", e)
+        return jsonify({'error': 'Update failed'}), 500
 
 
 
