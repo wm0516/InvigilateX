@@ -859,6 +859,39 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues):
         db.session.add(report)
         db.session.flush()
 
+        # Assign invigilators for this new exam
+        new_hours = (new_end - new_start).total_seconds() / 3600.0
+
+        eligible = User.query.filter(
+            User.userLevel == 1,
+            User.userStatus == 1
+        ).all()
+
+        # Filter by max 36 hours
+        eligible = [u for u in eligible if (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0) < 36]
+
+        males = sorted([u for u in eligible if u.userGender == "MALE"], key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
+        females = sorted([u for u in eligible if u.userGender == "FEMALE"], key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
+
+        chosen = []
+        if new_invigilator_count >= 2:
+            if males:
+                chosen.append(males.pop(0))
+            if females and len(chosen) < new_invigilator_count:
+                chosen.append(females.pop(0))
+
+        pool = sorted(males + females, key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
+        chosen += pool[:(new_invigilator_count - len(chosen))]
+
+        for inv in chosen:
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
+            db.session.add(InvigilatorAttendance(
+                reportId=report.invigilationReportId,
+                invigilatorId=inv.userId,
+                timeCreate=datetime.now(timezone.utc)
+            ))
+
+
     # 3️⃣ Update venue(s)
     # Get old venue records
     old_records = {v.venueNumber: v for v in VenueExam.query.filter_by(examId=exam.examId).all()}
