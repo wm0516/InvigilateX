@@ -1756,6 +1756,99 @@ def admin_manageTimetable():
 
 
 
+
+
+@app.route("/admin/updateAttendanceTime", methods=["POST"])
+@login_required
+def update_attendance_time():
+    data = request.get_json()
+    attendance_id = data.get("attendance_id")
+    check_in_str = data.get("check_in")
+    check_out_str = data.get("check_out")
+
+    from datetime import datetime, timedelta
+    import pytz
+
+    MYTZ = pytz.timezone("Asia/Kuala_Lumpur")
+
+    try:
+        check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M").replace(tzinfo=MYTZ)
+        check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M").replace(tzinfo=MYTZ)
+    except Exception:
+        return jsonify({"success": False, "message": "Invalid datetime format."}), 400
+
+    att = InvigilatorAttendance.query.get(attendance_id)
+    if not att:
+        return jsonify({"success": False, "message": "Attendance not found."}), 404
+
+    exam = att.report.exam
+    invigilator = att.invigilator
+
+    exam_start = exam.examStartTime.astimezone(MYTZ)
+    exam_end = exam.examEndTime.astimezone(MYTZ)
+
+    allowed_start = exam_start - timedelta(hours=1)
+    allowed_end = exam_end + timedelta(hours=1)
+
+    # Validate range
+    if not (allowed_start <= check_in <= allowed_end and allowed_start <= check_out <= allowed_end):
+        return jsonify({
+            "success": False,
+            "message": "Time must be within 1 hour before/after exam period."
+        }), 400
+
+    if check_in >= check_out:
+        return jsonify({"success": False, "message": "Check-in must be before check-out."}), 400
+
+    # compute old and new hours
+    old_hours = 0.0
+    if att.checkIn and att.checkOut:
+        old_hours = (att.checkOut - att.checkIn).total_seconds() / 3600.0
+
+    new_hours = (check_out - check_in).total_seconds() / 3600.0
+
+    # update user cumulative hours
+    invigilator.userCumulativeHours = (
+        (invigilator.userCumulativeHours or 0) - old_hours + new_hours
+    )
+
+    # Determine remark
+    remark = "PENDING"
+    if check_in > exam_start:
+        remark = "CHECK IN LATE"
+    else:
+        remark = "CHECK IN"
+
+    if check_out < exam_end:
+        if remark == "CHECK IN LATE":
+            remark = "CHECK IN LATE"   # keep same if both late + early
+        else:
+            remark = "CHECK OUT EARLY"
+    elif check_out <= exam_end + timedelta(hours=1):
+        if remark != "CHECK IN LATE":
+            remark = "COMPLETED"
+    else:
+        remark = "EXPIRED"
+
+    att.checkIn = check_in
+    att.checkOut = check_out
+    att.remark = remark
+    att.timeAction = datetime.now(MYTZ)
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Attendance updated successfully.",
+        "remark": remark,
+        "new_hours": round(new_hours, 2),
+        "check_in": check_in.strftime("%d/%b/%Y %H:%M:%S"),
+        "check_out": check_out.strftime("%d/%b/%Y %H:%M:%S")
+    })
+
+
+
+
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------

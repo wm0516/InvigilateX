@@ -242,6 +242,78 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.save("Admin_ViewInvigilationReport.pdf");
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+  // handle edit
+  document.querySelectorAll(".edit-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const row = btn.closest("tr");
+      const checkinSpan = row.querySelector(".checkin-text");
+      const checkoutSpan = row.querySelector(".checkout-text");
+
+      const currentIn = checkinSpan.textContent.trim();
+      const currentOut = checkoutSpan.textContent.trim();
+
+      // convert "25/Oct/2025 09:00:00" to datetime-local value
+      const parseToLocal = t => {
+        if (!t || t === "None") return "";
+        const [d, m, y_time] = t.split("/");
+        const [month, rest] = [m, y_time];
+        const [year, time] = rest.split(" ");
+        const months = {
+          Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
+          Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12"
+        };
+        return `${year}-${months[month]}-${d.padStart(2, "0")}T${time.substring(0,5)}`;
+      };
+
+      const inVal = parseToLocal(currentIn);
+      const outVal = parseToLocal(currentOut);
+
+      checkinSpan.outerHTML = `<input type="datetime-local" class="checkin-input" value="${inVal}">`;
+      checkoutSpan.outerHTML = `<input type="datetime-local" class="checkout-input" value="${outVal}">`;
+
+      btn.innerHTML = "<i class='fa fa-save'></i>";
+      btn.classList.add("save-btn");
+      btn.classList.remove("edit-btn");
+
+      // save handler
+      btn.addEventListener("click", async () => {
+        const checkinInput = row.querySelector(".checkin-input");
+        const checkoutInput = row.querySelector(".checkout-input");
+
+        const payload = {
+          attendance_id: btn.dataset.id,
+          check_in: checkinInput.value,
+          check_out: checkoutInput.value
+        };
+
+        const res = await fetch("/admin/updateAttendanceTime", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!data.success) {
+          alert(data.message);
+          return;
+        }
+
+        // update display
+        checkinInput.outerHTML = `<span class="checkin-text">${data.check_in}</span>`;
+        checkoutInput.outerHTML = `<span class="checkout-text">${data.check_out}</span>`;
+        const status = row.querySelector(".status");
+        if (status) status.textContent = data.remark;
+
+        btn.innerHTML = "<i class='fa fa-edit'></i>";
+        btn.classList.add("edit-btn");
+        btn.classList.remove("save-btn");
+
+        alert(data.message);
+      }, { once: true });
+    });
+  });
+});
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
