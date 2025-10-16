@@ -47,7 +47,6 @@ except ImportError as e:
     print(f"Failed to import routes: {e}")  
 
 
-
 scheduler = BackgroundScheduler()
 def scheduled_attendance_update():
     with app.app_context():  # Important for DB access
