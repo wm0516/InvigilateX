@@ -1923,8 +1923,6 @@ def update_attendance(attendance_id):
         else:
             attendance.checkOut = None
 
-        attendance.timeAction = datetime.now()
-
         # Auto-update remark based on timing comparison
         exam = (
             db.session.query(Exam)
@@ -1936,12 +1934,16 @@ def update_attendance(attendance_id):
         if exam:
             # Default remark
             remark = "COMPLETED"
-            if attendance.checkIn and attendance.checkIn > exam.examStartTime:
+            if not attendance.checkIn and not attendance.checkOut:
+                remark = "PENDING"
+            elif attendance.checkIn and not attendance.checkOut:
+                remark = "CHECK IN"
+            elif attendance.checkIn > exam.examStartTime:
                 remark = "CHECK IN LATE"
             elif attendance.checkOut and attendance.checkOut < exam.examEndTime:
                 remark = "CHECK OUT EARLY"
-            elif not attendance.checkIn and not attendance.checkOut:
-                remark = "PENDING"
+            else:
+                remark = "COMPLETED"
 
             attendance.remark = remark
 
