@@ -9,15 +9,26 @@
 </head>
 
 <body>
-    <div style="margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+    <div style="margin: auto; padding: 2%; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.3); max-width: 700px;">
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
-        <div class="input-container">
+
+        <!-- Step 1: Action Buttons -->
+        <div id="action-buttons" style="text-align:center; margin: 10px 0;">
+            <button id="btn-checkin" class="btn" style="background:#28a745; color:white; padding:10px 20px; border:none; border-radius:5px;">Check In</button>
+            <button id="btn-checkout" class="btn" style="background:#007bff; color:white; padding:10px 20px; border:none; border-radius:5px;">Check Out</button>
+        </div>
+        <p id="selected-action" style="text-align:center; font-weight:bold; color:#444;"></p>
+
+        <!-- Step 2: Scan Input (Hidden until a button is clicked) -->
+        <div id="scan-section" class="input-container hidden">
             <h3>Scan Card</h3>
             <input type="text" id="cardNumber" name="cardNumber" style="font-size: 16px;" autofocus autocomplete="off">
         </div>
+
         <p id="status-message" style="text-align:center; color:gray;"></p>
 
+        <!-- Step 3: Result Section -->
         <div id="result-section" class="user-table-container hidden">
             <table class="user-data-table">
                 <thead>
@@ -33,40 +44,76 @@
     </div>
 
     <script>
-        // Update live date-time
+        // Live datetime display
         function updateDateTime() {
             const now = new Date();
-            const options = { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const formatted = now.toLocaleString('en-GB', options).replace(',', ':');
-            document.getElementById("current-datetime").textContent = formatted;
+            const options = {
+                weekday: 'long',
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+            };
+            document.getElementById("current-datetime").textContent = now.toLocaleString('en-GB', options).replace(',', ':');
         }
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        // Auto-detect card scan (no Enter key)
+        // Variables
         const cardInput = document.getElementById('cardNumber');
+        const scanSection = document.getElementById('scan-section');
+        const actionButtons = document.getElementById('action-buttons');
+        const selectedAction = document.getElementById('selected-action');
         const resultSection = document.getElementById('result-section');
-        const statusMessage = document.getElementById('status-message');
         const tableBody = document.getElementById('attendance-table-body');
+        const statusMessage = document.getElementById('status-message');
 
-        cardInput.focus();
+        let currentAction = null;
+        let clickTime = null;
 
+        // Action Button Clicks
+        document.getElementById('btn-checkin').addEventListener('click', () => {
+            prepareScan('checkin');
+        });
+
+        document.getElementById('btn-checkout').addEventListener('click', () => {
+            prepareScan('checkout');
+        });
+
+        function prepareScan(action) {
+            currentAction = action;
+            clickTime = new Date();
+            selectedAction.textContent = `Action: ${action.toUpperCase()} (Clicked at ${clickTime.toLocaleTimeString()})`;
+
+            // Hide buttons, show scan box
+            actionButtons.classList.add('hidden');
+            scanSection.classList.remove('hidden');
+            statusMessage.textContent = "Please scan your card...";
+            cardInput.value = "";
+            cardInput.focus();
+        }
+
+        // Scan Detection
         cardInput.addEventListener('input', function () {
             const value = cardInput.value.trim();
-            if (value.length >= 3) { // Adjust if your card UID has a fixed length
+            if (!currentAction) {
+                statusMessage.textContent = "Please click Check In or Check Out first.";
+                cardInput.value = "";
+                return;
+            }
+            if (value.length >= 3) {
                 setTimeout(() => {
-                    sendCard(value);
+                    sendCard(value, currentAction, clickTime);
                     cardInput.value = "";
                 }, 100);
             }
         });
 
-        function sendCard(cardNumber) {
+        // Send Data to Flask
+        function sendCard(cardNumber, actionType, clickTime) {
             statusMessage.textContent = "Processing...";
             fetch('/attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cardNumber })
+                body: JSON.stringify({ cardNumber, actionType, clickTime })
             })
             .then(res => res.json())
             .then(data => {
@@ -91,13 +138,16 @@
                             <td><span class="status frame-${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
                         </tr>`;
 
-                    // Auto-clear table after 5 seconds
+                    // Reset UI after 5s
                     setTimeout(() => {
                         tableBody.innerHTML = "";
                         resultSection.classList.add('hidden');
                         statusMessage.textContent = "";
+                        selectedAction.textContent = "";
+                        scanSection.classList.add('hidden');
+                        actionButtons.classList.remove('hidden');
+                        currentAction = null;
                     }, 5000);
-
                 } else {
                     resultSection.classList.add('hidden');
                     statusMessage.textContent = data.message;
@@ -107,9 +157,6 @@
                 resultSection.classList.add('hidden');
                 statusMessage.textContent = "Error connecting to server.";
                 console.error(err);
-            })
-            .finally(() => {
-                cardInput.focus();
             });
         }
 
@@ -120,5 +167,10 @@
             return "pending";
         }
     </script>
+
+    <style>
+        .hidden { display: none; }
+        .btn:hover { opacity: 0.8; cursor: pointer; }
+    </style>
 </body>
 </html>

@@ -452,114 +452,112 @@ def attendance_record():
         try:
             data = request.get_json()
             card_input = data.get('cardNumber', '').strip()
+            action_type = data.get('actionType', '').lower().strip()
+            click_time_str = data.get('clickTime', None)
+
             if not card_input:
                 return jsonify({"success": False, "message": "Card scan missing!"})
+            if action_type not in ['checkin', 'checkout']:
+                return jsonify({"success": False, "message": "Invalid action type!"})
 
             # Find user by card
             user = User.query.filter_by(userCardId=card_input).first()
             if not user:
                 return jsonify({"success": False, "message": "Card not recognized!"})
-
             user_id = user.userId
 
-            # Get all assigned time slots for this user
+            # Fetch attendance records for this invigilator
             timeSlots = InvigilatorAttendance.query.filter_by(invigilatorId=user_id).all()
             if not timeSlots:
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
-            # Capture device time shifted to Malaysia Time (+8 hours)
+            # Convert to Malaysia Time (UTC+8)
             scan_time = datetime.utcnow() + timedelta(hours=8)
 
-            # Find nearest exam session by time proximity
+            # Optional: Use click_time if provided from browser (parsed safely)
+            if click_time_str:
+                try:
+                    click_time = datetime.fromisoformat(click_time_str.replace("Z", "+00:00")) + timedelta(hours=8)
+                    scan_time = click_time
+                except Exception:
+                    pass
+
+            # Helper: Find the exam nearest to scan_time
             def exam_proximity(att):
                 exam = getattr(att.report, "exam", None)
-                if not exam:
+                if not exam or not exam.examStartTime:
                     return float("inf")
-                start = exam.examStartTime
-                if not start:
-                    return float("inf")
-                return abs((start - scan_time).total_seconds())
+                return abs((exam.examStartTime - scan_time).total_seconds())
 
-            # Sort and pick nearest
-            timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
-            confirm = timeSlots_sorted[0]
-
-            exam = getattr(confirm.report, "exam", None)
+            # Find the closest exam slot
+            confirm = sorted(timeSlots, key=exam_proximity)[0]
+            report = getattr(confirm, "report", None)
+            exam = getattr(report, "exam", None)
             if not exam or not exam.examStartTime or not exam.examEndTime:
                 return jsonify({"success": False, "message": "Exam details missing!"})
 
             start, end = exam.examStartTime, exam.examEndTime
-
-            # 1-hour rule: only valid if within 1 hour before start
             one_hour_before = start - timedelta(hours=1)
+
+            # Only valid if scan is within 1 hour before start
             if scan_time < one_hour_before:
-                return jsonify({
-                    "success": False,
-                    "message": "No upcoming exam slot within 1 hour!"
-                })
+                return jsonify({"success": False, "message": "No upcoming exam slot within 1 hour!"})
 
-            # Define check-in/out windows
-            checkin_start = start - timedelta(hours=1)
-            checkin_end = end
-            checkout_start = end
-            checkout_end = end + timedelta(hours=1)
-            checkout_auto = end + timedelta(hours=1)
+            # ------------------------------
+            # CHECK-IN LOGIC
+            # ------------------------------
+            if action_type == 'checkin':
+                if confirm.checkIn:
+                    return jsonify({"success": False, "message": "Already checked in!"})
 
-            # Update attendance
-            for att in timeSlots:
-                report = getattr(att, "report", None)
-                exam = getattr(report, "exam", None)
-                if not exam or not exam.examStartTime or not exam.examEndTime:
-                    continue
+                if one_hour_before <= scan_time <= start:
+                    confirm.checkIn = scan_time
+                    confirm.remark = "CHECK IN"
+                elif start < scan_time <= (end - timedelta(minutes=30)):
+                    confirm.checkIn = scan_time
+                    confirm.remark = "CHECK IN LATE"
+                else:
+                    return jsonify({"success": False, "message": "Not allowed to check in after 30 mins before exam end!"})
 
-                start, end = exam.examStartTime, exam.examEndTime
-                checkin_start, checkin_end = start - timedelta(hours=1), end
-                checkout_start, checkout_end = end, end + timedelta(hours=1)
-                checkout_auto = end + timedelta(hours=1)
+            # ------------------------------
+            # CHECK-OUT LOGIC
+            # ------------------------------
+            elif action_type == 'checkout':
+                if not confirm.checkIn:
+                    return jsonify({"success": False, "message": "Please check in before checking out!"})
+                if confirm.checkOut:
+                    return jsonify({"success": False, "message": "Already checked out!"})
 
-                # --- Check-in logic ---
-                if not att.checkIn:
-                    if checkin_start <= scan_time <= start:
-                        att.checkIn = scan_time
-                        att.remark = "CHECK IN"
-                    elif start < scan_time <= checkin_end:
-                        att.checkIn = scan_time
-                        att.remark = "CHECK IN LATE"
+                expire_time = end + timedelta(hours=1)
+                if scan_time < end:
+                    confirm.checkOut = scan_time
+                    confirm.remark = "CHECK OUT EARLY"
+                elif end <= scan_time <= expire_time:
+                    confirm.checkOut = scan_time
+                    confirm.remark = "COMPLETED"
+                else:
+                    confirm.checkOut = expire_time
+                    confirm.remark = "EXPIRED"
 
-                # --- Check-out logic ---
-                elif not att.checkOut:
-                    if checkout_start <= scan_time <= checkout_end:
-                        att.checkOut = scan_time
-                        att.remark = "COMPLETED"
-                    elif scan_time < end:
-                        att.checkOut = scan_time
-                        att.remark = "CHECK OUT EARLY"
+            # ------------------------------
+            # Hours & Status update
+            # ------------------------------
+            if confirm.checkIn and confirm.checkOut:
+                exam_hours = hours_diff(start, end)
+                actual_hours = hours_diff(confirm.checkIn, confirm.checkOut)
 
-                # --- Auto check-out ---
-                if not att.checkOut and scan_time > checkout_auto:
-                    att.checkOut = checkout_auto
-                    att.remark = "COMPLETED"
-
-                # --- Update cumulative hours ---
-                if att.checkIn and att.checkOut:
-                    exam_hours = hours_diff(start, end)
-                    actual_hours = hours_diff(att.checkIn, att.checkOut)
-                    if att.checkIn > start or att.checkOut < end:
-                        user.userPendingCumulativeHours  = user.userPendingCumulativeHours - exam_hours
-                        user.userCumulativeHours = user.userCumulativeHours + actual_hours
-                    att.invigilationStatus = True
-
-                # Record time
-                att.timeAction = scan_time
+                # Adjust cumulative hours
+                if confirm.checkIn > start or confirm.checkOut < end:
+                    user.userPendingCumulativeHours -= exam_hours
+                    user.userCumulativeHours += actual_hours
+                confirm.invigilationStatus = True
 
             db.session.commit()
 
-            # Prepare response safely
-            report = getattr(confirm, "report", None)
-            exam = getattr(report, "exam", None)
+            # Prepare response
             course = getattr(exam, "course", None)
             venues = []
-            if exam and getattr(exam, "venue_availabilities", None):
+            if getattr(exam, "venue_availabilities", None):
                 venues = [v.venueNumber for v in exam.venue_availabilities]
             venue_list = ", ".join(venues) if venues else "N/A"
 
@@ -567,23 +565,21 @@ def attendance_record():
                 "courseName": getattr(course, "courseName", "N/A"),
                 "courseCode": getattr(course, "courseCodeSectionIntake", "N/A"),
                 "students": getattr(course, "courseStudent", "N/A"),
-                "examStart": exam.examStartTime.strftime("%d/%b/%Y %H:%M") if exam else "N/A",
-                "examEnd": exam.examEndTime.strftime("%d/%b/%Y %H:%M") if exam else "N/A",
+                "examStart": exam.examStartTime.strftime("%d/%b/%Y %H:%M"),
+                "examEnd": exam.examEndTime.strftime("%d/%b/%Y %H:%M"),
+                "examVenue": venue_list,
                 "checkIn": confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None",
                 "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
                 "remark": confirm.remark or "",
-                "examVenue": venue_list
             }
 
             return jsonify({"success": True, "data": response_data})
-
         except Exception as e:
             db.session.rollback()
             print(f"[ERROR] Attendance record failed: {e}")
             return jsonify({"success": False, "message": f"Server error: {str(e)}"})
-
-    # GET request
     return render_template('auth/attendance.html')
+
 
 
 def parse_date_range(date_range):
