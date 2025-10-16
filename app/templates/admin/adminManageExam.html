@@ -450,16 +450,53 @@ document.addEventListener("DOMContentLoaded", function () {
         const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
 
-        doc.setFont("helvetica","bold"); doc.setFontSize(18);
-        doc.text("Manage Exam", pageWidth/2, margin, {align:"center"});
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Exam", pageWidth / 2, margin, { align: "center" });
+
         const startY = margin + 25;
 
+        // ===== Prepare table data manually (to preserve readable formatting) =====
         const table = document.querySelector(".user-data-table");
-        if (!table) { alert("No table found to export!"); return; }
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
 
         const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => Array.from(tr.querySelectorAll("td")).map(td => td.innerText.trim().replace(/\s*\n\s*/g," ")));
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
+                let text = td.innerText.trim();
 
+                // Fix multi-line readability
+                text = text.replace(/\s*\n\s*/g, " ");
+
+                // Add newlines before each field label, not after colon
+                if (td.cellIndex === 2 || td.cellIndex === 4) {
+                    text = text
+                        .replace(/\s*Course Name\s*:/g, "\nCourse Name:") 
+                        .replace(/\s*Course Code\/Section\s*:/g, "\nCourse Code/Section:")
+                        .replace(/\s*Program Code\s*:/g, "\nProgram Code:")
+                        .replace(/\s*Number of Students\s*:/g, "\nNumber of Students:")
+                        .replace(/\s*Practical Lecturer\s*:/g, "\nPractical Lecturer:")
+                        .replace(/\s*Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
+                        .replace(/\s*Exam Date\s*:/g, "\nExam Date:")
+                        .replace(/\s*Exam Day\s*:/g, "\nExam Day:")
+                        .replace(/\s*Exam Time\s*:/g, "\nExam Time:")
+                        .replace(/\s*Exam Period\s*:/g, "\nExam Period:")
+                        .replace(/\s*Exam Venue\s*:/g, "\nExam Venue:");
+
+                    // Clean up possible leading newline
+                    text = text.trimStart();
+                }
+
+                return text;
+            });
+            return cells;
+        });
+
+        // ===== Generate AutoTable =====
         doc.autoTable({
             head: [headers],
             body: rows,
@@ -467,17 +504,18 @@ document.addEventListener("DOMContentLoaded", function () {
             theme: "grid",
             tableWidth: "auto",
             styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
-            headStyles: {fillColor: [33,37,41], textColor: [255,255,255], halign:"center"},
-            margin: {top: margin, left: margin, right: margin, bottom: margin},
-            didDrawPage: function(data){ 
-                const pageCount = doc.internal.getNumberOfPages(); 
-                const pageHeight = doc.internal.pageSize.height; 
-                doc.setFontSize(9); 
-                doc.setTextColor(100); 
-                doc.text(`Page ${pageCount}`, pageWidth-margin, pageHeight-10, {align:"right"});
-            }
+            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
         });
 
+        // ===== Save =====
         doc.save("Admin_ViewExamList.pdf");
     });
 });
