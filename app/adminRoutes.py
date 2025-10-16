@@ -974,7 +974,10 @@ def admin_manageExam():
         .all()
     )
     display_exam_data = [e for e in exam_data if e.examStatus]
-    total_exam_activated = Exam.query.filter_by(examStatus=1).count()
+    total_exam_activated = Exam.query.filter(
+        Exam.examStatus == 1,
+        Exam.examStartTime.isnot(None)
+    ).count()
 
     # For edit section
     exam_selected_code = request.form.get('editExamCourseSection')
