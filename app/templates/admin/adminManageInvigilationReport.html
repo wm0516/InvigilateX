@@ -71,6 +71,7 @@
                     <th>Exam Details</th>
                     <th>Invigilators</th>
                     <th>Invigilator Details</th>
+                    <th>Actions</th>
                     <th>Check-in/out Time</th>
                     <th>Attendance Status</th>
                     <th>Invigilation Status</th>
@@ -125,11 +126,14 @@
                         </div>
                     </td>
 
+                    <!-- Action -->
+                    <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}">Edit</button></td>
+
                     <!-- Check-in/out Time -->
                     <td>
                         <div class="info-grid">
-                            <div>Check-in Time</div><div><strong>: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                            <div>Check-out Time</div><div><strong>: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                            <div>Check-in Time</div><div><strong>: <span class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</span></strong></div>
+                            <div>Check-out Time</div><div><strong>: <span class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</span></strong></div>
                         </div>
                         {% if att.checkIn and att.checkOut %}
                             {% set exam_start = att.report.exam.examStartTime %}
@@ -140,7 +144,7 @@
                             {% set actual_end = [check_out, exam_end] | min %}
                             {% set total_seconds = (actual_end - actual_start).total_seconds() %}
                             {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
-                            <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours </div>
+                            <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours</div>
                         {% endif %}
                     </td>
 
@@ -253,6 +257,93 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         }
     });
     doc.save("Admin_ViewInvigilationReport.pdf");
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    document.querySelectorAll(".edit-btn").forEach(editBtn => {
+        editBtn.addEventListener("click", function() {
+            const row = editBtn.closest("tr");
+            const checkinText = row.querySelector(".checkin-text");
+            const checkoutText = row.querySelector(".checkout-text");
+            const attendanceId = editBtn.dataset.id;
+
+            // If already in edit mode, do nothing
+            if (editBtn.classList.contains("editing")) return;
+
+            // Store original text
+            const origCheckin = checkinText.textContent.trim();
+            const origCheckout = checkoutText.textContent.trim();
+
+            // Convert displayed date to datetime-local format
+            const parseDate = (str) => {
+                if (str === "None" || !str.trim()) return "";
+                const parts = str.split(" ");
+                if (parts.length < 2) return "";
+                const [date, time] = parts;
+                const [day, mon, year] = date.split("/");
+                const months = {"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06","Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"};
+                return `${year}-${months[mon]}-${day.padStart(2,'0')}T${time}`;
+            };
+
+            // Replace with editable inputs
+            checkinText.innerHTML = `<input type="datetime-local" value="${parseDate(origCheckin)}" class="checkin-input">`;
+            checkoutText.innerHTML = `<input type="datetime-local" value="${parseDate(origCheckout)}" class="checkout-input">`;
+
+            // Change button to Save/Cancel
+            editBtn.textContent = "Save";
+            editBtn.classList.add("editing");
+
+            // Add cancel button
+            const cancelBtn = document.createElement("button");
+            cancelBtn.textContent = "Cancel";
+            cancelBtn.className = "cancel-btn";
+            cancelBtn.style.marginLeft = "6px";
+            editBtn.insertAdjacentElement("afterend", cancelBtn);
+
+            // Cancel: restore original
+            cancelBtn.addEventListener("click", function() {
+                checkinText.textContent = origCheckin;
+                checkoutText.textContent = origCheckout;
+                editBtn.textContent = "Edit";
+                editBtn.classList.remove("editing");
+                cancelBtn.remove();
+            });
+
+            // Save handler (only once)
+            editBtn.addEventListener("click", async function saveHandler() {
+                if (!editBtn.classList.contains("editing")) return;
+
+                const newCheckin = row.querySelector(".checkin-input").value;
+                const newCheckout = row.querySelector(".checkout-input").value;
+
+                const response = await fetch(`/admin/updateAttendance/${attendanceId}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ checkIn: newCheckin, checkOut: newCheckout })
+                });
+
+                if (response.ok) {
+                    // Replace back with new formatted times
+                    const formatDate = (val) => {
+                        if (!val) return "None";
+                        const date = new Date(val);
+                        const options = { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" };
+                        return date.toLocaleString("en-GB", options).replace(",", "");
+                    };
+                    checkinText.textContent = formatDate(newCheckin);
+                    checkoutText.textContent = formatDate(newCheckout);
+                    editBtn.textContent = "Edit";
+                    editBtn.classList.remove("editing");
+                    cancelBtn.remove();
+                } else {
+                    alert("Error updating attendance.");
+                }
+
+                // Remove this temporary save listener
+                editBtn.removeEventListener("click", saveHandler);
+            }, { once: true });
+        });
+    });
 });
 
 
