@@ -2,6 +2,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
+from apscheduler.schedulers.background import BackgroundScheduler
+from .authRoutes import *
 
 # Create the Flask application
 app = Flask(__name__)
@@ -45,3 +47,13 @@ except ImportError as e:
     print(f"Failed to import routes: {e}")  
 
 
+
+scheduler = BackgroundScheduler()
+def scheduled_attendance_update():
+    with app.app_context():  # Important for DB access
+        # cleanup_expired_timetable_rows()
+        update_attendanceStatus()
+
+# Run every 5sec
+scheduler.add_job(func=scheduled_attendance_update, trigger='interval', seconds=5)
+scheduler.start()

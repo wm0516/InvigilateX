@@ -23,8 +23,6 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # cleanup_expired_timetable_rows()
-    update_attendanceStatus()
     login_text = ''
     password_text = ''
 
@@ -618,40 +616,28 @@ def cleanup_expired_timetable_rows():
 
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
-    timeNow = datetime.now()
+    timeNow = datetime.now(timezone.utc)
 
     for attendance in all_attendance:
         report = attendance.report
         exam = report.exam if report else None
-        if not exam:
+        if not exam or not exam.examStartTime or not exam.examEndTime:
             continue
 
         check_in = attendance.checkIn
         check_out = attendance.checkOut
-
-        # --- Localize all datetimes consistently ---
-        exam_start = exam.examStartTime if exam.examStartTime is None else exam.examStartTime
-        exam_end   = exam.examEndTime   if exam.examEndTime is None else exam.examEndTime
-        if check_in and check_in is None:
-            check_in = check_in
-        if check_out and check_out is None:
-            check_out = check_out
+        exam_start = exam.examStartTime
+        exam_end = exam.examEndTime
 
         remark = "PENDING"
 
         # --- Check-in logic ---
         if check_in:
-            if check_in <= exam_start:
-                remark = "CHECK IN"
-            else:
-                remark = "CHECK IN LATE"
+            remark = "CHECK IN" if check_in <= exam_start else "CHECK IN LATE"
 
         # --- Check-out logic ---
         if check_out:
-            if check_out < exam_end:
-                remark = "CHECK OUT EARLY"
-            else:
-                remark = "COMPLETED"
+            remark = "CHECK OUT EARLY" if check_out < exam_end else "COMPLETED"
 
         # --- After exam ended ---
         if timeNow > exam_end:
@@ -665,7 +651,15 @@ def update_attendanceStatus():
 
         attendance.remark = remark
 
+        # --- Update user cumulative hours if expired ---
+        if remark == "EXPIRED":
+            user = attendance.invigilator
+            if check_in and check_out:
+                worked_hours = (check_out - check_in).total_seconds() / 3600  # convert to hours
+                user.userCumulativeHours = (user.userCumulativeHours or 0) + worked_hours
+
     db.session.commit()
+
 
 
 
