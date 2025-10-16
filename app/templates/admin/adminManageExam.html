@@ -320,51 +320,41 @@ function populateEditForm(data) {
     document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 
-    // Handle multiple venues
     const venueContainer = document.getElementById('venueContainer');
     venueContainer.innerHTML = ''; // clear existing
 
-    if (data.examVenues && data.examVenues.length > 0) {
-        data.examVenues.forEach((venueNumber, index) => {
-            const div = document.createElement('div');
-            div.classList.add('venue-item');
-            div.style.display = "flex";
-            div.style.alignItems = "center";
-            div.style.gap = "8px";
-            div.style.marginBottom = "5px";
-
-            div.innerHTML = `
-                <select name="venue[]" class="venue-dropdown" required>
-                    ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
-                </select>
-                ${index === 0 
-                    ? `<button type="button" id="addVenueBtn" class="add-btn"
-                        style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">+</button>`
-                    : `<button type="button" class="removeVenueBtn"
-                        style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">&times;</button>`}
-            `;
-            venueContainer.appendChild(div);
-
-            if (index > 0) div.querySelector(".removeVenueBtn").addEventListener("click", () => div.remove());
-        });
-
-        const addBtn = document.getElementById("addVenueBtn");
-        if (addBtn) bindAddVenue(addBtn);
-    } else {
-        // No venues yet, create one empty
+    const createVenueRow = (venueNumber, isFirst) => {
         const div = document.createElement('div');
         div.classList.add('venue-item');
+        div.style.display = "flex";
+        div.style.alignItems = "center";
+        div.style.gap = "8px";
+        div.style.marginBottom = "5px";
+
         div.innerHTML = `
             <select name="venue[]" class="venue-dropdown" required>
-                ${venueOptionsHTML}
+                ${venueOptionsHTML.replace(`value="${venueNumber || ''}"`, `value="${venueNumber || ''}" ${venueNumber ? 'selected' : ''}`)}
             </select>
-            <button type="button" id="addVenueBtn" class="add-btn"
-                style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">+</button>
+            <button type="button" class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
+                style="background-color: ${isFirst ? '#28a745' : '#dc3545'};
+                       color: white; border: none; border-radius: 5px;
+                       padding: 10px; font-size: large;">
+                ${isFirst ? '+' : '×'}
+            </button>
         `;
         venueContainer.appendChild(div);
-        bindAddVenue(div.querySelector("#addVenueBtn"));
+
+        if (isFirst) bindAddVenue(div.querySelector(".add-btn"));
+        else div.querySelector(".removeVenueBtn").addEventListener("click", () => div.remove());
+    };
+
+    if (data.examVenues && data.examVenues.length > 0) {
+        data.examVenues.forEach((venueNumber, index) => createVenueRow(venueNumber, index === 0));
+    } else {
+        createVenueRow('', true);
     }
 }
+
 
 // -------------------------
 // On Exam Select Change
