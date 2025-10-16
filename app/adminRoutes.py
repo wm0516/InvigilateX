@@ -1818,42 +1818,7 @@ def admin_manageInvigilationTimetable():
     return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
 
 
-@app.route('/admin/updateAttendance/<int:attendance_id>', methods=['POST'])
-@login_required
-def update_attendance_time(attendance_id):
-    data = request.get_json()
-    check_in = data.get("checkIn")
-    check_out = data.get("checkOut")
 
-    if not check_in or not check_out:
-        return jsonify({"success": False, "message": "Missing time values"}), 400
-
-    attendance = InvigilatorAttendance.query.get(attendance_id)
-    if not attendance:
-        return jsonify({"success": False, "message": "Attendance not found"}), 404
-
-    exam = attendance.report.exam
-    if not exam or not exam.examStartTime or not exam.examEndTime:
-        return jsonify({"success": False, "message": "Exam data missing"}), 400
-
-    # Parse new times
-    from datetime import datetime, timedelta
-    new_check_in = datetime.strptime(check_in, "%Y-%m-%dT%H:%M")
-    new_check_out = datetime.strptime(check_out, "%Y-%m-%dT%H:%M")
-
-    # Validation (within ±1 hour range)
-    allowed_start = exam.examStartTime - timedelta(hours=1)
-    allowed_end = exam.examEndTime + timedelta(hours=1)
-    if not (allowed_start <= new_check_in <= allowed_end and allowed_start <= new_check_out <= allowed_end):
-        return jsonify({"success": False, "message": "Time must be within ±1 hour of exam period"}), 400
-
-    # Save updates
-    attendance.checkIn = new_check_in
-    attendance.checkOut = new_check_out
-    attendance.timeAction = datetime.now()
-    db.session.commit()
-
-    return jsonify({"success": True})
 
 # -------------------------------
 # Calculate All InvigilatorAttendance and InvigilationReport Data From Database
