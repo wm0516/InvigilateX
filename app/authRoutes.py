@@ -552,12 +552,19 @@ def attendance_record():
             # ------------------------------
             if confirm.checkIn and confirm.checkOut:
                 exam_hours = hours_diff(start, end)
-                actual_hours = hours_diff(confirm.checkIn, confirm.checkOut)
 
-                # Adjust cumulative hours
-                if confirm.checkIn > start or confirm.checkOut < end:
-                    user.userPendingCumulativeHours -= exam_hours
-                    user.userCumulativeHours += actual_hours
+                # Determine effective start
+                effective_start = start if confirm.checkIn < start else confirm.checkIn
+
+                # Determine effective end
+                effective_end = end if confirm.checkOut > end else confirm.checkOut
+
+                # Compute actual working hours
+                actual_hours = hours_diff(effective_start, effective_end)
+
+                # Adjust cumulative hours correctly
+                user.userPendingCumulativeHours -= exam_hours
+                user.userCumulativeHours += actual_hours
                 confirm.invigilationStatus = True
 
             db.session.commit()
