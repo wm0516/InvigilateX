@@ -646,7 +646,7 @@ def update_attendanceStatus():
         # 2️⃣ Determine remark logic
         # -----------------------------
         if not check_in and not check_out:
-            remark = "EXPIRED"
+            remark = "PENDING"
 
         elif check_in and not check_out:
             # Checked in but never checked out (still before auto-assign threshold)
