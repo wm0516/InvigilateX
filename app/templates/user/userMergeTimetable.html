@@ -3,18 +3,10 @@
 {% block head_title %}<h2>{{ user_department }} - Merge Timetable</h2>{% endblock %}
 
 {% block content %}
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="position: relative;">
-            <input type="text" id="searchInput" name="search_mergeTimetable" placeholder="Search..." value="{{ search_mergeTimetable }}" style="border-radius: 6px; width: 100%;">
-            <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
-        </div>
-        <div class="button-wrapper" style="margin-bottom: auto;">
-            <button id="generatePDF" style="background-color: black;">Download as PDF</button>
-        </div>
-    </div>
+
     <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
 
-    <form method="get" style="display:flex; align-items:center; gap:8px; width: 50%;">
+    <form method="get" style="display:flex; align-items:center; gap:8px;">
         <label for="lecturer">Select_Lecturer:</label>
         <select name="lecturer" id="lecturer" onchange="this.form.submit()">
             <option value="">All Lecturers</option>
@@ -30,6 +22,16 @@
                 Clear_Filter
             </button>
         {% endif %}
+        
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="position: relative;">
+                <input type="text" id="searchInput" name="search_mergeTimetable" placeholder="Search..." value="{{ search_mergeTimetable }}" style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+            </div>
+            <div class="button-wrapper" style="margin-bottom: auto;">
+                <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+            </div>
+        </div>
     </form>
 
     <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
