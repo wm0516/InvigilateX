@@ -91,6 +91,7 @@
     </div>
 </div><br>
 
+{% if waiting %}
 <form action="{{ url_for('user_homepage') }}" method="POST">
     <div style="padding: 10px;">
         <h2>Confirm or Decline Invigilation Slot</h2>
@@ -110,7 +111,6 @@
                 <tbody>
                     {% for w in waiting %}
                     <tr>
-
                         <td>{{ w.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ w.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                         <td>{{ w.report.exam.examStartTime.strftime("%A") }} - {{ w.report.exam.examEndTime.strftime("%A") }}</td>
                         <td>{{ w.report.exam.examStartTime.strftime("%H:%M") }} - {{ w.report.exam.examEndTime.strftime("%H:%M") }}</td>
@@ -129,7 +129,9 @@
         </div>
     </div>
 </form><br>
+{% endif %}
 
+{% if confirm %}
 <form action="{{ url_for('user_homepage') }}" method="POST">
     <div style="padding: 10px;">
         <h2>Incoming Invigilation Slot</h2>
@@ -163,7 +165,9 @@
         </div>
     </div>
 </form><br>
+{% endif %}
 
+{% if open %}
 <form action="{{ url_for('user_homepage') }}" method="POST">
     <div style="padding: 10px;">
         <h2>Open Public Own Selection Invigilation Slot</h2>
@@ -202,5 +206,6 @@
         </div>
     </div>
 </form>
+{% endif %}
 {% endif %}
 {% endblock %}
