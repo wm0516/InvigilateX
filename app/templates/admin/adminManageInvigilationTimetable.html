@@ -164,20 +164,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const days = document.querySelectorAll(".calendar-day");
         days.forEach(day => {
+            const dateText = day.querySelector(".calendar-date").innerText.toLowerCase();
             let dayHasVisible = false;
-            const cards = day.querySelectorAll(".exam-card");
 
-            cards.forEach(card => {
-                const text = card.innerText.toLowerCase();
-                if (text.includes(filter)) {
-                    card.style.display = "block";
-                    dayHasVisible = true;
-                } else {
-                    card.style.display = "none";
-                }
-            });
+            // Check if date matches filter
+            if (dateText.includes(filter)) {
+                dayHasVisible = true;
+                day.querySelectorAll(".exam-card").forEach(card => card.style.display = "block");
+            } else {
+                // Check each exam card under this date
+                const cards = day.querySelectorAll(".exam-card");
+                cards.forEach(card => {
+                    const text = card.innerText.toLowerCase();
+                    if (text.includes(filter)) {
+                        card.style.display = "block";
+                        dayHasVisible = true;
+                    } else {
+                        card.style.display = "none";
+                    }
+                });
+            }
 
-            // Hide entire day if no cards are visible
+            // Hide entire day if no cards or date match
             day.style.display = dayHasVisible ? "block" : "none";
             if (dayHasVisible) anyVisible = true;
         });
@@ -185,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
         noResults.style.display = anyVisible ? "none" : "block";
     });
 });
+
 </script>
 {% endblock %}
 
