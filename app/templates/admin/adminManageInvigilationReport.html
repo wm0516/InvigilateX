@@ -1,54 +1,39 @@
 {% extends "admin/adminBase.html" %}
-{% set show_tabs = true %}
+{% set show_tabs = false %}
 {% set show_upload = false %}
-{% set show_dashboard = true %}
+{% set show_dashboard = false %}
 {% set show_manual = false %}
-{% set show_edit = true %}
+{% set show_edit = false %}
 {% block title %}Admin ManageInvigilationReport{% endblock %}
 {% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
-
-{% block dashboard_section %}
-<!-- Dashboard Form -->
-<form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
-    <div id="dashboardSection">
-        <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
-            <div class="dashboard-row">
-                <div class="dashboard-frame">
-                    <h3>Pending Invigilation Duties</h3>
-                    <p class="dashboard-text">{{ total_activeReport }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Completed Invigilation Duties</h3>
-                    <p class="dashboard-text">{{ total_report - total_activeReport }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Checked In Late</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Checked Out Early</h3>
-                    <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
+{% block content %}
+<div class="menu-section">
+    <form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
+        <div id="dashboardSection">
+            <input type="hidden" name="form_type" value="dashboard">
+            <div class="form-left" style="width: 100%">
+                <div class="dashboard-row">
+                    <div class="dashboard-frame">
+                        <h3>Pending Invigilation Duties</h3>
+                        <p class="dashboard-text">{{ total_activeReport }}</p>
+                    </div>
+                    <div class="dashboard-frame">
+                        <h3>Completed Invigilation Duties</h3>
+                        <p class="dashboard-text">{{ total_report - total_activeReport }}</p>
+                    </div>
+                    <div class="dashboard-frame">
+                        <h3>Checked In Late</h3>
+                        <p class="dashboard-text" style="color:red;">{{ total_checkInLate }}</p>
+                    </div>
+                    <div class="dashboard-frame">
+                        <h3>Checked Out Early</h3>
+                        <p class="dashboard-text" style="color:red;">{{ total_checkOutEarly }}</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
-{% endblock %}
+    </form>
 
-{% block edit_section %}
-<!-- Edit Form -->
-<form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
-    <div id="editSection" style="width: 100%; margin:auto;">
-        <input type="hidden" name="form_type" value="edit">
-        <div class="form-left" style="width: 100%">
-        </div>
-    </div>
-</form>
-{% endblock %}
-
-{% block content %}
-<div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>List of Lecturer Invigilation Report</h3>
         <div style="display: flex; align-items: center; gap: 10px;">
