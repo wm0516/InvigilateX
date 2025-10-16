@@ -475,11 +475,12 @@ def attendance_record():
                 exam = getattr(att.report, "exam", None)
                 if not exam:
                     return float("inf")
-                start, end = exam.examStartTime, exam.examEndTime
-                if not start or not end:
+                start = exam.examStartTime
+                if not start:
                     return float("inf")
-                return min(abs((start - scan_time).total_seconds()), abs((end - scan_time).total_seconds()))
+                return abs((start - scan_time).total_seconds())
 
+            # Sort and pick nearest
             timeSlots_sorted = sorted(timeSlots, key=exam_proximity)
             confirm = timeSlots_sorted[0]
 
@@ -489,12 +490,20 @@ def attendance_record():
 
             start, end = exam.examStartTime, exam.examEndTime
 
-            # Define check-in and check-out windows
-            checkin_start = start - timedelta(hours=1)   # 1 hour before exam
-            checkin_end = end                             # until exam end
-            checkout_start = end                          # check-out starts at exam end
-            checkout_end = end + timedelta(hours=1)       # optional buffer after exam
-            checkout_auto = end + timedelta(hours=1)      # auto check-out if missed
+            # 1-hour rule: only valid if within 1 hour before start
+            one_hour_before = start - timedelta(hours=1)
+            if scan_time < one_hour_before:
+                return jsonify({
+                    "success": False,
+                    "message": "No upcoming exam slot within 1 hour!"
+                })
+
+            # Define check-in/out windows
+            checkin_start = start - timedelta(hours=1)
+            checkin_end = end
+            checkout_start = end
+            checkout_end = end + timedelta(hours=1)
+            checkout_auto = end + timedelta(hours=1)
 
             # Update attendance
             for att in timeSlots:
@@ -526,12 +535,12 @@ def attendance_record():
                         att.checkOut = scan_time
                         att.remark = "CHECK OUT EARLY"
 
-                # --- Auto check-out if missed ---
+                # --- Auto check-out ---
                 if not att.checkOut and scan_time > checkout_auto:
                     att.checkOut = checkout_auto
                     att.remark = "COMPLETED"
 
-                # --- Update user cumulative hours ---
+                # --- Update cumulative hours ---
                 if att.checkIn and att.checkOut:
                     exam_hours = hours_diff(start, end)
                     actual_hours = hours_diff(att.checkIn, att.checkOut)
@@ -539,7 +548,7 @@ def attendance_record():
                         user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
                     att.invigilationStatus = True
 
-                # Record the action time
+                # Record time
                 att.timeAction = scan_time
 
             db.session.commit()
@@ -572,8 +581,9 @@ def attendance_record():
             print(f"[ERROR] Attendance record failed: {e}")
             return jsonify({"success": False, "message": f"Server error: {str(e)}"})
 
-    # GET request: render attendance page
+    # GET request
     return render_template('auth/attendance.html')
+
 
 
 
