@@ -665,23 +665,19 @@ def update_attendanceStatus():
 
         remark = "PENDING"
 
-        # -----------------------------
-        # 1️⃣ Handle missing check-out after 30 minutes of exam end
-        # -----------------------------
+        # Handle missing check-out after 30 minutes of exam end
         if check_in and not check_out and timeNow > exam_end + timedelta(minutes=30):
             attendance.checkOut = exam_end + timedelta(minutes=30)
             check_out = attendance.checkOut
 
-        # -----------------------------
-        # 2️⃣ Determine remark logic
-        # -----------------------------
+        # Determine remark logic
         if not check_in and not check_out:
             remark = "PENDING"
 
         elif check_in and not check_out:
             # Checked in but never checked out (still before auto-assign threshold)
             if timeNow <= exam_end + timedelta(minutes=30):
-                remark = "ONGOING"
+                remark = "CHECK IN"
             else:
                 remark = "EXPIRED"
 
@@ -693,14 +689,8 @@ def update_attendanceStatus():
                 remark = "CHECK IN LATE"
             elif check_in <= exam_start and check_out < exam_end:
                 remark = "CHECK OUT EARLY"
-            elif check_in > exam_start and check_out < exam_end:
-                remark = "CHECK IN LATE & CHECK OUT EARLY"
-            else:
-                remark = "COMPLETED"
 
-        # -----------------------------
-        # 3️⃣ Auto-expire logic (after exam + 30min)
-        # -----------------------------
+        # Auto-expire logic (after exam + 30min)
         if timeNow > exam_end + timedelta(minutes=30):
             if not check_in and not check_out:
                 remark = "EXPIRED"
