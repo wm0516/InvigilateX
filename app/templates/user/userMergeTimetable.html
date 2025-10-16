@@ -3,26 +3,24 @@
 {% block head_title %}<h2>{{ user_department }} - Merge Timetable</h2>{% endblock %}
 
 {% block content %}
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <form method="get" style="display:flex; align-items:center; gap:8px;">
+            <label for="lecturer">Select_Lecturer:</label>
+            <select name="lecturer" id="lecturer" onchange="this.form.submit()">
+                <option value="">All Lecturers</option>
+                {% for lecturer in lecturers %}
+                    <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
+                        {{ lecturer }}
+                    </option>
+                {% endfor %}
+            </select>
 
-    <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
-
-    <form method="get" style="display:flex; align-items:center; gap:8px;">
-        <label for="lecturer">Select_Lecturer:</label>
-        <select name="lecturer" id="lecturer" onchange="this.form.submit()">
-            <option value="">All Lecturers</option>
-            {% for lecturer in lecturers %}
-                <option value="{{ lecturer }}" {% if lecturer == selected_lecturer %}selected{% endif %}>
-                    {{ lecturer }}
-                </option>
-            {% endfor %}
-        </select>
-
-        {% if selected_lecturer %}
-            <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'" style="padding: 1%; background-color: #edd5ff;">
-                Clear_Filter
-            </button>
-        {% endif %}
-        
+            {% if selected_lecturer %}
+                <button type="button" onclick="window.location.href='{{ url_for('user_mergeTimetable') }}'" style="padding: 1%; background-color: #edd5ff;">
+                    Clear_Filter
+                </button>
+            {% endif %}
+        </form>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_mergeTimetable" placeholder="Search..." value="{{ search_mergeTimetable }}" style="border-radius: 6px; width: 100%;">
@@ -32,7 +30,8 @@
                 <button id="generatePDF" style="background-color: black;">Download as PDF</button>
             </div>
         </div>
-    </form>
+    </div>
+    <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
 
     <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     <div class="user-table-container">
