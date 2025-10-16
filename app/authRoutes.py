@@ -307,8 +307,16 @@ def confirm_record(user_id):
     )
 
 # cutoff_time = datetime.now() - timedelta(minutes=1)days=2
-def open_record():
-    cutoff_time = datetime.now() - timedelta(minutes=1)
+def open_record(current_user_id):
+    cutoff_time = datetime.now(timezone.utc) - timedelta(minutes=1)
+
+    # Get all invigilator attendance for the current user
+    user_assigned_exam_ids = (
+        db.session.query(InvigilationReport.examId)
+        .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
+        .filter(InvigilatorAttendance.invigilatorId == current_user_id)
+        .subquery()
+    )
 
     slots = (
         InvigilatorAttendance.query
@@ -319,7 +327,8 @@ def open_record():
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.timeCreate < cutoff_time,
-            Exam.examStartTime > datetime.now()
+            Exam.examStartTime > datetime.now(timezone.utc),
+            ~InvigilationReport.examId.in_(user_assigned_exam_ids)   # Exclude exams the user is already assigned to
         )
         .all()
     )
@@ -332,7 +341,6 @@ def open_record():
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
-
 
 # -------------------------------
 # Main User Homepage
