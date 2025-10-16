@@ -304,6 +304,7 @@ def confirm_record(user_id):
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(InvigilatorAttendance.invigilatorId == user_id)
         .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(InvigilatorAttendance.timeAction.is_(None))
     )
 
 # cutoff_time = datetime.now() - timedelta(minutes=1)days=2
