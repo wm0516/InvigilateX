@@ -21,6 +21,7 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    update_attendanceStatus()
     login_text = ''
     password_text = ''
 
