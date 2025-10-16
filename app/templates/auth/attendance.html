@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
     <title>Attendance Check In/Out</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background: #f6f6f6;
             display: flex;
             justify-content: center;
@@ -18,7 +19,7 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            width: 700px;
+            width: 50%;
             text-align: center;
         }
         h1 { margin-bottom: 10px; color: #333; }
@@ -38,7 +39,7 @@
             width: 60%;
             padding: 8px;
             font-size: 16px;
-            margin-top: 10px;
+            margin-top: 1%;
         }
         #status-message {
             margin-top: 15px;
@@ -59,6 +60,7 @@
         .status.completed { color: green; font-weight: bold; }
         .status.expired { color: red; font-weight: bold; }
         .status.pending { color: orange; font-weight: bold; }
+        .hidden { display: none; }
     </style>
 </head>
 
@@ -67,10 +69,10 @@
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
 
-        <input type="text" id="cardNumber" placeholder="Scan your card here..." autofocus autocomplete="off">
+        <input type="text" id="cardNumber" placeholder="Enter or scan your card..." autofocus autocomplete="off">
         <br>
-        <button id="btn-checkin" class="btn">Check In</button>
-        <button id="btn-checkout" class="btn">Check Out</button>
+        <button id="btn-checkin" class="btn" onclick="handleAction('checkin')">Check In</button>
+        <button id="btn-checkout" class="btn" onclick="handleAction('checkout')">Check Out</button>
 
         <p id="status-message"></p>
 
@@ -87,7 +89,7 @@
     </div>
 
     <script>
-        // Live datetime display
+        // Display current date/time
         function updateDateTime() {
             const now = new Date();
             const options = {
@@ -101,38 +103,31 @@
         updateDateTime();
         setInterval(updateDateTime, 1000);
 
-        const cardInput = document.getElementById('cardNumber');
         const table = document.getElementById('attendance-table');
         const tableBody = document.getElementById('attendance-table-body');
         const statusMessage = document.getElementById('status-message');
-        let currentAction = null;
 
-        document.getElementById('btn-checkin').addEventListener('click', () => currentAction = 'checkin');
-        document.getElementById('btn-checkout').addEventListener('click', () => currentAction = 'checkout');
+        function handleAction(actionType) {
+            const cardInput = document.getElementById('cardNumber');
+            const cardNumber = cardInput.value.trim();
 
-        // Simulate scanning
-        cardInput.addEventListener('input', function () {
-            const value = cardInput.value.trim();
-            if (!currentAction) {
-                statusMessage.textContent = "Please click Check In or Check Out first.";
-                cardInput.value = "";
+            if (!cardNumber) {
+                statusMessage.textContent = "Please enter or scan your card number.";
                 return;
             }
-            if (value.length >= 3) {
-                statusMessage.textContent = "Processing...";
-                setTimeout(() => {
-                    sendCard(value, currentAction);
-                    cardInput.value = "";
-                }, 200);
-            }
-        });
 
-        // Send data to Flask
-        function sendCard(cardNumber, actionType) {
+            if (!confirm(`Are you sure to ${actionType.replace('check', 'check ')}?`)) return;
+
+            statusMessage.textContent = "Processing...";
+
             fetch('/attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cardNumber, actionType })
+                body: JSON.stringify({
+                    cardNumber: cardNumber,
+                    actionType: actionType,
+                    clickTime: new Date().toISOString()
+                })
             })
             .then(res => res.json())
             .then(data => {
@@ -154,10 +149,18 @@
                                 <strong>Check-in:</strong> ${d.checkIn}<br>
                                 <strong>Check-out:</strong> ${d.checkOut}
                             </td>
-                            <td><span class="status ${getRemarkClass(d.remark)}">[${d.remark}]</span></td>
+                            <td><span class="status ${getRemarkClass(d.remark)}">${d.remark}</span></td>
                         </tr>`;
+
+                    // Clear table automatically after 5 seconds
+                    setTimeout(() => {
+                        table.classList.add('hidden');
+                        tableBody.innerHTML = "";
+                        statusMessage.textContent = "";
+                    }, 5000);
                 } else {
                     table.classList.add('hidden');
+                    tableBody.innerHTML = "";
                     statusMessage.textContent = data.message;
                 }
             })
@@ -165,6 +168,9 @@
                 table.classList.add('hidden');
                 statusMessage.textContent = "Error connecting to server.";
             });
+
+            // Clear card input
+            cardInput.value = "";
         }
 
         function getRemarkClass(remark) {
