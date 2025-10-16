@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function searchTimetable() {
         const filter = searchInput.value.toLowerCase();
-        let anyRowVisible = false;
+        let anyVisible = false;
 
         if (!table) return;
 
@@ -142,26 +142,31 @@ document.addEventListener("DOMContentLoaded", function () {
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             const cells = row.getElementsByTagName("td");
-            let rowMatches = false;
+            let rowHasMatch = false;
 
             for (let j = 0; j < cells.length; j++) {
                 const divs = cells[j].getElementsByTagName("div");
+                let cellHasMatch = false;
+
                 for (let k = 0; k < divs.length; k++) {
-                    const text = divs[k].textContent.toLowerCase();
+                    const div = divs[k];
+                    const text = div.textContent.toLowerCase();
                     if (text.includes(filter)) {
-                        rowMatches = true;
-                        break;
+                        div.style.display = ""; // show matching
+                        cellHasMatch = true;
+                    } else {
+                        div.style.display = "none"; // hide non-matching
                     }
                 }
-                if (rowMatches) break;
+
+                if (cellHasMatch) rowHasMatch = true;
             }
 
-            row.style.display = rowMatches ? "" : "none";
-            if (rowMatches) anyRowVisible = true;
+            row.style.display = rowHasMatch ? "" : "none"; // hide row if no matches at all
+            if (rowHasMatch) anyVisible = true;
         }
 
-        // Show "No results" if nothing visible
-        noResults.style.display = anyRowVisible ? "none" : "block";
+        noResults.style.display = anyVisible ? "none" : "block";
     }
 
     searchInput.addEventListener("keyup", searchTimetable);
