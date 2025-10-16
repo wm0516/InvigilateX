@@ -236,26 +236,30 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
-// Clear edit form fields when course changes
+// -------------------------
+// Clear edit form fields
+// -------------------------
 function clearEditFields() {
-    const fieldsToClear = ['editProgramCode', 'editStudent', 'editVenue', 'editInvigilatorNo', 'startDate', 'startTime', 'endDate', 'endTime', 'editPracticalLecturer', 'editTutorialLecturer'];
+    const fieldsToClear = ['editProgramCode', 'editStudent', 'editInvigilatorNo', 'startDate', 'startTime', 'endDate', 'endTime', 'editPracticalLecturer', 'editTutorialLecturer'];
     fieldsToClear.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
     });
+    
+    const venueContainer = document.getElementById("venueContainer");
+    if (venueContainer) venueContainer.innerHTML = ''; // clear venues
 }
 
-// Populate edit form when course data is loaded
+// -------------------------
+// Populate edit form
+// -------------------------
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
-    document.getElementById('editVenue').value = data.examVenues || '';
     document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
 
-    // split datetime for inputs
     if (data.examStartTime) {
         const [date, time] = data.examStartTime.split('T');
         document.getElementById('startDate').value = date;
@@ -269,202 +273,98 @@ function populateEditForm(data) {
 
     document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
+
+    // -------------------------
+    // Handle multiple venues
+    // -------------------------
+    const venueContainer = document.getElementById("venueContainer");
+    venueContainer.innerHTML = ""; // clear existing
+
+    // Gather venue options from the first select (template)
+    const venueOptions = Array.from(document.querySelectorAll(".venue-dropdown")[0]?.options || [])
+                              .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join("");
+
+    if (data.examVenues && data.examVenues.length > 0) {
+        data.examVenues.forEach((venueNumber) => {
+            const newVenueDiv = document.createElement("div");
+            newVenueDiv.classList.add("venue-item");
+            newVenueDiv.style.display = "flex";
+            newVenueDiv.style.alignItems = "center";
+            newVenueDiv.style.gap = "8px";
+            newVenueDiv.style.marginBottom = "5px";
+
+            newVenueDiv.innerHTML = `
+                <select name="venue[]" class="venue-dropdown" required>
+                    <option value="" disabled>Select Exam Venue</option>
+                    ${venueOptions}
+                </select>
+                <button type="button" class="removeVenueBtn" 
+                        style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+                    &times;
+                </button>
+            `;
+            venueContainer.appendChild(newVenueDiv);
+
+            // Set the selected value
+            newVenueDiv.querySelector("select").value = venueNumber;
+
+            // Add remove functionality
+            newVenueDiv.querySelector(".removeVenueBtn").addEventListener("click", () => newVenueDiv.remove());
+        });
+    } else {
+        // No venues → create one empty select
+        const firstVenueDiv = document.createElement("div");
+        firstVenueDiv.classList.add("venue-item");
+        firstVenueDiv.style.display = "flex";
+        firstVenueDiv.style.alignItems = "center";
+        firstVenueDiv.style.gap = "8px";
+        firstVenueDiv.style.marginBottom = "5px";
+        firstVenueDiv.innerHTML = `
+            <select name="venue[]" class="venue-dropdown" required>
+                <option value="" disabled selected>Select Exam Venue</option>
+                ${venueOptions}
+            </select>
+            <button type="button" class="removeVenueBtn" 
+                    style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+                &times;
+            </button>
+        `;
+        venueContainer.appendChild(firstVenueDiv);
+        firstVenueDiv.querySelector(".removeVenueBtn").addEventListener("click", () => firstVenueDiv.remove());
+    }
 }
 
+// -------------------------
+// Load exam details on course change
+// -------------------------
 document.addEventListener("DOMContentLoaded", function() {
     const courseSelect = document.getElementById("editExamCourseSection");
+    if (!courseSelect) return;
 
-    if (courseSelect) {
-        courseSelect.addEventListener("change", function() {
-            const selectedValue = this.value;
-            clearEditFields();
+    courseSelect.addEventListener("change", function() {
+        const selectedValue = this.value;
+        clearEditFields();
+        if (!selectedValue) return;
 
-            if (!selectedValue) return;
-
-            // Fetch exam details from backend
-            fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        populateEditForm(data);
-                    }
-                })
-                .catch(err => {
-                    console.error("Error fetching exam details:", err);
-                });
-        });
-    }
-});
-
-
-// ==============================
-// Admin Manage Exam Page: Date/Time Restrictions
-// ==============================
-document.addEventListener("DOMContentLoaded", function () {
-    const startDate = document.getElementById("startDate");
-    const startTime = document.getElementById("startTime");
-    const endDate = document.getElementById("endDate");
-    const endTime = document.getElementById("endTime");
-
-    if (!startDate || !startTime || !endDate || !endTime) return;
-
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-    const nextYear = new Date(now);
-    nextYear.setFullYear(nextYear.getFullYear() + 1);
-    const nextYearDate = nextYear.toISOString().split("T")[0];
-
-    // Restrict date pickers
-    startDate.min = today;
-    startDate.max = nextYearDate;
-    endDate.min = today;
-    endDate.max = nextYearDate;
-
-    // Default: set both dates to today
-    startDate.value = today;
-    endDate.value = today;
-
-    // Restrict time: disable past times if today is selected
-    function restrictStartTime() {
-        if (startDate.value === today) {
-            let hh = String(now.getHours()).padStart(2, "0");
-            let mm = String(now.getMinutes()).padStart(2, "0");
-            startTime.min = hh + ":" + mm;  // from now onwards
-        } else {
-            startTime.min = "00:00";  // full day allowed
-        }
-    }
-
-    function restrictEndTime() {
-        if (endDate.value === today) {
-            let hh = String(now.getHours()).padStart(2, "0");
-            let mm = String(now.getMinutes()).padStart(2, "0");
-            endTime.min = hh + ":" + mm;
-        } else {
-            endTime.min = "00:00";
-        }
-    }
-
-    // Adjust end date automatically
-    function adjustEndDate() {
-        if (!startDate.value || !startTime.value || !endTime.value) return;
-
-        const start = new Date(startDate.value + "T" + startTime.value);
-        let end = new Date(endDate.value + "T" + endTime.value);
-
-        // If end time is earlier than start time → assume overnight
-        if (end < start) {
-            let nextDay = new Date(start);
-            nextDay.setDate(nextDay.getDate() + 1);
-            endDate.value = nextDay.toISOString().split("T")[0];
-        } else {
-            endDate.value = startDate.value;
-        }
-    }
-
-    // Bind events
-    startDate.addEventListener("change", () => {
-        endDate.value = startDate.value;
-        restrictStartTime();
-        restrictEndTime();
-    });
-
-    endDate.addEventListener("change", restrictEndTime);
-    startTime.addEventListener("change", adjustEndDate);
-    endTime.addEventListener("change", adjustEndDate);
-
-    // Initial restriction setup
-    restrictStartTime();
-    restrictEndTime();
-});
-
-
-document.addEventListener("DOMContentLoaded", function () {
-    const generateBtn = document.getElementById("generatePDF");
-    if (!generateBtn) return;
-
-    generateBtn.addEventListener("click", function () {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
-        const margin = 20;
-        const pageWidth = doc.internal.pageSize.getWidth();
-
-        // ===== Title =====
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("Manage Exam", pageWidth / 2, margin, { align: "center" });
-
-        const startY = margin + 25;
-
-        // ===== Prepare table data manually (to preserve readable formatting) =====
-        const table = document.querySelector(".user-data-table");
-        if (!table) {
-            alert("No table found to export!");
-            return;
-        }
-
-        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
-                let text = td.innerText.trim();
-
-                // Fix multi-line readability
-                text = text.replace(/\s*\n\s*/g, " ");
-
-                // Add newlines before each field label, not after colon
-                if (td.cellIndex === 2 || td.cellIndex === 4) {
-                    text = text
-                        .replace(/\s*Course Name\s*:/g, "\nCourse Name:") 
-                        .replace(/\s*Course Code\/Section\s*:/g, "\nCourse Code/Section:")
-                        .replace(/\s*Program Code\s*:/g, "\nProgram Code:")
-                        .replace(/\s*Number of Students\s*:/g, "\nNumber of Students:")
-                        .replace(/\s*Practical Lecturer\s*:/g, "\nPractical Lecturer:")
-                        .replace(/\s*Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
-                        .replace(/\s*Exam Date\s*:/g, "\nExam Date:")
-                        .replace(/\s*Exam Day\s*:/g, "\nExam Day:")
-                        .replace(/\s*Exam Time\s*:/g, "\nExam Time:")
-                        .replace(/\s*Exam Period\s*:/g, "\nExam Period:")
-                        .replace(/\s*Exam Venue\s*:/g, "\nExam Venue:");
-
-                    // Clean up possible leading newline
-                    text = text.trimStart();
+        fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    populateEditForm(data);
                 }
-
-                return text;
-            });
-            return cells;
-        });
-
-        // ===== Generate AutoTable =====
-        doc.autoTable({
-            head: [headers],
-            body: rows,
-            startY: startY,
-            theme: "grid",
-            tableWidth: "auto",
-            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
-            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
-            margin: { top: margin, left: margin, right: margin, bottom: margin },
-            didDrawPage: function (data) {
-                const pageCount = doc.internal.getNumberOfPages();
-                const pageHeight = doc.internal.pageSize.height;
-                doc.setFontSize(9);
-                doc.setTextColor(100);
-                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
-            },
-        });
-
-        // ===== Save =====
-        doc.save("Admin_ViewExamList.pdf");
+            })
+            .catch(err => console.error("Error fetching exam details:", err));
     });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+// -------------------------
+// Venue + button functionality
+// -------------------------
+document.addEventListener("DOMContentLoaded", function() {
     const venueContainer = document.getElementById("venueContainer");
     const addVenueBtn = document.getElementById("addVenueBtn");
-
     if (!venueContainer || !addVenueBtn) return;
 
     addVenueBtn.addEventListener("click", function () {
@@ -473,6 +373,9 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("You can only add up to 20 venues.");
             return;
         }
+
+        const venueOptions = Array.from(document.querySelectorAll(".venue-dropdown")[0]?.options || [])
+                                  .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join("");
 
         const newVenueDiv = document.createElement("div");
         newVenueDiv.classList.add("venue-item");
@@ -484,25 +387,108 @@ document.addEventListener("DOMContentLoaded", function () {
         newVenueDiv.innerHTML = `
             <select name="venue[]" class="venue-dropdown" required>
                 <option value="" disabled selected>Select Exam Venue</option>
-                ${Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
-                    .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`)
-                    .join("")}
+                ${venueOptions}
             </select>
             <button type="button" class="removeVenueBtn" 
                     style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
                 &times;
             </button>
         `;
-
         venueContainer.appendChild(newVenueDiv);
 
-        // Add remove functionality
-        const removeBtn = newVenueDiv.querySelector(".removeVenueBtn");
-        removeBtn.addEventListener("click", () => newVenueDiv.remove());
+        newVenueDiv.querySelector(".removeVenueBtn").addEventListener("click", () => newVenueDiv.remove());
+    });
+});
+
+// -------------------------
+// Date/Time restrictions
+// -------------------------
+document.addEventListener("DOMContentLoaded", function () {
+    const startDate = document.getElementById("startDate");
+    const startTime = document.getElementById("startTime");
+    const endDate = document.getElementById("endDate");
+    const endTime = document.getElementById("endTime");
+    if (!startDate || !startTime || !endDate || !endTime) return;
+
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    const nextYear = new Date(now); nextYear.setFullYear(nextYear.getFullYear() + 1);
+    const nextYearDate = nextYear.toISOString().split("T")[0];
+
+    startDate.min = today; startDate.max = nextYearDate;
+    endDate.min = today; endDate.max = nextYearDate;
+    startDate.value = today; endDate.value = today;
+
+    function restrictStartTime() {
+        if (startDate.value === today) {
+            startTime.min = String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+        } else startTime.min = "00:00";
+    }
+    function restrictEndTime() {
+        if (endDate.value === today) {
+            endTime.min = String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
+        } else endTime.min = "00:00";
+    }
+    function adjustEndDate() {
+        if (!startDate.value || !startTime.value || !endTime.value) return;
+        const start = new Date(startDate.value + "T" + startTime.value);
+        let end = new Date(endDate.value + "T" + endTime.value);
+        if (end < start) {
+            let nextDay = new Date(start); nextDay.setDate(nextDay.getDate()+1);
+            endDate.value = nextDay.toISOString().split("T")[0];
+        } else endDate.value = startDate.value;
+    }
+    startDate.addEventListener("change", () => { endDate.value=startDate.value; restrictStartTime(); restrictEndTime(); });
+    endDate.addEventListener("change", restrictEndTime);
+    startTime.addEventListener("change", adjustEndDate);
+    endTime.addEventListener("change", adjustEndDate);
+    restrictStartTime(); restrictEndTime();
+});
+
+// -------------------------
+// PDF Generation
+// -------------------------
+document.addEventListener("DOMContentLoaded", function () {
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
+
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        doc.setFont("helvetica","bold"); doc.setFontSize(18);
+        doc.text("Manage Exam", pageWidth/2, margin, {align:"center"});
+        const startY = margin+25;
+
+        const table = document.querySelector(".user-data-table");
+        if (!table) { alert("No table found to export!"); return; }
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => Array.from(tr.querySelectorAll("td")).map(td => td.innerText.trim().replace(/\s*\n\s*/g," ")));
+
+        doc.autoTable({
+            head:[headers],
+            body:rows,
+            startY:startY,
+            theme:"grid",
+            tableWidth:"auto",
+            styles:{font:"helvetica", fontSize:9, cellPadding:4, overflow:"linebreak", valign:"middle"},
+            headStyles:{fillColor:[33,37,41], textColor:[255,255,255], halign:"center"},
+            margin:{top:margin,left:margin,right:margin,bottom:margin},
+            didDrawPage:function(data){
+                const pageCount = doc.internal.getNumberOfPages();
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(9); doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth-margin, pageHeight-10, {align:"right"});
+            }
+        });
+        doc.save("Admin_ViewExamList.pdf");
     });
 });
 </script>
 {% endblock %}
+
 
 
 
