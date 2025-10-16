@@ -239,6 +239,19 @@
 {% block extra_scripts %}
 <script>
 // -------------------------
+// Store venue options once
+// -------------------------
+let venueOptionsHTML = "";
+document.addEventListener("DOMContentLoaded", function() {
+    const venueSelect = document.getElementById("editVenue");
+    if (venueSelect) {
+        venueOptionsHTML = Array.from(venueSelect.options)
+            .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`)
+            .join("");
+    }
+});
+
+// -------------------------
 // Helper: Clear edit form
 // -------------------------
 function clearEditFields() {
@@ -256,7 +269,7 @@ function clearEditFields() {
 // -------------------------
 // Helper: Bind Add Venue button
 // -------------------------
-function bindAddVenue(addBtn, venueOptions) {
+function bindAddVenue(addBtn) {
     const venueContainer = document.getElementById("venueContainer");
     addBtn.addEventListener("click", function () {
         const currentVenues = venueContainer.querySelectorAll(".venue-item");
@@ -274,7 +287,7 @@ function bindAddVenue(addBtn, venueOptions) {
 
         div.innerHTML = `
             <select name="venue[]" class="venue-dropdown" required>
-                ${venueOptions}
+                ${venueOptionsHTML}
             </select>
             <button type="button" class="removeVenueBtn"
                 style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">&times;</button>
@@ -311,9 +324,6 @@ function populateEditForm(data) {
     const venueContainer = document.getElementById('venueContainer');
     venueContainer.innerHTML = ''; // clear existing
 
-    const venueOptions = Array.from(document.querySelectorAll(".venue-dropdown")[0].options)
-        .map(opt => `<option value="${opt.value}">${opt.textContent}</option>`).join("");
-
     if (data.examVenues && data.examVenues.length > 0) {
         data.examVenues.forEach((venueNumber, index) => {
             const div = document.createElement('div');
@@ -325,7 +335,7 @@ function populateEditForm(data) {
 
             div.innerHTML = `
                 <select name="venue[]" class="venue-dropdown" required>
-                    ${venueOptions.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
+                    ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
                 </select>
                 ${index === 0 
                     ? `<button type="button" id="addVenueBtn" class="add-btn"
@@ -339,20 +349,20 @@ function populateEditForm(data) {
         });
 
         const addBtn = document.getElementById("addVenueBtn");
-        if (addBtn) bindAddVenue(addBtn, venueOptions);
+        if (addBtn) bindAddVenue(addBtn);
     } else {
-        // No venues yet
+        // No venues yet, create one empty
         const div = document.createElement('div');
         div.classList.add('venue-item');
         div.innerHTML = `
             <select name="venue[]" class="venue-dropdown" required>
-                ${venueOptions}
+                ${venueOptionsHTML}
             </select>
             <button type="button" id="addVenueBtn" class="add-btn"
                 style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">+</button>
         `;
         venueContainer.appendChild(div);
-        bindAddVenue(div.querySelector("#addVenueBtn"), venueOptions);
+        bindAddVenue(div.querySelector("#addVenueBtn"));
     }
 }
 
@@ -459,7 +469,13 @@ document.addEventListener("DOMContentLoaded", function () {
             styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
             headStyles: {fillColor: [33,37,41], textColor: [255,255,255], halign:"center"},
             margin: {top: margin, left: margin, right: margin, bottom: margin},
-            didDrawPage: function(data){ const pageCount = doc.internal.getNumberOfPages(); const pageHeight = doc.internal.pageSize.height; doc.setFontSize(9); doc.setTextColor(100); doc.text(`Page ${pageCount}`, pageWidth-margin, pageHeight-10, {align:"right"});}
+            didDrawPage: function(data){ 
+                const pageCount = doc.internal.getNumberOfPages(); 
+                const pageHeight = doc.internal.pageSize.height; 
+                doc.setFontSize(9); 
+                doc.setTextColor(100); 
+                doc.text(`Page ${pageCount}`, pageWidth-margin, pageHeight-10, {align:"right"});
+            }
         });
 
         doc.save("Admin_ViewExamList.pdf");
@@ -467,4 +483,5 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% endblock %}
+
 
