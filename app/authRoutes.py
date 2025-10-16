@@ -542,10 +542,9 @@ def attendance_record():
 
                 # --- Update cumulative hours ---
                 if att.checkIn and att.checkOut:
-                    exam_hours = hours_diff(start, end)
                     actual_hours = hours_diff(att.checkIn, att.checkOut)
                     if att.checkIn > start or att.checkOut < end:
-                        user.userCumulativeHours = user.userCumulativeHours - exam_hours + actual_hours
+                        user.userCumulativeHours = user.userCumulativeHours + actual_hours
                     att.invigilationStatus = True
 
                 # Record time
