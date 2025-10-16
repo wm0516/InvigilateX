@@ -28,7 +28,7 @@
 
     <br><div id="dayLegend" style="display:flex;gap:15px;align-items:center;"></div>
     <div class="user-table-container">
-        <table class="user-data-table" border="1">
+        <table class="user-data-table" id="mergeTimetable" border="1">
             <thead>
                 <tr>
                     <th>Day / Time</th>
@@ -123,6 +123,49 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.jQuery && $(select).select2) {
         $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
     }
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    const noResults = document.getElementById("noResults");
+    const table = document.getElementById("mergeTimetable");
+
+    function searchTimetable() {
+        const filter = searchInput.value.toLowerCase();
+        let anyRowVisible = false;
+
+        if (!table) return;
+
+        const rows = table.getElementsByTagName("tr");
+        // Skip header row
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName("td");
+            let rowMatches = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                const divs = cells[j].getElementsByTagName("div");
+                for (let k = 0; k < divs.length; k++) {
+                    const text = divs[k].textContent.toLowerCase();
+                    if (text.includes(filter)) {
+                        rowMatches = true;
+                        break;
+                    }
+                }
+                if (rowMatches) break;
+            }
+
+            row.style.display = rowMatches ? "" : "none";
+            if (rowMatches) anyRowVisible = true;
+        }
+
+        // Show "No results" if nothing visible
+        noResults.style.display = anyRowVisible ? "none" : "block";
+    }
+
+    searchInput.addEventListener("keyup", searchTimetable);
+    document.getElementById("searchBtn")?.addEventListener("click", searchTimetable);
 });
 </script>
 {% endblock %}

@@ -301,5 +301,47 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
         pdf.save(filename);
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("searchInput");
+    const noResults = document.getElementById("noResults");
+    const table = document.getElementById("manageTimetable");
+
+    function searchTimetable() {
+        const filter = searchInput.value.toLowerCase();
+        let anyRowVisible = false;
+
+        if (!table) return;
+
+        const rows = table.getElementsByTagName("tr");
+        // Skip header row
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const cells = row.getElementsByTagName("td");
+            let rowMatches = false;
+
+            for (let j = 0; j < cells.length; j++) {
+                const divs = cells[j].getElementsByTagName("div");
+                for (let k = 0; k < divs.length; k++) {
+                    const text = divs[k].textContent.toLowerCase();
+                    if (text.includes(filter)) {
+                        rowMatches = true;
+                        break;
+                    }
+                }
+                if (rowMatches) break;
+            }
+
+            row.style.display = rowMatches ? "" : "none";
+            if (rowMatches) anyRowVisible = true;
+        }
+
+        // Show "No results" if nothing visible
+        noResults.style.display = anyRowVisible ? "none" : "block";
+    }
+
+    searchInput.addEventListener("keyup", searchTimetable);
+    document.getElementById("searchBtn")?.addEventListener("click", searchTimetable);
+});
 </script>
 {% endblock %}  
