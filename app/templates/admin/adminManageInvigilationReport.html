@@ -71,7 +71,7 @@
                     <th>Exam Details</th>
                     <th>Invigilators</th>
                     <th>Invigilator Details</th>
-                    <th>Actions</th>
+                    <th>Action</th>
                     <th>Check-in/out Time</th>
                     <th>Attendance Status</th>
                     <th>Invigilation Status</th>
@@ -259,92 +259,100 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.save("Admin_ViewInvigilationReport.pdf");
 });
 
-document.addEventListener("DOMContentLoaded", function() {
-    document.querySelectorAll(".edit-btn").forEach(editBtn => {
-        editBtn.addEventListener("click", function() {
-            const row = editBtn.closest("tr");
-            const checkinText = row.querySelector(".checkin-text");
-            const checkoutText = row.querySelector(".checkout-text");
-            const attendanceId = editBtn.dataset.id;
+document.addEventListener("DOMContentLoaded", function () {
+    // --- Edit Time Handler ---
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const row = this.closest("tr");
+            const attendanceId = this.dataset.id;
+            const checkinEl = row.querySelector(".checkin-text");
+            const checkoutEl = row.querySelector(".checkout-text");
+            
+            // Fetch exam timing info from table context
+            const examStartText = row.closest("tbody").querySelector("td[rowspan] .info-grid").innerText;
+            const matchStart = examStartText.match(/Exam Time\s*:\s*(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+            const matchDate = examStartText.match(/Exam Date\s*:\s*(\d{2}\/\w{3}\/\d{4})/);
+            
+            if (!matchStart || !matchDate) {
+                alert("Unable to retrieve exam time range.");
+                return;
+            }
 
-            // If already in edit mode, do nothing
-            if (editBtn.classList.contains("editing")) return;
+            const examDate = matchDate[1];
+            const [startTime, endTime] = [matchStart[1], matchStart[2]];
 
-            // Store original text
-            const origCheckin = checkinText.textContent.trim();
-            const origCheckout = checkoutText.textContent.trim();
+            // Convert to Date objects
+            const start = new Date(`${examDate} ${startTime}`);
+            const end = new Date(`${examDate} ${endTime}`);
+            const minTime = new Date(start.getTime() - 60 * 60 * 1000);  // -1h
+            const maxTime = new Date(end.getTime() + 60 * 60 * 1000);    // +1h
 
-            // Convert displayed date to datetime-local format
-            const parseDate = (str) => {
-                if (str === "None" || !str.trim()) return "";
-                const parts = str.split(" ");
-                if (parts.length < 2) return "";
-                const [date, time] = parts;
-                const [day, mon, year] = date.split("/");
-                const months = {"Jan":"01","Feb":"02","Mar":"03","Apr":"04","May":"05","Jun":"06","Jul":"07","Aug":"08","Sep":"09","Oct":"10","Nov":"11","Dec":"12"};
-                return `${year}-${months[mon]}-${day.padStart(2,'0')}T${time}`;
-            };
+            // Replace texts with input fields
+            const checkInVal = checkinEl.textContent.trim() === "None" ? "" : checkinEl.textContent.trim();
+            const checkOutVal = checkoutEl.textContent.trim() === "None" ? "" : checkoutEl.textContent.trim();
 
-            // Replace with editable inputs
-            checkinText.innerHTML = `<input type="datetime-local" value="${parseDate(origCheckin)}" class="checkin-input">`;
-            checkoutText.innerHTML = `<input type="datetime-local" value="${parseDate(origCheckout)}" class="checkout-input">`;
+            const checkInInput = document.createElement("input");
+            checkInInput.type = "datetime-local";
+            checkInInput.value = checkInVal ? formatDateToLocalInput(checkInVal) : "";
+            checkInInput.min = formatDateToLocalInput(minTime);
+            checkInInput.max = formatDateToLocalInput(maxTime);
 
-            // Change button to Save/Cancel
-            editBtn.innerHTML = '<i class="fa fa-save"></i>';
-            editBtn.classList.add("editing");
+            const checkOutInput = document.createElement("input");
+            checkOutInput.type = "datetime-local";
+            checkOutInput.value = checkOutVal ? formatDateToLocalInput(checkOutVal) : "";
+            checkOutInput.min = formatDateToLocalInput(minTime);
+            checkOutInput.max = formatDateToLocalInput(maxTime);
 
-            // Add cancel button
-            const cancelBtn = document.createElement("button");
-            cancelBtn.innerHTML = '<i class="fa fa-times"></i>';
-            cancelBtn.className = "cancel-btn";
-            editBtn.insertAdjacentElement("afterend", cancelBtn);
+            checkinEl.replaceWith(checkInInput);
+            checkoutEl.replaceWith(checkOutInput);
 
-            // Cancel: restore original
-            cancelBtn.addEventListener("click", function() {
-                checkinText.textContent = origCheckin;
-                checkoutText.textContent = origCheckout;
-                editBtn.innerHTML = '<i class="fa fa-edit"></i>';
-                editBtn.classList.remove("editing");
-                cancelBtn.remove();
-            });
+            // Change edit button to Save
+            this.innerHTML = '<i class="fa fa-save"></i>';
+            this.classList.add("save-btn");
+            this.classList.remove("edit-btn");
 
-            // Save handler (only once)
-            editBtn.addEventListener("click", async function saveHandler() {
-                if (!editBtn.classList.contains("editing")) return;
+            // Attach save event
+            this.addEventListener("click", async function saveHandler() {
+                const newCheckIn = checkInInput.value;
+                const newCheckOut = checkOutInput.value;
 
-                const newCheckin = row.querySelector(".checkin-input").value;
-                const newCheckout = row.querySelector(".checkout-input").value;
-
-                const response = await fetch(`/admin/updateAttendance/${attendanceId}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ checkIn: newCheckin, checkOut: newCheckout })
-                });
-
-                if (response.ok) {
-                    // Replace back with new formatted times
-                    const formatDate = (val) => {
-                        if (!val) return "None";
-                        const date = new Date(val);
-                        const options = { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" };
-                        return date.toLocaleString("en-GB", options).replace(",", "");
-                    };
-                    checkinText.textContent = formatDate(newCheckin);
-                    checkoutText.textContent = formatDate(newCheckout);
-                    editBtn.textContent = "Edit";
-                    editBtn.classList.remove("editing");
-                    cancelBtn.remove();
-                } else {
-                    alert("Error updating attendance.");
+                if (!newCheckIn || !newCheckOut) {
+                    alert("Please fill both Check-in and Check-out time.");
+                    return;
                 }
 
-                // Remove this temporary save listener
-                editBtn.removeEventListener("click", saveHandler);
+                try {
+                    const response = await fetch(`/admin/updateAttendance/${attendanceId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            checkIn: newCheckIn,
+                            checkOut: newCheckOut
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        alert("Attendance updated successfully!");
+                        location.reload();
+                    } else {
+                        alert("Error: " + result.message);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Update failed.");
+                }
             }, { once: true });
         });
     });
-});
 
+    // Helper: format to 'YYYY-MM-DDTHH:mm'
+    function formatDateToLocalInput(dateStr) {
+        const d = new Date(dateStr);
+        const pad = n => n.toString().padStart(2, "0");
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+});
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
