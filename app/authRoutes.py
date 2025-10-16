@@ -446,6 +446,17 @@ def hours_diff(start, end):
     end = end.replace(tzinfo=None)
     return max(0, (end - start).total_seconds() / 3600.0)
 
+@app.template_filter('hours_format')
+def hours_format(hours_float):
+    hours = int(hours_float)
+    minutes = int(round((hours_float - hours) * 60))
+    if hours == 0:
+        return f"{minutes}m"
+    elif minutes == 0:
+        return f"{hours}h"
+    else:
+        return f"{hours}h {minutes}m"
+
 # -------------------------------
 # Attendance route
 # -------------------------------
