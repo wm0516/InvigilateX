@@ -540,12 +540,20 @@ def attendance_record():
 
                 expire_time = end + timedelta(hours=1)
                 if scan_time < end:
+                    # Checked out before exam end
                     confirm.checkOut = scan_time
                     confirm.remark = "CHECK OUT EARLY"
                 elif end <= scan_time <= expire_time:
-                    confirm.checkOut = scan_time
-                    confirm.remark = "COMPLETED"
+                    # Checked out normally (on time or slightly after)
+                    if confirm.remark == "CHECK IN LATE":
+                        # Keep previous remark if already late check-in
+                        confirm.checkOut = scan_time
+                        confirm.remark = "CHECK IN LATE"
+                    else:
+                        confirm.checkOut = scan_time
+                        confirm.remark = "COMPLETED"
                 else:
+                    # Checked out too late (after grace period)
                     confirm.checkOut = expire_time
                     confirm.remark = "EXPIRED"
 
