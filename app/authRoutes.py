@@ -619,9 +619,8 @@ def update_last_scan():
 @app.route('/last-scan')
 def get_last_scan():
     global last_scan_data
-    response = jsonify(last_scan_data)
-    last_scan_data = {"cardNumber": None, "time": None}
-    return response
+    return jsonify(last_scan_data)
+
 
 
 

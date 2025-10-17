@@ -114,28 +114,30 @@
                 .then(data => {
                     const cardInput = document.getElementById('cardNumber');
                     const statusMsg = document.getElementById('status-message');
+                    
+                    if (data.cardNumber) {
+                        const now = Date.now();
+                        // Allow same card again after 5 seconds
+                        if (!window.lastProcessedCard ||
+                            data.cardNumber !== window.lastProcessedCard.card ||
+                            (now - window.lastProcessedCard.time) > 5000) {
 
-                    // only process if a card is detected and it's different from the last one processed
-                    if (data.cardNumber && data.cardNumber !== window.lastProcessedCard) {
-                        cardInput.value = data.cardNumber;
-                        statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
-                        window.lastProcessedCard = data.cardNumber; // remember last processed card
+                            cardInput.value = data.cardNumber;
+                            statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
+                            window.lastProcessedCard = { card: data.cardNumber, time: now };
 
-                        // auto-clear UI after 5s
-                        clearTimeout(window.clearCardTimeout);
-                        window.clearCardTimeout = setTimeout(() => {
-                            cardInput.value = "";
-                            statusMsg.textContent = "";
-                            // ✅ we do NOT reset lastProcessedCard here
-                            // so repeated scans of same card won't trigger instantly
-                        }, 5000);
+                            clearTimeout(window.clearCardTimeout);
+                            window.clearCardTimeout = setTimeout(() => {
+                                cardInput.value = "";
+                                statusMsg.textContent = "";
+                            }, 5000);
+                        }
                     }
                 })
                 .catch(() => {
                     document.getElementById('status-message').textContent = "⚠️ RFID connection lost.";
                 });
         }, 1000);
-
 
         const table = document.getElementById('attendance-table');
         const tableBody = document.getElementById('attendance-table-body');
