@@ -33,9 +33,6 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 # -------------------------------
 # Function handle file upload
 # -------------------------------
-# -------------------------------
-# Function handle file upload
-# -------------------------------
 def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoint, usecols="A:Z", skiprows=1):
     file = request.files.get(file_key)
     if file and file.filename:
@@ -72,11 +69,13 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
                                 records_added += 1
                             else:
                                 records_failed += 1
+                                flash(f"Row failed: {message}", "error")
                         except Exception as row_err:
                             records_failed += 1
+                            flash(f"Row processing error: {str(row_err)} | Data: {row.to_dict()}", "error")
 
                 except Exception as sheet_err:
-                    pass
+                    flash(f"Error processing sheet '{sheet_name}': {str(sheet_err)}", "error")
 
             if records_added > 0:
                 flash(f"Successfully uploaded {records_added} record(s)", "success")
