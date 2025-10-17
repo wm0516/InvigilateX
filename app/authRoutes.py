@@ -516,9 +516,7 @@ def attendance_record():
             if scan_time < one_hour_before:
                 return jsonify({"success": False, "message": "No upcoming exam slot within 1 hour!"})
 
-            # ------------------------------
             # CHECK-IN LOGIC
-            # ------------------------------
             if action_type == 'checkin':
                 if confirm.checkIn:
                     return jsonify({"success": False, "message": "Already checked in!"})
@@ -532,9 +530,7 @@ def attendance_record():
                 else:
                     return jsonify({"success": False, "message": "Not allowed to check in after 30 mins before exam end!"})
 
-            # ------------------------------
             # CHECK-OUT LOGIC
-            # ------------------------------
             elif action_type == 'checkout':
                 if not confirm.checkIn:
                     return jsonify({"success": False, "message": "Please check in before checking out!"})
@@ -552,25 +548,20 @@ def attendance_record():
                     confirm.checkOut = expire_time
                     confirm.remark = "EXPIRED"
 
-            # ------------------------------
             # Hours & Status update
-            # ------------------------------
             if confirm.checkIn and confirm.checkOut:
                 exam_hours = hours_diff(start, end)
-
                 # Determine effective start
                 effective_start = start if confirm.checkIn < start else confirm.checkIn
-
                 # Determine effective end
                 effective_end = end if confirm.checkOut > end else confirm.checkOut
-
                 # Compute actual working hours
                 actual_hours = hours_diff(effective_start, effective_end)
-
                 # Adjust cumulative hours correctly
                 user.userPendingCumulativeHours -= exam_hours
                 user.userCumulativeHours += actual_hours
                 confirm.invigilationStatus = True
+            db.session.commit()
 
             # Prepare response
             course = getattr(exam, "course", None)
@@ -590,7 +581,6 @@ def attendance_record():
                 "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
                 "remark": confirm.remark or "",
             }
-
             return jsonify({"success": True, "data": response_data})
 
         except Exception as e:
