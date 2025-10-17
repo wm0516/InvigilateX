@@ -62,7 +62,9 @@
             </thead>
 
             {% for (status, start_time), grouped in attendances|groupby("group_key") %}
-            <tbody data-exam="{{ grouped[0].report.exam.examId }}">
+            <tbody data-exam="{{ grouped[0].report.exam.examId }}" 
+                data-exam-start="{{ grouped[0].report.exam.examStartTime.isoformat() }}"
+                data-exam-end="{{ grouped[0].report.exam.examEndTime.isoformat() }}">
                 {% for att in grouped %}
                 <tr data-exam="{{ grouped[0].report.exam.examId }}"
                     class="{% if not att.report.exam.examStatus %}inactive-row-show{% elif att.report.exam.examStartTime is none %}error-row-show{% endif %}">
@@ -243,18 +245,33 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  // handle edit
   document.querySelectorAll(".edit-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const row = btn.closest("tr");
       const checkinSpan = row.querySelector(".checkin-text");
       const checkoutSpan = row.querySelector(".checkout-text");
+      const examRow = row.closest("tbody");
+      
+      // Extract exam start/end times from dataset
+      const examStart = new Date(examRow.dataset.examStart);
+      const examEnd = new Date(examRow.dataset.examEnd);
 
-      const currentIn = checkinSpan.textContent.trim();
-      const currentOut = checkoutSpan.textContent.trim();
+      // Handle overnight exams
+      let adjustedExamEnd = new Date(examEnd);
+      if (examEnd < examStart) {
+        adjustedExamEnd.setDate(adjustedExamEnd.getDate() + 1);
+      }
 
-      // convert "25/Oct/2025 09:00:00" to datetime-local value
-      const parseToLocal = t => {
+      // Time limits: 1h before start, 1h after end
+      const minTime = new Date(examStart.getTime() - 60 * 60 * 1000);
+      const maxTime = new Date(adjustedExamEnd.getTime() + 60 * 60 * 1000);
+
+      const toDatetimeLocal = (d) => {
+        if (!d) return "";
+        return d.toISOString().slice(0, 16);
+      };
+
+      const parseToLocal = (t) => {
         if (!t || t === "None") return "";
         const [d, m, y_time] = t.split("/");
         const [month, rest] = [m, y_time];
@@ -266,23 +283,38 @@ document.addEventListener("DOMContentLoaded", function () {
         return `${year}-${months[month]}-${d.padStart(2, "0")}T${time.substring(0,5)}`;
       };
 
-      const inVal = parseToLocal(currentIn);
-      const outVal = parseToLocal(currentOut);
+      const currentIn = parseToLocal(checkinSpan.textContent.trim());
+      const currentOut = parseToLocal(checkoutSpan.textContent.trim());
 
-      checkinSpan.outerHTML = `<input type="datetime-local" class="checkin-input" value="${inVal}">`;
-      checkoutSpan.outerHTML = `<input type="datetime-local" class="checkout-input" value="${outVal}">`;
+      // Replace spans with input fields
+      checkinSpan.outerHTML = `<input type="datetime-local" class="checkin-input" value="${currentIn}" min="${toDatetimeLocal(minTime)}" max="${toDatetimeLocal(maxTime)}">`;
+      checkoutSpan.outerHTML = `<input type="datetime-local" class="checkout-input" value="${currentOut}" min="${toDatetimeLocal(minTime)}" max="${toDatetimeLocal(maxTime)}">`;
 
-      btn.innerHTML = "<i class='fa fa-save'></i>";
-      btn.classList.add("save-btn");
-      btn.classList.remove("edit-btn");
+      // Replace edit button with save + cancel
+      btn.outerHTML = `
+        <button type="button" class="save-btn" data-id="${btn.dataset.id}"><i class="fa fa-save"></i></button>
+        <button type="button" class="cancel-btn"><i class="fa fa-times"></i></button>
+      `;
 
-      // save handler
-      btn.addEventListener("click", async () => {
+      // Save handler
+      const saveBtn = row.querySelector(".save-btn");
+      const cancelBtn = row.querySelector(".cancel-btn");
+
+      saveBtn.addEventListener("click", async () => {
         const checkinInput = row.querySelector(".checkin-input");
         const checkoutInput = row.querySelector(".checkout-input");
 
+        const checkInTime = new Date(checkinInput.value);
+        const checkOutTime = new Date(checkoutInput.value);
+
+        // Validate within range
+        if (checkInTime < minTime || checkInTime > maxTime || checkOutTime < minTime || checkOutTime > maxTime) {
+          alert("Check-in/out time must be within 1 hour before start and 1 hour after end.");
+          return;
+        }
+
         const payload = {
-          attendance_id: btn.dataset.id,
+          attendance_id: saveBtn.dataset.id,
           check_in: checkinInput.value,
           check_out: checkoutInput.value
         };
@@ -299,21 +331,26 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
 
-        // update display
+        // Update display
         checkinInput.outerHTML = `<span class="checkin-text">${data.check_in}</span>`;
         checkoutInput.outerHTML = `<span class="checkout-text">${data.check_out}</span>`;
-        const status = row.querySelector(".status");
-        if (status) status.textContent = data.remark;
 
-        btn.innerHTML = "<i class='fa fa-edit'></i>";
-        btn.classList.add("edit-btn");
-        btn.classList.remove("save-btn");
-
+        saveBtn.outerHTML = `<button type="button" class="edit-btn" data-id="${payload.attendance_id}"><i class="fa fa-edit"></i></button>`;
+        cancelBtn.remove();
         alert(data.message);
-      }, { once: true });
+      });
+
+      // Cancel handler
+      cancelBtn.addEventListener("click", () => {
+        row.querySelector(".checkin-input").outerHTML = `<span class="checkin-text">${checkinSpan.textContent.trim()}</span>`;
+        row.querySelector(".checkout-input").outerHTML = `<span class="checkout-text">${checkoutSpan.textContent.trim()}</span>`;
+        cancelBtn.remove();
+        row.querySelector(".save-btn").outerHTML = `<button type="button" class="edit-btn" data-id="${btn.dataset.id}"><i class="fa fa-edit"></i></button>`;
+      });
     });
   });
 });
+
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
