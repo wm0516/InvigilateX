@@ -115,16 +115,19 @@
                     const cardInput = document.getElementById('cardNumber');
                     const statusMsg = document.getElementById('status-message');
 
-                    // Only act if a *new* card appears
-                    if (data.cardNumber && data.cardNumber !== window.lastScannedCard) {
+                    // only process if a card is detected and it's different from the last one processed
+                    if (data.cardNumber && data.cardNumber !== window.lastProcessedCard) {
                         cardInput.value = data.cardNumber;
                         statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
-                        window.lastScannedCard = data.cardNumber; // remember last scanned card
+                        window.lastProcessedCard = data.cardNumber; // remember last processed card
 
+                        // auto-clear UI after 5s
                         clearTimeout(window.clearCardTimeout);
                         window.clearCardTimeout = setTimeout(() => {
                             cardInput.value = "";
                             statusMsg.textContent = "";
+                            // ✅ we do NOT reset lastProcessedCard here
+                            // so repeated scans of same card won't trigger instantly
                         }, 5000);
                     }
                 })
@@ -132,6 +135,7 @@
                     document.getElementById('status-message').textContent = "⚠️ RFID connection lost.";
                 });
         }, 1000);
+
 
         const table = document.getElementById('attendance-table');
         const tableBody = document.getElementById('attendance-table-body');

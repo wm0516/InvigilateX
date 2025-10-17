@@ -609,12 +609,20 @@ def attendance_record():
 def update_last_scan():
     global last_scan_data
     data = request.get_json()
-    last_scan_data = {"cardNumber": data.get("cardNumber"), "time": data.get("time")}
+    last_scan_data = {
+        "cardNumber": data.get("cardNumber"),
+        "time": data.get("time")
+    }
     return jsonify(success=True)
+
 
 @app.route('/last-scan')
 def get_last_scan():
-    return jsonify(last_scan_data)
+    global last_scan_data
+    response = jsonify(last_scan_data)
+    last_scan_data = {"cardNumber": None, "time": None}
+    return response
+
 
 
 
