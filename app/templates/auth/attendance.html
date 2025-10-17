@@ -61,6 +61,12 @@
         .status.expired { color: red; font-weight: bold; }
         .status.pending { color: orange; font-weight: bold; }
         .hidden { display: none; }
+
+        input[readonly] {
+            background: #eeeeee;       /* Gray background */
+            cursor: not-allowed;       /* Show not-allowed cursor */
+            pointer-events: none;      /* Disable mouse interactions */
+        }
     </style>
 </head>
 
@@ -69,9 +75,8 @@
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
 
-        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly>
         <p id="scan-status" style="color: gray;">🟢 Ready to scan...</p>
-        <br>
+        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly>
         <button id="btn-checkin" class="btn" onclick="handleAction('checkin')">Check In</button>
         <button id="btn-checkout" class="btn" onclick="handleAction('checkout')">Check Out</button>
 
