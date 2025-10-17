@@ -106,6 +106,8 @@
         }
         updateDateTime();
         setInterval(updateDateTime, 1000);
+
+        // Auto-fetch card scan every 1 second
         setInterval(() => {
             fetch('/last-scan')
                 .then(res => res.json())
@@ -114,11 +116,11 @@
                         const cardInput = document.getElementById('cardNumber');
                         const statusMsg = document.getElementById('status-message');
 
-                        // ✅ Show UID in input
+                        // Show UID when scanned
                         cardInput.value = data.cardNumber;
                         statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
 
-                        // 🕒 Auto-clear after 5 seconds
+                        // Clear after 5 seconds (for idle scans only)
                         clearTimeout(window.clearCardTimeout);
                         window.clearCardTimeout = setTimeout(() => {
                             cardInput.value = "";
@@ -135,6 +137,7 @@
         const tableBody = document.getElementById('attendance-table-body');
         const statusMessage = document.getElementById('status-message');
 
+        // Handle Check-in / Check-out
         function handleAction(actionType) {
             const cardInput = document.getElementById('cardNumber');
             const cardNumber = cardInput.value.trim();
@@ -145,9 +148,7 @@
             }
 
             if (!confirm(`Are you sure to ${actionType.replace('check', 'check ')}?`)) return;
-
             statusMessage.textContent = "Processing...";
-
             fetch('/attendance', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -182,13 +183,13 @@
                             <td><span class="status ${getRemarkClass(d.remark)}">${d.remark}</span></td>
                         </tr>`;
 
-                    // ✅ Auto-clear all elements after 5 seconds
+                    // After 5 seconds: clear everything (table, card, message)
                     clearTimeout(window.clearAllTimeout);
                     window.clearAllTimeout = setTimeout(() => {
                         table.classList.add('hidden');
                         tableBody.innerHTML = "";
-                        document.getElementById('cardNumber').value = "";      // clear card UID input
-                        statusMessage.textContent = "";                         // clear status text
+                        cardInput.value = "";
+                        statusMessage.textContent = "";
                     }, 5000);
                 } else {
                     table.classList.add('hidden');
@@ -200,11 +201,9 @@
                 table.classList.add('hidden');
                 statusMessage.textContent = "Error connecting to server.";
             });
-
-            // Clear card input
-            cardInput.value = "";
         }
 
+        // Remark color logic
         function getRemarkClass(remark) {
             remark = remark.toUpperCase();
             if (remark.includes("LATE") || remark.includes("EARLY") || remark.includes("EXPIRED")) return "expired";
