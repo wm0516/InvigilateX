@@ -117,6 +117,9 @@
 
                     // Only act if a *new* card appears
                     if (data.cardNumber && data.cardNumber !== window.lastScannedCard) {
+                        cardInput.value = data.cardNumber;
+                        statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
+
                         // Auto-clear display after 5s (if idle)
                         clearTimeout(window.clearCardTimeout);
                         window.clearCardTimeout = setTimeout(() => {
