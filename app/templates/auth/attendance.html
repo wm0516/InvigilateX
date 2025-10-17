@@ -182,11 +182,13 @@
                             <td><span class="status ${getRemarkClass(d.remark)}">${d.remark}</span></td>
                         </tr>`;
 
-                    // Clear table automatically after 5 seconds
-                    setTimeout(() => {
+                    // ✅ Auto-clear all elements after 5 seconds
+                    clearTimeout(window.clearAllTimeout);
+                    window.clearAllTimeout = setTimeout(() => {
                         table.classList.add('hidden');
                         tableBody.innerHTML = "";
-                        statusMessage.textContent = "";
+                        document.getElementById('cardNumber').value = "";      // clear card UID input
+                        statusMessage.textContent = "";                         // clear status text
                     }, 5000);
                 } else {
                     table.classList.add('hidden');
