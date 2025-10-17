@@ -1103,7 +1103,7 @@ def generate_user_template():
     # First row empty
     ws.append([])
     # Second row = headers
-    headers = ['Id', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
+    headers = ['Id', 'CardId', 'Name', 'Department', 'Role', 'Email', 'Contact', 'Gender']
     ws.append(headers)
 
     # === Hidden sheet for lookup lists ===
@@ -1265,7 +1265,7 @@ def admin_manageStaff():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='staff_file',
-                expected_cols=['id', 'cardId', 'name', 'department', 'role', 'email', 'contact', 'gender'],
+                expected_cols=['id', 'cardid', 'name', 'department', 'role', 'email', 'contact', 'gender'],
                 process_row_fn=process_staff_row,
                 redirect_endpoint='admin_manageStaff',
                 usecols="A:H",
