@@ -1221,7 +1221,7 @@ def get_staff(id):
         "userLevel": str(user.userLevel),
         "userDepartment": user.userDepartment or "",
         "userStatus": str(user.userStatus),
-        "userCardId": user.usercardId or ""
+        "userCardId": user.userCardId or ""
     })
 
 # -------------------------------
