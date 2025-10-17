@@ -573,6 +573,12 @@ def attendance_record():
                 confirm.invigilationStatus = True
 
             db.session.commit()
+            # Clear the UID Card
+            try:
+                import requests
+                requests.post("https://wm05.pythonanywhere.com/update-last-scan", json={"cardNumber": None})
+            except Exception as e:
+                print("Could not clear last scan:", e)
 
             # Prepare response
             course = getattr(exam, "course", None)

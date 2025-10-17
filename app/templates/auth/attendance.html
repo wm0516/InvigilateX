@@ -112,20 +112,23 @@
             fetch('/last-scan')
                 .then(res => res.json())
                 .then(data => {
-                    if (data.cardNumber) {
-                        const cardInput = document.getElementById('cardNumber');
-                        const statusMsg = document.getElementById('status-message');
+                    const cardInput = document.getElementById('cardNumber');
+                    const statusMsg = document.getElementById('status-message');
 
-                        // Show UID when scanned
+                    // Only act if a *new* card appears
+                    if (data.cardNumber && data.cardNumber !== window.lastScannedCard) {
+                        window.lastScannedCard = data.cardNumber; // track last scan
+
                         cardInput.value = data.cardNumber;
                         statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
 
-                        // Clear after 5 seconds (for idle scans only)
+                        // Auto-clear display after 5s (if idle)
                         clearTimeout(window.clearCardTimeout);
                         window.clearCardTimeout = setTimeout(() => {
                             cardInput.value = "";
                             statusMsg.textContent = "";
-                        }, 5000);
+                            window.lastScannedCard = null;
+                        }, 5000);   
                     }
                 })
                 .catch(() => {
@@ -190,6 +193,7 @@
                         tableBody.innerHTML = "";
                         cardInput.value = "";
                         statusMessage.textContent = "";
+                        window.lastScannedCard = null; // ✅ reset tracker
                     }, 5000);
                 } else {
                     table.classList.add('hidden');
