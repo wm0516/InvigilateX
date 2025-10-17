@@ -1,8 +1,9 @@
-
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from flask import render_template, request, redirect, url_for, flash, session, get_flashed_messages, jsonify
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_bcrypt import Bcrypt
+import threading
+import time
 from itsdangerous import URLSafeTimedSerializer
 from app import app
 from .backend import *
@@ -595,22 +596,23 @@ def attendance_record():
 # -------------------------------
 # RFID bridge routes
 # -------------------------------
+def reset_last_scan(delay=5):
+    global last_scan_data
+    time.sleep(delay)
+    last_scan_data = {"cardNumber": None, "time": None}
+
 @app.route('/update-last-scan', methods=['POST'])
 def update_last_scan():
     global last_scan_data
     data = request.get_json()
-    last_scan_data = {
-        "cardNumber": data.get("cardNumber"),
-        "time": data.get("time")
-    }
+    last_scan_data = {"cardNumber": data.get("cardNumber"), "time": data.get("time")}
+    threading.Thread(target=reset_last_scan, args=(5,), daemon=True).start()  # ✅ auto clear
     return jsonify(success=True)
-
 
 @app.route('/last-scan')
 def get_last_scan():
     global last_scan_data
     return jsonify(last_scan_data)
-
 
 
 
