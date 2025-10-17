@@ -438,24 +438,15 @@ def user_homepage():
 # Helper functions
 # -------------------------------
 def hours_diff(start, end):
-    """Calculate hours difference between two naive datetimes."""
+    """Return positive hour difference."""
     if not start or not end:
         return 0
-    # Force both to naive for safety
-    start = start.replace(tzinfo=None)
-    end = end.replace(tzinfo=None)
-    return max(0, (end - start).total_seconds() / 3600.0)
+    return max(0, (end.replace(tzinfo=None) - start.replace(tzinfo=None)).total_seconds() / 3600)
 
 @app.template_filter('hours_format')
-def hours_format(hours_float):
-    hours = int(hours_float)
-    minutes = int(round((hours_float - hours) * 60))
-    if hours == 0:
-        return f"{minutes}m"
-    elif minutes == 0:
-        return f"{hours}h"
-    else:
-        return f"{hours}h {minutes}m"
+def hours_format(hours):
+    h, m = divmod(round(hours * 60), 60)
+    return f"{h}h {m}m" if h and m else (f"{h}h" if h else f"{m}m")
 
 # -------------------------------
 # Attendance route
@@ -612,8 +603,19 @@ def attendance_record():
     return render_template('auth/attendance.html')
 
 
+
+# -------------------------------
+# RFID bridge routes
+# -------------------------------
+@app.route('/update-last-scan', methods=['POST'])
+def update_last_scan():
+    global last_scan_data
+    data = request.get_json()
+    last_scan_data = {"cardNumber": data.get("cardNumber"), "time": data.get("time")}
+    return jsonify(success=True)
+
 @app.route('/last-scan')
-def last_scan():
+def get_last_scan():
     return jsonify(last_scan_data)
 
 

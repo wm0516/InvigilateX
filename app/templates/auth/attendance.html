@@ -74,14 +74,11 @@
     <div class="container">
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
-
         <p id="scan-status" style="color: gray;">🟢 Ready to scan...</p>
-        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly>
+        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly><br>
         <button id="btn-checkin" class="btn" onclick="handleAction('checkin')">Check In</button>
         <button id="btn-checkout" class="btn" onclick="handleAction('checkout')">Check Out</button>
-
         <p id="status-message"></p>
-
         <table id="attendance-table" class="hidden">
             <thead>
                 <tr>
@@ -114,9 +111,14 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.cardNumber) {
+                        const cardInput = document.getElementById('cardNumber');
+                        cardInput.value = data.cardNumber; // ✅ SHOW UID IN INPUT
                         document.getElementById('status-message').textContent = 
                             `🪪 Card Detected: ${data.cardNumber}`;
                     }
+                })
+                .catch(() => {
+                    document.getElementById('status-message').textContent = "⚠️ RFID connection lost.";
                 });
         }, 1000);
 
