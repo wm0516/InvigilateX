@@ -69,7 +69,8 @@
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
 
-        <input type="text" id="cardNumber" placeholder="Enter or scan your card..." autofocus autocomplete="off">
+        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly>
+        <p id="scan-status" style="color: gray;">🟢 Ready to scan...</p>
         <br>
         <button id="btn-checkin" class="btn" onclick="handleAction('checkin')">Check In</button>
         <button id="btn-checkout" class="btn" onclick="handleAction('checkout')">Check Out</button>
@@ -103,6 +104,16 @@
         }
         updateDateTime();
         setInterval(updateDateTime, 1000);
+        setInterval(() => {
+            fetch('/last-scan')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.cardNumber) {
+                        document.getElementById('status-message').textContent = 
+                            `🪪 Card Detected: ${data.cardNumber}`;
+                    }
+                });
+        }, 1000);
 
         const table = document.getElementById('attendance-table');
         const tableBody = document.getElementById('attendance-table-body');

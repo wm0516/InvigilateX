@@ -460,11 +460,14 @@ def hours_format(hours_float):
 # -------------------------------
 # Attendance route
 # -------------------------------
+last_scan_data = {"cardNumber": None, "time": None}
 @app.route('/attendance', methods=['GET', 'POST'])
 def attendance_record():
+    global last_scan_data
     if request.method == 'POST':
         try:
             data = request.get_json()
+            last_scan_data = {"cardNumber": data.get('cardNumber'), "time": datetime.now().isoformat()}
             card_input = data.get('cardNumber', '').strip()
             action_type = data.get('actionType', '').lower().strip()
             click_time_str = data.get('clickTime', None)
@@ -608,6 +611,10 @@ def attendance_record():
 
     return render_template('auth/attendance.html')
 
+
+@app.route('/last-scan')
+def last_scan():
+    return jsonify(last_scan_data)
 
 
 def parse_date_range(date_range):
