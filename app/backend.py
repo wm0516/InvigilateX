@@ -518,11 +518,11 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
 
     # Check uniqueness
     if User.query.filter_by(userId=id.upper()).first():
-        return False, "Id Already exists"
+        return False, "ID already exists"
     if User.query.filter_by(userEmail=email).first():
-        return False, "Email Already exists"
+        return False, "Email already exists"
     if User.query.filter_by(userContact=contact).first():
-        return False, "Contact Number Already exists"
+        return False, "Contact number already exists"
 
     # Create staff object
     new_staff = User(
@@ -537,22 +537,35 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
         userRegisterDateTime=datetime.now(timezone.utc),
         userCardId=cardId
     )
-    db.session.add(new_staff)
-    db.session.flush()  # Push to DB so userId is available for FK relations
 
-    # Assign Dean or HOP if applicable
+    db.session.add(new_staff)
+    db.session.flush()  # Ensures userId is available for foreign keys
+
+    matching_rows = TimetableRow.query.filter(
+        func.replace(TimetableRow.lecturerName, " ", "") == func.replace(new_staff.userName, " ", "")
+    ).all()
+
+    if matching_rows:
+        timetable = Timetable(user_id=new_staff.userId)
+        db.session.add(timetable)
+        db.session.flush()  # To get timetableId
+
+        for row in matching_rows:
+            row.timetable_id = timetable.timetableId
+
     if dept:
-        if role == 2:  # Dean
+        if role == 2: # Dean
             dept.deanId = new_staff.userId
         elif role == 3: # HOS
             dept.hosId = new_staff.userId
-        elif role == 4:  # HOP
+        elif role == 4: # HOP
             dept.hopId = new_staff.userId
         db.session.add(dept)
 
     db.session.commit()
 
     return True, "Staff created successfully"
+
 
 # -------------------------------
 # Admin Function 5: View and Edit Admin Profile
