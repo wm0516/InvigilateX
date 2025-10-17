@@ -503,7 +503,7 @@ def delete_exam_related(exam_id, commit=True):
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
-def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
+def create_staff(id, department, name, role, email, contact, gender, hashed_pw, cardId):
     # Normalize department code
     department_code = department.upper() if department else None
     dept = Department.query.filter_by(departmentCode=department_code).first()
@@ -534,7 +534,8 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw):
         userContact=contact,
         userGender=gender,
         userPassword=hashed_pw,
-        userRegisterDateTime=datetime.now(timezone.utc)
+        userRegisterDateTime=datetime.now(timezone.utc),
+        userCardId=cardId
     )
     db.session.add(new_staff)
     db.session.flush()  # Push to DB so userId is available for FK relations

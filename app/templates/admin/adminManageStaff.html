@@ -82,14 +82,17 @@
                 <label>Staff ID</label>
                 <input type="text" name="userid" value="{{ id_text }}" required><br>
 
-                <label>Staff Name</label>
-                <input type="text" name="username" value="{{ name_text }}" required><br>
+                <label>Staff Card Id</label>
+                <input type="text" id="cardId" value="{{ cardId_text }}" required><br>
 
-                <label>Staff Email Address</label>
-                <input type="email" name="email" value="{{ email_text }}" required>
+                <label>Staff Name</label>
+                <input type="text" name="username" value="{{ name_text }}" required>
             </div>
 
             <div class="form-middle">
+                <label>Staff Email Address</label>
+                <input type="email" name="email" value="{{ email_text }}" required><br>
+
                 <label>Staff Contact Number</label>
                 <input type="tel" name="contact" value="{{ contact_text }}" required><br>
                 
@@ -151,14 +154,17 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Staff Name</label>
-                <input type="text" id="editUsername" name="editUsername" required><br>
+                <label>Staff Card Id</label>
+                <input type="text" id="editCardId" name="editCardId" required><br>
 
-                <label>Staff Email Address</label>
-                <input type="email" id="editEmail" name="editEmail" required>
+                <label>Staff Name</label>
+                <input type="text" id="editUsername" name="editUsername" required>
             </div>
 
             <div class="form-middle">
+                <label>Staff Email Address</label>
+                <input type="email" id="editEmail" name="editEmail" required><br>
+
                 <label>Staff Contact Number</label>
                 <input type="tel" id="editContact" name="editContact" required><br>
                 
@@ -167,18 +173,18 @@
                     <option value="" disabled selected>Select Gender</option>
                     <option value="MALE">MALE</option>
                     <option value="FEMALE">FEMALE</option>
-                </select><br>
+                </select>
+            </div>
 
+            <div class="form-right">
                 <label>Staff Status</label>
                 <select id="editStatus" name="editStatus" required>
                     <option value="" disabled selected>Select Status</option>
                     <option value="1">Activated</option>
                     <option value="0">Deactivated</option>
                     <option value="2">Deleted</option>
-                </select>
-            </div>
+                </select><br>
 
-            <div class="form-right">
                 <label>Staff Role</label>
                 <select id="editRoleSelect" name="editRole" required>
                     <option value="" disabled selected>Select Role</option>

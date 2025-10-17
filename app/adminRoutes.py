@@ -1197,7 +1197,8 @@ def process_staff_row(row):
         email=str(row['email']),
         contact=clean_contact(row['contact']),
         gender=str(row['gender']).upper(),
-        hashed_pw=hashed_pw
+        hashed_pw=hashed_pw,
+        cardId=str(row['cardId']).upper(),
     )
 
 
@@ -1219,7 +1220,8 @@ def get_staff(id):
         "userGender": user.userGender,
         "userLevel": str(user.userLevel),
         "userDepartment": user.userDepartment or "",
-        "userStatus": str(user.userStatus)
+        "userStatus": str(user.userStatus),
+        "userCardId": user.usercardId or ""
     })
 
 # -------------------------------
@@ -1263,10 +1265,10 @@ def admin_manageStaff():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='staff_file',
-                expected_cols=['id', 'name', 'department', 'role', 'email', 'contact', 'gender'],
+                expected_cols=['id', 'cardId', 'name', 'department', 'role', 'email', 'contact', 'gender'],
                 process_row_fn=process_staff_row,
                 redirect_endpoint='admin_manageStaff',
-                usecols="A:G",
+                usecols="A:H",
                 skiprows=1 
             )
 
@@ -1279,6 +1281,7 @@ def admin_manageStaff():
                 user_select.userGender = request.form['editGender']
                 user_select.userLevel = int(request.form['editRole'])
                 user_select.userStatus = int(request.form['editStatus'])
+                user_select.userCardId = request.form['editCardId']
                 new_department_code = request.form['editDepartment']
 
                 if user_select.userStatus == 2:
@@ -1331,6 +1334,7 @@ def admin_manageStaff():
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
                 "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
+                "cardId": request.form.get('cardId', '').strip(),
             }
             success, message = create_staff(**form_data)
             if success:
