@@ -619,6 +619,8 @@ def get_last_scan():
     return jsonify(last_scan_data)
 
 
+
+
 def parse_date_range(date_range):
     """Parse classWeekDate 'MM/DD/YYYY-MM/DD/YYYY' and return (start, end) datetime safely."""
     if not date_range:

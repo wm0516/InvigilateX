@@ -112,9 +112,18 @@
                 .then(data => {
                     if (data.cardNumber) {
                         const cardInput = document.getElementById('cardNumber');
-                        cardInput.value = data.cardNumber; // ✅ SHOW UID IN INPUT
-                        document.getElementById('status-message').textContent = 
-                            `🪪 Card Detected: ${data.cardNumber}`;
+                        const statusMsg = document.getElementById('status-message');
+
+                        // ✅ Show UID in input
+                        cardInput.value = data.cardNumber;
+                        statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
+
+                        // 🕒 Auto-clear after 5 seconds
+                        clearTimeout(window.clearCardTimeout);
+                        window.clearCardTimeout = setTimeout(() => {
+                            cardInput.value = "";
+                            statusMsg.textContent = "";
+                        }, 5000);
                     }
                 })
                 .catch(() => {
