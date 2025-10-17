@@ -671,18 +671,12 @@ def update_attendanceStatus():
         exam_start = exam.examStartTime
         exam_end = exam.examEndTime
 
-        remark = "PENDING"
-
         # Handle missing check-out after 30 minutes of exam end
         if check_in and not check_out and timeNow > exam_end + timedelta(minutes=30):
             attendance.checkOut = exam_end + timedelta(minutes=30)
             check_out = attendance.checkOut
 
-        # Determine remark logic
-        if not check_in and not check_out:
-            remark = "PENDING"
-
-        elif check_in and not check_out:
+        if check_in and not check_out:
             # Checked in but never checked out (still before auto-assign threshold)
             if timeNow <= exam_end + timedelta(minutes=30):
                 remark = "CHECK IN"
