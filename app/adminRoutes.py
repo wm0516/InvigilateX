@@ -1132,7 +1132,7 @@ def generate_user_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_department)
-        dv_department.add("C3:C1002")  # Department dropdown
+        dv_department.add("D3:D1002")  # Department dropdown
 
     dv_role = DataValidation(
         type="list",
@@ -1140,7 +1140,7 @@ def generate_user_template():
         allow_blank=False
     )
     ws.add_data_validation(dv_role)
-    dv_role.add("D3:D1002")  # Role dropdown
+    dv_role.add("E3:E1002")  # Role dropdown
 
     dv_gender = DataValidation(
         type="list",
@@ -1148,14 +1148,14 @@ def generate_user_template():
         allow_blank=False
     )
     ws.add_data_validation(dv_gender)
-    dv_gender.add("G3:G1002")  # Gender dropdown
+    dv_gender.add("H3:H1002")  # Gender dropdown
 
     ws_lists.sheet_state = 'hidden'
-
     output = BytesIO()
     wb.save(output)
     output.seek(0)
     return output
+
 
 # -------------------------------
 # Route to download User Excel template
