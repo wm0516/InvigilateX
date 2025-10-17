@@ -119,14 +119,15 @@
                     if (data.cardNumber && data.cardNumber !== window.lastScannedCard) {
                         cardInput.value = data.cardNumber;
                         statusMsg.textContent = `🪪 Card Detected: ${data.cardNumber}`;
+                        window.lastScannedCard = data.cardNumber;  // ✅ remember last scanned card
 
-                        // Auto-clear display after 5s (if idle)
+                        // Auto-clear after 5s
                         clearTimeout(window.clearCardTimeout);
                         window.clearCardTimeout = setTimeout(() => {
                             cardInput.value = "";
                             statusMsg.textContent = "";
                             window.lastScannedCard = null;
-                        }, 5000);   
+                        }, 5000);
                     }
                 })
                 .catch(() => {
