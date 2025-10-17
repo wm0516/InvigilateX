@@ -1188,6 +1188,14 @@ def clean_contact(contact):
 def process_staff_row(row):
     role_mapping = {'lecturer': 1, 'dean': 2, 'hos': 3, 'hop': 4, 'admin': 5}
     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
+
+    # Handle empty cardid properly
+    cardid = row.get('cardid')
+    if pd.isna(cardid) or str(cardid).strip().lower() in ["", "nan", "none"]:
+        cardid = None
+    else:
+        cardid = str(cardid).upper()
+
     return create_staff(
         id=str(row['id']).upper(),
         department=str(row['department']).upper(),
@@ -1197,9 +1205,8 @@ def process_staff_row(row):
         contact=clean_contact(row['contact']),
         gender=str(row['gender']).upper(),
         hashed_pw=hashed_pw,
-        cardId=str(row['cardid']).upper(),
+        cardId=cardid,  # use the cleaned value
     )
-
 
 # -------------------------------
 # Read All StaffDetails Under The ManageLecturerEditPage
