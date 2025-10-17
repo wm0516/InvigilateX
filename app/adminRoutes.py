@@ -1197,7 +1197,7 @@ def process_staff_row(row):
         contact=clean_contact(row['contact']),
         gender=str(row['gender']).upper(),
         hashed_pw=hashed_pw,
-        cardId=str(row['cardId']).upper(),
+        cardId=str(row['cardid']).upper(),
     )
 
 
