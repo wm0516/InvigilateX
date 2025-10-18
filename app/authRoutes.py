@@ -415,7 +415,7 @@ def user_homepage():
             # Assign slot
             open_slot.invigilatorId = user_id
             open_slot.invigilationStatus = True
-            open_slot.timeAction = datetime.now()
+            open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
             # Update hours
             hours = 0

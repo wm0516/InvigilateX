@@ -1825,7 +1825,7 @@ def update_attendance_time():
     # Update invigilation status if provided
     if invigilation_status is not None:
         att.invigilationStatus = invigilation_status
-        att.timeAction = datetime.now()
+        att.timeAction = datetime.now()+ timedelta(hours=8)
 
     # Update cumulative hours only if status is True (ACCEPTED)
     if att.invigilationStatus and check_in and check_out:
