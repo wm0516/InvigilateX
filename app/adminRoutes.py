@@ -1985,12 +1985,10 @@ def get_all_attendances():
         .all()
     )
 
-
-from datetime import datetime, timedelta
-
 def parse_attendance_datetime_simple(date_val, time_val):
     try:
         raw = f"{date_val} {time_val}"
+        flash(f"{raw}", "sucess")
         dt_obj = datetime.strptime(raw.strip(), "%d/%m/%Y %H:%M")
     except Exception:
         dt_obj = datetime.now() + timedelta(hours=8)
@@ -2028,8 +2026,6 @@ def process_attendance_row(row):
                 attendance.remark = "COMPLETED" if attendance.checkIn else "CHECK OUT EARLY"
             else:
                 continue  # skip invalid In/Out
-
-            attendance.timeAction = datetime.now() + timedelta(hours=8)
 
         db.session.commit()
         return True, f"Attendance updated for {user.userId}"
