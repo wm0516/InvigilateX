@@ -2060,7 +2060,11 @@ def process_attendance_row(row):
         updated_count = 0
 
         for attendance in attendances:
-            exam = attendance.report.exam
+            # Get the Exam object from the report
+            exam = Exam.query.get(attendance.report.examId)
+            if not exam:
+                continue  # skip if no exam linked
+
             exam_start = exam.examStartTime
             exam_end = exam.examEndTime
 
