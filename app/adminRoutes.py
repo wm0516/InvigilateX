@@ -1986,10 +1986,11 @@ def get_all_attendances():
     )
 
 
+from datetime import datetime, timedelta
+
 def parse_attendance_datetime_simple(date_val, time_val):
     try:
         raw = f"{date_val} {time_val}"
-        # Expecting format: "18/10/2025 0:05" or "18/10/2025 14:30"
         dt_obj = datetime.strptime(raw.strip(), "%d/%m/%Y %H:%M")
     except Exception:
         dt_obj = datetime.now() + timedelta(hours=8)
@@ -2009,41 +2010,33 @@ def process_attendance_row(row):
         # Parse date + time
         dt_obj = parse_attendance_datetime_simple(row['date'], row['time'])
 
-        # Check if user has an exam on that date
-        attendance = (
-            InvigilatorAttendance.query
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .filter(
-                InvigilatorAttendance.invigilatorId == user.userId,
-                Exam.examStartTime <= dt_obj,
-                Exam.examEndTime >= dt_obj
-            )
-            .first()
-        )
+        # Get all invigilator attendance rows for this user
+        attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
+        if not attendances:
+            return False, f"No attendance records found for {user.userId}"
 
-        if not attendance:
-            return False, f"No exam found for user {user.userId} on {row['date']}"
-
-        # Update check-in / check-out
         inout_val = str(row['in/out']).strip().lower()
-        if inout_val == "in":
-            attendance.checkIn = dt_obj
-            attendance.remark = "CHECK IN"
-        elif inout_val == "out":
-            attendance.checkOut = dt_obj
-            attendance.remark = "COMPLETED" if attendance.checkIn else "CHECK OUT EARLY"
-        else:
-            return False, f"Invalid In/Out value: {inout_val}"
 
-        # Track processing time
-        attendance.timeAction = datetime.now() + timedelta(hours=8)
+        # Update all rows (or you can add logic to match by reportId)
+        for attendance in attendances:
+            if inout_val == "in":
+                attendance.checkIn = dt_obj
+                attendance.remark = "CHECK IN"
+            elif inout_val == "out":
+                attendance.checkOut = dt_obj
+                # Set remark based on whether checkIn exists
+                attendance.remark = "COMPLETED" if attendance.checkIn else "CHECK OUT EARLY"
+            else:
+                continue  # skip invalid In/Out
+
+            attendance.timeAction = datetime.now() + timedelta(hours=8)
+
         db.session.commit()
-
         return True, f"Attendance updated for {user.userId}"
 
     except Exception as e:
         return False, f"Error processing row: {str(e)}"
+
 
 
 
