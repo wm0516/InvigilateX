@@ -1774,70 +1774,88 @@ def update_attendance_time():
     check_in_str = data.get("check_in")
     check_out_str = data.get("check_out")
 
-    try:
-        check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M:%S")
-        check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M:%S")
-    except Exception:
-        return jsonify({"success": False, "message": "Invalid datetime format."}), 400
+    # Handle empty/null values
+    if not check_in_str or check_in_str == "None":
+        check_in_str = None
+    if not check_out_str or check_out_str == "None":
+        check_out_str = None
 
     att = InvigilatorAttendance.query.get(attendance_id)
     if not att:
         return jsonify({"success": False, "message": "Attendance not found."}), 404
 
+    try:
+        # Parse datetime with flexible format to handle both with and without seconds
+        check_in = None
+        check_out = None
+        
+        if check_in_str:
+            # Try parsing with seconds first, then without
+            try:
+                check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M")
+        if check_out_str:
+            try:
+                check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M")
+    except Exception as e:
+        return jsonify({"success": False, "message": f"Invalid datetime format: {str(e)}"}), 400
+
     exam = att.report.exam
     invigilator = att.invigilator
-
     exam_start = exam.examStartTime
     exam_end = exam.examEndTime
-
     allowed_start = exam_start - timedelta(hours=1)
     allowed_end = exam_end + timedelta(hours=1)
 
-    # Validate range
-    if not (allowed_start <= check_in <= allowed_end and allowed_start <= check_out <= allowed_end):
-        return jsonify({
-            "success": False,
-            "message": "Time must be within 1 hour before/after exam period."
-        }), 400
+    # Validate range (only if both times are provided)
+    if check_in and check_out:
+        if not (allowed_start <= check_in <= allowed_end and allowed_start <= check_out <= allowed_end):
+            return jsonify({
+                "success": False,
+                "message": "Time must be within 1 hour before/after exam period."
+            }), 400
 
-    if check_in >= check_out:
-        return jsonify({"success": False, "message": "Check-in must be before check-out."}), 400
+        if check_in >= check_out:
+            return jsonify({"success": False, "message": "Check-in must be before check-out."}), 400
 
-    # compute old and new hours
+    # Compute old and new hours
     old_hours = 0.0
     if att.checkIn and att.checkOut:
         old_hours = (att.checkOut - att.checkIn).total_seconds() / 3600.0
+    new_hours = 0.0
+    if check_in and check_out:
+        new_hours = (check_out - check_in).total_seconds() / 3600.0
+    # Update user cumulative hours
+    if check_in and check_out:
+        invigilator.userCumulativeHours = ((invigilator.userCumulativeHours or 0) - old_hours + new_hours)
 
-    new_hours = (check_out - check_in).total_seconds() / 3600.0
-
-    # update user cumulative hours
-    invigilator.userCumulativeHours = (
-        (invigilator.userCumulativeHours or 0) - old_hours + new_hours
-    )
-
-    # Determine remark
-    remark = "PENDING"
-    if check_in > exam_start:
-        remark = "CHECK IN LATE"
-    else:
-        remark = "CHECK IN"
-
-    if check_out < exam_end:
-        if remark == "CHECK IN LATE":
-            remark = "CHECK IN LATE"   # keep same if both late + early
+    if check_in:
+        if check_in > exam_start:
+            remark = "CHECK IN LATE"
         else:
-            remark = "CHECK OUT EARLY"
-    elif check_out <= exam_end + timedelta(hours=1):
-        if remark != "CHECK IN LATE":
-            remark = "COMPLETED"
+            remark = "CHECK IN"
+
+        if check_out:
+            if check_out < exam_end:
+                if remark == "CHECK IN LATE":
+                    remark = "CHECK IN LATE"   # keep same if both late + early
+                else:
+                    remark = "CHECK OUT EARLY"
+            elif check_out <= exam_end + timedelta(hours=1):
+                if remark != "CHECK IN LATE":
+                    remark = "COMPLETED"
+            else:
+                remark = "EXPIRED"
     else:
-        remark = "EXPIRED"
+        # No check-in time
+        remark = "PENDING"
 
     att.checkIn = check_in
     att.checkOut = check_out
     att.remark = remark
-    att.timeAction = datetime.now() + timedelta(hours=8)
-
     db.session.commit()
 
     return jsonify({
@@ -1845,8 +1863,8 @@ def update_attendance_time():
         "message": "Attendance updated successfully.",
         "remark": remark,
         "new_hours": round(new_hours, 2),
-        "check_in": check_in.strftime("%d/%b/%Y %H:%M:%S"),
-        "check_out": check_out.strftime("%d/%b/%Y %H:%M:%S")
+        "check_in": check_in.strftime("%d/%b/%Y %H:%M:%S") if check_in else "None",
+        "check_out": check_out.strftime("%d/%b/%Y %H:%M:%S") if check_out else "None"
     })
 
 
