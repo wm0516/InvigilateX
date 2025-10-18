@@ -1987,12 +1987,22 @@ def get_all_attendances():
 
 def parse_attendance_datetime_simple(date_val, time_val):
     try:
-        raw = f"{date_val} {time_val}"
-        flash(f"{raw}", "sucess")
-        dt_obj = datetime.strptime(raw.strip(), "%d/%m/%Y %H:%M")
+        # Extract just the date if date_val is datetime
+        if isinstance(date_val, datetime):
+            date_str = date_val.strftime("%Y-%m-%d")
+        else:
+            date_str = str(date_val)
+
+        # Combine date and time
+        raw = f"{date_str} {time_val}"
+        flash(f"{raw}", "success")
+
+        # Parse to datetime
+        dt_obj = datetime.strptime(raw.strip(), "%Y-%m-%d %H:%M:%S")
     except Exception:
         dt_obj = datetime.now() + timedelta(hours=8)
     return dt_obj
+
 
 def process_attendance_row(row):
     try:
