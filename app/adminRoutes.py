@@ -1989,7 +1989,7 @@ def get_all_attendances():
 def process_attendance_row(row):
     try:
         # Extract card UID
-        raw_uid = str(row['card uid']).strip()  # e.g., "UID: F5 3A 58 A4"
+        raw_uid = str(row['card iud']).strip()  # e.g., "UID: F5 3A 58 A4"
         if ':' in raw_uid:
             card_uid = raw_uid.split(':', 1)[1].strip()
         else:
@@ -2087,7 +2087,7 @@ def admin_manageInvigilationReport():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
-                expected_cols=['card uid', 'name', 'date', 'time', 'in/out'],
+                expected_cols=['card iud', 'name', 'date', 'time', 'in/out'],
                 process_row_fn=process_attendance_row,
                 redirect_endpoint='admin_manageInvigilationReport',
                 usecols="A:E",
