@@ -297,12 +297,6 @@ document.addEventListener("DOMContentLoaded", function () {
         saveBtn.addEventListener("click", async () => {
             const newCheckIn = tr.querySelector(".checkin-input").value;
             const newCheckOut = tr.querySelector(".checkout-input").value;
-
-            if (!newCheckIn || !newCheckOut) {
-                alert("Please fill both Check-in and Check-out times.");
-                return;
-            }
-
             try {
                 const response = await fetch("/admin/updateAttendanceTime", {
                     method: "POST",
