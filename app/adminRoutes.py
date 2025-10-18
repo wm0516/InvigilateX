@@ -1984,10 +1984,11 @@ def get_all_attendances():
         .order_by(Exam.examStatus.desc(), Exam.examStartTime.desc())
         .all()
     )
-
-
+# -------------------------------
+# Helper: Parse Date + Time from Excel
+# -------------------------------
 def parse_attendance_datetime(date_val, time_val):
-    """Combine date + time from Excel into datetime object, flexible for formats."""
+    """Combine date + time from Excel into datetime object."""
     try:
         # Parse date
         if isinstance(date_val, datetime):
@@ -2026,14 +2027,16 @@ def parse_attendance_datetime(date_val, time_val):
         return None
 
 
-
+# -------------------------------
+# Process Single Attendance Row
+# -------------------------------
 def process_attendance_row(row):
     """Process a single row from Excel for attendance."""
     try:
-        # 1. Extract UID (remove "UID:" prefix)
+        # 1. Extract UID
         raw_uid = str(row['card iud']).upper().replace('UID:', '').strip()
         
-        # 2. Find matching user
+        # 2. Find user
         user = User.query.filter_by(userCardId=raw_uid).first()
         if not user:
             return False, f"No matching user for UID {raw_uid}"
@@ -2041,103 +2044,90 @@ def process_attendance_row(row):
         # 3. Parse datetime
         dt_obj = parse_attendance_datetime(row['date'], row['time'])
         if not dt_obj:
-            return False, f"Invalid date/time format: {row['date']} {row['time']}"
+            return False, f"Invalid date/time: {row['date']} {row['time']}"
         
-        # 4. Find invigilator attendance for that date ±1h for exam sessions
-        start_window = dt_obj - timedelta(hours=1)
-        end_window = dt_obj + timedelta(hours=1)
-
-        attendances = InvigilatorAttendance.query.join(InvigilatorAttendance.report).join(InvigilatorAttendance.report.exam)\
-            .filter(
-                InvigilatorAttendance.invigilatorId == user.userId,
-                InvigilatorAttendance.checkIn == None  # optional, only update pending
-            ).all()
-        
+        # 4. Find all attendances for this user
+        attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
         if not attendances:
-            return False, f"No invigilation sessions found for user {user.userName} near {dt_obj}"
-
+            return False, f"No invigilation sessions found for user {user.userName}"
+        
         inout_val = str(row['in/out']).lower().strip()
         updated_count = 0
 
         for attendance in attendances:
-            # Get the Exam object from the report
-            exam = Exam.query.get(attendance.report.examId)
-            if not exam:
-                continue  # skip if no exam linked
+            # Get Exam via report
+            report = attendance.report
+            exam = Exam.query.get(report.examId)
+            if not exam or not exam.examStartTime or not exam.examEndTime:
+                continue
 
-            exam_start = exam.examStartTime
-            exam_end = exam.examEndTime
+            # Only update if within exam ±1 hour
+            if not (exam.examStartTime - timedelta(hours=1) <= dt_obj <= exam.examEndTime + timedelta(hours=1)):
+                continue
 
-            # Check if dt_obj falls within exam ±1h
-            if not (exam_start - timedelta(hours=1) <= dt_obj <= exam_end + timedelta(hours=1)):
-                continue  # skip this session
-            
-            # Check-in logic
+            # ------------------------
+            # Check-In
+            # ------------------------
             if inout_val == "in":
                 attendance.checkIn = dt_obj
                 attendance.timeAction = datetime.utcnow()
-                if dt_obj <= exam_start:
-                    attendance.remark = "CHECK IN"
-                else:
-                    attendance.remark = "CHECK IN LATE"
+                attendance.remark = "CHECK IN" if dt_obj <= exam.examStartTime else "CHECK IN LATE"
                 updated_count += 1
-            
-            # Check-out logic
+
+            # ------------------------
+            # Check-Out
+            # ------------------------
             elif inout_val == "out":
                 attendance.checkOut = dt_obj
                 attendance.timeAction = datetime.utcnow()
                 
                 if attendance.checkIn:
-                    # Calculate hours worked
-                    actual_checkin = attendance.checkIn
-                    checkin_for_hours = actual_checkin if attendance.remark == "CHECK IN LATE" else exam_start
-                    checkout_for_hours = dt_obj if dt_obj < exam_end else exam_end
-                    hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
+                    # Compute worked hours
+                    start = attendance.checkIn
+                    end = min(dt_obj, exam.examEndTime)
+                    hours_worked = (end - start).total_seconds() / 3600
                     user.userCumulativeHours += hours_worked
 
-                    # Set remark
-                    if dt_obj >= exam_end:
+                    # Update remark
+                    if dt_obj >= exam.examEndTime:
                         attendance.remark = "COMPLETED"
                     else:
                         attendance.remark = "CHECK OUT EARLY"
                 else:
-                    # No check-in, but check-out
                     attendance.remark = "PENDING"
-                
+
                 updated_count += 1
-            
-            # If no valid in/out, skip
-            else:
-                continue
 
         if updated_count > 0:
             db.session.commit()
             return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
         else:
             return False, f"No attendance sessions matched for {user.userName} at {dt_obj}"
-    
+
     except Exception as e:
         db.session.rollback()
         return False, f"Error processing row: {e}"
 
 
-
 # -------------------------------
-# Function for Admin ManageInviglationReport Route
+# Admin Route
 # -------------------------------
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
-    # Add composite group key: (examStatus, examStartTime)
+
+    # Attach composite key for sorting/grouping
     for att in attendances:
-        att.group_key = (not att.report.exam.examStatus, att.report.exam.examStartTime)
+        report = att.report
+        exam = Exam.query.get(report.examId) if report else None
+        att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
-        # --- Upload Section ---
+        # Upload Section
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2147,9 +2137,13 @@ def admin_manageInvigilationReport():
                 usecols="A:E",
                 skiprows=0
             )
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
-
+    return render_template(
+        'admin/adminManageInvigilationReport.html',
+        active_tab='admin_manageInvigilationReporttab',
+        attendances=attendances,
+        **stats
+    )
 
 # -------------------------------
 # Function for Admin ManageProfile Route
