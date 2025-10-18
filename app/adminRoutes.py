@@ -2036,20 +2036,31 @@ def process_attendance_row(row):
         for col_name, value in row.items():
             print(f"  {col_name}: '{value}' (type: {type(value)})")
         
-        # Extract card UID - hardcoded for "UID: 75 FD A9 A8" format
+        # Extract card UID - match the exact format in database "75 FD A9 A8"
         raw_uid = str(row['card iud']).strip().upper()
-        # Remove "UID:" and any spaces, then format as continuous string
+        
+        # Extract UID part after "UID:" and keep the original spacing
         if 'UID:' in raw_uid:
-            card_uid = raw_uid.replace('UID:', '').strip().replace(' ', '')
+            card_uid = raw_uid.replace('UID:', '').strip()  # Keep spaces: "75 FD A9 A8"
         else:
-            card_uid = raw_uid.replace(' ', '')
+            card_uid = raw_uid.strip()  # Keep original format
         
         print(f"DEBUG - Extracted Card UID: '{card_uid}'")
+        print(f"DEBUG - Searching for user with card ID: '{card_uid}'")
 
-        # Match UID with User table
+        # Match UID with User table - exact match with spaces
         user = User.query.filter_by(userCardId=card_uid).first()
+        
         if not user:
-            return False, f"No matching user for UID {card_uid}"
+            # Debug: Check what card IDs exist in database
+            all_users_with_cards = User.query.filter(User.userCardId.isnot(None)).all()
+            print("DEBUG - Users with cards in database:")
+            for u in all_users_with_cards:
+                print(f"  User: {u.userId}, Card: '{u.userCardId}'")
+            
+            return False, f"No matching user for UID '{card_uid}'"
+
+        print(f"DEBUG - Found user: {user.userId} - {user.userName}")
 
         # Parse date + time
         dt_obj = parse_attendance_datetime_simple(row['date'], row['time'])
@@ -2058,27 +2069,43 @@ def process_attendance_row(row):
         # Get all invigilator attendance rows for this user
         attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
         if not attendances:
-            return False, f"No attendance records found for {user.userId}"
+            return False, f"No attendance records found for user {user.userName}"
 
         inout_val = str(row['in/out']).strip().lower()
+        updated_count = 0
 
-        # Update all rows (or you can add logic to match by reportId)
+        # Update all attendance records for this user
         for attendance in attendances:
             if inout_val == "in":
                 attendance.checkIn = dt_obj
                 attendance.remark = "CHECK IN"
+                attendance.timeAction = datetime.now()
+                updated_count += 1
+                print(f"DEBUG - Updated checkIn for attendance {attendance.attendanceId}")
             elif inout_val == "out":
                 attendance.checkOut = dt_obj
                 # Set remark based on whether checkIn exists
                 attendance.remark = "COMPLETED" if attendance.checkIn else "CHECK OUT EARLY"
+                attendance.timeAction = datetime.now()
+                updated_count += 1
+                print(f"DEBUG - Updated checkOut for attendance {attendance.attendanceId}")
             else:
+                print(f"DEBUG - Skipped invalid in/out value: {inout_val}")
                 continue  # skip invalid In/Out
 
-        db.session.commit()
-        return True, f"Attendance updated for {user.userId}"
+        if updated_count > 0:
+            db.session.commit()
+            return True, f"Attendance updated for {user.userName} ({updated_count} records)"
+        else:
+            return False, f"No valid In/Out value processed for {user.userName}"
 
     except Exception as e:
-        return False, f"Error processing row: {str(e)}"
+        db.session.rollback()
+        error_msg = f"Error processing row: {str(e)}"
+        print(f"ERROR - {error_msg}")
+        import traceback
+        print(f"ERROR - Traceback: {traceback.format_exc()}")
+        return False, error_msg
 
 
 
