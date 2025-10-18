@@ -149,9 +149,9 @@
                     <!-- Invigilation Status -->
                     <td>
                         {% if att.invigilationStatus %}
-                            <span class="status frame-completed">ACCEPTED</span>
+                            <span class="status frame-completed invigilation-status">ACCEPTED</span>
                         {% else %}
-                            <span class="status frame-pending">PENDING</span>
+                            <span class="status frame-pending invigilation-status">PENDING</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -281,16 +281,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const checkInSpan = tr.querySelector(`.${checkinClass}`);
         const checkOutSpan = tr.querySelector(`.${checkoutClass}`);
+        const statusSpan = tr.querySelector(`.invigilation-status`);
+        
         const originalCheckIn = checkInSpan.textContent.trim();
         const originalCheckOut = checkOutSpan.textContent.trim();
+        const originalStatus = statusSpan.textContent.trim();
+        const originalStatusBoolean = originalStatus === "ACCEPTED";
 
         if (tr.classList.contains("editing")) return;
         tr.classList.add("editing");
 
         const checkInValue = toLocalInput(originalCheckIn);
         const checkOutValue = toLocalInput(originalCheckOut);
+        
         checkInSpan.innerHTML = `<input type="datetime-local" step="1" class="checkin-input" value="${checkInValue}" style="width: 180px;">`;
         checkOutSpan.innerHTML = `<input type="datetime-local" step="1" class="checkout-input" value="${checkOutValue}" style="width: 180px;">`;
+        
+        // Create dropdown for status
+        statusSpan.innerHTML = `
+            <select class="status-select" style="width: 120px;">
+                <option value="true" ${originalStatusBoolean ? 'selected' : ''}>ACCEPTED</option>
+                <option value="false" ${!originalStatusBoolean ? 'selected' : ''}>PENDING</option>
+            </select>
+        `;
 
         const actionTd = btn.closest("td");
         actionTd.innerHTML = `
@@ -307,6 +320,8 @@ document.addEventListener("DOMContentLoaded", function () {
         saveBtn.addEventListener("click", async () => {
             const newCheckIn = tr.querySelector(".checkin-input").value;
             const newCheckOut = tr.querySelector(".checkout-input").value;
+            const newStatus = tr.querySelector(".status-select").value === "true";
+            
             try {
                 const response = await fetch("/admin/updateAttendanceTime", {
                     method: "POST",
@@ -314,7 +329,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     body: JSON.stringify({
                         attendance_id: attendanceId,
                         check_in: newCheckIn,
-                        check_out: newCheckOut
+                        check_out: newCheckOut,
+                        invigilation_status: newStatus
                     })
                 });
 
@@ -322,10 +338,18 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (result.success) {
                     alert(result.message);
 
+                    // Update check-in/out times
                     checkInSpan.textContent = result.check_in;
                     checkOutSpan.textContent = result.check_out;
 
+                    // Update attendance status
                     tr.querySelector(".status").textContent = result.remark;
+
+                    // Update invigilation status
+                    const statusClass = result.invigilation_status ? "frame-completed" : "frame-pending";
+                    const statusText = result.invigilation_status ? "ACCEPTED" : "PENDING";
+                    statusSpan.className = `status ${statusClass} invigilation-status`;
+                    statusSpan.textContent = statusText;
 
                     // Update Total Invigilation Time
                     const totalDiv = tr.querySelector("div[style*='color: green']");
@@ -337,7 +361,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         newDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours (Adjusted)`;
                         tr.querySelector("td:nth-child(5)").appendChild(newDiv);
                     }
-                                        
+
                     // Restore Edit button
                     actionTd.innerHTML = `<button type="button" class="edit-btn" data-id="${attendanceId}" title="Edit"><i class="fa fa-edit"></i></button>`;
                     attachEditListener(actionTd.querySelector(".edit-btn"));
@@ -355,6 +379,10 @@ document.addEventListener("DOMContentLoaded", function () {
         cancelBtn.addEventListener("click", () => {
             checkInSpan.textContent = originalCheckIn;
             checkOutSpan.textContent = originalCheckOut;
+            
+            const statusClass = originalStatusBoolean ? "frame-completed" : "frame-pending";
+            statusSpan.className = `status ${statusClass} invigilation-status`;
+            statusSpan.textContent = originalStatus;
 
             actionTd.innerHTML = `<button type="button" class="edit-btn" data-id="${attendanceId}" title="Edit"><i class="fa fa-edit"></i></button>`;
             attachEditListener(actionTd.querySelector(".edit-btn"));

@@ -1773,6 +1773,7 @@ def update_attendance_time():
     attendance_id = data.get("attendance_id")
     check_in_str = data.get("check_in")
     check_out_str = data.get("check_out")
+    invigilation_status = data.get("invigilation_status")  # Get the new status
 
     # Handle empty values
     check_in_str = None if not check_in_str or check_in_str == "None" else check_in_str
@@ -1821,8 +1822,12 @@ def update_attendance_time():
     old_hours = calculate_hours(att.checkIn, att.checkOut)
     new_hours = calculate_hours(check_in, check_out)
 
-    # Update cumulative hours
-    if check_in and check_out:
+    # Update invigilation status if provided
+    if invigilation_status is not None:
+        att.invigilationStatus = invigilation_status
+
+    # Update cumulative hours only if status is True (ACCEPTED)
+    if att.invigilationStatus and check_in and check_out:
         invigilator = att.invigilator
         invigilator.userCumulativeHours = (invigilator.userCumulativeHours or 0) - old_hours + new_hours
 
@@ -1849,6 +1854,7 @@ def update_attendance_time():
         "message": "Attendance updated successfully.",
         "remark": remark,
         "new_hours": round(new_hours, 2),
+        "invigilation_status": att.invigilationStatus,  # Return the updated status
         "check_in": check_in.strftime("%d/%b/%Y %H:%M:%S") if check_in else "None",
         "check_out": check_out.strftime("%d/%b/%Y %H:%M:%S") if check_out else "None"
     })
