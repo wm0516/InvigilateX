@@ -1,4 +1,5 @@
 from app import app
+import threading
 import serial
 import re
 import requests
@@ -11,14 +12,14 @@ BAUD_RATE = 74880
 FLASK_URL = "https://wm05.pythonanywhere.com/attendance"
 LAST_SCAN_URL = "https://wm05.pythonanywhere.com/update-last-scan"
 
-# Helper function: extract UID from serial line
+# Helper: extract UID
 def extract_uid(line):
     match = re.search(r"UID:([0-9A-F ]+)", line)
     if match:
         return " ".join(match.group(1).strip().upper().split())
     return None
 
-# Continuous RFID reading loop
+# RFID loop
 def read_rfid_continuously():
     print("🔌 Connecting to RFID reader...")
 
@@ -38,7 +39,6 @@ def read_rfid_continuously():
                 if uid:
                     print(f"🪪 Card Detected: UID: {uid}")
 
-                    # Send UID to Flask endpoint
                     try:
                         requests.post(
                             LAST_SCAN_URL,
@@ -49,17 +49,19 @@ def read_rfid_continuously():
                             timeout=3
                         )
                         print("✅ Sent to Flask /update-last-scan")
-
                     except Exception as e:
                         print(f"⚠️ Could not update Flask: {e}")
 
                     time.sleep(0.2)
-
         except Exception as e:
             print(f"⚠️ Serial read error: {e}")
             time.sleep(1)
 
 # Entry point
 if __name__ == "__main__":
-    read_rfid_continuously()
-    app.run(debug=True)
+    # Run RFID reading in a background thread
+    rfid_thread = threading.Thread(target=read_rfid_continuously, daemon=True)
+    rfid_thread.start()
+
+    # Start Flask normally
+    app.run(debug=True, use_reloader=False)
