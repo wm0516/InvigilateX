@@ -1810,14 +1810,15 @@ def update_attendance_time():
         if check_in >= check_out:
             return jsonify({"success": False, "message": "Check-in must be before check-out."}), 400
 
-    # Calculate hours with adjustments
     def calculate_hours(start, end):
-        if not start or not end: return 0.0
+        """Calculate overlapping hours between exam and attendance."""
+        if not start or not end:
+            return 0.0
         adj_start = max(start, exam_start)
         adj_end = min(end, exam_end)
-        seconds = (adj_end - adj_start).total_seconds()
-        # Round to 2 decimal places for display
-        return round(seconds / 3600.0, 2)
+        if adj_start >= adj_end:
+            return 0.0
+        return round((adj_end - adj_start).total_seconds() / 3600.0, 2)
 
     old_hours = calculate_hours(att.checkIn, att.checkOut)
     new_hours = calculate_hours(check_in, check_out)
@@ -1827,10 +1828,15 @@ def update_attendance_time():
         att.invigilationStatus = invigilation_status
         att.timeAction = datetime.now()+ timedelta(hours=8)
 
-    # Update cumulative hours only if status is True (ACCEPTED)
-    if att.invigilationStatus and check_in and check_out:
-        invigilator = att.invigilator
-        invigilator.userCumulativeHours = invigilator.userCumulativeHours - (old_hours + new_hours)
+    # --- Safely update cumulative hours ---
+    invigilator = att.invigilator
+    if att.invigilationStatus:
+        # Remove old hours if previously valid
+        if att.checkIn and att.checkOut:
+            invigilator.userCumulativeHours -= old_hours
+        # Add new hours if valid
+        if check_in and check_out:
+            invigilator.userCumulativeHours += new_hours
 
     # Determine remark
     remark = "PENDING"
