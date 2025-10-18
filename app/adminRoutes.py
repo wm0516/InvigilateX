@@ -1814,7 +1814,9 @@ def update_attendance_time():
         if not start or not end: return 0.0
         adj_start = max(start, exam_start)
         adj_end = min(end, exam_end)
-        return max(0.0, (adj_end - adj_start).total_seconds() / 3600.0)
+        seconds = (adj_end - adj_start).total_seconds()
+        # Round to 2 decimal places for display
+        return round(seconds / 3600.0, 2)
 
     old_hours = calculate_hours(att.checkIn, att.checkOut)
     new_hours = calculate_hours(check_in, check_out)

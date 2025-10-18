@@ -108,7 +108,7 @@
                             {% set actual_end = [check_out, exam_end] | min %}
                             {% set total_seconds = (actual_end - actual_start).total_seconds() %}
                             {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
-                            <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600) | round(2) }} hours </div>
+                            <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }} hours </div>
                         {% endif %}
                     </td>
 
