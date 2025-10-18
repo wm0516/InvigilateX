@@ -501,8 +501,16 @@ def attendance_record():
                 exam_start = exam.examStartTime.replace(tzinfo=None)
                 return abs((exam_start - scan_time).total_seconds())
 
-            # Find the closest exam slot
-            confirm = sorted(timeSlots, key=exam_proximity)[0]
+            # Instead of picking the closest exam blindly
+            valid_slots = [att for att in timeSlots if att.report and att.report.exam]
+            upcoming_slots = [att for att in valid_slots
+                            if att.report.exam.examStartTime.replace(tzinfo=None) - timedelta(hours=1) <= scan_time <=
+                                att.report.exam.examEndTime.replace(tzinfo=None) + timedelta(hours=1)]
+
+            if not upcoming_slots:
+                return jsonify({"success": False, "message": "No upcoming exam slot within 1 hour!"})
+
+            confirm = sorted(upcoming_slots, key=exam_proximity)[0]
             report = getattr(confirm, "report", None)
             exam = getattr(report, "exam", None)
             if not exam or not exam.examStartTime or not exam.examEndTime:
@@ -519,9 +527,15 @@ def attendance_record():
 
             # CHECK-IN LOGIC
             if action_type == 'checkin':
-                if confirm.checkIn:
+                # Check if exam already ended
+                if scan_time > end:
+                    return jsonify({"success": False, "message": "Exam already ended!"})
+
+                # Check if already checked in within this exam period
+                if confirm.checkIn and confirm.checkOut is None and start <= scan_time <= end:
                     return jsonify({"success": False, "message": "Already checked in!"})
 
+                # Check-in time rules
                 if one_hour_before <= scan_time <= start:
                     confirm.checkIn = scan_time
                     confirm.remark = "CHECK IN"
