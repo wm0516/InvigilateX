@@ -1986,51 +1986,30 @@ def get_all_attendances():
     )
 
 
+def parse_attendance_datetime_simple(date_val, time_val):
+    try:
+        raw = f"{date_val} {time_val}"
+        # Expecting format: "18/10/2025 0:05" or "18/10/2025 14:30"
+        dt_obj = datetime.strptime(raw.strip(), "%d/%m/%Y %H:%M")
+    except Exception:
+        dt_obj = datetime.now() + timedelta(hours=8)
+    return dt_obj
+
 def process_attendance_row(row):
     try:
         # Extract card UID
-        raw_uid = str(row['card iud']).strip()  # e.g., "UID: F5 3A 58 A4"
-        if ':' in raw_uid:
-            card_uid = raw_uid.split(':', 1)[1].strip()
-        else:
-            card_uid = raw_uid
+        raw_uid = str(row['card uid']).strip()  # e.g., "UID: 75 FD A9 A8"
+        card_uid = raw_uid.split(':', 1)[1].strip() if ':' in raw_uid else raw_uid
 
-        # Find the user
+        # Match UID with User table
         user = User.query.filter_by(userCardId=card_uid).first()
         if not user:
             return False, f"No matching user for UID {card_uid}"
 
-        # Parse Excel date & time
-        date_val = row['date']
-        time_val = str(row['time']).strip()
-        inout_val = str(row['in/out']).strip().lower()
+        # Parse date + time
+        dt_obj = parse_attendance_datetime_simple(row['date'], row['time'])
 
-        # Handle Excel date formats
-        if isinstance(date_val, datetime):
-            date_obj = date_val
-        else:
-            date_str = str(date_val).strip()
-            try:
-                date_obj = datetime.strptime(date_str, "%d/%m/%Y")
-            except ValueError:
-                return False, f"Invalid date format: {date_val}"
-
-        # Combine date and time into datetime object
-        dt_obj = None
-        for fmt in ("%I:%M %p", "%H:%M", "%H:%M:%S"):
-            try:
-                time_obj = datetime.strptime(time_val, fmt).time()
-                dt_obj = datetime.combine(date_obj.date(), time_obj)
-                break
-            except ValueError:
-                continue
-        if dt_obj is None:
-            return False, f"Invalid time format: {time_val}"
-
-        # Override to UTC+8 logic
-        dt_obj = datetime.now() + timedelta(hours=8)
-
-        # Find InvigilatorAttendance for this user and exam
+        # Check if user has an exam on that date
         attendance = (
             InvigilatorAttendance.query
             .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -2044,28 +2023,28 @@ def process_attendance_row(row):
         )
 
         if not attendance:
-            return False, f"No exam found for user {user.userId} on {date_obj.date()}"
+            return False, f"No exam found for user {user.userId} on {row['date']}"
 
         # Update check-in / check-out
+        inout_val = str(row['in/out']).strip().lower()
         if inout_val == "in":
             attendance.checkIn = dt_obj
             attendance.remark = "CHECK IN"
         elif inout_val == "out":
             attendance.checkOut = dt_obj
-            if attendance.checkIn:
-                attendance.remark = "COMPLETED"
-            else:
-                attendance.remark = "CHECK OUT EARLY"
+            attendance.remark = "COMPLETED" if attendance.checkIn else "CHECK OUT EARLY"
         else:
             return False, f"Invalid In/Out value: {inout_val}"
 
         # Track processing time
         attendance.timeAction = datetime.now() + timedelta(hours=8)
         db.session.commit()
-        return True, f"Attendance updated for user {user.userId}"
+
+        return True, f"Attendance updated for {user.userId}"
 
     except Exception as e:
         return False, f"Error processing row: {str(e)}"
+
 
 
 # -------------------------------
