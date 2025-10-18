@@ -1765,7 +1765,6 @@ def admin_manageTimetable():
 
 
 
-
 @app.route("/admin/updateAttendanceTime", methods=["POST"])
 @login_required
 def update_attendance_time():
@@ -1820,25 +1819,31 @@ def update_attendance_time():
             return 0.0
         return round((adj_end - adj_start).total_seconds() / 3600.0, 2)
 
+    # --- Hours before & after update ---
     old_hours = calculate_hours(att.checkIn, att.checkOut)
     new_hours = calculate_hours(check_in, check_out)
+    exam_hours = round((exam_end - exam_start).total_seconds() / 3600.0, 2)
 
     # Update invigilation status if provided
-    if invigilation_status is not None: 
+    if invigilation_status is not None:
         att.invigilationStatus = invigilation_status
-        att.timeAction = datetime.now()+ timedelta(hours=8)
+        att.timeAction = datetime.now() + timedelta(hours=8)
 
-    # --- Safely update cumulative hours ---
     invigilator = att.invigilator
+
+    # --- Safely update cumulative hours and pending hours ---
     if att.invigilationStatus:
-        # Remove old hours if previously valid
+        # Remove previous contribution
         if att.checkIn and att.checkOut:
             invigilator.userCumulativeHours -= old_hours
-        # Add new hours if valid
+            invigilator.userPendingCumulativeHours += exam_hours  # restore previous pending
+
+        # Add new contribution
         if check_in and check_out:
             invigilator.userCumulativeHours += new_hours
+            invigilator.userPendingCumulativeHours -= exam_hours  # deduct for this completed exam
 
-    # Determine remark
+    # --- Determine remark ---
     remark = "PENDING"
     if check_in:
         remark = "CHECK IN LATE" if check_in > exam_start else "CHECK IN"
@@ -1850,10 +1855,11 @@ def update_attendance_time():
             else:
                 remark = "EXPIRED"
 
-    # Update attendance
+    # --- Apply updates ---
     att.checkIn = check_in
     att.checkOut = check_out
     att.remark = remark
+
     db.session.commit()
 
     return jsonify({
@@ -1861,10 +1867,11 @@ def update_attendance_time():
         "message": "Attendance updated successfully.",
         "remark": remark,
         "new_hours": round(new_hours, 2),
-        "invigilation_status": att.invigilationStatus,  # Return the updated status
+        "invigilation_status": att.invigilationStatus,
         "check_in": check_in.strftime("%d/%b/%Y %H:%M:%S") if check_in else "None",
         "check_out": check_out.strftime("%d/%b/%Y %H:%M:%S") if check_out else "None"
     })
+
 
 
 
