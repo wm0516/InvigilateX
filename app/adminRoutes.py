@@ -1986,130 +1986,121 @@ def get_all_attendances():
     )
 
 
-
-def parse_attendance_datetime_simple(date_val, time_val):
+def parse_attendance_datetime(date_val, time_val):
+    """Combine date + time from Excel into datetime object."""
     try:
-        # If date_val is already a datetime object, extract date part
+        # Convert date
         if isinstance(date_val, datetime):
-            date_part = date_val.strftime("%Y-%m-%d")
+            date_part = date_val.date()
         else:
-            date_part = str(date_val).split()[0]  # Take only date part
+            date_part = datetime.strptime(str(date_val), "%d/%m/%Y").date()
         
-        # If time_val is already a datetime object, extract time part
+        # Convert time
         if isinstance(time_val, datetime):
-            time_part = time_val.strftime("%H:%M:%S")
+            time_part = time_val.time()
         else:
-            time_str = str(time_val)
-            # Handle time formats like "0:05" or "2:34"
-            if ':' in time_str:
-                parts = time_str.split(':')
-                if len(parts) == 2:
-                    hours = parts[0].zfill(2)
-                    minutes = parts[1].zfill(2)
-                    time_part = f"{hours}:{minutes}:00"
-                else:
-                    time_part = time_str
+            parts = str(time_val).split(":")
+            if len(parts) == 2:
+                hours = int(parts[0])
+                minutes = int(parts[1])
+                time_part = datetime.strptime(f"{hours:02d}:{minutes:02d}:00", "%H:%M:%S").time()
             else:
-                time_part = time_str
+                time_part = datetime.strptime(str(time_val), "%H:%M:%S").time()
         
-        # Combine date and time
-        combined = f"{date_part} {time_part}"        
-        dt_obj = datetime.strptime(combined.strip(), "%Y-%m-%d %H:%M:%S")
-        return dt_obj
+        return datetime.combine(date_part, time_part)
     except Exception as e:
-        flash(f"Error parsing datetime: {str(e)}. Using current time +8.", "error")
-        return datetime.now() + timedelta(hours=8)
-    
+        flash(f"Error parsing datetime: {e}", "error")
+        return None
 
 
 def process_attendance_row(row):
+    """Process a single row from Excel for attendance."""
     try:
-        # Extract card UID - match the exact format in database "75 FD A9 A8"
-        raw_uid = str(row['card iud']).strip().upper()
+        # 1. Extract UID (remove "UID:" prefix)
+        raw_uid = str(row['card iud']).upper().replace('UID:', '').strip()
         
-        # Extract UID part after "UID:" and keep the original spacing
-        if 'UID:' in raw_uid:
-            card_uid = raw_uid.replace('UID:', '').strip()  # Keep spaces: "75 FD A9 A8"
-        else:
-            card_uid = raw_uid.strip()  # Keep original format
-
-        # Match UID with User table - exact match with spaces
-        user = User.query.filter_by(userCardId=card_uid).first()
+        # 2. Find matching user
+        user = User.query.filter_by(userCardId=raw_uid).first()
         if not user:
-            return False, f"No matching user for UID '{card_uid}'"
+            return False, f"No matching user for UID {raw_uid}"
+        
+        # 3. Parse datetime
+        dt_obj = parse_attendance_datetime(row['date'], row['time'])
+        if not dt_obj:
+            return False, f"Invalid date/time format: {row['date']} {row['time']}"
+        
+        # 4. Find invigilator attendance for that date ±1h for exam sessions
+        start_window = dt_obj - timedelta(hours=1)
+        end_window = dt_obj + timedelta(hours=1)
 
-        # Parse date + time
-        dt_obj = parse_attendance_datetime_simple(row['date'], row['time'])
-
-        # Get all invigilator attendance rows for this user
-        attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
+        attendances = InvigilatorAttendance.query.join(InvigilatorAttendance.report).join(InvigilatorAttendance.report.exam)\
+            .filter(
+                InvigilatorAttendance.invigilatorId == user.userId,
+                InvigilatorAttendance.checkIn == None  # optional, only update pending
+            ).all()
+        
         if not attendances:
-            return False, f"No attendance records found for user {user.userName}"
+            return False, f"No invigilation sessions found for user {user.userName} near {dt_obj}"
 
-        inout_val = str(row['in/out']).strip().lower()
+        inout_val = str(row['in/out']).lower().strip()
         updated_count = 0
 
-        # Update all attendance records for this user
         for attendance in attendances:
             exam = attendance.report.exam
-            exam_start_time = exam.examStartTime
-            exam_end_time = exam.examEndTime
+            exam_start = exam.examStartTime
+            exam_end = exam.examEndTime
+
+            # Check if dt_obj falls within exam ±1h
+            if not (exam_start - timedelta(hours=1) <= dt_obj <= exam_end + timedelta(hours=1)):
+                continue  # skip this session
             
+            # Check-in logic
             if inout_val == "in":
                 attendance.checkIn = dt_obj
-                
-                # Determine remark based on check-in time
-                if dt_obj <= exam_start_time:
+                attendance.timeAction = datetime.utcnow()
+                if dt_obj <= exam_start:
                     attendance.remark = "CHECK IN"
                 else:
                     attendance.remark = "CHECK IN LATE"
                 updated_count += 1
-                
+            
+            # Check-out logic
             elif inout_val == "out":
                 attendance.checkOut = dt_obj
+                attendance.timeAction = datetime.utcnow()
                 
-                # Determine remark based on check-out time and existing check-in
                 if attendance.checkIn:
-                    if dt_obj >= exam_end_time:
+                    # Calculate hours worked
+                    actual_checkin = attendance.checkIn
+                    checkin_for_hours = actual_checkin if attendance.remark == "CHECK IN LATE" else exam_start
+                    checkout_for_hours = dt_obj if dt_obj < exam_end else exam_end
+                    hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
+                    user.userCumulativeHours += hours_worked
+
+                    # Set remark
+                    if dt_obj >= exam_end:
                         attendance.remark = "COMPLETED"
                     else:
                         attendance.remark = "CHECK OUT EARLY"
-                    # Calculate hours worked and update cumulative hours
-                    actual_checkin = attendance.checkIn
-                    actual_checkout = dt_obj
-                    
-                    # If check-in was late, use actual check-in time, otherwise use exam start time
-                    if attendance.remark == "CHECK IN LATE":
-                        checkin_for_calculation = actual_checkin
-                    else:
-                        checkin_for_calculation = exam_start_time
-                        
-                    # If check-out was early, use actual check-out time, otherwise use exam end time
-                    if attendance.remark == "CHECK OUT EARLY":
-                        checkout_for_calculation = actual_checkout
-                    else:
-                        checkout_for_calculation = exam_end_time
-                    
-                    # Calculate hours worked
-                    hours_worked = (checkout_for_calculation - checkin_for_calculation).total_seconds() / 3600
-                    # Update user's cumulative hours
-                    user.userCumulativeHours += hours_worked
                 else:
-                    # No check-in recorded, just check out
+                    # No check-in, but check-out
                     attendance.remark = "PENDING"
+                
                 updated_count += 1
+            
+            # If no valid in/out, skip
             else:
-                continue  # skip invalid In/Out
+                continue
 
         if updated_count > 0:
             db.session.commit()
-            return True, f"Attendance updated for {user.userName} ({updated_count} records)"
+            return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
         else:
-            return False, f"No valid In/Out value processed for {user.userName}"
-
+            return False, f"No attendance sessions matched for {user.userName} at {dt_obj}"
+    
     except Exception as e:
         db.session.rollback()
-        return False
+        return False, f"Error processing row: {e}"
 
 
 
