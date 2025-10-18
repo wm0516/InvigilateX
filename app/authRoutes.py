@@ -613,8 +613,6 @@ def attendance_record():
 
     return render_template('auth/attendance.html')
 
-
-
 # -------------------------------
 # RFID bridge routes
 # -------------------------------
