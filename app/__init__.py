@@ -40,7 +40,7 @@ with app.app_context():
 # --- RFID READER BACKGROUND THREAD ---
 # This section integrates your rfid_bridge.py logic as a background service
 try:
-    from app.rfid_bridge import read_rfid_continuously
+    from main import read_rfid_continuously
     def start_rfid_thread():
         """Start RFID background reader thread."""
         thread = threading.Thread(target=read_rfid_continuously, daemon=True)
