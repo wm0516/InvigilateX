@@ -1774,85 +1774,69 @@ def update_attendance_time():
     check_in_str = data.get("check_in")
     check_out_str = data.get("check_out")
 
-    # Handle empty/null values
-    if not check_in_str or check_in_str == "None":
-        check_in_str = None
-    if not check_out_str or check_out_str == "None":
-        check_out_str = None
+    # Handle empty values
+    check_in_str = None if not check_in_str or check_in_str == "None" else check_in_str
+    check_out_str = None if not check_out_str or check_out_str == "None" else check_out_str
 
     att = InvigilatorAttendance.query.get(attendance_id)
     if not att:
         return jsonify({"success": False, "message": "Attendance not found."}), 404
 
+    # Parse datetime
+    def parse_datetime(dt_str):
+        if not dt_str: return None
+        try:
+            return datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            return datetime.strptime(dt_str, "%Y-%m-%dT%H:%M")
+
     try:
-        # Parse datetime with flexible format to handle both with and without seconds
-        check_in = None
-        check_out = None
-        
-        if check_in_str:
-            # Try parsing with seconds first, then without
-            try:
-                check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M:%S")
-            except ValueError:
-                check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M")
-        if check_out_str:
-            try:
-                check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M:%S")
-            except ValueError:
-                check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M")
+        check_in = parse_datetime(check_in_str)
+        check_out = parse_datetime(check_out_str)
     except Exception as e:
         return jsonify({"success": False, "message": f"Invalid datetime format: {str(e)}"}), 400
 
     exam = att.report.exam
-    invigilator = att.invigilator
     exam_start = exam.examStartTime
     exam_end = exam.examEndTime
     allowed_start = exam_start - timedelta(hours=1)
     allowed_end = exam_end + timedelta(hours=1)
 
-    # Validate range (only if both times are provided)
+    # Validate times
     if check_in and check_out:
         if not (allowed_start <= check_in <= allowed_end and allowed_start <= check_out <= allowed_end):
-            return jsonify({
-                "success": False,
-                "message": "Time must be within 1 hour before/after exam period."
-            }), 400
-
+            return jsonify({"success": False, "message": "Time must be within 1 hour before/after exam period."}), 400
         if check_in >= check_out:
             return jsonify({"success": False, "message": "Check-in must be before check-out."}), 400
 
-    # Compute old and new hours
-    old_hours = 0.0
-    if att.checkIn and att.checkOut:
-        old_hours = (att.checkOut - att.checkIn).total_seconds() / 3600.0
-    new_hours = 0.0
-    if check_in and check_out:
-        new_hours = (check_out - check_in).total_seconds() / 3600.0
-    # Update user cumulative hours
-    if check_in and check_out:
-        invigilator.userCumulativeHours = ((invigilator.userCumulativeHours or 0) - old_hours + new_hours)
+    # Calculate hours with adjustments
+    def calculate_hours(start, end):
+        if not start or not end: return 0.0
+        adj_start = max(start, exam_start)
+        adj_end = min(end, exam_end)
+        return max(0.0, (adj_end - adj_start).total_seconds() / 3600.0)
 
+    old_hours = calculate_hours(att.checkIn, att.checkOut)
+    new_hours = calculate_hours(check_in, check_out)
+
+    # Update cumulative hours
+    if check_in and check_out:
+        invigilator = att.invigilator
+        invigilator.userCumulativeHours = (invigilator.userCumulativeHours or 0) - old_hours + new_hours
+
+    # Determine remark
+    remark = "PENDING"
     if check_in:
-        if check_in > exam_start:
-            remark = "CHECK IN LATE"
-        else:
-            remark = "CHECK IN"
-
+        remark = "CHECK IN LATE" if check_in > exam_start else "CHECK IN"
         if check_out:
             if check_out < exam_end:
-                if remark == "CHECK IN LATE":
-                    remark = "CHECK IN LATE"   # keep same if both late + early
-                else:
-                    remark = "CHECK OUT EARLY"
-            elif check_out <= exam_end + timedelta(hours=1):
-                if remark != "CHECK IN LATE":
-                    remark = "COMPLETED"
+                remark = "CHECK IN LATE" if "LATE" in remark else "CHECK OUT EARLY"
+            elif check_out <= allowed_end:
+                remark = "COMPLETED" if "LATE" not in remark else remark
             else:
                 remark = "EXPIRED"
-    else:
-        # No check-in time
-        remark = "PENDING"
 
+    # Update attendance
     att.checkIn = check_in
     att.checkOut = check_out
     att.remark = remark

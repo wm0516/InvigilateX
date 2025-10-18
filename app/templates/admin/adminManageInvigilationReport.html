@@ -330,14 +330,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Update Total Invigilation Time
                     const totalDiv = tr.querySelector("div[style*='color: green']");
                     if (totalDiv) {
-                        totalDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours`;
+                        totalDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours (Adjusted)`;
                     } else {
                         const newDiv = document.createElement("div");
                         newDiv.style.color = "green";
-                        newDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours`;
+                        newDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours (Adjusted)`;
                         tr.querySelector("td:nth-child(5)").appendChild(newDiv);
                     }
-
+                                        
                     // Restore Edit button
                     actionTd.innerHTML = `<button type="button" class="edit-btn" data-id="${attendanceId}" title="Edit"><i class="fa fa-edit"></i></button>`;
                     attachEditListener(actionTd.querySelector(".edit-btn"));
