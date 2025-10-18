@@ -2068,11 +2068,11 @@ def process_attendance_row(row):
             return False, f"Duplicate entry skipped for {user.userName} at {dt_obj} ({inout_val.upper()})"
 
         # 6. Proceed with updating attendance
-        attendances = InvigilatorAttendance.query.join(InvigilatorAttendance.report)\
-            .join(InvigilatorAttendance.report.exam)\
-            .filter(
-                InvigilatorAttendance.invigilatorId == user.userId
-            ).all()
+        attendances = InvigilatorAttendance.query \
+            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId) \
+            .join(Exam, InvigilationReport.examId == Exam.examId) \
+            .filter(InvigilatorAttendance.invigilatorId == user.userId) \
+            .all()
         
         if not attendances:
             return False, f"No invigilation sessions found for user {user.userName} near {dt_obj}"
