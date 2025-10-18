@@ -354,11 +354,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Update Total Invigilation Time
                     const totalDiv = tr.querySelector("div[style*='color: green']");
                     if (totalDiv) {
-                        totalDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours (Adjusted)`;
+                        totalDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours`;
                     } else {
                         const newDiv = document.createElement("div");
                         newDiv.style.color = "green";
-                        newDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours (Adjusted)`;
+                        newDiv.textContent = `Total Invigilation Time: ${result.new_hours} hours`;
                         tr.querySelector("td:nth-child(5)").appendChild(newDiv);
                     }
 
