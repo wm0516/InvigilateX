@@ -1989,30 +1989,62 @@ def get_all_attendances():
 
 def parse_attendance_datetime_simple(date_val, time_val):
     try:
-        # Combine date and time first
-        combined_str = f"{date_val} {time_val}"
-        flash(f"Raw combined: {combined_str}", "info")
+        # Debug: Check what types we're receiving
+        print(f"DEBUG - date_val: {date_val} (type: {type(date_val)})")
+        print(f"DEBUG - time_val: {time_val} (type: {type(time_val)})")
         
-        # Parse directly from "18/10/2025 0:05" format
-        dt_obj = datetime.strptime(combined_str.strip(), "%d/%m/%Y %H:%M")
+        # If date_val is already a datetime object, extract date part
+        if isinstance(date_val, datetime):
+            date_part = date_val.strftime("%Y-%m-%d")
+        else:
+            date_part = str(date_val).split()[0]  # Take only date part
         
-        # Convert to string and back to ensure consistent format
-        formatted_str = dt_obj.strftime("%Y-%m-%d %H:%M:%S")
-        flash(f"Formatted: {formatted_str}", "success")
+        # If time_val is already a datetime object, extract time part
+        if isinstance(time_val, datetime):
+            time_part = time_val.strftime("%H:%M:%S")
+        else:
+            time_str = str(time_val)
+            # Handle time formats like "0:05" or "2:34"
+            if ':' in time_str:
+                parts = time_str.split(':')
+                if len(parts) == 2:
+                    hours = parts[0].zfill(2)
+                    minutes = parts[1].zfill(2)
+                    time_part = f"{hours}:{minutes}:00"
+                else:
+                    time_part = time_str
+            else:
+                time_part = time_str
         
+        # Combine date and time
+        combined = f"{date_part} {time_part}"
+        flash(f"{combined}", "success")
+        
+        # Parse to datetime
+        dt_obj = datetime.strptime(combined.strip(), "%Y-%m-%d %H:%M:%S")
         return dt_obj
         
     except Exception as e:
-        # Log the actual error for debugging
-        flash(f"Error parsing datetime '{date_val} {time_val}': {str(e)}. Using current time +8.", "error")
+        flash(f"Error parsing datetime: {str(e)}. Using current time +8.", "error")
         return datetime.now() + timedelta(hours=8)
 
 
 def process_attendance_row(row):
     try:
-        # Extract card UID
-        raw_uid = str(row['card iud']).strip()  # e.g., "UID: 75 FD A9 A8"
-        card_uid = raw_uid.split(':', 1)[1].strip() if ':' in raw_uid else raw_uid
+        # Debug: Print ALL row data to see what pandas is reading
+        print("DEBUG - Full row data:")
+        for col_name, value in row.items():
+            print(f"  {col_name}: '{value}' (type: {type(value)})")
+        
+        # Extract card UID - hardcoded for "UID: 75 FD A9 A8" format
+        raw_uid = str(row['card iud']).strip().upper()
+        # Remove "UID:" and any spaces, then format as continuous string
+        if 'UID:' in raw_uid:
+            card_uid = raw_uid.replace('UID:', '').strip().replace(' ', '')
+        else:
+            card_uid = raw_uid.replace(' ', '')
+        
+        print(f"DEBUG - Extracted Card UID: '{card_uid}'")
 
         # Match UID with User table
         user = User.query.filter_by(userCardId=card_uid).first()
@@ -2021,6 +2053,7 @@ def process_attendance_row(row):
 
         # Parse date + time
         dt_obj = parse_attendance_datetime_simple(row['date'], row['time'])
+        print(f"DEBUG - Final datetime object: {dt_obj}")
 
         # Get all invigilator attendance rows for this user
         attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
