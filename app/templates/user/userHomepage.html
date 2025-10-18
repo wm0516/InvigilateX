@@ -158,9 +158,11 @@
                         <td>
                             {% if c.report.exam.venue_availabilities %}
                                 {% for va in c.report.exam.venue_availabilities %}
-                                    <strong>: {{ va.venueNumber }} [Capacity Use: {{ va.capacity }}]</strong><br>
+                                    <strong>{{ va.venueNumber }}</strong> [Capacity Used: {{ va.capacity }}]<br>
                                 {% endfor %}
                             {% else %}
+                                <strong>: None</strong>
+                            {% endif %}
                         </td>
                         <td>{{ c.report.exam.course.courseName }}</td>
                         <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
