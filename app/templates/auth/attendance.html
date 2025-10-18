@@ -74,8 +74,9 @@
     <div class="container">
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
+        <h3>If the website is offline, check attendance using an Excel file</h3>
         <p id="status-message"></p>
-        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly>
+        <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly><br>
         <button id="btn-checkin" class="btn" onclick="handleAction('checkin')">Check In</button>
         <button id="btn-checkout" class="btn" onclick="handleAction('checkout')">Check Out</button>
         <table id="attendance-table" class="hidden">
