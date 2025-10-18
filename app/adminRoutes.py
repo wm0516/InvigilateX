@@ -1775,14 +1775,9 @@ def update_attendance_time():
     check_in_str = data.get("check_in")
     check_out_str = data.get("check_out")
 
-    from datetime import datetime, timedelta
-    import pytz
-
-    MYTZ = pytz.timezone("Asia/Kuala_Lumpur")
-
     try:
-        check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M").replace(tzinfo=MYTZ)
-        check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M").replace(tzinfo=MYTZ)
+        check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M")
+        check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M")
     except Exception:
         return jsonify({"success": False, "message": "Invalid datetime format."}), 400
 
@@ -1793,8 +1788,8 @@ def update_attendance_time():
     exam = att.report.exam
     invigilator = att.invigilator
 
-    exam_start = exam.examStartTime.astimezone(MYTZ)
-    exam_end = exam.examEndTime.astimezone(MYTZ)
+    exam_start = exam.examStartTime
+    exam_end = exam.examEndTime
 
     allowed_start = exam_start - timedelta(hours=1)
     allowed_end = exam_end + timedelta(hours=1)
@@ -1842,7 +1837,7 @@ def update_attendance_time():
     att.checkIn = check_in
     att.checkOut = check_out
     att.remark = remark
-    att.timeAction = datetime.now(MYTZ)
+    att.timeAction = datetime.now() + timedelta(hours=8)
 
     db.session.commit()
 
