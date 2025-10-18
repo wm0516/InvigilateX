@@ -1984,6 +1984,8 @@ def get_all_attendances():
         .order_by(Exam.examStatus.desc(), Exam.examStartTime.desc())
         .all()
     )
+
+
 # -------------------------------
 # Helper: Parse Date + Time from Excel
 # -------------------------------
@@ -2031,29 +2033,43 @@ def parse_attendance_datetime(date_val, time_val):
 # Process Single Attendance Row
 # -------------------------------
 def process_attendance_row(row):
-    """Process a single row from Excel for attendance, avoiding duplicate hours."""
     try:
         # 1. Extract UID
         raw_uid = str(row['card iud']).upper().replace('UID:', '').strip()
-        
+
         # 2. Find matching user
         user = User.query.filter_by(userCardId=raw_uid).first()
         if not user:
             return False, f"No matching user for UID {raw_uid}"
-        
+
         # 3. Parse datetime
         dt_obj = parse_attendance_datetime(row['date'], row['time'])
         if not dt_obj:
             return False, f"Invalid date/time format: {row['date']} {row['time']}"
-        
+
         # 4. Determine in/out value
         inout_val = str(row['in/out']).lower().strip()
         if inout_val not in ['in', 'out']:
             return False, f"Invalid in/out value: {row['in/out']}"
-        
-        # 5. Find all attendance records for the user on the same report/exam
-        attendances = InvigilatorAttendance.query.join(InvigilatorAttendance.reportId)\
-            .join(InvigilatorAttendance.reportId.exam)\
+
+        # 5. Skip duplicate
+        if inout_val == 'in':
+            existing = InvigilatorAttendance.query.filter_by(
+                invigilatorId=user.userId,
+                checkIn=dt_obj
+            ).first()
+        else:
+            existing = InvigilatorAttendance.query.filter_by(
+                invigilatorId=user.userId,
+                checkOut=dt_obj
+            ).first()
+
+        if existing:
+            return False, f"Duplicate entry skipped for {user.userName} at {dt_obj} ({inout_val.upper()})"
+
+        # 6. Proceed with updating attendance
+        attendances = InvigilatorAttendance.query.join(InvigilatorAttendance.report)\
+            .join(InvigilatorAttendance.report.exam)\
             .filter(
                 InvigilatorAttendance.invigilatorId == user.userId
             ).all()
@@ -2069,40 +2085,39 @@ def process_attendance_row(row):
 
             exam_start = exam.examStartTime
             exam_end = exam.examEndTime
-            # Only update if dt_obj falls within exam ±1h
+
             if not (exam_start - timedelta(hours=1) <= dt_obj <= exam_end + timedelta(hours=1)):
                 continue
-            # ---- CHECK-IN ----
+
             if inout_val == "in":
                 if attendance.checkIn is None:
                     attendance.checkIn = dt_obj
                     attendance.remark = "CHECK IN" if dt_obj <= exam_start else "CHECK IN LATE"
                     updated_count += 1
-            # ---- CHECK-OUT ----
             elif inout_val == "out":
                 if attendance.checkOut is None:
                     attendance.checkOut = dt_obj
-                    # Only add hours once
                     if attendance.checkIn:
                         actual_checkin = attendance.checkIn
                         checkin_for_hours = actual_checkin if attendance.remark == "CHECK IN LATE" else exam_start
                         checkout_for_hours = dt_obj if dt_obj < exam_end else exam_end
                         hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
                         user.userCumulativeHours += hours_worked
-                        # Set remark
                         attendance.remark = "COMPLETED" if dt_obj >= exam_end else "CHECK OUT EARLY"
                     else:
                         attendance.remark = "PENDING"
                     updated_count += 1
-                    
+
         if updated_count > 0:
             db.session.commit()
             return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
         else:
             return False, f"No attendance sessions updated for {user.userName} at {dt_obj}"
+
     except Exception as e:
         db.session.rollback()
         return False, f"Error processing row: {e}"
+
 
 
 
