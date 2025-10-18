@@ -673,39 +673,9 @@ def update_attendanceStatus():
         if not exam:
             continue
 
-        check_in = attendance.checkIn
-        check_out = attendance.checkOut
-
-        exam_start = exam.examStartTime
-        exam_end = exam.examEndTime
-
-        # Handle missing check-out after 30 minutes of exam end
-        if check_in and not check_out and timeNow > exam_end + timedelta(minutes=30):
-            attendance.checkOut = exam_end + timedelta(minutes=30)
-            check_out = attendance.checkOut
-
-        if check_in and not check_out:
-            # Checked in but never checked out (still before auto-assign threshold)
-            if timeNow <= exam_end + timedelta(minutes=30):
-                remark = "CHECK IN"
-            else:
-                remark = "EXPIRED"
-
-        elif check_in and check_out:
-            # Check-in & Check-out both exist — evaluate timing
-            if check_in <= exam_start and check_out >= exam_end:
-                remark = "COMPLETED"
-            elif check_in > exam_start and check_out >= exam_end:
-                remark = "CHECK IN LATE"
-            elif check_in <= exam_start and check_out < exam_end:
-                remark = "CHECK OUT EARLY"
-
-        # Auto-expire logic (after exam + 30min)
-        if timeNow > exam_end + timedelta(minutes=30):
-            if not check_in and not check_out:
-                remark = "EXPIRED"
-
-        attendance.remark = remark
+        # If current time is after exam end time, mark as EXPIRED
+        if timeNow > exam.examEndTime:
+            attendance.remark = "EXPIRED"
 
     db.session.commit()
 

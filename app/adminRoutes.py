@@ -776,7 +776,6 @@ def get_available_venues():
 def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues):
     old_start = exam.examStartTime
     old_end = exam.examEndTime
-    old_inv_count = exam.examNoInvigilator
 
     # 1️⃣ Update exam times
     exam.examStartTime = new_start
@@ -994,7 +993,7 @@ def admin_manageExam():
     ])
 
     # Default form values
-    venue_text = invigilatorNo_text = ''
+    invigilatorNo_text = ''
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')

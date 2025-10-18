@@ -1,4 +1,4 @@
-import serial
+'''import serial
 import re
 import requests
 import time
@@ -61,3 +61,4 @@ def read_rfid_continuously():
 # Entry point
 if __name__ == "__main__":
     read_rfid_continuously()
+'''
