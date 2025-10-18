@@ -250,8 +250,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Convert displayed date text to ISO format for input[type="datetime-local"]
     function toLocalInput(dateText) {
-        if (dateText === "None" || !dateText) return "";
+        if (!dateText || dateText === "None") return "";
         const parsed = new Date(dateText);
+        parsed.setHours(parsed.getHours() + 8);
         return parsed.toISOString().slice(0, 16);
     }
 

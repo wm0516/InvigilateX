@@ -395,6 +395,37 @@ html, body {
 }
 
 
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+}
+
+.action-buttons button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.action-buttons .save-btn {
+    color: green;
+}
+
+.action-buttons .cancel-btn {
+    color: red;
+}
+
+
+
+
+
+
+
+
+
+
 
 .info-grid {
     display: grid;
@@ -606,28 +637,6 @@ input[readonly] {
     height: auto !important;
 }
 
-
-.action-buttons {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    align-items: center;
-}
-
-.action-buttons button {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.action-buttons .save-btn {
-    color: green;
-}
-
-.action-buttons .cancel-btn {
-    color: red;
-}
 
 
 
