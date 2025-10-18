@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Parse browser-local date
         const parsed = new Date(dateText);
         // Add 8 hours if necessary
-        parsed.setHours(parsed.getHours() + 8);
+        parsed.setHours(parsed.getHours());
         // Format as: yyyy-MM-ddTHH:mm:ss (for datetime-local with seconds)
         const pad = (n) => n.toString().padStart(2, "0");
 
