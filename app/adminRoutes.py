@@ -1985,6 +1985,89 @@ def get_all_attendances():
         .all()
     )
 
+
+def process_attendance_row(row):
+    try:
+        # Extract card UID
+        raw_uid = str(row['card uid']).strip()  # e.g., "UID: F5 3A 58 A4"
+        if ':' in raw_uid:
+            card_uid = raw_uid.split(':', 1)[1].strip()
+        else:
+            card_uid = raw_uid
+
+        # Find the user
+        user = User.query.filter_by(userCardId=card_uid).first()
+        if not user:
+            return False, f"No matching user for UID {card_uid}"
+
+        # Parse Excel date & time
+        date_val = row['date']
+        time_val = str(row['time']).strip()
+        inout_val = str(row['in/out']).strip().lower()
+
+        # Handle Excel date formats
+        if isinstance(date_val, datetime):
+            date_obj = date_val
+        else:
+            date_str = str(date_val).strip()
+            try:
+                date_obj = datetime.strptime(date_str, "%d/%m/%Y")
+            except ValueError:
+                return False, f"Invalid date format: {date_val}"
+
+        # Combine date and time into datetime object
+        dt_obj = None
+        for fmt in ("%I:%M %p", "%H:%M", "%H:%M:%S"):
+            try:
+                time_obj = datetime.strptime(time_val, fmt).time()
+                dt_obj = datetime.combine(date_obj.date(), time_obj)
+                break
+            except ValueError:
+                continue
+        if dt_obj is None:
+            return False, f"Invalid time format: {time_val}"
+
+        # Override to UTC+8 logic
+        dt_obj = datetime.now() + timedelta(hours=8)
+
+        # Find InvigilatorAttendance for this user and exam
+        attendance = (
+            InvigilatorAttendance.query
+            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+            .join(Exam, InvigilationReport.examId == Exam.examId)
+            .filter(
+                InvigilatorAttendance.invigilatorId == user.userId,
+                Exam.examStartTime <= dt_obj,
+                Exam.examEndTime >= dt_obj
+            )
+            .first()
+        )
+
+        if not attendance:
+            return False, f"No exam found for user {user.userId} on {date_obj.date()}"
+
+        # Update check-in / check-out
+        if inout_val == "in":
+            attendance.checkIn = dt_obj
+            attendance.remark = "CHECK IN"
+        elif inout_val == "out":
+            attendance.checkOut = dt_obj
+            if attendance.checkIn:
+                attendance.remark = "COMPLETED"
+            else:
+                attendance.remark = "CHECK OUT EARLY"
+        else:
+            return False, f"Invalid In/Out value: {inout_val}"
+
+        # Track processing time
+        attendance.timeAction = datetime.now() + timedelta(hours=8)
+        db.session.commit()
+        return True, f"Attendance updated for user {user.userId}"
+
+    except Exception as e:
+        return False, f"Error processing row: {str(e)}"
+
+
 # -------------------------------
 # Function for Admin ManageInviglationReport Route
 # -------------------------------
@@ -1992,12 +2075,24 @@ def get_all_attendances():
 @login_required
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
-
+    stats = calculate_invigilation_stats()
     # Add composite group key: (examStatus, examStartTime)
     for att in attendances:
         att.group_key = (not att.report.exam.examStatus, att.report.exam.examStartTime)
 
-    stats = calculate_invigilation_stats()
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
+
+        # --- Upload Section ---
+        if form_type == 'upload':
+            return handle_file_upload(
+                file_key='attendance_file',
+                expected_cols=['card uid', 'name', 'date', 'time', 'in/out'],
+                process_row_fn=process_attendance_row,
+                redirect_endpoint='admin_manageInvigilationReport',
+                usecols="A:E",
+                skiprows=0
+            )
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 
