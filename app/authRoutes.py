@@ -679,19 +679,20 @@ def cleanup_expired_timetable_rows():
 
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
-    timeNow = datetime.now()
+    time_now = datetime.now()
 
     for attendance in all_attendance:
         report = attendance.report
         exam = report.exam if report else None
-        if not exam:
+        if not exam or not exam.examEndTime:
             continue
 
-        # If current time is after exam end time, mark as EXPIRED
-        if timeNow > exam.examEndTime:
+        # If exam has ended and remark is still 'PENDING', mark as 'EXPIRED'
+        if attendance.remark == "PENDING" and time_now > exam.examEndTime:
             attendance.remark = "EXPIRED"
 
     db.session.commit()
+
 
 
 
