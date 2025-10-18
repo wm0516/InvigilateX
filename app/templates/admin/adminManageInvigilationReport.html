@@ -55,9 +55,9 @@
                     <th>Invigilators</th>
                     <th>Invigilator Details</th>
                     <th>Check-in/out Time</th>
+                    <th>Action</th>
                     <th>Attendance Status</th>
                     <th>Invigilation Status</th>
-                    <th>Action</th>
                 </tr>
             </thead>
 
@@ -126,9 +126,12 @@
                             {% set actual_end = [check_out, exam_end] | min %}
                             {% set total_seconds = (actual_end - actual_start).total_seconds() %}
                             {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
-                            <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }} hours</div>
+                            <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }}</div>
                         {% endif %}
                     </td>
+                    
+                    <!-- Action -->
+                    <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
 
                     <!-- Attendance Status -->
                     <td>
@@ -151,9 +154,6 @@
                             <span class="status frame-pending">PENDING</span>
                         {% endif %}
                     </td>
-                    
-                    <!-- Action -->
-                    <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -204,15 +204,15 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             invCount = tds[2]?.innerText.trim() || "";
             invDetails = tds[3]?.innerText.trim() || "";
             checkTimes = tds[4]?.innerText.trim() || "";
-            attendance = tds[5]?.innerText.trim() || "";
-            invStatus = tds[6]?.innerText.trim() || "";
+            attendance = tds[6]?.innerText.trim() || "";
+            invStatus = tds[7]?.innerText.trim() || "";
 
         } else if (tdCount === 5) {
             // This is a "continuation row" — missing rowspan columns
             invDetails = tds[0]?.innerText.trim() || "";
             checkTimes = tds[1]?.innerText.trim() || "";
-            attendance = tds[2]?.innerText.trim() || "";
-            invStatus = tds[3]?.innerText.trim() || "";
+            attendance = tds[3]?.innerText.trim() || "";
+            invStatus = tds[4]?.innerText.trim() || "";
         }
 
         // Clean up text formatting
