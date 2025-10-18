@@ -1989,10 +1989,6 @@ def get_all_attendances():
 
 def parse_attendance_datetime_simple(date_val, time_val):
     try:
-        # Debug: Check what types we're receiving
-        print(f"DEBUG - date_val: {date_val} (type: {type(date_val)})")
-        print(f"DEBUG - time_val: {time_val} (type: {type(time_val)})")
-        
         # If date_val is already a datetime object, extract date part
         if isinstance(date_val, datetime):
             date_part = date_val.strftime("%Y-%m-%d")
@@ -2017,25 +2013,17 @@ def parse_attendance_datetime_simple(date_val, time_val):
                 time_part = time_str
         
         # Combine date and time
-        combined = f"{date_part} {time_part}"
-        flash(f"{combined}", "success")
-        
-        # Parse to datetime
+        combined = f"{date_part} {time_part}"        
         dt_obj = datetime.strptime(combined.strip(), "%Y-%m-%d %H:%M:%S")
         return dt_obj
-        
     except Exception as e:
         flash(f"Error parsing datetime: {str(e)}. Using current time +8.", "error")
         return datetime.now() + timedelta(hours=8)
+    
 
 
 def process_attendance_row(row):
     try:
-        # Debug: Print ALL row data to see what pandas is reading
-        print("DEBUG - Full row data:")
-        for col_name, value in row.items():
-            print(f"  {col_name}: '{value}' (type: {type(value)})")
-        
         # Extract card UID - match the exact format in database "75 FD A9 A8"
         raw_uid = str(row['card iud']).strip().upper()
         
@@ -2044,27 +2032,14 @@ def process_attendance_row(row):
             card_uid = raw_uid.replace('UID:', '').strip()  # Keep spaces: "75 FD A9 A8"
         else:
             card_uid = raw_uid.strip()  # Keep original format
-        
-        print(f"DEBUG - Extracted Card UID: '{card_uid}'")
-        print(f"DEBUG - Searching for user with card ID: '{card_uid}'")
 
         # Match UID with User table - exact match with spaces
         user = User.query.filter_by(userCardId=card_uid).first()
-        
         if not user:
-            # Debug: Check what card IDs exist in database
-            all_users_with_cards = User.query.filter(User.userCardId.isnot(None)).all()
-            print("DEBUG - Users with cards in database:")
-            for u in all_users_with_cards:
-                print(f"  User: {u.userId}, Card: '{u.userCardId}'")
-            
             return False, f"No matching user for UID '{card_uid}'"
-
-        print(f"DEBUG - Found user: {user.userId} - {user.userName}")
 
         # Parse date + time
         dt_obj = parse_attendance_datetime_simple(row['date'], row['time'])
-        print(f"DEBUG - Final datetime object: {dt_obj}")
 
         # Get all invigilator attendance rows for this user
         attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
@@ -2076,21 +2051,54 @@ def process_attendance_row(row):
 
         # Update all attendance records for this user
         for attendance in attendances:
+            exam = attendance.report.exam
+            exam_start_time = exam.examStartTime
+            exam_end_time = exam.examEndTime
+            
             if inout_val == "in":
                 attendance.checkIn = dt_obj
-                attendance.remark = "CHECK IN"
-                attendance.timeAction = datetime.now()
+                
+                # Determine remark based on check-in time
+                if dt_obj <= exam_start_time:
+                    attendance.remark = "CHECK IN"
+                else:
+                    attendance.remark = "CHECK IN LATE"
                 updated_count += 1
-                print(f"DEBUG - Updated checkIn for attendance {attendance.attendanceId}")
+                
             elif inout_val == "out":
                 attendance.checkOut = dt_obj
-                # Set remark based on whether checkIn exists
-                attendance.remark = "COMPLETED" if attendance.checkIn else "CHECK OUT EARLY"
-                attendance.timeAction = datetime.now()
+                
+                # Determine remark based on check-out time and existing check-in
+                if attendance.checkIn:
+                    if dt_obj >= exam_end_time:
+                        attendance.remark = "COMPLETED"
+                    else:
+                        attendance.remark = "CHECK OUT EARLY"
+                    # Calculate hours worked and update cumulative hours
+                    actual_checkin = attendance.checkIn
+                    actual_checkout = dt_obj
+                    
+                    # If check-in was late, use actual check-in time, otherwise use exam start time
+                    if attendance.remark == "CHECK IN LATE":
+                        checkin_for_calculation = actual_checkin
+                    else:
+                        checkin_for_calculation = exam_start_time
+                        
+                    # If check-out was early, use actual check-out time, otherwise use exam end time
+                    if attendance.remark == "CHECK OUT EARLY":
+                        checkout_for_calculation = actual_checkout
+                    else:
+                        checkout_for_calculation = exam_end_time
+                    
+                    # Calculate hours worked
+                    hours_worked = (checkout_for_calculation - checkin_for_calculation).total_seconds() / 3600
+                    # Update user's cumulative hours
+                    user.userCumulativeHours += hours_worked
+                else:
+                    # No check-in recorded, just check out
+                    attendance.remark = "PENDING"
                 updated_count += 1
-                print(f"DEBUG - Updated checkOut for attendance {attendance.attendanceId}")
             else:
-                print(f"DEBUG - Skipped invalid in/out value: {inout_val}")
                 continue  # skip invalid In/Out
 
         if updated_count > 0:
@@ -2101,12 +2109,7 @@ def process_attendance_row(row):
 
     except Exception as e:
         db.session.rollback()
-        error_msg = f"Error processing row: {str(e)}"
-        print(f"ERROR - {error_msg}")
-        import traceback
-        print(f"ERROR - Traceback: {traceback.format_exc()}")
-        return False, error_msg
-
+        return False
 
 
 
