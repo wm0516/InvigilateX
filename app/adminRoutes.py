@@ -955,7 +955,7 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues):
 @login_required
 def admin_manageExam():
     # Auto-expire exams
-    now = datetime.now()
+    now = datetime.now() + timedelta(hours=8)
     expired_exams = Exam.query.filter(Exam.examEndTime < now, Exam.examStatus == True).all()
     for exam in expired_exams:
         exam.examStatus = False
@@ -1823,7 +1823,7 @@ def update_attendance_time():
     new_hours = calculate_hours(check_in, check_out)
 
     # Update invigilation status if provided
-    if invigilation_status is not None:
+    if invigilation_status is not None: 
         att.invigilationStatus = invigilation_status
         att.timeAction = datetime.now()+ timedelta(hours=8)
 

@@ -107,7 +107,7 @@ def register():
                 userPassword=hashed_pw,
                 userGender=gender_text,
                 userStatus=0,  # not verified yet
-                userRegisterDateTime=datetime.now()
+                userRegisterDateTime=datetime.now() + timedelta(hours=8)
             )
             db.session.add(new_user)
             db.session.commit()
@@ -328,7 +328,7 @@ def open_record(user_id):
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.timeCreate < cutoff_time,
-            Exam.examStartTime > datetime.now(),
+            Exam.examStartTime > datetime.now() + timedelta(hours=8),
             ~InvigilationReport.examId.in_(user_assigned_exam_ids)   # Exclude exams the user is already assigned to
         )
         .all()
@@ -352,7 +352,7 @@ def user_homepage():
     user_id = session.get('user_id')
     chosen = User.query.filter_by(userId=user_id).first()
     waiting = waiting_record(user_id)
-    confirm = confirm_record(user_id).filter(Exam.examEndTime > datetime.now()).all()
+    confirm = confirm_record(user_id).filter(Exam.examEndTime > (datetime.now() + timedelta(hours=8))).all()
 
     # Get open slots + gender filter
     open_slots = open_record(user_id)
@@ -386,13 +386,13 @@ def user_homepage():
 
             if action == 'accept':
                 waiting_slot.invigilationStatus = True
-                waiting_slot.timeAction = datetime.now()
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
 
             elif action == 'reject':
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
 
-            waiting_slot.timeAction = datetime.now()
+            waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
             db.session.commit()
 
         # Handle open slot accept
