@@ -2031,12 +2031,12 @@ def parse_attendance_datetime(date_val, time_val):
 # Process Single Attendance Row
 # -------------------------------
 def process_attendance_row(row):
-    """Process a single row from Excel for attendance."""
+    """Process a single row from Excel for attendance, avoiding duplicate hours."""
     try:
         # 1. Extract UID
         raw_uid = str(row['card iud']).upper().replace('UID:', '').strip()
         
-        # 2. Find user
+        # 2. Find matching user
         user = User.query.filter_by(userCardId=raw_uid).first()
         if not user:
             return False, f"No matching user for UID {raw_uid}"
@@ -2044,69 +2044,76 @@ def process_attendance_row(row):
         # 3. Parse datetime
         dt_obj = parse_attendance_datetime(row['date'], row['time'])
         if not dt_obj:
-            return False, f"Invalid date/time: {row['date']} {row['time']}"
+            return False, f"Invalid date/time format: {row['date']} {row['time']}"
         
-        # 4. Find all attendances for this user
-        attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
-        if not attendances:
-            return False, f"No invigilation sessions found for user {user.userName}"
-        
+        # 4. Determine in/out value
         inout_val = str(row['in/out']).lower().strip()
+        if inout_val not in ['in', 'out']:
+            return False, f"Invalid in/out value: {row['in/out']}"
+        
+        # 5. Find all attendance records for the user on the same report/exam
+        attendances = InvigilatorAttendance.query.join(InvigilatorAttendance.reportId)\
+            .join(InvigilatorAttendance.reportId.exam)\
+            .filter(
+                InvigilatorAttendance.invigilatorId == user.userId
+            ).all()
+        
+        if not attendances:
+            return False, f"No invigilation sessions found for user {user.userName} near {dt_obj}"
+
         updated_count = 0
 
         for attendance in attendances:
-            # Get Exam via report
-            report = attendance.report
-            exam = Exam.query.get(report.examId)
-            if not exam or not exam.examStartTime or not exam.examEndTime:
+            exam = Exam.query.get(attendance.report.examId)
+            if not exam:
                 continue
 
-            # Only update if within exam ±1 hour
-            if not (exam.examStartTime - timedelta(hours=1) <= dt_obj <= exam.examEndTime + timedelta(hours=1)):
+            exam_start = exam.examStartTime
+            exam_end = exam.examEndTime
+
+            # Only update if dt_obj falls within exam ±1h
+            if not (exam_start - timedelta(hours=1) <= dt_obj <= exam_end + timedelta(hours=1)):
                 continue
 
-            # ------------------------
-            # Check-In
-            # ------------------------
+            # ---- CHECK-IN ----
             if inout_val == "in":
-                attendance.checkIn = dt_obj
-                attendance.timeAction = datetime.utcnow()
-                attendance.remark = "CHECK IN" if dt_obj <= exam.examStartTime else "CHECK IN LATE"
-                updated_count += 1
-
-            # ------------------------
-            # Check-Out
-            # ------------------------
+                if attendance.checkIn is None:
+                    attendance.checkIn = dt_obj
+                    attendance.timeAction = datetime.utcnow()
+                    attendance.remark = "CHECK IN" if dt_obj <= exam_start else "CHECK IN LATE"
+                    updated_count += 1
+            
+            # ---- CHECK-OUT ----
             elif inout_val == "out":
-                attendance.checkOut = dt_obj
-                attendance.timeAction = datetime.utcnow()
-                
-                if attendance.checkIn:
-                    # Compute worked hours
-                    start = attendance.checkIn
-                    end = min(dt_obj, exam.examEndTime)
-                    hours_worked = (end - start).total_seconds() / 3600
-                    user.userCumulativeHours += hours_worked
+                if attendance.checkOut is None:
+                    attendance.checkOut = dt_obj
+                    attendance.timeAction = datetime.utcnow()
 
-                    # Update remark
-                    if dt_obj >= exam.examEndTime:
-                        attendance.remark = "COMPLETED"
+                    # Only add hours once
+                    if attendance.checkIn:
+                        actual_checkin = attendance.checkIn
+                        checkin_for_hours = actual_checkin if attendance.remark == "CHECK IN LATE" else exam_start
+                        checkout_for_hours = dt_obj if dt_obj < exam_end else exam_end
+                        hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
+                        user.userCumulativeHours += hours_worked
+
+                        # Set remark
+                        attendance.remark = "COMPLETED" if dt_obj >= exam_end else "CHECK OUT EARLY"
                     else:
-                        attendance.remark = "CHECK OUT EARLY"
-                else:
-                    attendance.remark = "PENDING"
-
-                updated_count += 1
+                        attendance.remark = "PENDING"
+                    
+                    updated_count += 1
 
         if updated_count > 0:
             db.session.commit()
             return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
         else:
-            return False, f"No attendance sessions matched for {user.userName} at {dt_obj}"
-
+            return False, f"No attendance sessions updated for {user.userName} at {dt_obj}"
+    
     except Exception as e:
         db.session.rollback()
         return False, f"Error processing row: {e}"
+
 
 
 # -------------------------------
