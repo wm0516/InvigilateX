@@ -1,13 +1,15 @@
 {% extends "admin/adminBase.html" %}
-{% set show_tabs = false %}
-{% set show_upload = false %}
-{% set show_dashboard = false %}
+{% set show_tabs = true %}
+{% set show_upload = true %}
+{% set show_dashboard = true %}
 {% set show_manual = false %}
 {% set show_edit = false %}
 {% block title %}Admin ManageInvigilationReport{% endblock %}
 {% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
-{% block content %}
-<div class="menu-section">
+
+{% block dashboard_section %}
+<!-- Dashboard Form -->
+<form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
@@ -31,7 +33,44 @@
             </div>
         </div>
     </div>
+</form>
+{% endblock %}
 
+{% block upload_section %}
+<!-- Upload Form -->
+<form id="uploadForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST" enctype="multipart/form-data">
+    <div id="uploadSection" class="function-frame" style="width:80%">
+        <div class="form-left" style="width: 100%">
+            <h4 style="text-align: center;">File Upload Section</h4>
+            <label for="attendance_list">
+                <div class="upload-container" id="attendanceUploadContainer">
+                    <div class="upload-text">
+                        Please upload an Excel file with the sheet name <b>Clock_IO</b>.<br>
+                        The sheet must have the following headers: <b>CARD UID</b>, <b>Name</b>, <b>Date</b>, <b>Time</b>, <b>In/Out</b>.<br>
+                        Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
+                    </div><br>
+
+                    <div class="upload-text">
+                        Please upload a file with sheets name call as 'Clock_IO'
+                        and with the header of ['CARD UID', 'Name', 'Date', 'Time', 'In/Out']
+                        Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
+                    </div><br>
+                    <div id="attendanceSelectedFileName" class="file-name-display"></div>
+                </div>
+            </label>
+            <input type="file" id="attendance_list" name="attendance_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
+            <input type="hidden" name="form_type" value="upload">
+            <br>
+            <div class="button-wrapper">
+                <button type="submit">Upload Attendance Record</button>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>List of Lecturer Invigilation Report</h3>
         <div style="display: flex; align-items: center; gap: 10px;">

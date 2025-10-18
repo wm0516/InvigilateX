@@ -203,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupFileUpload('exam_list', 'examUploadContainer', 'examSelectedFileName');
     setupFileUpload('staff_list', 'staffUploadContainer', 'staffSelectedFileName');
     setupFileUpload('timetable_list', 'timetableUploadContainer', 'timetableSelectedFileName');
+    setupFileUpload('attendance_list', 'attendanceUploadContainer', 'attendanceSelectedFileName');
 });
 
 
