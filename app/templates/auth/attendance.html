@@ -66,6 +66,7 @@
             background: #eeeeee;       /* Gray background */
             cursor: not-allowed;       /* Show not-allowed cursor */
             pointer-events: none;      /* Disable mouse interactions */
+            margin: 1%;
         }
     </style>
 </head>
@@ -74,11 +75,10 @@
     <div class="container">
         <h4 id="current-datetime"></h4>
         <h1>Attendance Check In/Out</h1>
-        <p id="scan-status" style="color: gray;">🟢 Ready to scan...</p>
+        <p id="status-message"></p>
         <input type="text" id="cardNumber" placeholder="Waiting for card scan..." readonly><br>
         <button id="btn-checkin" class="btn" onclick="handleAction('checkin')">Check In</button>
         <button id="btn-checkout" class="btn" onclick="handleAction('checkout')">Check Out</button>
-        <p id="status-message"></p>
         <table id="attendance-table" class="hidden">
             <thead>
                 <tr>
