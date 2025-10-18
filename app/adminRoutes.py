@@ -1830,7 +1830,7 @@ def update_attendance_time():
     # Update cumulative hours only if status is True (ACCEPTED)
     if att.invigilationStatus and check_in and check_out:
         invigilator = att.invigilator
-        invigilator.userCumulativeHours -= (old_hours + new_hours)
+        invigilator.userCumulativeHours = invigilator.userCumulativeHours - (old_hours + new_hours)
 
     # Determine remark
     remark = "PENDING"
