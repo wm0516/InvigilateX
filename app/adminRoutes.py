@@ -1987,30 +1987,44 @@ def get_all_attendances():
 
 
 def parse_attendance_datetime(date_val, time_val):
-    """Combine date + time from Excel into datetime object."""
+    """Combine date + time from Excel into datetime object, flexible for formats."""
     try:
-        # Convert date
+        # Parse date
         if isinstance(date_val, datetime):
             date_part = date_val.date()
         else:
-            date_part = datetime.strptime(str(date_val), "%d/%m/%Y").date()
+            date_str = str(date_val).strip()
+            try:
+                # Try DD/MM/YYYY first
+                date_part = datetime.strptime(date_str, "%d/%m/%Y").date()
+            except ValueError:
+                # Try ISO format YYYY-MM-DD
+                date_part = datetime.strptime(date_str.split()[0], "%Y-%m-%d").date()
         
-        # Convert time
+        # Parse time
         if isinstance(time_val, datetime):
             time_part = time_val.time()
         else:
-            parts = str(time_val).split(":")
-            if len(parts) == 2:
-                hours = int(parts[0])
-                minutes = int(parts[1])
-                time_part = datetime.strptime(f"{hours:02d}:{minutes:02d}:00", "%H:%M:%S").time()
+            time_str = str(time_val).strip()
+            if ':' in time_str:
+                parts = time_str.split(":")
+                if len(parts) == 2:
+                    hours = int(parts[0])
+                    minutes = int(parts[1])
+                    time_part = datetime.strptime(f"{hours:02d}:{minutes:02d}:00", "%H:%M:%S").time()
+                elif len(parts) == 3:
+                    time_part = datetime.strptime(time_str, "%H:%M:%S").time()
+                else:
+                    raise ValueError(f"Invalid time format: {time_str}")
             else:
-                time_part = datetime.strptime(str(time_val), "%H:%M:%S").time()
+                raise ValueError(f"Invalid time format: {time_str}")
         
         return datetime.combine(date_part, time_part)
+    
     except Exception as e:
         flash(f"Error parsing datetime: {e}", "error")
         return None
+
 
 
 def process_attendance_row(row):
