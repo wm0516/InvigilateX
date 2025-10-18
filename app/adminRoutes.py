@@ -1830,7 +1830,7 @@ def update_attendance_time():
     # Update cumulative hours only if status is True (ACCEPTED)
     if att.invigilationStatus and check_in and check_out:
         invigilator = att.invigilator
-        invigilator.userCumulativeHours = (invigilator.userCumulativeHours or 0) - old_hours + new_hours
+        invigilator.userCumulativeHours -= (old_hours + new_hours)
 
     # Determine remark
     remark = "PENDING"
@@ -2150,12 +2150,7 @@ def admin_manageInvigilationReport():
                 skiprows=0
             )
 
-    return render_template(
-        'admin/adminManageInvigilationReport.html',
-        active_tab='admin_manageInvigilationReporttab',
-        attendances=attendances,
-        **stats
-    )
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 # -------------------------------
 # Function for Admin ManageProfile Route
