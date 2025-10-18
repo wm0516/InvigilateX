@@ -2062,7 +2062,6 @@ def process_attendance_row(row):
             return False, f"No invigilation sessions found for user {user.userName} near {dt_obj}"
 
         updated_count = 0
-
         for attendance in attendances:
             exam = Exam.query.get(attendance.report.examId)
             if not exam:
@@ -2070,25 +2069,19 @@ def process_attendance_row(row):
 
             exam_start = exam.examStartTime
             exam_end = exam.examEndTime
-
             # Only update if dt_obj falls within exam ±1h
             if not (exam_start - timedelta(hours=1) <= dt_obj <= exam_end + timedelta(hours=1)):
                 continue
-
             # ---- CHECK-IN ----
             if inout_val == "in":
                 if attendance.checkIn is None:
                     attendance.checkIn = dt_obj
-                    attendance.timeAction = datetime.utcnow()
                     attendance.remark = "CHECK IN" if dt_obj <= exam_start else "CHECK IN LATE"
                     updated_count += 1
-            
             # ---- CHECK-OUT ----
             elif inout_val == "out":
                 if attendance.checkOut is None:
                     attendance.checkOut = dt_obj
-                    attendance.timeAction = datetime.utcnow()
-
                     # Only add hours once
                     if attendance.checkIn:
                         actual_checkin = attendance.checkIn
@@ -2096,20 +2089,17 @@ def process_attendance_row(row):
                         checkout_for_hours = dt_obj if dt_obj < exam_end else exam_end
                         hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
                         user.userCumulativeHours += hours_worked
-
                         # Set remark
                         attendance.remark = "COMPLETED" if dt_obj >= exam_end else "CHECK OUT EARLY"
                     else:
                         attendance.remark = "PENDING"
-                    
                     updated_count += 1
-
+                    
         if updated_count > 0:
             db.session.commit()
             return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
         else:
             return False, f"No attendance sessions updated for {user.userName} at {dt_obj}"
-    
     except Exception as e:
         db.session.rollback()
         return False, f"Error processing row: {e}"
