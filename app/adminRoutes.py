@@ -1998,7 +1998,7 @@ def parse_attendance_datetime_simple(date_val, time_val):
 def process_attendance_row(row):
     try:
         # Extract card UID
-        raw_uid = str(row['card uid']).strip()  # e.g., "UID: 75 FD A9 A8"
+        raw_uid = str(row['card iud']).strip()  # e.g., "UID: 75 FD A9 A8"
         card_uid = raw_uid.split(':', 1)[1].strip() if ':' in raw_uid else raw_uid
 
         # Match UID with User table
