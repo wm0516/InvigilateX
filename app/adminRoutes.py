@@ -1775,8 +1775,8 @@ def update_attendance_time():
     check_out_str = data.get("check_out")
 
     try:
-        check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M")
-        check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M")
+        check_in = datetime.strptime(check_in_str, "%Y-%m-%dT%H:%M:%S")
+        check_out = datetime.strptime(check_out_str, "%Y-%m-%dT%H:%M:%S")
     except Exception:
         return jsonify({"success": False, "message": "Invalid datetime format."}), 400
 

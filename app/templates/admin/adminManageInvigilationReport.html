@@ -251,10 +251,23 @@ document.addEventListener("DOMContentLoaded", function () {
     // Convert displayed date text to ISO format for input[type="datetime-local"]
     function toLocalInput(dateText) {
         if (!dateText || dateText === "None") return "";
+
+        // Parse browser-local date
         const parsed = new Date(dateText);
+        // Add 8 hours if necessary
         parsed.setHours(parsed.getHours() + 8);
-        return parsed.toISOString().slice(0, 16);
+        // Format as: yyyy-MM-ddTHH:mm:ss (for datetime-local with seconds)
+        const pad = (n) => n.toString().padStart(2, "0");
+
+        const yyyy = parsed.getFullYear();
+        const mm = pad(parsed.getMonth() + 1);
+        const dd = pad(parsed.getDate());
+        const hh = pad(parsed.getHours());
+        const min = pad(parsed.getMinutes());
+        const ss = pad(parsed.getSeconds());
+        return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
     }
+
 
     // Attach edit listener to a single button
     function attachEditListener(btn) {
@@ -269,7 +282,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const checkInSpan = tr.querySelector(`.${checkinClass}`);
         const checkOutSpan = tr.querySelector(`.${checkoutClass}`);
-
         const originalCheckIn = checkInSpan.textContent.trim();
         const originalCheckOut = checkOutSpan.textContent.trim();
 
@@ -278,9 +290,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const checkInValue = toLocalInput(originalCheckIn);
         const checkOutValue = toLocalInput(originalCheckOut);
-
-        checkInSpan.innerHTML = `<input type="datetime-local" class="checkin-input" value="${checkInValue}" style="width: 180px;">`;
-        checkOutSpan.innerHTML = `<input type="datetime-local" class="checkout-input" value="${checkOutValue}" style="width: 180px;">`;
+        checkInSpan.innerHTML = `<input type="datetime-local" step="1" class="checkin-input" value="${checkInValue}" style="width: 180px;">`;
+        checkOutSpan.innerHTML = `<input type="datetime-local" step="1" class="checkout-input" value="${checkOutValue}" style="width: 180px;">`;
 
         const actionTd = btn.closest("td");
         actionTd.innerHTML = `
