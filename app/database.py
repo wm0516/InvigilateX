@@ -63,8 +63,8 @@ class User(db.Model):
     userContact = db.Column(db.String(15), nullable=False)                                                            # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
     userPassword = db.Column(db.String(255), nullable=False)                                                          # Refer to Staff Password
-    userStatus = db.Column(db.Integer, default=0)                                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
-    userRegisterDateTime = db.Column(db.DateTime, server_default=func.now())                                          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
+    userStatus = db.Column(db.Integer, default=0, nullable=False)                                                     # Refer to Staff Account Status, if by self register as 'Active', else as 'Deactived" (0=Deactivated, 1=Activated, 2=Deleted) 
+    userRegisterDateTime = db.Column(db.DateTime, server_default=func.now(), nullable=False)                          # Refer to user register time (if more than 2 years deactivated will be deleted automatically)
     userCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                            # Refer to the estimated total hours of invigilator (using float allow store with mins, and each of them with min 36 hours)
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     userCardId = db.Column(db.String(15), nullable=True)                                                              # Refer to user card UID
@@ -74,19 +74,19 @@ class User(db.Model):
     department = db.relationship("Department", backref="users", foreign_keys=[userDepartment])
     '''
     CREATE TABLE User (
-        userId VARCHAR(20) PRIMARY KEY,
-        userDepartment VARCHAR(10) NOT NULL,
-        userName VARCHAR(255) NOT NULL,
-        userLevel INT NOT NULL,
-        userEmail VARCHAR(255) NOT NULL,
-        userContact VARCHAR(15) NOT NULL,
-        userGender VARCHAR(10) NOT NULL,
-        userPassword VARCHAR(255) NOT NULL,
-        userStatus INT DEFAULT 0,
-        userRegisterDateTime DATETIME DEFAULT CURRENT_TIMESTAMP,
-        userCumulativeHours FLOAT DEFAULT 0.0,
-        userPendingCumulativeHours FLOAT DEFAULT 0.0,
-        userCardId VARCHAR(15) NULL,
+        userId VARCHAR(20) PRIMARY KEY,                                  
+        userDepartment VARCHAR(10) NOT NULL,                             
+        userName VARCHAR(255) NOT NULL,                                  
+        userLevel INT NOT NULL,                                          
+        userEmail VARCHAR(255) NOT NULL,                                 
+        userContact VARCHAR(15) NOT NULL,                                
+        userGender VARCHAR(10) NOT NULL,                                 
+        userPassword VARCHAR(255) NOT NULL,                              
+        userStatus INT NOT NULL DEFAULT 0,                               
+        userRegisterDateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,                  
+        userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,           
+        userCardId VARCHAR(15) NULL,                                    
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
