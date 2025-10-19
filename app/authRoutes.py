@@ -32,13 +32,51 @@ def login():
     if request.method == 'POST':
         login_text = request.form.get('login_field', '').strip()
         password_text = request.form.get('password_field', '').strip()
-        
-        valid, result, role = check_login(login_text, password_text)
-        if not valid:
-            flash(result, 'login_error')
+
+        # Track login attempts in session
+        attempts = session.get('login_attempts', {})
+        user_attempt = attempts.get(login_text, {"count": 0})
+        locked = user_attempt["count"] >= 3
+
+        if locked:
+            flash("⚠️ Your account is locked due to too many failed attempts. A password reset email has been sent.", "error")
+            # Attempt to send reset password email
+            success, msg = check_forgotPasswordEmail(login_text)
+            if not success:
+                flash(msg or "Failed to send reset email.", "login_error")
+            # Kept attempts after email is sent
+            attempts[login_text] = {"count": 3}
+            session['login_attempts'] = attempts
             all_messages = get_flashed_messages(with_categories=True)
             return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
+        # Validate login credentials
+        valid, result, role = check_login(login_text, password_text)
+
+        if not valid:
+            user_attempt["count"] += 1
+            attempts[login_text] = user_attempt
+            session['login_attempts'] = attempts
+
+            remaining = 3 - user_attempt["count"]
+            if remaining > 0:
+                flash(f"Invalid credentials. You have {remaining} attempt(s) left.", "login_error")
+            else:
+                flash("⚠️ Account locked due to too many failed attempts. A password reset link has been sent to your email.", "login_error")
+                # Send reset email
+                success, msg = check_forgotPasswordEmail(login_text)
+                if not success:
+                    flash(msg or "Failed to send reset email.", "login_error")
+                # Reset attempts after lock
+                attempts[login_text] = {"count": 0}
+                session['login_attempts'] = attempts
+
+            all_messages = get_flashed_messages(with_categories=True)
+            return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+
+        # Successful login → clear attempts
+        attempts.pop(login_text, None)
+        session['login_attempts'] = attempts
         session['user_id'] = result
         session['user_role'] = role
 
@@ -50,9 +88,10 @@ def login():
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
-    # Ensure GET request also includes flashed messages
+    # For GET requests
     all_messages = get_flashed_messages(with_categories=True)
     return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+
 
 
 # -------------------------------
