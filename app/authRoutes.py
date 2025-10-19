@@ -24,7 +24,6 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # cleanup_expired_timetable_rows()
     update_attendanceStatus()
     login_text = ''
     password_text = ''
@@ -32,12 +31,41 @@ def login():
     if request.method == 'POST':
         login_text = request.form.get('login_field', '').strip()
         password_text = request.form.get('password_field', '').strip()
-        
+
+        user = User.query.filter_by(userEmail=login_text).first()
+        if user:
+            # Check if account is locked
+            if user.isLocked:
+                flash("⚠️ Your account is locked. Please check your email for the reset password link.", "login_error")
+                all_messages = get_flashed_messages(with_categories=True)
+                return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+
         valid, result, role = check_login(login_text, password_text)
+
         if not valid:
-            flash(result, 'login_error')
+            # Increment failed attempts
+            if user:
+                user.failedAttempts += 1
+                if user.failedAttempts >= 3:
+                    user.isLocked = True
+                    db.session.commit()
+                    # Send reset password email
+                    check_forgotPasswordEmail(user.userEmail)
+                    flash("⚠️ Your account is locked. Please check your email for the reset password link.", "login_error")
+                else:
+                    db.session.commit()
+                    flash(f"Invalid credentials. {3 - user.failedAttempts} attempts remaining.", "login_error")
+            else:
+                flash("No account found.", "login_error")
+
             all_messages = get_flashed_messages(with_categories=True)
             return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+
+        # Successful login — reset counters
+        if user:
+            user.failedAttempts = 0
+            user.isLocked = False
+            db.session.commit()
 
         session['user_id'] = result
         session['user_role'] = role
@@ -50,7 +78,6 @@ def login():
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
-    # Ensure GET request also includes flashed messages
     all_messages = get_flashed_messages(with_categories=True)
     return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 

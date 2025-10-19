@@ -69,6 +69,8 @@ class User(db.Model):
     userPendingCumulativeHours = db.Column(db.Float, default=0.0, nullable=False)                                     # Refer to the pending total hours of invigilator
     userCardId = db.Column(db.String(15), nullable=True)                                                              # Refer to user card UID
     timetable = db.relationship('Timetable', back_populates='user', uselist=False)                                    # [FK] Refer to that User with Own Timetable
+    isLocked = db.Column(db.Boolean, default=False, nullable=False)                                                   # Account locked flag
+    failedAttempts = db.Column(db.Integer, default=0, nullable=False)                                                 # Count for the times of user try to enter
 
     # Relationship
     department = db.relationship("Department", backref="users", foreign_keys=[userDepartment])
@@ -86,7 +88,9 @@ class User(db.Model):
         userRegisterDateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,                  
         userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,           
-        userCardId VARCHAR(15) NULL,                                    
+        userCardId VARCHAR(15) NULL,
+        isLocked BOOLEAN DEFAULT FALSE,
+        failedAttempts INT DEFAULT 0;                   
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''

@@ -188,24 +188,22 @@ The InvigilateX Team'''
 # -------------------------------
 def check_resetPassword(token, resetPassword1, resetPassword2):
     try:
-        # Decode token to get the email
-        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)  # Valid for 1 hour
+        email = serializer.loads(token, salt='password-reset-salt', max_age=3600)
     except Exception:
         return None, "The Reset Link is Invalid or Has Expired"
 
-    # Validation checks
     if resetPassword1 != resetPassword2:
         return None, "Passwords Do Not Match"
     if not password_format(resetPassword1):
         return None, "Wrong Password Format"
 
-    # Find the user by email
     user = User.query.filter_by(userEmail=email).first()
     if not user:
         return None, "User Not Found."
 
-    # Update user password with encryption
     user.userPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
+    user.isLocked = False             # ✅ unlock the account
+    user.failedAttempts = 0           # ✅ reset counter
     db.session.commit()
     return user, None
 
