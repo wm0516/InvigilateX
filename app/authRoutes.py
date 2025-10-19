@@ -18,7 +18,6 @@ bcrypt = Bcrypt()
 def index():
     return redirect(url_for('login'))
 
-
 # -------------------------------
 # Function for Auth Login route
 # -------------------------------
@@ -35,51 +34,58 @@ def login():
 
         # Track login attempts in session
         attempts = session.get('login_attempts', {})
-        user_attempt = attempts.get(login_text, {"count": 0})
-        locked = user_attempt["count"] >= 3
+        user_attempt = attempts.get(login_text, {"count": 0, "locked": False})
 
-        if locked:
-            flash("⚠️ Your account is locked due to too many failed attempts. A password reset email has been sent.", "error")
-            # Attempt to send reset password email
-            success, msg = check_forgotPasswordEmail(login_text)
-            if not success:
-                flash(msg or "Failed to send reset email.", "login_error")
-            # Kept attempts after email is sent
-            attempts[login_text] = {"count": 3}
-            session['login_attempts'] = attempts
+        # 🚫 Already locked → block login
+        if user_attempt.get("locked", False):
+            flash("⚠️ Your account is locked. Please check your email for the reset password link.", "login_error")
             all_messages = get_flashed_messages(with_categories=True)
-            return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+            return render_template('auth/login.html',login_text=login_text,password_text=password_text,all_messages=all_messages)
 
-        # Validate login credentials
+        # ✅ Validate login credentials
         valid, result, role = check_login(login_text, password_text)
 
         if not valid:
             user_attempt["count"] += 1
-            attempts[login_text] = user_attempt
-            session['login_attempts'] = attempts
 
-            remaining = 3 - user_attempt["count"]
-            if remaining > 0:
-                flash(f"Invalid credentials. You have {remaining} attempt(s) left.", "login_error")
-            else:
-                flash("⚠️ Account locked due to too many failed attempts. A password reset link has been sent to your email.", "login_error")
-                # Send reset email
+            # 🔒 Lock account after 3 failed attempts
+            if user_attempt["count"] >= 3:
+                user_attempt["locked"] = True
+                flash("⚠️ Account locked after 3 failed login attempts. Please check your email for a password reset link.", "login_error")
+
+                # Send reset password email
                 success, msg = check_forgotPasswordEmail(login_text)
                 if not success:
                     flash(msg or "Failed to send reset email.", "login_error")
-                # Reset attempts after lock
-                attempts[login_text] = {"count": 0}
+
+                # Save locked state
+                attempts[login_text] = user_attempt
                 session['login_attempts'] = attempts
 
-            all_messages = get_flashed_messages(with_categories=True)
-            return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
+                all_messages = get_flashed_messages(with_categories=True)
+                return render_template('auth/login.html',login_text=login_text,password_text=password_text,all_messages=all_messages)
 
-        # Successful login → clear attempts
-        attempts.pop(login_text, None)
+            # ❌ Still under 3 failed attempts
+            remaining = 3 - user_attempt["count"]
+            flash(f"Invalid credentials. You have {remaining} attempt(s) left.", "login_error")
+
+            # Save progress
+            attempts[login_text] = user_attempt
+            session['login_attempts'] = attempts
+
+            all_messages = get_flashed_messages(with_categories=True)
+            return render_template('auth/login.html',login_text=login_text,password_text=password_text,all_messages=all_messages)
+
+        # ✅ Successful login → clear attempts
+        if login_text in attempts:
+            del attempts[login_text]
         session['login_attempts'] = attempts
+
+        # Store session info
         session['user_id'] = result
         session['user_role'] = role
 
+        # Redirect by role
         if role == ADMIN:
             return redirect(url_for('admin_homepage'))
         elif role in (DEAN, HOS, HOP, LECTURER):
@@ -88,10 +94,9 @@ def login():
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
 
-    # For GET requests
+    # 🧭 GET request
     all_messages = get_flashed_messages(with_categories=True)
-    return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
-
+    return render_template('auth/login.html',login_text=login_text,password_text=password_text,all_messages=all_messages)
 
 
 # -------------------------------
