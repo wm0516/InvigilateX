@@ -89,8 +89,8 @@ class User(db.Model):
         userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,                  
         userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,           
         userCardId VARCHAR(15) NULL,
-        isLocked BOOLEAN DEFAULT FALSE,
-        failedAttempts INT DEFAULT 0;                   
+        isLocked BOOLEAN DEFAULT FALSE NOT NULL,
+        failedAttempts INT DEFAULT 0 NOT NULL;                   
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
