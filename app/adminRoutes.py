@@ -148,7 +148,7 @@ def generate_managecourse_template(department_code=None):
     return output
 
 # -------------------------------
-# Function for Admin ManageCourse Download Excel File Template
+# Function for Admin ManageCourse Download Excel File Template  
 # -------------------------------
 @app.route('/download_course_template/<department_code>')
 @login_required
@@ -203,7 +203,7 @@ def get_courseCodeSection(courseCodeSection_select):
         "coursePractical"   : course.coursePractical,
         "courseTutorial"    : course.courseTutorial,
         "courseName"        : course.courseName,
-        "courseHour"        : course.courseHour,
+        "courseHour"        : course.courseHour,    
         "courseStudent"     : course.courseStudent,
         "courseStatus"      : course.courseStatus,
     })
