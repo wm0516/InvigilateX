@@ -409,12 +409,18 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial] if uid]
 
     # Eligible invigilators: active, level 1, not assigned, <36 hours, and available in timetable
-    eligible_invigilators = User.query.filter(
+    query = User.query.filter(
         User.userLevel == 1,
-        User.userStatus == True,
-        ~User.userId.in_(exclude_ids)
-    ).all()
+        User.userStatus == True
+    )
 
+    # Only apply exclusion filter if list is not empty
+    if exclude_ids:
+        query = query.filter(~User.userId.in_(exclude_ids))
+
+    eligible_invigilators = query.all()
+
+    # Further filter by workload and timetable availability
     eligible_invigilators = [
         inv for inv in eligible_invigilators
         if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36

@@ -402,8 +402,8 @@ def admin_manageDepartment():
 
         # ---------------- Manual Section ----------------
         if form_type == 'manual':
-            departmentCode = request.form.get('departmentCode')
-            departmentName = request.form.get('departmentName')
+            departmentCode = request.form.get('departmentCode', '').upper()
+            departmentName = request.form.get('departmentName', '').upper()
 
             # Check if department code already exists
             if Department.query.filter_by(departmentCode=departmentCode).first():
