@@ -139,14 +139,14 @@ def generate_managecourse_template():
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Template  
 # -------------------------------
-@app.route('/download_course_template/<department_code>')
+@app.route('/download_course_template')
 @login_required
-def download_course_template(department_code):
-    output = generate_managecourse_template(department_code)
+def download_course_template():
+    output = generate_managecourse_template()
     return send_file(
         output,
         as_attachment=True, 
-        download_name=f"ManageCourse_{department_code}.xlsx", # type: ignore[arg-type]
+        download_name=f"ManageCourse.xlsx", # type: ignore[arg-type]
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
