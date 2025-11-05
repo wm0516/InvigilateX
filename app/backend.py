@@ -511,7 +511,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
         return False, "ID already exists"
     if User.query.filter_by(userEmail=email).first():
         return False, "Email already exists"
-    if User.query.filter_by(userContact=contact).first():
+    if contact and User.query.filter_by(userContact=contact).first():
         return False, "Contact number already exists"
 
     # Create staff object
