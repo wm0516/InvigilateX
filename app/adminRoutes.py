@@ -1217,7 +1217,7 @@ def get_staff(id):
         "userId": user.userId,
         "userName": user.userName,
         "userEmail": user.userEmail,
-        "userContact": user.userContact,
+        "userContact": user.userContact or "",
         "userGender": user.userGender,
         "userLevel": str(user.userLevel),
         "userDepartment": user.userDepartment or "",
