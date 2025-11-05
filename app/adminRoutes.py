@@ -94,6 +94,9 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Format 
 # -------------------------------
+# -------------------------------
+# Function for Admin ManageCourse Download Excel File Format (Without Practical/Tutorial Columns)
+# -------------------------------
 def generate_managecourse_template(department_code=None):
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
@@ -103,7 +106,7 @@ def generate_managecourse_template(department_code=None):
     
     # Header row (start from row 2)
     ws.append([])
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'Practical Lecturer', 'Tutorial Lecturer', 'No of Students']
+    headers = ['Department Code','Course Code','Course Section','Course Name','Credit Hour','No of Students']
     ws.append(headers)
     
     # Hidden sheet for dropdown lists
@@ -118,34 +121,24 @@ def generate_managecourse_template(department_code=None):
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
 
-    # Lecturers (filtered by department if needed)
-    lecturers_query = User.query.filter_by(userLevel=1)
-    if department_code:
-        lecturers_query = lecturers_query.filter_by(userDepartment=department_code)
-
-    lecturers = [u.userId for u in lecturers_query.all()]
-    for i, lec in enumerate(lecturers, start=1):
-        ws_lists[f"B{i}"] = lec
-
     ws_lists.sheet_state = 'hidden'
     
     # Dropdowns
     if departments:
-        dv_dept = DataValidation(type="list", formula1=f"=Lists!$A$1:$A${len(departments)}", allow_blank=False)
+        dv_dept = DataValidation(
+            type="list",
+            formula1=f"=Lists!$A$1:$A${len(departments)}",
+            allow_blank=False
+        )
         ws.add_data_validation(dv_dept)
-        dv_dept.add("A3:A1000")
+        dv_dept.add("A3:A1000")  # Department dropdown
     
-    if lecturers:
-        dv_lecturer = DataValidation(type="list", formula1=f"=Lists!$B$1:$B${len(lecturers)}", allow_blank=True)
-        ws.add_data_validation(dv_lecturer)
-        dv_lecturer.add("F3:F1000")
-        dv_lecturer.add("G3:G1000")
-    
-    # Return BytesIO
+    # Return Excel file as BytesIO
     output = BytesIO()
     wb.save(output)
     output.seek(0)
     return output
+
 
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Template  
@@ -264,10 +257,10 @@ def admin_manageCourse():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='course_file',
-                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'practical lecturer', 'tutorial lecturer', 'no of students'],
+                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'no of students'],
                 process_row_fn=process_course_row,
                 redirect_endpoint='admin_manageCourse',
-                usecols="A:H",
+                usecols="A:F",
                 skiprows=1 
             )
 

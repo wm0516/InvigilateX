@@ -170,13 +170,13 @@
             </div>
 
             <div class="form-middle">
-                <label>Practical Lecturer</label>
-                <select id="editPracticalLecturer" name="practicalLecturerSelect" required>
+                <label>Practical Lecturer (Optional)</label>
+                <select id="editPracticalLecturer" name="practicalLecturerSelect">
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select><br>
 
-                <label>Tutorial Lecturer</label>
-                <select id="editTutorialLecturer" name="tutorialLecturerSelect" required>
+                <label>Tutorial Lecturer (Optional)</label>
+                <select id="editTutorialLecturer" name="tutorialLecturerSelect">
                     <option value="" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
@@ -242,8 +242,8 @@
                     <th>Credit Hour(s)</th>
                     <th>Course Department</th>
                     <th>Number of Students</th>
-                    <th>Lecturer Details</th>
                     <th>Exam ID</th>
+                    <th>Lecturer Details</th>
                 </tr>   
             </thead>
             <tbody>
@@ -271,15 +271,15 @@
                         <td>{{ row.courseDepartment }}</td>
                         <td>{{ row.courseStudent }}</td>
                         <td>
+                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
+                        </td>                        
+                        <td>
                             <div class="info-grid">
                                 <div>Practical</div>
                                 <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
                                 <div>Tutorial</div>
                                 <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
                             </div>
-                        </td>
-                        <td>
-                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
                         </td>
                     </tr>
                 {% endfor %}

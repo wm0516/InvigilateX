@@ -163,8 +163,8 @@ class Course(db.Model):
     __tablename__ = 'Course'
     courseCodeSectionIntake = db.Column(db.String(50), primary_key=True)                                         # [PK] Refer to CourseCodeSection
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
-    coursePractical = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                     # [FK ]Refer to Course Practical Lecturer
-    courseTutorial = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=False)                      # [FK] Refer to Course Tutorial Lecturer
+    coursePractical = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)                     # [FK ]Refer to Course Practical Lecturer
+    courseTutorial = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)                      # [FK] Refer to Course Tutorial Lecturer
     courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                           # Refer to courseExamStatus whether have exam or not
     courseName = db.Column(db.String(50), nullable=False)                                                        # Refer to CourseName
     courseHour = db.Column(db.Integer, nullable=False)                                                           # Refer to CourseHour
@@ -181,8 +181,8 @@ class Course(db.Model):
     CREATE TABLE Course (
         courseCodeSectionIntake VARCHAR(50) NOT NULL PRIMARY KEY,
         courseDepartment VARCHAR(10) NOT NULL,
-        coursePractical VARCHAR(20) NOT NULL,
-        courseTutorial VARCHAR(20) NOT NULL,
+        coursePractical VARCHAR(20) NULL,
+        courseTutorial VARCHAR(20) NULL,
         courseExamId INT NOT NULL,
         courseName VARCHAR(50) NOT NULL,
         courseHour INT NOT NULL,
