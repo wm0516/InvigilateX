@@ -1183,17 +1183,25 @@ def process_staff_row(row):
     else:
         cardid = str(cardid).upper()
 
+    # Handle empty contact properly
+    contact = row.get('contact')
+    if pd.isna(contact) or str(contact).strip().lower() in ["", "nan", "none"]:
+        contact = None
+    else:
+        contact = clean_contact(contact)
+
     return create_staff(
         id=str(row['id']).upper(),
         department=str(row['department']).upper(),
         name=str(row['name']).upper(),
         role=role_mapping.get(str(row['role']).strip().lower()),
         email=str(row['email']),
-        contact=clean_contact(row['contact']),
+        contact=contact,  # cleaned and can be None
         gender=str(row['gender']).upper(),
         hashed_pw=hashed_pw,
-        cardId=cardid,  # use the cleaned value
+        cardId=cardid,  # cleaned card ID
     )
+
 
 # -------------------------------
 # Read All StaffDetails Under The ManageLecturerEditPage
