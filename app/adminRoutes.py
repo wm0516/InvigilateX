@@ -164,8 +164,6 @@ def process_course_row(row):
         section     = str(row['course section']).strip().replace(" ", ""),
         name        = str(row['course name']).strip(),
         hour        = int(row['credit hour']),
-        practical   = str(row['practical lecturer']).strip().upper(),
-        tutorial    = str(row['tutorial lecturer']).strip().upper(),
         students    = int(row['no of students']),
     )
 
@@ -340,8 +338,6 @@ def admin_manageCourse():
                 "section"   : request.form.get('courseSection', '').replace(' ', ''),
                 "name"      : request.form.get('courseName', '').strip(),
                 "hour"      : safe_int(request.form.get('courseHour')),
-                "practical" : request.form.get('practicalLecturerSelect', '').strip(),
-                "tutorial"  : request.form.get('tutorialLecturerSelect', '').strip(),
                 "students"  : safe_int(request.form.get('courseStudent')),
             }
             success, message = create_course_and_exam(**form_data)

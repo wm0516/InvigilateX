@@ -211,27 +211,13 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
 # -------------------------------
 # Admin Function 1: Create Course with Automatically Exam when with all correct data
 # -------------------------------
-def create_course_and_exam(department, code, section, name, hour, practical, tutorial, students):
+def create_course_and_exam(department, code, section, name, hour, students):
     # Validate department code
     department_name = Department.query.filter_by(departmentCode=department.upper() if department else None).first()
     if not department_name:
         department = None
     else:
         department = department.upper()
-
-    # Validate practical lecturer
-    practical_user = User.query.filter_by(userId=practical if practical else None).first()
-    if practical_user:
-        practical_id = practical_user.userId
-    else:
-        practical_id = None
-
-    # Validate tutorial lecturer
-    tutorial_user = User.query.filter_by(userId=tutorial if tutorial else None).first()
-    if tutorial_user:
-        tutorial_id = tutorial_user.userId
-    else:
-        tutorial_id = None
 
     courseCodeSection_text = (code + '/' + section)
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSectionIntake.ilike(courseCodeSection_text)).first()
@@ -261,15 +247,14 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
 
     # Only create an Exam if both lecturers are valid
     exam_id = None
-    if practical_user and tutorial_user:
-        new_exam = Exam(
-            examStartTime=None,
-            examEndTime=None,
-            examNoInvigilator=invigilatorNo
-        )
-        db.session.add(new_exam)
-        db.session.flush()  # Get the examId before commit
-        exam_id = new_exam.examId
+    new_exam = Exam(
+        examStartTime=None,
+        examEndTime=None,
+        examNoInvigilator=invigilatorNo
+    )
+    db.session.add(new_exam)
+    db.session.flush()  # Get the examId before commit
+    exam_id = new_exam.examId
 
     # Create the Course
     new_course = Course(
@@ -278,8 +263,6 @@ def create_course_and_exam(department, code, section, name, hour, practical, tut
         courseName=name.upper() if name else None,
         courseHour=hour,
         courseStudent=students,
-        coursePractical=practical_id,
-        courseTutorial=tutorial_id,
         courseExamId=exam_id,  # Assign examId if exists, else None
         courseStatus=True
     )
