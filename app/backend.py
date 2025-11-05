@@ -499,8 +499,12 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
     # Validate email and contact
     if not email_format(email):
         return False, "Wrong Email Address Format"
-    if not contact_format(contact):
-        return False, "Wrong Contact Number Format"
+    # Validate contact only if it's not empty
+    if contact:
+        if not contact_format(contact):
+            return False, "Wrong Contact Number Format"
+    else:
+        contact = None  # Explicitly set as NULL for the database
 
     # Check uniqueness
     if User.query.filter_by(userId=id.upper()).first():
