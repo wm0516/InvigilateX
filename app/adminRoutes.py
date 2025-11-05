@@ -91,13 +91,11 @@ def handle_file_upload(file_key, expected_cols, process_row_fn, redirect_endpoin
         flash("No file uploaded", "error")
         return redirect(url_for(redirect_endpoint))
 
+
 # -------------------------------
-# Function for Admin ManageCourse Download Excel File Format 
+# Function for Admin ManageCourse Download Overall Excel File Format 
 # -------------------------------
-# -------------------------------
-# Function for Admin ManageCourse Download Excel File Format (Without Practical/Tutorial Columns)
-# -------------------------------
-def generate_managecourse_template(department_code=None):
+def generate_managecourse_template():
     warnings.simplefilter("ignore", UserWarning)
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -106,24 +104,23 @@ def generate_managecourse_template(department_code=None):
     
     # Header row (start from row 2)
     ws.append([])
-    headers = ['Department Code','Course Code','Course Section','Course Name','Credit Hour','No of Students']
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'No of Students']
     ws.append(headers)
     
     # Hidden sheet for dropdown lists
     ws_lists = wb.create_sheet(title="Lists")
 
-    # Departments
-    if department_code:  
-        departments = [department_code]   # single department
-    else:  
-        departments = [d.departmentCode for d in Department.query.all()]  # fallback: all
+    # Get all department codes from the database
+    departments = [d.departmentCode for d in Department.query.all()]
 
+    # Write department codes into the Lists sheet
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
 
+    # Hide the Lists sheet
     ws_lists.sheet_state = 'hidden'
     
-    # Dropdowns
+    # Create dropdown for Department Code column
     if departments:
         dv_dept = DataValidation(
             type="list",
@@ -138,7 +135,6 @@ def generate_managecourse_template(department_code=None):
     wb.save(output)
     output.seek(0)
     return output
-
 
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Template  
