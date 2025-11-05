@@ -251,7 +251,7 @@
                     <tr class="
                         {% if row.courseStatus == 0 %}
                             inactive-row-show
-                        {% elif row.courseDepartment is none or row.practicalLecturer is none or row.tutorialLecturer is none or row.courseExamId is none %}
+                        {% elif row.courseDepartment is none %}
                             error-row-show
                         {% endif %}
                     ">
@@ -271,14 +271,14 @@
                         <td>{{ row.courseDepartment }}</td>
                         <td>{{ row.courseStudent }}</td>
                         <td>
-                            {{ row.courseExamId if row.courseExamId else '<span class="status frame-expired">None</span>' | safe }}
+                            {{ row.courseExamId if row.courseExamId else '<span>None</span>' | safe }}
                         </td>                        
                         <td>
                             <div class="info-grid">
                                 <div>Practical</div>
-                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
+                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
                                 <div>Tutorial</div>
-                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span class="status frame-expired">N/A</span>' | safe }}</strong></div>
+                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span>N/A</span>' | safe }}</strong></div>
                             </div>
                         </td>
                     </tr>
