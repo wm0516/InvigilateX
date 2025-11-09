@@ -1180,7 +1180,7 @@ def process_staff_row(row):
         cardid = str(cardid).upper()
 
     return create_staff(
-        id=str(row['id']).upper(),
+        id=row['id'],
         department=str(row['department']).upper(),
         name=str(row['name']).upper(),
         role=role_mapping.get(str(row['role']).strip().lower()),
