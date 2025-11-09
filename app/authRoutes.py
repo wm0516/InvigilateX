@@ -340,7 +340,6 @@ def confirm_record(user_id):
 def open_record(user_id):
     cutoff_time = datetime.now() - timedelta(minutes=1)
 
-    # Get all invigilator attendance for the current user
     user_assigned_exam_ids = (
         db.session.query(InvigilationReport.examId)
         .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
@@ -352,18 +351,17 @@ def open_record(user_id):
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)  # safer: allow NULL
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.timeCreate < cutoff_time,
-            Exam.examStartTime > datetime.now() + timedelta(hours=8),
-            ~InvigilationReport.examId.in_(user_assigned_exam_ids)   # Exclude exams the user is already assigned to
+            Exam.examStartTime > datetime.now(),  # remove +8 hours unless needed
+            ~InvigilationReport.examId.in_(user_assigned_exam_ids)
         )
         .all()
     )
 
-    # Remove duplicates by examId (keep first)
+    # Remove duplicates by examId
     unique_slots = {}
     for slot in slots:
         exam_id = slot.report.examId
@@ -371,6 +369,7 @@ def open_record(user_id):
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 # -------------------------------
 # Main User Homepage
