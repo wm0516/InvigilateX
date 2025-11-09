@@ -256,7 +256,7 @@ document.addEventListener("DOMContentLoaded", function() {
 // -------------------------
 function clearEditFields() {
     const fieldsToClear = [
-        'editProgramCode', 'editStudent', 'editInvigilatorNo',
+        'editProgramCode', 'editStudent',
         'startDate', 'startTime', 'endDate', 'endTime',
         'editPracticalLecturer', 'editTutorialLecturer'
     ];
@@ -313,7 +313,6 @@ function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
-    document.getElementById('editInvigilatorNo').value = data.examNoInvigilator || '';
 
     if (data.examStartTime) {
         const [date, time] = data.examStartTime.split('T');
