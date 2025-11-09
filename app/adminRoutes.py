@@ -1277,30 +1277,31 @@ def admin_manageStaff():
                 if user_select.userStatus == 2:
                     user_select.userRegisterDateTime = datetime.now(timezone.utc)
 
-                if user_select.userDepartment != new_department_code:
-                    # 1. Remove user from OLD department
-                    old_department = Department.query.filter_by(departmentCode=user_select.userDepartment).first()
-                    if old_department:
-                        if old_department.hopId == user_select.userId:
-                            old_department.hopId = None
-                        if old_department.deanId == user_select.userId:
-                            old_department.deanId = None
-                        if old_department.hosId == user_select.userId:
-                            old_department.hosId = None
+                # Always update department and related dean/hop/hos fields
+                old_department = Department.query.filter_by(departmentCode=user_select.userDepartment).first()
+                new_department = Department.query.filter_by(departmentCode=new_department_code).first()
 
-                    # 2. Assign user to NEW department
-                    new_department = Department.query.filter_by(departmentCode=new_department_code).first()
-                    if new_department:
-                        if user_select.userLevel == 3:  # HOS
-                            new_department.hosId = user_select.userId
-                        elif user_select.userLevel == 4:  # HOP
-                            new_department.hopId = user_select.userId
-                        elif user_select.userLevel == 2:  # Dean
-                            new_department.deanId = user_select.userId
+                # Remove from old department (if user moves OR role changes)
+                if old_department:
+                    if old_department.hopId == user_select.userId:
+                        old_department.hopId = None
+                    if old_department.deanId == user_select.userId:
+                        old_department.deanId = None
+                    if old_department.hosId == user_select.userId:
+                        old_department.hosId = None
 
-                    # 3. Update user table
-                    user_select.userDepartment = new_department_code
-                    user_select.userRegisterDateTime = datetime.now(timezone.utc)
+                # Assign to new department
+                if new_department:
+                    if user_select.userLevel == 3:  # HOS
+                        new_department.hosId = user_select.userId
+                    elif user_select.userLevel == 4:  # HOP
+                        new_department.hopId = user_select.userId
+                    elif user_select.userLevel == 2:  # Dean
+                        new_department.deanId = user_select.userId
+
+                # Update user department & timestamp
+                user_select.userDepartment = new_department_code
+                user_select.userRegisterDateTime = datetime.now(timezone.utc)
 
                 db.session.commit()
                 flash("Staff updated successfully", "success")
