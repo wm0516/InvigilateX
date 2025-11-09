@@ -553,20 +553,24 @@ def generate_manageexam_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Exams"
 
-    # First row empty
+    # --- Row 1 empty
     ws.append([])
-    # Second row = headers  
+
+    # --- Row 2 headers
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'No of', 'Room']
     ws.append(headers)
 
     # === Apply formatting ===
-    date_style = NamedStyle(name="date_style", number_format="MM/DD/YYYY")
+    # Date in DD/MM/YYYY format
+    date_style = NamedStyle(name="date_style", number_format="DD/MM/YYYY")
+    time_style = NamedStyle(name="time_style", number_format="hh:mm:ss AM/PM")
 
+    # Apply date and formula formatting
     for row in range(3, 503):
-        # Column A = Date with date format
         ws[f"A{row}"].style = date_style
-        # Column B = Day (auto formula from date)
         ws[f"B{row}"] = f'=IF(A{row}="","",TEXT(A{row},"dddd"))'
+        ws[f"C{row}"].style = time_style  # Start time
+        ws[f"D{row}"].style = time_style  # End time
 
     # === Hidden sheet for lookup lists ===
     ws_lists = wb.create_sheet(title="Lists")
@@ -586,15 +590,16 @@ def generate_manageexam_template():
         )
         .all()
     )
+
     for i, c in enumerate(courses, start=1):
-        ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
-        ws_lists[f"B{i}"] = c.courseDepartment          # Program
-        ws_lists[f"C{i}"] = c.courseStudent or 0       # No of students 
+        ws_lists[f"A{i}"] = c.courseCodeSectionIntake       # Course/Sec
+        ws_lists[f"B{i}"] = c.courseDepartment              # Program
+        ws_lists[f"C{i}"] = c.courseStudent or 0            # No of students
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"E{i}"] = v.venueNumber   # put venues in column E 
+        ws_lists[f"E{i}"] = v.venueNumber                   # Room list
 
     # === Data Validations ===
     if courses:
@@ -604,12 +609,12 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_course)
-        dv_course.add("F3:F1002")  # Course/Sec dropdown
+        dv_course.add("F3:F502")  # Course/Sec dropdown
 
-        # Auto-fill program, no of students 
+        # Auto-fill program and number of students
         for row in range(3, 503):
-            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},2,FALSE))'  # Program
-            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},3,FALSE))'  # No of Students
+            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},2,FALSE))'
+            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},3,FALSE))'
 
     if venues:
         dv_venue = DataValidation(
@@ -618,11 +623,12 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        ws["H3:H1002"] = ""  # Room column 
-        dv_venue.add("H3:H1002")  # Room dropdown
+        dv_venue.add("H3:H502")  # Room dropdown
 
+    # Hide lookup sheet
     ws_lists.sheet_state = 'hidden'
 
+    # Save to memory
     output = BytesIO()
     wb.save(output)
     output.seek(0)
@@ -635,13 +641,19 @@ def generate_manageexam_template():
 @app.route('/download_exam_template')
 @login_required
 def download_exam_template():
-    output = generate_manageexam_template()
-    return send_file(
-        output,
-        as_attachment=True,
-        download_name="ManageExam.xlsx", # type: ignore[arg-type]
-        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    try:
+        output = generate_manageexam_template()
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name="ManageExam.xlsx",
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        import traceback
+        print("Error generating Excel:", e)
+        print(traceback.format_exc())
+        return "Error generating Excel template", 500
 
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
