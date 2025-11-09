@@ -165,7 +165,7 @@ class Course(db.Model):
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
     coursePractical = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                     # [FK ]Refer to Course Practical Lecturer
     courseTutorial = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                      # [FK] Refer to Course Tutorial Lecturer
-    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                           # Refer to courseExamStatus whether have exam or not
+    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=True)                           # Refer to courseExamStatus whether have exam or not
     courseName = db.Column(db.String(50), nullable=False)                                                        # Refer to CourseName
     courseHour = db.Column(db.Integer, nullable=False)                                                           # Refer to CourseHour
     courseStudent = db.Column(db.Integer, nullable=False)                                                        # Refer to Course Total Number of Students
@@ -182,7 +182,7 @@ class Course(db.Model):
         courseDepartment VARCHAR(10) NOT NULL,
         coursePractical INT NULL,
         courseTutorial INT NULL,
-        courseExamId INT NOT NULL,
+        courseExamId INT NULL,
         courseName VARCHAR(50) NOT NULL,
         courseHour INT NOT NULL,
         courseStudent INT NOT NULL,
