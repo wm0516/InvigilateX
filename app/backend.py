@@ -219,7 +219,7 @@ def create_course_and_exam(department, code, section, name, hour, students):
     else:
         department = department.upper()
 
-    courseCodeSection_text = (code + '/' + section)
+    courseCodeSection_text = f"{code}/{section}".upper() if code and section else None
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSectionIntake.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
         return False, "Course Already Registered"
@@ -239,19 +239,37 @@ def create_course_and_exam(department, code, section, name, hour, students):
         return False, "Students must be an integer"
     if students < 0:
         return False, "Students cannot be negative"
-        
+
+    # Check if an Exam already exists for this course code (all sections share one exam)
+    existing_exam_course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{code}/%")).first()
+    if existing_exam_course and existing_exam_course.courseExamId:
+        exam_id = existing_exam_course.courseExamId
+    else:
+        # Create new Exam
+        new_exam = Exam(
+            examStartTime=None,
+            examEndTime=None,
+            examNoInvigilator=None
+        )
+        db.session.add(new_exam)
+        db.session.flush()  # Get examId
+        exam_id = new_exam.examId
+
     # Create the Course
     new_course = Course(
-        courseCodeSectionIntake=f"{code}/{section}".upper() if code and section else None,
+        courseCodeSectionIntake=courseCodeSection_text,
         courseDepartment=department,
         courseName=name.upper() if name else None,
         courseHour=hour,
         courseStudent=students,
+        courseExamId=exam_id,
         courseStatus=True
     )
     db.session.add(new_course)
     db.session.commit()
+    
     return True, "Course created successfully"
+
 
 
 # -------------------------------

@@ -25,6 +25,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # cleanup_expired_timetable_rows()
+    update_exam_status()
     update_attendanceStatus()
     login_text = ''
     password_text = ''
@@ -717,6 +718,14 @@ def update_attendanceStatus():
         if attendance.remark == "PENDING" and time_now > exam.examEndTime:
             attendance.remark = "EXPIRED"
 
+    db.session.commit()
+
+def update_exam_status():
+    # Auto-expire exams
+    now = datetime.now() + timedelta(hours=8)
+    expired_exams = Exam.query.filter(Exam.examEndTime < now, Exam.examStatus == True).all()
+    for exam in expired_exams:
+        exam.examStatus = False
     db.session.commit()
 
 

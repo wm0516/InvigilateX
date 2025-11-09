@@ -779,7 +779,7 @@ def get_available_venues():
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues):
+def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new_students):
     old_start = exam.examStartTime
     old_end = exam.examEndTime
 
@@ -965,13 +965,6 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues):
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 @login_required
 def admin_manageExam():
-    # Auto-expire exams
-    now = datetime.now() + timedelta(hours=8)
-    expired_exams = Exam.query.filter(Exam.examEndTime < now, Exam.examStatus == True).all()
-    for exam in expired_exams:
-        exam.examStatus = False
-    db.session.commit()
-
     # Load departments and exams
     department_data = Department.query.all()
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
@@ -1030,6 +1023,7 @@ def admin_manageExam():
             start_dt = parse_datetime(start_date_raw, start_time_raw)
             end_dt = parse_datetime(end_date_raw, end_time_raw)
             venue_list = request.form.getlist("venue[]")
+            student_list = request.form.getlist("venueStudents[]")
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
             new_inv_count = int(invigilatorNo_text)
 
@@ -1040,7 +1034,8 @@ def admin_manageExam():
                         new_start=start_dt,
                         new_end=end_dt,
                         new_invigilator_count=new_inv_count,
-                        new_venues=venue_list
+                        new_venues=venue_list,
+                        new_students=student_list
                     )
                     flash(f"💾 Exam {exam_select.course.courseCodeSectionIntake} updated successfully.", "success")
                 except ValueError as e:

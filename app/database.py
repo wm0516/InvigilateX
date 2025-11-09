@@ -116,7 +116,7 @@ class Exam(db.Model):
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                         # [PK] Refer to Exam ID
     examStartTime = db.Column(db.DateTime, nullable=True)                                        # Refer to Exam StartTime
     examEndTime = db.Column(db.DateTime, nullable=True)                                          # Refer to Exam EndTime
-    examNoInvigilator = db.Column(db.Integer, nullable=False)                                    # Number of invigilators needed
+    examNoInvigilator = db.Column(db.Integer, nullable=True)                                    # Number of invigilators needed
     examStatus = db.Column(db.Boolean, default=True, nullable=False)                             # Refer to Course Status, when course deleted, it will show False
 
     # Relationships
@@ -128,7 +128,7 @@ class Exam(db.Model):
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         examStartTime DATETIME NULL,
         examEndTime DATETIME NULL,
-        examNoInvigilator INT NOT NULL,
+        examNoInvigilator INT NULL,
         examStatus TINYINT(1) NOT NULL DEFAULT 1
     );
     '''
@@ -165,7 +165,7 @@ class Course(db.Model):
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
     coursePractical = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                     # [FK ]Refer to Course Practical Lecturer
     courseTutorial = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                      # [FK] Refer to Course Tutorial Lecturer
-    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=True)                           # Refer to courseExamStatus whether have exam or not
+    courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                           # Refer to courseExamStatus whether have exam or not
     courseName = db.Column(db.String(50), nullable=False)                                                        # Refer to CourseName
     courseHour = db.Column(db.Integer, nullable=False)                                                           # Refer to CourseHour
     courseStudent = db.Column(db.Integer, nullable=False)                                                        # Refer to Course Total Number of Students
@@ -182,7 +182,7 @@ class Course(db.Model):
         courseDepartment VARCHAR(10) NOT NULL,
         coursePractical INT NULL,
         courseTutorial INT NULL,
-        courseExamId INT NULL,
+        courseExamId INT NOT NULL,
         courseName VARCHAR(50) NOT NULL,
         courseHour INT NOT NULL,
         courseStudent INT NOT NULL,
