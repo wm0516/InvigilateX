@@ -201,10 +201,9 @@ def get_courseCodeSection(courseCodeSection_select):
 @login_required
 def admin_manageCourse():
     course_data = Course.query.order_by(
-        Course.coursePractical.asc(),
-        Course.courseTutorial.asc(),
         Course.courseStatus.desc(),
-        Course.courseDepartment.asc()
+        Course.courseDepartment.asc(),
+        Course.courseName.asc()
     ).all()
     department_data = Department.query.all()
 
