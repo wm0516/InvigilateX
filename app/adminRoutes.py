@@ -102,25 +102,23 @@ def generate_managecourse_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Courses"
     
-    # Header row (start from row 2)
-    ws.append([])
+    # --- Header row ---
+    ws.append([])  # First row empty
     headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'No of Students']
     ws.append(headers)
-    
-    # Hidden sheet for dropdown lists
+
+    # --- Hidden sheet for dropdown lists ---
     ws_lists = wb.create_sheet(title="Lists")
 
-    # Get all department codes from the database
-    departments = [d.departmentCode for d in Department.query.all()]
-
-    # Write department codes into the Lists sheet
+    # Fetch all department codes
+    departments = [d.departmentCode for d in Department.query.order_by(Department.departmentCode).all()]
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
 
     # Hide the Lists sheet
     ws_lists.sheet_state = 'hidden'
-    
-    # Create dropdown for Department Code column
+
+    # Create dropdown for Department Code column (A3:A1000)
     if departments:
         dv_dept = DataValidation(
             type="list",
@@ -128,13 +126,14 @@ def generate_managecourse_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_dept)
-        dv_dept.add("A3:A1000")  # Department dropdown
-    
-    # Return Excel file as BytesIO
+        dv_dept.add("A3:A1000")
+
+    # Return as BytesIO for Flask send_file
     output = BytesIO()
     wb.save(output)
     output.seek(0)
     return output
+
 
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Template  
