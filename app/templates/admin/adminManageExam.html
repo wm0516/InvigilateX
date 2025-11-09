@@ -74,16 +74,15 @@
         <h4 style="text-align: center;">Edit Existing Exams</h4>
         <div class="profile-frame">
             <div class="form-left">
-                <label for="editExamCourseSection">Select Exam Course/Section - Course Name</label>
+                <label for="editExamCourseSection">Select Exam Course - Course Name</label>
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
-                    <option value="" disabled selected>Select Course Section</option>
+                    <option value="" disabled selected>Select Course</option>
                     {% for exam in display_exam_data %}
                         {% if exam.course %}
-                            <option value="{{ exam.course.courseCodeSectionIntake }}">
-                                [{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}
+                            <option value="{{ exam.course.courseCodeSectionIntake.split('/')[0] }}">
+                                [{{ exam.course.courseCodeSectionIntake.split('/')[0] }}] - {{ exam.course.courseName }}
                             </option>
                         {% else %}
-                            {# optional: show a disabled placeholder for exams without a linked course #}
                             <option value="" disabled>Unlinked exam (ID: {{ exam.examId }})</option>
                         {% endif %}
                     {% endfor %}

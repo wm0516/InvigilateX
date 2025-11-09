@@ -701,29 +701,31 @@ def process_exam_row(row):
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
-@app.route('/get_exam_details/<path:course_code_section>')
+@app.route('/get_exam_details/<path:course_code>')
 @login_required
-def get_exam_details(course_code_section):
-    course = Course.query.filter_by(courseCodeSectionIntake=course_code_section).first()
-    if not course:
-        return jsonify({"error": "Course not found"}), 404
+def get_exam_details(course_code):
+    # Get any course under this course code (ignore section)
+    course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{course_code}/%")).first()
+    if not course or not course.courseExamId:
+        return jsonify({"error": "Course or exam not found"}), 404
 
-    exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
-    venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
+    exam = Exam.query.get(course.courseExamId)
+    venues = VenueExam.query.filter_by(examId=exam.examId).all()
 
     response_data = {
-        "courseCodeSection": course.courseCodeSectionIntake,
+        "courseCode": course.courseCodeSectionIntake.split('/')[0],  # just course code
         "courseName": course.courseName or "",
-        "courseDepartment": course.courseDepartment or "",
         "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
         "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
-        "courseStudent": course.courseStudent or 0,
+        "examTotalStudents": exam.examTotalStudents or 0,
         "examVenues": [v.venueNumber for v in venues],
-        "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
-        "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
-        "examNoInvigilator": exam.examNoInvigilator if exam else 0
+        "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam.examStartTime else "",
+        "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam.examEndTime else "",
+        "examNoInvigilator": exam.examNoInvigilator or 0,
+        "examId": exam.examId
     }
     return jsonify(response_data)
+
 
 
 # -------------------------------
