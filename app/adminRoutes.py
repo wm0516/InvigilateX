@@ -779,11 +779,25 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
     old_start = exam.examStartTime
     old_end = exam.examEndTime
 
+    # -------------------------------
     # 1️⃣ Update exam times
+    # -------------------------------
     exam.examStartTime = new_start
     exam.examEndTime = new_end
-    exam.examNoInvigilator = new_invigilator_count
 
+    # Determine total invigilators based on venue student counts
+    total_invigilators = 0
+    for s in new_students:
+        try:
+            student_count = int(s)
+        except ValueError:
+            student_count = 0
+        if student_count > 32:
+            total_invigilators += 3
+        elif student_count > 0:
+            total_invigilators += 2
+
+    exam.examNoInvigilator = total_invigilators
     db.session.flush()  # Ensure exam is updated before attendance
 
     # Calculate new duration and old duration
