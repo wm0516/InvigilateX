@@ -654,12 +654,10 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
-    print("---- DEBUG EXAM ROW ----")
-    print(f"Raw row: {row.to_dict()}")
-    print(f"Type of date: {type(row['date'])}, value: {row['date']}")
-    print(f"Type of start: {type(row['start'])}, value: {row['start']}")
-    print(f"Type of end: {type(row['end'])}, value: {row['end']}")
-    print("-------------------------")
+    flash(f"Raw row: {row.to_dict()}", "error")
+    flash(f"Type of date: {type(row['date'])}, value: {row['date']}", "error")
+    flash(f"Type of start: {type(row['start'])}, value: {row['start']}", "error")
+    flash(f"Type of end: {type(row['end'])}, value: {row['end']}", "error")
 
     examDate = row['date']
     if isinstance(examDate, str):
