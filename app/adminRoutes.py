@@ -653,35 +653,19 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
-    from dateutil import parser
-
-    # Parse date safely
     examDate = row['date']
     if isinstance(examDate, str):
-        try:
-            examDate = parser.parse(examDate.strip(), dayfirst=False, yearfirst=False)
-        except Exception:
-            return False, f"Invalid date format: {row['date']}"
-    elif isinstance(examDate, (float, int)):
-        # Excel date serial
-        examDate = pd.to_datetime(examDate, unit='D', origin='1899-12-30')
-    elif not isinstance(examDate, datetime):
-        return False, f"Unsupported date type: {type(examDate)}"
+        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
+        
+    examDate_text = examDate.strftime("%Y-%m-%d")
+    startTime_text = row['start']
+    endTime_text   = row['end']
 
-    # Parse time
-    try:
-        start_dt = datetime.combine(
-            examDate.date(), datetime.strptime(row['start'].strip(), "%I:%M %p").time()
-        )
-        end_dt = datetime.combine(
-            examDate.date(), datetime.strptime(row['end'].strip(), "%I:%M %p").time()
-        )
-    except Exception:
-        return False, f"Invalid time format: {row['start']} - {row['end']}"
-
-    if not start_dt or not end_dt:
+    if not examDate_text or not startTime_text or not endTime_text:
         return False, "Invalid time/date"
-
+    
+    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
+    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
     venue = str(row['room']).upper()
 
     # Conflict check before saving
@@ -692,12 +676,11 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
-        return None, 'Venue conflict detected'
+        return None, ''
 
-    # Create record
+    # No conflict → create
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
-
 
 
 # -------------------------------
