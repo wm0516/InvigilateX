@@ -116,7 +116,8 @@ class Exam(db.Model):
     examId = db.Column(db.Integer, primary_key=True, autoincrement=True)                         # [PK] Refer to Exam ID
     examStartTime = db.Column(db.DateTime, nullable=True)                                        # Refer to Exam StartTime
     examEndTime = db.Column(db.DateTime, nullable=True)                                          # Refer to Exam EndTime
-    examNoInvigilator = db.Column(db.Integer, nullable=True)                                    # Number of invigilators needed
+    examTotalStudents = db.Column(db.Integer, nullable=False)                                    # Refer to Total Students of the Course
+    examNoInvigilator = db.Column(db.Integer, nullable=True)                                     # Number of invigilators needed
     examStatus = db.Column(db.Boolean, default=True, nullable=False)                             # Refer to Course Status, when course deleted, it will show False
 
     # Relationships
@@ -128,6 +129,7 @@ class Exam(db.Model):
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         examStartTime DATETIME NULL,
         examEndTime DATETIME NULL,
+        examTotalStudents INT NOT NULL,
         examNoInvigilator INT NULL,
         examStatus TINYINT(1) NOT NULL DEFAULT 1
     );

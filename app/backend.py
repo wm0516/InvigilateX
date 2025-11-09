@@ -244,18 +244,26 @@ def create_course_and_exam(department, code, section, name, hour, students):
     existing_exam_course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{code}/%")).first()
     if existing_exam_course and existing_exam_course.courseExamId:
         exam_id = existing_exam_course.courseExamId
+        exam = Exam.query.get(exam_id)
+
+        # 🧮 Update total students for that exam
+        total_students = db.session.query(db.func.sum(Course.courseStudent)).filter(
+            Course.courseCodeSectionIntake.ilike(f"{code}/%")
+        ).scalar() or 0
+        exam.examTotalStudents = total_students + students  # add new section’s students
     else:
-        # Create new Exam
+        # 🆕 Create new Exam
         new_exam = Exam(
             examStartTime=None,
             examEndTime=None,
-            examNoInvigilator=None
+            examNoInvigilator=None,
+            examTotalStudents=students  # only this section initially
         )
         db.session.add(new_exam)
         db.session.flush()  # Get examId
         exam_id = new_exam.examId
 
-    # Create the Course
+    # ➕ Create the new Course
     new_course = Course(
         courseCodeSectionIntake=courseCodeSection_text,
         courseDepartment=department,
@@ -269,7 +277,6 @@ def create_course_and_exam(department, code, section, name, hour, students):
     db.session.commit()
     
     return True, "Course created successfully"
-
 
 
 # -------------------------------
