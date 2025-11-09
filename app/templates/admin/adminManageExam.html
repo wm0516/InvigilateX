@@ -348,9 +348,6 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .catch(err => console.error("Error fetching exam details:", err));
     });
-
-    // Initialize empty form with one venue row if nothing is selected
-    if (!courseSelect.value) createVenueRow('', '', true);
 });
 
 // -------------------------
