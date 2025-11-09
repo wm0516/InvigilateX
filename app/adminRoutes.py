@@ -895,59 +895,64 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
             ))
 
 
-    # 3️⃣ Update venue(s)
+    # -------------------------------
+    # 3️⃣ Update venue(s) using exact form input
+    # -------------------------------
     # Get old venue records
     old_records = {v.venueNumber: v for v in VenueExam.query.filter_by(examId=exam.examId).all()}
     used_venues = set()
-    remaining_students = exam.course.courseStudent
 
-    for venue_no in new_venues:
+    for i, venue_no in enumerate(new_venues):
+        try:
+            students_for_venue = int(new_students[i])
+        except (IndexError, ValueError):
+            students_for_venue = 0
+
+        if students_for_venue <= 0:
+            continue  # Skip venues with no students
+
         venue_obj = Venue.query.filter_by(venueNumber=venue_no).first()
         if not venue_obj:
             continue
 
-        # Skip if already used
+        # If the venue existed before, update capacity and times
         if venue_no in old_records:
             rec = old_records[venue_no]
             rec.startDateTime = new_start
             rec.endDateTime = new_end
-            rec.capacity = min(rec.capacity, remaining_students)
+            rec.capacity = students_for_venue
             used_venues.add(venue_no)
-            remaining_students -= rec.capacity
             continue
 
-        # Check conflicts based on capacity
+        # Check conflicts with other exams at the same venue and time
         overlapping_exams = VenueExam.query.filter(
             VenueExam.venueNumber == venue_no,
             VenueExam.examId != exam.examId,
-            VenueExam.startDateTime == new_start,
-            VenueExam.endDateTime == new_end
+            VenueExam.startDateTime < new_end + timedelta(minutes=30),
+            VenueExam.endDateTime > new_start - timedelta(minutes=30)
         ).all()
 
         total_students_in_use = sum(e.capacity for e in overlapping_exams)
         available_capacity = venue_obj.venueCapacity - total_students_in_use
 
-        if available_capacity <= 0:
-            raise ValueError(f"Venue {venue_no} is fully booked at {new_start}-{new_end}")
-
-        # Allocate as many students as possible
-        allocated = min(available_capacity, remaining_students)
-        remaining_students -= allocated
+        if available_capacity < students_for_venue:
+            raise ValueError(f"Venue {venue_no} cannot accommodate {students_for_venue} students (available: {available_capacity})")
 
         new_ve = VenueExam(
             examId=exam.examId,
             venueNumber=venue_no,
             startDateTime=new_start,
             endDateTime=new_end,
-            capacity=allocated
+            capacity=students_for_venue
         )
         db.session.add(new_ve)
         used_venues.add(venue_no)
 
-    # Remove old venues no longer used
+    # Remove old venues that are no longer used
     for venue_no, rec in old_records.items():
         if venue_no not in used_venues:
             db.session.delete(rec)
+
 
     if remaining_students > 0:
         raise ValueError(f"{remaining_students} students could not be seated")
