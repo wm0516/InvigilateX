@@ -775,7 +775,7 @@ def get_available_venues():
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new_students):
+def adjust_exam(exam, new_start, new_end, new_venues, new_students):
     old_start = exam.examStartTime
     old_end = exam.examEndTime
 
@@ -785,7 +785,9 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
     exam.examStartTime = new_start
     exam.examEndTime = new_end
 
-    # Determine total invigilators based on venue student counts
+    # -------------------------------
+    # 2️⃣ Determine invigilators based on student count for each venue
+    # -------------------------------
     total_invigilators = 0
     for s in new_students:
         try:
@@ -797,6 +799,7 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
         elif student_count > 0:
             total_invigilators += 2
 
+    # Update the total invigilator count for the exam
     exam.examNoInvigilator = total_invigilators
     db.session.flush()  # Ensure exam is updated before attendance
 
@@ -804,7 +807,9 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
     new_hours = (new_end - new_start).total_seconds() / 3600.0
     old_hours = (old_end - old_start).total_seconds() / 3600.0 if old_start and old_end else 0
 
-    # 2️⃣ Update invigilators
+    # -------------------------------
+    # 3️⃣ Update invigilators based on updated count
+    # -------------------------------
     report = InvigilationReport.query.filter_by(examId=exam.examId).first()
     if report:
         current_attendances = report.attendances
@@ -820,8 +825,8 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
                 )
 
         # Add new invigilators if count increased
-        if new_invigilator_count > current_count:
-            extra_needed = new_invigilator_count - current_count
+        if total_invigilators > current_count:
+            extra_needed = total_invigilators - current_count
             assigned_ids = [att.invigilatorId for att in current_attendances]
 
             # Exclude lecturers
@@ -861,8 +866,8 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
                 ))
 
         # Remove excess invigilators if count decreased
-        elif new_invigilator_count < current_count:
-            remove_count = current_count - new_invigilator_count
+        elif total_invigilators < current_count:
+            remove_count = current_count - total_invigilators
             to_remove = random.sample(current_attendances, remove_count)
             for att in to_remove:
                 inv = att.invigilator
@@ -891,14 +896,14 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
         females = sorted([u for u in eligible if u.userGender == "FEMALE"], key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
 
         chosen = []
-        if new_invigilator_count >= 2:
+        if total_invigilators >= 2:
             if males:
                 chosen.append(males.pop(0))
-            if females and len(chosen) < new_invigilator_count:
+            if females and len(chosen) < total_invigilators:
                 chosen.append(females.pop(0))
 
         pool = sorted(males + females, key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
-        chosen += pool[:(new_invigilator_count - len(chosen))]
+        chosen += pool[:(total_invigilators - len(chosen))]
 
         for inv in chosen:
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
@@ -1007,13 +1012,10 @@ def admin_manageExam():
         e for e in exam_data if e.examStatus and e.examStartTime and e.examEndTime and e.examNoInvigilator not in (None, 0)
     ])
 
-    # Default form values
-    invigilatorNo_text = ''
-
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
-        # 1️⃣ Upload exam file (optional)
+        # 1️⃣ Upload exam file
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='exam_file',
@@ -1025,7 +1027,7 @@ def admin_manageExam():
             )
 
         # 2️⃣ Edit exam
-        elif form_type == 'edit' and exam_select:
+        if form_type == 'edit' and exam_select:
             action = request.form.get('action')
             start_date_raw = request.form.get('startDate', '').strip()
             start_time_raw = request.form.get('startTime', '').strip()
@@ -1035,8 +1037,6 @@ def admin_manageExam():
             end_dt = parse_datetime(end_date_raw, end_time_raw)
             venue_list = request.form.getlist("venue[]")
             student_list = request.form.getlist("venueStudents[]")
-            invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
-            new_inv_count = int(invigilatorNo_text)
 
             # Get total students across all course sections for this exam
             total_students = exam_select.examTotalStudents
@@ -1054,7 +1054,6 @@ def admin_manageExam():
                         exam=exam_select,
                         new_start=start_dt,
                         new_end=end_dt,
-                        new_invigilator_count=new_inv_count,
                         new_venues=venue_list,
                         new_students=student_list
                     )
