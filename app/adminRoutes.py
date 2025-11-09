@@ -556,8 +556,8 @@ def generate_manageexam_template():
 
     # First row empty
     ws.append([])
-    # Second row = headers
-    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'Lecturer', 'No of', 'Room']
+    # Second row = headers (Removed 'Lecturer')
+    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'No of', 'Room']
     ws.append(headers)
 
     # === Apply formatting ===
@@ -590,15 +590,14 @@ def generate_manageexam_template():
     for i, c in enumerate(courses, start=1):
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
         ws_lists[f"B{i}"] = c.courseDepartment          # Program
-        ws_lists[f"C{i}"] = c.practicalLecturer.userId if c.practicalLecturer else ""  # Lecturer
-        ws_lists[f"D{i}"] = c.courseStudent or 0        # No of students
+        ws_lists[f"C{i}"] = c.courseStudent or 0       # No of students (shifted to C)
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"G{i}"] = v.venueNumber   # put venues in column G
+        ws_lists[f"E{i}"] = v.venueNumber   # put venues in column E (shifted)
 
-    # === Data Validations ===s
+    # === Data Validations ===
     if courses:
         dv_course = DataValidation(
             type="list",
@@ -608,20 +607,20 @@ def generate_manageexam_template():
         ws.add_data_validation(dv_course)
         dv_course.add("F3:F1002")  # Course/Sec dropdown
 
-        # Auto-fill program, lecturers, no of students
+        # Auto-fill program, no of students (Lecturer removed)
         for row in range(3, 503):
-            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))'  # Program
-            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))'  # Lecturer
-            ws[f"H{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))'  # No of Students
+            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},2,FALSE))'  # Program
+            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},3,FALSE))'  # No of Students
 
     if venues:
         dv_venue = DataValidation(
             type="list",
-            formula1=f"=Lists!$G$1:$G${len(venues)}",
+            formula1=f"=Lists!$E$1:$E${len(venues)}",
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        dv_venue.add("I3:I1002")  # Room dropdown
+        ws["H3:H1002"] = ""  # Room column shifted to H
+        dv_venue.add("H3:H1002")  # Room dropdown
 
     ws_lists.sheet_state = 'hidden'
 
@@ -629,6 +628,7 @@ def generate_manageexam_template():
     wb.save(output)
     output.seek(0)
     return output
+
 
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Template
@@ -987,10 +987,10 @@ def admin_manageExam():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec','lecturer','no of','room'],
+                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec','no of','room'],
                 process_row_fn=process_exam_row,
                 redirect_endpoint='admin_manageExam',
-                usecols="A:I",
+                usecols="A:H",
                 skiprows=1 
             )
 
