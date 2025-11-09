@@ -653,15 +653,7 @@ def download_exam_template():
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
-from datetime import datetime, timedelta
-
 def process_exam_row(row):
-    # Debug to confirm raw values
-    flash(f"Raw row: {row.to_dict()}", "info")
-    flash(f"Type of date: {type(row['date'])}, value: {row['date']}", "info")
-    flash(f"Type of start: {type(row['start'])}, value: {row['start']}", "info")
-    flash(f"Type of end: {type(row['end'])}, value: {row['end']}", "info")
-
     # --- Parse exam date ---
     examDate = row['date']
     if isinstance(examDate, str):
@@ -691,8 +683,6 @@ def process_exam_row(row):
     end_dt   = datetime.combine(examDate.date(), end_time)
     venue    = str(row['room']).upper()
 
-    flash(f"✅ Combined start_dt={start_dt}, end_dt={end_dt}, venue={venue}", "info")
-
     # --- Conflict check ---
     conflict = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
@@ -701,7 +691,7 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
-        flash(f"⚠️ Conflict found for {venue} between {start_dt} and {end_dt}", "warning")
+        flash(f"⚠️ Conflict found for {venue} between {start_dt} and {end_dt}", "error")
         return None, ''
 
     # --- Create record ---
