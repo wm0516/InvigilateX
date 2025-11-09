@@ -701,10 +701,12 @@ def process_exam_row(row):
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
 # -------------------------------
-@app.route('/get_exam_details/<path:course_code_section>')
+@app.route('/get_exam_details/<path:course_code>')
 @login_required
-def get_exam_details(course_code_section):
-    course = Course.query.filter_by(courseCodeSectionIntake=course_code_section).first()
+def get_exam_details(course_code):
+    # Match first course that starts with course_code + '/'
+    course = Course.query.filter(Course.courseCodeSectionIntake.like(f"{course_code}/%")).first()
+
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
@@ -712,7 +714,7 @@ def get_exam_details(course_code_section):
     venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
 
     response_data = {
-        "courseCode": course.courseCodeSectionIntake.split('/')[0],  # Only code
+        "courseCode": course.courseCodeSectionIntake.split('/')[0],
         "courseDepartment": course.courseDepartment or "",
         "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
         "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
@@ -722,6 +724,7 @@ def get_exam_details(course_code_section):
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
     }
     return jsonify(response_data)
+
 
 
 
