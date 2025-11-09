@@ -654,35 +654,38 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
-    examDate = row['date']
-    # --- Handle date in DD/MM/YYYY or datetime object ---
-    if isinstance(examDate, str):
-        examDate = datetime.strptime(examDate.strip(), "%d/%m/%Y")
+    try:
+        # --- Parse date in DD/MM/YYYY ---
+        examDate = datetime.strptime(row['date'].strip(), "%d/%m/%Y")
 
-    # --- Handle time in 12-hour format with AM/PM ---
-    startTime_text = row['start'].strip()
-    endTime_text   = row['end'].strip()
+        # --- Parse start and end times in 12-hour format ---
+        start_time = datetime.strptime(row['start'].strip(), "%I:%M:%S %p").time()
+        end_time   = datetime.strptime(row['end'].strip(), "%I:%M:%S %p").time()
 
-    start_time = datetime.strptime(startTime_text, "%I:%M:%S %p").time()  # 12-hour → time
-    end_time   = datetime.strptime(endTime_text, "%I:%M:%S %p").time()
+        # --- Combine into full datetime objects ---
+        start_dt = datetime.combine(examDate.date(), start_time)
+        end_dt   = datetime.combine(examDate.date(), end_time)
 
-    start_dt = datetime.combine(examDate.date(), start_time)
-    end_dt   = datetime.combine(examDate.date(), end_time)
-    venue = str(row['room']).upper()
+        # --- Venue (uppercase for consistency) ---
+        venue = str(row['room']).upper()
 
-    # Conflict check before saving
-    conflict = VenueExam.query.filter(
-        VenueExam.venueNumber == venue,
-        VenueExam.startDateTime < end_dt + timedelta(minutes=30),
-        VenueExam.endDateTime > start_dt - timedelta(minutes=30)
-    ).first()
+        # --- Conflict check ---
+        conflict = VenueExam.query.filter(
+            VenueExam.venueNumber == venue,
+            VenueExam.startDateTime < end_dt + timedelta(minutes=30),
+            VenueExam.endDateTime > start_dt - timedelta(minutes=30)
+        ).first()
 
-    if conflict:
-        return None, ''
+        if conflict:
+            return None, ''  # Conflict found
 
-    # No conflict → create
-    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
-    return True, ''
+        # --- Create exam entry ---
+        create_exam_and_related(start_dt,end_dt,str(row['course/sec']).upper(),venue,None,None)
+        return True, ''  # Successfully processed
+
+    except Exception as e:
+        return False, f"Row processing error: {e}"
+
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
