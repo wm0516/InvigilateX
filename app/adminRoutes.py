@@ -649,52 +649,39 @@ def download_exam_template():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
-    # Parse exam date robustly
     examDate = row['date']
     if isinstance(examDate, str):
-        for fmt in ("%d-%b-%y", "%Y-%m-%d", "%d/%m/%Y"):
-            try:
-                examDate = datetime.strptime(examDate.strip(), fmt)
-                break
-            except ValueError:
-                continue
-        else:
-            return False, f"Invalid date format: {row['date']}"
+        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
+        
+    examDate_text = examDate.strftime("%Y-%m-%d")
+    startTime_text = row['start']
+    endTime_text   = row['end']
 
-    start_str = str(row['start']).strip().replace('.', ':').upper()
-    end_str   = str(row['end']).strip().replace('.', ':').upper()
-
-    # Try parsing time in multiple common formats
-    for fmt in ("%I:%M %p", "%H:%M:%S", "%H:%M"):
-        try:
-            start_time = datetime.strptime(start_str, fmt).time()
-            end_time = datetime.strptime(end_str, fmt).time()
-            break
-        except ValueError:
-            continue
-    else:
-        return False, f"Invalid time format: start={row['start']} end={row['end']}"
-
-    start_dt = datetime.combine(examDate.date(), start_time)
-    end_dt = datetime.combine(examDate.date(), end_time)
+    if not examDate_text or not startTime_text or not endTime_text:
+        return False, "Invalid time/date"
+    
+    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
+    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
     venue = str(row['room']).upper()
 
-    # Conflict check
+    # Conflict check before saving
     conflict = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).first()
-    if conflict:
-        return None, "Venue conflict"
 
+    if conflict:
+        return None, ''
+
+    # No conflict → create
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
-
 
 
 # -------------------------------
