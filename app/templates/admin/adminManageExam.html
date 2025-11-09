@@ -112,23 +112,7 @@
 
             <div class="form-right">
                 <label>Exam Venue(s)</label>
-                <div id="venueContainer">
-                    <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
-                        <select name="venue[]" id="editVenue" class="venue-dropdown" required>
-                            <option value="" disabled selected>Select Exam Venue</option>
-                            {% for venue in venue_data %}
-                                <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
-                            {% endfor %}
-                        </select>
-
-                        <!-- Input for number of students -->
-                        <input type="number" name="venueStudents[]" placeholder="Students" min="1" style="width: 100px;" required>
-
-                        <button type="button" id="addVenueBtn" class="add-btn"
-                            style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
-                            +
-                        </button>
-                    </div>
+                <div id="venueContainer"></div>
                 </div>
             </div>
         </div>
@@ -263,7 +247,9 @@ function clearEditFields() {
     if (venueContainer) venueContainer.innerHTML = '';
 }
 
-// Create Venue Row (without capacity)
+// -------------------------
+// Create Venue Row
+// -------------------------
 function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
     const venueContainer = document.getElementById('venueContainer');
     const div = document.createElement('div');
@@ -299,7 +285,9 @@ function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
     }
 }
 
-// Populate Edit Form (no capacity)
+// -------------------------
+// Populate Edit Form
+// -------------------------
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
@@ -320,7 +308,7 @@ function populateEditForm(data) {
 
     if (data.examVenues && data.examVenues.length > 0) {
         data.examVenues.forEach((venue, index) => {
-            const studentCount = ''; // Optional: leave empty
+            const studentCount = ''; // Optional
             createVenueRow(venue, studentCount, index === 0);
         });
     } else {
@@ -335,6 +323,10 @@ document.addEventListener("DOMContentLoaded", function() {
     const courseSelect = document.getElementById("editExamCourseSection");
     if (!courseSelect) return;
 
+    // Initialize with one empty venue row
+    const venueContainer = document.getElementById('venueContainer');
+    if (venueContainer.children.length === 0) createVenueRow('', '', true);
+
     courseSelect.addEventListener("change", function() {
         const selectedValue = this.value;
         clearEditFields();
@@ -348,9 +340,6 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .catch(err => console.error("Error fetching exam details:", err));
     });
-
-    // Initialize empty form with one venue row if nothing is selected
-    if (!courseSelect.value) createVenueRow('', '', true);
 });
 
 // -------------------------

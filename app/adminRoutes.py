@@ -1024,7 +1024,7 @@ def admin_manageExam():
             new_inv_count = int(invigilatorNo_text)
 
             # Get total students across all course sections for this exam
-            total_students = sum(course.courseStudent for course in Course.query.filter_by(courseExamId=exam_select.examId).all())
+            total_students = exam_select.examTotalStudents
 
             if action == 'update':
                 try:
@@ -1047,11 +1047,6 @@ def admin_manageExam():
                 except ValueError as e:
                     db.session.rollback()
                     flash(str(e), "error")
-                    flash("❌ Please reselect venues and try again.", "error")
-                    return redirect(request.url)
-                except Exception as e:
-                    db.session.rollback()
-                    flash(f"⚠️ Unexpected error: {str(e)}", "error")
                     flash("❌ Please reselect venues and try again.", "error")
                     return redirect(request.url)
 
