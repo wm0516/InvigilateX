@@ -654,37 +654,57 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
+    examDate = row['date']
+    
+    # --- Handle multiple possible date formats ---
+    if isinstance(examDate, str):
+        examDate = examDate.strip()
+        date_formats = ["%d/%m/%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S"]
+        for fmt in date_formats:
+            try:
+                examDate = datetime.strptime(examDate, fmt)
+                break
+            except ValueError:
+                continue
+        else:
+            return False, f"Invalid date format: {examDate}"
+
+    # --- Handle multiple time formats (24h or 12h with AM/PM) ---
+    start_raw = row['start'].strip()
+    end_raw = row['end'].strip()
+
+    def parse_time(t):
+        for fmt in ("%H:%M:%S", "%I:%M:%S %p", "%H:%M", "%I:%M %p"):
+            try:
+                return datetime.strptime(t, fmt).time()
+            except ValueError:
+                continue
+        raise ValueError(f"Invalid time format: {t}")
+
     try:
-        # --- Parse date in DD/MM/YYYY ---
-        examDate = datetime.strptime(row['date'].strip(), "%d/%m/%Y")
+        start_time = parse_time(start_raw)
+        end_time   = parse_time(end_raw)
+    except ValueError as e:
+        return False, str(e)
 
-        # --- Parse start and end times in 12-hour format ---
-        start_time = datetime.strptime(row['start'].strip(), "%I:%M:%S %p").time()
-        end_time   = datetime.strptime(row['end'].strip(), "%I:%M:%S %p").time()
+    start_dt = datetime.combine(examDate.date(), start_time)
+    end_dt   = datetime.combine(examDate.date(), end_time)
+    venue = str(row['room']).upper()
 
-        # --- Combine into full datetime objects ---
-        start_dt = datetime.combine(examDate.date(), start_time)
-        end_dt   = datetime.combine(examDate.date(), end_time)
+    # --- Conflict check ---
+    conflict = VenueExam.query.filter(
+        VenueExam.venueNumber == venue,
+        VenueExam.startDateTime < end_dt + timedelta(minutes=30),
+        VenueExam.endDateTime > start_dt - timedelta(minutes=30)
+    ).first()
 
-        # --- Venue (uppercase for consistency) ---
-        venue = str(row['room']).upper()
+    if conflict:
+        return None, ''
 
-        # --- Conflict check ---
-        conflict = VenueExam.query.filter(
-            VenueExam.venueNumber == venue,
-            VenueExam.startDateTime < end_dt + timedelta(minutes=30),
-            VenueExam.endDateTime > start_dt - timedelta(minutes=30)
-        ).first()
+    # --- Create exam ---
+    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
+    return True, ''
 
-        if conflict:
-            return None, ''  # Conflict found
-
-        # --- Create exam entry ---
-        create_exam_and_related(start_dt,end_dt,str(row['course/sec']).upper(),venue,None,None)
-        return True, ''  # Successfully processed
-
-    except Exception as e:
-        return False, f"Row processing error: {e}"
 
 
 # -------------------------------
