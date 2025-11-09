@@ -253,56 +253,63 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // -------------------------
-// Helper: Clear edit form
+// Clear edit form
 // -------------------------
 function clearEditFields() {
-    const fieldsToClear = ['editProgramCode', 'editStudent', 'editInvigilatorNo', 'startDate', 'startTime', 'endDate', 'endTime', 'editPracticalLecturer', 'editTutorialLecturer'];
+    const fieldsToClear = [
+        'editProgramCode', 'editStudent', 'editInvigilatorNo',
+        'startDate', 'startTime', 'endDate', 'endTime',
+        'editPracticalLecturer', 'editTutorialLecturer'
+    ];
     fieldsToClear.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
     });
 
-    // Clear venue container
     const venueContainer = document.getElementById('venueContainer');
     if (venueContainer) venueContainer.innerHTML = '';
 }
 
 // -------------------------
-// Bind Add Venue button
+// Create Venue Row
 // -------------------------
-function bindAddVenue(addBtn) {
-    const venueContainer = document.getElementById("venueContainer");
-    addBtn.addEventListener("click", function () {
-        const currentVenues = venueContainer.querySelectorAll(".venue-item");
-        if (currentVenues.length >= 20) {
-            alert("You can only add up to 20 venues.");
-            return;
-        }
+function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
+    const venueContainer = document.getElementById('venueContainer');
+    const div = document.createElement('div');
+    div.classList.add('venue-item');
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "8px";
+    div.style.marginBottom = "5px";
 
-        const div = document.createElement("div");
-        div.classList.add("venue-item");
-        div.style.display = "flex";
-        div.style.alignItems = "center";
-        div.style.gap = "8px";
-        div.style.marginBottom = "5px";
+    div.innerHTML = `
+        <select name="venue[]" class="venue-dropdown" required>
+            ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
+        </select>
+        <input type="number" name="venueStudents[]" placeholder="Students" min="1" value="${studentCount}" style="width: 100px;" required>
+        <button type="button" class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
+            style="background-color: ${isFirst ? '#28a745' : '#dc3545'};
+                   color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
+            ${isFirst ? '+' : '×'}
+        </button>
+    `;
+    venueContainer.appendChild(div);
 
-        div.innerHTML = `
-            <select name="venue[]" class="venue-dropdown" required>
-                ${venueOptionsHTML}
-            </select>
-            <input type="number" name="venueStudents[]" placeholder="Students" min="1" style="width: 100px;" required>
-            <button type="button" class="removeVenueBtn"
-                style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">×</button>
-        `;
-
-        venueContainer.appendChild(div);
-
+    if (isFirst) {
+        div.querySelector('.add-btn').addEventListener('click', () => {
+            if (venueContainer.querySelectorAll('.venue-item').length >= 20) {
+                alert("You can only add up to 20 venues.");
+                return;
+            }
+            createVenueRow('', '', false);
+        });
+    } else {
         div.querySelector(".removeVenueBtn").addEventListener("click", () => div.remove());
-    });
+    }
 }
 
 // -------------------------
-// Populate Edit Form with venues & student counts
+// Populate Edit Form
 // -------------------------
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
@@ -323,33 +330,9 @@ function populateEditForm(data) {
     document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
     document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 
+    // Clear and populate venues
     const venueContainer = document.getElementById('venueContainer');
-    venueContainer.innerHTML = ''; // clear existing
-
-    const createVenueRow = (venueNumber = '', studentCount = '', isFirst = false) => {
-        const div = document.createElement('div');
-        div.classList.add('venue-item');
-        div.style.display = "flex";
-        div.style.alignItems = "center";
-        div.style.gap = "8px";
-        div.style.marginBottom = "5px";
-
-        div.innerHTML = `
-            <select name="venue[]" class="venue-dropdown" required>
-                ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
-            </select>
-            <input type="number" name="venueStudents[]" placeholder="Students" min="1" value="${studentCount}" style="width: 100px;" required>
-            <button type="button" class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
-                style="background-color: ${isFirst ? '#28a745' : '#dc3545'};
-                       color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
-                ${isFirst ? '+' : '×'}
-            </button>
-        `;
-        venueContainer.appendChild(div);
-
-        if (isFirst) bindAddVenue(div.querySelector(".add-btn"));
-        else div.querySelector(".removeVenueBtn").addEventListener("click", () => div.remove());
-    };
+    venueContainer.innerHTML = '';
 
     if (data.examVenues && data.examVenues.length > 0) {
         data.examVenues.forEach((venue, index) => {
@@ -357,10 +340,34 @@ function populateEditForm(data) {
             createVenueRow(venue, studentCount, index === 0);
         });
     } else {
-        createVenueRow('', '', true);
+        createVenueRow('', '', true); // initial row with '+'
     }
 }
 
+// -------------------------
+// On Exam Select Change
+// -------------------------
+document.addEventListener("DOMContentLoaded", function() {
+    const courseSelect = document.getElementById("editExamCourseSection");
+    if (!courseSelect) return;
+
+    courseSelect.addEventListener("change", function() {
+        const selectedValue = this.value;
+        clearEditFields();
+        if (!selectedValue) return;
+
+        fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) alert(data.error);
+                else populateEditForm(data);
+            })
+            .catch(err => console.error("Error fetching exam details:", err));
+    });
+
+    // Initialize empty form with one venue row if nothing is selected
+    if (!courseSelect.value) createVenueRow('', '', true);
+});
 
 
 // -------------------------
