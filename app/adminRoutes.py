@@ -1023,8 +1023,18 @@ def admin_manageExam():
             invigilatorNo_text = request.form.get('invigilatorNo', '0').strip()
             new_inv_count = int(invigilatorNo_text)
 
+            # Get total students across all course sections for this exam
+            total_students = sum(course.courseStudent for course in Course.query.filter_by(courseExamId=exam_select.examId).all())
+
             if action == 'update':
                 try:
+                    # Validate student split matches total students
+                    assigned_total = sum(int(s) for s in student_list if s.strip().isdigit())
+                    if assigned_total != total_students:
+                        flash(f"❌ Assigned students ({assigned_total}) do not match exam total ({total_students})", "error")
+                        return redirect(request.url)
+
+                    # Call adjust_exam to update times, invigilators, and venue assignment
                     adjust_exam(
                         exam=exam_select,
                         new_start=start_dt,
@@ -1047,7 +1057,6 @@ def admin_manageExam():
 
             elif action == 'delete':
                 # Delete all invigilators and reports
-                student = exam_select.course.courseStudent
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
                 for report in reports:
                     for att in report.attendances:
@@ -1059,20 +1068,20 @@ def admin_manageExam():
                         db.session.delete(att)
                     db.session.delete(report)
 
-                # Delete venues
+                # Delete all venue assignments
                 for ve in VenueExam.query.filter_by(examId=exam_select.examId).all():
                     db.session.delete(ve)
 
+                # Reset exam times
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
-                if student > 32:
-                    exam_select.examNoInvigilator = 3
-                else:
-                    exam_select.examNoInvigilator = 2
+                exam_select.examNoInvigilator = 3 if total_students > 32 else 2
+
                 db.session.commit()
                 flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
 
             return redirect(url_for('admin_manageExam'))
+
 
     return render_template(
         'admin/adminManageExam.html',
