@@ -369,29 +369,6 @@ document.addEventListener("DOMContentLoaded", function() {
     if (!courseSelect.value) createVenueRow('', '', true);
 });
 
-
-// -------------------------
-// On Exam Select Change
-// -------------------------
-document.addEventListener("DOMContentLoaded", function() {
-    const courseSelect = document.getElementById("editExamCourseSection");
-    if (!courseSelect) return;
-
-    courseSelect.addEventListener("change", function() {
-        const selectedValue = this.value;
-        clearEditFields();
-        if (!selectedValue) return;
-
-        fetch(`/get_exam_details/${encodeURIComponent(selectedValue)}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) alert(data.error);
-                else populateEditForm(data);
-            })
-            .catch(err => console.error("Error fetching exam details:", err));
-    });
-});
-
 // -------------------------
 // Date & Time Restrictions
 // -------------------------
