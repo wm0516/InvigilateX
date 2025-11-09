@@ -953,10 +953,6 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
         if venue_no not in used_venues:
             db.session.delete(rec)
 
-
-    if remaining_students > 0:
-        raise ValueError(f"{remaining_students} students could not be seated")
-
     db.session.commit()
 
 
