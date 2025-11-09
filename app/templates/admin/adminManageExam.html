@@ -92,22 +92,17 @@
                 <label>Program Code</label>
                 <input type="text" id="editProgramCode" name="programCode" readonly><br>
 
-                <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" value="" readonly><br>
-            </div>
-
-            <div class="form-middle">
                 <label>Practical Lecturer</label>
                 <input type="text" id="editPracticalLecturer" name="practicalLecturer" readonly><br>
 
                 <label>Tutorial Lecturer</label>
-                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly><br>
-
-                <label>Number of Invigilators</label>
-                <input type="number" id="editInvigilatorNo" name="invigilatorNo" value="" min="1" step="1" required>
+                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly>
             </div>
 
-            <div class="form-right">
+            <div class="form-middle">
+                <label>Number of Students</label>
+                <input type="number" id="editStudent" name="student" value="" readonly><br>
+
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="startDate" name="startDate" required>
@@ -118,8 +113,10 @@
                 <div style="display: flex; gap: 2%;">
                     <input type="date" id="endDate" name="endDate" required>
                     <input type="time" id="endTime" name="endTime" required>
-                </div><br>
+                </div>
+            </div>
 
+            <div class="form-right">
                 <label>Exam Venue(s)</label>
                 <div id="venueContainer">
                     <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
@@ -129,8 +126,12 @@
                                 <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                             {% endfor %}
                         </select>
-                        <button type="button" id="addVenueBtn" class="add-btn" 
-                                style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">
+
+                        <!-- Input for number of students -->
+                        <input type="number" name="venueStudents[]" placeholder="Students" min="1" style="width: 100px;" required>
+
+                        <button type="button" id="addVenueBtn" class="add-btn"
+                            style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
                             +
                         </button>
                     </div>
@@ -267,7 +268,7 @@ function clearEditFields() {
 }
 
 // -------------------------
-// Helper: Bind Add Venue button
+// Bind Add Venue button
 // -------------------------
 function bindAddVenue(addBtn) {
     const venueContainer = document.getElementById("venueContainer");
@@ -289,9 +290,11 @@ function bindAddVenue(addBtn) {
             <select name="venue[]" class="venue-dropdown" required>
                 ${venueOptionsHTML}
             </select>
+            <input type="number" name="venueStudents[]" placeholder="Students" min="1" style="width: 100px;" required>
             <button type="button" class="removeVenueBtn"
-                style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px 10px; font-size: large;">&times;</button>
+                style="background-color: #dc3545; color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">×</button>
         `;
+
         venueContainer.appendChild(div);
 
         div.querySelector(".removeVenueBtn").addEventListener("click", () => div.remove());
@@ -299,7 +302,7 @@ function bindAddVenue(addBtn) {
 }
 
 // -------------------------
-// Populate Edit Form
+// Populate Edit Form with venues & student counts
 // -------------------------
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
@@ -323,7 +326,7 @@ function populateEditForm(data) {
     const venueContainer = document.getElementById('venueContainer');
     venueContainer.innerHTML = ''; // clear existing
 
-    const createVenueRow = (venueNumber, isFirst) => {
+    const createVenueRow = (venueNumber = '', studentCount = '', isFirst = false) => {
         const div = document.createElement('div');
         div.classList.add('venue-item');
         div.style.display = "flex";
@@ -333,12 +336,12 @@ function populateEditForm(data) {
 
         div.innerHTML = `
             <select name="venue[]" class="venue-dropdown" required>
-                ${venueOptionsHTML.replace(`value="${venueNumber || ''}"`, `value="${venueNumber || ''}" ${venueNumber ? 'selected' : ''}`)}
+                ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
             </select>
+            <input type="number" name="venueStudents[]" placeholder="Students" min="1" value="${studentCount}" style="width: 100px;" required>
             <button type="button" class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
                 style="background-color: ${isFirst ? '#28a745' : '#dc3545'};
-                       color: white; border: none; border-radius: 5px;
-                       padding: 10px; font-size: large;">
+                       color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
                 ${isFirst ? '+' : '×'}
             </button>
         `;
@@ -349,11 +352,15 @@ function populateEditForm(data) {
     };
 
     if (data.examVenues && data.examVenues.length > 0) {
-        data.examVenues.forEach((venueNumber, index) => createVenueRow(venueNumber, index === 0));
+        data.examVenues.forEach((venue, index) => {
+            const studentCount = data.venueStudents && data.venueStudents[index] ? data.venueStudents[index] : '';
+            createVenueRow(venue, studentCount, index === 0);
+        });
     } else {
-        createVenueRow('', true);
+        createVenueRow('', '', true);
     }
 }
+
 
 
 // -------------------------
