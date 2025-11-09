@@ -655,47 +655,21 @@ def download_exam_template():
 # -------------------------------
 def process_exam_row(row):
     examDate = row['date']
+    if isinstance(examDate, str):
+        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
+        
+    examDate_text = examDate.strftime("%Y-%m-%d")
+    startTime_text = row['start']
+    endTime_text   = row['end']
 
-    # --- Normalize exam date ---
-    if isinstance(examDate, datetime):
-        # Already a datetime object (Excel stores date as datetime)
-        pass
-    elif isinstance(examDate, str):
-        examDate = examDate.strip()
-        try:
-            # Fixed format: 10-Nov-2025
-            examDate = datetime.strptime(examDate, "%d-%b-%Y")
-        except ValueError:
-            return False, f"Invalid date format: {examDate} (expected dd-MMM-yyyy)"
-    else:
-        return False, f"Invalid date type: {type(examDate)}"
-
-    # --- Normalize start and end time ---
-    start_raw = row['start']
-    end_raw = row['end']
-    if not start_raw or not end_raw:
-        return False, "Missing start or end time"
-
-    def parse_time(t):
-        t = t.strip()
-        for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
-            try:
-                return datetime.strptime(t, fmt).time()
-            except ValueError:
-                continue
-        raise ValueError(f"Invalid time format: {t}")
-
-    try:
-        start_time = parse_time(start_raw)
-        end_time = parse_time(end_raw)
-    except ValueError as e:
-        return False, str(e)
-
-    start_dt = datetime.combine(examDate.date(), start_time)
-    end_dt   = datetime.combine(examDate.date(), end_time)
+    if not examDate_text or not startTime_text or not endTime_text:
+        return False, "Invalid time/date"
+    
+    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
+    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
     venue = str(row['room']).upper()
 
-    # --- Conflict check ---
+    # Conflict check before saving
     conflict = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
@@ -703,12 +677,11 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
-        return None, f"Venue conflict detected for {venue}"
+        return None, ''
 
-    # --- Create exam and related entries ---
-    create_exam_and_related(start_dt, end_dt,str(row['course/sec']).upper(),venue,None, None)
+    # No conflict → create
+    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
-
 
 
 # -------------------------------
