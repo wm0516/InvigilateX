@@ -716,8 +716,6 @@ def get_exam_details(course_code):
     response_data = {
         "courseCode": course.courseCodeSectionIntake.split('/')[0],
         "courseDepartment": course.courseDepartment or "",
-        "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
-        "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
         "courseStudent": exam.examTotalStudents if exam else 0,
         "examVenues": [v.venueNumber for v in venues],
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",

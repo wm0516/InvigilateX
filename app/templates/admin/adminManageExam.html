@@ -90,17 +90,12 @@
 
                 <label>Program Code</label>
                 <input type="text" id="editProgramCode" name="programCode" readonly><br>
-
-                <label>Practical Lecturer</label>
-                <input type="text" id="editPracticalLecturer" name="practicalLecturer" readonly><br>
-
-                <label>Tutorial Lecturer</label>
-                <input type="text" id="editTutorialLecturer" name="tutorialLecturer" readonly>
+                
+                <label>Number of Students</label>
+                <input type="number" id="editStudent" name="student" value="" readonly>
             </div>
 
             <div class="form-middle">
-                <label>Number of Students</label>
-                <input type="number" id="editStudent" name="student" value="" readonly><br>
 
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
@@ -257,8 +252,7 @@ document.addEventListener("DOMContentLoaded", function() {
 function clearEditFields() {
     const fieldsToClear = [
         'editProgramCode', 'editStudent',
-        'startDate', 'startTime', 'endDate', 'endTime',
-        'editPracticalLecturer', 'editTutorialLecturer'
+        'startDate', 'startTime', 'endDate', 'endTime'
     ];
     fieldsToClear.forEach(fieldId => {
         const field = document.getElementById(fieldId);
@@ -309,8 +303,6 @@ function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
-    document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
-    document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 
     if (data.examStartTime) {
         const [date, time] = data.examStartTime.split('T');
