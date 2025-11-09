@@ -920,17 +920,22 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues):
             remaining_students -= rec.capacity
             continue
 
-        # Check conflicts
-        conflict = VenueExam.query.filter(
+        # Check conflicts based on capacity
+        overlapping_exams = VenueExam.query.filter(
             VenueExam.venueNumber == venue_no,
             VenueExam.examId != exam.examId,
-            VenueExam.startDateTime < new_end,
-            VenueExam.endDateTime > new_start
-        ).first()
-        if conflict:
-            raise ValueError(f"{venue_no} conflicts with another exam {conflict.startDateTime}-{conflict.endDateTime}")
+            VenueExam.startDateTime == new_start,
+            VenueExam.endDateTime == new_end
+        ).all()
 
-        allocated = min(venue_obj.venueCapacity, remaining_students)
+        total_students_in_use = sum(e.capacity for e in overlapping_exams)
+        available_capacity = venue_obj.venueCapacity - total_students_in_use
+
+        if available_capacity <= 0:
+            raise ValueError(f"Venue {venue_no} is fully booked at {new_start}-{new_end}")
+
+        # Allocate as many students as possible
+        allocated = min(available_capacity, remaining_students)
         remaining_students -= allocated
 
         new_ve = VenueExam(
