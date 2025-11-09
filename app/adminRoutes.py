@@ -723,9 +723,6 @@ def get_exam_details(course_code):
     }
     return jsonify(response_data)
 
-
-
-
 # -------------------------------
 # Reformat the datetime for ManageExamEditPage
 # -------------------------------
@@ -1050,7 +1047,7 @@ def admin_manageExam():
 
             elif action == 'delete':
                 # Delete all invigilators and reports
-                noInvigilator = exam_select.course.courseStudent
+                student = exam_select.course.courseStudent
                 reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
                 for report in reports:
                     for att in report.attendances:
@@ -1068,7 +1065,7 @@ def admin_manageExam():
 
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
-                if noInvigilator > 32:
+                if student > 32:
                     exam_select.examNoInvigilator = 3
                 else:
                     exam_select.examNoInvigilator = 2

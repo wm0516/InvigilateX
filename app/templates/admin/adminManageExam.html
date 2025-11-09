@@ -304,7 +304,7 @@ function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
 
-    if (data.examStartTime) {
+    if (data.examStartTime) {   
         const [date, time] = data.examStartTime.split('T');
         document.getElementById('startDate').value = date;
         document.getElementById('startTime').value = time;
@@ -320,7 +320,7 @@ function populateEditForm(data) {
 
     if (data.examVenues && data.examVenues.length > 0) {
         data.examVenues.forEach((venue, index) => {
-            const studentCount = ''; // Optional: leave empty or fetch from another field
+            const studentCount = ''; // Optional: leave empty
             createVenueRow(venue, studentCount, index === 0);
         });
     } else {
