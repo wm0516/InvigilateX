@@ -653,28 +653,47 @@ def download_exam_template():
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
-def process_exam_row(row):
-    flash(f"Raw row: {row.to_dict()}", "error")
-    flash(f"Type of date: {type(row['date'])}, value: {row['date']}", "error")
-    flash(f"Type of start: {type(row['start'])}, value: {row['start']}", "error")
-    flash(f"Type of end: {type(row['end'])}, value: {row['end']}", "error")
+from datetime import datetime, timedelta
 
+def process_exam_row(row):
+    # Debug to confirm raw values
+    flash(f"Raw row: {row.to_dict()}", "info")
+    flash(f"Type of date: {type(row['date'])}, value: {row['date']}", "info")
+    flash(f"Type of start: {type(row['start'])}, value: {row['start']}", "info")
+    flash(f"Type of end: {type(row['end'])}, value: {row['end']}", "info")
+
+    # --- Parse exam date ---
     examDate = row['date']
     if isinstance(examDate, str):
-        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
-        
-    examDate_text = examDate.strftime("%Y-%m-%d")
+        # Your Excel gives "2025-11-10 00:00:00"
+        try:
+            examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            # fallback: maybe sometimes it’s just YYYY-MM-DD
+            examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
+
+    # --- Parse start & end time ---
     startTime_text = row['start']
     endTime_text   = row['end']
 
-    if not examDate_text or not startTime_text or not endTime_text:
+    # Defensive: ensure they are strings
+    if not startTime_text or not endTime_text:
         return False, "Invalid time/date"
-    
-    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
-    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
-    venue = str(row['room']).upper()
 
-    # Conflict check before saving
+    try:
+        start_time = datetime.strptime(startTime_text.strip(), "%H:%M:%S").time()
+        end_time   = datetime.strptime(endTime_text.strip(), "%H:%M:%S").time()
+    except ValueError:
+        return False, "Invalid time format (expected HH:MM:SS)"
+
+    # --- Combine into datetimes ---
+    start_dt = datetime.combine(examDate.date(), start_time)
+    end_dt   = datetime.combine(examDate.date(), end_time)
+    venue    = str(row['room']).upper()
+
+    flash(f"✅ Combined start_dt={start_dt}, end_dt={end_dt}, venue={venue}", "info")
+
+    # --- Conflict check ---
     conflict = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
@@ -682,9 +701,10 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
+        flash(f"⚠️ Conflict found for {venue} between {start_dt} and {end_dt}", "warning")
         return None, ''
 
-    # No conflict → create
+    # --- Create record ---
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
 
