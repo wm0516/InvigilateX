@@ -589,12 +589,12 @@ def generate_manageexam_template():
     for i, c in enumerate(courses, start=1):
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake   # Course/Sec
         ws_lists[f"B{i}"] = c.courseDepartment          # Program
-        ws_lists[f"C{i}"] = c.courseStudent or 0       # No of students (shifted to C)
+        ws_lists[f"C{i}"] = c.courseStudent or 0       # No of students 
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"E{i}"] = v.venueNumber   # put venues in column E (shifted)
+        ws_lists[f"E{i}"] = v.venueNumber   # put venues in column E 
 
     # === Data Validations ===
     if courses:
@@ -606,7 +606,7 @@ def generate_manageexam_template():
         ws.add_data_validation(dv_course)
         dv_course.add("F3:F1002")  # Course/Sec dropdown
 
-        # Auto-fill program, no of students (Lecturer removed)
+        # Auto-fill program, no of students 
         for row in range(3, 503):
             ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},2,FALSE))'  # Program
             ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},3,FALSE))'  # No of Students
@@ -618,7 +618,7 @@ def generate_manageexam_template():
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        ws["H3:H1002"] = ""  # Room column shifted to H
+        ws["H3:H1002"] = ""  # Room column 
         dv_venue.add("H3:H1002")  # Room dropdown
 
     ws_lists.sheet_state = 'hidden'
