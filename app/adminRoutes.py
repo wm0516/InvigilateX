@@ -910,7 +910,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
-                timeCreate=datetime.now(timezone.utc)
+                timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
             ))
 
 
