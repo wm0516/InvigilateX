@@ -2145,33 +2145,55 @@ def process_attendance_row(row):
 # -------------------------------
 # Admin Route
 # -------------------------------
+from flask import flash, redirect, url_for
+import traceback
+
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    attendances = get_all_attendances()
-    stats = calculate_invigilation_stats()
+    try:
+        attendances = get_all_attendances()
+        stats = calculate_invigilation_stats()
 
-    # Attach composite key for sorting/grouping
-    for att in attendances:
-        report = att.report
-        exam = Exam.query.get(report.examId) if report else None
-        att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
+        for att in attendances:
+            report = att.report
+            exam = Exam.query.get(report.examId) if report else None
+            att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
 
-    if request.method == 'POST':
-        form_type = request.form.get('form_type')
+        if request.method == 'POST':
+            form_type = request.form.get('form_type')
 
-        # Upload Section
-        if form_type == 'upload':
-            return handle_file_upload(
-                file_key='attendance_file',
-                expected_cols=['card iud', 'name', 'date', 'time', 'in/out'],
-                process_row_fn=process_attendance_row,
-                redirect_endpoint='admin_manageInvigilationReport',
-                usecols="A:E",
-                skiprows=0
-            )
+            if form_type == 'upload':
+                try:
+                    return handle_file_upload(
+                        file_key='attendance_file',
+                        expected_cols=['card iud', 'name', 'date', 'time', 'in/out'],
+                        process_row_fn=process_attendance_row,
+                        redirect_endpoint='admin_manageInvigilationReport',
+                        usecols="A:E",
+                        skiprows=0
+                    )
+                except Exception as e:
+                    # Log the error
+                    app.logger.error(f"File upload failed: {e}")
+                    traceback.print_exc()
+                    # Show a friendly message
+                    flash(f"Error uploading file: {str(e)}", "error")
+                    return redirect(url_for('admin_manageInvigilationReport'))
 
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+        return render_template(
+            'admin/adminManageInvigilationReport.html',
+            active_tab='admin_manageInvigilationReporttab',
+            attendances=attendances,
+            **stats
+        )
+
+    except Exception as e:
+        app.logger.error(f"Unexpected error: {e}")
+        traceback.print_exc()
+        flash("Something went wrong while loading the page. Please try again later.", "error")
+        return redirect(url_for('admin_dashboard'))
+
 
 # -------------------------------
 # Function for Admin ManageProfile Route
