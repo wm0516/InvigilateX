@@ -641,37 +641,47 @@ def generate_manageexam_template():
 @app.route('/download_exam_template')
 @login_required
 def download_exam_template():
-    try:
-        output = generate_manageexam_template()
-        return send_file(
-            output,
-            as_attachment=True,
-            download_name="ManageExam.xlsx",
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-    except Exception as e:
-        import traceback
-        print("Error generating Excel:", e)
-        print(traceback.format_exc())
-        return "Error generating Excel template", 500
+    output = generate_manageexam_template()
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="ManageExam.xlsx", # type: ignore[arg-type]
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
+    from dateutil import parser
+
+    # Parse date safely
     examDate = row['date']
     if isinstance(examDate, str):
-        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
-        
-    examDate_text = examDate.strftime("%Y-%m-%d")
-    startTime_text = row['start']
-    endTime_text   = row['end']
+        try:
+            examDate = parser.parse(examDate.strip(), dayfirst=False, yearfirst=False)
+        except Exception:
+            return False, f"Invalid date format: {row['date']}"
+    elif isinstance(examDate, (float, int)):
+        # Excel date serial
+        examDate = pd.to_datetime(examDate, unit='D', origin='1899-12-30')
+    elif not isinstance(examDate, datetime):
+        return False, f"Unsupported date type: {type(examDate)}"
 
-    if not examDate_text or not startTime_text or not endTime_text:
+    # Parse time
+    try:
+        start_dt = datetime.combine(
+            examDate.date(), datetime.strptime(row['start'].strip(), "%I:%M %p").time()
+        )
+        end_dt = datetime.combine(
+            examDate.date(), datetime.strptime(row['end'].strip(), "%I:%M %p").time()
+        )
+    except Exception:
+        return False, f"Invalid time format: {row['start']} - {row['end']}"
+
+    if not start_dt or not end_dt:
         return False, "Invalid time/date"
-    
-    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
-    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
+
     venue = str(row['room']).upper()
 
     # Conflict check before saving
@@ -682,11 +692,12 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
-        return None, ''
+        return None, 'Venue conflict detected'
 
-    # No conflict → create
+    # Create record
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
+
 
 
 # -------------------------------
