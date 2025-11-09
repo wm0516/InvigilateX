@@ -240,22 +240,6 @@ def create_course_and_exam(department, code, section, name, hour, students):
     if students < 0:
         return False, "Students cannot be negative"
         
-    if students > 32:
-        invigilatorNo = 3
-    else: 
-        invigilatorNo = 2
-
-    # Only create an Exam if both lecturers are valid
-    exam_id = None
-    new_exam = Exam(
-        examStartTime=None,
-        examEndTime=None,
-        examNoInvigilator=invigilatorNo
-    )
-    db.session.add(new_exam)
-    db.session.flush()  # Get the examId before commit
-    exam_id = new_exam.examId
-
     # Create the Course
     new_course = Course(
         courseCodeSectionIntake=f"{code}/{section}".upper() if code and section else None,
@@ -263,7 +247,6 @@ def create_course_and_exam(department, code, section, name, hour, students):
         courseName=name.upper() if name else None,
         courseHour=hour,
         courseStudent=students,
-        courseExamId=exam_id,  # Assign examId if exists, else None
         courseStatus=True
     )
     db.session.add(new_course)
