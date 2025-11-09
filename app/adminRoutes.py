@@ -250,7 +250,7 @@ def admin_manageCourse():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='course_file',
-                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'no of students'],
+                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'no. of students'],
                 process_row_fn=process_course_row,
                 redirect_endpoint='admin_manageCourse',
                 usecols="A:F",
