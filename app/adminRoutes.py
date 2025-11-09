@@ -655,18 +655,19 @@ def download_exam_template():
 # -------------------------------
 def process_exam_row(row):
     examDate = row['date']
+    # --- Handle date in DD/MM/YYYY or datetime object ---
     if isinstance(examDate, str):
-        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
-        
-    examDate_text = examDate.strftime("%Y-%m-%d")
-    startTime_text = row['start']
-    endTime_text   = row['end']
+        examDate = datetime.strptime(examDate.strip(), "%d/%m/%Y")
 
-    if not examDate_text or not startTime_text or not endTime_text:
-        return False, "Invalid time/date"
-    
-    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
-    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
+    # --- Handle time in 12-hour format with AM/PM ---
+    startTime_text = row['start'].strip()
+    endTime_text   = row['end'].strip()
+
+    start_time = datetime.strptime(startTime_text, "%I:%M:%S %p").time()  # 12-hour → time
+    end_time   = datetime.strptime(endTime_text, "%I:%M:%S %p").time()
+
+    start_dt = datetime.combine(examDate.date(), start_time)
+    end_dt   = datetime.combine(examDate.date(), end_time)
     venue = str(row['room']).upper()
 
     # Conflict check before saving
@@ -682,7 +683,6 @@ def process_exam_row(row):
     # No conflict → create
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
-
 
 # -------------------------------
 # Get ExamDetails for ManageExamEditPage
