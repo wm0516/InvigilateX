@@ -317,7 +317,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practicalLecturer, tutorialLecturer, invigilatorNo):
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecturer,  invigilatorNo):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
@@ -347,15 +347,15 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, practic
     exam.examNoInvigilator = invigilatorNo
 
     # Assign lecturers
-    if practicalLecturer:
+    if lecturer:
         lecturer_user = User.query.filter(
             or_(
-                User.userId == practicalLecturer,
-                User.userName.ilike(practicalLecturer)
+                User.userId == lecturer,
+                User.userName.ilike(lecturer)
             )
         ).first()
         if not lecturer_user:
-            return False, f"Lecturer '{practicalLecturer}' not found in User table"
+            return False, f"Lecturer '{lecturer}' not found in User table"
 
         course.coursePractical = lecturer_user.userId
         course.courseTutorial = lecturer_user.userId

@@ -555,7 +555,7 @@ def generate_manageexam_template():
 
     # First row empty
     ws.append([])
-    # Second row = headers (Removed 'Lecturer')
+    # Second row = headers  
     headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course/Sec', 'No of', 'Room']
     ws.append(headers)
 
@@ -673,7 +673,7 @@ def process_exam_row(row):
         return None, ''
 
     # No conflict → create
-    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, str(row['lecturer']).upper(), None, None)
+    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
 
 
