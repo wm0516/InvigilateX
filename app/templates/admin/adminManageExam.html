@@ -269,9 +269,7 @@ function clearEditFields() {
     if (venueContainer) venueContainer.innerHTML = '';
 }
 
-// -------------------------
-// Create Venue Row
-// -------------------------
+// Create Venue Row (without capacity)
 function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
     const venueContainer = document.getElementById('venueContainer');
     const div = document.createElement('div');
@@ -307,12 +305,12 @@ function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
     }
 }
 
-// -------------------------
-// Populate Edit Form
-// -------------------------
+// Populate Edit Form (no capacity)
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
+    document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
+    document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
 
     if (data.examStartTime) {
         const [date, time] = data.examStartTime.split('T');
@@ -325,20 +323,16 @@ function populateEditForm(data) {
         document.getElementById('endTime').value = time;
     }
 
-    document.getElementById('editPracticalLecturer').value = data.practicalLecturer || '';
-    document.getElementById('editTutorialLecturer').value = data.tutorialLecturer || '';
-
-    // Clear and populate venues
     const venueContainer = document.getElementById('venueContainer');
     venueContainer.innerHTML = '';
 
     if (data.examVenues && data.examVenues.length > 0) {
         data.examVenues.forEach((venue, index) => {
-            const studentCount = data.venueStudents && data.venueStudents[index] ? data.venueStudents[index] : '';
+            const studentCount = ''; // Optional: leave empty or fetch from another field
             createVenueRow(venue, studentCount, index === 0);
         });
     } else {
-        createVenueRow('', '', true); // initial row with '+'
+        createVenueRow('', '', true);
     }
 }
 

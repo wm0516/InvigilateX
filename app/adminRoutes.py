@@ -712,17 +712,17 @@ def get_exam_details(course_code_section):
     venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
 
     response_data = {
-        "courseCodeSection": course.courseCodeSectionIntake,
-        "courseName": course.courseName or "",
+        "courseCode": course.courseCodeSectionIntake.split('/')[0],  # Only code
         "courseDepartment": course.courseDepartment or "",
         "practicalLecturer": course.practicalLecturer.userName if course.practicalLecturer else "",
         "tutorialLecturer": course.tutorialLecturer.userName if course.tutorialLecturer else "",
-        "courseStudent": exam.examTotalStudents or 0,
+        "courseStudent": exam.examTotalStudents if exam else 0,
         "examVenues": [v.venueNumber for v in venues],
         "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
     }
     return jsonify(response_data)
+
 
 
 # -------------------------------
