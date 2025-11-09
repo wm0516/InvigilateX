@@ -171,7 +171,6 @@ class Course(db.Model):
     courseStudent = db.Column(db.Integer, nullable=False)                                                        # Refer to Course Total Number of Students
     courseStatus = db.Column(db.Boolean, default=True, nullable=False)                                          # Refer to Course Status, when course deleted, it will show False
 
-
     # Relationship
     department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])

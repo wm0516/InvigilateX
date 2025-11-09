@@ -159,12 +159,12 @@ def process_course_row(row):
         section     = str(row['course section']).strip().replace(" ", ""),
         name        = str(row['course name']).strip(),
         hour        = int(row['credit hour']),
-        students    = int(row['no of students']),
+        students    = int(row['no. of students']),
     )
 
 # -------------------------------
 # Read All LecturerName Under The Selected Department For ManageCoursePage
-# -------------------------------
+# -------------------------------   
 @app.route('/get_lecturers_by_department/<department_code>')
 @login_required
 def get_lecturers_by_department(department_code):
