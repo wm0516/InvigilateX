@@ -874,7 +874,7 @@ def adjust_exam(exam, new_start, new_end, new_invigilator_count, new_venues, new
         # Create report if doesn't exist
         report = InvigilationReport(examId=exam.examId)
         db.session.add(report)
-        db.session.flush()
+        db.session.commit()  # Ensure ID is generated before assigning attendance
 
         # Assign invigilators for this new exam
         new_hours = (new_end - new_start).total_seconds() / 3600.0
