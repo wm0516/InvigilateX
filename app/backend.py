@@ -507,7 +507,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
         contact = None  # Explicitly set as NULL for the database
 
     # Check uniqueness
-    if User.query.filter_by(userId=id.upper()).first():
+    if User.query.filter_by(userId=id).first():
         return False, "ID already exists"
     if User.query.filter_by(userEmail=email).first():
         return False, "Email already exists"
@@ -516,7 +516,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
 
     # Create staff object
     new_staff = User(
-        userId=id.upper(),
+        userId=id,
         userDepartment=department_code,
         userName=name.upper(),
         userLevel=role,
