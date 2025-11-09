@@ -654,48 +654,29 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
-    # --- Read and normalize exam date ---
+    print("---- DEBUG EXAM ROW ----")
+    print(f"Raw row: {row.to_dict()}")
+    print(f"Type of date: {type(row['date'])}, value: {row['date']}")
+    print(f"Type of start: {type(row['start'])}, value: {row['start']}")
+    print(f"Type of end: {type(row['end'])}, value: {row['end']}")
+    print("-------------------------")
+
     examDate = row['date']
     if isinstance(examDate, str):
-        # Try multiple common formats (Excel exports vary)
-        for fmt in ("%d-%b-%y", "%d-%b-%Y", "%Y-%m-%d"):
-            try:
-                examDate = datetime.strptime(examDate.strip(), fmt)
-                break
-            except ValueError:
-                continue
-        else:
-            return False, f"Invalid date format: {row['date']}"
+        examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
+        
+    examDate_text = examDate.strftime("%Y-%m-%d")
+    startTime_text = row['start']
+    endTime_text   = row['end']
 
-    # --- Read and normalize start and end times ---
-    startTime = row['start']
-    endTime   = row['end']
+    if not examDate_text or not startTime_text or not endTime_text:
+        return False, "Invalid time/date"
+    
+    start_dt = datetime.combine(examDate.date(), datetime.strptime(startTime_text, "%H:%M:%S").time())
+    end_dt   = datetime.combine(examDate.date(), datetime.strptime(endTime_text, "%H:%M:%S").time())
+    venue = str(row['room']).upper()
 
-    def parse_time(t):
-        if isinstance(t, datetime):
-            return t.time()
-        elif isinstance(t, str):
-            for fmt in ("%I:%M %p", "%H:%M", "%H:%M:%S"):
-                try:
-                    return datetime.strptime(t.strip(), fmt).time()
-                except ValueError:
-                    continue
-            raise ValueError(f"Invalid time format: {t}")
-        else:
-            raise ValueError(f"Unexpected time type: {type(t)}")
-
-    try:
-        start_t = parse_time(startTime)
-        end_t   = parse_time(endTime)
-    except ValueError as e:
-        return False, str(e)
-
-    # --- Combine into datetime objects ---
-    start_dt = datetime.combine(examDate.date(), start_t)
-    end_dt   = datetime.combine(examDate.date(), end_t)
-    venue    = str(row['room']).upper()
-
-    # --- Conflict check ---
+    # Conflict check before saving
     conflict = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
@@ -703,12 +684,11 @@ def process_exam_row(row):
     ).first()
 
     if conflict:
-        return None, ''  # Conflict found
+        return None, ''
 
-    # --- Create exam entry if no conflict ---
+    # No conflict → create
     create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
     return True, ''
-
 
 
 # -------------------------------
