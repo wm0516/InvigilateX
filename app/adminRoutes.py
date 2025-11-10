@@ -2153,13 +2153,13 @@ def admin_manageInvigilationReport():
         report = att.report
         exam = Exam.query.get(report.examId) if report else None
         att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
-
+        flash(f"Attendance: {exam}", "success") 
+    
     reports_with_attendance = db.session.query(InvigilationReport).join(InvigilatorAttendance).count()
     all_reports = InvigilationReport.query.count()
     flash(f"All Reports: {all_reports}", "success")
     flash(f"Reports With Attendance: {reports_with_attendance}", "success")
-    flash(f"Attendance: {attendances}", "success")  
-    flash(f"Attendance: {exam}", "success") 
+    
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
