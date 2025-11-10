@@ -99,9 +99,7 @@
             {% set total_rows = grouped[0].report.exam.examNoInvigilator %}
             <tbody data-exam="{{ grouped[0].report.exam.examId }}" 
                 data-exam-start="{{ grouped[0].report.exam.examStartTime.isoformat() }}"
-                data-exam-end="{{ grouped[0].report.exam.examEndTime.isoformat() }}">
-                <td>{{ total_rows }}</td>
-                
+                data-exam-end="{{ grouped[0].report.exam.examEndTime.isoformat() }}">                
                 {% for i in range(total_rows) %}
                 <tr data-exam="{{ grouped[0].report.exam.examId }}"
                     class="{% if not grouped[0].report.exam.examStatus %}inactive-row-show{% elif grouped[0].report.exam.examStartTime is none %}error-row-show{% endif %}">
