@@ -1993,37 +1993,14 @@ def calculate_invigilation_stats():
 # Read All InvigilatorAttendance Data From Database
 # -------------------------------
 def get_all_attendances():
-    attendances = []
-
-    # Loop through all reports
-    for report in InvigilationReport.query.all():
-        exam = report.exam
-        if not exam:
-            continue
-
-        assigned = exam.examNoInvigilator or 0
-
-        # Fetch only assigned number of invigilators for this report
-        report_att = (
-            InvigilatorAttendance.query
-            .filter_by(reportId=report.invigilationReportId)
-            .limit(assigned)
-            .all()
-        )
-
-        attendances.extend(report_att)
-
-    # Optional: sort the final list by exam status and start time
-    attendances.sort(
-        key=lambda att: (
-            not att.report.exam.examStatus if att.report and att.report.exam else True,
-            att.report.exam.examStartTime if att.report and att.report.exam else datetime.min
-        )
+    return (
+        InvigilatorAttendance.query \
+        .join(InvigilationReport) \
+        .join(Exam) \
+        .distinct() \
+        .order_by(Exam.examStatus.desc(), Exam.examStartTime.desc()) \
+        .all()
     )
-
-    return attendances
-
-
 
 # -------------------------------
 # Helper: Parse Date + Time from Excel
