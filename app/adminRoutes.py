@@ -845,8 +845,9 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         eligible = User.query.filter(
             User.userLevel == 1,
             User.userStatus == 1,
-            ~User.userId.in_(
-                [lecturer for lecturer in lecturers if lecturer is not None]
+            ~or_(
+                User.userId == exam.course.coursePractical,
+                User.userId == exam.course.courseTutorial
             )
         ).all()
 
