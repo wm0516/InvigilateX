@@ -45,8 +45,8 @@
                     <th>Invigilation Status</th>
                 </tr>
             </thead>
-
-            {% for (status, start_time), grouped in attendances|groupby("group_key") %}
+            
+            {% for (status, start_time, exam_id), grouped in attendances|groupby("group_key") %}
             <tbody data-exam="{{ grouped[0].report.exam.examId }}">
                 {% for att in grouped %}
                 <tr data-exam="{{ grouped[0].report.exam.examId }}"

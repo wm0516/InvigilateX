@@ -112,11 +112,14 @@ def user_invigilationReport():
 
     # Add composite group key: (examStatus, examStartTime)
     for att in attendances:
-        att.group_key = (not att.report.exam.examStatus, att.report.exam.examStartTime)
+        report = att.report
+        exam = Exam.query.get(report.examId) if report else None
+        att.group_key = (
+            not exam.examStatus if exam else True,
+            exam.examStartTime if exam else datetime.min,
+            exam.examId if exam else 0
+        )
     return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats)
-
-
-
 # -------------------------------
 # Function for InviglationTimetable Route to read all the timetable in calendar mode
 # -------------------------------

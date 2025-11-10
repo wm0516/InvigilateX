@@ -887,11 +887,8 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
                 invigilationStatus=False
             ))
 
-        
         flash(f"Eligible invigilators: {len(eligible)}","success")
         flash(f"Chosen invigilators for venue {venue_no}: {[inv.userId for inv in chosen]}","success")
-        flash(f"Creating InvigilatorAttendance for reportId {report.invigilationReportId}, invigilatorId {inv.userId}, venueNumber {venue_no}","success")
-
 
     # -------------------------------
     # 5️⃣ Update or create VenueExam records
