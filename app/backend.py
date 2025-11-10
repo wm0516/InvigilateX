@@ -452,7 +452,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecture
         attendance = InvigilatorAttendance(
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,
-            timeCreate=datetime.now(timezone.utc)
+            timeCreate=datetime.now(timezone.utc),
+            venueNumber=venue_text
         )
         db.session.add(attendance)
 
