@@ -43,15 +43,19 @@ def calculate_invigilation_stats():
             InvigilatorAttendance.invigilatorId == user.userId,
             InvigilatorAttendance.invigilationStatus == True
         )
+        total_active_report = filtered_query.filter(Exam.examStatus == True).count()
+        flash(f"report have {total_active_report}", "error")
     else:
         # Level 2–4 → All records from the same department
         filtered_query = base_query.filter(
             Course.courseDepartment == user.userDepartment
         )
+        total_active_report = filtered_query.filter(Exam.examStatus == True).count()
+        flash(f"report have {total_active_report}", "error")
 
     # Calculate report totals before filtering to specific statuses
     total_report = filtered_query.count()
-    total_active_report = filtered_query.filter(Exam.examStatus == True).count()
+    # total_active_report = filtered_query.filter(Exam.examStatus == True).count()
 
     # Retrieve only active invigilations for detailed time analysis
     records = (
