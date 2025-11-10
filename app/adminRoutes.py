@@ -2143,19 +2143,42 @@ def process_attendance_row(row):
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    attendances = get_all_attendances()
-    stats = calculate_invigilation_stats()
+    from sqlalchemy.orm import joinedload
+    from datetime import datetime
 
-    # Attach composite key for sorting/grouping
-    for att in attendances:
-        report = att.report
-        exam = Exam.query.get(report.examId) if report else None
-        att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
+    # Fetch all reports, eager load attendances and exam
+    reports = (
+        InvigilationReport.query
+        .options(joinedload(InvigilationReport.attendances).joinedload('invigilator'),
+                 joinedload(InvigilationReport.exam).joinedload('course'))
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .order_by(Exam.examStatus.desc(), Exam.examStartTime.asc().nullslast())
+        .all()
+    )
+
+    # Flatten attendances for the table
+    attendance_rows = []
+    for report in reports:
+        exam = report.exam
+        num_invigilators = exam.examNoInvigilator if exam else 1
+        attendances = report.attendances or []
+
+        # Pad attendances with None to maintain rowspan for unassigned invigilators
+        for i in range(num_invigilators):
+            att = attendances[i] if i < len(attendances) else None
+            attendance_rows.append({
+                "report": report,
+                "exam": exam,
+                "attendance": att,
+                "row_index": i,
+                "group_key": (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
+            })
+
+    # Calculate dashboard stats
+    stats = calculate_invigilation_stats()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-
-        # Upload Section
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2166,8 +2189,7 @@ def admin_manageInvigilationReport():
                 skiprows=0
             )
 
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
-
+    return render_template('admin/adminManageInvigilationReport.html',active_tab='admin_manageInvigilationReporttab',attendances=attendance_rows,**stats)
 
 # -------------------------------
 # Function for Admin ManageProfile Route

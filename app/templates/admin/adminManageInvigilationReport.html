@@ -4,11 +4,10 @@
 {% set show_dashboard = true %}
 {% set show_manual = false %}
 {% set show_edit = false %}
-{% block title %}Admin ManageInvigilationReport{% endblock %}
+{% block title %}Admin Manage Invigilation Report{% endblock %}
 {% block head_title %}<h2>Manage Invigilation Report</h2>{% endblock %}
 
 {% block dashboard_section %}
-<!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
@@ -37,7 +36,6 @@
 {% endblock %}
 
 {% block upload_section %}
-<!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" class="function-frame" style="width:80%">
         <div class="form-left" style="width: 100%">
@@ -46,9 +44,8 @@
                 <div class="upload-container" id="attendanceUploadContainer">
                     <div class="upload-text">
                         Please upload an Excel file with the sheet name <b>Clock_IO</b>.<br>
-                        Data should begin from columns <b>A to E</b>, with headers as follows:<br><br>
-                        <i>['CARD UID', 'Name', 'Date', 'Time', 'In/Out']</i><br><br>
-                        Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
+                        Columns A-E, headers: <i>['CARD UID', 'Name', 'Date', 'Time', 'In/Out']</i><br>
+                        Click or drag and drop a file (XLSX, XLS, XLSM).
                     </div><br>
                     <div id="attendanceSelectedFileName" class="file-name-display"></div>
                 </div>
@@ -67,11 +64,11 @@
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3>List of Lecturer Invigilation Report</h3>
+        <h3>List of Lecturer Invigilation Reports</h3>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="searchInput" name="search_report" placeholder="Search..." value="{{ search_report }}" style="border-radius: 6px; width: 100%;">
-                <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                <input type="text" id="searchInput" placeholder="Search..." style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
             </div>
             <div class="button-wrapper">
                 <button id="generatePDF" style="background-color: black;">Download as PDF</button>
@@ -94,38 +91,32 @@
                     <th>Action</th>
                 </tr>
             </thead>
-
-            {% for (status, start_time), grouped in attendances|groupby("group_key") %}
-            {% set total_rows = grouped[0].report.exam.examNoInvigilator %}
-            <tbody data-exam="{{ grouped[0].report.exam.examId }}" 
-                data-exam-start="{{ grouped[0].report.exam.examStartTime.isoformat() }}"
-                data-exam-end="{{ grouped[0].report.exam.examEndTime.isoformat() }}">
-                
+            {% for key, group in attendances|groupby("group_key") %}
+            <tbody data-exam="{{ group[0].exam.examId if group[0].exam else 'N/A' }}">
+                {% set total_rows = group|length %}
                 {% for i in range(total_rows) %}
-                <tr data-exam="{{ grouped[0].report.exam.examId }}"
-                    class="{% if not grouped[0].report.exam.examStatus %}inactive-row-show{% elif grouped[0].report.exam.examStartTime is none %}error-row-show{% endif %}">
-                    
+                {% set att = group[i] %}
+                <tr class="{% if att.exam and not att.exam.examStatus %}inactive-row-show{% endif %}">
                     {% if i == 0 %}
-                    <!-- Exam ID -->
                     <td rowspan="{{ total_rows }}" style="text-align:center;">
-                        [{{ grouped[0].report.exam.examId }}]
+                        [{{ att.exam.examId if att.exam else 'N/A' }}]
                     </td>
-
-                    <!-- Exam Details -->
                     <td rowspan="{{ total_rows }}">
                         <div class="info-grid">
-                            <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
-                            <div>Course Code/Section</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</strong></div>
-                            <div>Number of Students</div><div><strong>: {{ grouped[0].report.exam.examTotalStudents }}</strong></div>
-                            <div>Program Code</div><div><strong>: {{ grouped[0].report.exam.course.courseDepartment }}</strong></div>
-                            <div>Exam Date</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ grouped[0].report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
-                            <div>Exam Day</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%A") }} - {{ grouped[0].report.exam.examEndTime.strftime("%A") }}</strong></div>
-                            <div>Exam Time</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%H:%M") }} - {{ grouped[0].report.exam.examEndTime.strftime("%H:%M") }}</strong></div>
-                            <div>Exam Period</div><div><strong>: {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds // 3600) }}h {{ ((grouped[0].report.exam.examEndTime - grouped[0].report.exam.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                            <div>Course Name</div><div><strong>: {{ att.exam.course.courseName if att.exam and att.exam.course else 'N/A' }}</strong></div>
+                            <div>Course Code/Section</div><div><strong>: {{ att.exam.course.courseCodeSectionIntake if att.exam and att.exam.course else 'N/A' }}</strong></div>
+                            <div>Number of Students</div><div><strong>: {{ att.exam.examTotalStudents if att.exam else 'N/A' }}</strong></div>
+                            <div>Program Code</div><div><strong>: {{ att.exam.course.courseDepartment if att.exam and att.exam.course else 'N/A' }}</strong></div>
+                            <div>Exam Date</div>
+                            <div><strong>: {% if att.exam and att.exam.examStartTime and att.exam.examEndTime %}{{ att.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ att.exam.examEndTime.strftime("%d/%b/%Y") }}{% else %}N/A{% endif %}</strong></div>
+                            <div>Exam Day</div>
+                            <div><strong>: {% if att.exam and att.exam.examStartTime %}{{ att.exam.examStartTime.strftime("%A") }}{% else %}N/A{% endif %}</strong></div>
+                            <div>Exam Time</div>
+                            <div><strong>: {% if att.exam and att.exam.examStartTime and att.exam.examEndTime %}{{ att.exam.examStartTime.strftime("%H:%M") }} - {{ att.exam.examEndTime.strftime("%H:%M") }}{% else %}N/A{% endif %}</strong></div>
                             <div>Exam Venue(s)</div>
                             <div>
-                                {% if grouped[0].report.exam.venue_availabilities %}
-                                    {% for va in grouped[0].report.exam.venue_availabilities %}
+                                {% if att.exam and att.exam.venue_availabilities %}
+                                    {% for va in att.exam.venue_availabilities %}
                                         <strong>: {{ va.venueNumber }} [Capacity Use: {{ va.capacity }}]</strong><br>
                                     {% endfor %}
                                 {% else %}
@@ -134,72 +125,64 @@
                             </div>
                         </div>
                     </td>
-
-                    <!-- Invigilators count -->
-                    <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                    <td rowspan="{{ total_rows }}">[{{ att.exam.examNoInvigilator if att.exam else 1 }}]</td>
                     {% endif %}
 
-                    {% if i < grouped|length %}
-                        {% set att = grouped[i] %}
-                        <!-- Invigilator Details -->
-                        <td>
-                            <div class="info-grid">
-                                <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
-                                <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
-                                <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
-                                <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
-                                <div>Venue</div><div><strong>: {{ att.venueNumber }}</strong></div>
-                            </div>
-                        </td>
+                    <!-- Invigilator Details -->
+                    <td>
+                        {% if att.attendance %}
+                        <div class="info-grid">
+                            <div>ID</div><div><strong>: {{ att.attendance.invigilator.userId }}</strong></div>
+                            <div>Name</div><div><strong>: {{ att.attendance.invigilator.userName }}</strong></div>
+                            <div>Contact</div><div><strong>: {{ att.attendance.invigilator.userContact }}</strong></div>
+                            <div>Gender</div><div><strong>: {{ att.attendance.invigilator.userGender }}</strong></div>
+                            <div>Venue</div><div><strong>: {{ att.attendance.venueNumber }}</strong></div>
+                        </div>
+                        {% else %}
+                        <span style="color:gray;">No invigilator assigned</span>
+                        {% endif %}
+                    </td>
 
-                        <!-- Check-in/out Time -->
-                        <td>
-                            <div class="info-grid">
-                                <div>Check-in Time</div><div><strong>: <span class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</span></strong></div>
-                                <div>Check-out Time</div><div><strong>: <span class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</span></strong></div>
-                            </div>
-                            {% if att.checkIn and att.checkOut %}
-                                {% set exam_start = att.report.exam.examStartTime %}
-                                {% set exam_end = att.report.exam.examEndTime %}
-                                {% set check_in = att.checkIn %}
-                                {% set check_out = att.checkOut %}
-                                {% set actual_start = [check_in, exam_start] | max %}
-                                {% set actual_end = [check_out, exam_end] | min %}
-                                {% set total_seconds = (actual_end - actual_start).total_seconds() %}
-                                {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
-                                <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }}</div>
-                            {% endif %}
-                        </td>
+                    <!-- Check-in/out Time -->
+                    <td>
+                        {% if att.attendance %}
+                        <div class="info-grid">
+                            <div>Check-in Time</div><div><strong>: {{ att.attendance.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.attendance.checkIn else "None" }}</strong></div>
+                            <div>Check-out Time</div><div><strong>: {{ att.attendance.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.attendance.checkOut else "None" }}</strong></div>
+                        </div>
+                        {% endif %}
+                    </td>
 
-                        <!-- Attendance Status -->
-                        <td>
-                            {% set remark_classes = {
-                                "PENDING": "frame-pending",
-                                "CHECK IN": "frame-completed",
-                                "COMPLETED": "frame-completed",
-                                "CHECK IN LATE": "frame-expired",
-                                "CHECK OUT EARLY": "frame-expired",
-                                "EXPIRED": "frame-expired"
-                            } %}
-                            <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
-                        </td>
+                    <!-- Attendance Status -->
+                    <td>
+                        {% if att.attendance %}
+                        <span class="status frame-completed">{{ att.attendance.remark }}</span>
+                        {% else %}
+                        <span style="color:gray;">N/A</span>
+                        {% endif %}
+                    </td>
 
-                        <!-- Invigilation Status -->
-                        <td>
-                            {% if att.invigilationStatus %}
-                                <span class="status frame-completed invigilation-status">ACCEPTED</span>
-                            {% else %}
-                                <span class="status frame-pending invigilation-status">PENDING</span>
-                            {% endif %}
-                        </td>
+                    <!-- Invigilation Status -->
+                    <td>
+                        {% if att.attendance %}
+                        {% if att.attendance.invigilationStatus %}
+                        <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                        {% else %}
+                        <span class="status frame-pending invigilation-status">PENDING</span>
+                        {% endif %}
+                        {% else %}
+                        <span style="color:gray;">N/A</span>
+                        {% endif %}
+                    </td>
 
-                        <!-- Action -->
-                        <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
-
-                    {% else %}
-                        <!-- Placeholder for unassigned invigilator -->
-                        <td colspan="5" style="text-align:center; color:gray;">No invigilator assigned</td>
-                    {% endif %}
+                    <!-- Action -->
+                    <td>
+                        {% if att.attendance %}
+                        <button type="button" class="edit-btn" data-id="{{ att.attendance.attendanceId }}"><i class="fa fa-edit"></i></button>
+                        {% else %}
+                        <span style="color:gray;">-</span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
