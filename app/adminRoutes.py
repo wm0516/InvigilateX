@@ -840,11 +840,14 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         # Determine how many invigilators needed
         inv_count = 3 if students_for_venue > 32 else 2
 
-        # Fetch eligible invigilators (excluding course lecturers)
+        # Filter the users who are eligible (level 1, active status)
         lecturers = [exam.course.coursePractical, exam.course.courseTutorial]
         eligible = User.query.filter(
             User.userLevel == 1,
             User.userStatus == 1,
+            ~User.userId.in_(
+                [lecturer for lecturer in lecturers if lecturer is not None]
+            )
         ).all()
 
          # Filter by max 36 hours total
@@ -889,7 +892,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         
         flash(f"Eligible invigilators: {len(eligible)}","success")
         flash(f"Chosen invigilators for venue {venue_no}: {[inv.userId for inv in chosen]}","success")
-        flash(f"Creating InvigilatorAttendance for reportId {report.invigilationReportId}, invigilatorId {inv.userId}, venueNumber {venue_no}","success")
+        flash(f"Creating InvigilatorAttendance for reportId {report.invigilationReportId}, invigilatorId {inv.userId}, venueNumber {venue_no}"
 
 
     # -------------------------------
