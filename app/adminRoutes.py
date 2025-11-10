@@ -2145,6 +2145,11 @@ def process_attendance_row(row):
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
+    reports_with_attendance = db.session.query(InvigilationReport).join(InvigilatorAttendance).count()
+    all_reports = InvigilationReport.query.count()
+    flash(f"All Reports: {all_reports}", "success")
+    flash(f"Reports With Attendance: {reports_with_attendance}", "success")
+
 
     # Attach composite key for sorting/grouping
     for att in attendances:
