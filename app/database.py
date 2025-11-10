@@ -226,9 +226,12 @@ class InvigilatorAttendance(db.Model):
     timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     invigilationStatus = db.Column(db.Boolean, default=False)
     remark = db.Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED",name="attendance_remark_enum"),nullable=False,default="PENDING")  # Remark 
+    venueNumber = db.Column(db.String(20), db.ForeignKey('Venue.venueNumber'), nullable=True)
 
     # Relationships
     invigilator = db.relationship("User")
+    venue = db.relationship("Venue", backref="attendances")  # link to Venue model
+
     '''
     CREATE TABLE InvigilatorAttendance (
         attendanceId INT AUTO_INCREMENT PRIMARY KEY,
@@ -240,8 +243,10 @@ class InvigilatorAttendance(db.Model):
         timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         timeAction DATETIME NULL,
         invigilationStatus BOOLEAN DEFAULT False,
+        venueNumber VARCHAR(20) NULL, 
         FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
+        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
     );
     '''
 
