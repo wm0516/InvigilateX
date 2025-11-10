@@ -830,11 +830,12 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
     # -------------------------------
     for i, venue_no in enumerate(new_venues):
         try:
-            students_for_venue = int(new_students[i])
+            students_for_venue = int(new_students[i]) if new_students[i].strip() else 0
         except (IndexError, ValueError):
             students_for_venue = 0
 
-        if students_for_venue <= 0:
+        # 🚫 Skip only if venue is invalid or no students
+        if not venue_no or students_for_venue <= 0:
             continue
 
         # Determine how many invigilators needed
