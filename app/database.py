@@ -35,9 +35,9 @@ class Department(db.Model):
     __tablename__ = 'Department'
     departmentCode = db.Column(db.String(10), primary_key=True)                     # [PK] Department Code
     departmentName = db.Column(db.String(60), nullable=False)                       # Department Name
-    deanId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)  # Dean (FK to User)
-    hopId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)   # HOP (FK to User)
-    hosId = db.Column(db.String(20), db.ForeignKey('User.userId'), nullable=True)   # HOS (FK to User)
+    deanId = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)     # Dean (FK to User)
+    hopId = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)      # HOP (FK to User)
+    hosId = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)      # HOS (FK to User)
 
     # Relationship
     dean = db.relationship("User", foreign_keys=[deanId], backref="dean_of_departments")
@@ -157,7 +157,7 @@ class VenueExam(db.Model):
         capacity INT NOT NULL,
         FOREIGN KEY (examId) REFERENCES Exam(examId),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
-    );
+    );  
     '''
 
 
