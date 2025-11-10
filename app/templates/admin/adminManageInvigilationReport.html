@@ -95,7 +95,7 @@
                 </tr>
             </thead>
 
-            {% for (status, start_time), grouped in attendances|groupby("group_key") %}
+            {% for (status, start_time, exam_id), grouped in attendances|groupby("group_key") %}
             {% set total_rows = grouped[0].report.exam.examNoInvigilator %}
             <tbody data-exam="{{ grouped[0].report.exam.examId }}" 
                 data-exam-start="{{ grouped[0].report.exam.examStartTime.isoformat() }}"
