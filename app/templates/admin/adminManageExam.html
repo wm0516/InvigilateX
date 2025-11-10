@@ -122,7 +122,7 @@
                         </select>
 
                         <!-- Input for number of students -->
-                        <input type="number" name="venueStudents[]" placeholder="Students" min="1" style="width: 100px;" required>
+                        <input type="number" name="venueStudents[]" placeholder="Capacity" min="1" style="width: 100px;" required>
 
                         <button type="button" id="addVenueBtn" class="add-btn"
                             style="background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
@@ -263,8 +263,8 @@ function clearEditFields() {
     if (venueContainer) venueContainer.innerHTML = '';
 }
 
-// Create Venue Row (without capacity)
-function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
+// Create Venue Row (now supports prefill capacity)
+function createVenueRow(venueNumber = '', capacity = '', isFirst = false) {
     const venueContainer = document.getElementById('venueContainer');
     const div = document.createElement('div');
     div.classList.add('venue-item');
@@ -277,7 +277,8 @@ function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
         <select name="venue[]" class="venue-dropdown" required>
             ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
         </select>
-        <input type="number" name="venueStudents[]" placeholder="Students" min="1" value="${studentCount}" style="width: 100px;" required>
+        <input type="number" name="venueStudents[]" placeholder="Capacity" min="1" 
+               value="${capacity}" style="width: 100px;" required>
         <button type="button" class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
             style="background-color: ${isFirst ? '#28a745' : '#dc3545'};
                    color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
@@ -299,7 +300,7 @@ function createVenueRow(venueNumber = '', studentCount = '', isFirst = false) {
     }
 }
 
-// Populate Edit Form (no capacity)
+// Populate Edit Form (with venue capacity)
 function populateEditForm(data) {
     document.getElementById('editProgramCode').value = data.courseDepartment || '';
     document.getElementById('editStudent').value = data.courseStudent || '';
@@ -319,9 +320,8 @@ function populateEditForm(data) {
     venueContainer.innerHTML = '';
 
     if (data.examVenues && data.examVenues.length > 0) {
-        data.examVenues.forEach((venue, index) => {
-            const studentCount = ''; // Optional: leave empty
-            createVenueRow(venue, studentCount, index === 0);
+        data.examVenues.forEach((venueObj, index) => {
+            createVenueRow(venueObj.venueNumber, venueObj.capacity, index === 0);
         });
     } else {
         createVenueRow('', '', true);
