@@ -2152,7 +2152,7 @@ def admin_manageInvigilationReport():
     for att in attendances:
         report = att.report
         exam = Exam.query.get(report.examId) if report else None
-        att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
+        # att.group_key = (not exam.examStatus if exam else True, exam.examStartTime if exam else datetime.min)
         flash(f"Attendance: {exam}", "success") 
     
     reports_with_attendance = db.session.query(InvigilationReport).join(InvigilatorAttendance).count()
