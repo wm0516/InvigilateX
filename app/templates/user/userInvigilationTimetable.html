@@ -40,12 +40,12 @@
                             <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
                             {% if exam.venue %}
                                 {% for va in exam.venue %}
-                                    <i>Venue: {{ va.venueNumber }} [Capacity Use: {{ va.capacity }}]</i><br>
+                                    Venue: {{ va.venueNumber }} [Capacity Use: {{ va.capacity }}]<br>
                                 {% endfor %}
                             {% else %}
                                 <strong>: None</strong>
                             {% endif %}
-                            <i>Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}</i>
+                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
                             {% if exam.is_overnight %}
                                 <span style="font-size: 12px; color: #700;"><strong>[Overnight]</strong></span>
                             {% endif %}
