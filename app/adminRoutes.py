@@ -2002,6 +2002,8 @@ def get_all_attendances():
     )
 
 
+
+
 # -------------------------------
 # Helper: Parse Date + Time from Excel
 # -------------------------------
@@ -2149,7 +2151,7 @@ def admin_manageInvigilationReport():
     all_reports = InvigilationReport.query.count()
     flash(f"All Reports: {all_reports}", "success")
     flash(f"Reports With Attendance: {reports_with_attendance}", "success")
-
+    flash(f"Attendance: {attendances}", "success")
 
     # Attach composite key for sorting/grouping
     for att in attendances:
