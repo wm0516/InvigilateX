@@ -381,6 +381,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecture
     delete_exam_related(exam.examId, commit=False)
 
     # Create new venue availability
+    new_availability = None
     if venue_text:
         new_availability = VenueExam(
             venueNumber=venue_text,
@@ -390,11 +391,12 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecture
             capacity=course.courseStudent
         )
         db.session.add(new_availability)
+        db.session.flush()  # ✅ ensure it's persisted before creating attendance
 
     # Create new invigilation report
     new_report = InvigilationReport(examId=exam.examId)
     db.session.add(new_report)
-    db.session.flush()
+    db.session.flush()  # ✅ ensure report ID exists
 
     # Exclude course lecturers
     exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial] if uid]
@@ -453,7 +455,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecture
             reportId=new_report.invigilationReportId,
             invigilatorId=chosen.userId,
             timeCreate=datetime.now(timezone.utc),
-            venueNumber=venue_text
+            venueNumber=venue_text if venue_text else None  # ✅ directly use the venue number string
         )
         db.session.add(attendance)
 
