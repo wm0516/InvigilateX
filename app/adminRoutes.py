@@ -1994,16 +1994,11 @@ def calculate_invigilation_stats():
 # -------------------------------
 def get_all_attendances():
     return (
-        invigilators = (
-            db.session.query(InvigilatorAttendance)
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .filter(
-                Exam.examId == selected_exam_id,      # Only the current exam
-                InvigilatorAttendance.venueNumber.in_(exam_venues)  # Only the venues for this exam
-            )
-            .all()
-        )
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .order_by(Exam.examStatus.desc(), Exam.examStartTime.desc())
+        .all()
     )
 
 
