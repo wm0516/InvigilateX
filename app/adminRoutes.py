@@ -775,11 +775,9 @@ def get_available_venues():
     return jsonify({'venues': available_venues})
 
 # -------------------------------
-# Reassign invigilator for ManageExamEditPage (Safe Order)
+# Reassign invigilator for ManageExamEditPage
 # -------------------------------
 def adjust_exam(exam, new_start, new_end, new_venues, new_students):
-    from datetime import datetime, timedelta, timezone
-
     old_start = exam.examStartTime
     old_end = exam.examEndTime
 
@@ -790,7 +788,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
     exam.examEndTime = new_end
 
     # -------------------------------
-    # 2️⃣ Calculate total invigilators based on students
+    # 2️⃣ Calculate total invigilators
     # -------------------------------
     total_invigilators = 0
     for s in new_students:
@@ -804,37 +802,95 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
             total_invigilators += 2
 
     exam.examNoInvigilator = total_invigilators
-    db.session.flush()  # Ensure updated before proceeding
+    db.session.flush()  # Ensure exam updated
 
-    # Compute durations for invigilator hours
+    # Duration
     new_hours = (new_end - new_start).total_seconds() / 3600.0
     old_hours = (old_end - old_start).total_seconds() / 3600.0 if old_start and old_end else 0
 
     # -------------------------------
-    # 3️⃣ Handle InvigilationReport (ensure existence and clear old attendances)
+    # 3️⃣ Handle InvigilationReport
     # -------------------------------
     report = InvigilationReport.query.filter_by(examId=exam.examId).first()
     if not report:
         report = InvigilationReport(examId=exam.examId)
         db.session.add(report)
-        db.session.commit()  # Generate report ID
+        db.session.commit()  # Generate ID
 
-    # Remove existing invigilator attendances and adjust pending hours
+    # Remove existing attendances
     for att in report.attendances:
         inv = att.invigilator
         if inv:
-            inv.userPendingCumulativeHours = max(
-                0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours
-            )
+            inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours)
         db.session.delete(att)
     db.session.flush()
 
     # -------------------------------
-    # 4️⃣ Update or create VenueExam records (so venue_no is ready)
+    # 4️⃣ Assign invigilators per venue
     # -------------------------------
-    old_records = {
-        v.venueNumber: v for v in VenueExam.query.filter_by(examId=exam.examId).all()
-    }
+    for i, venue_no in enumerate(new_venues):
+        try:
+            students_for_venue = int(new_students[i])
+        except (IndexError, ValueError):
+            students_for_venue = 0
+
+        if students_for_venue <= 0:
+            continue
+
+        # Determine how many invigilators needed
+        inv_count = 3 if students_for_venue > 32 else 2
+
+        # Fetch eligible invigilators (excluding course lecturers)
+        lecturers = [exam.course.coursePractical, exam.course.courseTutorial]
+        eligible = User.query.filter(
+            User.userLevel == 1,
+            User.userStatus == 1,
+            ~User.userId.in_(lecturers)
+        ).all()
+
+        # Filter by max 36 hours total
+        eligible = [
+            u for u in eligible
+            if (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0) < 36
+        ]
+
+        # Sort by gender and hours (to balance load)
+        males = sorted(
+            [u for u in eligible if u.userGender == "MALE"],
+            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
+        )
+        females = sorted(
+            [u for u in eligible if u.userGender == "FEMALE"],
+            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
+        )
+
+        chosen = []
+        # Ensure at least one male and one female (if possible)
+        if inv_count >= 2:
+            if males:
+                chosen.append(males.pop(0))
+            if females and len(chosen) < inv_count:
+                chosen.append(females.pop(0))
+
+        # Fill remaining slots with lowest-hour invigilators
+        pool = sorted(males + females, key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
+        chosen += pool[:(inv_count - len(chosen))]
+
+        # Save attendance entries with venueNumber
+        for inv in chosen:
+            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
+            db.session.add(InvigilatorAttendance(
+                reportId=report.invigilationReportId,
+                invigilatorId=inv.userId,
+                venueNumber=venue_no,
+                timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
+                invigilationStatus=False
+            ))
+
+    # -------------------------------
+    # 5️⃣ Update or create VenueExam records
+    # -------------------------------
+    old_records = {v.venueNumber: v for v in VenueExam.query.filter_by(examId=exam.examId).all()}
     used_venues = set()
 
     for i, venue_no in enumerate(new_venues):
@@ -876,7 +932,6 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
                 f"(available: {available_capacity})"
             )
 
-        # Add new record
         new_ve = VenueExam(
             examId=exam.examId,
             venueNumber=venue_no,
@@ -892,79 +947,8 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         if venue_no not in used_venues:
             db.session.delete(rec)
 
-    db.session.flush()  # ✅ Make sure new VenueExam records exist before invigilator assignment
-
-    # -------------------------------
-    # 5️⃣ Assign invigilators per venue
-    # -------------------------------
-    for i, venue_no in enumerate(new_venues):
-        try:
-            students_for_venue = int(new_students[i])
-        except (IndexError, ValueError):
-            students_for_venue = 0
-
-        if students_for_venue <= 0:
-            continue
-
-        # Determine number of invigilators
-        inv_count = 3 if students_for_venue > 32 else 2
-
-        # Exclude course lecturers
-        lecturers = [exam.course.coursePractical, exam.course.courseTutorial]
-        eligible = User.query.filter(
-            User.userLevel == 1,
-            User.userStatus == 1,
-            ~User.userId.in_(lecturers)
-        ).all()
-
-        # Filter those under 36 hours
-        eligible = [
-            u for u in eligible
-            if (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0) < 36
-        ]
-
-        # Sort by gender + hours (to balance)
-        males = sorted(
-            [u for u in eligible if u.userGender == "MALE"],
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-        females = sorted(
-            [u for u in eligible if u.userGender == "FEMALE"],
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-
-        chosen = []
-        # Try to ensure at least one male and one female
-        if inv_count >= 2:
-            if males:
-                chosen.append(males.pop(0))
-            if females and len(chosen) < inv_count:
-                chosen.append(females.pop(0))
-
-        # Fill remaining slots by lowest total hours
-        pool = sorted(
-            males + females,
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-        chosen += pool[:(inv_count - len(chosen))]
-
-        # Add attendance entries
-        for inv in chosen:
-            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
-            db.session.add(
-                InvigilatorAttendance(
-                    reportId=report.invigilationReportId,
-                    invigilatorId=inv.userId,
-                    venueNumber=venue_no,
-                    timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
-                    invigilationStatus=False
-                )
-            )
-
-    # -------------------------------
-    # 6️⃣ Final commit
-    # -------------------------------
     db.session.commit()
+
 
 
 # -------------------------------
