@@ -840,15 +840,12 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         # Determine how many invigilators needed
         inv_count = 3 if students_for_venue > 32 else 2
 
-        # Filter the users who are eligible (level 1, active status)
+        # Fetch eligible invigilators (excluding course lecturers)
         lecturers = [exam.course.coursePractical, exam.course.courseTutorial]
         eligible = User.query.filter(
             User.userLevel == 1,
-            User.userStatus == 1,
-            ~or_(
-                User.userId == exam.course.coursePractical,
-                User.userId == exam.course.courseTutorial
-            )
+            User.userStatus == 1
+            #,~User.userId.in_(lecturers)
         ).all()
 
          # Filter by max 36 hours total
