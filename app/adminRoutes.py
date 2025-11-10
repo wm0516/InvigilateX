@@ -833,6 +833,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
             students_for_venue = int(new_students[i])
         except (IndexError, ValueError):
             students_for_venue = 0
+        flash(f"Venue: {venue_no}, Students: {students_for_venue}",'error') 
 
         if students_for_venue <= 0:
             continue
