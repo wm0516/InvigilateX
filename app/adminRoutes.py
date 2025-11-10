@@ -1993,13 +1993,36 @@ def calculate_invigilation_stats():
 # Read All InvigilatorAttendance Data From Database
 # -------------------------------
 def get_all_attendances():
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .order_by(Exam.examStatus.desc(), Exam.examStartTime.desc())
-        .all()
+    attendances = []
+
+    # Loop through all reports
+    for report in InvigilationReport.query.all():
+        exam = report.exam
+        if not exam:
+            continue
+
+        assigned = exam.examNoInvigilator or 0
+
+        # Fetch only assigned number of invigilators for this report
+        report_att = (
+            InvigilatorAttendance.query
+            .filter_by(reportId=report.invigilationReportId)
+            .limit(assigned)
+            .all()
+        )
+
+        attendances.extend(report_att)
+
+    # Optional: sort the final list by exam status and start time
+    attendances.sort(
+        key=lambda att: (
+            not att.report.exam.examStatus if att.report and att.report.exam else True,
+            att.report.exam.examStartTime if att.report and att.report.exam else datetime.min
+        )
     )
+
+    return attendances
+
 
 
 # -------------------------------
