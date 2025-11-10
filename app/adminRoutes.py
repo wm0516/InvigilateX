@@ -552,28 +552,28 @@ def generate_manageexam_template():
     assert ws is not None, "Workbook has no active worksheet"
     ws.title = "Exams"
 
-
     # --- Row 1 empty
     ws.append([])
 
-    # --- Row 2 headers (Updated 'Course/Sec' → 'Course')
-    headers = ['Date', 'Day', 'Start', 'End', 'Program', 'Course', 'No of', 'Room']
+    # --- Row 2 headers (updated)
+    headers = ['Exam Date','Day','Start Time','End Time','Course Code','Course Name',
+        'Total number of students','Total number of students by venue','Exam Venue']
     ws.append(headers)
 
-    # === Apply formatting ===
+    # === Formatting for date/time ===
     date_style = NamedStyle(name="date_style", number_format="DD/MM/YYYY")
     time_style = NamedStyle(name="time_style", number_format="hh:mm:ss AM/PM")
 
     for row in range(3, 503):
         ws[f"A{row}"].style = date_style
         ws[f"B{row}"] = f'=IF(A{row}="","",TEXT(A{row},"dddd"))'
-        ws[f"C{row}"].style = time_style
-        ws[f"D{row}"].style = time_style
+        ws[f"C{row}"].style = time_style  # Start Time
+        ws[f"D{row}"].style = time_style  # End Time
 
     # === Hidden sheet for lookup lists ===
     ws_lists = wb.create_sheet(title="Lists")
 
-    # --- Courses and their corresponding exams ---
+    # --- Fetch courses and exams ---
     courses = (
         db.session.query(Course, Exam)
         .join(Exam, Course.courseExamId == Exam.examId)
@@ -589,42 +589,45 @@ def generate_manageexam_template():
         .all()
     )
 
-    # Write Course, Program, and No of Students (from Exam.examTotalStudents)
+    # --- Fill lookup data ---
     for i, (c, e) in enumerate(courses, start=1):
-        course_code = c.courseCodeSectionIntake.split('/')[0]  # Extract only 'Abc123' from 'Abc123/ca1'
-        ws_lists[f"A{i}"] = course_code                        # Course
-        ws_lists[f"B{i}"] = c.courseDepartment                 # Program
-        ws_lists[f"C{i}"] = e.examTotalStudents or 0           # Total Students from Exam table
+        course_code = c.courseCodeSectionIntake.split('/')[0]  # 'Abc123/ca1' → 'Abc123'
+        ws_lists[f"A{i}"] = course_code                       # Course Code
+        ws_lists[f"B{i}"] = c.courseName                      # Course Name
+        ws_lists[f"C{i}"] = e.examTotalStudents or 0          # Total number of students
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"E{i}"] = v.venueNumber
+        ws_lists[f"D{i}"] = v.venueNumber
 
     # === Data Validations ===
     if courses:
+        # Dropdown for Course Code
         dv_course = DataValidation(
             type="list",
             formula1=f"=Lists!$A$1:$A${len(courses)}",
             allow_blank=False
         )
         ws.add_data_validation(dv_course)
-        dv_course.add("F3:F502")  # Course dropdown
+        dv_course.add("E3:E502")  # Course Code column
 
-        # Auto-fill Program and No of Students
+        # Auto-fill Course Name and Total number of students
         for row in range(3, 503):
-            ws[f"E{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},2,FALSE))'
-            ws[f"G{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},3,FALSE))'
+            ws[f"F{row}"] = f'=IF(E{row}="","",VLOOKUP(E{row},Lists!$A$1:$C${len(courses)},2,FALSE))'
+            ws[f"G{row}"] = f'=IF(E{row}="","",VLOOKUP(E{row},Lists!$A$1:$C${len(courses)},3,FALSE))'
 
+    # Dropdown for Exam Venue
     if venues:
         dv_venue = DataValidation(
             type="list",
-            formula1=f"=Lists!$E$1:$E${len(venues)}",
+            formula1=f"=Lists!$D$1:$D${len(venues)}",
             allow_blank=False
         )
         ws.add_data_validation(dv_venue)
-        dv_venue.add("H3:H502")
+        dv_venue.add("I3:I502")  # Exam Venue column
 
+    # Hide lookup sheet
     ws_lists.sheet_state = 'hidden'
 
     # Save to memory
