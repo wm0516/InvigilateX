@@ -318,6 +318,7 @@ def waiting_record(user_id):
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
+            Exam.examStatus == True,
             InvigilatorAttendance.timeAction.is_(None),
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.invigilatorId == user_id
