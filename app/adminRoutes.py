@@ -695,7 +695,8 @@ def process_exam_row(row):
     if conflict:
         flash(f"⚠️ Conflict found for {venue} between {start_dt} and {end_dt}", "error")
         return None, ''
-
+    
+    flash("Passing Value", "error")
     # --- Create record ---
     create_exam_and_related(start_dt, end_dt, str(row['Course Code']).upper(), venue, row['Total number of students by venue'])
     return True, ''
