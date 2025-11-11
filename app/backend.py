@@ -441,10 +441,9 @@ def delete_exam_related(exam_id, commit=True):
     if not exam:
         return False, f"Exam {exam_id} not found"   
 
+    pending_hours = 0
     if exam.examStartTime and exam.examEndTime:
         pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
-    else:
-        pending_hours = 0
 
     # Roll back pending hours from invigilators
     reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
@@ -456,16 +455,14 @@ def delete_exam_related(exam_id, commit=True):
                     0.0,
                     (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
                 )
+        db.session.delete(report)  # Use ORM delete to trigger cascade
 
-    # Delete reports and venue availability
-    InvigilationReport.query.filter_by(examId=exam.examId).delete()
     VenueExam.query.filter_by(examId=exam.examId).delete()
 
     if commit:
         db.session.commit()
 
     return True, f"Related data for exam {exam_id} deleted successfully"
-
 
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data
