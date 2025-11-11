@@ -1570,23 +1570,22 @@ def save_timetable_to_db(structured):
     filename = structured.get("filename")
 
     if not lecturer:
-        return 
+        return
 
-    # Normalize the lecturer input: remove all spaces
+    # Normalize lecturer name (remove all spaces)
     normalized_lecturer = ''.join(lecturer.split())
 
-    # Find user where username with spaces removed matches normalized lecturer
+    # Find user where username (spaces removed) matches normalized lecturer
     user = User.query.filter(func.replace(User.userName, " ", "") == normalized_lecturer).first()
 
     # Ensure timetable exists for user
+    timetable = None
     if user:
         timetable = Timetable.query.filter_by(user_id=user.userId).first()
         if not timetable:
             timetable = Timetable(user_id=user.userId)
             db.session.add(timetable)
             db.session.commit()
-    else:
-        timetable = None
 
     # ---- Delete old rows if lecturer already exists in DB ----
     existing_rows = TimetableRow.query.filter_by(lecturerName=lecturer).count()
@@ -1594,13 +1593,36 @@ def save_timetable_to_db(structured):
         TimetableRow.query.filter_by(lecturerName=lecturer).delete()
         db.session.commit()
 
-    # ---- Insert new rows from structured data ----
     rows_inserted = 0
 
-    for day, activities in structured["days"].items():
+    # ---- Insert new timetable rows ----
+    for day, activities in structured.get("days", {}).items():
         for act in activities:
-            if not (act.get("class_type") and act.get("time") and act.get("room") and act.get("course")):
+            class_type = act.get("class_type", "").strip()
+            course_name_uploaded = act.get("course", "").strip()
+            if not (class_type and act.get("time") and act.get("room") and course_name_uploaded):
                 continue
+
+            # Normalize course name for comparison
+            normalized_course_uploaded = ''.join(course_name_uploaded.split()).lower()
+
+            # Try to find matching course in database (ignoring spaces)
+            matching_course = None
+            for course in Course.query.all():
+                normalized_course_db = ''.join(course.courseName.split()).lower()
+                if normalized_course_uploaded == normalized_course_db:
+                    matching_course = course
+                    break
+
+            # If found and user exists, assign lecturer to tutorial/practical
+            if matching_course and user:
+                if class_type.lower() == "tutorial":
+                    matching_course.courseTutorial = user.userId
+                elif class_type.lower() == "practical":
+                    matching_course.coursePractical = user.userId
+                db.session.commit()
+
+            # Insert timetable rows (if have sections)
             if act.get("sections"):
                 for sec in act["sections"]:
                     if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
@@ -1610,11 +1632,11 @@ def save_timetable_to_db(structured):
                         timetable_id=timetable.timetableId if timetable else None,
                         filename=filename,
                         lecturerName=lecturer,
-                        classType=act.get("class_type"),
+                        classType=class_type,
                         classDay=day,
                         classTime=act.get("time"),
                         classRoom=act.get("room"),
-                        courseName=act.get("course"),
+                        courseName=course_name_uploaded,
                         courseIntake=sec.get("intake"),
                         courseCode=sec.get("course_code"),
                         courseSection=sec.get("section"),
@@ -1626,6 +1648,7 @@ def save_timetable_to_db(structured):
 
     db.session.commit()
     return rows_inserted
+
 
 
 # -------------------------------
