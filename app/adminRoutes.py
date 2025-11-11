@@ -717,17 +717,17 @@ def process_exam_row(row):
 
     exam_id = course_row.courseExamId
 
-    # --- Check for duplicate upload based on examId and venue ---
-    duplicate_exam = VenueExam.query.filter_by(
-        examId=exam_id,
-        venueNumber=venue,
-        startDateTime=start_dt,
-        endDateTime=end_dt
-    ).first()
+    # --- Check for duplicate upload based on examId and start/end time ---
+    existing_venues = VenueExam.query.filter(
+        VenueExam.examId == exam_id,
+        VenueExam.startDateTime == start_dt,
+        VenueExam.endDateTime == end_dt
+    ).all()
 
-    if duplicate_exam:
-        flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) in {venue} already uploaded.", "warning")
-        return None, ''  # skip insert
+    if existing_venues:
+        venue_list = ",".join([v.venueNumber for v in existing_venues])
+        flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) already uploaded in {venue_list}.", "warning")
+        return None, ''
 
     # --- Check overlapping exams for capacity only (exclude current examId) ---
     overlapping_exams = VenueExam.query.filter(
@@ -750,7 +750,6 @@ def process_exam_row(row):
         return None, ''
 
     # --- Create exam and related records ---
-    flash(f"✅ Venue {venue}: (used={used_capacity}, new={requested_capacity}, "f"total={used_capacity + requested_capacity}/{venue_capacity})", "success")
     create_exam_and_related(start_dt, end_dt,course_code_input,[venue],[requested_capacity])
     return True, ''
 
