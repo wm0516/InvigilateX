@@ -715,7 +715,7 @@ def update_attendanceStatus():
             continue
 
         # Case 1: Exam has ended, remark still PENDING
-        if attendance.remark == "PENDING" and time_now > exam.examEndTime:
+        if attendance.remark == "PENDING" and exam.examStatus == False:
             attendance.remark = "EXPIRED"
 
         # Case 2: Remark is not PENDING, but 1 hour passed after exam end
