@@ -325,7 +325,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecturer, invigilatorNo):
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, studentPerVenue):
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
@@ -341,35 +341,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, lecture
         return False, f"Exam for course {courseSection} not found"
 
     # Auto-set invigilator count
-    invigilatorNo = invigilatorNo or (3 if (course.courseStudent or 0) > 32 else 2)
-    try:
-        invigilatorNo = int(invigilatorNo)
-    except ValueError:
-        return False, "Number of Invigilators must be an integer"
-    if invigilatorNo < 1:
-        return False, "Number of Invigilators must be at least 1"
+    if studentPerVenue is not None:
+        invigilatorNo = 3 if studentPerVenue > 32 else 2
 
     # Update exam details
     exam.examStartTime = start_dt
     exam.examEndTime = end_dt
     exam.examNoInvigilator = invigilatorNo
-
-    # Assign lecturers
-    if lecturer:
-        lecturer_user = User.query.filter(
-            or_(
-                User.userId == lecturer,
-                User.userName.ilike(lecturer)
-            )
-        ).first()
-        if not lecturer_user:
-            return False, f"Lecturer '{lecturer}' not found in User table"
-
-        course.coursePractical = lecturer_user.userId
-        course.courseTutorial = lecturer_user.userId
-    else:
-        course.coursePractical = None
-        course.courseTutorial = None  
 
     # Adjust end time if necessary
     adj_end_dt = end_dt

@@ -657,7 +657,7 @@ def download_exam_template():
 # -------------------------------
 def process_exam_row(row):
     # --- Parse exam date ---
-    examDate = row['date']
+    examDate = row['Exam Date']
     if isinstance(examDate, str):
         # Your Excel gives "2025-11-10 00:00:00"
         try:
@@ -667,8 +667,8 @@ def process_exam_row(row):
             examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
 
     # --- Parse start & end time ---
-    startTime_text = row['start']
-    endTime_text   = row['end']
+    startTime_text = row['Start Time']
+    endTime_text   = row['End Time']
 
     # Defensive: ensure they are strings
     if not startTime_text or not endTime_text:
@@ -683,7 +683,7 @@ def process_exam_row(row):
     # --- Combine into datetimes ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
-    venue    = str(row['room']).upper()
+    venue    = str(row['Exam Venue']).upper()
 
     # --- Conflict check ---
     conflict = VenueExam.query.filter(
@@ -697,7 +697,7 @@ def process_exam_row(row):
         return None, ''
 
     # --- Create record ---
-    create_exam_and_related(start_dt, end_dt, str(row['course/sec']).upper(), venue, None, None)
+    create_exam_and_related(start_dt, end_dt, str(row['Course Code']).upper(), venue, row['Total number of students by venue'])
     return True, ''
 
 
@@ -1000,10 +1000,10 @@ def admin_manageExam():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['date', 'day', 'start', 'end', 'program','course/sec','no of','room'],
+                expected_cols=['Exam Date', 'Day', 'Start Time', 'End Time', 'Course Code','Course Name','Total number of students','Total number of students by venue','Exam Venue'],
                 process_row_fn=process_exam_row,
                 redirect_endpoint='admin_manageExam',
-                usecols="A:H",
+                usecols="A:I",
                 skiprows=1 
             )
 
