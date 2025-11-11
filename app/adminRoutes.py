@@ -714,7 +714,7 @@ def process_exam_row(row):
     
     flash(f"✅ Venue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity+requested_capacity}/{venue_capacity})", "success")
         # --- Create record ---
-    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), venue, requested_capacity)
+    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), [venue], requested_capacity)
     return True, ''
 
 
