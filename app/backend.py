@@ -341,8 +341,11 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     total_students = sum(c.courseStudent for c in course_sections)
     exam.examTotalStudents = total_students
 
-    # Auto-set invigilator number
-    invigilatorNo = 3 if sum(studentPerVenue_list) > 32 else 2
+    if studentPerVenue_list > 32:
+        invigilatorNo = 3
+    else:
+        invigilatorNo = 2
+
     exam.examNoInvigilator += invigilatorNo
     exam.examStartTime = start_dt
     exam.examEndTime = end_dt
