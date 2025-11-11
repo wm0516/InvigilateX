@@ -713,8 +713,12 @@ def update_attendanceStatus():
         if not exam or not exam.examEndTime:
             continue
 
-        # If exam has ended and remark is still 'PENDING', mark as 'EXPIRED'
+        # Case 1: Exam has ended, remark still PENDING
         if attendance.remark == "PENDING" and time_now > exam.examEndTime:
+            attendance.remark = "EXPIRED"
+
+        # Case 2: Remark is not PENDING, but 1 hour passed after exam end
+        elif attendance.remark != "PENDING" and time_now > (exam.examEndTime + timedelta(hours=1)):
             attendance.remark = "EXPIRED"
 
     db.session.commit()
