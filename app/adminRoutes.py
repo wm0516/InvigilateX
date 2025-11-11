@@ -684,21 +684,37 @@ def process_exam_row(row):
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
     venue    = str(row['exam venue']).upper()
+    requested_capacity = int(row['total number of students by venue'])
 
-    # --- Conflict check ---
-    conflict = VenueExam.query.filter(
+    # --- Get venue info ---
+    venue_obj = Venue.query.filter_by(venueNumber=venue).first()
+    if not venue_obj:
+        return False, f"Venue {venue} not found in database"
+    venue_capacity = venue_obj.venueCapacity
+
+    # --- Find overlapping exams ---
+    overlapping_exams = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
-    ).first()
+    ).all()
 
-    if conflict:
-        flash(f"⚠️ Conflict found for {venue} between {start_dt} and {end_dt}", "error")
+    used_capacity = sum([v.capacity for v in overlapping_exams])
+    available_capacity = venue_capacity - used_capacity
+
+    # --- Check if there’s enough room ---
+    if requested_capacity > available_capacity:
+        flash(
+            f"⚠️ Capacity conflict in {venue}: "
+            f"Used {used_capacity}/{venue_capacity}, "
+            f"requested {requested_capacity} more → exceeds capacity!",
+            "error"
+        )
         return None, ''
     
-    flash("Passing Value", "error")
-    # --- Create record ---
-    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), venue, row['total number of students by venue'])
+    flash(f"✅ Venue {venue} OK (used={used_capacity}, new={requested_capacity}, total={used_capacity+requested_capacity}/{venue_capacity})", "success")
+        # --- Create record ---
+    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), venue, requested_capacity)
     return True, ''
 
 
