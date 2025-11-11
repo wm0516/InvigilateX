@@ -25,8 +25,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # cleanup_expired_timetable_rows()
-    update_exam_status()
-    update_attendanceStatus()
+    auto_expire_exams_and_attendance()
     login_text = ''
     password_text = ''
 
@@ -704,32 +703,42 @@ def cleanup_expired_timetable_rows():
     db.session.commit()  # Commit even if 0, or you can add a check
 
 
-def update_attendanceStatus():
-    all_attendance = InvigilatorAttendance.query.all()
-    time_now = datetime.now()
+def auto_expire_exams_and_attendance():
+    now = datetime.now()
 
+    # 1. Expire exams
+    expired_exams = Exam.query.filter(
+        Exam.examEndTime < now,
+        Exam.examStatus == True
+    ).all()
+    for exam in expired_exams:
+        exam.examStatus = False
+
+    # 2. Update attendance remarks
+    all_attendance = InvigilatorAttendance.query.join(InvigilatorAttendance.report).join(InvigilationReport.exam).all()
     for attendance in all_attendance:
-        report = attendance.report
-        exam = report.exam if report else None
+        exam = attendance.report.exam if attendance.report else None
         if not exam or not exam.examEndTime:
             continue
 
-        # Case 1: Exam has ended, remark still PENDING
-        if attendance.remark == "PENDING" and time_now > exam.examEndTime:
+        exam_end = exam.examEndTime
+
+        # Case A: PENDING after exam end
+        if attendance.remark == "PENDING" and now > exam_end:
             attendance.remark = "EXPIRED"
 
-        # Case 2: Remark is not PENDING, but 1 hour passed after exam end
-        elif attendance.remark != "PENDING" and time_now > (exam.examEndTime + timedelta(hours=1)):
+        # Case B: CHECK IN or CHECK IN LATE, more than 1 hour after exam end
+        elif attendance.remark in ["CHECK IN", "CHECK IN LATE"] and now > (exam_end + timedelta(hours=1)):
             attendance.remark = "EXPIRED"
 
-    db.session.commit()
+        # Remove exam hours from pending if not checked-in
+        if attendance.remark == "EXPIRED" and not attendance.invigilationStatus:
+            user = attendance.invigilator
+            if user:
+                # Assuming exam duration is in hours
+                exam_duration = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600
+                user.userPendingCumulativeHours = max(user.userPendingCumulativeHours - exam_duration, 0)
 
-def update_exam_status():
-    # Auto-expire exams
-    now = datetime.now() + timedelta(hours=8)
-    expired_exams = Exam.query.filter(Exam.examEndTime < now, Exam.examStatus == True).all()
-    for exam in expired_exams:
-        exam.examStatus = False
     db.session.commit()
 
 
