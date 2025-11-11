@@ -711,18 +711,42 @@ def update_attendanceStatus():
     for attendance in all_attendance:
         report = attendance.report
         exam = report.exam if report else None
-        if not exam or not exam.examEndTime:
+        if not exam or not exam.examEndTime or not exam.examStartTime:
             continue
 
-        # Case 1: Exam has ended, remark still PENDING
+        exam_duration = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+
+        # Case 1: Exam has ended, remark still PENDING (no check-in)
         if attendance.remark == "PENDING" and exam.examStatus == False:
             attendance.remark = "EXPIRED"
+            if attendance.invigilator:
+                # Remove pending hours
+                attendance.invigilator.userPendingCumulativeHours -= exam_duration
+                if attendance.invigilator.userPendingCumulativeHours < 0:
+                    attendance.invigilator.userPendingCumulativeHours = 0
 
-        # Case 2: Remark is not PENDING, but 1 hour passed after exam end
-        elif attendance.remark in ["CHECK IN LATE","CHECK IN"] and time_now > (exam.examEndTime + timedelta(hours=1)):
+        # Case 2: Checked in (normal or late) but exam expired
+        elif attendance.remark in ["CHECK IN", "CHECK IN LATE"] and time_now > (exam.examEndTime + timedelta(hours=1)):
             attendance.remark = "EXPIRED"
+            if attendance.invigilator:
+                if attendance.remark == "CHECK IN LATE" and attendance.checkIn:
+                    # Actual worked hours: exam end - check-in late
+                    worked_hours = (exam.examEndTime - attendance.checkIn).total_seconds() / 3600.0
+                    if worked_hours < 0:
+                        worked_hours = 0
+                else:  # CHECK IN normal (no checkout)
+                    worked_hours = exam_duration
+
+                # Remove full exam duration from pending hours
+                attendance.invigilator.userPendingCumulativeHours -= exam_duration
+                if attendance.invigilator.userPendingCumulativeHours < 0:
+                    attendance.invigilator.userPendingCumulativeHours = 0
+
+                # Add worked hours to cumulative hours
+                attendance.invigilator.userCumulativeHours += worked_hours
 
     db.session.commit()
+
 
 def update_exam_status():
     # Auto-expire exams
