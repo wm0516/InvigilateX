@@ -1071,7 +1071,6 @@ def admin_manageExam():
                 for report in reports:
                     for att in report.attendances:
                         if exam_select.examStartTime and exam_select.examEndTime:
-                            exam_select.examNoInvigilator=0
                             duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
                             user = User.query.get(att.invigilatorId)
                             if user:
@@ -1086,6 +1085,7 @@ def admin_manageExam():
                 # Reset exam times
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
+                exam_select.examNoInvigilator = None
                 exam_select.examNoInvigilator = 3 if total_students > 32 else 2
 
                 db.session.commit()
