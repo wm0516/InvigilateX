@@ -684,7 +684,7 @@ def process_exam_row(row):
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
     venue    = str(row['exam venue']).upper()
-    requested_capacity = int(row['total number of students by venue'])
+    requested_capacity = row['total number of students by venue']
 
     # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
