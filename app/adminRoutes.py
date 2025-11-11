@@ -694,11 +694,6 @@ def process_exam_row(row):
     except ValueError:
         return False, f"Invalid total number of students by venue: {row.get('total number of students by venue')}"
 
-    try:
-        total_students_excel = int(row.get('total number of students', 0))
-    except ValueError:
-        return False, f"Invalid total number of students: {row.get('total number of students')}"
-
     # --- Parse venue ---
     venue = str(row.get('exam venue', '')).upper()
     if not venue:
