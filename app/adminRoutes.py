@@ -708,6 +708,8 @@ def process_exam_row(row):
     # --- Find overlapping exams ---
     overlapping_exams = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
+        VenueExam.startDateTime.isnot(None),  # <-- only consider assigned exams
+        VenueExam.endDateTime.isnot(None),
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).all()
@@ -725,7 +727,7 @@ def process_exam_row(row):
         )
         return None, ''
 
-    flash(f"✅ Venue List {[venue]};\tVenue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity + requested_capacity}/{venue_capacity})", "success")
+    flash(f"✅ Venue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity + requested_capacity}/{venue_capacity})", "success")
     # --- Create exam and related records ---
     create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
 
