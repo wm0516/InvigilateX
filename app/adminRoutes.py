@@ -716,7 +716,7 @@ def process_exam_row(row):
         return False, f"Course code '{course_code_input}' not found in Course table"
 
     exam_id = course_row.courseExamId
-
+    
     # --- Check for duplicate upload based on examId and start/end time ---
     existing_venues = VenueExam.query.filter(
         VenueExam.examId == exam_id,
@@ -724,10 +724,13 @@ def process_exam_row(row):
         VenueExam.endDateTime == end_dt
     ).all()
 
+    # Only flash once if there is any existing venue
     if existing_venues:
-        venue_list = ",".join([v.venueNumber for v in existing_venues])
-        flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) already uploaded in {venue_list}.", "warning")
-        return None, ''
+        # Combine venues: include the current venue being processed
+        venue_list = ",".join(sorted(set([v.venueNumber for v in existing_venues] + [venue])))
+        flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) already uploaded in {venue_list}.", "error")
+        return None, ''  # skip insert
+
 
     # --- Check overlapping exams for capacity only (exclude current examId) ---
     overlapping_exams = VenueExam.query.filter(
