@@ -683,7 +683,7 @@ def process_exam_row(row):
     # --- Combine into datetimes ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
-    venue    = str(row['Exam Venue']).upper()
+    venue    = str(row['exam venue']).upper()
 
     # --- Conflict check ---
     conflict = VenueExam.query.filter(
