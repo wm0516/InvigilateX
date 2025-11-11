@@ -1001,7 +1001,7 @@ def admin_manageExam():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['Exam Date', 'Day', 'Start Time', 'End Time', 'Course Code','Course Name','Total number of students','Total number of students by venue','Exam Venue'],
+                expected_cols=['exam date', 'day', 'start time', 'end time', 'course code', 'course name', 'total number of students', 'total number of students by venue', 'exam venue'],
                 process_row_fn=process_exam_row,
                 redirect_endpoint='admin_manageExam',
                 usecols="A:I",
