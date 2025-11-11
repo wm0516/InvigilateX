@@ -341,6 +341,14 @@ def confirm_record(user_id):
 def open_record(user_id):
     cutoff_time = datetime.now() - timedelta(minutes=1)
 
+    # Get current user's gender
+    current_user = User.query.get(user_id)
+    if not current_user:
+        return []
+
+    user_gender = current_user.userGender
+
+    # Get all exams the user already joined
     user_assigned_exam_ids = (
         db.session.query(InvigilationReport.examId)
         .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
@@ -348,16 +356,21 @@ def open_record(user_id):
         .subquery()
     )
 
+    # Query open slots
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)  # safer: allow NULL
+        .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(
-            InvigilatorAttendance.invigilationStatus == False,
+            Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
-            Exam.examStartTime > datetime.now(),  # remove +8 hours unless needed
-            ~InvigilationReport.examId.in_(user_assigned_exam_ids)
+            InvigilatorAttendance.invigilationStatus == False,
+            ~InvigilationReport.examId.in_(user_assigned_exam_ids),
+            or_(
+                InvigilatorAttendance.invigilatorId == None,  # not assigned yet
+                User.userGender == user_gender                 # same gender only
+            )
         )
         .all()
     )
@@ -370,6 +383,7 @@ def open_record(user_id):
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 # -------------------------------
