@@ -336,10 +336,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 
-    # --- Total students for this row ---
-    row_total_students = sum(c.courseStudent for c in course_sections)
-    exam.examTotalStudents = (exam.examTotalStudents or 0) + row_total_students  # ✅ accumulate
-
     # --- Number of invigilators for this row ---
     if studentPerVenue_list:
         invigilatorNo_for_row = 3 if sum(studentPerVenue_list) > 32 else 2
