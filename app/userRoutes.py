@@ -157,7 +157,7 @@ def get_calendar_data():
             return {
                 "exam_id": exam.examId,
                 "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
+                "course_code": exam.course.courseCodeSectionIntake.split('/')[0],
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,

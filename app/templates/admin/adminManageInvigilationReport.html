@@ -115,7 +115,7 @@
                     <td rowspan="{{ total_rows }}">
                         <div class="info-grid">
                             <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
-                            <div>Course Code/Section</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</strong></div>
+                            <div>Course Code/Section</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake.split('/')[0] }}</strong></div>
                             <div>Number of Students</div><div><strong>: {{ grouped[0].report.exam.examTotalStudents }}</strong></div>
                             <div>Program Code</div><div><strong>: {{ grouped[0].report.exam.course.courseDepartment }}</strong></div>
                             <div>Exam Date</div><div><strong>: {{ grouped[0].report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ grouped[0].report.exam.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
