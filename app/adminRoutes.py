@@ -651,11 +651,13 @@ def download_exam_template():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
+processed_exam_warnings = set()  # <--- global/session-level tracking for this upload
 def process_exam_row(row):
+    global processed_exam_warnings
+
     # --- Parse exam date ---
     examDate = row.get('exam date')
     if not examDate:
@@ -681,33 +683,27 @@ def process_exam_row(row):
     except ValueError:
         return False, "Invalid time format (expected HH:MM:SS)"
 
-    # --- Combine into datetimes ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
 
-    # --- Parse numeric fields safely ---
     try:
         requested_capacity = int(row.get('total number of students by venue', 0))
     except ValueError:
         return False, f"Invalid total number of students by venue: {row.get('total number of students by venue')}"
 
-    # --- Parse venue ---
     venue = str(row.get('exam venue', '')).upper()
     if not venue:
         return False, "Venue missing"
 
-    # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
     if not venue_obj:
         return False, f"Venue {venue} not found in database"
     venue_capacity = venue_obj.venueCapacity
 
-    # --- Get examId from course code ---
     course_code_input = str(row.get('course code', '')).upper()
     if not course_code_input:
         return False, "Course code missing"
 
-    # Look for the course row where courseCodeSectionIntake starts with the input code
     course_row = Course.query.filter(
         Course.courseCodeSectionIntake.like(f"{course_code_input}%")
     ).first()
@@ -716,26 +712,26 @@ def process_exam_row(row):
         return False, f"Course code '{course_code_input}' not found in Course table"
 
     exam_id = course_row.courseExamId
-    
-    # --- Check for duplicate upload based on examId and start/end time ---
+
+    # --- Check for duplicate upload ---
     existing_venues = VenueExam.query.filter(
         VenueExam.examId == exam_id,
         VenueExam.startDateTime == start_dt,
         VenueExam.endDateTime == end_dt
     ).all()
 
-    # Only flash once if there is any existing venue
     if existing_venues:
-        # Combine venues: include the current venue being processed
-        venue_list = ",".join(sorted(set([v.venueNumber for v in existing_venues] + [venue])))
-        flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) already uploaded in {venue_list}.", "error")
+        # Only flash once per examId per upload session
+        if exam_id not in processed_exam_warnings:
+            venue_list = ",".join(sorted(set([v.venueNumber for v in existing_venues] + [venue])))
+            flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) already uploaded in {venue_list}.", "error")
+            processed_exam_warnings.add(exam_id)
         return None, ''  # skip insert
 
-
-    # --- Check overlapping exams for capacity only (exclude current examId) ---
+    # --- Capacity conflict check ---
     overlapping_exams = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
-        VenueExam.examId != exam_id,  # exclude current exam
+        VenueExam.examId != exam_id,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).all()
@@ -752,10 +748,8 @@ def process_exam_row(row):
         )
         return None, ''
 
-    # --- Create exam and related records ---
-    create_exam_and_related(start_dt, end_dt,course_code_input,[venue],[requested_capacity])
+    create_exam_and_related(start_dt, end_dt, course_code_input, [venue], [requested_capacity])
     return True, ''
-
 
 
 
