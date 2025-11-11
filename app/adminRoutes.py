@@ -654,10 +654,7 @@ def download_exam_template():
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
-processed_exam_warnings = set()  # <--- global/session-level tracking for this upload
 def process_exam_row(row):
-    global processed_exam_warnings
-
     # --- Parse exam date ---
     examDate = row.get('exam date')
     if not examDate:
@@ -720,11 +717,8 @@ def process_exam_row(row):
             "error"
         )
         return None, ''
-
-    flash(f"✅ Venue List {[venue]};\tVenue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity + requested_capacity}/{venue_capacity})", "success")
-    # --- Create exam and related records ---
+    
     create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
-
     return True, ''
 
 

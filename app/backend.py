@@ -352,7 +352,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
     # Delete old related records safely
-    # delete_exam_related(exam.examId, commit=False)
+    delete_exam_related(exam.examId, commit=False)
 
     # --- Assign students to each venue ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
@@ -378,9 +378,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
         flash(f"✅ Venue {venue_text.upper()}: assigned {assigned_students} students (capacity {venue_capacity})", "success")
 
     # --- Create InvigilationReport ---
-    new_report = InvigilationReport(examId=exam.examId)
-    db.session.add(new_report)
-    db.session.flush()
+    # --- Inside create_exam_and_related ---
+    # Check if report already exists for this exam
+    new_report = InvigilationReport.query.filter_by(examId=exam.examId).first()
+    if not new_report:
+        new_report = InvigilationReport(examId=exam.examId)
+        db.session.add(new_report)
+        db.session.flush()  # get the ID
 
     # --- Exclude course lecturers from invigilation ---
     exclude_ids = []
@@ -423,10 +427,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     for chosen in chosen_invigilators:
         chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
         attendance = InvigilatorAttendance(
-            reportId=new_report.invigilationReportId,
+            reportId=new_report.invigilationReportId,  # use the same report
             invigilatorId=chosen.userId,
             timeCreate=datetime.now(timezone.utc),
-            venueNumber=venue_list[0].upper() if venue_list else None
+            venueNumber=venue_text.upper()
         )
         db.session.add(attendance)
 
