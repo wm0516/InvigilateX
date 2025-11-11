@@ -656,23 +656,27 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
+    from datetime import datetime, timedelta
+
     # --- Parse exam date ---
-    examDate = row['exam date']
+    examDate = row.get('exam date')
+    if not examDate:
+        return False, "Exam date missing"
     if isinstance(examDate, str):
-        # Your Excel gives "2025-11-10 00:00:00"
+        # Your Excel gives "2025-11-10 00:00:00" or "2025-11-10"
         try:
             examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
         except ValueError:
-            # fallback: maybe sometimes it’s just YYYY-MM-DD
-            examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
+            try:
+                examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
+            except ValueError:
+                return False, f"Invalid exam date format: {examDate}"
 
     # --- Parse start & end time ---
-    startTime_text = row['start time']
-    endTime_text   = row['end time']
-
-    # Defensive: ensure they are strings
+    startTime_text = row.get('start time')
+    endTime_text   = row.get('end time')
     if not startTime_text or not endTime_text:
-        return False, "Invalid time/date"
+        return False, "Start or end time missing"
 
     try:
         start_time = datetime.strptime(startTime_text.strip(), "%H:%M:%S").time()
@@ -683,8 +687,22 @@ def process_exam_row(row):
     # --- Combine into datetimes ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
-    venue    = str(row['exam venue']).upper()
-    requested_capacity = (row['total number of students by venue'])
+
+    # --- Parse numeric fields safely ---
+    try:
+        requested_capacity = int(row.get('total number of students by venue', 0))
+    except ValueError:
+        return False, f"Invalid total number of students by venue: {row.get('total number of students by venue')}"
+
+    try:
+        total_students_excel = int(row.get('total number of students', 0))
+    except ValueError:
+        return False, f"Invalid total number of students: {row.get('total number of students')}"
+
+    # --- Parse venue ---
+    venue = str(row.get('exam venue', '')).upper()
+    if not venue:
+        return False, "Venue missing"
 
     # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
@@ -711,10 +729,11 @@ def process_exam_row(row):
             "error"
         )
         return None, ''
-    
-    flash(f"✅ Venue {[venue]}: (used={used_capacity}, new={requested_capacity}, total={used_capacity+requested_capacity}/{venue_capacity})", "success")
-        # --- Create record ---
-    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), [venue], requested_capacity)
+
+    flash(f"✅ Venue List {[venue]};\tVenue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity + requested_capacity}/{venue_capacity})", "success")
+    # --- Create exam and related records ---
+    create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
+
     return True, ''
 
 
