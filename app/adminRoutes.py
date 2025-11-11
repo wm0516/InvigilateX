@@ -685,6 +685,7 @@ def process_exam_row(row):
     end_dt   = datetime.combine(examDate.date(), end_time)
     venue    = str(row['exam venue']).upper()
     requested_capacity = row['total number of students by venue']
+    int_requested_capacity = int(requested_capacity)
 
     # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
@@ -703,7 +704,7 @@ def process_exam_row(row):
     available_capacity = venue_capacity - used_capacity
 
     # --- Check if there’s enough room ---
-    if requested_capacity > available_capacity:
+    if int_requested_capacity > available_capacity:
         flash(
             f"⚠️ Capacity conflict in {venue}: "
             f"Used {used_capacity}/{venue_capacity}, "
