@@ -1086,8 +1086,6 @@ def admin_manageExam():
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
                 exam_select.examNoInvigilator = None
-                exam_select.examNoInvigilator = 3 if total_students > 32 else 2
-
                 db.session.commit()
                 flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
 
