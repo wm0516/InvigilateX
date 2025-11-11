@@ -797,8 +797,6 @@ def get_available_venues():
 
     return jsonify({'venues': available_venues})
 
-
-
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
