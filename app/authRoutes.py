@@ -16,8 +16,6 @@ bcrypt = Bcrypt()
 # -------------------------------
 @app.route('/')
 def index():
-    # cleanup_expired_timetable_rows()
-    auto_expire_exams_and_attendance()
     return redirect(url_for('login'))
 
 
@@ -26,6 +24,8 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # cleanup_expired_timetable_rows()
+    auto_expire_exams_and_attendance()
     login_text = ''
     password_text = ''
 
