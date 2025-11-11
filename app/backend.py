@@ -326,7 +326,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_text, studentPerVenue):
-    flash("HI", "error")
+    flash(f"Start: {start_dt}, End: {end_dt}, Course: {courseSection}, Venue: {venue_text}, Student: {studentPerVenue}")
     venue_place = Venue.query.filter_by(venueNumber=venue_text.upper() if venue_text else None).first()
     if not venue_place:
         venue_text = None
