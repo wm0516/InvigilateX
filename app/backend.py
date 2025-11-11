@@ -352,7 +352,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
     # Delete old related records safely
-    delete_exam_related(exam.examId, commit=False)
+    # delete_exam_related(exam.examId, commit=False)
 
     # --- Assign students to each venue ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
