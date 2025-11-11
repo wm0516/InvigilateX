@@ -701,10 +701,15 @@ def process_exam_row(row):
     exam = Exam.query.filter_by(examId=course_sections[0].courseExamId).first()
     if not exam:
         return False, f"Exam not found for {course_code}"
+    
+    if exam:
+        flash(f"Exam found {course_code}", "success")
 
     exam.examTotalStudents = sum(c.courseStudent for c in course_sections)
     invigilatorNo = 3 if student_per_venue > 32 else 2
     exam.examNoInvigilator = invigilatorNo
+    exam.examStartTime = start_dt
+    exam.examEndTime = end_dt   
 
     # --- Create VenueExam ---
     new_venue_exam = VenueExam(
