@@ -336,26 +336,29 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 
-    total_students = sum(c.courseStudent for c in course_sections)
-    exam.examTotalStudents = total_students
+    # --- Total students for this row ---
+    row_total_students = sum(c.courseStudent for c in course_sections)
+    exam.examTotalStudents = (exam.examTotalStudents or 0) + row_total_students  # ✅ accumulate
 
+    # --- Number of invigilators for this row ---
     if studentPerVenue_list:
-        invigilatorNo = 3 if sum(studentPerVenue_list) > 32 else 2
-    exam.examNoInvigilator += invigilatorNo
-    exam.examStartTime = start_dt
-    exam.examEndTime = end_dt
+        invigilatorNo_for_row = 3 if sum(studentPerVenue_list) > 32 else 2
+        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row  # ✅ accumulate
+
+    exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
+    exam.examEndTime = max(exam.examEndTime or end_dt, end_dt)
 
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-    # Create / reuse InvigilationReport
+    # --- Create / reuse InvigilationReport ---
     report = InvigilationReport.query.filter_by(examId=exam.examId).first()
     if not report:
         report = InvigilationReport(examId=exam.examId)
         db.session.add(report)
         db.session.flush()
 
-    # Exclude lecturers
+    # --- Exclude lecturers for this exam ---
     exclude_ids = []
     for c in course_sections:
         exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial] if uid]
@@ -378,7 +381,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     female = sorted([i for i in eligible_invigilators if i.userGender == "FEMALE"],
                     key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
 
-    # 💥 The important part — handle each venue independently
+    # --- Handle each venue independently ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
         spv = int(spv)
         venue_text = venue_text.upper()
@@ -389,6 +392,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
         assigned_students = min(spv, venue_obj.venueCapacity)
 
+        # --- Create VenueExam entry ---
         new_venue_exam = VenueExam(
             venueNumber=venue_text,
             startDateTime=start_dt,
@@ -401,8 +405,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
         flash(f"✅ Venue {venue_text}: assigned {assigned_students} students", "success")
 
-        # Pick invigilators per venue
-        if invigilatorNo == 1:
+        # --- Pick invigilators per venue ---
+        if invigilatorNo_for_row == 1:
             pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
             chosen_invigilators = [pool[0]]
         else:
@@ -410,9 +414,9 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                 return False, "Need both male and female invigilators for 2+ invigilators"
             chosen_invigilators = [male.pop(0), female.pop(0)]
             pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-            chosen_invigilators += pool[:invigilatorNo - 2]
+            chosen_invigilators += pool[:invigilatorNo_for_row - 2]
 
-        # 💡 Now create attendance entries for THIS venue
+        # --- Create attendance entries (do NOT overwrite existing ones) ---
         for chosen in chosen_invigilators:
             chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
             db.session.add(InvigilatorAttendance(
@@ -423,8 +427,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
             ))
 
     db.session.commit()
-    return True, f"Exam updated for course {courseSection} with total {total_students} students"
-
+    return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
 
 
 # -------------------------------
