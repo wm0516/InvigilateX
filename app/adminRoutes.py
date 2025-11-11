@@ -657,7 +657,7 @@ def download_exam_template():
 # -------------------------------
 def process_exam_row(row):
     # --- Parse exam date ---
-    examDate = row['Exam Date']
+    examDate = row['exam date']
     if isinstance(examDate, str):
         # Your Excel gives "2025-11-10 00:00:00"
         try:
@@ -667,8 +667,8 @@ def process_exam_row(row):
             examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
 
     # --- Parse start & end time ---
-    startTime_text = row['Start Time']
-    endTime_text   = row['End Time']
+    startTime_text = row['start time']
+    endTime_text   = row['end time']
 
     # Defensive: ensure they are strings
     if not startTime_text or not endTime_text:
@@ -698,7 +698,7 @@ def process_exam_row(row):
     
     flash("Passing Value", "error")
     # --- Create record ---
-    create_exam_and_related(start_dt, end_dt, str(row['Course Code']).upper(), venue, row['Total number of students by venue'])
+    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), venue, row['total number of students by venue'])
     return True, ''
 
 
