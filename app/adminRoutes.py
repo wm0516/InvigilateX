@@ -656,14 +656,11 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
-    from datetime import datetime, timedelta
-
     # --- Parse exam date ---
     examDate = row.get('exam date')
     if not examDate:
         return False, "Exam date missing"
     if isinstance(examDate, str):
-        # Your Excel gives "2025-11-10 00:00:00" or "2025-11-10"
         try:
             examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
         except ValueError:
@@ -705,11 +702,37 @@ def process_exam_row(row):
         return False, f"Venue {venue} not found in database"
     venue_capacity = venue_obj.venueCapacity
 
-    # --- Find overlapping exams ---
+    # --- Get examId from course code ---
+    course_code_input = str(row.get('course code', '')).upper()
+    if not course_code_input:
+        return False, "Course code missing"
+
+    # Look for the course row where courseCodeSectionIntake starts with the input code
+    course_row = Course.query.filter(
+        Course.courseCodeSectionIntake.like(f"{course_code_input}%")
+    ).first()
+
+    if not course_row:
+        return False, f"Course code '{course_code_input}' not found in Course table"
+
+    exam_id = course_row.courseExamId
+
+    # --- Check for duplicate upload based on examId and venue ---
+    duplicate_exam = VenueExam.query.filter_by(
+        examId=exam_id,
+        venueNumber=venue,
+        startDateTime=start_dt,
+        endDateTime=end_dt
+    ).first()
+
+    if duplicate_exam:
+        flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) in {venue} already uploaded.", "warning")
+        return None, ''  # skip insert
+
+    # --- Check overlapping exams for capacity only (exclude current examId) ---
     overlapping_exams = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
-        VenueExam.startDateTime.isnot(None),  # <-- only consider assigned exams
-        VenueExam.endDateTime.isnot(None),
+        VenueExam.examId != exam_id,  # exclude current exam
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).all()
@@ -717,21 +740,21 @@ def process_exam_row(row):
     used_capacity = sum([v.capacity for v in overlapping_exams])
     available_capacity = venue_capacity - used_capacity
 
-    # --- Check if there’s enough room ---
     if requested_capacity > available_capacity:
         flash(
             f"⚠️ Capacity conflict in {venue}: "
             f"Used {used_capacity}/{venue_capacity}, "
-            f"requested {requested_capacity} more → exceeds capacity!",
+            f"requested {requested_capacity} → exceeds capacity!",
             "error"
         )
         return None, ''
 
-    flash(f"✅ Venue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity + requested_capacity}/{venue_capacity})", "success")
     # --- Create exam and related records ---
-    create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
-
+    flash(f"✅ Venue {venue}: (used={used_capacity}, new={requested_capacity}, "f"total={used_capacity + requested_capacity}/{venue_capacity})", "success")
+    create_exam_and_related(start_dt, end_dt,course_code_input,[venue],[requested_capacity])
     return True, ''
+
+
 
 
 # -------------------------------
