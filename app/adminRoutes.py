@@ -290,7 +290,6 @@ def admin_manageCourse():
                     course_select.courseStudent
                 ]
 
-                invigilatorNo = 3 if course_select.courseStudent > 32 else 2
 
                 if all(f is not None and f != '' for f in required_fields):
                     # Update existing exam if it already exists
@@ -303,7 +302,7 @@ def admin_manageCourse():
                         new_exam = Exam(
                             examStartTime=None,
                             examEndTime=None,
-                            examNoInvigilator=invigilatorNo
+                            examNoInvigilator=None
                         )
                         db.session.add(new_exam)
                         db.session.flush()
