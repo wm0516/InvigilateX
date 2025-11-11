@@ -343,6 +343,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
     invigilatorNo = 3 if studentPerVenue and int(studentPerVenue) > 32 else 2
     exam.examNoInvigilator = invigilatorNo
+    exam.examStartTime = start_dt
+    exam.examEndTime = end_dt   
 
     # Adjust end datetime if needed
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)

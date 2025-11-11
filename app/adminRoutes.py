@@ -659,119 +659,63 @@ def process_exam_row(row):
     # --- Parse exam date ---
     examDate = row['exam date']
     if isinstance(examDate, str):
+        # Your Excel gives "2025-11-10 00:00:00"
         try:
             examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
         except ValueError:
+            # fallback: maybe sometimes it’s just YYYY-MM-DD
             examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
 
     # --- Parse start & end time ---
-    try:
-        start_time = datetime.strptime(row['start time'].strip(), "%H:%M:%S").time()
-        end_time   = datetime.strptime(row['end time'].strip(), "%H:%M:%S").time()
-    except Exception as e:
-        return False, f"Invalid time format: {e}"
+    startTime_text = row['start time']
+    endTime_text   = row['end time']
 
+    # Defensive: ensure they are strings
+    if not startTime_text or not endTime_text:
+        return False, "Invalid time/date"
+
+    try:
+        start_time = datetime.strptime(startTime_text.strip(), "%H:%M:%S").time()
+        end_time   = datetime.strptime(endTime_text.strip(), "%H:%M:%S").time()
+    except ValueError:
+        return False, "Invalid time format (expected HH:MM:SS)"
+
+    # --- Combine into datetimes ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
+    venue    = str(row['exam venue']).upper()
+    requested_capacity = int(row['total number of students by venue'])
 
-    # --- Parse venue & capacity ---
-    venue_code = str(row['exam venue']).upper()
-    student_per_venue = int(row['total number of students by venue'])
-
-    venue_obj = Venue.query.filter_by(venueNumber=venue_code).first()
+    # --- Get venue info ---
+    venue_obj = Venue.query.filter_by(venueNumber=venue).first()
     if not venue_obj:
-        return False, f"Venue {venue_code} not found"
+        return False, f"Venue {venue} not found in database"
+    venue_capacity = venue_obj.venueCapacity
 
-    # --- Check capacity ---
+    # --- Find overlapping exams ---
     overlapping_exams = VenueExam.query.filter(
-        VenueExam.venueNumber == venue_code,
+        VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).all()
+
     used_capacity = sum([v.capacity for v in overlapping_exams])
-    if student_per_venue + used_capacity > venue_obj.venueCapacity:
-        return False, f"Capacity exceeded in {venue_code} ({used_capacity}/{venue_obj.venueCapacity})"
+    available_capacity = venue_capacity - used_capacity
 
-    # --- Get exam/course ---
-    course_code = str(row['course code']).upper()
-    course_sections = Course.query.filter(Course.courseCodeSectionIntake.like(f"{course_code}/%")).all()
-    if not course_sections:
-        return False, f"No course sections for {course_code}"
-
-    exam = Exam.query.filter_by(examId=course_sections[0].courseExamId).first()
-    if not exam:
-        return False, f"Exam not found for {course_code}"
-    
-    if exam:
-        flash(f"Exam found {course_code}", "success")
-
-    exam.examTotalStudents = sum(c.courseStudent for c in course_sections)
-    invigilatorNo = 3 if student_per_venue > 32 else 2
-    exam.examNoInvigilator = invigilatorNo
-    exam.examStartTime = start_dt
-    exam.examEndTime = end_dt   
-
-    # --- Create VenueExam ---
-    new_venue_exam = VenueExam(
-        venueNumber=venue_code,
-        startDateTime=start_dt,
-        endDateTime=end_dt,
-        examId=exam.examId,
-        capacity=student_per_venue
-    )
-    db.session.add(new_venue_exam)
-    db.session.flush()
-
-    # --- Create InvigilationReport ---
-    new_report = InvigilationReport(examId=exam.examId)
-    db.session.add(new_report)
-    db.session.flush()
-
-    # --- Assign eligible invigilators ---
-    exclude_ids = []
-    for course in course_sections:
-        exclude_ids += [uid for uid in [course.coursePractical, course.courseTutorial] if uid]
-
-    eligible_invigilators = [
-        inv for inv in User.query.filter(User.userLevel == 1, User.userStatus == True).all()
-        if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
-        and inv.userId not in exclude_ids
-        and is_lecturer_available(inv.userId, start_dt, end_dt)
-    ]
-
-    if not eligible_invigilators:
-        return False, "No eligible invigilators"
-
-    # --- Gender split ---
-    male_inv = sorted([i for i in eligible_invigilators if i.userGender=="MALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-    female_inv = sorted([i for i in eligible_invigilators if i.userGender=="FEMALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-
-    chosen_inv = []
-    if invigilatorNo == 1:
-        pool = male_inv + female_inv
-        pool = sorted(pool, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-        chosen_inv = [pool[0]]
-    else:
-        if not male_inv or not female_inv:
-            return False, "Need both male and female invigilators for 2+ invigilators"
-        chosen_inv = [male_inv.pop(0), female_inv.pop(0)]
-        pool = sorted(male_inv + female_inv, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-        chosen_inv += pool[:invigilatorNo-2]
-
-    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
-    for inv in chosen_inv:
-        inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
-        attendance = InvigilatorAttendance(
-            reportId=new_report.invigilationReportId,
-            invigilatorId=inv.userId,
-            timeCreate=datetime.now(timezone.utc),
-            venueNumber=venue_code
+    # --- Check if there’s enough room ---
+    if requested_capacity > available_capacity:
+        flash(
+            f"⚠️ Capacity conflict in {venue}: "
+            f"Used {used_capacity}/{venue_capacity}, "
+            f"requested {requested_capacity} more → exceeds capacity!",
+            "error"
         )
-        db.session.add(attendance)
-
-    db.session.commit()
-    return True, f"Exam for {course_code} at {venue_code} created successfully"
-
+        return None, ''
+    
+    flash(f"✅ Venue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity+requested_capacity}/{venue_capacity})", "success")
+        # --- Create record ---
+    create_exam_and_related(start_dt, end_dt, str(row['course code']).upper(), [venue], requested_capacity)
+    return True, ''
 
 
 # -------------------------------
