@@ -695,43 +695,15 @@ def process_exam_row(row):
     if not venue:
         return False, "Venue missing"
 
+    # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
     if not venue_obj:
         return False, f"Venue {venue} not found in database"
     venue_capacity = venue_obj.venueCapacity
 
-    course_code_input = str(row.get('course code', '')).upper()
-    if not course_code_input:
-        return False, "Course code missing"
-
-    course_row = Course.query.filter(
-        Course.courseCodeSectionIntake.like(f"{course_code_input}%")
-    ).first()
-
-    if not course_row:
-        return False, f"Course code '{course_code_input}' not found in Course table"
-
-    exam_id = course_row.courseExamId
-
-    # --- Check for duplicate upload ---
-    existing_venues = VenueExam.query.filter(
-        VenueExam.examId == exam_id,
-        VenueExam.startDateTime == start_dt,
-        VenueExam.endDateTime == end_dt
-    ).all()
-
-    if existing_venues:
-        # Only flash once per examId per upload session
-        if exam_id not in processed_exam_warnings:
-            venue_list = ",".join(sorted(set([v.venueNumber for v in existing_venues] + [venue])))
-            flash(f"⚠️ Exam {course_code_input} (Exam ID {exam_id}) already uploaded in {venue_list}.", "error")
-            processed_exam_warnings.add(exam_id)
-        return None, ''  # skip insert
-
-    # --- Capacity conflict check ---
+    # --- Find overlapping exams ---
     overlapping_exams = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
-        VenueExam.examId != exam_id,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
         VenueExam.endDateTime > start_dt - timedelta(minutes=30)
     ).all()
@@ -739,16 +711,20 @@ def process_exam_row(row):
     used_capacity = sum([v.capacity for v in overlapping_exams])
     available_capacity = venue_capacity - used_capacity
 
+    # --- Check if there’s enough room ---
     if requested_capacity > available_capacity:
         flash(
             f"⚠️ Capacity conflict in {venue}: "
             f"Used {used_capacity}/{venue_capacity}, "
-            f"requested {requested_capacity} → exceeds capacity!",
+            f"requested {requested_capacity} more → exceeds capacity!",
             "error"
         )
         return None, ''
 
-    create_exam_and_related(start_dt, end_dt, course_code_input, [venue], [requested_capacity])
+    flash(f"✅ Venue List {[venue]};\tVenue {venue}: (used={used_capacity}, new={requested_capacity}, total={used_capacity + requested_capacity}/{venue_capacity})", "success")
+    # --- Create exam and related records ---
+    create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
+
     return True, ''
 
 
