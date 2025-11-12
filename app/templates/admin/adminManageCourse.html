@@ -372,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 els.editCourseStudents.value = c.courseStudent;
                 els.editStatus.value = c.courseStatus;
 
-                populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, c.coursePractical, c.courseTutorial, c.courseLecturer);
+                populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, els.editLecturer, c.coursePractical, c.courseTutorial, c.courseLecturer);
             })
             .catch(err => console.error("Error fetching course:", err));
     });
