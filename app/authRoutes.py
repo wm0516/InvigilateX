@@ -348,14 +348,6 @@ def open_record(user_id):
 
     user_gender = current_user.userGender
 
-    # Get all exams the user already joined
-    user_assigned_exam_ids = (
-        db.session.query(InvigilationReport.examId)
-        .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
-        .subquery()
-    )
-
     # Query open slots
     slots = (
         InvigilatorAttendance.query
@@ -366,10 +358,9 @@ def open_record(user_id):
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
             InvigilatorAttendance.invigilationStatus == False,
-            ~InvigilationReport.examId.in_(user_assigned_exam_ids),
             or_(
-                InvigilatorAttendance.invigilatorId == None,  # not assigned yet
-                User.userGender == user_gender                 # same gender only
+                InvigilatorAttendance.invigilatorId == None,  # unassigned
+                User.userGender == user_gender               # same gender only
             )
         )
         .all()
@@ -383,6 +374,7 @@ def open_record(user_id):
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 
