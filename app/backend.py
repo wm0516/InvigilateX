@@ -359,7 +359,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     # --- Exclude lecturers for this exam ---
     exclude_ids = []
     for c in courseSection:
-        exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid]
+        exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid is not None]
 
     query = User.query.filter(User.userLevel == 1, User.userStatus == True)
     if exclude_ids:
