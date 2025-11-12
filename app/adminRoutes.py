@@ -217,10 +217,7 @@ def admin_manageCourse():
         (Course.courseCodeSectionIntake.is_(None)) | (Course.courseCodeSectionIntake == '') |
         (Course.courseName.is_(None)) | (Course.courseName == '') |
         (Course.courseHour.is_(None)) |
-        (Course.courseStudent.is_(None)) |
-        (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
-        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '') |
-        (Course.courseLecturer.is_(None)) | (Course.courseLecturer == '') 
+        (Course.courseStudent.is_(None))
     ).count()
 
     # === Courses by department safely ===
