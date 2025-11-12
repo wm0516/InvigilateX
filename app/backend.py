@@ -407,7 +407,7 @@ def create_exam_and_related(start_dt, end_dt, course_code, venue_list, studentPe
             ))
 
     db.session.commit()
-    return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
+    return True, f"Exam updated for course {course_code} with total {exam.examTotalStudents} students"
 
 
 # -------------------------------
