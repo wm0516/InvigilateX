@@ -178,6 +178,7 @@ class Course(db.Model):
     department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])   
+    classLecturer = db.relationship("User", foreign_keys=[courseLecturer])
     exam = db.relationship("Exam", back_populates="course", uselist=False)  # One Course ↔ One Exam
     '''
     CREATE TABLE Course (

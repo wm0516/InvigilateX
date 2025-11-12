@@ -105,19 +105,19 @@
 
                 <label>Practical Lecturer (Optional)</label>
                 <select id="practicalLecturerSelect" name="practicalLecturerSelect">
-                    <option value="">-- No Practical Lecturer --</option>
+                    <option value="">-- Select Practical Lecturer --</option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="tutorialLecturerSelect" name="tutorialLecturerSelect">
-                    <option value="">-- No Tutorial Lecturer --</option>
+                    <option value="">-- Select Tutorial Lecturer --</option>
                 </select>
             </div>
 
             <div class="form-right">
-                <label>Lecturer Class(Optional)</label>
+                <label>Class Lecturer (Optional)</label>
                 <select id="lecturerSelect" name="lecturerSelect">
-                    <option value="">-- No Tutorial Lecturer --</option>
+                    <option value="">-- Select Class Lecturer --</option>
                 </select><br>
                 
                 <label>Course Credit Hour(s)</label>
@@ -172,21 +172,26 @@
             </div>
 
             <div class="form-middle">
-                <label>Practical Lecturer</label>
+                <label>Practical Lecturer (Optional)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect">
                     <option value="" disabled>Select Practical Lecturer</option>
                 </select><br>
 
-                <label>Tutorial Lecturer</label>
+                <label>Tutorial Lecturer (Optional)</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect">
                     <option value="" disabled>Select Tutorial Lecturer</option>
                 </select><br>
 
-                <label>Course Credit Hour(s)</label>
-                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required>
+                <label>Class Lecturer (Optional)</label>
+                <select id="editlecturer" name="lecturerSelect">
+                    <option value="" disabled>Select Class Lecturer</option>
+                </select>
             </div>
 
             <div class="form-right">
+                <label>Course Credit Hour(s)</label>
+                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required><br>
+
                 <label>Course Number of Student(s)</label>
                 <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
 
@@ -277,10 +282,17 @@
                         </td>                        
                         <td>
                             <div class="info-grid">
-                                <div>Practical</div>
-                                <div><strong>: {{ row.practicalLecturer.userName if row.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
-                                <div>Tutorial</div>
-                                <div><strong>: {{ row.tutorialLecturer.userName if row.tutorialLecturer else '<span>N/A</span>' | safe }}</strong></div>
+                                {% if row.practicalLecturer and row.practicalLecturer.userName %}
+                                    <div>Practical</div><div><strong>: {{ row.practicalLecturer.userName }}</strong></div>
+                                {% endif %}
+
+                                {% if row.tutorialLecturer and row.tutorialLecturer.userName %}
+                                    <div>Tutorial</div><div><strong>: {{ row.tutorialLecturer.userName }}</strong></div>
+                                {% endif %}
+
+                                {% if row.classLecturer and row.classLecturer.userName %}
+                                    <div>Class</div><div><strong>: {{ row.classLecturer.userName }}</strong></div>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
@@ -290,7 +302,6 @@
     </div>
 </div>
 {% endblock %}
-
 
 
 {% block extra_scripts %}
