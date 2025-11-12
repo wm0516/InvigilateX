@@ -168,10 +168,10 @@ def process_course_row(row):
 @app.route('/get_lecturers_by_department/<department_code>')
 @login_required
 def get_lecturers_by_department(department_code):
-    # Ensure case-insensitive match if needed
-    lecturers = User.query.filter_by(userDepartment=department_code, userLevel=1).all()
+    # Filter userDepartment and multiple userLevel values
+    lecturers = User.query.filter(User.userDepartment == department_code,User.userLevel.in_([1, 2, 3, 4])).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
-    return jsonify(lecturers_list) 
+    return jsonify(lecturers_list)
 
 # -------------------------------
 # Read All CourseCodeSection and Return all the selected data details Under The ManageCourseEditPage
