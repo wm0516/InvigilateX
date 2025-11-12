@@ -328,7 +328,13 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, studentPerVenue_list):
-    exam = Exam.query.filter_by(examId=courseSection.courseExamId).first()
+    # Get all course sections under this course group
+    course_sections = Course.query.filter(Course.courseCodeSectionIntake.like(f"{courseSection}/%")).all()
+    if not course_sections:
+        return False, f"No course sections found for {courseSection}"
+
+    # All course sections share the same examId
+    exam = Exam.query.filter_by(examId=course_sections[0].courseExamId).first()
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 
