@@ -800,7 +800,6 @@ def get_available_venues():
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
 def adjust_exam(exam, new_start, new_end, new_venues, new_students):
-    flash(f"{exam}")
     old_start = exam.examStartTime
     old_end = exam.examEndTime
 
