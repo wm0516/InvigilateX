@@ -105,16 +105,21 @@
 
                 <label>Practical Lecturer (Optional)</label>
                 <select id="practicalLecturerSelect" name="practicalLecturerSelect">
-                    <option value="" disabled selected>Select Practical Lecturer</option>
+                    <option value="">-- No Practical Lecturer --</option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="tutorialLecturerSelect" name="tutorialLecturerSelect">
-                    <option value="" disabled selected>Select Tutorial Lecturer</option>
+                    <option value="">-- No Tutorial Lecturer --</option>
                 </select>
             </div>
 
             <div class="form-right">
+                <label>Lecturer Class(Optional)</label>
+                <select id="lecturerSelect" name="lecturerSelect">
+                    <option value="">-- No Tutorial Lecturer --</option>
+                </select><br>
+                
                 <label>Course Credit Hour(s)</label>
                 <input type="number" name="courseHour" value="{{ courseHour_text }}" min="1" step="1" required><br>
 

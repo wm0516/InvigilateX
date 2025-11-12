@@ -167,6 +167,7 @@ class Course(db.Model):
     courseDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)      # [FK] Refer to CourseDepartment
     coursePractical = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                     # [FK ]Refer to Course Practical Lecturer
     courseTutorial = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                      # [FK] Refer to Course Tutorial Lecturer
+    courseLecturer = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=True)                      # [FK] Refer to Course Lecturer Lecturer
     courseExamId = db.Column(db.Integer, db.ForeignKey('Exam.examId'), nullable=False)                           # Refer to courseExamStatus whether have exam or not
     courseName = db.Column(db.String(50), nullable=False)                                                        # Refer to CourseName
     courseHour = db.Column(db.Integer, nullable=False)                                                           # Refer to CourseHour
@@ -184,6 +185,7 @@ class Course(db.Model):
         courseDepartment VARCHAR(10) NOT NULL,
         coursePractical INT NULL,
         courseTutorial INT NULL,
+        courseLecturer INT NULL,
         courseExamId INT NOT NULL,
         courseName VARCHAR(50) NOT NULL,
         courseHour INT NOT NULL,
@@ -192,6 +194,7 @@ class Course(db.Model):
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
         FOREIGN KEY (courseTutorial) REFERENCES User(userId),
+        FOREIGN KEY (courseLecturer) REFERENCES User(userId),
         FOREIGN KEY (courseExamId) REFERENCES Exam(examId)
     );
     '''

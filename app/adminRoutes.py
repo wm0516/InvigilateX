@@ -188,6 +188,7 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseDepartment"  : course.courseDepartment,
         "coursePractical"   : course.coursePractical,
         "courseTutorial"    : course.courseTutorial,
+        "courseLecturer"    : course.courseLecturer,
         "courseName"        : course.courseName,
         "courseHour"        : course.courseHour,    
         "courseStudent"     : course.courseStudent,
@@ -218,7 +219,8 @@ def admin_manageCourse():
         (Course.courseHour.is_(None)) |
         (Course.courseStudent.is_(None)) |
         (Course.coursePractical.is_(None)) | (Course.coursePractical == '') |
-        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '')
+        (Course.courseTutorial.is_(None)) | (Course.courseTutorial == '') |
+        (Course.courseLecturer.is_(None)) | (Course.courseLecturer == '') 
     ).count()
 
     # === Courses by department safely ===
@@ -263,8 +265,9 @@ def admin_manageCourse():
                 # Update course values
                 course_select.courseDepartment  = request.form.get('departmentCode', '').strip()
                 course_select.courseName        = request.form.get('courseName', '').strip()
-                course_select.coursePractical   = request.form.get('practicalLecturerSelect', '').strip()
-                course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip()
+                course_select.coursePractical   = request.form.get('practicalLecturerSelect', '').strip() or None
+                course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip() or None
+                course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
                 course_select.courseStatus      = True if request.form.get('courseStatus') == '1' else False
 
                 # Safe int conversion
@@ -286,6 +289,7 @@ def admin_manageCourse():
                     course_select.courseName,
                     course_select.coursePractical,
                     course_select.courseTutorial,
+                    course_select.courseLecturer,
                     course_select.courseHour,
                     course_select.courseStudent
                 ]
@@ -296,7 +300,7 @@ def admin_manageCourse():
                     if course_select.courseExamId:
                         existing_exam = Exam.query.get(course_select.courseExamId)
                         if existing_exam:
-                            existing_exam.examNoInvigilator = invigilatorNo
+                            pass
                     else:
                         # Create new exam if none exists
                         new_exam = Exam(
