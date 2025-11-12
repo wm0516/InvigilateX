@@ -79,8 +79,8 @@
                     <option value="" disabled selected>Select Course</option>
                     {% for exam in display_exam_data %}
                         {% if exam.course %}
-                            <option value="{{ exam.course.courseCodeSectionIntake.split('/')[0] }}">
-                                [{{ exam.course.courseCodeSectionIntake.split('/')[0] }}] - {{ exam.course.courseName }}
+                            <option value="{{ exam.course.courseCodeSectionIntake }}">
+                                [{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}
                             </option>
                         {% else %}
                             <option value="" disabled>Unlinked exam (ID: {{ exam.examId }})</option>
