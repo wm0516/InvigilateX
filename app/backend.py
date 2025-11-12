@@ -219,11 +219,12 @@ def create_course_and_exam(department, code, section, name, hour, students):
     else:
         department = department.upper()
 
+    # Validate courseCodeSection
     courseCodeSection_text = f"{code}/{section}".upper() if code and section else None
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSectionIntake.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
         return False, "Course Already Registered"
-    
+
     # Validate 'hour'
     try:
         hour = int(hour)
@@ -231,7 +232,7 @@ def create_course_and_exam(department, code, section, name, hour, students):
         return False, "Hour must be an integer"
     if hour < 0:
         return False, "Hour cannot be negative"
-    
+
     # Validate 'students'
     try:
         students = int(students)
@@ -240,28 +241,16 @@ def create_course_and_exam(department, code, section, name, hour, students):
     if students < 0:
         return False, "Students cannot be negative"
 
-    # Check if an Exam already exists for this course code (all sections share one exam)
-    existing_exam_course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{code}/%")).first()
-    if existing_exam_course and existing_exam_course.courseExamId:
-        exam_id = existing_exam_course.courseExamId
-        exam = Exam.query.get(exam_id)
-
-        # 🧮 Update total students for that exam
-        total_students = db.session.query(db.func.sum(Course.courseStudent)).filter(
-            Course.courseCodeSectionIntake.ilike(f"{code}/%")
-        ).scalar() or 0
-        exam.examTotalStudents = total_students + students  # add new section’s students
-    else:
-        # 🆕 Create new Exam
-        new_exam = Exam(
-            examStartTime=None,
-            examEndTime=None,
-            examNoInvigilator=None,
-            examTotalStudents=students  # only this section initially
-        )
-        db.session.add(new_exam)
-        db.session.flush()  # Get examId
-        exam_id = new_exam.examId
+    # 🆕 Create a new Exam for this section (no sharing)
+    new_exam = Exam(
+        examStartTime=None,
+        examEndTime=None,
+        examNoInvigilator=None,
+        examTotalStudents=students
+    )
+    db.session.add(new_exam)
+    db.session.flush()  # Get examId
+    exam_id = new_exam.examId
 
     # ➕ Create the new Course
     new_course = Course(
@@ -275,8 +264,9 @@ def create_course_and_exam(department, code, section, name, hour, students):
     )
     db.session.add(new_course)
     db.session.commit()
-    
+
     return True, "Course created successfully"
+
 
 
 # -------------------------------
@@ -326,12 +316,6 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, studentPerVenue_list):
-    '''course_sections = Course.query.filter(
-        Course.courseCodeSectionIntake.like(f"{courseSection}/%")
-    ).all()
-    if not course_sections:
-        return False, f"No course sections found for {courseSection}"'''
-
     exam = Exam.query.filter_by(examId=courseSection.courseExamId).first()
     if not exam:
         return False, f"Exam for course {courseSection} not found"

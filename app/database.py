@@ -235,7 +235,6 @@ class InvigilatorAttendance(db.Model):
     # Relationships
     invigilator = db.relationship("User")
     venue = db.relationship("Venue", backref="attendances")  # link to Venue model
-
     '''
     CREATE TABLE InvigilatorAttendance (
         attendanceId INT AUTO_INCREMENT PRIMARY KEY,
