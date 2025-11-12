@@ -329,9 +329,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!deptCode) return;
 
         // Clear existing options, keep placeholder and None option
-        practicalSel.innerHTML = '<option value="" selected hidden>-- Select Practical Lecturer --</option><option value="">None</option>';
-        tutorialSel.innerHTML = '<option value="" selected hidden>-- Select Tutorial Lecturer --</option><option value="">None</option>';
-        lecturerSel.innerHTML = '<option value="" selected hidden>-- Select Class Lecturer --</option><option value="">None</option>';
+        practicalSel.innerHTML = '<option value="" selected hidden>-- Select Practical Lecturer --</option>';
+        tutorialSel.innerHTML = '<option value="" selected hidden>-- Select Tutorial Lecturer --</option>';
+        lecturerSel.innerHTML = '<option value="" selected hidden>-- Select Class Lecturer --</option>';
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
             .then(r => r.json())
