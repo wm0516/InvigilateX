@@ -312,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
         deptCode: document.getElementById('departmentCode'),
         practical: document.getElementById('practicalLecturerSelect'),
         tutorial: document.getElementById('tutorialLecturerSelect'),
-        lecturer: document.getElementById('ecturerSelect'),
+        lecturer: document.getElementById('lecturerSelect'),
         editCourseSelect: document.getElementById("editCourseSelect"),
         editDept: document.getElementById("editDepartment"),
         editCourseName: document.getElementById("editCourseName"),
@@ -325,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- Helper: Populate lecturers ---
-    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null) {
+    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
         practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
         tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
         lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option>';
@@ -339,7 +339,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         const opt = document.createElement("option");
                         opt.value = l.userId;
                         opt.textContent = l.userName.trim();
-                        if ((i === 0 && l.userId == selectedPractical) || (i === 1 && l.userId == selectedTutorial || (i === 1 && l.userId == selectedTutorial)) {
+
+                        if ((i === 0 && l.userId == selectedPractical) || 
+                            (i === 1 && l.userId == selectedTutorial) || 
+                            (i === 2 && l.userId == selectedLecturer)) {
                             opt.selected = true;
                         }
                         sel.appendChild(opt);
