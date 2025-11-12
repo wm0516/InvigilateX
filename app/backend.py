@@ -241,16 +241,28 @@ def create_course_and_exam(department, code, section, name, hour, students):
     if students < 0:
         return False, "Students cannot be negative"
 
-    # 🆕 Create a new Exam for this section (no sharing)
-    new_exam = Exam(
-        examStartTime=None,
-        examEndTime=None,
-        examNoInvigilator=None,
-        examTotalStudents=students
-    )
-    db.session.add(new_exam)
-    db.session.flush()  # Get examId
-    exam_id = new_exam.examId
+    # Check if an Exam already exists for this course code (all sections share one exam)
+    existing_exam_course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{code}/%")).first()
+    if existing_exam_course and existing_exam_course.courseExamId:
+        exam_id = existing_exam_course.courseExamId
+        exam = Exam.query.get(exam_id)
+
+        # 🧮 Update total students for that exam
+        total_students = db.session.query(db.func.sum(Course.courseStudent)).filter(
+            Course.courseCodeSectionIntake.ilike(f"{code}/%")
+        ).scalar() or 0
+        exam.examTotalStudents = total_students + students  # add new section’s students
+    else:
+        # 🆕 Create new Exam
+        new_exam = Exam(
+            examStartTime=None,
+            examEndTime=None,
+            examNoInvigilator=None,
+            examTotalStudents=students  # only this section initially
+        )
+        db.session.add(new_exam)
+        db.session.flush()  # Get examId
+        exam_id = new_exam.examId
 
     # ➕ Create the new Course
     new_course = Course(
@@ -264,7 +276,7 @@ def create_course_and_exam(department, code, section, name, hour, students):
     )
     db.session.add(new_course)
     db.session.commit()
-
+    
     return True, "Course created successfully"
 
 
@@ -315,19 +327,15 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-def create_exam_and_related(start_dt, end_dt, course_code, venue_list, studentPerVenue_list):
-    course = Course.query.filter_by(courseCodeSectionIntake=course_code).first()
-    if not course:
-        return False, f"Course with section {course_code} not found"
-
-    exam = Exam.query.filter_by(examId=course.courseExamId).first()
+def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, studentPerVenue_list):
+    exam = Exam.query.filter_by(examId=courseSection.courseExamId).first()
     if not exam:
-        return False, f"Exam for course {course_code} not found"
+        return False, f"Exam for course {courseSection} not found"
 
-    # Number of invigilators
+    # --- Number of invigilators for this row ---
     if studentPerVenue_list:
         invigilatorNo_for_row = 3 if sum(studentPerVenue_list) > 32 else 2
-        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row
+        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row  # ✅ accumulate
 
     exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
     exam.examEndTime = max(exam.examEndTime or end_dt, end_dt)
@@ -335,13 +343,17 @@ def create_exam_and_related(start_dt, end_dt, course_code, venue_list, studentPe
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-    # --- CREATE a new InvigilationReport per section ---
-    report = InvigilationReport(examId=exam.examId)
-    db.session.add(report)
-    db.session.flush()
+    # --- Create / reuse InvigilationReport ---
+    report = InvigilationReport.query.filter_by(examId=exam.examId).first()
+    if not report:
+        report = InvigilationReport(examId=exam.examId)
+        db.session.add(report)
+        db.session.flush()
 
     # --- Exclude lecturers for this exam ---
-    exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial, course.courseLecturer] if uid is not None]
+    exclude_ids = []
+    for c in courseSection:
+        exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid]
 
     query = User.query.filter(User.userLevel == 1, User.userStatus == True)
     if exclude_ids:
@@ -407,8 +419,7 @@ def create_exam_and_related(start_dt, end_dt, course_code, venue_list, studentPe
             ))
 
     db.session.commit()
-    return True, f"Exam updated for course {course_code} with total {exam.examTotalStudents} students"
-
+    return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
 
 # -------------------------------
 # Delete All Related Exam after get modify

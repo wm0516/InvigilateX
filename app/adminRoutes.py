@@ -591,7 +591,8 @@ def generate_manageexam_template():
 
     # --- Fill lookup data ---
     for i, (c, e) in enumerate(courses, start=1):
-        ws_lists[f"A{i}"] = c.courseCodeSectionIntake         # Course Code
+        course_code = c.courseCodeSectionIntake.split('/')[0]  # 'Abc123/ca1' → 'Abc123'
+        ws_lists[f"A{i}"] = course_code                       # Course Code
         ws_lists[f"B{i}"] = c.courseName                      # Course Name
         ws_lists[f"C{i}"] = e.examTotalStudents or 0          # Total number of students
 
@@ -729,7 +730,7 @@ def process_exam_row(row):
 @login_required
 def get_exam_details(course_code):
     # Match first course that starts with course_code + '/'
-    course = Course.query.filter_by(courseCodeSectionIntake=course_code).first()
+    course = Course.query.filter(Course.courseCodeSectionIntake.like(f"{course_code}/%")).first()
 
     if not course:
         return jsonify({"error": "Course not found"}), 404
@@ -738,7 +739,7 @@ def get_exam_details(course_code):
     venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
 
     response_data = {
-        "courseCode": course.courseCodeSectionIntake,
+        "courseCode": course.courseCodeSectionIntake.split('/')[0],
         "courseDepartment": course.courseDepartment or "",
         "courseStudent": exam.examTotalStudents if exam else 0,
         "examVenues": [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],
