@@ -315,19 +315,19 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, studentPerVenue_list):
-    course = Course.query.filter_by(courseCodeSectionIntake=courseSection).first()
+def create_exam_and_related(start_dt, end_dt, course_code, venue_list, studentPerVenue_list):
+    course = Course.query.filter_by(courseCodeSectionIntake=course_code).first()
     if not course:
-        return False, f"Course with section {courseSection} not found"
+        return False, f"Course with section {course_code} not found"
 
     exam = Exam.query.filter_by(examId=course.courseExamId).first()
     if not exam:
-        return False, f"Exam for course {courseSection} not found"
+        return False, f"Exam for course {course_code} not found"
 
-    # --- Number of invigilators for this row ---
+    # Number of invigilators
     if studentPerVenue_list:
         invigilatorNo_for_row = 3 if sum(studentPerVenue_list) > 32 else 2
-        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row  # ✅ accumulate
+        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row
 
     exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
     exam.examEndTime = max(exam.examEndTime or end_dt, end_dt)
@@ -335,18 +335,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-    # --- Create / reuse InvigilationReport ---
-    report = InvigilationReport.query.filter_by(examId=exam.examId).first()
-    if not report:
-        report = InvigilationReport(examId=exam.examId)
-        db.session.add(report)
-        db.session.flush()
+    # --- CREATE a new InvigilationReport per section ---
+    report = InvigilationReport(examId=exam.examId)
+    db.session.add(report)
+    db.session.flush()
 
     # --- Exclude lecturers for this exam ---
-    exclude_ids = []
-    for c in courseSection:
-        # Only include IDs that are not None
-        exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid is not None]
+    exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial, course.courseLecturer] if uid is not None]
 
     query = User.query.filter(User.userLevel == 1, User.userStatus == True)
     if exclude_ids:
