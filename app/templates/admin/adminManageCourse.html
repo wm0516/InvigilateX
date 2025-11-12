@@ -326,9 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Helper: Populate lecturers ---
     function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
-        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
-        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
-        lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option>';
+        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option><option value="">None</option>';
+        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option><option value="">None</option>';
+        lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option><option value="">None</option>';
         if (!deptCode) return;
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
