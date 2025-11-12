@@ -591,8 +591,7 @@ def generate_manageexam_template():
 
     # --- Fill lookup data ---
     for i, (c, e) in enumerate(courses, start=1):
-        course_code = c.courseCodeSectionIntake
-        ws_lists[f"A{i}"] = course_code                       # Course Code
+        ws_lists[f"A{i}"] = c.courseCodeSectionIntake         # Course Code
         ws_lists[f"B{i}"] = c.courseName                      # Course Name
         ws_lists[f"C{i}"] = e.examTotalStudents or 0          # Total number of students
 
@@ -717,7 +716,7 @@ def process_exam_row(row):
             "error"
         )
         return None, ''
-    
+    flash(f"Start:{start_dt}, End:{end_dt}, Course:{str(row.get('course code')).upper()}, Venue:{[venue]}, Capacity:{requested_capacity}","success")
     create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
     return True, ''
 
@@ -864,7 +863,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         inv_count = 3 if students_for_venue > 32 else 2
 
         # Fetch eligible invigilators (excluding course lecturers)
-        lecturers = [exam.course.coursePractical, exam.course.courseTutorial]
+        lecturers = [exam.course.coursePractical, exam.course.courseTutorial, exam.course.courseLecturer]
         eligible = User.query.filter(
             User.userLevel == 1,
             User.userStatus == 1
