@@ -106,13 +106,11 @@
                 <label>Practical Lecturer (Optional)</label>
                 <select id="practicalLecturerSelect" name="practicalLecturerSelect">
                     <option value="" selected hidden>-- Select Practical Lecturer --</option>
-                    <option value="">None</option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="tutorialLecturerSelect" name="tutorialLecturerSelect">
                     <option value="" selected hidden>-- Select Tutorial Lecturer --</option>
-                    <option value="">None</option>
                 </select>
             </div>
 
@@ -120,7 +118,6 @@
                 <label>Class Lecturer (Optional)</label>
                 <select id="lecturerSelect" name="lecturerSelect">
                     <option value="" selected hidden>-- Select Class Lecturer --</option>
-                    <option value="">None</option>
                 </select><br>
                 
                 <label>Course Credit Hour(s)</label>
@@ -178,19 +175,16 @@
                 <label>Practical Lecturer (Optional)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect">
                     <option value="" selected>Select Practical Lecturer</option>
-                    <option value="">None</option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect">
                     <option value="" selected>Select Tutorial Lecturer</option>
-                    <option value="">None</option>
                 </select><br>
 
                 <label>Class Lecturer (Optional)</label>
                 <select id="editLecturer" name="lecturerSelect">
                     <option value="" selected>Select Class Lecturer</option>
-                    <option value="">None</option>
                 </select>
             </div>
 
@@ -334,10 +328,10 @@ document.addEventListener("DOMContentLoaded", () => {
     function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
         if (!deptCode) return;
 
-        // Clear existing options, keep placeholder
-        practicalSel.innerHTML = '<option value="" selected hidden>-- Select Practical Lecturer --</option>';
-        tutorialSel.innerHTML = '<option value="" selected hidden>-- Select Tutorial Lecturer --</option>';
-        lecturerSel.innerHTML = '<option value="" selected hidden>-- Select Class Lecturer --</option>';
+        // Clear existing options, keep placeholder and None option
+        practicalSel.innerHTML = '<option value="" selected hidden>-- Select Practical Lecturer --</option><option value="">None</option>';
+        tutorialSel.innerHTML = '<option value="" selected hidden>-- Select Tutorial Lecturer --</option><option value="">None</option>';
+        lecturerSel.innerHTML = '<option value="" selected hidden>-- Select Class Lecturer --</option><option value="">None</option>';
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
             .then(r => r.json())
@@ -351,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         sel.appendChild(opt);
                     });
                 });
-            })
+            })x 
             .catch(err => console.error("Error fetching lecturers:", err));
     }
 
