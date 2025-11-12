@@ -105,19 +105,19 @@
 
                 <label>Practical Lecturer (Optional)</label>
                 <select id="practicalLecturerSelect" name="practicalLecturerSelect">
-                    <option value="" selected hidden>-- Select Practical Lecturer --</option>
+                    <option value="" selected>-- Select Practical Lecturer --</option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="tutorialLecturerSelect" name="tutorialLecturerSelect">
-                    <option value="" selected hidden>-- Select Tutorial Lecturer --</option>
+                    <option value="" selected>-- Select Tutorial Lecturer --</option>
                 </select>
             </div>
 
             <div class="form-right">
                 <label>Class Lecturer (Optional)</label>
                 <select id="lecturerSelect" name="lecturerSelect">
-                    <option value="" selected hidden>-- Select Class Lecturer --</option>
+                    <option value="" selected>-- Select Class Lecturer --</option>
                 </select><br>
                 
                 <label>Course Credit Hour(s)</label>
@@ -326,52 +326,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- Helper: Populate lecturers ---
     function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
+        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option>';
+        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option>';
+        lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option>';
         if (!deptCode) return;
-
-        // Clear existing options, keep placeholder and None option
-        practicalSel.innerHTML = '<option value="" selected hidden>-- Select Practical Lecturer --</option>';
-        tutorialSel.innerHTML = '<option value="" selected hidden>-- Select Tutorial Lecturer --</option>';
-        lecturerSel.innerHTML = '<option value="" selected hidden>-- Select Class Lecturer --</option>';
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
             .then(r => r.json())
             .then(lecturers => {
                 lecturers.forEach(l => {
-                    [[practicalSel, selectedPractical], [tutorialSel, selectedTutorial], [lecturerSel, selectedLecturer]].forEach(([sel, selected]) => {
+                    [practicalSel, tutorialSel, lecturerSel].forEach((sel, i) => {
                         const opt = document.createElement("option");
                         opt.value = l.userId;
                         opt.textContent = l.userName.trim();
-                        if (selected && l.userId == selected) opt.selected = true;
+
+                        if ((i === 0 && l.userId == selectedPractical) || 
+                            (i === 1 && l.userId == selectedTutorial) || 
+                            (i === 2 && l.userId == selectedLecturer)) {
+                            opt.selected = true;
+                        }
                         sel.appendChild(opt);
                     });
                 });
-            })x 
+            })
             .catch(err => console.error("Error fetching lecturers:", err));
     }
 
-    // --- Lazy populate on focus ---
-    function lazyPopulateLecturers(deptCodeInput, practicalSel, tutorialSel, lecturerSel) {
-        [practicalSel, tutorialSel, lecturerSel].forEach(sel => {
-            sel.addEventListener('focus', () => {
-                const deptCode = deptCodeInput.value;
-                if (!deptCode || sel.options.length > 1) return; // already populated
-                populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel);
-            });
-        });
-    }
-
-    // Manual form lazy populate
-    if (els.deptCode) lazyPopulateLecturers(els.deptCode, els.practical, els.tutorial, els.lecturer);
-
-    // Edit form lazy populate
-    if (els.editDept) lazyPopulateLecturers(els.editDept, els.editPractical, els.editTutorial, els.editLecturer);
-
-    // --- Reset dropdowns on department change ---
-    els.deptCode?.addEventListener("change", () => {
-        [els.practical, els.tutorial, els.lecturer].forEach(sel => sel.innerHTML = `<option value="" selected hidden>-- Select --</option>`);
-    });
-    els.editDept?.addEventListener("change", () => {
-        [els.editPractical, els.editTutorial, els.editLecturer].forEach(sel => sel.innerHTML = `<option value="" selected hidden>-- Select --</option>`);
+    // --- Manual form: department change ---
+    els.deptCode?.addEventListener("change", e => {
+        populateLecturers(e.target.value, els.practical, els.tutorial, els.lecturer);
     });
 
     // --- Edit form: course select change ---
@@ -389,13 +372,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 els.editCourseStudents.value = c.courseStudent;
                 els.editStatus.value = c.courseStatus;
 
-                // Pre-select lecturers
                 populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, els.editLecturer, c.coursePractical, c.courseTutorial, c.courseLecturer);
             })
             .catch(err => console.error("Error fetching course:", err));
     });
 
-    // --- Pie chart ---
+    // --- Edit form: department change ---
+    els.editDept?.addEventListener("change", e => {
+        populateLecturers(e.target.value, els.editPractical, els.editTutorial, els.editLecturer);
+    });
+
     new Chart(document.getElementById('courseDeptPieChart'), {
         type: 'pie',
         data: {
@@ -421,56 +407,70 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     });
+});
 
-    // --- Generate PDF ---
+document.addEventListener("DOMContentLoaded", function () {
     const generateBtn = document.getElementById("generatePDF");
-    if (generateBtn) {
-        generateBtn.addEventListener("click", function () {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({orientation: "landscape", unit: "pt", format: "a4"});
-            const margin = 20;
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
+    if (!generateBtn) return;
 
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(14);
-            doc.text("Manage Courses", pageWidth / 2, margin, { align: "center" });
+    generateBtn.addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
 
-            const startY = margin + 25;
-            const table = document.querySelector(".user-data-table");
-            if (!table) { alert("No table found to export!"); return; }
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Manage Courses", pageWidth / 2, margin, { align: "center" });
 
-            const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-            const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-                return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
-                    let text = td.innerText.trim();
-                    if (idx === 7) text = text.replace(/\s*Practical\s*:/g, "Practical:").replace(/\s*Tutorial\s*:/g, "\nTutorial:").trim();
-                    return text.replace(/\s*\n\n\s*/g, " ");
-                });
+        const startY = margin + 25;
+
+        // ===== Get table =====
+        const table = document.querySelector(".user-data-table");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
+
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
+            return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
+                let text = td.innerText.trim();
+
+                if (idx === 7) {  // Lecturer details
+                    text = text
+                        .replace(/\s*Practical\s*:/g, "Practical:")
+                        .replace(/\s*Tutorial\s*:/g, "\nTutorial:")
+                        .trim();
+                }
+                return text.replace(/\s*\n\n\s*/g, " ");
             });
-
-            doc.autoTable({
-                head: [headers],
-                body: rows,
-                startY: startY,
-                theme: "grid",
-                styles: { font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle" },
-                headStyles: { fillColor: [33,37,41], textColor: [255,255,255], halign: "center" },
-                tableWidth: pageWidth - 2*margin,
-                margin: { top: margin, left: margin, right: margin, bottom: margin },
-                didDrawPage: function () {
-                    const pageCount = doc.internal.getNumberOfPages();
-                    doc.setFontSize(9);
-                    doc.setTextColor(100);
-                    doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
-                },
-            });
-
-            doc.save("Admin_ViewCourseList.pdf");
         });
-    }
+
+        // ===== Generate table =====
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: startY,
+            theme: "grid",
+            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
+            // Automatically calculate table width to fit page
+            tableWidth: pageWidth - 2 * margin,
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
+        });
+
+        doc.save("Admin_ViewCourseList.pdf");
+    });
 });
 </script>
 {% endblock %}
-
 
