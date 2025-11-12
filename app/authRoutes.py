@@ -401,7 +401,6 @@ def user_homepage():
     open_slots = open_record(user_id)
     if chosen:
         open_slots = [slot for slot in open_slots if slot.invigilator.userGender == chosen.userGender]
-        flash(f"Filtered {len(open_slots)} open slots for gender: {chosen.userGender}", "success")
 
     if request.method == 'POST':
         action = request.form.get('action')
