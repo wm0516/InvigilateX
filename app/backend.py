@@ -423,9 +423,9 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                 timeCreate=datetime.now(timezone.utc)
             ))
             send_invigilator_slot_notification(chosen.userId)
-            flash({send_invigilator_slot_notification(chosen.userId)}, "sucess")
-
-
+            result = send_invigilator_slot_notification(chosen.userId)
+            flash(result, "success")
+            
     db.session.commit()
     return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
 
