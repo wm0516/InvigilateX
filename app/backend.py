@@ -1,6 +1,7 @@
 import re
 from flask_bcrypt import Bcrypt
 from .database import *
+from .authRoutes import get_invigilator_slot_summary
 from flask import redirect, url_for, flash, session
 from flask_mail import Message
 from app import app, mail
@@ -422,6 +423,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                 venueNumber=venue_text,          # ✅ Each venue gets its own attendance
                 timeCreate=datetime.now(timezone.utc)
             ))
+            send_invigilator_slot_notification(chosen.userId)
 
     db.session.commit()
     return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
@@ -560,3 +562,44 @@ def check_profile(id, contact, password1, password2):
     
     return True, ""
 
+# -------------------------------
+# Email: Notify Invigilator About Slot Summary
+# -------------------------------
+def send_invigilator_slot_notification(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return False, "User not found."
+
+    # Get summary data
+    summary = get_invigilator_slot_summary(user_id)
+    waiting = summary["waiting_count"]
+    confirmed = summary["confirmed_count"]
+    open_count = summary["open_count"]
+
+    try:
+        msg = Message(
+            'InvigilateX - Your Invigilation Slot Update',
+            recipients=[user.userEmail]
+        )
+
+        msg.body = f'''Hi {user.userName},
+
+You have new updates regarding your invigilation status.
+
+Here is your current summary:
+
+• Pending confirmation slots : {waiting}
+• Confirmed upcoming slots   : {confirmed}
+• Open public slots available: {open_count}
+
+If any action is needed from your side (accept / reject), please login to your InvigilateX portal.
+
+Thank you,
+The InvigilateX Team
+'''
+
+        mail.send(msg)
+        return True, None
+    
+    except Exception as e:
+        return False, f"Failed to send email. Error: {str(e)}"

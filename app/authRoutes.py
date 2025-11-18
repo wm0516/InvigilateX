@@ -376,6 +376,19 @@ def open_record(user_id):
     return list(unique_slots.values())
 
 
+# -------------------------------
+# Helper to get invigilator slot summary
+# -------------------------------
+def get_invigilator_slot_summary(user_id):
+    waiting = waiting_record(user_id)
+    confirmed = confirm_record(user_id).all()
+    open_slots = open_record(user_id)
+
+    return {
+        "waiting_count": len(waiting),
+        "confirmed_count": len(confirmed),
+        "open_count": len(open_slots)
+    }
 
 
 # -------------------------------
