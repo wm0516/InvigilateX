@@ -909,6 +909,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
                 invigilationStatus=False
             ))
             send_invigilator_slot_notification(inv.userId)
+            flash({send_invigilator_slot_notification(inv.userId)}, "sucess")
 
         flash(f"Eligible invigilators: {len(eligible)}","success")
         flash(f"Chosen invigilators for venue {venue_no}: {[inv.userId for inv in chosen]}","success")
