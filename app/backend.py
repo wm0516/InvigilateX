@@ -1,7 +1,6 @@
 import re
 from flask_bcrypt import Bcrypt
 from .database import *
-from .authRoutes import get_invigilator_slot_summary
 from flask import redirect, url_for, flash, session
 from flask_mail import Message
 from app import app, mail
@@ -561,6 +560,90 @@ def check_profile(id, contact, password1, password2):
         return True, "No Update"
     
     return True, ""
+
+
+
+# -------------------------------
+# Helper functions
+# -------------------------------
+def waiting_record(user_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(
+            Exam.examStatus == True,
+            InvigilatorAttendance.timeAction.is_(None),
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.invigilatorId == user_id
+        )
+        .all()
+    )
+
+def confirm_record(user_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .filter(InvigilatorAttendance.invigilatorId == user_id)
+        .filter(InvigilatorAttendance.invigilationStatus == True)
+    )
+
+# cutoff_time = datetime.now() - timedelta(minutes=1)days=2
+def open_record(user_id):
+    cutoff_time = datetime.now() - timedelta(minutes=1)
+
+    # Get current user's gender
+    current_user = User.query.get(user_id)
+    if not current_user:
+        return []
+
+    user_gender = current_user.userGender
+
+    # Query open slots
+    slots = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .filter(
+            Exam.examStartTime > datetime.now(),
+            InvigilatorAttendance.timeCreate < cutoff_time,
+            InvigilatorAttendance.invigilationStatus == False,
+            or_(
+                InvigilatorAttendance.invigilatorId == None,  # unassigned
+                User.userGender == user_gender               # same gender only
+            )
+        )
+        .all()
+    )
+
+    # Remove duplicates by examId
+    unique_slots = {}
+    for slot in slots:
+        exam_id = slot.report.examId
+        if exam_id not in unique_slots:
+            unique_slots[exam_id] = slot
+
+    return list(unique_slots.values())
+
+
+# -------------------------------
+# Helper to get invigilator slot summary
+# -------------------------------
+def get_invigilator_slot_summary(user_id):
+    waiting = waiting_record(user_id)
+    confirmed = confirm_record(user_id).all()
+    open_slots = open_record(user_id)
+
+    return {
+        "waiting_count": len(waiting),
+        "confirmed_count": len(confirmed),
+        "open_count": len(open_slots)
+    }
+
 
 # -------------------------------
 # Email: Notify Invigilator About Slot Summary
