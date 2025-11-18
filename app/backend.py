@@ -676,6 +676,7 @@ Here is your current summary:
 • Open public slots available: {open_count}
 
 If any action is needed from your side (accept / reject), please login to your InvigilateX portal.
+https://wm05.pythonanywhere.com/login
 
 Thank you,
 The InvigilateX Team
