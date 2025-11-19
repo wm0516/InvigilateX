@@ -358,7 +358,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
     exclude_ids = []
     for c in course_sections:
-        flash(f"Practical: {c.coursePractical}, Tutorial: {c.courseTutorial}, Lecturer: {c.courseLecturer}", "success")
+        flash(f"ExamId: {c.courseExamId}, Practical: {c.coursePractical}, Tutorial: {c.courseTutorial}, Lecturer: {c.courseLecturer}", "success")
         exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid is not None]
 
     query = User.query.filter(User.userLevel == 1, User.userStatus == True)
@@ -379,9 +379,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
     eligible_invigilators = flexible
 
-    # Flash messages
-    flash(f"Eligible Invigilators: {len(eligible_invigilators)}, Flexible Invigilators: {len(flexible)}, Not Flexible Invigilators: {len(not_flexible)}", "success")
-
     if not eligible_invigilators:
         return False, "No eligible invigilators available due to timetable conflicts or workload limits"
 
@@ -389,8 +386,13 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                   key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
     female = sorted([i for i in eligible_invigilators if i.userGender == "FEMALE"],
                     key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-
-    flash(f"Male Invigilators Available: {len(male)}, Female Invigilators Available: {len(female)}, Total Eligible (Recount): {len(eligible_invigilators)}", "success")
+    
+    # Flash messages
+    flash(
+        f"✅ Eligible Invigilators: {len(eligible_invigilators)} | Flexible: {len(flexible)} | "
+        f"Not Flexible: {len(not_flexible)} | Male: {len(male)} | Female: {len(female)}", 
+        "success"
+    )
 
     # --- Handle each venue independently ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
