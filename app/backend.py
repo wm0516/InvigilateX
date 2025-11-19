@@ -388,13 +388,15 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                     key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
     
     # Flash messages
+    not_flex_ids = [str(i.userId) for i, t, a in not_flexible]
+    not_flex_text = ", ".join(not_flex_ids) if not_flex_ids else "None"
+
     flash(
-        f"✅ Eligible Invigilators: {len(eligible_invigilators)} | Flexible: {len(flexible)} | "
-        f"Not Flexible: {len(not_flexible)} | Male: {len(male)} | Female: {len(female)}", 
+        f"✅ Eligible: {len(eligible_invigilators)} | Flexible: {len(flexible)} | "
+        f"Not Flexible: {len(not_flexible)}: {not_flex_text} | "
+        f"Male: {len(male)} | Female: {len(female)}",
         "success"
     )
-    flash(f"[Not Flexible] {[f'{i.userId} - hours:{t} - available:{a}' for i, t, a in not_flexible]}", "warning")
-
 
     # --- Handle each venue independently ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
