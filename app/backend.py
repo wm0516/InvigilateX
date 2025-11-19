@@ -136,7 +136,7 @@ def check_forgotPasswordEmail(forgotEmail):
         reset_link = url_for("resetPassword", token=token, _external=True)
 
         msg = Message('InvigilateX - Password Reset Request', recipients=[email_to_reset])
-        msg.body = f'''Hi,
+        msg.body = f'''Hi {user.userName},
 
 We received a request to reset your password for your InvigilateX account.
 
@@ -164,7 +164,7 @@ def send_verifyActivateLink(email):
         verify_link = url_for("verifyAccount", token=token, _external=True)
 
         msg = Message('InvigilateX - Verify Your Account', recipients=[email])
-        msg.body = f'''Hi,
+        msg.body = f'''Hi {user.userName},
 
 Thank you for registering for InvigilateX!
 
@@ -710,18 +710,16 @@ def send_invigilator_slot_notification(user_id):
 You have new updates regarding your invigilation status.
 
 Here is your current summary:
-
 • Pending confirmation slots: {waiting}
 • Confirmed upcoming slots: {confirmed}
 • Open public slots available: {open_count}
 
 If any action is needed from your side (accept / reject), please login to your InvigilateX portal.
-'https://wm05.pythonanywhere.com/login'
+https://wm05.pythonanywhere.com/login
 
 Thank you,
 The InvigilateX Team
 '''
-
         mail.send(msg)
         return True, None
     
