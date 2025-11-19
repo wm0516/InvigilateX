@@ -393,6 +393,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
         f"Not Flexible: {len(not_flexible)} | Male: {len(male)} | Female: {len(female)}", 
         "success"
     )
+    flash(f"[Not Flexible] {[f'{i.userId} - hours:{t} - available:{a}' for i, t, a in not_flexible]}", "warning")
+
 
     # --- Handle each venue independently ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
