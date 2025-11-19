@@ -327,9 +327,6 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-# -------------------------------
-# Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
-# -------------------------------
 def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, studentPerVenue_list):
     # --- Fetch course sections ---
     course_sections = Course.query.filter(Course.courseCodeSectionIntake.like(f"{courseSection}/%")).all()
@@ -404,7 +401,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     flash(
         f"✅ Eligible: {len(eligible_invigilators)} | "
         f"Flexible: {len(flexible)} | "
-        f"Not Flexible: {len(not_flexible)}: {not_flex_text} | "
+        f"Not Flexible: {len(not_flexible)}: [{not_flex_text}] | "
         f"Male: {len(male)} | Female: {len(female)}",
         "success"
     )
