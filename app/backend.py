@@ -380,9 +380,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     eligible_invigilators = flexible
 
     # Flash messages
-    flash(f"[Eligible Invigilators] {[(i.userId, (i.userCumulativeHours or 0)+(i.userPendingCumulativeHours or 0)) for i in eligible_invigilators]}", "info")
-    flash(f"[Flexible Invigilators] {[i.userId for i in flexible]}", "success")
-    flash(f"[Not Flexible] {[f'{i.userId} - hours:{t} - available:{a}' for i, t, a in not_flexible]}", "warning")
+    flash(f"Eligible Invigilators: {len(eligible_invigilators)}, Flexible Invigilators: {len(flexible)}, Not Flexible Invigilators: {len(not_flexible)}", "success")
 
     if not eligible_invigilators:
         return False, "No eligible invigilators available due to timetable conflicts or workload limits"
@@ -391,10 +389,8 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                   key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
     female = sorted([i for i in eligible_invigilators if i.userGender == "FEMALE"],
                     key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-    
-    flash(f"[Male Pool] {[f'{i.userId} ({(i.userCumulativeHours or 0)+(i.userPendingCumulativeHours or 0)}h)' for i in male]}", "success")
-    flash(f"[Female Pool] {[f'{i.userId} ({(i.userCumulativeHours or 0)+(i.userPendingCumulativeHours or 0)}h)' for i in female]}", "success")
-    flash(f"[Eligible Invigilators] {[(i.userId, (i.userCumulativeHours or 0) + (i.userPendingCumulativeHours or 0)) for i in eligible_invigilators]}","success")
+
+    flash(f"Male Invigilators Available: {len(male)}, Female Invigilators Available: {len(female)}, Total Eligible (Recount): {len(eligible_invigilators)}", "success")
 
     # --- Handle each venue independently ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
