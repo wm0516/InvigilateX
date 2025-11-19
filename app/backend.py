@@ -358,17 +358,31 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
     exclude_ids = []
     for c in course_sections:
+        flash(f"Practical: {c.coursePractical}, Tutorial: {c.courseTutorial}, Lecturer: {c.courseLecturer}", "success")
         exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid is not None]
 
     query = User.query.filter(User.userLevel == 1, User.userStatus == True)
     if exclude_ids:
         query = query.filter(~User.userId.in_(exclude_ids))
 
-    eligible_invigilators = [
-        inv for inv in query.all()
-        if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
-        and is_lecturer_available(inv.userId, start_dt, adj_end_dt)
-    ]
+    flexible = []
+    not_flexible = []
+
+    for inv in query.all():
+        total = (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+        available = is_lecturer_available(inv.userId, start_dt, adj_end_dt)
+
+        if total < 36 and available:
+            flexible.append(inv)
+        else:
+            not_flexible.append((inv, total, available))
+
+    eligible_invigilators = flexible
+
+    # Flash messages
+    flash(f"[Eligible Invigilators] {[(i.userId, (i.userCumulativeHours or 0)+(i.userPendingCumulativeHours or 0)) for i in eligible_invigilators]}", "info")
+    flash(f"[Flexible Invigilators] {[i.userId for i in flexible]}", "success")
+    flash(f"[Not Flexible] {[f'{i.userId} - hours:{t} - available:{a}' for i, t, a in not_flexible]}", "warning")
 
     if not eligible_invigilators:
         return False, "No eligible invigilators available due to timetable conflicts or workload limits"
@@ -377,6 +391,10 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                   key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
     female = sorted([i for i in eligible_invigilators if i.userGender == "FEMALE"],
                     key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+    
+    flash(f"[Male Pool] {[f'{i.userId} ({(i.userCumulativeHours or 0)+(i.userPendingCumulativeHours or 0)}h)' for i in male]}", "success")
+    flash(f"[Female Pool] {[f'{i.userId} ({(i.userCumulativeHours or 0)+(i.userPendingCumulativeHours or 0)}h)' for i in female]}", "success")
+    flash(f"[Eligible Invigilators] {[(i.userId, (i.userCumulativeHours or 0) + (i.userPendingCumulativeHours or 0)) for i in eligible_invigilators]}","success")
 
     # --- Handle each venue independently ---
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
