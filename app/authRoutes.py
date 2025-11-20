@@ -448,7 +448,7 @@ def attendance_record():
                 return jsonify({"success": False, "message": "No exam assigned!"})
 
             # Malaysia local time (UTC +8)
-            scan_time = datetime.utcnow() + timedelta(hours=8)
+            scan_time = datetime.utcnow() 
 
             # Optional: use click time from browser if provided
             if click_time_str:
