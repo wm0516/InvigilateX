@@ -2248,10 +2248,9 @@ def admin_profile():
             return redirect(url_for('admin_profile'))
 
         if valid and admin:
-            if admin_contact_text:
-                admin.userContact = admin_contact_text
-            if admin_cardUID:
-                admin.userCardId = admin_cardUID
+            admin.userContact = admin_contact_text or None
+            admin.userCardId = admin_cardUID or None
+            # Update password only if entered
             if admin_password1_text:
                 hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
                 admin.userPassword = hashed_pw
