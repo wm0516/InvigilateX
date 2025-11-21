@@ -129,6 +129,7 @@ def register():
                 userPassword=hashed_pw,
                 userGender=gender_text,
                 userStatus=0,  # not verified yet
+                userCardId=card_text,
                 userRegisterDateTime=datetime.now() + timedelta(hours=8)
             )
             db.session.add(new_user)
