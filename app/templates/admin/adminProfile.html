@@ -9,9 +9,6 @@
                 <label>Full Name as per IC</label>
                 <input value="{{ admin_data.userName }}" readonly><br>
                 
-                <label>Staff Card UID</label>
-                <input value="{{ admin_data.userCardId }}" readonly><br>
-                
                 <label>Staff ID</label>
                 <input value="{{ admin_data.userId }}" readonly><br>
 
@@ -31,8 +28,11 @@
             </div>
 
             <div class="form-right">
+                <label>Staff Card UID</label>
+                <input type="text" name="cardUID" value="{{ admin_cardUID or '' }}"><br>
+
                 <label>Contact Number</label>
-                <input type="tel" name="contact" value="{{ admin_contact_text }}"><br>
+                <input type="tel" name="contact" value="{{ admin_contact_text or '' }}"><br>
 
                 <div class="password-container">
                     <label>Password</label> 

@@ -2230,17 +2230,19 @@ def admin_profile():
     admin = User.query.filter_by(userId=adminId).first()
 
     # Default values for GET requests
-    admin_contact_text = admin.userContact if admin else ''
+    admin_cardUID = admin.userCardId or ''
+    admin_contact_text = admin.userContact or ''
     admin_password1_text = ''
     admin_password2_text = ''
     
     # --------------------- MANUAL EDIT PROFILE FORM ---------------------
     if request.method == 'POST':
+        admin_cardUID = request.form.get('cardUID', '').strip()
         admin_contact_text = request.form.get('contact', '').strip()
         admin_password1_text = request.form.get('password1', '').strip()
         admin_password2_text = request.form.get('password2', '').strip()
 
-        valid, message = check_profile(adminId, admin_contact_text, admin_password1_text, admin_password2_text)
+        valid, message = check_profile(adminId, cardId, admin_contact_text, admin_password1_text, admin_password2_text)
         if not valid:
             flash(message, 'error')
             return redirect(url_for('admin_profile'))
@@ -2248,6 +2250,8 @@ def admin_profile():
         if valid and admin:
             if admin_contact_text:
                 admin.userContact = admin_contact_text
+            if admin_cardUID:
+                admin.userCardId = admin_cardUID
             if admin_password1_text:
                 hashed_pw = bcrypt.generate_password_hash(admin_password1_text).decode('utf-8')
                 admin.userPassword = hashed_pw
@@ -2257,5 +2261,5 @@ def admin_profile():
             return redirect(url_for('admin_profile'))
 
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
-                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text)
+                           admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text, admin_cardUID=admin_cardUID)
 

@@ -561,34 +561,40 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
 # -------------------------------
 # Admin Function 5: View and Edit Admin Profile
 # -------------------------------
-def check_profile(id, contact, password1, password2):
-    # If contact is entered, validate format
+def check_profile(user_id, cardId, contact, password1, password2):
+    user_record = User.query.filter_by(userId=user_id).first()
+    if not user_record:
+        return False, "User not found"
+
+    if cardId:
+        # Check if cardId exists for other users
+        existing_card = User.query.filter(User.userCardId == cardId, User.userId != user_id).first()
+        if existing_card:
+            return False, "Card ID Already Exists"
+
     if contact:
-        user_record = User.query.filter(User.userId == id).first()
-        if not user_record:
-            return False, "User not found"
-        
+        # Validate format
         if not contact_format(contact):
             return False, "Wrong Contact Number Format"
-        
-        if contact != user_record.userContact:
+        # Check uniqueness (excluding current user)
+        if contact != (user_record.userContact or ''):
             is_unique, msg = check_contact(contact)
             if not is_unique:
                 return False, msg
 
-    # If any password is entered, both must be present and match
     if password1 or password2:
         if not password1 or not password2:
-            return False, "Both Password Fields Are Rquired"
+            return False, "Both Password Fields Are Required"
         if not password_format(password1) or not password_format(password2):
             return False, "Wrong Password Format"
         if password1 != password2:
             return False, "Passwords Do Not Match"
-        
-    if contact and not password1 and not password2:
+
+    if not cardId and not contact and not password1 and not password2:
         return True, "No Update"
-    
+
     return True, ""
+
 
 
 
