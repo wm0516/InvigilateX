@@ -1337,6 +1337,9 @@ def admin_manageStaff():
                 # Update user department & timestamp
                 user_select.userDepartment = new_department_code
                 user_select.userRegisterDateTime = datetime.now(timezone.utc)
+                
+                if user_select.userContact == '':
+                    user_select.userContact = None
 
                 db.session.commit()
                 flash("Staff updated successfully", "success")
