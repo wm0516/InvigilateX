@@ -121,7 +121,7 @@ def register():
         elif is_valid:
             hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
             new_user = User(
-                userId=id_text.upper(),
+                userId=id_text,
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
                 userEmail=email_text,
