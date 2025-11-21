@@ -421,7 +421,7 @@ def attendance_record():
         try:
             data = request.get_json()
             last_scan_data = {"cardNumber": data.get('cardNumber'), "time": datetime.now().isoformat()}
-            card_input = data.get('cardNumber', '').strip()
+            card_input = data.get('cardNumber', '').replace(' ', '')
             action_type = data.get('actionType', '').lower().strip()
             click_time_str = data.get('clickTime', None)
 

@@ -2098,7 +2098,7 @@ def parse_attendance_datetime(date_val, time_val):
 def process_attendance_row(row):
     try:
         # 1. Extract UID
-        raw_uid = str(row['card iud']).upper().replace('UID:', '').strip()
+        raw_uid = str(row['card iud']).upper().replace('UID:', '').strip().replace(' ', '')
 
         # 2. Find matching user
         user = User.query.filter_by(userCardId=raw_uid).first()
@@ -2237,7 +2237,7 @@ def admin_profile():
     
     # --------------------- MANUAL EDIT PROFILE FORM ---------------------
     if request.method == 'POST':
-        admin_cardUID = request.form.get('cardUID', '').strip()
+        admin_cardUID = request.form.get('cardUID', '').strip().replace(' ', '')
         admin_contact_text = request.form.get('contact', '').strip()
         admin_password1_text = request.form.get('password1', '').strip()
         admin_password2_text = request.form.get('password2', '').strip()
