@@ -98,33 +98,31 @@ def role_required(required_role):
 # -------------------------------
 # Auth Function 3: Check Register [ID, Email, and Contact must be unique]
 # -------------------------------
-def check_register(id, card, email, contact, password1, password2):
+def check_register(id, card, email, contact, password1=None, password2=None):
+    # Email format
     if not email_format(email):
         return False, "Wrong Email Address Format"
-    elif not contact_format(contact):
+    # Contact format
+    if contact and not contact_format(contact):
         return False, "Wrong Contact Number Format"
-    elif password1 != password2:
-        return False, "Passwords Do Not Match"
-    elif not password_format(password1):
-        return False, "Wrong Password Format"
+    # Password match + format (only when provided)
+    if password1 is not None and password2 is not None:
+        if password1 != password2:
+            return False, "Passwords Do Not Match"
+        if not password_format(password1):
+            return False, "Wrong Password Format"
 
-    existing_id = User.query.filter(User.userId == id).first()
-    if existing_id:
-        return False, "Id Already Exists"
-    
-    existing_email = User.query.filter(User.userEmail == email).first()
-    if existing_email:
+    # Uniqueness checks
+    if User.query.filter_by(userId=id).first():
+        return False, "ID Already Exists"
+    if User.query.filter_by(userEmail=email).first():
         return False, "Email Already Exists"
-    
-    existing_contact = User.query.filter(User.userContact == contact).first()
-    if existing_contact:
+    if contact and User.query.filter_by(userContact=contact).first():
         return False, "Contact Number Already Exists"
-    
-    existing_card = User.query.filter(User.userCardId == card).first()
-    if existing_card:
+    if card and User.query.filter_by(userCardId=card).first():
         return False, "Card ID Already Exists"
-
     return True, ""
+
 
 # -------------------------------
 # Auth Function 4: Check Forgot Password [Email User to Send Reset Password Link]
@@ -506,31 +504,18 @@ def delete_exam_related(exam_id, commit=True):
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
 def create_staff(id, department, name, role, email, contact, gender, hashed_pw, cardId):
+    # Call shared validation logic here
+    valid, message = check_register(id, cardId, email, contact)
+    if not valid:
+        return False, message
+
     # Normalize department code
     department_code = department.upper() if department else None
     dept = Department.query.filter_by(departmentCode=department_code).first()
     if not dept:
-        department_code = None  # If department doesn't exist, set to None
+        department_code = None
 
-    # Validate email and contact
-    if not email_format(email):
-        return False, "Wrong Email Address Format"
-    # Validate contact only if it's not empty
-    if contact:
-        if not contact_format(contact):
-            return False, "Wrong Contact Number Format"
-    else:
-        contact = None  # Explicitly set as NULL for the database
-
-    # Check uniqueness
-    if User.query.filter_by(userId=id).first():
-        return False, "ID already exists"
-    if User.query.filter_by(userEmail=email).first():
-        return False, "Email already exists"
-    if contact and User.query.filter_by(userContact=contact).first():
-        return False, "Contact number already exists"
-
-    # Create staff object
+    # Create staff object after validation passes
     new_staff = User(
         userId=id,
         userDepartment=department_code,
@@ -545,7 +530,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
     )
 
     db.session.add(new_staff)
-    db.session.flush()  # Ensures userId is available for foreign keys
+    db.session.flush()
 
     matching_rows = TimetableRow.query.filter(
         func.replace(TimetableRow.lecturerName, " ", "") == func.replace(new_staff.userName, " ", "")
