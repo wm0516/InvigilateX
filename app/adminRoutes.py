@@ -2242,7 +2242,7 @@ def admin_profile():
         admin_password1_text = request.form.get('password1', '').strip()
         admin_password2_text = request.form.get('password2', '').strip()
 
-        valid, message = check_profile(adminId, cardId, admin_contact_text, admin_password1_text, admin_password2_text)
+        valid, message = check_profile(adminId, admin_cardUID, admin_contact_text, admin_password1_text, admin_password2_text)
         if not valid:
             flash(message, 'error')
             return redirect(url_for('admin_profile'))
