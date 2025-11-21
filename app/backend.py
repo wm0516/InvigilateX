@@ -98,7 +98,7 @@ def role_required(required_role):
 # -------------------------------
 # Auth Function 3: Check Register [ID, Email, and Contact must be unique]
 # -------------------------------
-def check_register(id, email, contact, password1, password2):
+def check_register(id, card, email, contact, password1, password2):
     if not email_format(email):
         return False, "Wrong Email Address Format"
     elif not contact_format(contact):
@@ -119,6 +119,10 @@ def check_register(id, email, contact, password1, password2):
     existing_contact = User.query.filter(User.userContact == contact).first()
     if existing_contact:
         return False, "Contact Number Already Exists"
+    
+    existing_card = User.query.filter(User.userCardId == card).first()
+    if existing_card:
+        return False, "Card ID Already Exists"
 
     return True, ""
 

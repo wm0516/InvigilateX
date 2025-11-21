@@ -19,34 +19,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
-// Register Page: Department Text [Will Changes According to Role]
-function updateDepartmentLabel() {
-    const roleSelect = document.getElementById('roleSelect');
-    const departmentLabel = document.getElementById('departmentLabel');
-    const selectedRole = roleSelect.value;
-    
-    switch(selectedRole) {
-        case 'LECTURER':
-            departmentLabel.textContent = 'Lecturer of Department';
-            break;
-        case 'DEAN':
-            departmentLabel.textContent = 'Dean of Department';
-            break;
-        case 'HOS':
-            departmentLabel.textContent = 'Head of School';
-            break;
-        case 'HOP':
-            departmentLabel.textContent = 'Head of Programme';
-            break;
-        case 'ADMIN':
-            departmentLabel.textContent = 'Admin of Department';
-            break;
-        default:
-            departmentLabel.textContent = 'Department';
-    }
-}
-
-
 // To All Page Exclude 'Auth Page': Initialize sidebar state from localStorage
 document.addEventListener('DOMContentLoaded', function() {
     const sidebar = document.getElementById('sidebar');

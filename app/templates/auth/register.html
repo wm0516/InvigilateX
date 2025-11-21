@@ -31,17 +31,10 @@
                 <label>Contact Number</label>
                 <input type="tel" name="contact" value="{{ contact_text }}" required><br> 
 
-                <label>Role Registered as</label>
-                <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}" required>
-                    <option value="" disabled selected>Select Role</option>
-                    <option value="LECTURER">LECTURER</option>
-                    <option value="DEAN">DEAN</option>
-                    <option value="HOS">(HOS) HEAD OF SCHOOL</option>
-                    <option value="HOP">(HOP) HEAD OF PROGRAMME</option>
-                    <option value="ADMIN">ADMIN</option>
-                </select><br>
+                <label>Card UID</label>
+                <input type="text" name="cardid" value="{{ card_text }}" required><br>
 
-                <label id="departmentLabel">Department</label>
+                <label id="departmentLabel">Lecturer of Department</label>
                 <select name="department" required>
                     <option value="" disabled selected>Select Department</option>
                     {% for dept in department_data %}

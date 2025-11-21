@@ -89,16 +89,9 @@ def login():
 # -------------------------------
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    role_map = {
-        'LECTURER': LECTURER,
-        'DEAN': DEAN,
-        'HOS': HOS,
-        'HOP': HOP,
-        'ADMIN': ADMIN
-    }
-    
     department_data = Department.query.all()
     id_text = ''
+    card_text = ''
     name_text = ''
     email_text = ''
     contact_text = ''
@@ -111,6 +104,7 @@ def register():
 
     if request.method == 'POST':
         id_text = request.form.get('userid', '').strip()
+        card_text = request.form.get('cardid', '').strip()
         name_text = request.form.get('username', '').strip()
         email_text = request.form.get('email', '').strip()
         contact_text = request.form.get('contact', '').strip()
@@ -120,7 +114,7 @@ def register():
         password1_text = request.form.get('password1', '').strip()
         password2_text = request.form.get('password2', '').strip()
 
-        is_valid, error_message = check_register(id_text, email_text, contact_text, password1_text, password2_text)
+        is_valid, error_message = check_register(id_text, card_text, email_text, contact_text, password1_text, password2_text)
 
         if error_message:
             flash(error_message, 'error')
@@ -130,7 +124,6 @@ def register():
                 userId=id_text.upper(),
                 userName=name_text.upper(),
                 userDepartment=department_text.upper(),
-                userLevel=role_map.get(role_text, ADMIN),  # default to ADMIN if role missing
                 userEmail=email_text,
                 userContact=contact_text,
                 userPassword=hashed_pw,

@@ -58,7 +58,7 @@ class User(db.Model):
     userId = db.Column(db.Integer, primary_key=True)                                                                  # [PK]Refer to Staff ID
     userDepartment = db.Column(db.String(10), db.ForeignKey('Department.departmentCode'), nullable=False)             # [FK] Refer to Staff Department
     userName = db.Column(db.String(255), nullable=False)                                                              # Refer to Staff Name
-    userLevel = db.Column(db.Integer, nullable=False)                                                                 # Lecturer = 1, Dean/HOS = 2, HOP = 3, Admin = 4
+    userLevel = db.Column(db.Integer, default=1, nullable=False)                                                      # Lecturer = 1, Dean/HOS = 2, HOP = 3, Admin = 4
     userEmail = db.Column(db.String(255), nullable=False)                                                             # Refer to Staff INTI email
     userContact = db.Column(db.String(15), nullable=True)                                                             # Refer to Staff Contact Number [Use String to Store '01', If Use INT Can't Store '0']
     userGender = db.Column(db.String(10), nullable=False)                                                             # Refer to Staff Gender
@@ -79,7 +79,7 @@ class User(db.Model):
         userId INT PRIMARY KEY,                                  
         userDepartment VARCHAR(10) NOT NULL,                             
         userName VARCHAR(255) NOT NULL,                                  
-        userLevel INT NOT NULL,                                          
+        userLevel INT NOT NULL DEFAULT 1,                                          
         userEmail VARCHAR(255) NOT NULL,                                 
         userContact VARCHAR(15) NULL,                                
         userGender VARCHAR(10) NOT NULL,                                 
