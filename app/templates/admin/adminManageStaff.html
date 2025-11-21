@@ -280,7 +280,11 @@
                     <td>{{ row.userName }}</td>
                     <td>{{ row.userGender }}</td>
                     <td>{{ row.userEmail }}</td>
-                    <td>{{ row.userContact }}</td>
+                    <td>
+                        {% if row.userContact %}
+                            {{ row.userContact }}
+                        {% else %}---{% endif %}
+                    </td>
                     <td>
                         {% if row.userLevel == 1 %}LECTURER
                         {% elif row.userLevel == 2 %}DEAN
