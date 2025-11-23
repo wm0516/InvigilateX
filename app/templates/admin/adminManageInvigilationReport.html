@@ -78,17 +78,11 @@
                     {% endfor %}
                 </select><br>
 
-                <label>Course Code</label>
-                <input type="text" id="courseCode" readonly><br>
+                <label>Course Code - Name</label>
+                <input type="text" id="courseInfo" readonly><br>
 
-                <label>Course Name</label>
-                <input type="text" id="courseName" readonly><br>
-
-                <label>Exam Start</label>
-                <input type="text" id="examStart" readonly><br>
-
-                <label>Exam End</label>
-                <input type="text" id="examEnd" readonly><br>
+                <label>Exam Time (Start → End)</label>
+                <input type="text" id="examTime" readonly>
             </div>
 
             <div class="form-middle" id="middleSlots"></div>
@@ -525,10 +519,9 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", () => {
 
     const reportSelect = document.getElementById("editReport");
-    const courseCode = document.getElementById("courseCode");
-    const courseName = document.getElementById("courseName");
-    const examStart = document.getElementById("examStart");
-    const examEnd = document.getElementById("examEnd");
+
+    const courseInfo = document.getElementById("courseInfo");
+    const examTime = document.getElementById("examTime");
 
     const middleSlots = document.getElementById("middleSlots");
     const rightSlots = document.getElementById("rightSlots");
@@ -538,37 +531,34 @@ document.addEventListener("DOMContentLoaded", () => {
         const data = await resp.json();
         if (data.error) { alert(data.error); return; }
 
-        courseCode.value = data.courseCode;
-        courseName.value = data.courseName;
-        examStart.value = data.examStart;
-        examEnd.value = data.examEnd;
+        // ✔ Combined Course field
+        courseInfo.value = `${data.courseCode} - ${data.courseName}`;
+
+        // ✔ Combined Exam Time
+        examTime.value = `${data.examStart} → ${data.examEnd}`;
 
         middleSlots.innerHTML = "";
         rightSlots.innerHTML = "";
 
         for (let att of data.attendances) {
 
-            /* --------------------------
-            LEFT SIDE: CURRENT INVIGILATOR
-            --------------------------- */
+            /* ---------------- LEFT SIDE ---------------- */
             middleSlots.innerHTML += `
                 <div class="slot-card">
-                    <label>Slot for Venue ${att.venue}</label>
+                    <label>Venue ${att.venue}</label>
                     <input type="text" value="${att.invigilatorName}" readonly>
                     <p><b>Gender:</b> ${att.gender}</p>
                 </div>
             `;
 
-            /* --------------------------
-            RIGHT SIDE: REPLACEMENT DROPDOWN
-            --------------------------- */
+            /* ---------------- RIGHT SIDE ---------------- */
             const slotWrapper = document.createElement("div");
             slotWrapper.className = "slot-card";
 
             slotWrapper.innerHTML = `
                 <label>Replace Invigilator (Same Gender)</label>
                 <select name="slot_${att.attendanceId}" required>
-                    <option value="" disabled>Select Invigilator</option>
+                    <option disabled>Loading...</option>
                 </select>
             `;
 
@@ -576,30 +566,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const dropdown = slotWrapper.querySelector("select");
 
-            /* --------------------------
-               FETCH VALID SAME-GENDER INVIGILATORS
-            --------------------------- */
+            // Populate dropdown with valid same-gender invigilators
             fetch(`/get_valid_invigilators/${att.gender}`)
                 .then(res => res.json())
                 .then(invigilators => {
                     dropdown.innerHTML = "";
-
                     for (let u of invigilators) {
                         dropdown.innerHTML += `
                             <option value="${u.userId}"
                                 ${u.userId == att.invigilatorId ? "selected" : ""}
                             >
                                 ${u.userName}
-                            </option>
-                        `;
+                            </option>`;
                     }
                 });
         }
     }
 
-    reportSelect.addEventListener("change", () => {
-        loadReport(reportSelect.value);
-    });
+    reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
 
 });
 
