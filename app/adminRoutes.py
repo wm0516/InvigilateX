@@ -2191,17 +2191,16 @@ def get_report(report_id):
     
     exam = report.exam
     course = exam.course
-    attendances = []
 
-    # Attach composite key for sorting/grouping
-    for att in attendances:
-        report = att.report
-        exam = Exam.query.get(report.examId) if report else None
-        att.group_key = (
-            not exam.examStatus if exam else True,
-            exam.examStartTime if exam else datetime.min,
-            exam.examId if exam else 0
-        )
+    attendances = []
+    for att in report.attendances:
+        attendances.append({
+            "attendanceId": att.attendanceId,
+            "invigilatorId": att.invigilatorId,
+            "invigilatorName": att.invigilator.userName,
+            "gender": att.invigilator.userGender,
+            "venue": att.venueNumber
+        })
 
     return jsonify({
         "examId": exam.examId,
@@ -2230,6 +2229,16 @@ def get_valid_invigilators(gender):
 def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
+
+    # Attach composite key for sorting/grouping
+    for att in attendances:
+        report = att.report
+        exam = Exam.query.get(report.examId) if report else None
+        att.group_key = (
+            not exam.examStatus if exam else True,
+            exam.examStartTime if exam else datetime.min,
+            exam.examId if exam else 0
+        )
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
