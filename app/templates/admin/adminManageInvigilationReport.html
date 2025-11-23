@@ -546,9 +546,9 @@ document.addEventListener("DOMContentLoaded", () => {
             middleSlots.innerHTML += `
                 <div class="slot-card">
                     <label>Venue ${att.venue}</label>
-                    <input type="text" value="${att.invigilatorName}" readonly>
                     <b>Gender:</b> ${att.gender}
-                </div>
+                    <input type="text" value="${att.invigilatorName}" readonly>
+                </div><br>
             `;
 
             /* ---------------- RIGHT SIDE ---------------- */
@@ -559,11 +559,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 <label>Replace Invigilator (Same Gender)</label>
                 <select name="slot_${att.attendanceId}" required>
                     <option disabled>Loading...</option>
-                </select><br>
+                </select>
             `;
 
             rightSlots.appendChild(slotWrapper);
-
+            rightSlots.appendChild(document.createElement("br"));
             const dropdown = slotWrapper.querySelector("select");
 
             // Populate dropdown with valid same-gender invigilators
