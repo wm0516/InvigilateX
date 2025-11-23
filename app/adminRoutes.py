@@ -2271,7 +2271,7 @@ def admin_manageInvigilationReport():
 
                     # Duplicate check within this report
                     if invigilator_id in selected_invigilators:
-                        flash(f"Error: Invigilator assigned to multiple slots in the same report.", "danger")
+                        flash(f"Invigilator assigned to multiple slots in the same report.", "Error")
                         return redirect(url_for('admin_manageInvigilationReport'))
                     selected_invigilators.append(invigilator_id)
 
@@ -2287,7 +2287,7 @@ def admin_manageInvigilationReport():
                         gap_start = ia.report.exam.examStartTime - timedelta(minutes=30)
                         gap_end = ia.report.exam.examEndTime + timedelta(minutes=30)
                         if exam.examStartTime < gap_end and exam.examEndTime > gap_start:
-                            flash(f"Error: Invigilator {ia.invigilator.userName} does not have enough gap between exams.", "danger")
+                            flash(f"Invigilator {ia.invigilator.userName} does not have enough gap between exams.", "error")
                             return redirect(url_for('admin_manageInvigilationReport'))
 
             # Second pass: update records
