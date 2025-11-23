@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="slot-card">
                     <label>Venue ${att.venue}</label>
                     <input type="text" value="${att.invigilatorName}" readonly>
-                    <p><b>Gender:</b> ${att.gender}</p>
+                    <b>Gender:</b> ${att.gender}
                 </div>
             `;
 
@@ -559,7 +559,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <label>Replace Invigilator (Same Gender)</label>
                 <select name="slot_${att.attendanceId}" required>
                     <option disabled>Loading...</option>
-                </select>
+                </select><br>
             `;
 
             rightSlots.appendChild(slotWrapper);
