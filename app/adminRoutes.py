@@ -2214,12 +2214,11 @@ def get_report(report_id):
 @app.route('/get_valid_invigilators/<gender>')
 @login_required
 def get_valid_invigilators(gender):
-    valid = User.query.filter_by(userGender=gender).all()
+    valid = User.query.filter_by(userGender=gender, userLevel=1).all()
     return jsonify([
         {"userId": u.userId, "userName": u.userName}
         for u in valid
     ])
-
 
 # -------------------------------
 # Admin Route
@@ -2262,18 +2261,36 @@ def admin_manageInvigilationReport():
             if report is None:
                 flash("Report not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
-            
-            # Update each attendance slot
+
+            # Calculate exam duration in hours
+            exam = report.exam
+            exam_duration = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600
+
             for key, value in request.form.items():
-                if key.startswith("slot_"):  
+                if key.startswith("slot_"):
                     attendance_id = key.replace("slot_", "")
                     new_invigilator_id = int(value)
 
                     att = InvigilatorAttendance.query.get(attendance_id)
                     if att.invigilatorId != new_invigilator_id:
+                        old_invigilator = User.query.get(att.invigilatorId)
+                        new_invigilator = User.query.get(new_invigilator_id)
+
+                        if old_invigilator:
+                            old_invigilator.userPendingCumulativeHours = max(0,old_invigilator.userPendingCumulativeHours - exam_duration)
+                        if new_invigilator:
+                            new_invigilator.userPendingCumulativeHours += exam_duration
+                        else:
+                            new_invigilator.userPendingCumulativeHours = exam_duration
+
+                        # Update the invigilatorId on the attendance record
                         att.invigilatorId = new_invigilator_id
-                        db.session.commit()
-                        send_invigilator_slot_notification(new_invigilator_id)
+
+            db.session.commit()  # Commit after all updates
+            for key, value in request.form.items():
+                if key.startswith("slot_"):
+                    new_invigilator_id = int(value)
+                    send_invigilator_slot_notification(new_invigilator_id)
 
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
