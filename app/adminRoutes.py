@@ -2260,8 +2260,10 @@ def admin_manageInvigilationReport():
             report_id = request.form.get('reportId')
             examId = request.form.get('examId')
             exam = Exam.query.get(examId)
+            if exam is None:
+                flash("Exam not found.", "danger")
+                return redirect(url_for('admin_manageInvigilationReport'))
 
-            # Reject if exam has started
             if datetime.now() > exam.examStartTime:
                 flash("Exam already started — editing is locked!", "danger")
                 return redirect(url_for('admin_manageInvigilationReport'))
