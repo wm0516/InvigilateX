@@ -2182,6 +2182,43 @@ def process_attendance_row(row):
         return False, f"Error processing row: {e}"
 
 
+@app.route('/get_report/<int:report_id>')
+@login_required
+def get_report(report_id):
+    report = InvigilationReport.query.get(report_id)
+    if not report:
+        return jsonify({"error": "Invigilation report not found"}), 404
+    
+    exam = report.exam
+    course = exam.course
+
+    attendances = []
+    for att in report.attendances:
+        attendances.append({
+            "attendanceId": att.attendanceId,
+            "invigilatorId": att.invigilatorId,
+            "invigilatorName": att.invigilator.userName,
+            "gender": att.invigilator.userGender,
+            "venue": att.venueNumber
+        })
+
+    return jsonify({
+        "examId": exam.examId,
+        "courseCode": course.courseCodeSectionIntake,
+        "courseName": course.courseName,
+        "examStart": exam.examStartTime.strftime("%Y-%m-%d %H:%M"),
+        "examEnd": exam.examEndTime.strftime("%Y-%m-%d %H:%M"),
+        "attendances": attendances
+    })
+
+@app.route('/get_valid_invigilators/<gender>')
+@login_required
+def get_valid_invigilators(gender):
+    valid = User.query.filter_by(userGender=gender).all()
+    return jsonify([
+        {"userId": u.userId, "userName": u.userName}
+        for u in valid
+    ])
 
 
 # -------------------------------
@@ -2193,20 +2230,10 @@ def admin_manageInvigilationReport():
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
-    # Attach composite key for sorting/grouping
-    for att in attendances:
-        report = att.report
-        exam = Exam.query.get(report.examId) if report else None
-        att.group_key = (
-            not exam.examStatus if exam else True,
-            exam.examStartTime if exam else datetime.min,
-            exam.examId if exam else 0
-        )
-
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
-        # Upload Section
+        # Upload CSV Section
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2217,8 +2244,38 @@ def admin_manageInvigilationReport():
                 skiprows=0
             )
 
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+        # Update Invigilators Section
+        if form_type == 'edit':
+            report_id = request.form.get('reportId')
+            examId = request.form.get('examId')
+            exam = Exam.query.get(examId)
 
+            # Reject if exam has started
+            if datetime.now() > exam.examStartTime:
+                flash("Exam already started — editing is locked!", "danger")
+                return redirect(url_for('admin_manageInvigilationReport'))
+            
+            # Update each attendance slot
+            for key, value in request.form.items():
+                if key.startswith("slot_"):  
+                    attendance_id = key.replace("slot_", "")
+                    new_invigilator_id = int(value)
+
+                    att = InvigilatorAttendance.query.get(attendance_id)
+                    if att.invigilatorId != new_invigilator_id:
+                        att.invigilatorId = new_invigilator_id
+                        db.session.commit()
+                        send_invigilator_slot_notification(new_invigilator_id)
+
+            flash("Invigilators updated successfully.", "success")
+            return redirect(url_for('admin_manageInvigilationReport'))
+
+    return render_template(
+        'admin/adminManageInvigilationReport.html',
+        active_tab='admin_manageInvigilationReporttab',
+        attendances=attendances,
+        **stats
+    )
 
 # -------------------------------
 # Function for Admin ManageProfile Route

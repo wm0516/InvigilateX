@@ -65,29 +65,57 @@
 {% endblock %}
 
 {% block edit_section %}
-<!-- Edit Form -->
-<form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST" enctype="multipart/form-data">
+<form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" class="function-frame">
-        <h4 style="text-align: center;">Edit Existing Invigilation Report</h4>
+        <h4 style="text-align:center;">Edit Invigilation Report</h4>
+
         <div class="profile-frame">
+
+            <!-- LEFT — Exam Info -->
             <div class="form-left">
+                <label>Select Report</label>
+                <select id="editReport" name="reportId" required>
+                    <option value="" disabled selected>Select Report</option>
+                    {% for att in attendances %}
+                        <option value="{{ att.reportId }}">{{ att.reportId }} - {{ att.report.exam.course.courseName }}</option>
+                    {% endfor %}
+                </select>
+
+                <label>Course Code</label>
+                <input type="text" id="courseCode" readonly>
+
+                <label>Course Name</label>
+                <input type="text" id="courseName" readonly>
+
+                <label>Exam Start</label>
+                <input type="text" id="examStart" readonly>
+
+                <label>Exam End</label>
+                <input type="text" id="examEnd" readonly>
             </div>
-            <div class="form-middle">
-            </div> 
-            <div class="form-right">
+
+            <!-- MIDDLE — Current Invigilators -->
+            <div class="form-middle" id="middleSlots">
+                <!-- JS inserts slot cards here -->
             </div>
+
+            <!-- RIGHT — Replacement Dropdowns -->
+            <div class="form-right" id="rightSlots">
+                <!-- JS inserts dropdowns here -->
+            </div>
+
         </div>
+
         <input type="hidden" name="form_type" value="edit">
-        <br><br>
 
         <div class="button-wrapper">
-            <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
-                <i class="fas fa-check"></i> Update InvigilationReport
-            </button>
+            <button type="submit" style="background:#d4edda;color:#155724;">Update Invigilators</button>
         </div>
+
     </div>
 </form>
 {% endblock %}
+
 
 {% block content %}
 <div class="menu-section">
@@ -494,6 +522,77 @@ document.addEventListener("DOMContentLoaded", function () {
         // Toggle "No results found"
         noResults.style.display = foundAny ? "none" : "block";
     });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const reportSelect = document.getElementById("editReport");
+    const courseCode = document.getElementById("courseCode");
+    const courseName = document.getElementById("courseName");
+    const examStart = document.getElementById("examStart");
+    const examEnd = document.getElementById("examEnd");
+    const middleSlots = document.getElementById("middleSlots");
+    const rightSlots = document.getElementById("rightSlots");
+
+    // Fetch report details
+    async function loadReport(id) {
+        const resp = await fetch(`/get_report/${id}`);
+        const data = await resp.json();
+        if (data.error) { alert(data.error); return; }
+
+        courseCode.value = data.courseCode;
+        courseName.value = data.courseName;
+        examStart.value = data.examStart;
+        examEnd.value = data.examEnd;
+
+        middleSlots.innerHTML = "";
+        rightSlots.innerHTML = "";
+
+        // Render each invigilator slot
+        for (let att of data.attendances) {
+
+            // LEFT side — current invigilator
+            middleSlots.innerHTML += `
+                <div class="slot-card">
+                    <label>Current Invigilator</label>
+                    <input type="text" value="${att.invigilatorName}" readonly>
+                    <p>Gender: ${att.gender}</p>
+                    <p>Venue: ${att.venue}</p>
+                </div>
+            `;
+
+            // RIGHT side — dropdown to pick replacement
+            const slotId = att.attendanceId;
+            const gender = att.gender;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "slot-card";
+
+            wrapper.innerHTML = `
+                <label>Replace Invigilator (Same Gender)</label>
+                <select name="slot_${slotId}" class="slot-select" required>
+                    <option value="" disabled selected>Loading...</option>
+                </select>
+            `;
+            rightSlots.appendChild(wrapper);
+
+            // Populate dropdown
+            const select = wrapper.querySelector("select");
+            fetch(`/get_valid_invigilators/${gender}`)
+                .then(res => res.json())
+                .then(users => {
+                    select.innerHTML = "";
+                    for (let u of users) {
+                        select.innerHTML += `<option value="${u.userId}">${u.userName}</option>`;
+                    }
+                });
+        }
+    }
+
+    reportSelect.addEventListener("change", () => {
+        loadReport(reportSelect.value);
+    });
+
 });
 </script>
 {% endblock %}
