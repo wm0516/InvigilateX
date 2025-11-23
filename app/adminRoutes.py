@@ -2269,13 +2269,7 @@ def admin_manageInvigilationReport():
 
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
-
-    return render_template(
-        'admin/adminManageInvigilationReport.html',
-        active_tab='admin_manageInvigilationReporttab',
-        attendances=attendances,
-        **stats
-    )
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
 
 # -------------------------------
 # Function for Admin ManageProfile Route

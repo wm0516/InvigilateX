@@ -437,35 +437,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (result.success) {
                     alert(result.message);
 
-                    // Update check-in/out times
+                    // Restore Check-in/out text
                     checkInSpan.textContent = result.check_in;
                     checkOutSpan.textContent = result.check_out;
 
-                    // Update attendance status
+                    // Update attendance remark
                     tr.querySelector(".status").textContent = result.remark;
 
                     // Update invigilation status
                     const statusClass = result.invigilation_status ? "frame-completed" : "frame-pending";
                     const statusText = result.invigilation_status ? "ACCEPTED" : "PENDING";
+
                     statusSpan.className = `status ${statusClass} invigilation-status`;
                     statusSpan.textContent = statusText;
 
-                    // Remove Total Invigilation Time display
+                    // Remove total time display (regenerated on refresh)
                     const totalDiv = tr.querySelector("div[style*='color: green']");
-                    if (totalDiv) {
-                        totalDiv.remove();
-                    }
+                    if (totalDiv) totalDiv.remove();
 
                     // Restore Edit button
-                    actionTd.innerHTML = `<button type="button" class="edit-btn" data-id="${attendanceId}" title="Edit"><i class="fa fa-edit"></i></button>`;
+                    actionTd.innerHTML = `
+                        <button type="button" class="edit-btn" data-id="${attendanceId}">
+                            <i class="fa fa-edit"></i>
+                        </button>
+                    `;
                     attachEditListener(actionTd.querySelector(".edit-btn"));
+
                     tr.classList.remove("editing");
                 } else {
-                    alert("Error: " + result.message);
+                    alert("Failed: " + result.message);
                 }
             } catch (err) {
-                alert("Failed to update attendance. Please try again.");
                 console.error(err);
+                alert("An error occurred while updating attendance.");
             }
         });
 
@@ -473,13 +477,19 @@ document.addEventListener("DOMContentLoaded", function () {
         cancelBtn.addEventListener("click", () => {
             checkInSpan.textContent = originalCheckIn;
             checkOutSpan.textContent = originalCheckOut;
-            
-            const statusClass = originalStatusBoolean ? "frame-completed" : "frame-pending";
-            statusSpan.className = `status ${statusClass} invigilation-status`;
             statusSpan.textContent = originalStatus;
 
-            actionTd.innerHTML = `<button type="button" class="edit-btn" data-id="${attendanceId}" title="Edit"><i class="fa fa-edit"></i></button>`;
+            const statusClass = originalStatusBoolean ? "frame-completed" : "frame-pending";
+            statusSpan.className = `status ${statusClass} invigilation-status`;
+
+            // Restore Edit button
+            actionTd.innerHTML = `
+                <button type="button" class="edit-btn" data-id="${attendanceId}">
+                    <i class="fa fa-edit"></i>
+                </button>
+            `;
             attachEditListener(actionTd.querySelector(".edit-btn"));
+
             tr.classList.remove("editing");
         });
     }
