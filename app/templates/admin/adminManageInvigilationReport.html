@@ -540,8 +540,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let att of data.attendances) {
             middleSlots.innerHTML += `
                 <div class="slot-card">
-                    <label>Venue ${att.venue}</label><br>
-                    <b>Gender:</b> ${att.gender}
+                    <label><b>Venue</b>: ${att.venue} [<b>Gender</b>: ${att.gender}]</label>
                     <input type="text" value="${att.invigilatorName}" readonly>
                 </div><br>
             `;
