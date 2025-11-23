@@ -2277,21 +2277,16 @@ def admin_manageInvigilationReport():
                         new_invigilator = User.query.get(new_invigilator_id)
 
                         if old_invigilator:
-                            old_invigilator.userPendingCumulativeHours = max(0,old_invigilator.userPendingCumulativeHours - exam_duration)
+                            old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - exam_duration)
                         if new_invigilator:
-                            new_invigilator.userPendingCumulativeHours += exam_duration
-                        else:
-                            new_invigilator.userPendingCumulativeHours = exam_duration
-
-                        # Update the invigilatorId on the attendance record
+                            new_invigilator.userPendingCumulativeHours = (new_invigilator.userPendingCumulativeHours or 0) + exam_duration
                         att.invigilatorId = new_invigilator_id
+            db.session.commit() 
 
-            db.session.commit()  # Commit after all updates
             for key, value in request.form.items():
                 if key.startswith("slot_"):
                     new_invigilator_id = int(value)
                     send_invigilator_slot_notification(new_invigilator_id)
-
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats, reports=reports)
