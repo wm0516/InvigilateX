@@ -2191,16 +2191,17 @@ def get_report(report_id):
     
     exam = report.exam
     course = exam.course
-
     attendances = []
-    for att in report.attendances:
-        attendances.append({
-            "attendanceId": att.attendanceId,
-            "invigilatorId": att.invigilatorId,
-            "invigilatorName": att.invigilator.userName,
-            "gender": att.invigilator.userGender,
-            "venue": att.venueNumber
-        })
+
+    # Attach composite key for sorting/grouping
+    for att in attendances:
+        report = att.report
+        exam = Exam.query.get(report.examId) if report else None
+        att.group_key = (
+            not exam.examStatus if exam else True,
+            exam.examStartTime if exam else datetime.min,
+            exam.examId if exam else 0
+        )
 
     return jsonify({
         "examId": exam.examId,
