@@ -2262,10 +2262,6 @@ def admin_manageInvigilationReport():
             if report is None:
                 flash("Report not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
-
-            if datetime.now() > report.exam.examStartTime:
-                flash("Exam already started — editing is locked!", "error")
-                return redirect(url_for('admin_manageInvigilationReport'))
             
             # Update each attendance slot
             for key, value in request.form.items():
