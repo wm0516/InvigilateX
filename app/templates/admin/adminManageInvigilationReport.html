@@ -540,7 +540,7 @@ document.addEventListener("DOMContentLoaded", () => {
         for (let att of data.attendances) {
             middleSlots.innerHTML += `
                 <div class="slot-card">
-                    <label><b>Venue</b>: ${att.venue} [<b>Gender</b>: ${att.gender}]</label>
+                    <label><b>Venue</b>: ${att.venue}</label>
                     <input type="text" value="${att.invigilatorName}" readonly>
                 </div><br>
             `;
@@ -548,7 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const slotWrapper = document.createElement("div");
             slotWrapper.className = "slot-card";
             slotWrapper.innerHTML = `
-                <label>Replace Invigilator (Same Gender)</label>
+                <label>New Invigilator [<b>Gender</b>: ${att.gender}]</label>
                 <select name="slot_${att.attendanceId}" required>
                     <option disabled>Loading...</option>
                 </select>
