@@ -2227,6 +2227,7 @@ def get_valid_invigilators(gender):
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
+    reports = InvigilationReport.query.all()
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
@@ -2279,7 +2280,7 @@ def admin_manageInvigilationReport():
 
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
-    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats)
+    return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats, reports=reports)
 
 # -------------------------------
 # Function for Admin ManageProfile Route

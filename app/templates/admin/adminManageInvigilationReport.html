@@ -73,8 +73,10 @@
                 <label>Select Report</label>
                 <select id="editReport" name="reportId" required>
                     <option value="" disabled selected>Select Report</option>
-                    {% for att in attendances %}
-                        <option value="{{ att.reportId }}">{{ att.reportId }} - {{ att.report.exam.course.courseName }}</option>
+                    {% for r in reports %}
+                        <option value="{{ r.invigilationReportId }}">
+                            {{ r.invigilationReportId }} - {{ r.exam.course.courseName }}
+                        </option>
                     {% endfor %}
                 </select><br>
 
@@ -517,12 +519,9 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-
     const reportSelect = document.getElementById("editReport");
-
     const courseInfo = document.getElementById("courseInfo");
     const examTime = document.getElementById("examTime");
-
     const middleSlots = document.getElementById("middleSlots");
     const rightSlots = document.getElementById("rightSlots");
 
@@ -533,28 +532,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // ✔ Combined Course field
         courseInfo.value = `${data.courseCode} - ${data.courseName}`;
-
         // ✔ Combined Exam Time
         examTime.value = `${data.examStart} → ${data.examEnd}`;
-
         middleSlots.innerHTML = "";
         rightSlots.innerHTML = "";
 
         for (let att of data.attendances) {
-
-            /* ---------------- LEFT SIDE ---------------- */
             middleSlots.innerHTML += `
                 <div class="slot-card">
-                    <label>Venue ${att.venue}</label>
+                    <label>Venue ${att.venue}</label><br>
                     <b>Gender:</b> ${att.gender}
                     <input type="text" value="${att.invigilatorName}" readonly>
                 </div><br>
             `;
 
-            /* ---------------- RIGHT SIDE ---------------- */
             const slotWrapper = document.createElement("div");
             slotWrapper.className = "slot-card";
-
             slotWrapper.innerHTML = `
                 <label>Replace Invigilator (Same Gender)</label>
                 <select name="slot_${att.attendanceId}" required>
@@ -565,8 +558,6 @@ document.addEventListener("DOMContentLoaded", () => {
             rightSlots.appendChild(slotWrapper);
             rightSlots.appendChild(document.createElement("br"));
             const dropdown = slotWrapper.querySelector("select");
-
-            // Populate dropdown with valid same-gender invigilators
             fetch(`/get_valid_invigilators/${att.gender}`)
                 .then(res => res.json())
                 .then(invigilators => {
@@ -582,10 +573,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         }
     }
-
     reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
-
 });
-
 </script>
 {% endblock %}
