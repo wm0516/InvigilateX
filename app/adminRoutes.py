@@ -2243,7 +2243,6 @@ def admin_manageInvigilationReport():
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
-        # Upload CSV Section
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2254,39 +2253,65 @@ def admin_manageInvigilationReport():
                 skiprows=0
             )
 
-        # Update Invigilators Section
-        if form_type == 'edit':
+        elif form_type == 'edit':
             report_id = request.form.get('reportId')
             report = InvigilationReport.query.get(report_id)
-            if report is None:
+            if not report:
                 flash("Report not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
 
-            # Calculate exam duration in hours
             exam = report.exam
             exam_duration = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600
+            selected_invigilators = []
 
+            # First pass: validation
+            for key, value in request.form.items():
+                if key.startswith("slot_"):
+                    invigilator_id = int(value)
+
+                    # Duplicate check within this report
+                    if invigilator_id in selected_invigilators:
+                        flash(f"Error: Invigilator assigned to multiple slots in the same report.", "danger")
+                        return redirect(url_for('admin_manageInvigilationReport'))
+                    selected_invigilators.append(invigilator_id)
+
+                    # 30-minute gap check
+                    att_id = key.replace("slot_", "")
+                    att = InvigilatorAttendance.query.get(att_id)
+                    invig_attendances = InvigilatorAttendance.query.join(InvigilationReport).join(Exam)\
+                        .filter(InvigilatorAttendance.invigilatorId == invigilator_id).all()
+
+                    for ia in invig_attendances:
+                        if ia.report.examId == exam.examId:
+                            continue  # skip same exam
+                        gap_start = ia.report.exam.examStartTime - timedelta(minutes=30)
+                        gap_end = ia.report.exam.examEndTime + timedelta(minutes=30)
+                        if exam.examStartTime < gap_end and exam.examEndTime > gap_start:
+                            flash(f"Error: Invigilator {ia.invigilator.userName} does not have enough gap between exams.", "danger")
+                            return redirect(url_for('admin_manageInvigilationReport'))
+
+            # Second pass: update records
             for key, value in request.form.items():
                 if key.startswith("slot_"):
                     attendance_id = key.replace("slot_", "")
                     new_invigilator_id = int(value)
-
                     att = InvigilatorAttendance.query.get(attendance_id)
-                    if att.invigilatorId != new_invigilator_id:
-                        old_invigilator = User.query.get(att.invigilatorId)
-                        new_invigilator = User.query.get(new_invigilator_id)
+                    old_invigilator = User.query.get(att.invigilatorId)
+                    new_invigilator = User.query.get(new_invigilator_id)
 
-                        if old_invigilator:
-                            old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - exam_duration)
-                        if new_invigilator:
-                            new_invigilator.userPendingCumulativeHours = (new_invigilator.userPendingCumulativeHours or 0) + exam_duration
+                    if old_invigilator.userId != new_invigilator.userId:
+                        old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - exam_duration)
+                        # Add hours to new invigilator
+                        new_invigilator.userPendingCumulativeHours += exam_duration
+                        # Update the attendance
                         att.invigilatorId = new_invigilator_id
-            db.session.commit() 
+            db.session.commit()
 
+            # Send notifications
             for key, value in request.form.items():
                 if key.startswith("slot_"):
-                    new_invigilator_id = int(value)
-                    send_invigilator_slot_notification(new_invigilator_id)
+                    send_invigilator_slot_notification(int(value))
+
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats, reports=reports)
