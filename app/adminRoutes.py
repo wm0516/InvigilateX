@@ -2258,13 +2258,12 @@ def admin_manageInvigilationReport():
         # Update Invigilators Section
         if form_type == 'edit':
             report_id = request.form.get('reportId')
-            examId = request.form.get('examId')
-            exam = Exam.query.get(examId)
-            if exam is None:
-                flash("Exam not found.", "danger")
+            report = InvigilationReport.query.get(report_id)
+            if report is None:
+                flash("Report not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
 
-            if datetime.now() > exam.examStartTime:
+            if datetime.now() > report.exam.examStartTime:
                 flash("Exam already started — editing is locked!", "danger")
                 return redirect(url_for('admin_manageInvigilationReport'))
             
