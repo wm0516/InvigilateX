@@ -2271,7 +2271,7 @@ def admin_manageInvigilationReport():
 
                     # Duplicate check within this report
                     if invigilator_id in selected_invigilators:
-                        flash(f"Invigilator assigned to multiple slots in the same report.", "Error")
+                        flash(f"Invigilator assigned to multiple slots in the same report.", "error")
                         return redirect(url_for('admin_manageInvigilationReport'))
                     selected_invigilators.append(invigilator_id)
 
