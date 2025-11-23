@@ -2264,7 +2264,7 @@ def admin_manageInvigilationReport():
                 return redirect(url_for('admin_manageInvigilationReport'))
 
             if datetime.now() > report.exam.examStartTime:
-                flash("Exam already started — editing is locked!", "danger")
+                flash("Exam already started — editing is locked!", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
             
             # Update each attendance slot
