@@ -403,6 +403,40 @@ def user_homepage():
 # -------------------------------
 # Helper functions
 # -------------------------------
+@app.route("/invigilator/accept", methods=["POST"])
+@login_required
+def accept_slot():
+    data = request.get_json()
+    attendance_id = data.get("attendance_id")
+    user_id = session.get("user_id")
+    slot = InvigilatorAttendance.query.get(attendance_id)
+
+    if not slot:
+        return jsonify({"error": "Slot not found"}), 404
+
+    exam_id = slot.report.examId
+    # STEP A: Check if the user already has a slot for this exam
+    existing = find_user_existing_slot(user_id, exam_id)
+
+    # CASE 1 — Public slot selected, but user already has another slot for same exam
+    if existing and existing.attendanceId != slot.attendanceId:
+        # Merge logic: update existing slot, delete public duplicate
+        existing.timeAction = datetime.now()
+        existing.invigilationStatus = True
+        existing.remark = "PENDING"
+        db.session.delete(slot)
+        db.session.commit()
+        return jsonify({"status": "merged"}), 200
+
+    # CASE 2 — Normal accept
+    slot.invigilatorId = user_id
+    slot.timeAction = datetime.now()
+    slot.invigilationStatus = True
+    slot.remark = "PENDING"
+
+    db.session.commit()
+    return jsonify({"status": "accepted"}), 200
+
 def hours_diff(start, end):
     """Return positive hour difference."""
     if not start or not end:
