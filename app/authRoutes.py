@@ -397,7 +397,6 @@ def user_homepage():
                 )
                 .first()
             )
-            flash(f"Output: {existing_waiting}", "success")
             if not existing_waiting:
                 chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours
 

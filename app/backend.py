@@ -601,18 +601,6 @@ def check_profile(user_id, cardId, contact, password1, password2):
 # -------------------------------
 # Helper functions
 # -------------------------------
-def find_user_existing_slot(user_id, exam_id):
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilationReport.examId == exam_id
-        )
-        .first()
-    )
-
-
 def waiting_record(user_id):
     return (
         InvigilatorAttendance.query
@@ -649,19 +637,19 @@ def open_record(user_id):
 
     user_gender = current_user.userGender
 
-    # STEP 1 — Find all exam IDs where this user has already accepted or assigned
-    accepted_exam_ids = {
-        att.report.examId
-        for att in InvigilatorAttendance.query
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .filter(
-                InvigilatorAttendance.invigilatorId == user_id,
-                InvigilatorAttendance.invigilationStatus == True  # Already accepted
-            )
-            .all()
-    }
+    # Subquery: slots that are currently in THIS user's waiting list
+    waiting_subq = (
+        InvigilatorAttendance.query
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.timeAction.is_(None)
+        )
+        .with_entities(InvigilatorAttendance.reportId)
+        .subquery()
+    )
 
-    # STEP 2 — Query open slots
+    # Public slots
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -670,39 +658,37 @@ def open_record(user_id):
         .filter(
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
-            InvigilatorAttendance.invigilationStatus == False,  # only unaccepted slots
+            InvigilatorAttendance.invigilationStatus == False,
 
-            # ✅ include:
-            # - unassigned slots
-            # - rejected by self
+            # Include:
+            # - unassigned
+            # - OR assigned but still not accepted (timeAction NULL)
+            # - OR assigned but rejected (timeAction NOT NULL)
             or_(
-                InvigilatorAttendance.invigilatorId == None,
-                and_(
-                    InvigilatorAttendance.invigilatorId == user_id,
-                    InvigilatorAttendance.timeAction.isnot(None)  # rejected previously
-                ),
-                and_(
-                    User.userGender == user_gender,
-                    InvigilatorAttendance.invigilatorId != user_id  # same gender but not self
-                )
-            )
+                InvigilatorAttendance.invigilatorId.is_(None),
+                InvigilatorAttendance.invigilatorId.isnot(None)
+            ),
+
+            # Gender rule
+            or_(
+                InvigilatorAttendance.invigilatorId.is_(None),
+                User.userGender == user_gender
+            ),
+
+            # Exclude slots that belong to current user's waiting list
+            ~InvigilatorAttendance.reportId.in_(waiting_subq)
         )
         .all()
     )
 
-    # STEP 3 — Remove duplicates and exclude exams already accepted by user
+    # Remove duplicates by examId
     unique_slots = {}
     for slot in slots:
         exam_id = slot.report.examId
-
-        if exam_id in accepted_exam_ids:
-            continue  # skip slots already accepted
-
         if exam_id not in unique_slots:
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
-
 
 
 # -------------------------------
