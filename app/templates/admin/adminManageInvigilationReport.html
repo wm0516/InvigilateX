@@ -547,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const slotWrapper = document.createElement("div");
             slotWrapper.innerHTML = `
-                <label>New Invigilator</label>
+                <label>New Invigilator [<b>Gender</b>: ${att.gender}]</label>
                 <select name="slot_${att.attendanceId}" required>
                     <option disabled>Loading...</option>
                 </select>
