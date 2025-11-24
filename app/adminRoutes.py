@@ -2223,7 +2223,13 @@ def get_valid_invigilators():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    reports = InvigilationReport.query.all()
+    now = datetime.now()
+    reports = (
+        InvigilationReport.query
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(Exam.examStartTime > now)
+        .all()
+    )    
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
