@@ -359,7 +359,6 @@ def user_homepage():
         # Handle open slot accept
         open_id = request.form.get('a_id')
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
-
         if open_slot and action == 'open_accept' and chosen:
             exam = (
                 Exam.query
@@ -368,17 +367,17 @@ def user_homepage():
                 .first()
             )
 
-            # Gender check here (must match user)
-            if open_slot.invigilator.userGender != chosen.userGender:
+            # Gender check
+            if open_slot.invigilator and open_slot.invigilator.userGender != chosen.userGender:
                 flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Assign slot
+            # Assign slot to user
             open_slot.invigilatorId = user_id
             open_slot.invigilationStatus = True
             open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
-            # Update hours
+            # Calculate hours
             hours = 0
             if exam and exam.examStartTime and exam.examEndTime:
                 start_dt, end_dt = exam.examStartTime, exam.examEndTime
@@ -386,10 +385,25 @@ def user_homepage():
                     end_dt += timedelta(days=1)
                 hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-            chosen.userPendingCumulativeHours  = (chosen.userPendingCumulativeHours or 0) + hours
+            # ✅ Check if user already had a waiting slot for this exam
+            existing_waiting = (
+                InvigilatorAttendance.query
+                .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+                .filter(
+                    InvigilatorAttendance.invigilatorId == user_id,
+                    InvigilatorAttendance.invigilationStatus == False,
+                    InvigilatorAttendance.timeAction.is_(None),
+                    InvigilationReport.examId == exam.examId
+                )
+                .first()
+            )
+
+            if not existing_waiting:
+                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours
+
             db.session.commit()
             flash("Open Slot Accepted Successfully", "success")
-        return redirect(url_for('user_homepage'))
+            return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 
 
@@ -399,7 +413,6 @@ def user_homepage():
 # -------------------------------
 # Helper functions
 # -------------------------------
-
 def hours_diff(start, end):
     """Return positive hour difference."""
     if not start or not end:
