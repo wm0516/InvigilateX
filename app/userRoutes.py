@@ -351,37 +351,37 @@ def user_profile():
     user = User.query.filter_by(userId=userId).first()
     
     # Pre-fill existing data
-    userCardUID = user.userCardId or ''
-    userContact_text = user.userContact or ''
-    userPassword1_text = ''
-    userPassword2_text = ''
+    user_cardUID = user.userCardId or ''
+    user_contact_text = user.userContact or ''
+    user_password1_text = ''
+    user_password2_text = ''
 
     if request.method == 'POST':
-        userCardUID = request.form.get('cardUID', '').strip().replace(' ', '')
-        userContact_text = request.form.get('contact', '').strip()
-        userPassword1_text = request.form.get('password1', '').strip()
+        user_cardUID = request.form.get('cardUID', '').strip().replace(' ', '')
+        user_contact_text = request.form.get('contact', '').strip()
+        user_password1_text = request.form.get('password1', '').strip()
         userPassword2_text = request.form.get('password2', '').strip()
 
-        valid, message = check_profile(userId, userCardUID, userContact_text, userPassword1_text, userPassword2_text)
+        valid, message = check_profile(userId, user_cardUID, user_contact_text, user_password1_text, user_password2_text)
         if not valid:
             flash(message, 'error')
             return redirect(url_for('user_profile'))
 
         if valid and user:
-            user.userContact = userContact_text or None
-            user.userCardId = userCardUID or None
+            user.userContact = user_contact_text or None
+            user.userCardId = user_cardUID or None
             # Update password only if entered
-            if userPassword1_text:
-                hashed_pw = bcrypt.generate_password_hash(userPassword1_text).decode('utf-8')
+            if user_password1_text:
+                hashed_pw = bcrypt.generate_password_hash(user_password1_text).decode('utf-8')
                 user.userPassword = hashed_pw
 
             db.session.commit()
             flash("Successfully updated", 'success')
             return redirect(url_for('user_profile'))
     
-    flash(f"Card UID: {userCardUID}", "success")
-    return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, userContact_text=userContact_text,
-                            userPassword1_text=userPassword1_text, userPassword2_text=userPassword2_text, userCardUID=userCardUID)
+    flash(f"Card UID: {user_cardUID}", "success")
+    return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, user_contact_text=user_contact_text,
+                            user_password1_text=user_password1_text, user_password2_text=user_password2_text, user_cardUID=user_cardUID)
 
 
 
