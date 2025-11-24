@@ -671,9 +671,20 @@ def open_record(user_id):
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
             InvigilatorAttendance.invigilationStatus == False,  # only unaccepted slots
+
+            # ✅ include:
+            # - unassigned slots
+            # - rejected by self
             or_(
-                InvigilatorAttendance.invigilatorId == None,  # unassigned
-                User.userGender == user_gender               # same gender only
+                InvigilatorAttendance.invigilatorId == None,
+                and_(
+                    InvigilatorAttendance.invigilatorId == user_id,
+                    InvigilatorAttendance.timeAction.isnot(None)  # rejected previously
+                ),
+                and_(
+                    User.userGender == user_gender,
+                    InvigilatorAttendance.invigilatorId != user_id  # same gender but not self
+                )
             )
         )
         .all()
