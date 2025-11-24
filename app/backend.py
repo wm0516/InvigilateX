@@ -649,7 +649,19 @@ def open_record(user_id):
 
     user_gender = current_user.userGender
 
-    # Query open slots
+    # STEP 1 — Find all exam IDs where this user has already accepted or assigned
+    accepted_exam_ids = {
+        att.report.examId
+        for att in InvigilatorAttendance.query
+            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+            .filter(
+                InvigilatorAttendance.invigilatorId == user_id,
+                InvigilatorAttendance.invigilationStatus == True  # Already accepted
+            )
+            .all()
+    }
+
+    # STEP 2 — Query open slots
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -658,7 +670,7 @@ def open_record(user_id):
         .filter(
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
-            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.invigilationStatus == False,  # only unaccepted slots
             or_(
                 InvigilatorAttendance.invigilatorId == None,  # unassigned
                 User.userGender == user_gender               # same gender only
@@ -667,14 +679,19 @@ def open_record(user_id):
         .all()
     )
 
-    # Remove duplicates by examId
+    # STEP 3 — Remove duplicates and exclude exams already accepted by user
     unique_slots = {}
     for slot in slots:
         exam_id = slot.report.examId
+
+        if exam_id in accepted_exam_ids:
+            continue  # skip slots already accepted
+
         if exam_id not in unique_slots:
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 # -------------------------------

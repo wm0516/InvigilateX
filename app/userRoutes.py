@@ -351,24 +351,26 @@ def user_profile():
     user = User.query.filter_by(userId=userId).first()
     
     # Pre-fill existing data
-    userContact_text = ''
+    userCardUID = user.userCardId or ''
+    userContact_text = user.userContact or ''
     userPassword1_text = ''
     userPassword2_text = ''
-    error_message = None
 
     if request.method == 'POST':
+        userCardUID = request.form.get('cardUID', '').strip().replace(' ', '')
         userContact_text = request.form.get('contact', '').strip()
         userPassword1_text = request.form.get('password1', '').strip()
         userPassword2_text = request.form.get('password2', '').strip()
 
-        valid, message = check_profile(userId, userContact_text, userPassword1_text, userPassword2_text)
+        valid, message = check_profile(userId, userCardUID, userContact_text, userPassword1_text, userPassword2_text)
         if not valid:
             flash(message, 'error')
             return redirect(url_for('user_profile'))
 
         if valid and user:
-            if userContact_text:
-                user.userContact = userContact_text
+            user.userContact = userContact_text or None
+            user.userCardId = userCardUID or None
+            # Update password only if entered
             if userPassword1_text:
                 hashed_pw = bcrypt.generate_password_hash(userPassword1_text).decode('utf-8')
                 user.userPassword = hashed_pw
