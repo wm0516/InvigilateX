@@ -361,34 +361,38 @@ def user_homepage():
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
 
         if open_slot and action == 'open_accept' and chosen:
-            exam = (
-                Exam.query
-                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
-                .first()
-            )
-
-            # Gender check here (must match user)
+            # Gender check
             if open_slot.invigilator.userGender != chosen.userGender:
                 flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Assign slot
-            open_slot.invigilatorId = user_id
-            open_slot.invigilationStatus = True
-            open_slot.timeAction = datetime.now() + timedelta(hours=8)
+            # Only assign if not already assigned
+            if open_slot.invigilatorId != user_id:
+                open_slot.invigilatorId = user_id
+                open_slot.invigilationStatus = True
 
-            # Update hours
-            hours = 0
-            if exam and exam.examStartTime and exam.examEndTime:
-                start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                if end_dt < start_dt:
-                    end_dt += timedelta(days=1)
-                hours = (end_dt - start_dt).total_seconds() / 3600.0
+                # Update hours only if this user hasn't been assigned yet
+                exam = (
+                    Exam.query
+                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                    .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
+                    .first()
+                )
 
-            chosen.userPendingCumulativeHours  = (chosen.userPendingCumulativeHours or 0) + hours
-            db.session.commit()
-            flash("Open Slot Accepted Successfully", "success")
+                hours = 0
+                if exam and exam.examStartTime and exam.examEndTime:
+                    start_dt, end_dt = exam.examStartTime, exam.examEndTime
+                    if end_dt < start_dt:
+                        end_dt += timedelta(days=1)
+                    hours = (end_dt - start_dt).total_seconds() / 3600.0
+
+                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours
+                open_slot.timeAction = datetime.now() + timedelta(hours=8)
+                db.session.commit()
+                flash("Open Slot Accepted Successfully", "success")
+            else:
+                flash("You have already accepted this slot.", "info")
+
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 

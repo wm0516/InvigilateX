@@ -378,9 +378,7 @@ def user_profile():
             db.session.commit()
             flash("Successfully updated", 'success')
             return redirect(url_for('user_profile'))
-    
-    flash(f"Card UID: {user_cardUID}", "success")
-    return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, user_contact_text=user_contact_text,
+        return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, user_contact_text=user_contact_text,
                             user_password1_text=user_password1_text, user_password2_text=user_password2_text, user_cardUID=user_cardUID)
 
 
