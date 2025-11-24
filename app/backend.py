@@ -637,7 +637,7 @@ def open_record(user_id):
 
     user_gender = current_user.userGender
 
-    # Subquery: slots that are currently in THIS user's waiting list
+    # 1. Waiting subquery (exclude from public)
     waiting_subq = (
         InvigilatorAttendance.query
         .filter(
@@ -649,7 +649,18 @@ def open_record(user_id):
         .subquery()
     )
 
-    # Public slots
+    # 2. Exams already held by user (accepted or waiting)
+    user_exam_subq = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .with_entities(InvigilationReport.examId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id
+        )
+        .subquery()
+    )
+
+    # 3. Public slots query
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -660,23 +671,18 @@ def open_record(user_id):
             InvigilatorAttendance.timeCreate < cutoff_time,
             InvigilatorAttendance.invigilationStatus == False,
 
-            # Include:
-            # - unassigned
-            # - OR assigned but still not accepted (timeAction NULL)
-            # - OR assigned but rejected (timeAction NOT NULL)
-            or_(
-                InvigilatorAttendance.invigilatorId.is_(None),
-                InvigilatorAttendance.invigilatorId.isnot(None)
-            ),
-
             # Gender rule
             or_(
                 InvigilatorAttendance.invigilatorId.is_(None),
                 User.userGender == user_gender
             ),
 
-            # Exclude slots that belong to current user's waiting list
-            ~InvigilatorAttendance.reportId.in_(waiting_subq)
+            # Not in the user's waiting list
+            ~InvigilatorAttendance.reportId.in_(waiting_subq),
+
+            # ❗ IMPORTANT FIX:
+            # Do not show any exam the user already has a seat in
+            ~Exam.examId.in_(user_exam_subq)
         )
         .all()
     )
@@ -689,6 +695,7 @@ def open_record(user_id):
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 # -------------------------------
