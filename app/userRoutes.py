@@ -379,8 +379,8 @@ def user_profile():
             flash("Successfully updated", 'success')
             return redirect(url_for('user_profile'))
 
-    return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, userContact_text=user.userContact if user else '',
-                            userPassword1_text=userPassword1_text, userPassword2_text=userPassword2_text, error_message=error_message)
+    return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, userContact_text=userContact_text,
+                            userPassword1_text=userPassword1_text, userPassword2_text=userPassword2_text, userCardUID=userCardUID)
 
 
 
