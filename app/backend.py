@@ -601,6 +601,18 @@ def check_profile(user_id, cardId, contact, password1, password2):
 # -------------------------------
 # Helper functions
 # -------------------------------
+def find_user_existing_slot(user_id, exam_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilationReport.examId == exam_id
+        )
+        .first()
+    )
+
+
 def waiting_record(user_id):
     return (
         InvigilatorAttendance.query
