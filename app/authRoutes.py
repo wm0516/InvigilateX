@@ -405,14 +405,12 @@ def accept_slot():
     data = request.get_json()
     attendance_id = data.get("attendance_id")
     user_id = session.get("user_id")
-
     slot = InvigilatorAttendance.query.get(attendance_id)
 
     if not slot:
         return jsonify({"error": "Slot not found"}), 404
 
     exam_id = slot.report.examId
-
     # STEP A: Check if the user already has a slot for this exam
     existing = find_user_existing_slot(user_id, exam_id)
 
@@ -422,7 +420,6 @@ def accept_slot():
         existing.timeAction = datetime.now()
         existing.invigilationStatus = True
         existing.remark = "PENDING"
-
         db.session.delete(slot)
         db.session.commit()
         return jsonify({"status": "merged"}), 200
