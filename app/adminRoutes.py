@@ -2215,10 +2215,7 @@ def get_report(report_id):
 @login_required
 def get_valid_invigilators():
     valid = User.query.filter_by(userLevel=1).all()
-    return jsonify([
-        {"userId": u.userId, "userName": u.userName}
-        for u in valid
-    ])
+    return jsonify([{"userId": u.userId, "userName": u.userName}for u in valid])
 
 # -------------------------------
 # Admin Route
