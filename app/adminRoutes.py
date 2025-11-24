@@ -2211,10 +2211,10 @@ def get_report(report_id):
         "attendances": attendances
     })
 
-@app.route('/get_valid_invigilators/<gender>')
+@app.route('/get_valid_invigilators')
 @login_required
-def get_valid_invigilators(gender):
-    valid = User.query.filter_by(userGender=gender, userLevel=1).all()
+def get_valid_invigilators():
+    valid = User.query.filter_by(userLevel=1).all()
     return jsonify([
         {"userId": u.userId, "userName": u.userName}
         for u in valid

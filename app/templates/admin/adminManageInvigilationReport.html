@@ -556,7 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
             rightSlots.appendChild(slotWrapper);
             rightSlots.appendChild(document.createElement("br"));
             const dropdown = slotWrapper.querySelector("select");
-            fetch(`/get_valid_invigilators/${att.gender}`)
+            fetch(`/get_valid_invigilators`)
                 .then(res => res.json())
                 .then(invigilators => {
                     dropdown.innerHTML = "";
