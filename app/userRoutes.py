@@ -360,17 +360,18 @@ def user_profile():
         user_cardUID = request.form.get('cardUID', '').strip().replace(' ', '')
         user_contact_text = request.form.get('contact', '').strip()
         user_password1_text = request.form.get('password1', '').strip()
-        userPassword2_text = request.form.get('password2', '').strip()
+        user_password2_text = request.form.get('password2', '').strip()
 
         valid, message = check_profile(userId, user_cardUID, user_contact_text, user_password1_text, user_password2_text)
         if not valid:
             flash(message, 'error')
-            return redirect(url_for('user_profile'))
+            return render_template('user/userProfile.html',active_tab='user_profiletab',user=user,user_contact_text=user_contact_text,
+                                   user_password1_text=user_password1_text,user_password2_text=user_password2_text,user_cardUID=user_cardUID)
 
-        if valid and user:
+        # Update user info
+        if user:
             user.userContact = user_contact_text or None
             user.userCardId = user_cardUID or None
-            # Update password only if entered
             if user_password1_text:
                 hashed_pw = bcrypt.generate_password_hash(user_password1_text).decode('utf-8')
                 user.userPassword = hashed_pw
@@ -378,8 +379,7 @@ def user_profile():
             db.session.commit()
             flash("Successfully updated", 'success')
             return redirect(url_for('user_profile'))
-        return render_template('user/userProfile.html', active_tab='user_profiletab', user=user, user_contact_text=user_contact_text,
-                            user_password1_text=user_password1_text, user_password2_text=user_password2_text, user_cardUID=user_cardUID)
 
-
+    return render_template('user/userProfile.html',active_tab='user_profiletab',user=user,user_contact_text=user_contact_text,
+                           user_password1_text=user_password1_text,user_password2_text=user_password2_text,user_cardUID=user_cardUID)
 
