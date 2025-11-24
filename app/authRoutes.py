@@ -647,10 +647,12 @@ def update_attendanceStatus():
             continue
 
         exam_duration = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
-
+    
         # Case 1: Exam has ended, remark still PENDING (no check-in)
         if attendance.remark == "PENDING" and exam.examStatus == False:
             attendance.remark = "EXPIRED"
+            attendance.timeAction = time_now
+            attendance.invigilationStatus = True
             if attendance.invigilator:
                 # Remove pending hours
                 attendance.invigilator.userPendingCumulativeHours -= exam_duration
