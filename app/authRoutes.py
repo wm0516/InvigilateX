@@ -361,38 +361,34 @@ def user_homepage():
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
 
         if open_slot and action == 'open_accept' and chosen:
-            # Gender check
+            exam = (
+                Exam.query
+                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
+                .first()
+            )
+
+            # Gender check here (must match user)
             if open_slot.invigilator.userGender != chosen.userGender:
                 flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Only assign if not already assigned
-            if open_slot.invigilatorId != user_id:
-                open_slot.invigilatorId = user_id
-                open_slot.invigilationStatus = True
+            # Assign slot
+            open_slot.invigilatorId = user_id
+            open_slot.invigilationStatus = True
+            open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
-                # Update hours only if this user hasn't been assigned yet
-                exam = (
-                    Exam.query
-                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                    .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
-                    .first()
-                )
+            # Update hours
+            hours = 0
+            if exam and exam.examStartTime and exam.examEndTime:
+                start_dt, end_dt = exam.examStartTime, exam.examEndTime
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-                hours = 0
-                if exam and exam.examStartTime and exam.examEndTime:
-                    start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                    if end_dt < start_dt:
-                        end_dt += timedelta(days=1)
-                    hours = (end_dt - start_dt).total_seconds() / 3600.0
-
-                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours
-                open_slot.timeAction = datetime.now() + timedelta(hours=8)
-                db.session.commit()
-                flash("Open Slot Accepted Successfully", "success")
-            else:
-                flash("You have already accepted this slot.", "info")
-
+            chosen.userPendingCumulativeHours  = (chosen.userPendingCumulativeHours or 0) + hours
+            db.session.commit()
+            flash("Open Slot Accepted Successfully", "success")
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 
@@ -403,39 +399,6 @@ def user_homepage():
 # -------------------------------
 # Helper functions
 # -------------------------------
-@app.route("/invigilator/accept", methods=["POST"])
-@login_required
-def accept_slot():
-    data = request.get_json()
-    attendance_id = data.get("attendance_id")
-    user_id = session.get("user_id")
-    slot = InvigilatorAttendance.query.get(attendance_id)
-
-    if not slot:
-        return jsonify({"error": "Slot not found"}), 404
-
-    exam_id = slot.report.examId
-    # STEP A: Check if the user already has a slot for this exam
-    existing = find_user_existing_slot(user_id, exam_id)
-
-    # CASE 1 — Public slot selected, but user already has another slot for same exam
-    if existing and existing.attendanceId != slot.attendanceId:
-        # Merge logic: update existing slot, delete public duplicate
-        existing.timeAction = datetime.now()
-        existing.invigilationStatus = True
-        existing.remark = "PENDING"
-        db.session.delete(slot)
-        db.session.commit()
-        return jsonify({"status": "merged"}), 200
-
-    # CASE 2 — Normal accept
-    slot.invigilatorId = user_id
-    slot.timeAction = datetime.now()
-    slot.invigilationStatus = True
-    slot.remark = "PENDING"
-
-    db.session.commit()
-    return jsonify({"status": "accepted"}), 200
 
 def hours_diff(start, end):
     """Return positive hour difference."""
