@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timezone
 
 # Configuration
-SERIAL_PORT = "COM5"
+SERIAL_PORT = "COM6"
 BAUD_RATE = 74880
 FLASK_URL = "https://wm05.pythonanywhere.com/attendance"
 LAST_SCAN_URL = "https://wm05.pythonanywhere.com/update-last-scan"
