@@ -377,7 +377,6 @@ def user_profile():
                 user.userPassword = hashed_pw
 
             db.session.commit()
-            flash("Successfully updated", 'success')
             return redirect(url_for('user_profile'))
 
     return render_template('user/userProfile.html',active_tab='user_profiletab',user=user,user_contact_text=user_contact_text,
