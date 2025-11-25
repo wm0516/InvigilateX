@@ -55,17 +55,6 @@
                 </div>
             </div>
         </div>
-
-        <br><br>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    <strong>{{ category.capitalize() }}:</strong> {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
         <br>
         
         <div class="button-wrapper">
