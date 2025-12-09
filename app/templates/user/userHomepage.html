@@ -234,7 +234,7 @@ document.querySelectorAll('.reject-btn').forEach(btn => {
         const id = this.dataset.id;
         const form = document.getElementById('reject-form-' + id);
         form.style.display = 'block'; // show reject form
-        this.style.display = 'none';  // hide reject button once clicked
+        // this.style.display = 'none';  <-- remove this line
     });
 });
 </script>
