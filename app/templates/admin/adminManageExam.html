@@ -168,9 +168,9 @@
             <thead>
                 <tr>
                     <th>No</th>
+                    <th>Exam ID</th>
                     <th>Exam Status</th>
                     <th>Course Details</th>
-                    <th>Exam ID</th>
                     <th>Exam Details</th>
                     <th>Invigilator Filter</th>
                     <th>Number of Invigilators</th>
@@ -190,6 +190,7 @@
                             <span class="status frame-expired">EXPIRED</span>
                         {% endif %}
                     </td>
+                    <td>{{ row.examId }}</td>
                     <td>
                         <div class="info-grid">
                             <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
@@ -200,7 +201,6 @@
                             <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                         </div>
                     </td>
-                    <td>{{ row.examId }}</td>
                     <td>
                         {% if row.examStartTime and row.examEndTime %}
                         <div class="info-grid">
@@ -226,12 +226,12 @@
                     <td>
                         {% if row.examOutput %}
                         <div class="info-grid">
-                            <div>Eligible Invigilator</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
-                            <div>Flexible Invigilatior</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
-                            <div>Non-Flexible Invigilatior</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
-                            <div>List Non-Flexible Invigilatior</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
-                            <div>Flexible Male Invigilatior</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
-                            <div>Flexible Female Invigilatior</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
+                            <div>Eligible</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
+                            <div>Flexible</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
+                            <div>Non-Flexible</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
+                            <div>List Non-Flexible</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
+                            <div>Flexible Male</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
+                            <div>Flexible Female</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
                         </div>
                         {% else %}
                         <span class="status frame-expired">Exam details not yet assigned</span>
