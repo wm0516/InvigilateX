@@ -119,6 +119,7 @@ class Exam(db.Model):
     examTotalStudents = db.Column(db.Integer, nullable=False)                                    # Refer to Total Students of the Course
     examNoInvigilator = db.Column(db.Integer, nullable=True)                                     # Number of invigilators needed
     examStatus = db.Column(db.Boolean, default=True, nullable=False)                             # Refer to Course Status, when course deleted, it will show False
+    examOutput = db.Column(db.JSON, nullable=True)                                               # Refer to exam filter output ()
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
@@ -131,6 +132,7 @@ class Exam(db.Model):
         examEndTime DATETIME NULL,
         examTotalStudents INT NOT NULL,
         examNoInvigilator INT NULL,
+        examOutput JSON NULL,
         examStatus TINYINT(1) NOT NULL DEFAULT 1
     );
     '''
