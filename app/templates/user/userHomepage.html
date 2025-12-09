@@ -119,9 +119,10 @@
                         <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
                         <td>
                             <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
-                            <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
                             <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                            <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
                             <!-- hidden reason input -->
+                            <br>
                             <div id="reason-container-{{ w.attendanceId }}" style="display:none; margin-top:5px;">
                                 <textarea name="reject_reason_{{ w.attendanceId }}" placeholder="Enter reason for rejection" required style="width: 100%;"></textarea>
                                 <button type="submit" name="action" value="reject" style="margin-top:5px;">Submit Rejection</button>
