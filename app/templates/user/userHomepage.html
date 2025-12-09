@@ -118,15 +118,18 @@
                         <td>{{ w.report.exam.course.courseName }}</td>
                         <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
                         <td>
-                            <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
-                            <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                            <!-- Accept Form -->
+                            <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
+                                <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                            </form>
+                            <!-- Reject Form -->
                             <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
-                            <!-- hidden reason input -->
-                            <br>
-                            <div id="reason-container-{{ w.attendanceId }}" style="display:none; margin-top:5px;">
+                            <form action="{{ url_for('user_homepage') }}" method="POST" id="reject-form-{{ w.attendanceId }}" style="display:none; margin-top:5px;">
+                                <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
                                 <textarea name="reject_reason_{{ w.attendanceId }}" placeholder="Enter reason for rejection" required style="width: 100%;"></textarea>
                                 <button type="submit" name="action" value="reject" style="margin-top:5px;">Submit Rejection</button>
-                            </div>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
@@ -229,11 +232,9 @@
 document.querySelectorAll('.reject-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.dataset.id;
-        const container = document.getElementById('reason-container-' + id);
-        const textarea = container.querySelector('textarea');
-        const isHidden = container.style.display === 'none';
-        container.style.display = isHidden ? 'block' : 'none';
-        textarea.required = isHidden; // only required when shown
+        const form = document.getElementById('reject-form-' + id);
+        form.style.display = 'block'; // show reject form
+        this.style.display = 'none';  // hide reject button once clicked
     });
 });
 </script>
