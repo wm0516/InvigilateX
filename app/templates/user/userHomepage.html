@@ -230,7 +230,10 @@ document.querySelectorAll('.reject-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const id = this.dataset.id;
         const container = document.getElementById('reason-container-' + id);
-        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        const textarea = container.querySelector('textarea');
+        const isHidden = container.style.display === 'none';
+        container.style.display = isHidden ? 'block' : 'none';
+        textarea.required = isHidden; // only required when shown
     });
 });
 </script>
