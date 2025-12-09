@@ -361,7 +361,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
     # --- Excluded lecturers (teaching the course) ---
     exclude_ids = []
     for c in course_sections:
-        flash(f"ExamId: {c.courseExamId}, Practical: {c.coursePractical}, Tutorial: {c.courseTutorial}, Lecturer: {c.courseLecturer}", "success")
         exclude_ids += [uid for uid in [c.coursePractical, c.courseTutorial, c.courseLecturer] if uid is not None]
 
     # --- Filter potential invigilators ---
@@ -399,15 +398,6 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
     # --- Summary Flash Message (One Line) ---
     not_flex_ids = [str(i.userId) for i, t, a in not_flexible]
-    not_flex_text = ", ".join(not_flex_ids) if not_flex_ids else "None"
-
-    flash(
-        f"✅ Eligible: {len(eligible_invigilators)} | "
-        f"Flexible: {len(flexible)} | "
-        f"Not Flexible: {len(not_flexible)}: [{not_flex_text}] | "
-        f"Male: {len(male)} | Female: {len(female)}",
-        "success"
-    )
     exam.examOutput = [total_lecturers, len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids, len(male), len(female)]
 
     # ---------------------------------------
