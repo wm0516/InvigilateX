@@ -366,6 +366,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
 
     # --- Filter potential invigilators ---
     query = User.query.filter(User.userLevel == 1,User.userStatus == True)
+    total_lecturers = query.count()
     if exclude_ids:
         query = query.filter(~User.userId.in_(exclude_ids))
 
@@ -407,7 +408,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
         f"Male: {len(male)} | Female: {len(female)}",
         "success"
     )
-    exam.examOutput = [len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids, len(male), len(female)]
+    exam.examOutput = [total_lecturers, len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids, len(male), len(female)]
 
     # ---------------------------------------
     # Handle each venue independently

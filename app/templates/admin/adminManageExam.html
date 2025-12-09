@@ -226,12 +226,13 @@
                     <td>
                         {% if row.examOutput %}
                         <div class="info-grid">
-                            <div>Eligible</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
-                            <div>Flexible</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
-                            <div>Non-Flexible</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
-                            <div>List Non-Flexible</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
-                            <div>Flexible Male</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
-                            <div>Flexible Female</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
+                            <div>Total Lecturers</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
+                            <div>Eligible Invigilators</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
+                            <div>Flexible Invigilators</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
+                            <div>Non-Flexible Invigilators</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
+                            <div>Non-Flexible List</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
+                            <div>Flexible Male</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
+                            <div>Flexible Female</div><div><strong>: {{ row.examOutput[6] }}</strong></div>
                         </div>
                         {% else %}
                         <span class="status frame-expired">Exam details not yet assigned</span>
