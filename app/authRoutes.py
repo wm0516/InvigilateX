@@ -359,7 +359,7 @@ def user_homepage():
                 waiting_slot.invigilationStatus = False
                 db.session.add(
                     InvigilatorAttendance(
-                        reportId=report.invigilationReportId,
+                        reportId=waiting_slot.reportId,
                         venueNumber=venue_text,
                         timeCreate=datetime.now(timezone.utc)
                     )
