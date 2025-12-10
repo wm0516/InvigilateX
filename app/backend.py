@@ -599,13 +599,15 @@ def waiting_record(user_id):
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
-            Exam.examStatus == True,
-            InvigilatorAttendance.timeAction.is_(None),
-            InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.invigilatorId == user_id
+            Exam.examStatus == True,                        # Only active exams
+            InvigilatorAttendance.timeAction.is_(None),    # Not yet acted on
+            InvigilatorAttendance.invigilationStatus == False,  # Not yet confirmed
+            InvigilatorAttendance.invigilatorId == user_id, 
+            InvigilatorAttendance.rejectReason.is_(None)   # Exclude rejected slots
         )
         .all()
     )
+
 
 def confirm_record(user_id):
     return (
