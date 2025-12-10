@@ -13,7 +13,6 @@ bcrypt = Bcrypt()
 
 
 
-
 # -------------------------------
 # Calculate Invigilation Stats (Filtered by User Department or Own Data)
 # -------------------------------
@@ -23,7 +22,6 @@ def calculate_invigilation_stats():
     stats = {
         "total_report": 0,
         "user_total_activeReport": 0,
-        "total_activeReport": 0,
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
@@ -32,7 +30,7 @@ def calculate_invigilation_stats():
     # LEVEL 1: Personal stats for lecturer
     # -------------------------------
     if user.userLevel == 1:
-        # Total reports assigned to this user
+        # Total reports assigned to this user (any exam)
         stats["total_report"] = (
             InvigilationReport.query
             .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -42,14 +40,21 @@ def calculate_invigilation_stats():
             .count()
         )
 
-        # Active reports for this user
-        stats["user_total_activeReport"] = (    
-            InvigilatorAttendance.query
-            .filter_by(invigilatorId=user.userId, invigilationStatus=True)
+        # Active reports for this user (examStatus == True)
+        stats["user_total_activeReport"] = (
+            InvigilationReport.query
+            .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+            .join(Exam, InvigilationReport.examId == Exam.examId)
+            .filter(
+                InvigilatorAttendance.invigilatorId == user.userId,
+                InvigilatorAttendance.invigilationStatus == True,
+                Exam.examStatus == True
+            )
+            .distinct()
             .count()
         )
 
-        # Attendance stats (check-in late / check-out early)
+        # Attendance stats (lateness / early checkout)
         records = (
             InvigilatorAttendance.query
             .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -66,8 +71,8 @@ def calculate_invigilation_stats():
     # LEVEL 2-4: Department stats
     # -------------------------------
     else:
-        # Total reports in user's department
-        stats["user_total_activeReport"] = (
+        # Total reports in department (all exams)
+        stats["total_report"] = (
             InvigilationReport.query
             .join(Exam, InvigilationReport.examId == Exam.examId)
             .join(Course, Course.courseExamId == Exam.examId)
@@ -76,20 +81,20 @@ def calculate_invigilation_stats():
             .count()
         )
 
-        # Total active reports in department
-        stats["total_report"] = (
-            InvigilatorAttendance.query
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        # Active reports in department (examStatus == True)
+        stats["user_total_activeReport"] = (
+            InvigilationReport.query
             .join(Exam, InvigilationReport.examId == Exam.examId)
             .join(Course, Course.courseExamId == Exam.examId)
             .filter(
                 Course.courseDepartment == user.userDepartment,
                 Exam.examStatus == True
             )
+            .distinct()
             .count()
         )
 
-        # Attendance stats
+        # Attendance stats (lateness / early checkout)
         records = (
             InvigilatorAttendance.query
             .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -111,9 +116,6 @@ def calculate_invigilation_stats():
             stats["total_checkInLate"] += 1
         if r.checkOut and r.checkOut < r.exam.examEndTime:
             stats["total_checkOutEarly"] += 1
-
-    # Total active reports in the system (all exams)
-    # stats["total_activeReport"] = Exam.query.filter_by(examStatus=True).count()
 
     return stats
 
