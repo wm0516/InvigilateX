@@ -125,9 +125,9 @@
                     <th>Exam Details</th>
                     <th>Invigilators</th>
                     <th>Invigilator Details</th>
-                    <th>Check-in/out Time</th>
                     <th>Attendance Status</th>
-                    <th>Invigilation Status</th>
+                    <th>Invigilation Status</th>                   
+                     <th>Check-in/out Time</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -189,25 +189,6 @@
                             </div>
                         </td>
 
-                        <!-- Check-in/out Time -->
-                        <td>
-                            <div class="info-grid">
-                                <div>Check-in Time</div><div><strong>: <span class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</span></strong></div>
-                                <div>Check-out Time</div><div><strong>: <span class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</span></strong></div>
-                            </div>
-                            {% if att.checkIn and att.checkOut %}
-                                {% set exam_start = att.report.exam.examStartTime %}
-                                {% set exam_end = att.report.exam.examEndTime %}
-                                {% set check_in = att.checkIn %}
-                                {% set check_out = att.checkOut %}
-                                {% set actual_start = [check_in, exam_start] | max %}
-                                {% set actual_end = [check_out, exam_end] | min %}
-                                {% set total_seconds = (actual_end - actual_start).total_seconds() %}
-                                {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
-                                <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }}</div>
-                            {% endif %}
-                        </td>
-
                         <!-- Attendance Status -->
                         <td>
                             {% set remark_classes = {
@@ -227,9 +208,28 @@
                                 <span class="status frame-completed invigilation-status">ACCEPTED</span>
                             {% elif not att.invigilationStatus and att.rejectReason %}
                                 <span class="status frame-expired invigilation-status">REJECTED</span>
-                                <p>{{ att.rejectReason }}</p>
+                                <div>Reason</div><div><strong>: <span style="max-width: 200px;">{{ att.rejectReason }}</span></strong></div>
                             {% elif not att.invigilationStatus and not att.rejectReason %}
                                 <span class="status frame-pending invigilation-status">PENDING</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Check-in/out Time -->
+                        <td>
+                            <div class="info-grid">
+                                <div>Check-in Time</div><div><strong>: <span class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</span></strong></div>
+                                <div>Check-out Time</div><div><strong>: <span class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</span></strong></div>
+                            </div>
+                            {% if att.checkIn and att.checkOut %}
+                                {% set exam_start = att.report.exam.examStartTime %}
+                                {% set exam_end = att.report.exam.examEndTime %}
+                                {% set check_in = att.checkIn %}
+                                {% set check_out = att.checkOut %}
+                                {% set actual_start = [check_in, exam_start] | max %}
+                                {% set actual_end = [check_out, exam_end] | min %}
+                                {% set total_seconds = (actual_end - actual_start).total_seconds() %}
+                                {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
+                                <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }}</div>
                             {% endif %}
                         </td>
 
