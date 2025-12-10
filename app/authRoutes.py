@@ -415,9 +415,15 @@ def user_homepage():
             # -----------------------------
             # Assign slot to current user
             # -----------------------------
-            open_slot.invigilatorId = user_id
-            open_slot.invigilationStatus = True
-            open_slot.timeAction = datetime.now() + timedelta(hours=8)
+            if open_slot.invigilatorId == user_id and not open_slot.rejectReason:
+                # Case 1: User is reselecting their own previously assigned (but not rejected) slot
+                open_slot.invigilationStatus = True
+                open_slot.timeAction = datetime.now() + timedelta(hours=8)
+            else:
+                # Case 2: Slot is either unassigned or assigned to another user
+                open_slot.invigilatorId = user_id       # Reassign to current user
+                open_slot.invigilationStatus = True
+                open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
             # -----------------------------
             # Add pending hours to current user
