@@ -357,7 +357,8 @@ def user_homepage():
                 waiting_slot.rejectReason = ','.join(lines)
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
-                int_gender = 1 if waiting_slot.invigilatorId.userGender == "MALE" else 2
+                invigilator_gender = waiting_slot.invigilator.userGender
+                int_gender = 1 if invigilator_gender.upper() == "MALE" else 2
                 db.session.add(
                     InvigilatorAttendance(
                         reportId=waiting_slot.reportId,
