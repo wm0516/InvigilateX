@@ -385,35 +385,38 @@ def user_homepage():
         # -----------------------------
         # Handle open slot acceptance
         # -----------------------------
-        open_id = request.form.get('a_id')
-
+        open_attendance_id = request.form.get('a_id')
         if action == 'open_accept' and chosen:
 
-            # Step 1: Prefer the user's own previously rejected/recreated slot
+            # Step 0: Fetch the slot by attendanceId from the form
+            form_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_attendance_id).first()
+            if not form_slot:
+                flash("Selected slot not found.", "error")
+                return redirect(url_for('user_homepage'))
+
+            report_id = form_slot.reportId
+
+            # Step 1: Try to fetch user's own unaccepted slot for this report
             open_slot = (
                 InvigilatorAttendance.query
-                .filter_by(
-                    reportId=open_id,
-                    invigilatorId=user_id,
-                    invigilationStatus=False
+                .filter(
+                    InvigilatorAttendance.reportId == report_id,
+                    InvigilatorAttendance.invigilatorId == user_id,
+                    InvigilatorAttendance.invigilationStatus == False  # only unaccepted slots
                 )
-                .order_by(InvigilatorAttendance.attendanceId.desc())  # pick the newest slot
+                .order_by(InvigilatorAttendance.attendanceId.desc())  # pick newest row first
                 .first()
             )
 
-            # Step 2: If no such slot exists, fallback to any open slot
+            # Step 2: Fallback to the slot from the form if no own slot exists
             if not open_slot:
-                open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
-
-            if not open_slot:
-                flash("Selected slot not found.", "error")
-                return redirect(url_for('user_homepage'))
+                open_slot = form_slot
 
             # Step 3: Get exam and course info
             exam = (
                 Exam.query
                 .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
+                .filter(InvigilationReport.examId == open_slot.reportId)
                 .first()
             )
             course_code = exam.course.courseCodeSectionIntake if exam and exam.course else ""
@@ -465,7 +468,6 @@ def user_homepage():
             db.session.commit()
             flash(f"Open Slot Course Code: {course_code} Accepted Successfully", "success")
             return redirect(url_for('user_homepage'))
-
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
 
 
