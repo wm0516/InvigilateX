@@ -350,8 +350,7 @@ def user_homepage():
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
 
             elif action == 'reject':
-                reason = request.form.get('reject_reason')
-                waiting_slot.rejectReason = reason
+                waiting_slot.rejectReason = request.form.get('reject_reason', '').replace('\n', ',')
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
 

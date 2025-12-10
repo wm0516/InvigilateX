@@ -237,7 +237,7 @@ class InvigilatorAttendance(db.Model):
     invigilationStatus = db.Column(db.Boolean, default=False)
     remark = db.Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED",name="attendance_remark_enum"),nullable=False,default="PENDING")  # Remark 
     venueNumber = db.Column(db.String(20), db.ForeignKey('Venue.venueNumber'), nullable=False)
-    rejectReason = db.Column(db.Text, nullable=True)
+    rejectReason = db.Column(db.String(255), nullable=True)
 
     # Relationships
     invigilator = db.relationship("User")
@@ -254,7 +254,7 @@ class InvigilatorAttendance(db.Model):
         timeAction DATETIME NULL,
         invigilationStatus BOOLEAN DEFAULT False,
         venueNumber VARCHAR(20) NOT NULL, 
-        rejectReason TEXT NULL,
+        rejectReason VARCHAR(255) NULL,
         FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
