@@ -50,9 +50,7 @@
             <tbody data-exam="{{ grouped[0].report.exam.examId }}">
                 {% for att in grouped %}
                 <tr data-exam="{{ grouped[0].report.exam.examId }}"
-                    class="{% if not att.report.exam.examStatus %}inactive-row-show
-                        {% elif att.report.exam.examStartTime is none or (not att.invigilationStatus and att.rejectReason) %}error-row-show
-                        {% endif %}">
+                    class="{% if not att.report.exam.examStatus %}inactive-row-show{% elif att.report.exam.examStartTime is none %}error-row-show{% endif %}">
 
                     {% if loop.first %}
                     <!-- Exam ID -->

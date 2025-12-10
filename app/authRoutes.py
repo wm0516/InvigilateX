@@ -352,6 +352,7 @@ def user_homepage():
             if action == 'accept':
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
+                db.session.commit()
                 flash(f"{course_code} have been accepted", "success")
 
             elif action == 'reject':
