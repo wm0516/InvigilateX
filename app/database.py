@@ -30,7 +30,7 @@ from app import db
 # NULL = OPTIONAL HAVE DATA
 # DROP TABLE Course, Exam, VenueExam, InvigilationReport, InvigilatorAttendance;
 # UPDATE User SET userPendingCumulativeHours = 0, userCumulativeHours = 0;
-
+# UPDATE InvigilatorAttendance SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0;
 
 
 

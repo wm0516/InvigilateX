@@ -118,7 +118,7 @@
                     <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
                     <td>
                         <!-- Accept Form -->
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
                             <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
                             <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" 
                                 style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
