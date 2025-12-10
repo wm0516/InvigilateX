@@ -20,14 +20,13 @@ bcrypt = Bcrypt()
 def calculate_invigilation_stats():
     user = User.query.get(session.get('user_id'))
 
-    # Base query for reports
+    # Total reports (role-based)
     base_query = (
         db.session.query(InvigilationReport)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
     )
 
-    # Role-based filters
     if user.userLevel == 1:
         # Level 1 → only reports the invigilator is assigned to
         filtered_query = (
@@ -39,39 +38,49 @@ def calculate_invigilation_stats():
         # Level 2–4 → reports within same department
         filtered_query = base_query.filter(Course.courseDepartment == user.userDepartment).distinct()
 
-    # Calculate report totals
     total_report = filtered_query.count()
-    total_active_report = filtered_query.filter(Exam.examStatus == True).count()
 
-    # Retrieve attendance data for detailed time analysis
+    # Total active reports (entire database, Exam.examStatus==True)
+    total_active_report = Exam.query.filter_by(examStatus=True).count()
+
+    # User total active report (assigned to user, invigilationStatus==True)
+    user_total_active_report = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user.userId,
+            InvigilatorAttendance.invigilationStatus == True
+        )
+        .count()
+    )
+
+    # Attendance check-in/out analysis
     attendance_query = (
         db.session.query(
-            InvigilatorAttendance.attendanceId,
-            InvigilatorAttendance.invigilatorId,
             InvigilatorAttendance.checkIn,
             InvigilatorAttendance.checkOut,
             Exam.examStartTime,
-            Exam.examEndTime,
-            InvigilatorAttendance.reportId,
+            Exam.examEndTime
         )
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .filter(Exam.examStatus == True)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(Exam.examStatus == True, InvigilatorAttendance.invigilationStatus == True)
     )
 
-    # Apply the same visibility filter for attendance records
+    # Apply user visibility filter
     if user.userLevel == 1:
         attendance_query = attendance_query.filter(InvigilatorAttendance.invigilatorId == user.userId)
     else:
+        attendance_query = attendance_query.join(Course, Course.courseExamId == Exam.examId)
         attendance_query = attendance_query.filter(Course.courseDepartment == user.userDepartment)
 
     records = attendance_query.all()
 
-    # Initialize statistics
+    # Stats calculation
     stats = {
         "total_report": total_report,
+        "user_total_activeReport": user_total_active_report,
         "total_activeReport": total_active_report,
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,

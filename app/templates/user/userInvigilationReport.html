@@ -17,7 +17,7 @@
     <div class="dashboard-row">
         <div class="dashboard-frame">
             <h3>Pending Invigilation Duties</h3>
-            <p class="dashboard-text">{{ total_activeReport }}</p>
+            <p class="dashboard-text">{% if current_user.userLevel == 1 %}{{ user_total_activeReport }}{% else %}{{ total_activeReport }}{% endif %}</p>
         </div>
         <div class="dashboard-frame">
             <h3>Completed Invigilation Duties</h3>
