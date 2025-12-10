@@ -10,7 +10,7 @@ bcrypt = Bcrypt()
 from functools import wraps
 import random
 from datetime import datetime, timedelta
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, exists
 
 
 # constants.py or at the top of your app.py
@@ -594,6 +594,20 @@ def check_profile(user_id, cardId, contact, password1, password2):
 # Helper functions
 # -------------------------------
 def waiting_record(user_id):
+    # Subquery: find all (reportId, invigilatorId) that have been rejected
+    rejected_subq = (
+        InvigilatorAttendance.query
+        .filter(
+            InvigilatorAttendance.rejectReason.isnot(None)
+        )
+        .with_entities(
+            InvigilatorAttendance.reportId,
+            InvigilatorAttendance.invigilatorId
+        )
+        .subquery()
+    )
+
+    # Main query: select waiting records excluding rejected combinations
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -602,8 +616,13 @@ def waiting_record(user_id):
             Exam.examStatus == True,                        # Only active exams
             InvigilatorAttendance.timeAction.is_(None),    # Not yet acted on
             InvigilatorAttendance.invigilationStatus == False,  # Not yet confirmed
-            InvigilatorAttendance.invigilatorId == user_id, 
-            InvigilatorAttendance.rejectReason.is_(None)   # Exclude rejected slots
+            InvigilatorAttendance.invigilatorId == user_id,
+            ~exists().where(
+                and_(
+                    InvigilatorAttendance.reportId == rejected_subq.c.reportId,
+                    InvigilatorAttendance.invigilatorId == rejected_subq.c.invigilatorId
+                )
+            )
         )
         .all()
     )
