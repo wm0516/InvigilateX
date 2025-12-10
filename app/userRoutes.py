@@ -67,7 +67,7 @@ def calculate_invigilation_stats():
     # -------------------------------
     else:
         # Total reports in user's department
-        stats["total_report"] = (
+        stats["user_total_activeReport"] = (
             InvigilationReport.query
             .join(Exam, InvigilationReport.examId == Exam.examId)
             .join(Course, Course.courseExamId == Exam.examId)
@@ -77,7 +77,7 @@ def calculate_invigilation_stats():
         )
 
         # Total active reports in department
-        stats["user_total_activeReport"] = (
+        stats["total_report"] = (
             InvigilatorAttendance.query
             .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
             .join(Exam, InvigilationReport.examId == Exam.examId)
