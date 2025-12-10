@@ -642,9 +642,26 @@ def confirm_record(user_id):
         )
     )
 
+# ----------------------------------------------------
+# HELPER 3: Rejected Slots
+# User has rejected these slots (rejectReason IS NOT NULL)
+# ----------------------------------------------------
+def reject_record(user_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.rejectReason.isnot(None)  # only rejected rows
+        )
+    )
+
 
 # ----------------------------------------------------
-# HELPER 3: Open Slots
+# HELPER 4: Open Slots
 # - After cutoff time, any waiting slot becomes open
 # - Also includes any slot that user rejected (can choose again)
 # - Excludes only: user's still-waiting system-assigned slots
@@ -736,11 +753,13 @@ def open_record(user_id):
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
     confirmed = confirm_record(user_id).all()
+    rejected = reject_record(user_id).all()
     open_slots = open_record(user_id)
 
     return {
         "waiting_count": len(waiting),
         "confirmed_count": len(confirmed),
+        "rejected_count": len(rejected),
         "open_count": len(open_slots)
     }
 

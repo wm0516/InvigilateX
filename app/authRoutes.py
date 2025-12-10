@@ -314,6 +314,7 @@ def user_homepage():
     chosen = User.query.filter_by(userId=user_id).first()
     waiting = waiting_record(user_id)
     confirm = confirm_record(user_id).filter(Exam.examEndTime > (datetime.now() + timedelta(hours=8))).all()
+    reject = reject_record(user_id)
 
     # Get open slots + gender filter
     open_slots = open_record(user_id)
@@ -445,7 +446,7 @@ def user_homepage():
             db.session.commit()
             flash(f"Open Slot Accepted Successfully, Course Code: {course_code}", "success")
         return redirect(url_for('user_homepage'))
-    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
+    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
 
 
 
