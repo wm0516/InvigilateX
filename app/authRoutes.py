@@ -372,6 +372,7 @@ def user_homepage():
                 .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
                 .first()
             )
+            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else ""
 
             # Gender check
             if open_slot.invigilator and open_slot.invigilator.userGender != chosen.userGender:
@@ -407,7 +408,7 @@ def user_homepage():
                 chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours
 
             db.session.commit()
-            flash(f"Open Slot Accepted Successfully,  Course Code: {course_code}", "success")
+            flash(f"Open Slot Accepted Successfully, Course Code: {course_code}", "success")
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
 
