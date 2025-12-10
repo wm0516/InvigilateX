@@ -651,7 +651,7 @@ def confirm_record(user_id):
 # - cutoff_time = datetime.now() - timedelta(minutes=1)days=2
 # ----------------------------------------------------
 def open_record(user_id):
-    cutoff_time = datetime.now() - timedelta(minutes=1)
+    cutoff_time = datetime.now() + timedelta(hours=8) # to get current time
 
     # 1. Get user's gender
     current_user = User.query.get(user_id)
