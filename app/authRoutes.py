@@ -354,6 +354,7 @@ def user_homepage():
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
                 flash(f"{course_code} have been accepted", "success")
+                return redirect(url_for('user_homepage'))
 
             elif action == 'reject':
                 # Process reject reason
@@ -379,6 +380,7 @@ def user_homepage():
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
                 flash(f"{course_code} has been rejected", "success")
+                return redirect(url_for('user_homepage'))
 
         # -----------------------------
         # Handle open slot acceptance
