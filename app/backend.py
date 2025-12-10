@@ -650,26 +650,25 @@ def open_record(user_id):
 
     user_gender = current_user.userGender
 
-    # 1. Waiting subquery (exclude from public)
+    # 1. Waiting subquery: only rows that are still "waiting" and not rejected
     waiting_subq = (
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.timeAction.is_(None),
             InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.timeAction.is_(None)
+            InvigilatorAttendance.rejectReason.is_(None)
         )
         .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
 
-    # 2. Exams already held by user (accepted or waiting)
+    # 2. Exams the user already holds (accepted or waiting)
     user_exam_subq = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .with_entities(InvigilationReport.examId)
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id
-        )
+        .filter(InvigilatorAttendance.invigilatorId == user_id)
         .subquery()
     )
 
@@ -690,11 +689,10 @@ def open_record(user_id):
                 User.userGender == user_gender
             ),
 
-            # Not in the user's waiting list
+            # Not in the user's current waiting list
             ~InvigilatorAttendance.reportId.in_(waiting_subq),
 
-            # ❗ IMPORTANT FIX:
-            # Do not show any exam the user already has a seat in
+            # Exclude exams the user already has a seat in
             ~Exam.examId.in_(user_exam_subq)
         )
         .all()
