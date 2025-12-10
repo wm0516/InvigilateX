@@ -648,18 +648,18 @@ def confirm_record(user_id):
 # - After cutoff time, any waiting slot becomes open
 # - Also includes any slot that user rejected (can choose again)
 # - Excludes only: user's still-waiting system-assigned slots
-# cutoff_time = datetime.now() - timedelta(minutes=1)days=2
+# - cutoff_time = datetime.now() - timedelta(minutes=1)days=2
 # ----------------------------------------------------
 def open_record(user_id):
     cutoff_time = datetime.now() - timedelta(minutes=1)
 
-    # Get user's gender
+    # 1. Get user's gender
     current_user = User.query.get(user_id)
     if not current_user:
         return []
     user_gender = current_user.userGender
 
-    # ReportIds that user has rejected before (allowed to reselect)
+    # 2. ReportIds the user has rejected before (allowed to reselect)
     rejected_report_subq = (
         InvigilatorAttendance.query
         .filter(
@@ -670,7 +670,7 @@ def open_record(user_id):
         .subquery()
     )
 
-    # ReportIds that are *still* waiting (system assigned)
+    # 3. User's still-waiting system-assigned reportIds (must EXCLUDE)
     waiting_report_subq = (
         InvigilatorAttendance.query
         .filter(
@@ -678,32 +678,38 @@ def open_record(user_id):
             InvigilatorAttendance.timeAction.is_(None),
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.rejectReason.is_(None),
-            ~InvigilatorAttendance.reportId.in_(rejected_report_subq)  # new fix
+            ~InvigilatorAttendance.reportId.in_(rejected_report_subq)
         )
         .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
 
-    # Exams user already has ANY seat in (accepted or waiting)
+    # 4. Exams the user already has ANY seat for (accepted or waiting)
     user_exam_subq = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .with_entities(InvigilationReport.examId)
         .filter(InvigilatorAttendance.invigilatorId == user_id)
+        .with_entities(InvigilationReport.examId)
         .subquery()
     )
 
-    # Main query: find open slots
+    # 5. Find OPEN slots
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
+
+            # Slot must be unclaimed
             InvigilatorAttendance.invigilationStatus == False,
 
-            # EXCLUDE user's still-waiting system-assigned slots
+            # Slot must match user's gender
+            User.userGender == user_gender,
+
+            # EXCLUDE system-assigned waiting slots of current user
             ~InvigilatorAttendance.reportId.in_(waiting_report_subq),
 
             # EXCLUDE exams user already has a seat in
@@ -712,7 +718,7 @@ def open_record(user_id):
         .all()
     )
 
-    # Remove duplicates by examId
+    # 6. Remove duplicates by examId (each exam only once)
     unique_slots = {}
     for slot in slots:
         exam_id = slot.report.examId
