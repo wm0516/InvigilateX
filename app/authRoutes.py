@@ -348,6 +348,7 @@ def user_homepage():
             if action == 'accept':
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
+                flash(f"{waiting_slot.reportId.exam.course.courseCodeSectionIntake} have been accepted", "success")
 
             elif action == 'reject':
                 raw_reason = request.form.get('reject_reason', '')
@@ -355,6 +356,7 @@ def user_homepage():
                 waiting_slot.rejectReason = ','.join(lines)
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
+                flash(f"{waiting_slot.reportId.exam.course.courseCodeSectionIntake} have been rejected", "success")
 
             waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
             db.session.commit()
