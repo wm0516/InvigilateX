@@ -370,7 +370,7 @@ def user_homepage():
                         reportId=waiting_slot.reportId,
                         invigilatorId=waiting_slot.invigilatorId,
                         venueNumber=waiting_slot.venueNumber,
-                        timeCreate=datetime.now(timezone.utc)
+                        timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
                     )
                 )
 

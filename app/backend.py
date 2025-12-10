@@ -453,7 +453,7 @@ def create_exam_and_related(start_dt, end_dt, courseSection, venue_list, student
                     reportId=report.invigilationReportId,
                     invigilatorId=chosen.userId,
                     venueNumber=venue_text,
-                    timeCreate=datetime.now(timezone.utc)
+                    timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
                 )
             )
             send_invigilator_slot_notification(chosen.userId)
