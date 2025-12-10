@@ -382,6 +382,7 @@ def user_homepage():
         # Handle open slot accept
         open_id = request.form.get('a_id')
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
+
         if open_slot and action == 'open_accept' and chosen:
             exam = (
                 Exam.query
@@ -396,12 +397,24 @@ def user_homepage():
                 flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Assign slot to user
+            # -----------------------------
+            # Remove pending hours from previous invigilator if different
+            # -----------------------------
+            if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
+                prev_user = User.query.get(open_slot.invigilatorId)
+                if prev_user and exam and exam.examStartTime and exam.examEndTime:
+                    start_dt, end_dt = exam.examStartTime, exam.examEndTime
+                    if end_dt < start_dt:
+                        end_dt += timedelta(days=1)
+                    hours_to_remove = (end_dt - start_dt).total_seconds() / 3600.0
+                    prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
+
+            # Assign slot to current user
             open_slot.invigilatorId = user_id
             open_slot.invigilationStatus = True
             open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
-            # Calculate hours
+            # Calculate hours for current user
             hours = 0
             if exam and exam.examStartTime and exam.examEndTime:
                 start_dt, end_dt = exam.examStartTime, exam.examEndTime
