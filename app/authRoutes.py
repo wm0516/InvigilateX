@@ -340,7 +340,7 @@ def user_homepage():
                 .first()
             )
 
-            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else ""
+            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
             pending_hours = 0
             if exam and exam.examStartTime and exam.examEndTime:
                 start_dt, end_dt = exam.examStartTime, exam.examEndTime
