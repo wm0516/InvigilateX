@@ -40,8 +40,8 @@
                     <th>Exam ID</th>
                     <th>Exam Details</th>
                     <th>Invigilator Details</th>
+                    <th>Invigilation Status</th>    
                     <th>Attendance Status</th>
-                    <th>Invigilation Status</th>                    
                     <th>Check-in/out Time</th>
                 </tr>
             </thead>
@@ -50,7 +50,9 @@
             <tbody data-exam="{{ grouped[0].report.exam.examId }}">
                 {% for att in grouped %}
                 <tr data-exam="{{ grouped[0].report.exam.examId }}"
-                    class="{% if not att.report.exam.examStatus %}inactive-row-show{% elif att.report.exam.examStartTime is none %}error-row-show{% endif %}">
+                    class="{% if not att.report.exam.examStatus %}inactive-row-show
+                        {% elif att.report.exam.examStartTime is none or (not att.invigilationStatus and att.rejectReason) %}error-row-show
+                        {% endif %}">
 
                     {% if loop.first %}
                     <!-- Exam ID -->
@@ -94,6 +96,18 @@
                         </div>
                     </td>
 
+                    <!-- Invigilation Status -->
+                    <td>
+                        {% if att.invigilationStatus %}
+                            <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                        {% elif not att.invigilationStatus and att.rejectReason %}
+                            <span class="status frame-expired invigilation-status">REJECTED</span>
+                            <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
+                        {% elif not att.invigilationStatus and not att.rejectReason %}
+                            <span class="status frame-pending invigilation-status">PENDING</span>
+                        {% endif %}
+                    </td>
+                    
                     <!-- Attendance Status -->
                     <td>
                         {% set remark_classes = {
@@ -106,18 +120,6 @@
                             "EXPIRED": "frame-expired"
                         } %}
                         <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
-                    </td>
-
-                    <!-- Invigilation Status -->
-                    <td>
-                        {% if att.invigilationStatus %}
-                            <span class="status frame-completed invigilation-status">ACCEPTED</span>
-                        {% elif not att.invigilationStatus and att.rejectReason %}
-                            <span class="status frame-expired invigilation-status">REJECTED</span>
-                            <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
-                        {% elif not att.invigilationStatus and not att.rejectReason %}
-                            <span class="status frame-pending invigilation-status">PENDING</span>
-                        {% endif %}
                     </td>
 
                     <!-- Check-in/out Time -->

@@ -125,8 +125,8 @@
                     <th>Exam Details</th>
                     <th>Invigilators</th>
                     <th>Invigilator Details</th>
-                    <th>Attendance Status</th>
-                    <th>Invigilation Status</th>                   
+                    <th>Invigilation Status</th>                      
+                     <th>Attendance Status</th>
                      <th>Check-in/out Time</th>
                     <th>Action</th>
                 </tr>
@@ -189,6 +189,18 @@
                             </div>
                         </td>
 
+                        <!-- Invigilation Status -->
+                        <td>
+                            {% if att.invigilationStatus %}
+                                <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                            {% elif not att.invigilationStatus and att.rejectReason %}
+                                <span class="status frame-expired invigilation-status">REJECTED</span>
+                                <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
+                            {% elif not att.invigilationStatus and not att.rejectReason %}
+                                <span class="status frame-pending invigilation-status">PENDING</span>
+                            {% endif %}
+                        </td>
+                        
                         <!-- Attendance Status -->
                         <td>
                             {% set remark_classes = {
@@ -200,18 +212,6 @@
                                 "EXPIRED": "frame-expired"
                             } %}
                             <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
-                        </td>
-
-                        <!-- Invigilation Status -->
-                        <td>
-                            {% if att.invigilationStatus %}
-                                <span class="status frame-completed invigilation-status">ACCEPTED</span>
-                            {% elif not att.invigilationStatus and att.rejectReason %}
-                                <span class="status frame-expired invigilation-status">REJECTED</span>
-                                <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
-                            {% elif not att.invigilationStatus and not att.rejectReason %}
-                                <span class="status frame-pending invigilation-status">PENDING</span>
-                            {% endif %}
                         </td>
 
                         <!-- Check-in/out Time -->
