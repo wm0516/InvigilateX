@@ -699,12 +699,10 @@ def open_record(user_id):
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
             InvigilatorAttendance.invigilationStatus == False,
-            User.userGender == user_gender,
 
             # EXCLUDE user's still-waiting system-assigned slots
             ~InvigilatorAttendance.reportId.in_(waiting_report_subq),
@@ -731,7 +729,7 @@ def open_record(user_id):
 # -------------------------------
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
-    confirmed = confirm_record(user_id).all()
+    confirmed = confirm_record(user_id)
     open_slots = open_record(user_id)
 
     return {
