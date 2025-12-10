@@ -352,23 +352,32 @@ def user_homepage():
                 flash(f"{course_code} have been accepted", "success")
 
             elif action == 'reject':
+                # Process reject reason
                 raw_reason = request.form.get('reject_reason', '')
                 lines = [line.strip() for line in raw_reason.splitlines() if line.strip()]
                 waiting_slot.rejectReason = ','.join(lines)
+
+                # Reduce user's pending hours
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
-                invigilator_gender = waiting_slot.invigilator.userGender
-                int_gender = 1 if invigilator_gender.upper() == "MALE" else 2
+
+                # Map gender to 1 or 2 (use chosen user's gender)
+                int_gender = 1 if chosen.userGender.upper() == "MALE" else 2
+
+                # Create new record with gender stored in invigilatorId
                 db.session.add(
                     InvigilatorAttendance(
                         reportId=waiting_slot.reportId,
-                        invigilatorId=int_gender,
+                        invigilatorId=int_gender,  # 1 or 2
                         venueNumber=waiting_slot.venueNumber,
                         timeCreate=datetime.now(timezone.utc)
                     )
                 )
+
+                # Update action time and commit
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
-                flash(f"{course_code} have been rejected", "success")
+                flash(f"{course_code} has been rejected", "success")
 
             waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
             db.session.commit()
