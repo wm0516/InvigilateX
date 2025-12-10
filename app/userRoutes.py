@@ -37,12 +37,13 @@ def calculate_invigilation_stats():
             InvigilationReport.query
             .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
             .filter(InvigilatorAttendance.invigilatorId == user.userId)
+            .filter(InvigilatorAttendance.invigilationStatus == True)
             .distinct()
             .count()
         )
 
         # Active reports for this user
-        stats["user_total_activeReport"] = (
+        stats["user_total_activeReport"] = (    
             InvigilatorAttendance.query
             .filter_by(invigilatorId=user.userId, invigilationStatus=True)
             .count()
