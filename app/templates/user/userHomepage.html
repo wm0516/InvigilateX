@@ -158,7 +158,7 @@
             <tbody>
                 {% for c in confirm %}
                 <tr>
-                    <td>{{ r.timeAction }}</td>
+                    <td>{{ c.timeAction }}</td>
                     <td>{{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                     <td>{{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</td>
                     <td>{{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</td>
