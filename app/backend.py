@@ -662,13 +662,6 @@ def reject_record(user_id):
 
 # ----------------------------------------------------
 # HELPER 4: Open Slots
-# - After cutoff time, any waiting slot becomes open
-# - Also includes any slot that user rejected (can choose again)
-# - Excludes only: user's still-waiting system-assigned slots
-# - cutoff_time = datetime.now() - timedelta(minutes=1)days=2
-# ----------------------------------------------------
-# ----------------------------------------------------
-# HELPER 3: Open Slots
 # - Includes slots user rejected (can reselect)
 # - Excludes user's current waiting slots
 # - Picks only un-rejected slots (rejectReason IS NULL)
@@ -710,6 +703,15 @@ def open_record(user_id):
         .subquery()
     )
 
+    # 3a. Subquery: exams user already has a slot for
+    user_exam_subq = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .filter(InvigilatorAttendance.invigilatorId == user_id)
+        .with_entities(InvigilationReport.examId)
+        .subquery()
+    )
+
     # 4. Subquery: latest attendance row per reportId & invigilatorId
     latest_attendance_subq = (
         db.session.query(
@@ -728,16 +730,16 @@ def open_record(user_id):
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
-            Exam.examStartTime > current_time,               # upcoming exams
-            InvigilatorAttendance.timeCreate <= two_days_ago,   # created at least 2 days ago
+            Exam.examStartTime > current_time,                # upcoming exams
+            InvigilatorAttendance.timeCreate <= two_days_ago, # created at least 2 days ago
             InvigilatorAttendance.invigilationStatus == False,  # slot not yet accepted
             InvigilatorAttendance.rejectReason.is_(None),       # only unrejected slots
             InvigilatorAttendance.invigilator.has(userGender=user_gender), # match gender
-            ~InvigilatorAttendance.reportId.in_(waiting_report_subq)       # exclude current waiting
+            ~InvigilatorAttendance.reportId.in_(waiting_report_subq),      # exclude current waiting
+            ~InvigilationReport.examId.in_(user_exam_subq)                  # exclude exams user already has
         )
         .all()
     )
-
 
     # 6. Remove duplicates by examId (one slot per exam)
     unique_slots = {}
