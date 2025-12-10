@@ -307,9 +307,6 @@ def admin_homepage():
 # -------------------------------
 # Main User Homepage
 # -------------------------------
-# -------------------------------
-# Main User Homepage
-# -------------------------------
 @app.route('/user/home', methods=['GET', 'POST'])
 @login_required
 def user_homepage():
@@ -322,11 +319,7 @@ def user_homepage():
     # Get open slots + gender filter
     open_slots = open_record(user_id)
     if chosen:
-        # Show only slots that are unassigned or match the user's gender
-        open_slots = [
-            slot for slot in open_slots
-            if slot.invigilatorId == user_id and slot.invigilator.userGender == chosen.userGender
-        ]
+        open_slots = [slot for slot in open_slots if slot.invigilator.userGender == chosen.userGender]
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -335,115 +328,126 @@ def user_homepage():
         # Handle waiting approval/rejection
         # -----------------------------
         waiting_id = request.form.get('w_id')
-        if waiting_id:
-            waiting_slot = InvigilatorAttendance.query.filter_by(
-                invigilatorId=user_id,
-                attendanceId=waiting_id
-            ).first()
+        waiting_slot = InvigilatorAttendance.query.filter_by(
+            invigilatorId=user_id,
+            attendanceId=waiting_id
+        ).first()
 
-            if waiting_slot:
-                exam = (
-                    Exam.query
-                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                    .filter(InvigilationReport.invigilationReportId == waiting_slot.reportId)
-                    .first()
-                )
-                course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
-                
-                # Calculate hours
-                pending_hours = 0
-                if exam and exam.examStartTime and exam.examEndTime:
-                    start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                    if end_dt < start_dt:
-                        end_dt += timedelta(days=1)
-                    pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+        if waiting_slot:
+            exam = (
+                Exam.query
+                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                .filter(InvigilationReport.invigilationReportId == waiting_slot.reportId)
+                .first()
+            )
 
-                if action == 'accept':
-                    waiting_slot.invigilationStatus = True
-                    waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
-                    flash(f"{course_code} has been accepted", "success")
+            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
+            pending_hours = 0
+            if exam and exam.examStartTime and exam.examEndTime:
+                start_dt, end_dt = exam.examStartTime, exam.examEndTime
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
 
-                elif action == 'reject':
-                    # Process reject reason
-                    raw_reason = request.form.get('reject_reason', '')
-                    lines = [line.strip() for line in raw_reason.splitlines() if line.strip()]
-                    waiting_slot.rejectReason = ','.join(lines)
+            if action == 'accept':
+                waiting_slot.invigilationStatus = True
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
+                flash(f"{course_code} have been accepted", "success")
 
-                    # Subtract hours from the user
-                    chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
+            elif action == 'reject':
+                # Process reject reason
+                raw_reason = request.form.get('reject_reason', '')
+                lines = [line.strip() for line in raw_reason.splitlines() if line.strip()]
+                waiting_slot.rejectReason = ','.join(lines)
 
-                    waiting_slot.invigilationStatus = False
+                # ✅ Subtract hours for the user
+                chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
 
-                    # Create new unassigned record
-                    db.session.add(
-                        InvigilatorAttendance(
-                            reportId=waiting_slot.reportId,
-                            invigilatorId=None,
-                            venueNumber=waiting_slot.venueNumber,
-                            timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
-                        )
+                waiting_slot.invigilationStatus = False
+
+                # Create new record for reassignment (unassigned slot)
+                db.session.add(
+                    InvigilatorAttendance(
+                        reportId=waiting_slot.reportId,
+                        invigilatorId=waiting_slot.invigilatorId,
+                        venueNumber=waiting_slot.venueNumber,
+                        timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
                     )
+                )
 
-                    waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
-                    db.session.commit()
-                    flash(f"{course_code} has been rejected", "success")
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
+                db.session.commit()
+                flash(f"{course_code} has been rejected", "success")
 
         # -----------------------------
         # Handle open slot acceptance
         # -----------------------------
         open_id = request.form.get('a_id')
-        if open_id and action == 'open_accept' and chosen:
-            open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
-            if open_slot:
-                exam = (
-                    Exam.query
-                    .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                    .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
-                    .first()
-                )
-                course_code = exam.course.courseCodeSectionIntake if exam and exam.course else ""
+        open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
 
-                # Gender check
-                if open_slot.invigilator and open_slot.invigilator.userGender != chosen.userGender:
-                    flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
-                    return redirect(url_for('user_homepage'))
+        if open_slot and action == 'open_accept' and chosen:
+            exam = (
+                Exam.query
+                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
+                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
+                .first()
+            )
+            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else ""
 
-                # Subtract hours from previous invigilator if assigned
-                if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
-                    prev_user = User.query.get(open_slot.invigilatorId)
-                    if prev_user and exam and exam.examStartTime and exam.examEndTime:
-                        start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                        if end_dt < start_dt:
-                            end_dt += timedelta(days=1)
-                        hours_to_remove = (end_dt - start_dt).total_seconds() / 3600.0
-                        prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
+            # Gender check
+            if open_slot.invigilator and open_slot.invigilator.userGender != chosen.userGender:
+                flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
+                return redirect(url_for('user_homepage'))
 
-                # Assign slot to current user
-                open_slot.invigilatorId = user_id
-                open_slot.invigilationStatus = True
-                open_slot.timeAction = datetime.now() + timedelta(hours=8)
-
-                # Add hours to current user if not already assigned
-                hours_to_add = 0
-                if exam and exam.examStartTime and exam.examEndTime:
+            # -----------------------------
+            # Subtract pending hours from previous invigilator if slot reassigned
+            # -----------------------------
+            if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
+                prev_user = User.query.get(open_slot.invigilatorId)
+                if prev_user and exam and exam.examStartTime and exam.examEndTime:
                     start_dt, end_dt = exam.examStartTime, exam.examEndTime
                     if end_dt < start_dt:
                         end_dt += timedelta(days=1)
-                    hours_to_add = (end_dt - start_dt).total_seconds() / 3600.0
+                    hours_to_remove = (end_dt - start_dt).total_seconds() / 3600.0
+                    prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
 
-                existing_assignment = InvigilatorAttendance.query.filter_by(
-                    invigilatorId=user_id,
-                    reportId=open_slot.reportId,
-                    invigilationStatus=True
-                ).first()
-                if not existing_assignment:
-                    chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
+            # -----------------------------
+            # Assign slot to current user
+            # -----------------------------
+            open_slot.invigilatorId = user_id
+            open_slot.invigilationStatus = True
+            open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
-                db.session.commit()
-                flash(f"Open Slot Accepted Successfully, Course Code: {course_code}", "success")
+            # -----------------------------
+            # Add pending hours to current user
+            # -----------------------------
+            hours_to_add = 0
+            if exam and exam.examStartTime and exam.examEndTime:
+                start_dt, end_dt = exam.examStartTime, exam.examEndTime
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                hours_to_add = (end_dt - start_dt).total_seconds() / 3600.0
 
+            # Avoid double-counting if user already had a waiting slot for this exam
+            existing_waiting = (
+                InvigilatorAttendance.query
+                .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+                .filter(
+                    InvigilatorAttendance.invigilatorId == user_id,
+                    InvigilatorAttendance.invigilationStatus == False,
+                    InvigilatorAttendance.timeAction.is_(None),
+                    InvigilationReport.examId == exam.examId
+                )
+                .first()
+            )
+            if not existing_waiting:
+                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
+
+            db.session.commit()
+            flash(f"Open Slot Accepted Successfully, Course Code: {course_code}", "success")
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
+
 
 
 # -------------------------------
