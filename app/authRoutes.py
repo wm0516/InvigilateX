@@ -360,7 +360,7 @@ def user_homepage():
                 db.session.add(
                     InvigilatorAttendance(
                         reportId=waiting_slot.reportId,
-                        venueNumber=venue_text,
+                        venueNumber=waiting_slot.venueNumber,
                         timeCreate=datetime.now(timezone.utc)
                     )
                 )
