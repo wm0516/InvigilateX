@@ -357,6 +357,14 @@ def user_homepage():
                 waiting_slot.rejectReason = ','.join(lines)
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
+                db.session.add(
+                    InvigilatorAttendance(
+                        reportId=report.invigilationReportId,
+                        venueNumber=venue_text,
+                        timeCreate=datetime.now(timezone.utc)
+                    )
+                )
+                db.session.commit()
                 flash(f"{course_code} have been rejected", "success")
 
             waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
