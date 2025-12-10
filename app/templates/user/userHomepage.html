@@ -220,7 +220,10 @@
     </div>
 </div>
 {% endif %}
+{% endif %}
 
+{% if not waiting && confirm && open %}
+    <h2>No Invigilation Slot</h2>
 {% endif %}
 {% endblock %}
 
