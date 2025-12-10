@@ -590,44 +590,45 @@ def check_profile(user_id, cardId, contact, password1, password2):
 
 
 
-# -------------------------------
-# Helper functions
-# -------------------------------
+# ----------------------------------------------------
+# HELPER 1: Waiting Slots
+# System-assigned slots waiting for user action
+# Excludes ANY reportId that user has previously rejected
+# ----------------------------------------------------
 def waiting_record(user_id):
-    # Subquery: find all (reportId, invigilatorId) that have been rejected
-    rejected_subq = (
+
+    # Subquery: reportIds that user has rejected before
+    rejected_report_subq = (
         InvigilatorAttendance.query
         .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
             InvigilatorAttendance.rejectReason.isnot(None)
         )
-        .with_entities(
-            InvigilatorAttendance.reportId,
-            InvigilatorAttendance.invigilatorId
-        )
+        .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
 
-    # Main query: select waiting records excluding rejected combinations
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
-            Exam.examStatus == True,                        # Only active exams
-            InvigilatorAttendance.timeAction.is_(None),    # Not yet acted on
-            InvigilatorAttendance.invigilationStatus == False,  # Not yet confirmed
+            Exam.examStatus == True,
             InvigilatorAttendance.invigilatorId == user_id,
-            ~exists().where(
-                and_(
-                    InvigilatorAttendance.reportId == rejected_subq.c.reportId,
-                    InvigilatorAttendance.invigilatorId == rejected_subq.c.invigilatorId
-                )
-            )
+            InvigilatorAttendance.timeAction.is_(None),       # user has not acted
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.rejectReason.is_(None),     # current record is not rejected
+            ~InvigilatorAttendance.reportId.in_(rejected_report_subq)  # block regenerated rows
         )
         .all()
     )
 
 
+
+# ----------------------------------------------------
+# HELPER 2: Confirmed Slots
+# User has accepted these slots
+# ----------------------------------------------------
 def confirm_record(user_id):
     return (
         InvigilatorAttendance.query
@@ -635,35 +636,56 @@ def confirm_record(user_id):
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
         .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
-        .filter(InvigilatorAttendance.invigilationStatus == True)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.invigilationStatus == True
+        )
+        .all()
     )
 
+
+# ----------------------------------------------------
+# HELPER 3: Open Slots
+# - After cutoff time, any waiting slot becomes open
+# - Also includes any slot that user rejected (can choose again)
+# - Excludes only: user's still-waiting system-assigned slots
 # cutoff_time = datetime.now() - timedelta(minutes=1)days=2
+# ----------------------------------------------------
 def open_record(user_id):
     cutoff_time = datetime.now() - timedelta(minutes=1)
 
-    # Get current user's gender
+    # Get user's gender
     current_user = User.query.get(user_id)
     if not current_user:
         return []
-
     user_gender = current_user.userGender
 
-    # 1. Waiting subquery: ONLY rows still waiting (not accepted, not rejected)
-    waiting_subq = (
+    # ReportIds that user has rejected before (allowed to reselect)
+    rejected_report_subq = (
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.timeAction.is_(None),
-            InvigilatorAttendance.rejectReason.is_(None)
+            InvigilatorAttendance.rejectReason.isnot(None)
         )
-        .with_entities(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId)
+        .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
 
-    # 2. Exams the user already holds (accepted, or still waiting)
+    # ReportIds that are *still* waiting (system assigned)
+    waiting_report_subq = (
+        InvigilatorAttendance.query
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.timeAction.is_(None),
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.rejectReason.is_(None),
+            ~InvigilatorAttendance.reportId.in_(rejected_report_subq)  # new fix
+        )
+        .with_entities(InvigilatorAttendance.reportId)
+        .subquery()
+    )
+
+    # Exams user already has ANY seat in (accepted or waiting)
     user_exam_subq = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -672,7 +694,7 @@ def open_record(user_id):
         .subquery()
     )
 
-    # 3. Public slots (open to everyone)
+    # Main query: find open slots
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -682,15 +704,12 @@ def open_record(user_id):
             Exam.examStartTime > datetime.now(),
             InvigilatorAttendance.timeCreate < cutoff_time,
             InvigilatorAttendance.invigilationStatus == False,
-
-            # Gender filter
             User.userGender == user_gender,
 
-            # EXCLUDE user's current waiting list only
-            ~tuple_(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId).in_(waiting_subq),
+            # EXCLUDE user's still-waiting system-assigned slots
+            ~InvigilatorAttendance.reportId.in_(waiting_report_subq),
 
-
-            # EXCLUDE exams where user already has any row (accepted/waiting/rejected)
+            # EXCLUDE exams user already has a seat in
             ~Exam.examId.in_(user_exam_subq)
         )
         .all()
