@@ -235,6 +235,7 @@
                     <th>Course Name</th>
                     <th>Course Code</th>
                     <th>Reason</th>
+                    <th>Time Rejected</th>
                 </tr>
             </thead>
             <tbody>
@@ -247,6 +248,7 @@
                     <td>{{ r.report.exam.course.courseName }}</td>
                     <td>{{ r.report.exam.course.courseCodeSectionIntake }}</td>
                     <td>{{ r.rejectReason }}</td>
+                    <td>{{ r.timeAction }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
