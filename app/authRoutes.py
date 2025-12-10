@@ -323,7 +323,9 @@ def user_homepage():
     if request.method == 'POST':
         action = request.form.get('action')
 
-        # Handle waiting approval
+        # -----------------------------
+        # Handle waiting approval/rejection
+        # -----------------------------
         waiting_id = request.form.get('w_id')
         waiting_slot = InvigilatorAttendance.query.filter_by(
             invigilatorId=user_id,
@@ -357,11 +359,12 @@ def user_homepage():
                 lines = [line.strip() for line in raw_reason.splitlines() if line.strip()]
                 waiting_slot.rejectReason = ','.join(lines)
 
-                # Reduce user's pending hours
+                # ✅ Subtract hours for the user
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
+
                 waiting_slot.invigilationStatus = False
 
-                # Create new record 
+                # Create new record for reassignment (unassigned slot)
                 db.session.add(
                     InvigilatorAttendance(
                         reportId=waiting_slot.reportId,
@@ -371,15 +374,13 @@ def user_homepage():
                     )
                 )
 
-                # Update action time and commit
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
                 flash(f"{course_code} has been rejected", "success")
 
-            waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
-            db.session.commit()
-
-        # Handle open slot accept
+        # -----------------------------
+        # Handle open slot acceptance
+        # -----------------------------
         open_id = request.form.get('a_id')
         open_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_id).first()
 
@@ -398,7 +399,7 @@ def user_homepage():
                 return redirect(url_for('user_homepage'))
 
             # -----------------------------
-            # Remove pending hours from previous invigilator if different
+            # Subtract pending hours from previous invigilator if slot reassigned
             # -----------------------------
             if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
                 prev_user = User.query.get(open_slot.invigilatorId)
@@ -409,20 +410,24 @@ def user_homepage():
                     hours_to_remove = (end_dt - start_dt).total_seconds() / 3600.0
                     prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
 
+            # -----------------------------
             # Assign slot to current user
+            # -----------------------------
             open_slot.invigilatorId = user_id
             open_slot.invigilationStatus = True
             open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
-            # Calculate hours for current user
-            hours = 0
+            # -----------------------------
+            # Add pending hours to current user
+            # -----------------------------
+            hours_to_add = 0
             if exam and exam.examStartTime and exam.examEndTime:
                 start_dt, end_dt = exam.examStartTime, exam.examEndTime
                 if end_dt < start_dt:
                     end_dt += timedelta(days=1)
-                hours = (end_dt - start_dt).total_seconds() / 3600.0
+                hours_to_add = (end_dt - start_dt).total_seconds() / 3600.0
 
-            # ✅ Check if user already had a waiting slot for this exam
+            # Avoid double-counting if user already had a waiting slot for this exam
             existing_waiting = (
                 InvigilatorAttendance.query
                 .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -435,14 +440,12 @@ def user_homepage():
                 .first()
             )
             if not existing_waiting:
-                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours
+                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
 
             db.session.commit()
             flash(f"Open Slot Accepted Successfully, Course Code: {course_code}", "success")
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots)
-
-
 
 
 
