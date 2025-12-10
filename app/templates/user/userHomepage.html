@@ -221,14 +221,13 @@
 </div>
 {% endif %}
 {% endif %}
-
-{% if not waiting and confirm and open %}
+{% if not waiting and not confirm and not open %}
     <h2>No Invigilation Slot</h2>
 {% endif %}
 {% endblock %}
 
-{% block extra_scripts %}
 
+{% block extra_scripts %}
 <!-- Reject Reason Popup Modal -->
 <div id="rejectModal" class="modal" style="
     display:none;
