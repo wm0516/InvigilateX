@@ -92,150 +92,190 @@
 </div><br>
 
 {% if waiting %}
-<form action="{{ url_for('user_homepage') }}" method="POST">
-    <div style="padding: 10px;">
-        <h2>Confirm or Decline Invigilation Slot</h2>
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Exam Date</th>
-                        <th>Exam Day</th>
-                        <th>Exam Time</th>
-                        <th>Exam Period</th>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for w in waiting %}
-                    <tr>
-                        <td>{{ w.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ w.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ w.report.exam.examStartTime.strftime("%A") }} - {{ w.report.exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ w.report.exam.examStartTime.strftime("%H:%M") }} - {{ w.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ (w.report.exam.examEndTime - w.report.exam.examStartTime).seconds // 3600 }}h {{ ((w.report.exam.examEndTime - w.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>{{ w.report.exam.course.courseName }}</td>
-                        <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
-                        <td>
-                            <!-- Accept Form -->
-                            <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
-                                <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
-                                <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
-                            </form>
-                            <!-- Reject Form -->
-                            <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}" style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
-                            <form action="{{ url_for('user_homepage') }}" method="POST" id="reject-form-{{ w.attendanceId }}" style="display:none; margin-top:5px;">
-                                <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
-                                <textarea name="reject_reason_{{ w.attendanceId }}" placeholder="Enter reason for rejection" required style="width: 100%;"></textarea>
-                                <button type="submit" name="action" value="reject" style="margin-top:5px;">Submit Rejection</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div style="padding: 10px;">
+    <h2>Confirm or Decline Invigilation Slot</h2>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Exam Date</th>
+                    <th>Exam Day</th>
+                    <th>Exam Time</th>
+                    <th>Exam Period</th>
+                    <th>Course Name</th>
+                    <th>Course Code</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in waiting %}
+                <tr>
+                    <td>{{ w.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ w.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                    <td>{{ w.report.exam.examStartTime.strftime("%A") }} - {{ w.report.exam.examEndTime.strftime("%A") }}</td>
+                    <td>{{ w.report.exam.examStartTime.strftime("%H:%M") }} - {{ w.report.exam.examEndTime.strftime("%H:%M") }}</td>
+                    <td>{{ (w.report.exam.examEndTime - w.report.exam.examStartTime).seconds // 3600 }}h {{ ((w.report.exam.examEndTime - w.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                    <td>{{ w.report.exam.course.courseName }}</td>
+                    <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
+                    <td>
+                        <!-- Accept Form -->
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
+                            <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" 
+                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                        </form>
+
+                        <!-- Reject Button (opens popup) -->
+                        <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}"
+                            style="background-color: #f8d7da; color: #721c24; padding: 5%;">
+                            Reject
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</form><br>
+</div><br>
 {% endif %}
 
 {% if confirm %}
-<form action="{{ url_for('user_homepage') }}" method="POST">
-    <div style="padding: 10px;">
-        <h2>Incoming Invigilation Slot</h2>
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Exam Date</th>
-                        <th>Exam Day</th>
-                        <th>Exam Time</th>
-                        <th>Exam Period</th>
-                        <th>Exam Venue</th>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in confirm %}
-                    <tr>
-                        <td>{{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ (c.report.exam.examEndTime - c.report.exam.examStartTime).seconds // 3600 }}h {{ ((c.report.exam.examEndTime - c.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>
-                            {% if c.report.exam.venue_availabilities %}
-                                {% for va in c.report.exam.venue_availabilities %}
-                                    <strong>{{ va.venueNumber }}</strong> [Capacity Used: {{ va.capacity }}]<br>
-                                {% endfor %}
-                            {% else %}
-                                <strong>: None</strong>
-                            {% endif %}
-                        </td>
-                        <td>{{ c.report.exam.course.courseName }}</td>
-                        <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div style="padding: 10px;">
+    <h2>Incoming Invigilation Slot</h2>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Exam Date</th>
+                    <th>Exam Day</th>
+                    <th>Exam Time</th>
+                    <th>Exam Period</th>
+                    <th>Exam Venue</th>
+                    <th>Course Name</th>
+                    <th>Course Code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in confirm %}
+                <tr>
+                    <td>{{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                    <td>{{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</td>
+                    <td>{{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</td>
+                    <td>{{ (c.report.exam.examEndTime - c.report.exam.examStartTime).seconds // 3600 }}h {{ ((c.report.exam.examEndTime - c.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                    <td>
+                        {% if c.report.exam.venue_availabilities %}
+                            {% for va in c.report.exam.venue_availabilities %}
+                                <strong>{{ va.venueNumber }}</strong> [Capacity Used: {{ va.capacity }}]<br>
+                            {% endfor %}
+                        {% else %}
+                            <strong>None</strong>
+                        {% endif %}
+                    </td>
+                    <td>{{ c.report.exam.course.courseName }}</td>
+                    <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</form><br>
+</div><br>
 {% endif %}
 
 {% if open %}
-<form action="{{ url_for('user_homepage') }}" method="POST">
-    <div style="padding: 10px;">
-        <h2>Open Public Own Select Invigilation Slot</h2>
-        <div class="user-table-container">
-            <table class="user-data-table">
-                <thead>
-                    <tr>
-                        <th>Exam Date</th>
-                        <th>Exam Day</th>
-                        <th>Exam Time</th>
-                        <th>Exam Period</th>
-                        <th>Course Name</th>
-                        <th>Course Code</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for a in open %}
-                    <tr>
-                        <td>{{ a.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ a.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ a.report.exam.examStartTime.strftime("%A") }} - {{ a.report.exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ a.report.exam.examStartTime.strftime("%H:%M") }} - {{ a.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ (a.report.exam.examEndTime - a.report.exam.examStartTime).seconds // 3600 }}h {{ ((a.report.exam.examEndTime - a.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>{{ a.report.exam.course.courseName }}</td>
-                        <td>{{ a.report.exam.course.courseCodeSectionIntake }}</td>
-                        <td>
+<div style="padding: 10px;">
+    <h2>Open Public Own Select Invigilation Slot</h2>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Exam Date</th>
+                    <th>Exam Day</th>
+                    <th>Exam Time</th>
+                    <th>Exam Period</th>
+                    <th>Course Name</th>
+                    <th>Course Code</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in open %}
+                <tr>
+                    <td>{{ a.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ a.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                    <td>{{ a.report.exam.examStartTime.strftime("%A") }} - {{ a.report.exam.examEndTime.strftime("%A") }}</td>
+                    <td>{{ a.report.exam.examStartTime.strftime("%H:%M") }} - {{ a.report.exam.examEndTime.strftime("%H:%M") }}</td>
+                    <td>{{ (a.report.exam.examEndTime - a.report.exam.examStartTime).seconds // 3600 }}h {{ ((a.report.exam.examEndTime - a.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                    <td>{{ a.report.exam.course.courseName }}</td>
+                    <td>{{ a.report.exam.course.courseCodeSectionIntake }}</td>
+                    <td>
+                        <form action="{{ url_for('user_homepage') }}" method="POST">
                             <input type="hidden" name="a_id" value="{{ a.attendanceId }}">
-                            <button type="submit" name="action" value="open_accept" onclick="return confirm('Are you sure to additional choose this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">
-                                Accept
-                            </button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                            <button type="submit" name="action" value="open_accept" 
+                                onclick="return confirm('Are you sure to additional choose this slot?')" 
+                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</form>
+</div>
 {% endif %}
+
 {% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
+
+<!-- Reject Reason Popup Modal -->
+<div id="rejectModal" class="modal" style="
+    display:none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+">
+    <div style="
+        background:white;
+        padding: 20px;
+        width: 350px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    ">
+        <h3>Reject Slot</h3>
+
+        <form id="rejectModalForm" method="POST" action="{{ url_for('user_homepage') }}">
+            <input type="hidden" name="w_id" id="reject_wid">
+            <textarea name="reject_reason" placeholder="Enter rejection reason" required
+                style="width:100%; height:100px; margin-top:10px;"></textarea>
+
+            <div style="margin-top:15px; text-align:right;">
+                <button type="button" onclick="closeRejectModal()"
+                    style="padding:5px 12px; margin-right:10px;">Cancel</button>
+                <button type="submit" name="action" value="reject"
+                    style="padding:5px 12px; background:#e74c3c; color:white;">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+function openRejectModal(id) {
+    document.getElementById('reject_wid').value = id;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+}
+
 document.querySelectorAll('.reject-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const id = this.dataset.id;
-        const form = document.getElementById('reject-form-' + id);
-        form.style.display = 'block'; // show reject form
-        // this.style.display = 'none';  <-- remove this line
+    btn.addEventListener('click', function () {
+        openRejectModal(this.dataset.id);
     });
 });
 </script>
+
 {% endblock %}
