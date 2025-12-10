@@ -84,7 +84,6 @@ def calculate_invigilation_stats():
             .join(Course, Course.courseExamId == Exam.examId)
             .filter(
                 Course.courseDepartment == user.userDepartment,
-                InvigilatorAttendance.invigilationStatus == True,
                 Exam.examStatus == True
             )
             .count()
