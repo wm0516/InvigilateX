@@ -10,7 +10,7 @@ bcrypt = Bcrypt()
 from functools import wraps
 import random
 from datetime import datetime, timedelta
-from sqlalchemy import and_, or_, exists
+from sqlalchemy import and_, or_, exists, tuple_
 
 
 # constants.py or at the top of your app.py
@@ -655,11 +655,11 @@ def open_record(user_id):
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.timeAction.is_(None),
             InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.timeAction.is_(None),
             InvigilatorAttendance.rejectReason.is_(None)
         )
-        .with_entities(InvigilatorAttendance.reportId)
+        .with_entities(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId)
         .subquery()
     )
 
@@ -687,7 +687,8 @@ def open_record(user_id):
             User.userGender == user_gender,
 
             # EXCLUDE user's current waiting list only
-            ~InvigilatorAttendance.reportId.in_(waiting_subq),
+            ~tuple_(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId).in_(waiting_subq),
+
 
             # EXCLUDE exams where user already has any row (accepted/waiting/rejected)
             ~Exam.examId.in_(user_exam_subq)
