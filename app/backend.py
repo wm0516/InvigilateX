@@ -622,29 +622,46 @@ def confirm_record(user_id):
 def open_record(user_id):
     cutoff_time = datetime.now() - timedelta(minutes=1)
 
-    # Get user and gender
+    # Get current user's gender
     current_user = User.query.get(user_id)
     if not current_user:
         return []
+
     user_gender = current_user.userGender
 
-    # Exams the user already has a seat (accepted / pending / any attendance)
-    user_exam_subq = (
-        db.session.query(InvigilationReport.examId)
-        .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
+    # 1. Waiting subquery (exclude from public)
+    waiting_subq = (
+        InvigilatorAttendance.query
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.timeAction.is_(None)
+        )
+        .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
 
-    # Main open slots logic
+    # 2. Exams already held by user (accepted or waiting)
+    user_exam_subq = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .with_entities(InvigilationReport.examId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id
+        )
+        .subquery()
+    )
+
+    # 3. Public slots query
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(
-            # Future exam only
             Exam.examStartTime > datetime.now(),
+            InvigilatorAttendance.timeCreate < cutoff_time,
+            InvigilatorAttendance.invigilationStatus == False,
 
             # Gender rule
             or_(
@@ -652,21 +669,12 @@ def open_record(user_id):
                 User.userGender == user_gender
             ),
 
-            # Exclude exams the user already has
-            ~Exam.examId.in_(user_exam_subq),
+            # Not in the user's waiting list
+            ~InvigilatorAttendance.reportId.in_(waiting_subq),
 
-            # Condition group:
-            or_(
-                # Condition 1: Completely empty slot
-                InvigilatorAttendance.invigilatorId.is_(None),
-
-                # Condition 2: Someone there but not acted, not rejected
-                and_(
-                    InvigilatorAttendance.timeAction.is_(None),
-                    InvigilatorAttendance.invigilationStatus == False,
-                    InvigilatorAttendance.rejectReason.is_(None)
-                )
-            )
+            # ❗ IMPORTANT FIX:
+            # Do not show any exam the user already has a seat in
+            ~Exam.examId.in_(user_exam_subq)
         )
         .all()
     )
@@ -679,7 +687,6 @@ def open_record(user_id):
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
-
 
 
 
