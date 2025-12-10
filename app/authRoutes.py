@@ -419,7 +419,7 @@ def user_homepage():
                 .filter(InvigilationReport.examId == open_slot.reportId)
                 .first()
             )
-            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else ""
+            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
 
             # Step 4: Gender check
             if open_slot.invigilator and open_slot.invigilator.userGender != chosen.userGender:
