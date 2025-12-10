@@ -126,6 +126,7 @@ def get_all_attendances():
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
 @login_required
 def user_invigilationReport():
+    user = User.query.get(session.get('user_id'))
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
@@ -138,7 +139,8 @@ def user_invigilationReport():
             exam.examStartTime if exam else datetime.min,
             exam.examId if exam else 0
         )
-    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats)
+    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats, current_user=user)
+    
 # -------------------------------
 # Function for InviglationTimetable Route to read all the timetable in calendar mode
 # -------------------------------
