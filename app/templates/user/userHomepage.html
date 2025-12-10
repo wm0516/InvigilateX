@@ -206,7 +206,7 @@
                     <td>{{ a.report.exam.course.courseName }}</td>
                     <td>{{ a.report.exam.course.courseCodeSectionIntake }}</td>
                     <td>
-                        <form action="{{ url_for('user_homepage') }}" method="POST">
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
                             <input type="hidden" name="a_id" value="{{ a.attendanceId }}">
                             <button type="submit" name="action" value="open_accept" 
                                 onclick="return confirm('Are you sure to additional choose this slot?')" 
