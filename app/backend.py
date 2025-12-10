@@ -640,7 +640,6 @@ def confirm_record(user_id):
             InvigilatorAttendance.invigilatorId == user_id,
             InvigilatorAttendance.invigilationStatus == True
         )
-        .all()
     )
 
 
@@ -729,7 +728,7 @@ def open_record(user_id):
 # -------------------------------
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
-    confirmed = confirm_record(user_id)
+    confirmed = confirm_record(user_id).all()
     open_slots = open_record(user_id)
 
     return {
