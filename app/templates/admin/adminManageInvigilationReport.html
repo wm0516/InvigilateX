@@ -225,7 +225,9 @@
                         <td>
                             {% if att.invigilationStatus %}
                                 <span class="status frame-completed invigilation-status">ACCEPTED</span>
-                            {% else %}
+                            {% elif not att.invigilationStatus and att.rejectReason %}
+                                <span class="status frame-completed invigilation-status">REJECTED</span>
+                            {% elif not att.invigilationStatus and not att.rejectReason %}
                                 <span class="status frame-pending invigilation-status">PENDING</span>
                             {% endif %}
                         </td>

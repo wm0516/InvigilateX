@@ -228,27 +228,27 @@
         <table class="user-data-table">
             <thead>
                 <tr>
+                    <th>Time Rejected</th>
+                    <th>Reason</th>
                     <th>Exam Date</th>
                     <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
                     <th>Course Name</th>
                     <th>Course Code</th>
-                    <th>Reason</th>
-                    <th>Time Rejected</th>
                 </tr>
             </thead>
             <tbody>
                 {% for r in reject %}
                 <tr>
+                    <td>{{ r.rejectReason }}</td>
+                    <td>{{ r.timeAction }}</td>
                     <td>{{ r.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ r.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                     <td>{{ r.report.exam.examStartTime.strftime("%A") }} - {{ r.report.exam.examEndTime.strftime("%A") }}</td>
                     <td>{{ r.report.exam.examStartTime.strftime("%H:%M") }} - {{ r.report.exam.examEndTime.strftime("%H:%M") }}</td>
                     <td>{{ (r.report.exam.examEndTime - r.report.exam.examStartTime).seconds // 3600 }}h {{ ((r.report.exam.examEndTime - r.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
                     <td>{{ r.report.exam.course.courseName }}</td>
                     <td>{{ r.report.exam.course.courseCodeSectionIntake }}</td>
-                    <td>{{ r.rejectReason }}</td>
-                    <td>{{ r.timeAction }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -315,5 +315,4 @@ document.querySelectorAll('.reject-btn').forEach(btn => {
     });
 });
 </script>
-
 {% endblock %}
