@@ -208,7 +208,7 @@
                                 <span class="status frame-completed invigilation-status">ACCEPTED</span>
                             {% elif not att.invigilationStatus and att.rejectReason %}
                                 <span class="status frame-expired invigilation-status">REJECTED</span>
-                                <div>Reason</div><div><strong>: <span style="max-width: 200px;">{{ att.rejectReason }}</span></strong></div>
+                                <div>Reason</div><div><strong>: <p style="max-width: 200px;">{{ att.rejectReason }}</p></strong></div>
                             {% elif not att.invigilationStatus and not att.rejectReason %}
                                 <span class="status frame-pending invigilation-status">PENDING</span>
                             {% endif %}
