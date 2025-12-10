@@ -674,7 +674,10 @@ def reject_record(user_id):
 # - Picks only un-rejected slots (rejectReason IS NULL)
 # ----------------------------------------------------
 def open_record(user_id):
-    cutoff_time = datetime.now() + timedelta(hours=8)  # adjust timezone if needed
+    # Current time in your timezone
+    current_time = datetime.now() + timedelta(hours=8)
+    # Cutoff: only show records created at least 2 days ago
+    two_days_ago = current_time - timedelta(minutes=1)
 
     # 1. Get current user and gender
     current_user = User.query.get(user_id)
@@ -725,15 +728,16 @@ def open_record(user_id):
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
-            Exam.examStartTime > datetime.now(),               # upcoming exams
-            InvigilatorAttendance.timeCreate < cutoff_time,   # created before now
-            InvigilatorAttendance.invigilationStatus == False,# slot not yet accepted
-            InvigilatorAttendance.rejectReason.is_(None),     # only unrejected slots
+            Exam.examStartTime > current_time,               # upcoming exams
+            InvigilatorAttendance.timeCreate <= two_days_ago,   # created at least 2 days ago
+            InvigilatorAttendance.invigilationStatus == False,  # slot not yet accepted
+            InvigilatorAttendance.rejectReason.is_(None),       # only unrejected slots
             InvigilatorAttendance.invigilator.has(userGender=user_gender), # match gender
-            ~InvigilatorAttendance.reportId.in_(waiting_report_subq)        # exclude current waiting
+            ~InvigilatorAttendance.reportId.in_(waiting_report_subq)       # exclude current waiting
         )
         .all()
     )
+
 
     # 6. Remove duplicates by examId (one slot per exam)
     unique_slots = {}

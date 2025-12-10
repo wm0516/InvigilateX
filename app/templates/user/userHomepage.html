@@ -241,8 +241,8 @@
             <tbody>
                 {% for r in reject %}
                 <tr>
-                    <td>{{ r.rejectReason }}</td>
                     <td>{{ r.timeAction }}</td>
+                    <td>{{ r.rejectReason }}</td>
                     <td>{{ r.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ r.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
                     <td>{{ r.report.exam.examStartTime.strftime("%A") }} - {{ r.report.exam.examEndTime.strftime("%A") }}</td>
                     <td>{{ r.report.exam.examStartTime.strftime("%H:%M") }} - {{ r.report.exam.examEndTime.strftime("%H:%M") }}</td>
