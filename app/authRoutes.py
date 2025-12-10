@@ -444,7 +444,7 @@ def user_homepage():
                 chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
 
             db.session.commit()
-            flash(f"Open Slot Accepted Successfully, Course Code: {course_code}", "success")
+            flash(f"Open Slot Course Code: {course_code} Accepted Successfully", "success")
         return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
 
