@@ -416,7 +416,7 @@ def user_homepage():
             exam = (
                 Exam.query
                 .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.examId == open_slot.reportId)
+                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
                 .first()
             )
             course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
