@@ -361,14 +361,11 @@ def user_homepage():
                 chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
                 waiting_slot.invigilationStatus = False
 
-                # Map gender to 1 or 2 (use chosen user's gender)
-                int_gender = 1 if chosen.userGender.upper() == "MALE" else 2
-
-                # Create new record with gender stored in invigilatorId
+                # Create new record 
                 db.session.add(
                     InvigilatorAttendance(
                         reportId=waiting_slot.reportId,
-                        invigilatorId=int_gender,  # 1 or 2
+                        invigilatorId=waiting_slot.invigilatorId,
                         venueNumber=waiting_slot.venueNumber,
                         timeCreate=datetime.now(timezone.utc)
                     )

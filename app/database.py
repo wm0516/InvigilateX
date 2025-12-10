@@ -228,7 +228,7 @@ class InvigilationReport(db.Model):
 class InvigilatorAttendance(db.Model):
     __tablename__ = 'InvigilatorAttendance'
     attendanceId = db.Column(db.Integer, primary_key=True, autoincrement=True)                                     # [PK] Refer to Attendance ID
-    reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=True)     # [FK] Refer to Invigilation Report with the exam details
+    reportId = db.Column(db.Integer, db.ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)     # [FK] Refer to Invigilation Report with the exam details
     invigilatorId = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=False)                         # [FK] Refer to which invigilator in charge
     checkIn = db.Column(db.DateTime, nullable=True)                                                                # Check-in time
     checkOut = db.Column(db.DateTime, nullable=True)                                                               # Check-out time
@@ -246,7 +246,7 @@ class InvigilatorAttendance(db.Model):
     CREATE TABLE InvigilatorAttendance (
         attendanceId INT AUTO_INCREMENT PRIMARY KEY,
         reportId INT NOT NULL,
-        invigilatorId INT NULL,
+        invigilatorId INT NOT NULL,
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
         remark ENUM('PENDING', 'CHECK IN LATE', 'CHECK IN', 'CHECK OUT EARLY', 'COMPLETED', 'EXPIRED') NOT NULL DEFAULT 'PENDING',
