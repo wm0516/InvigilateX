@@ -650,16 +650,22 @@ def confirm_record(user_id):
 # - Excludes only: user's still-waiting system-assigned slots
 # - cutoff_time = datetime.now() - timedelta(minutes=1)days=2
 # ----------------------------------------------------
+# ----------------------------------------------------
+# HELPER 3: Open Slots
+# - Includes slots user rejected (can reselect)
+# - Excludes user's current waiting slots
+# - Picks only un-rejected slots (rejectReason IS NULL)
+# ----------------------------------------------------
 def open_record(user_id):
-    cutoff_time = datetime.now() + timedelta(hours=8) # to get current time
+    cutoff_time = datetime.now() + timedelta(hours=8)  # adjust timezone if needed
 
-    # 1. Get user's gender
+    # 1. Get current user and gender
     current_user = User.query.get(user_id)
     if not current_user:
         return []
     user_gender = current_user.userGender
 
-    # 2. ReportIds the user has rejected before (allowed to reselect)
+    # 2. Subquery: user's rejected slots (allowed to reselect)
     rejected_report_subq = (
         InvigilatorAttendance.query
         .filter(
@@ -670,7 +676,7 @@ def open_record(user_id):
         .subquery()
     )
 
-    # 3. User's still-waiting system-assigned reportIds (must EXCLUDE)
+    # 3. Subquery: user's current waiting slots (must exclude)
     waiting_report_subq = (
         InvigilatorAttendance.query
         .filter(
@@ -684,41 +690,35 @@ def open_record(user_id):
         .subquery()
     )
 
-    # 4. Exams the user already has ANY seat for (accepted or waiting)
-    user_exam_subq = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
-        .with_entities(InvigilationReport.examId)
+    # 4. Subquery: latest attendance row per reportId & invigilatorId
+    latest_attendance_subq = (
+        db.session.query(
+            InvigilatorAttendance.reportId,
+            InvigilatorAttendance.invigilatorId,
+            func.max(InvigilatorAttendance.attendanceId).label('latest_id')
+        )
+        .group_by(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId)
         .subquery()
     )
 
-    # 5. Find OPEN slots
+    # 5. Query: open slots
     slots = (
         InvigilatorAttendance.query
+        .join(latest_attendance_subq, InvigilatorAttendance.attendanceId == latest_attendance_subq.c.latest_id)
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(
-            Exam.examStartTime > datetime.now(),
-            InvigilatorAttendance.timeCreate < cutoff_time,
-
-            # Slot must be unclaimed
-            InvigilatorAttendance.invigilationStatus == False,
-
-            # Slot must match user's gender
-            User.userGender == user_gender,
-
-            # EXCLUDE system-assigned waiting slots of current user
-            ~InvigilatorAttendance.reportId.in_(waiting_report_subq),
-
-            # EXCLUDE exams user already has a seat in
-            ~Exam.examId.in_(user_exam_subq)
+            Exam.examStartTime > datetime.now(),               # upcoming exams
+            InvigilatorAttendance.timeCreate < cutoff_time,   # created before now
+            InvigilatorAttendance.invigilationStatus == False,# slot not yet accepted
+            InvigilatorAttendance.rejectReason.is_(None),     # only unrejected slots
+            InvigilatorAttendance.invigilator.has(userGender=user_gender), # match gender
+            ~InvigilatorAttendance.reportId.in_(waiting_report_subq)        # exclude current waiting
         )
         .all()
     )
 
-    # 6. Remove duplicates by examId (each exam only once)
+    # 6. Remove duplicates by examId (one slot per exam)
     unique_slots = {}
     for slot in slots:
         exam_id = slot.report.examId
@@ -726,6 +726,7 @@ def open_record(user_id):
             unique_slots[exam_id] = slot
 
     return list(unique_slots.values())
+
 
 
 
