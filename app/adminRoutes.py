@@ -1048,7 +1048,6 @@ def admin_manageExam():
 
         # 1️⃣ Upload exam file
         if form_type == 'upload':
-
             return handle_file_upload(
                 file_key='exam_file',
                 expected_cols=['exam date', 'day', 'start time', 'end time', 'course code', 'course name', 'total number of students', 'total number of students by venue', 'exam venue'],
@@ -1057,7 +1056,6 @@ def admin_manageExam():
                 usecols="A:I",
                 skiprows=1 
             )
-        
 
         # 2️⃣ Edit exam
         if form_type == 'edit' and exam_select:

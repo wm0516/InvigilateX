@@ -67,20 +67,6 @@
     </div>
 </form>
 {% endblock %}  
-<div id="timeModal" class="modal">
-    <div class="modal-content">
-        <h3>Select Share & Expire Time</h3>
-
-        <label>Share Time:</label>
-        <input type="datetime-local" id="shareTimePicker"><br><br>
-
-        <label>Expire Time:</label>
-        <input type="datetime-local" id="expireTimePicker"><br><br>
-
-        <button id="confirmTimes">Confirm</button>
-        <button id="cancelTimes">Cancel</button>
-    </div>
-</div>
 
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
@@ -518,41 +504,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // ===== Save =====
         doc.save("Admin_ViewExamList.pdf");
-    });
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    const uploadForm = document.getElementById("uploadForm");
-    const modal = document.getElementById("timeModal");
-    const shareInput = document.getElementById("shareTimeInput");
-    const expireInput = document.getElementById("expireTimeInput");
-
-    if (!uploadForm) return;
-
-    uploadForm.addEventListener("submit", function(e) {
-        e.preventDefault();  // stop submit
-        modal.style.display = "block";
-    });
-
-    document.getElementById("confirmTimes").addEventListener("click", function() {
-
-        const shareValue = document.getElementById("shareTimePicker").value;
-        const expireValue = document.getElementById("expireTimePicker").value;
-
-        if (!shareValue || !expireValue) {
-            alert("⚠ Please select both share time and expire time.");
-            return;
-        }
-
-        shareInput.value = shareValue;
-        expireInput.value = expireValue;
-
-        modal.style.display = "none";
-        uploadForm.submit();
-    });
-
-    document.getElementById("cancelTimes").addEventListener("click", function() {
-        modal.style.display = "none";
     });
 });
 </script>
