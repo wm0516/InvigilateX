@@ -879,68 +879,42 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
     # -------------------------------
     # 4️⃣ Assign invigilators per venue
     # -------------------------------
-    for i, venue_no in enumerate(new_venues):
-        try:
-            students_for_venue = int(new_students[i])
-        except (IndexError, ValueError):
-            students_for_venue = 0
+    # Get excluded lecturers for this course
+    exclude_ids = [
+        uid for uid in [
+            exam.course.coursePractical,
+            exam.course.courseTutorial,
+            exam.course.courseLecturer
+        ] if uid is not None
+    ]
 
-        if students_for_venue <= 0:
-            continue
+    # Fetch eligible invigilators excluding lecturers
+    eligible_query = User.query.filter(
+        User.userLevel == 1,
+        User.userStatus == 1,
+    )
+    if exclude_ids:
+        eligible_query = eligible_query.filter(~User.userId.in_(exclude_ids))
 
-        # Determine how many invigilators needed
-        inv_count = 3 if students_for_venue > 32 else 2
+    # Apply workload and timetable checks
+    flexible = []
+    not_flexible = []
 
-        # Fetch eligible invigilators (excluding course lecturers)
-        lecturers = [exam.course.coursePractical, exam.course.courseTutorial, exam.course.courseLecturer]
-        eligible = User.query.filter(
-            User.userLevel == 1,
-            User.userStatus == 1
-            #,~User.userId.in_(lecturers)
-        ).all()
+    for u in eligible_query.all():
+        total_hours = (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
+        available = is_lecturer_available(u.userId, new_start, new_end)
+        if total_hours < 36 and available:
+            flexible.append(u)
+        else:
+            not_flexible.append((u, total_hours, available))
 
-         # Filter by max 36 hours total
-        eligible = [
-            u for u in eligible
-            if (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0) < 36
-        ]
+    eligible_invigilators = flexible
+    male = sorted([u for u in eligible_invigilators if u.userGender == "MALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+    female = sorted([u for u in eligible_invigilators if u.userGender == "FEMALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
 
-        # Sort by gender and hours (to balance load)
-        males = sorted(
-            [u for u in eligible if u.userGender == "MALE"],
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-        females = sorted(
-            [u for u in eligible if u.userGender == "FEMALE"],
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-
-        chosen = []
-        # Ensure at least one male and one female (if possible)
-        if inv_count >= 2:
-            if males:
-                chosen.append(males.pop(0))
-            if females and len(chosen) < inv_count:
-                chosen.append(females.pop(0))
-
-        # Fill remaining slots with lowest-hour invigilators
-        pool = sorted(males + females, key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
-        chosen += pool[:(inv_count - len(chosen))]
-
-        # Save attendance entries with venueNumber
-        for inv in chosen:
-            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
-            db.session.add(InvigilatorAttendance(
-                reportId=report.invigilationReportId,
-                invigilatorId=inv.userId,
-                venueNumber=venue_no,
-                timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
-                invigilationStatus=False
-            ))
-            send_invigilator_slot_notification(inv.userId)
-
-        flash(f"Eligible invigilators: {len(eligible)}","success")
-        flash(f"Chosen invigilators for venue {venue_no}: {[inv.userId for inv in chosen]}","success")
+    not_flex_ids = [str(i.userId) for i, t, a in not_flexible]
+    # Store summary in examOutput
+    exam.examOutput = [eligible_query.count(), len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids,len(male), len(female)]
 
     # -------------------------------
     # 5️⃣ Update or create VenueExam records
