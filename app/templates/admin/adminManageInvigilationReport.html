@@ -199,6 +199,7 @@
                             {% elif not att.invigilationStatus and not att.rejectReason %}
                                 <span class="status frame-pending invigilation-status">PENDING</span>
                             {% endif %}
+                            <div style="max-width: 200px;"><strong>Action Time: </strong>{{ att.timeAction }}</div>
                         </td>
                         
                         <!-- Attendance Status -->

@@ -1270,17 +1270,6 @@ def admin_manageStaff():
     total_activated = User.query.filter_by(userStatus=1).count()
     total_deactivate = User.query.filter_by(userStatus=0).count()
     total_deleted = User.query.filter_by(userStatus=2).count()
-
-    # Incomplete rows check
-    error_rows = User.query.filter(
-        (User.userDepartment.is_(None)) | (User.userDepartment == '') |
-        (User.userName.is_(None)) | (User.userName == '') |
-        (User.userEmail.is_(None)) | (User.userEmail == '') |
-        (User.userContact.is_(None)) | (User.userContact == '') |
-        (User.userGender.is_(None)) | (User.userGender == '') |
-        (User.userLevel.is_(None))
-    ).count()
-
     staff_id = request.form.get('editStaffId')
     user_select = User.query.filter_by(userId=staff_id).first()
 
@@ -1393,7 +1382,6 @@ def admin_manageStaff():
         total_activated=total_activated,
         total_deactivate=total_deactivate,
         total_deleted=total_deleted,
-        error_rows=error_rows,
         user_select=user_select
     )
 

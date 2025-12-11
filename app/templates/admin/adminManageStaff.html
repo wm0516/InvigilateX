@@ -13,7 +13,7 @@
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-            <div class="dashboard-row">
+            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame pie">
                     <h3>Staff Distribution</h3>
                     <canvas id="staffPieChart"></canvas>
@@ -25,10 +25,6 @@
                 <div class="dashboard-frame pie">
                     <h3>Account Status</h3>
                     <canvas id="statusPieChart"></canvas>
-                </div>
-                <div class="dashboard-frame">
-                    <h3>Incompleted Data Rows</h3>
-                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
             </div>
         </div>
