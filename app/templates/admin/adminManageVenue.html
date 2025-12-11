@@ -160,13 +160,9 @@
                     <td>{{ row.venueLevel }}</td>
                     <td>{{ row.venueCapacity }}</td>
                     <td>
-                        <div class="info-grid">
                         {% if row.venueAddedBy and row.venueAddedOn %}
-                            <span>By: <strong>[{{ row.venueAddedBy }}] {{ row.addedBy.userName }}</strong></span>
-                            <span style="margin: 0 6px;">|</span>
-                            <span>On: <strong>{{ row.venueAddedOn }}</strong></span>
+                            By: <strong>[{{ row.venueAddedBy }}] {{ row.addedBy.userName }}</strong> | On: <strong>{{ row.venueAddedOn }}</strong>
                         {% endif %}
-                        </div>
                     </td>
                 </tr>
                 {% endfor %}
