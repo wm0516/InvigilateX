@@ -523,29 +523,39 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.getElementById("uploadForm").addEventListener("submit", function(e) {
-    e.preventDefault();  // stop form submission
-    document.getElementById("timeModal").style.display = "block";
-});
+document.addEventListener("DOMContentLoaded", function () {
+    const uploadForm = document.getElementById("uploadForm");
+    const modal = document.getElementById("timeModal");
+    const shareInput = document.getElementById("shareTimeInput");
+    const expireInput = document.getElementById("expireTimeInput");
 
-document.getElementById("confirmTimes").addEventListener("click", function() {
-    const shareValue = document.getElementById("shareTimePicker").value;
-    const expireValue = document.getElementById("expireTimePicker").value;
+    if (!uploadForm) return;
 
-    if (!shareValue || !expireValue) {
-        alert("⚠ Please select both share time and expire time.");
-        return;
-    }
+    uploadForm.addEventListener("submit", function(e) {
+        e.preventDefault();  // stop submit
+        modal.style.display = "block";
+    });
 
-    document.getElementById("shareTimeInput").value = shareValue;
-    document.getElementById("expireTimeInput").value = expireValue;
+    document.getElementById("confirmTimes").addEventListener("click", function() {
 
-    document.getElementById("timeModal").style.display = "none";
-    document.getElementById("uploadForm").submit();
-});
+        const shareValue = document.getElementById("shareTimePicker").value;
+        const expireValue = document.getElementById("expireTimePicker").value;
 
-document.getElementById("cancelTimes").addEventListener("click", function() {
-    document.getElementById("timeModal").style.display = "none";
+        if (!shareValue || !expireValue) {
+            alert("⚠ Please select both share time and expire time.");
+            return;
+        }
+
+        shareInput.value = shareValue;
+        expireInput.value = expireValue;
+
+        modal.style.display = "none";
+        uploadForm.submit();
+    });
+
+    document.getElementById("cancelTimes").addEventListener("click", function() {
+        modal.style.display = "none";
+    });
 });
 </script>
 {% endblock %}

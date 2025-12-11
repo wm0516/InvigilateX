@@ -1051,6 +1051,9 @@ def admin_manageExam():
             share_time = request.form.get("share_time")
             expire_time = request.form.get("expire_time")
 
+            share_dt = None
+            expire_dt = None
+
             if share_time:
                 share_dt = datetime.fromisoformat(share_time)
 
