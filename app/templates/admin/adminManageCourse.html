@@ -298,10 +298,10 @@
                         </td>
                         <td>
                             <div class="info-grid">
-                                {% if row.courseAddedStaff and row.courseAddedDate%}
-                                    <div>By</div><div><strong>: {{ row.courseAddedStaff }}</strong></div>
-                                    <div>By</div><div><strong>: {{ row.addedStaff.userName }}</strong></div>
-                                    <div>On</div><div><strong>: {{ row.courseAddedDate }}</strong></div>
+                                {% if row.courseAddedBy and row.courseAddedOn %}
+                                    <div>By</div><div><strong>: {{ row.courseAddedBy }}</strong></div>
+                                    <div>By</div><div><strong>: {{ row.addedBy.userName }}</strong></div>
+                                    <div>On</div><div><strong>: {{ row.courseAddedOn }}</strong></div>
                                 {% endif %}
                             </div>
                         </td>
