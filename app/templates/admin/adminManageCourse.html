@@ -251,6 +251,7 @@
                     <th>Number of Students</th>
                     <th>Exam ID</th>
                     <th>Lecturer Details</th>
+                    <th>Added Details</th>
                 </tr>   
             </thead>
             <tbody>
@@ -295,6 +296,15 @@
                                 {% endif %}
                             </div>
                         </td>
+                        <td>
+                            <div class="info-grid">
+                                {% if row.addedStaffName and row.addedDate%}
+                                    <div>Added By</div><div><strong>: {{ row.addedStaffName }}</strong></div>
+                                    <div>Added By</div><div><strong>: {{ row.addedStaffName.userId }}</strong></div>
+                                    <div>Added By</div><div><strong>: {{ row.addedDate }}</strong></div>
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -302,7 +312,6 @@
     </div>
 </div>
 {% endblock %}
-
 
 {% block extra_scripts %}
 <script>
