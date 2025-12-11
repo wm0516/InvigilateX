@@ -195,10 +195,9 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseHour"        : course.courseHour,    
         "courseStudent"     : course.courseStudent,
         "courseStatus"      : course.courseStatus,
-        "addedBy"           : course.addedBy.userName,
-        "addedOn"           : course.courseAddedOn.isoformat()
+        "addedBy"           : course.courseAddedBy if course.courseAddedBy else None,
+        "addedOn"           : course.courseAddedOn.isoformat()if course.courseAddedDate else None
     })
-
 
 # -------------------------------
 # Function for Admin ManageCourse Route
