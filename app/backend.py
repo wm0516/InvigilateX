@@ -261,6 +261,8 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
             examEndTime=None,
             examNoInvigilator=None,
             examTotalStudents=students  # only this section initially
+            examAddedBy=userid,
+            examAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
         )
         db.session.add(new_exam)
         db.session.flush()  # Get examId
