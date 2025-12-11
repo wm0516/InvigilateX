@@ -680,6 +680,7 @@ def download_exam_template():
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
 def process_exam_row(row):
+    user_id = session.get('user_id')
     # --- Parse exam date ---
     examDate = row.get('exam date')
     if not examDate:
@@ -742,7 +743,7 @@ def process_exam_row(row):
             "error"
         )
         return None, ''
-    create_exam_and_related(start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
+    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
     return True, ''
 
 
@@ -825,6 +826,7 @@ def get_available_venues():
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
 def adjust_exam(exam, new_start, new_end, new_venues, new_students):
+    user_id = session.get('user_id')
     old_start = exam.examStartTime
     old_end = exam.examEndTime
 
@@ -833,6 +835,8 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
     # -------------------------------
     exam.examStartTime = new_start
     exam.examEndTime = new_end
+    exam.examAddedBy = user_id
+    exam.examAddedOn = datetime.now() + timedelta(hours=8)
 
     # -------------------------------
     # 2️⃣ Calculate total invigilators
@@ -1007,6 +1011,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
 @app.route('/admin/manageExam', methods=['GET', 'POST'])
 @login_required
 def admin_manageExam():
+    user_id = session.get('user_id')
     # Load departments and exams
     department_data = Department.query.all()
     exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
@@ -1111,6 +1116,8 @@ def admin_manageExam():
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
                 exam_select.examNoInvigilator = None
+                exam_select.examAddedBy = user_id
+                exam_select.examAddedOn = datetime.now() + timedelta(hours=8)
                 db.session.commit()
                 flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
 

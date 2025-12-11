@@ -136,11 +136,15 @@ class Exam(db.Model):
     examNoInvigilator = db.Column(db.Integer, nullable=True)                                     # Number of invigilators needed
     examStatus = db.Column(db.Boolean, default=True, nullable=False)                             # Refer to Course Status, when course deleted, it will show False
     examOutput = db.Column(db.JSON, nullable=True)                                               # Refer to exam filter output ()
+    examAddedBy = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=False)
+    examddedOn = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
     venue_availabilities = db.relationship("VenueExam", back_populates="exam")                   # One Exam ↔ Many VenueExam
     invigilation_reports = db.relationship("InvigilationReport", backref="exam")                 # One Exam ↔ Many InvigilationReport
+    addedBy = db.relationship("User", foreign_keys=[examAddedBy])
+
     '''
     CREATE TABLE Exam (
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -149,7 +153,10 @@ class Exam(db.Model):
         examTotalStudents INT NOT NULL,
         examNoInvigilator INT NULL,
         examOutput JSON NULL,
-        examStatus TINYINT(1) NOT NULL DEFAULT 1
+        examStatus TINYINT(1) NOT NULL DEFAULT 1,
+        examAddedBy INT NOT NULL,
+        examddedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (examAddedBy) REFERENCES User(userId)
     );
     '''
 
