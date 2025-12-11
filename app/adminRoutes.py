@@ -1116,6 +1116,7 @@ def admin_manageExam():
                 exam_select.examStartTime = None
                 exam_select.examEndTime = None
                 exam_select.examNoInvigilator = None
+                exam_select.examOutput = None
                 exam_select.examAddedBy = user_id
                 exam_select.examAddedOn = datetime.now() + timedelta(hours=8)
                 db.session.commit()
