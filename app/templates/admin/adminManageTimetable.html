@@ -161,18 +161,18 @@
                 </select>
             </div>
             
-            <div class="button-wrapper" style="padding: 1%;">
-                <button type="button" id="clearFilter">Clear Filter</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="button-wrapper" style="padding: 1%;">
+                    <button type="button" id="clearFilter">Clear Filter</button>
+                </div>
+                <div style="position: relative;">
+                    <input type="text" id="searchInput" name="search_timetable" placeholder="Search..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
+                    <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+                </div>
+                <div class="button-wrapper">
+                    <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="position: relative;">
-                <input type="text" id="searchInput" name="search_timetable" placeholder="Search..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
-                <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
-            </div>
-            <div class="button-wrapper">
-                <button id="generatePDF" style="background-color: black;">Download as PDF</button>
-            </div>
-        </div>
         </div>
     </form> 
 
