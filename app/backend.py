@@ -458,7 +458,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                     invigilatorId=chosen.userId,
                     venueNumber=venue_text,
                     timeCreate=open,
-                    timeAction=close
+                    timeExpire=close
                 )
             )
             send_invigilator_slot_notification(chosen.userId)

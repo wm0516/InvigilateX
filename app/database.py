@@ -259,7 +259,8 @@ class InvigilatorAttendance(db.Model):
     checkIn = db.Column(db.DateTime, nullable=True)                                                                # Check-in time
     checkOut = db.Column(db.DateTime, nullable=True)                                                               # Check-out time
     timeAction = db.Column(db.DateTime, nullable=True)
-    timeCreate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    timeCreate = db.Column(db.DateTime, nullable=False)
+    timeExpire = db.Column(db.DateTime, nullable=False)
     invigilationStatus = db.Column(db.Boolean, default=False)
     remark = db.Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED",name="attendance_remark_enum"),nullable=False,default="PENDING")  # Remark 
     venueNumber = db.Column(db.String(20), db.ForeignKey('Venue.venueNumber'), nullable=False)
@@ -276,7 +277,8 @@ class InvigilatorAttendance(db.Model):
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
         remark ENUM('PENDING', 'CHECK IN LATE', 'CHECK IN', 'CHECK OUT EARLY', 'COMPLETED', 'EXPIRED') NOT NULL DEFAULT 'PENDING',
-        timeCreate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        timeCreate DATETIME NOT NULL,
+        timeExpire DATETIME NOT NULL,
         timeAction DATETIME NULL,
         invigilationStatus BOOLEAN DEFAULT False,
         venueNumber VARCHAR(20) NOT NULL, 

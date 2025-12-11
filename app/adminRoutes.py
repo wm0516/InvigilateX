@@ -1053,7 +1053,6 @@ def admin_manageExam():
             time_slot_open = request.form.get("time_slot_open")        # yyyy-mm-ddTHH:MM
             slot_share_dt = datetime.strptime(time_slot_share, "%Y-%m-%dT%H:%M")
             slot_open_dt = datetime.strptime(time_slot_open, "%Y-%m-%dT%H:%M")
-            flash(f"Converted: {slot_share_dt}, && {slot_open_dt}", "success")
             
             #process_row_fn=process_exam_row,
             return handle_file_upload(
