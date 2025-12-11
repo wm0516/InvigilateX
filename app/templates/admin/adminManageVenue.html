@@ -162,8 +162,8 @@
                     <td>
                         <div class="info-grid">
                             {% if row.venueAddedBy and row.venueAddedOn %}
-                                <div>By</div><div><strong>: [{{ row.venueAddedBy }}] {{ row.addedBy.userName }}</strong></div>
-                                <div>On</div><div><strong>: {{ row.venueAddedOn }}</strong></div>
+                                <strong>By: [{{ row.venueAddedBy }}] {{ row.addedBy.userName }}</strong> 
+                                <strong>On: {{ row.venueAddedOn }}</strong>
                             {% endif %}
                         </div>
                     </td>
