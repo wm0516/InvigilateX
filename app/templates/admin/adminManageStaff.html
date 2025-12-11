@@ -13,7 +13,7 @@
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-left" style="width: 100%">
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
+            <div class="dashboard-row">
                 <div class="dashboard-frame pie">
                     <h3>Staff Distribution</h3>
                     <canvas id="staffPieChart"></canvas>
@@ -21,6 +21,10 @@
                 <div class="dashboard-frame pie">
                     <h3>Gender Distribution</h3>
                     <canvas id="genderPieChart"></canvas>
+                </div>
+                <div class="dashboard-frame pie">
+                    <h3>Staff Department Distribution</h3>
+                    <canvas id="staffDepartmentPieChart"></canvas>
                 </div>
                 <div class="dashboard-frame pie">
                     <h3>Account Status</h3>
@@ -410,6 +414,12 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: ['Male', 'Female'],
             data: [{{ total_male_staff }}, {{ total_female_staff }}],
             label: 'Gender Distribution'
+        },
+        {
+            id: 'staffDepartmentPieChart',
+            labels: {{ staffDepartmentLabels | tojson }},
+            data: {{ staffDepartmentCounts | tojson }},
+            label: 'Staff Department Distribution'
         },
         {
             id: 'statusPieChart',

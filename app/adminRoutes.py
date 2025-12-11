@@ -1270,6 +1270,17 @@ def admin_manageStaff():
     total_activated = User.query.filter_by(userStatus=1).count()
     total_deactivate = User.query.filter_by(userStatus=0).count()
     total_deleted = User.query.filter_by(userStatus=2).count()
+    # === Staff Department Distribution ===
+    staff_dept_query = (
+        db.session.query(Department.departmentName, func.count(User.userId))
+        .join(User, User.userDepartment == Department.departmentCode)
+        .group_by(Department.departmentName)
+        .all()
+    )
+
+    staffDepartmentLabels = [row[0] for row in staff_dept_query]
+    staffDepartmentCounts = [row[1] for row in staff_dept_query]
+
     staff_id = request.form.get('editStaffId')
     user_select = User.query.filter_by(userId=staff_id).first()
 
@@ -1382,7 +1393,9 @@ def admin_manageStaff():
         total_activated=total_activated,
         total_deactivate=total_deactivate,
         total_deleted=total_deleted,
-        user_select=user_select
+        user_select=user_select,
+        staffDepartmentLabels=staffDepartmentLabels,
+        staffDepartmentCounts=staffDepartmentCounts
     )
 
 
