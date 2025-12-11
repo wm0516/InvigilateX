@@ -1048,19 +1048,6 @@ def admin_manageExam():
 
         # 1️⃣ Upload exam file
         if form_type == 'upload':
-            share_time = request.form.get("share_time")
-            expire_time = request.form.get("expire_time")
-
-            share_dt = None
-            expire_dt = None
-
-            if share_time:
-                share_dt = datetime.fromisoformat(share_time)
-
-            if expire_time:
-                expire_dt = datetime.fromisoformat(expire_time)
-
-            flash(f"Share Time{share_dt}, Expire Time{expire_dt}", "success")
 
             return handle_file_upload(
                 file_key='exam_file',
