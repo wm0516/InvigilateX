@@ -679,7 +679,7 @@ def download_exam_template():
 # -------------------------------
 # Function for Admin ManageExam Route Upload File Combine Date and Time
 # -------------------------------
-def process_exam_row(row):
+def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
     # --- Parse exam date ---
     examDate = row.get('exam date')
@@ -743,7 +743,7 @@ def process_exam_row(row):
             "error"
         )
         return None, ''
-    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity])
+    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     return True, ''
 
 
@@ -1051,21 +1051,15 @@ def admin_manageExam():
             # NEW: Read the two datetime-local inputs
             time_slot_share = request.form.get("time_slot_share")      # yyyy-mm-ddTHH:MM
             time_slot_open = request.form.get("time_slot_open")        # yyyy-mm-ddTHH:MM
-
-            print("📌 Time to distribute slots:", time_slot_share)
-            print("📌 Time to open unselected slots:", time_slot_open)
-            flash(f"Time to distribute slots: {time_slot_share}; Time to open unselected slots: {time_slot_open}", "success")
-
             slot_share_dt = datetime.strptime(time_slot_share, "%Y-%m-%dT%H:%M")
             slot_open_dt = datetime.strptime(time_slot_open, "%Y-%m-%dT%H:%M")
-
-            flash(f"Converted: {slot_share_dt}, && {slot_open_dt}", "sucess")
-
-
+            flash(f"Converted: {slot_share_dt}, && {slot_open_dt}", "success")
+            
+            #process_row_fn=process_exam_row,
             return handle_file_upload(
                 file_key='exam_file',
                 expected_cols=['exam date', 'day', 'start time', 'end time', 'course code', 'course name', 'total number of students', 'total number of students by venue', 'exam venue'],
-                process_row_fn=process_exam_row,
+                process_row_fn=lambda row: process_exam_row(row, slot_share_dt, slot_open_dt),
                 redirect_endpoint='admin_manageExam',
                 usecols="A:I",
                 skiprows=1 

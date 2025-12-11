@@ -331,7 +331,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list):
+def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
     # --- Fetch course sections ---
     course_sections = Course.query.filter(Course.courseCodeSectionIntake.like(f"{courseSection}/%")).all()
     if not course_sections:
@@ -457,7 +457,8 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                     reportId=report.invigilationReportId,
                     invigilatorId=chosen.userId,
                     venueNumber=venue_text,
-                    timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
+                    timeCreate=open,
+                    timeAction=close
                 )
             )
             send_invigilator_slot_notification(chosen.userId)
