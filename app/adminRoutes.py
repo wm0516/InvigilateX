@@ -1048,6 +1048,17 @@ def admin_manageExam():
 
         # 1️⃣ Upload exam file
         if form_type == 'upload':
+            share_time = request.form.get("share_time")
+            expire_time = request.form.get("expire_time")
+
+            if share_time:
+                share_dt = datetime.fromisoformat(share_time)
+
+            if expire_time:
+                expire_dt = datetime.fromisoformat(expire_time)
+
+            flash(f"Share Time{share_dt}, Expire Time{expire_dt}", "success")
+
             return handle_file_upload(
                 file_key='exam_file',
                 expected_cols=['exam date', 'day', 'start time', 'end time', 'course code', 'course name', 'total number of students', 'total number of students by venue', 'exam venue'],
@@ -1056,6 +1067,7 @@ def admin_manageExam():
                 usecols="A:I",
                 skiprows=1 
             )
+        
 
         # 2️⃣ Edit exam
         if form_type == 'edit' and exam_select:

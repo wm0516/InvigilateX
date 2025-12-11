@@ -59,6 +59,8 @@
             </label>
             <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
+            <input type="hidden" name="share_time" id="shareTimeInput">
+            <input type="hidden" name="expire_time" id="expireTimeInput">
             <br>
             <div class="button-wrapper">
                 <button type="submit">Upload Exam</button>
@@ -67,6 +69,20 @@
     </div>
 </form>
 {% endblock %}  
+<div id="timeModal" class="modal">
+    <div class="modal-content">
+        <h3>Select Share & Expire Time</h3>
+
+        <label>Share Time:</label>
+        <input type="datetime-local" id="shareTimePicker"><br><br>
+
+        <label>Expire Time:</label>
+        <input type="datetime-local" id="expireTimePicker"><br><br>
+
+        <button id="confirmTimes">Confirm</button>
+        <button id="cancelTimes">Cancel</button>
+    </div>
+</div>
 
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageExam') }}" method="POST">
@@ -505,6 +521,31 @@ document.addEventListener("DOMContentLoaded", function () {
         // ===== Save =====
         doc.save("Admin_ViewExamList.pdf");
     });
+});
+
+document.getElementById("uploadForm").addEventListener("submit", function(e) {
+    e.preventDefault();  // stop form submission
+    document.getElementById("timeModal").style.display = "block";
+});
+
+document.getElementById("confirmTimes").addEventListener("click", function() {
+    const shareValue = document.getElementById("shareTimePicker").value;
+    const expireValue = document.getElementById("expireTimePicker").value;
+
+    if (!shareValue || !expireValue) {
+        alert("⚠ Please select both share time and expire time.");
+        return;
+    }
+
+    document.getElementById("shareTimeInput").value = shareValue;
+    document.getElementById("expireTimeInput").value = expireValue;
+
+    document.getElementById("timeModal").style.display = "none";
+    document.getElementById("uploadForm").submit();
+});
+
+document.getElementById("cancelTimes").addEventListener("click", function() {
+    document.getElementById("timeModal").style.display = "none";
 });
 </script>
 {% endblock %}
