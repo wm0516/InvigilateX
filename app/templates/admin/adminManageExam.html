@@ -62,12 +62,12 @@
 
             <div style="margin-top:20px; display: flex; gap: 30px; justify-content: center;">
                 <div class="form-left">
-                    <label><b>Exam Time Start:</b></label>
-                    <input type="datetime-local" name="exam_time_start" required style="width: 100%; padding: 6px;">
+                    <label><b>Time to Distribute Exam Slots:</b></label>
+                    <input type="datetime-local" name="time_slot_share" required>
                 </div>
                 <div class="form-right">
-                    <label><b>Exam Time Expire:</b></label>
-                    <input type="datetime-local" name="exam_time_expire" required style="width: 100%; padding: 6px;">
+                    <label><b>Time to Open All Unselected Slots:</b></label>
+                    <input type="datetime-local" name="time_slot_open" required>
                 </div>
             </div>
             <br>
@@ -286,10 +286,7 @@ document.addEventListener("DOMContentLoaded", function() {
 // Clear edit form
 // -------------------------
 function clearEditFields() {
-    const fieldsToClear = [
-        'editProgramCode', 'editStudent',
-        'startDate', 'startTime', 'endDate', 'endTime'
-    ];
+    const fieldsToClear = ['editProgramCode', 'editStudent', 'startDate', 'startTime', 'endDate', 'endTime'];
     fieldsToClear.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
@@ -514,8 +511,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // ===== Save =====
-        doc.save("Admin_ViewExamList.pdf");
+        doc.save("Admin_ExamList.pdf");
     });
+});
+
+document.getElementById("uploadForm").addEventListener("submit", function (event) {
+    const timeShare = document.querySelector("input[name='time_slot_share']").value;
+    const timeOpen = document.querySelector("input[name='time_slot_open']").value;
+
+    if (!timeShare || !timeOpen) {
+        alert("Please fill in both date-time slots.");
+        event.preventDefault();
+        return;
+    }
+
+    if (new Date(timeOpen) <= new Date(timeShare)) {
+        alert("Time to open unselected slots must be *after* time to distribute slots.");
+        event.preventDefault();
+    }
 });
 </script>
 {% endblock %}

@@ -1048,6 +1048,20 @@ def admin_manageExam():
 
         # 1️⃣ Upload exam file
         if form_type == 'upload':
+            # NEW: Read the two datetime-local inputs
+            time_slot_share = request.form.get("time_slot_share")      # yyyy-mm-ddTHH:MM
+            time_slot_open = request.form.get("time_slot_open")        # yyyy-mm-ddTHH:MM
+
+            print("📌 Time to distribute slots:", time_slot_share)
+            print("📌 Time to open unselected slots:", time_slot_open)
+            flash(f"Time to distribute slots: {time_slot_share}; Time to open unselected slots: {time_slot_open}", "success")
+
+            slot_share_dt = datetime.strptime(time_slot_share, "%Y-%m-%dT%H:%M")
+            slot_open_dt = datetime.strptime(time_slot_open, "%Y-%m-%dT%H:%M")
+
+            flash(f"Converted: {slot_share_dt}, && {slot_open_dt}", "sucess")
+
+
             return handle_file_upload(
                 file_key='exam_file',
                 expected_cols=['exam date', 'day', 'start time', 'end time', 'course code', 'course name', 'total number of students', 'total number of students by venue', 'exam venue'],
