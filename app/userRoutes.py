@@ -359,23 +359,20 @@ def user_viewStaff():
     total_deactivate = lecturers.filter_by(userStatus=0).count()
     total_deleted = lecturers.filter_by(userStatus=2).count()
 
-    # Department filter
-    dept_filter = User.userDepartment == current_user.userDepartment
-    # Incomplete rows check within the same department
-    error_rows = User.query.filter(
-        dept_filter,
-        (
-            (User.userDepartment.is_(None)) | (User.userDepartment == '') |
-            (User.userName.is_(None)) | (User.userName == '') |
-            (User.userEmail.is_(None)) | (User.userEmail == '') |
-            (User.userContact.is_(None)) | (User.userContact == '') |
-            (User.userGender.is_(None)) | (User.userGender == '') |
-            (User.userLevel.is_(None))
-        )
-    ).count()
+    # === Staff Department Distribution ===
+    staff_dept_query = (
+        db.session.query(Department.departmentCode, func.count(User.userId))
+        .join(User, User.userDepartment == Department.departmentCode)
+        .group_by(Department.departmentCode)
+        .all()
+    )
 
-    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,error_rows=error_rows,
-                           total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
+    staffDepartmentLabels = [row[0] for row in staff_dept_query]
+    staffDepartmentCounts = [row[1] for row in staff_dept_query]
+
+
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,staffDepartmentLabels=staffDepartmentLabels,
+        staffDepartmentCounts=staffDepartmentCounts,total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
 
 # -------------------------------
 # Function for Profile Route

@@ -179,12 +179,15 @@ class Course(db.Model):
     courseHour = db.Column(db.Integer, nullable=False)                                                           # Refer to CourseHour
     courseStudent = db.Column(db.Integer, nullable=False)                                                        # Refer to Course Total Number of Students
     courseStatus = db.Column(db.Boolean, default=True, nullable=False)                                          # Refer to Course Status, when course deleted, it will show False
+    courseAddedStaff = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=False)                     # [FK ]Refer to who added staff
+    courseAddedDate = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # Relationship
     department = db.relationship("Department", backref="course")
     practicalLecturer = db.relationship("User", foreign_keys=[coursePractical])
     tutorialLecturer = db.relationship("User", foreign_keys=[courseTutorial])   
     classLecturer = db.relationship("User", foreign_keys=[courseLecturer])
+    addedStaff = db.relationship("User", foreign_keys=[courseAddedStaff])
     exam = db.relationship("Exam", back_populates="course", uselist=False)  # One Course ↔ One Exam
     '''
     CREATE TABLE Course (
@@ -198,8 +201,11 @@ class Course(db.Model):
         courseHour INT NOT NULL,
         courseStudent INT NOT NULL,
         courseStatus TINYINT(1) NOT NULL DEFAULT 1,
+        courseAddedStaff INT NOT NULL,
+        courseAddedDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (courseDepartment) REFERENCES Department(departmentCode),
         FOREIGN KEY (coursePractical) REFERENCES User(userId),
+        FOREIGN KEY (courseAddedStaff) REFERENCES User(userId),
         FOREIGN KEY (courseTutorial) REFERENCES User(userId),
         FOREIGN KEY (courseLecturer) REFERENCES User(userId),
         FOREIGN KEY (courseExamId) REFERENCES Exam(examId)

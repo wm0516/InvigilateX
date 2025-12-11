@@ -153,7 +153,9 @@ def download_course_template():
 # Function for Admin ManageCourse Route Upload File
 # -------------------------------
 def process_course_row(row):
+    user_id = session.get('user_id')
     return create_course_and_exam(
+        userid      = user_id,
         department  = str(row['department code']).strip(),
         code        = str(row['course code']).strip().replace(" ", ""),
         section     = str(row['course section']).strip().replace(" ", ""),
@@ -193,7 +195,10 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseHour"        : course.courseHour,    
         "courseStudent"     : course.courseStudent,
         "courseStatus"      : course.courseStatus,
+        "addedStaffName"    : course.addedStaff.userName,
+        "addedDate"         : course.courseAddedDate.isoformat()
     })
+
 
 # -------------------------------
 # Function for Admin ManageCourse Route
@@ -201,6 +206,7 @@ def get_courseCodeSection(courseCodeSection_select):
 @app.route('/admin/manageCourse', methods=['GET', 'POST'])
 @login_required
 def admin_manageCourse():
+    user_id = session.get('user_id')
     course_data = Course.query.order_by(
         Course.courseStatus.desc(),
         Course.courseDepartment.asc(),
@@ -327,6 +333,7 @@ def admin_manageCourse():
                     return default
 
             form_data = {
+                "userid"      : user_id,
                 "department": request.form.get('departmentCode', '').strip(),
                 "code"      : request.form.get('courseCode', '').replace(' ', ''),
                 "section"   : request.form.get('courseSection', '').replace(' ', ''),

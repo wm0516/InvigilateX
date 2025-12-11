@@ -19,7 +19,11 @@
     
     <div class="dashboard-row">
         <div class="dashboard-frame pie">
-            <h3>Staff Distribution</h3>
+            <h3>Department Distribution</h3>
+            <canvas id="staffDepartmentPieChart"></canvas>
+        </div>
+        <div class="dashboard-frame pie">
+            <h3>Role Distribution</h3>
             <canvas id="staffPieChart"></canvas>
         </div>
         <div class="dashboard-frame pie">
@@ -29,10 +33,6 @@
         <div class="dashboard-frame pie">
             <h3>Account Status</h3>
             <canvas id="statusPieChart"></canvas>
-        </div>
-        <div class="dashboard-frame">
-            <h3>Incompleted Data Rows</h3>
-            <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
         </div>
     </div>
 
@@ -240,6 +240,12 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: ['Male', 'Female'],
             data: [{{ total_male_staff }}, {{ total_female_staff }}],
             label: 'Gender Distribution'
+        },
+        {
+            id: 'staffDepartmentPieChart',
+            labels: {{ staffDepartmentLabels | tojson }},
+            data: {{ staffDepartmentCounts | tojson }},
+            label: 'Staff Department Distribution'
         },
         {
             id: 'statusPieChart',
