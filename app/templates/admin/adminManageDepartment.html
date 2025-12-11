@@ -164,6 +164,7 @@
                     <th>Dean Details</th>
                     <th>Hos Details</th>
                     <th>Hop Details</th>
+                    <th>Added/Edit Details</th>
                 </tr>
             </thead>
             <tbody>
@@ -204,6 +205,15 @@
                                 <div>Department</div><div><strong>: {{ row.hop.userDepartment }}</strong></div>
                             </div>
                         {% endif %}
+                    </td>
+                    <td>
+                        <div class="info-grid">
+                            {% if row.departmentAddedBy and row.departmentAddedOn %}
+                                <div>By</div><div><strong>: {{ row.departmentAddedBy }}</strong></div>
+                                <div>By</div><div><strong>: {{ row.addedBy.userName }}</strong></div>
+                                <div>On</div><div><strong>: {{ row.departmentAddedOn }}</strong></div>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
