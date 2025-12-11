@@ -193,14 +193,15 @@
                         <td>
                             {% if att.invigilationStatus %}
                                 <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                                <div style="max-width: 200px;"><strong>TimeAction: </strong>{{ att.timeAction }}</div>
                             {% elif not att.invigilationStatus and att.rejectReason %}
                                 <span class="status frame-expired invigilation-status">REJECTED</span>
                                 <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
+                                <div style="max-width: 200px;"><strong>TimeAction: </strong>{{ att.timeAction }}</div>
                             {% elif not att.invigilationStatus and not att.rejectReason %}
                                 <span class="status frame-pending invigilation-status">PENDING</span>
                             {% endif %}
-                            <div style="max-width: 200px;"><strong>Action Time: </strong>{{ att.timeAction }}</div>
-                        </td>
+                        </td>   
                         
                         <!-- Attendance Status -->
                         <td>
