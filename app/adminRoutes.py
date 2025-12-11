@@ -273,7 +273,7 @@ def admin_manageCourse():
                 course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
                 course_select.courseStatus      = True if request.form.get('courseStatus') == '1' else False
                 # Update added staff and date
-                course_select.courseAddedStaff = userid
+                course_select.courseAddedStaff = user_id
                 course_select.courseAddedDate = datetime.now() + timedelta(hours=8)
 
                 # Safe int conversion
