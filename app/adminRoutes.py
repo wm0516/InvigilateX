@@ -195,8 +195,8 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseHour"        : course.courseHour,    
         "courseStudent"     : course.courseStudent,
         "courseStatus"      : course.courseStatus,
-        "addedStaffName"    : course.addedStaff.userName,
-        "addedDate"         : course.courseAddedDate.isoformat()
+        "addedBy"           : course.addedBy.userName,
+        "addedOn"           : course.courseAddedOn.isoformat()
     })
 
 
@@ -273,8 +273,8 @@ def admin_manageCourse():
                 course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
                 course_select.courseStatus      = True if request.form.get('courseStatus') == '1' else False
                 # Update added staff and date
-                course_select.courseAddedStaff = user_id
-                course_select.courseAddedDate = datetime.now() + timedelta(hours=8)
+                course_select.courseAddedBy = user_id
+                course_select.courseAddedOn = datetime.now() + timedelta(hours=8)
 
                 # Safe int conversion
                 try:
@@ -298,8 +298,8 @@ def admin_manageCourse():
                     course_select.courseLecturer,
                     course_select.courseHour,
                     course_select.courseStudent,
-                    course_select.courseAddedStaff,
-                    course_select.courseAddedDate
+                    course_select.courseAddedBy,
+                    course_select.courseAddedOn
                 ]
 
                 if all(f is not None and f != '' for f in required_fields):
@@ -380,6 +380,7 @@ def get_department(department_code):
 @app.route('/admin/manageDepartment', methods=['GET', 'POST'])
 @login_required
 def admin_manageDepartment():
+    user_id = session.get('user_id')
     # Load all departments and stats
     department_data     = Department.query.all()
     total_department    = len(department_data)
@@ -403,7 +404,14 @@ def admin_manageDepartment():
             if Department.query.filter_by(departmentCode=departmentCode).first():
                 flash("Department code already exists. Please use a unique code.", "error")
             else:
-                db.session.add(Department(departmentCode=departmentCode, departmentName=departmentName))
+                db.session.add(
+                    Department(
+                        departmentCode=departmentCode, 
+                        departmentName=departmentName,
+                        departmentAddedBy=user_id,
+                        departmentAddedOn=datetime.now(timezone.utc) + timedelta(hours=8),
+                        )
+                    )
                 db.session.commit()
                 flash("New Department Added", "success")
 
@@ -445,6 +453,8 @@ def admin_manageDepartment():
                 # Update HOP only if a valid selection is made
                 if hopId is not None:
                     department_select.hopId = hopId
+                department_select.departmentAddedBy = user_id
+                department_select.departmentAddedOn = datetime.now(timezone.utc) + timedelta(hours=8)
                 db.session.commit()
                 flash("Department updated successfully", "success")
             elif action == 'delete':

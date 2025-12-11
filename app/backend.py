@@ -275,14 +275,12 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         courseStudent=students,
         courseExamId=exam_id,
         courseStatus=True,
-        courseAddedStaff=userid,
-        courseAddedDate=datetime.now(timezone.utc) + timedelta(hours=8)
+        courseAddedBy=userid,
+        courseAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
     )
     db.session.add(new_course)
     db.session.commit()
-    
     return True, "Course created successfully"
-
 
 
 # -------------------------------
