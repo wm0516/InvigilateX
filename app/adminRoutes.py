@@ -294,9 +294,10 @@ def admin_manageCourse():
                     course_select.courseTutorial,
                     course_select.courseLecturer,
                     course_select.courseHour,
-                    course_select.courseStudent
+                    course_select.courseStudent,
+                    course_select.courseAddedStaff = userid,
+                    course_select.courseAddedDate = datetime.now() + timedelta(hours=8)  
                 ]
-
 
                 if all(f is not None and f != '' for f in required_fields):
                     # Update existing exam if it already exists

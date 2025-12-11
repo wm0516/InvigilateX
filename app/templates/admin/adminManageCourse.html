@@ -251,7 +251,7 @@
                     <th>Number of Students</th>
                     <th>Exam ID</th>
                     <th>Lecturer Details</th>
-                    <th>Added Details</th>
+                    <th>Added/Edit Details</th>
                 </tr>   
             </thead>
             <tbody>
@@ -299,9 +299,9 @@
                         <td>
                             <div class="info-grid">
                                 {% if row.courseAddedStaff and row.courseAddedDate%}
-                                    <div>Added By</div><div><strong>: {{ row.courseAddedStaff }}</strong></div>
-                                    <div>Added By</div><div><strong>: {{ row.addedStaff.userName }}</strong></div>
-                                    <div>Added By</div><div><strong>: {{ row.courseAddedDate }}</strong></div>
+                                    <div>By</div><div><strong>: {{ row.courseAddedStaff }}</strong></div>
+                                    <div>By</div><div><strong>: {{ row.addedStaff.userName }}</strong></div>
+                                    <div>On</div><div><strong>: {{ row.courseAddedDate }}</strong></div>
                                 {% endif %}
                             </div>
                         </td>
