@@ -1272,9 +1272,9 @@ def admin_manageStaff():
     total_deleted = User.query.filter_by(userStatus=2).count()
     # === Staff Department Distribution ===
     staff_dept_query = (
-        db.session.query(Department.departmentName, func.count(User.userId))
+        db.session.query(Department.departmentCode, func.count(User.userId))
         .join(User, User.userDepartment == Department.departmentCode)
-        .group_by(Department.departmentName)
+        .group_by(Department.departmentCode)
         .all()
     )
 
