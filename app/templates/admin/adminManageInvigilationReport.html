@@ -133,11 +133,15 @@
             </thead>
 
             {% for (status, start_time, exam_id), grouped in attendances|groupby("group_key") %}
-            {% set total_rows = grouped|length %}
-            <tbody data-exam="{{ grouped[0].report.exam.examId }}" 
-                data-exam-start="{{ grouped[0].report.exam.examStartTime.isoformat() }}"
-                data-exam-end="{{ grouped[0].report.exam.examEndTime.isoformat() }}">                
+                {% set sorted_grouped = grouped | sort(attribute='rejectReason') %}
+                {% set total_rows = sorted_grouped | length %}
+
+            <tbody data-exam="{{ sorted_grouped[0].report.exam.examId }}"
+                data-exam-start="{{ sorted_grouped[0].report.exam.examStartTime.isoformat() }}"
+                data-exam-end="{{ sorted_grouped[0].report.exam.examEndTime.isoformat() }}">
+
                 {% for i in range(total_rows) %}
+                {% set att = sorted_grouped[i] %}
                 <tr data-exam="{{ grouped[0].report.exam.examId }}"
                     class="{% if not grouped[0].report.exam.examStatus %}inactive-row-show{% elif grouped[0].report.exam.examStartTime is none %}error-row-show{% endif %}">
                     
