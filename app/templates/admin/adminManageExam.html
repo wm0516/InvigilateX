@@ -59,6 +59,16 @@
             </label>
             <input type="file" id="exam_list" name="exam_file" accept=".xlsx,.xls,.xlsm" style="display: none;">
             <input type="hidden" name="form_type" value="upload">
+
+            <div class="datetime-wrapper" style="margin-top:20px;">
+                <label><b>Exam Time Start:</b></label>
+                <input type="datetime-local" name="exam_time_start" required style="width: 100%; padding: 6px;">
+
+                <br><br>
+
+                <label><b>Exam Time Expire:</b></label>
+                <input type="datetime-local" name="exam_time_expire" required style="width: 100%; padding: 6px;">
+            </div>
             <br>
             <div class="button-wrapper">
                 <button type="submit">Upload Exam</button>
