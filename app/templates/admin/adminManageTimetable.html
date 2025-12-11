@@ -134,7 +134,20 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>Timetable</h2>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>Timetable</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="position: relative;">
+                <input type="text" id="searchInput" name="search_timetable" placeholder="Search..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
+                <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+            </div>
+            <div class="button-wrapper">
+                <button id="generatePDF" style="background-color: black;">Download as PDF</button>
+            </div>
+        </div>
+    </div>
+    <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
+
     <form method="get" action="{{ url_for('admin_manageTimetable') }}">
         <div class="profile-frame" style="margin-top: 1%;">
             <div class="form-left">
@@ -161,17 +174,8 @@
                 </select>
             </div>
             
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div class="button-wrapper" style="padding: 1%;">
-                    <button type="button" id="clearFilter">Clear Filter</button>
-                </div>
-                <div style="position: relative;">
-                    <input type="text" id="searchInput" name="search_timetable" placeholder="Search..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
-                    <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
-                </div>
-                <div class="button-wrapper">
-                    <button id="generatePDF" style="background-color: black;">Download as PDF</button>
-                </div>
+            <div class="button-wrapper" style="padding: 1%;">
+                <button type="button" id="clearFilter">Clear Filter</button>
             </div>
         </div>
     </form> 
