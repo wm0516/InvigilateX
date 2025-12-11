@@ -336,7 +336,7 @@ def admin_manageCourse():
                     return default
 
             form_data = {
-                "userid"      : user_id,
+                "userid"    : user_id,
                 "department": request.form.get('departmentCode', '').strip(),
                 "code"      : request.form.get('courseCode', '').replace(' ', ''),
                 "section"   : request.form.get('courseSection', '').replace(' ', ''),

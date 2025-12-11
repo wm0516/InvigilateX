@@ -49,7 +49,7 @@ class Department(db.Model):
     dean = db.relationship("User", foreign_keys=[deanId], backref="dean_of_departments")
     hop = db.relationship("User", foreign_keys=[hopId], backref="hop_of_departments")
     hos = db.relationship("User", foreign_keys=[hosId], backref="hos_of_departments")
-    addedBy = db.relationship("User", foreign_keys=[departmentAddedBy], backref="hos_of_departments")
+    addedBy = db.relationship("User", foreign_keys=[departmentAddedBy])
     '''
     CREATE TABLE Department (
         departmentCode VARCHAR(10) NOT NULL PRIMARY KEY,
