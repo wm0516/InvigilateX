@@ -272,6 +272,9 @@ def admin_manageCourse():
                 course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip() or None
                 course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
                 course_select.courseStatus      = True if request.form.get('courseStatus') == '1' else False
+                # Update added staff and date
+                course_select.courseAddedStaff = userid
+                course_select.courseAddedDate = datetime.now() + timedelta(hours=8)
 
                 # Safe int conversion
                 try:
@@ -295,8 +298,8 @@ def admin_manageCourse():
                     course_select.courseLecturer,
                     course_select.courseHour,
                     course_select.courseStudent,
-                    course_select.courseAddedStaff = userid,
-                    course_select.courseAddedDate = datetime.now() + timedelta(hours=8)  
+                    course_select.courseAddedStaff,
+                    course_select.courseAddedDate
                 ]
 
                 if all(f is not None and f != '' for f in required_fields):
