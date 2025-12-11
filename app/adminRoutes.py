@@ -489,6 +489,7 @@ def get_venue(venue_number):
 @app.route('/admin/manageVenue', methods=['GET', 'POST'])
 @login_required
 def admin_manageVenue():
+    user_id = session.get('user_id')
     # Load all venues and stats
     venue_data = Venue.query.order_by(Venue.venueLevel.asc()).all()
 
@@ -516,7 +517,9 @@ def admin_manageVenue():
                     db.session.add(Venue(
                         venueNumber=venueNumber,
                         venueLevel=venueLevel,
-                        venueCapacity=capacity
+                        venueCapacity=capacity,
+                        venueAddedBy=user_id,
+                        venueAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
                     ))
                     db.session.commit()
                     flash("Venue Added", "success")
@@ -537,6 +540,8 @@ def admin_manageVenue():
                         raise ValueError
                     venue_select.venueLevel = venueLevel
                     venue_select.venueCapacity = capacity
+                    venue_select.venueAddedBy = user_id
+                    venue_select.venueAddedOn = datetime.now(timezone.utc) + timedelta(hours=8)
                     db.session.commit()
                     flash("Venue Updated", "success")
                 except ValueError:

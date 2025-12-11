@@ -110,14 +110,20 @@ class Venue(db.Model):
     venueNumber = db.Column(db.String(20), primary_key=True)                                     # [PK] Venue identifier
     venueLevel = db.Column(db.String(10), nullable=False)                                        # Floor of venue
     venueCapacity = db.Column(db.Integer, nullable=False)                                        # Capacity of venue
+    venueAddedBy = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=False)
+    venueAddedOn = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # Relationships
+    addedBy = db.relationship("User", foreign_keys=[venueAddedBy])
     availabilities = db.relationship("VenueExam", back_populates="venue")                        # One Venue ↔ Many VenueExam
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
         venueLevel VARCHAR(10) NOT NULL,
-        venueCapacity INT NOT NULL
+        venueCapacity INT NOT NULL,
+        venueAddedBy INT NOT NULL,
+        venueAddedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (venueAddedBy) REFERENCES User(userId)
     );
     '''
     
