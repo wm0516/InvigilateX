@@ -461,7 +461,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                     timeExpire=close
                 )
             )
-            db.session.commit()
+    db.session.commit()
     return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
 
 
@@ -816,4 +816,3 @@ The InvigilateX Team
         return False, f"Failed to send email. Error: {str(e)}"
     
 
-    
