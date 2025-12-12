@@ -769,6 +769,3 @@ def update_exam_status():
 
 
 
-
-
-
