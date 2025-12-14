@@ -259,7 +259,7 @@
 </div>
 {% endif %}
 {% endif %}
-{% if not waiting and not confirm and not open and not reject %}
+{% if user_level == 1 and not waiting and not confirm and not open and not reject %}
     <h2>No Invigilation Slot</h2>
 {% endif %}
 {% endblock %}
