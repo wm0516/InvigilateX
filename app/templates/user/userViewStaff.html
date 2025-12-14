@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 text = text.replace(/\s*\n\s*/g, " ");
 
                 // Handle cumulative and pending hours in Invigilation Time column (td.cellIndex === 9)
-                if (td.cellIndex === 9) {
+                if (td.cellIndex === 10) {
                     text = text
                         .replace(/\s*Cumulative\s*:/g, "\nCumulative:") 
                         .replace(/\s*Pending\s*:/g, "\nPending:");
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
             startY: startY,
             theme: "grid",
             tableWidth: "auto",
-            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "middle"},
             headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             margin: { top: margin, left: margin, right: margin, bottom: margin },
             didDrawPage: function (data) {
