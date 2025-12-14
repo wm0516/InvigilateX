@@ -269,7 +269,6 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         db.session.flush()  # Get examId
         exam_id = new_exam.examId
     '''
-    # Only create an Exam if both lecturers are valid
     exam_id = None
     new_exam = Exam(
         examStartTime=None,
