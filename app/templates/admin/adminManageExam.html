@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", function () {
     inputs.forEach(input => {
         input.addEventListener("change", () => {
             inputs.forEach(other => {
-                if (other !== input && other.value && other.value < input.value) {
+                if (other !== input) {
                     other.value = input.value;
                 }
                 other.min = input.value;
