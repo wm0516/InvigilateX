@@ -70,9 +70,9 @@
         <h4 style="text-align:center;">Edit Invigilation Report</h4>
         <div class="profile-frame">
             <div class="form-left">
-                <label>Select Report</label>
+                <label>Select Exam</label>
                 <select id="editReport" name="reportId" required>
-                    <option value="" disabled selected>Select Report</option>
+                    <option value="" disabled selected>Select Exam</option>
                     {% for r in reports %}
                         <option value="{{ r.invigilationReportId }}">
                             {{ r.invigilationReportId }} - {{ r.exam.course.courseName }}
@@ -543,12 +543,15 @@ document.addEventListener("DOMContentLoaded", () => {
         middleSlots.innerHTML = "";
         rightSlots.innerHTML = "";
 
-        for (let att of data.attendances) {
+        for (let i = 0; i < data.attendances.length; i++) {
+            const att = data.attendances[i];
+
             middleSlots.innerHTML += `
                 <div>
                     <label>Assigned Invigilator [<b>Venue</b>: ${att.venue}]</label>
                     <input type="text" value="${att.invigilatorName}" readonly>
-                </div><br>
+                </div>
+                ${i < data.attendances.length - 1 ? '<br>' : ''}
             `;
 
             const slotWrapper = document.createElement("div");
@@ -560,7 +563,10 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 
             rightSlots.appendChild(slotWrapper);
-            rightSlots.appendChild(document.createElement("br"));
+            if (i < data.attendances.length - 1) {
+                rightSlots.appendChild(document.createElement("br"));
+            }
+
             const dropdown = slotWrapper.querySelector("select");
             fetch(`/get_valid_invigilators`)
                 .then(res => res.json())
@@ -568,9 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     dropdown.innerHTML = "";
                     for (let u of invigilators) {
                         dropdown.innerHTML += `
-                            <option value="${u.userId}"
-                                ${u.userId == att.invigilatorId ? "selected" : ""}
-                            >
+                            <option value="${u.userId}" ${u.userId == att.invigilatorId ? "selected" : ""}>
                                 ${u.userName}
                             </option>`;
                     }
