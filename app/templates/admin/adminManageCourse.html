@@ -316,12 +316,18 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Cache DOM Elements ---
+
+    /* =========================
+       Cache DOM Elements
+    ========================== */
     const els = {
-        deptCode: document.getElementById('departmentCode'),
-        practical: document.getElementById('practicalLecturerSelect'),
-        tutorial: document.getElementById('tutorialLecturerSelect'),
-        lecturer: document.getElementById('lecturerSelect'),
+        // ----- Manual form -----
+        deptCode: document.getElementById("departmentCode"),
+        manualPractical: document.getElementById("practicalLecturerSelect"),
+        manualTutorial: document.getElementById("tutorialLecturerSelect"),
+        manualLecturer: document.getElementById("lecturerSelect"),
+
+        // ----- Edit form -----
         editCourseSelect: document.getElementById("editCourseSelect"),
         editDept: document.getElementById("editDepartment"),
         editCourseName: document.getElementById("editCourseName"),
@@ -333,40 +339,67 @@ document.addEventListener("DOMContentLoaded", () => {
         editStatus: document.getElementById("editCourseStatus"),
     };
 
-    // --- Helper: Populate lecturers ---
-    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
-        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option><option value="">None</option>';
-        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option><option value="">None</option>';
-        lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option><option value="">None</option>';
+    /* =========================
+       Helpers
+    ========================== */
+    function resetSelect(selectEl, label) {
+        if (!selectEl) return;
+        selectEl.innerHTML = `
+            <option value="" selected>${label}</option>
+            <option value="">None</option>
+        `;
+    }
+
+    function populateLecturers(
+        deptCode,
+        practicalSel,
+        tutorialSel,
+        lecturerSel,
+        selectedPractical = null,
+        selectedTutorial = null,
+        selectedLecturer = null
+    ) {
+        resetSelect(practicalSel, "Select Practical Lecturer");
+        resetSelect(tutorialSel, "Select Tutorial Lecturer");
+        resetSelect(lecturerSel, "Select Class Lecturer");
+
         if (!deptCode) return;
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
             .then(r => r.json())
             .then(lecturers => {
                 lecturers.forEach(l => {
-                    [practicalSel, tutorialSel, lecturerSel].forEach((sel, i) => {
+                    const createOpt = (selectedId) => {
                         const opt = document.createElement("option");
                         opt.value = l.userId;
                         opt.textContent = l.userName.trim();
+                        if (l.userId == selectedId) opt.selected = true;
+                        return opt;
+                    };
 
-                        if ((i === 0 && l.userId == selectedPractical) || 
-                            (i === 1 && l.userId == selectedTutorial) || 
-                            (i === 2 && l.userId == selectedLecturer)) {
-                            opt.selected = true;
-                        }
-                        sel.appendChild(opt);
-                    });
+                    practicalSel?.appendChild(createOpt(selectedPractical));
+                    tutorialSel?.appendChild(createOpt(selectedTutorial));
+                    lecturerSel?.appendChild(createOpt(selectedLecturer));
                 });
             })
-            .catch(err => console.error("Error fetching lecturers:", err));
+            .catch(err => console.error("Lecturer fetch error:", err));
     }
 
-    // --- Manual form: department change ---
+    /* =========================
+       Manual Form Logic
+    ========================== */
     els.deptCode?.addEventListener("change", e => {
-        populateLecturers(e.target.value, els.practical, els.tutorial, els.lecturer);
+        populateLecturers(
+            e.target.value,
+            els.manualPractical,
+            els.manualTutorial,
+            els.manualLecturer
+        );
     });
 
-    // --- Edit form: course select change ---
+    /* =========================
+       Edit Form Logic
+    ========================== */
     els.editCourseSelect?.addEventListener("change", e => {
         const codeSection = e.target.value;
         if (!codeSection) return;
@@ -375,47 +408,69 @@ document.addEventListener("DOMContentLoaded", () => {
             .then(r => r.json())
             .then(c => {
                 if (c.error) return alert(c.error);
-                els.editDept.value = c.courseDepartment || '';
-                els.editCourseName.value = c.courseName;
-                els.editCourseHour.value = c.courseHour;
-                els.editCourseStudents.value = c.courseStudent;
-                els.editStatus.value = c.courseStatus;
 
-                populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, els.editLecturer, c.coursePractical, c.courseTutorial, c.courseLecturer);
+                els.editDept.value = c.courseDepartment || "";
+                els.editCourseName.value = c.courseName || "";
+                els.editCourseHour.value = c.courseHour || "";
+                els.editCourseStudents.value = c.courseStudent || "";
+                els.editStatus.value = c.courseStatus ? "1" : "0";
+
+                populateLecturers(
+                    c.courseDepartment,
+                    els.editPractical,
+                    els.editTutorial,
+                    els.editLecturer,
+                    c.coursePractical,
+                    c.courseTutorial,
+                    c.courseLecturer
+                );
             })
-            .catch(err => console.error("Error fetching course:", err));
+            .catch(err => console.error("Course fetch error:", err));
     });
 
-    // --- Edit form: department change ---
     els.editDept?.addEventListener("change", e => {
-        populateLecturers(e.target.value, els.editPractical, els.editTutorial, els.editLecturer);
+        populateLecturers(
+            e.target.value,
+            els.editPractical,
+            els.editTutorial,
+            els.editLecturer
+        );
     });
 
-    new Chart(document.getElementById('courseDeptPieChart'), {
-        type: 'pie',
-        data: {
-            labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
-            datasets: [{
-                data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C7C7C7', '#5366FF', '#FF66FF', '#66FFB2', '#FFB266', '#66B2FF'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'right' },
-                tooltip: {
-                    callbacks: {
-                        label: ({ dataset, parsed, label }) => {
-                            const sum = dataset.data.reduce((a, b) => a + b, 0);
-                            return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
+    /* =========================
+       Dashboard Pie Chart
+    ========================== */
+    const pieCanvas = document.getElementById("courseDeptPieChart");
+    if (pieCanvas) {
+        new Chart(pieCanvas, {
+            type: "pie",
+            data: {
+                labels: {{ courses_by_department | map(attribute='department') | list | tojson | safe }},
+                datasets: [{
+                    data: {{ courses_by_department | map(attribute='count') | list | tojson | safe }},
+                    backgroundColor: [
+                        '#FF6384','#36A2EB','#FFCE56','#4BC0C0',
+                        '#9966FF','#FF9F40','#C7C7C7','#5366FF'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "right" },
+                    tooltip: {
+                        callbacks: {
+                            label: ({ dataset, parsed, label }) => {
+                                const sum = dataset.data.reduce((a,b)=>a+b,0);
+                                return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function () {

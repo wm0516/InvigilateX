@@ -188,9 +188,9 @@ def get_courseCodeSection(courseCodeSection_select):
     return jsonify({
         "courseCodeSection" : course.courseCodeSectionIntake,
         "courseDepartment"  : course.courseDepartment,
-        "coursePractical"   : course.coursePractical if course.coursePractical else None,
-        "courseTutorial"    : course.courseTutorial if course.courseTutorial else None,
-        "courseLecturer"    : course.courseLecturer if course.courseLecturer else None,
+        "coursePractical"   : course.coursePractical,
+        "courseTutorial"    : course.courseTutorial,
+        "courseLecturer"    : course.courseLecturer,
         "courseName"        : course.courseName,
         "courseHour"        : course.courseHour,
         "courseStudent"     : course.courseStudent,
