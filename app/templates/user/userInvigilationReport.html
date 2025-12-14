@@ -154,7 +154,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
-    const userLevel = "{{ current_user.userLevel }}";
+    const userLevel = Number("{{ current_user.userLevel }}");
     const userName = "{{ current_user.userName }}";
     const userDepartment = "{{ current_user.userDepartment }}";
 
