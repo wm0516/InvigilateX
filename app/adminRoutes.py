@@ -1322,7 +1322,12 @@ def admin_manageStaff():
     staffDepartmentCounts = [row[1] for row in staff_dept_query]
 
     staff_id = request.form.get('editStaffId')
-    user_select = User.query.filter_by(userId=staff_id).first()
+    user_select = (
+        User.query
+        .filter(User.userId == staff_id)
+        .order_by(User.userName.asc())
+        .first()
+    )
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
