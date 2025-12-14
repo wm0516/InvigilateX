@@ -683,8 +683,8 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
     # --- Parse exam date ---
     examDate = row.get('exam date')
-    if not examDate:
-        return False, "Exam date missing"
+    if not examDate or str(examDate).strip() == '':
+        return None, '' 
     if isinstance(examDate, str):
         try:
             examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
