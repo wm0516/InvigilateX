@@ -431,6 +431,50 @@ document.addEventListener("DOMContentLoaded", function () {
     restrictStartTime(); restrictEndTime();
 });
 
+document.addEventListener("DOMContentLoaded", function () {
+    const timeShare = document.querySelector("input[name='time_slot_share']");
+    const timeOpen  = document.querySelector("input[name='time_slot_open']");
+    if (!timeShare || !timeOpen) return;
+
+    // ===== Get current datetime in yyyy-MM-ddTHH:mm format =====
+    function getNowLocal() {
+        const now = new Date();
+        now.setSeconds(0, 0); // remove seconds & ms
+        return now.toISOString().slice(0,16);
+    }
+
+    const nowLocal = getNowLocal();
+
+    // ===== Lock past datetime =====
+    timeShare.min = nowLocal;
+    timeOpen.min  = nowLocal;
+
+    // ===== When share time changes =====
+    timeShare.addEventListener("change", function () {
+        if (!timeShare.value) return;
+
+        // Open time must be AFTER share time
+        timeOpen.min = timeShare.value;
+
+        // Auto-fix if open <= share
+        if (timeOpen.value && new Date(timeOpen.value) <= new Date(timeShare.value)) {
+            const openFix = new Date(timeShare.value);
+            openFix.setMinutes(openFix.getMinutes() + 1);
+            timeOpen.value = openFix.toISOString().slice(0,16);
+        }
+    });
+
+    // ===== Extra safety: prevent open <= share =====
+    timeOpen.addEventListener("change", function () {
+        if (!timeShare.value || !timeOpen.value) return;
+
+        if (new Date(timeOpen.value) <= new Date(timeShare.value)) {
+            alert("Time to open unselected slots must be AFTER time to distribute slots.");
+            timeOpen.value = "";
+        }
+    });
+});
+
 // -------------------------
 // PDF Export
 // -------------------------
