@@ -241,12 +241,6 @@ document.addEventListener("DOMContentLoaded", function () {
             label: 'Gender Distribution'
         },
         {
-            id: 'staffDepartmentPieChart',
-            labels: {{ staffDepartmentLabels | tojson }},
-            data: {{ staffDepartmentCounts | tojson }},
-            label: 'Staff Department Distribution'
-        },
-        {
             id: 'statusPieChart',
             labels: ['Activated', 'Deactivated', 'Deleted'],
             data: [{{ total_activated }}, {{ total_deactivate }}, {{ total_deleted }}],
