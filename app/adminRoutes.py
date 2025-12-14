@@ -196,7 +196,7 @@ def get_courseCodeSection(courseCodeSection_select):
         "courseStudent"     : course.courseStudent,
         "courseStatus"      : course.courseStatus,
         "addedBy"           : course.courseAddedBy if course.courseAddedBy else None,
-        "addedOn"           : course.courseAddedOn.isoformat()if course.courseAddedDate else None
+        "addedOn"           : course.courseAddedOn.isoformat()if course.courseAddedOn else None
     })
 
 # -------------------------------
