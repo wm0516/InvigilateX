@@ -244,6 +244,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         return False, "Students cannot be negative"
 
     # Check if an Exam already exists for this course code (all sections share one exam)
+    '''
     existing_exam_course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{code}/%")).first()
     if existing_exam_course and existing_exam_course.courseExamId:
         exam_id = existing_exam_course.courseExamId
@@ -267,6 +268,21 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         db.session.add(new_exam)
         db.session.flush()  # Get examId
         exam_id = new_exam.examId
+    '''
+    # Only create an Exam if both lecturers are valid
+    exam_id = None
+    new_exam = Exam(
+        examStartTime=None,
+        examEndTime=None,
+        examNoInvigilator=None,
+        examTotalStudents=students,
+        examAddedBy=userid,
+        examAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
+
+    )
+    db.session.add(new_exam)
+    db.session.flush()  # Get the examId before commit
+    exam_id = new_exam.examId
 
     # ➕ Create the new Course
     new_course = Course(
