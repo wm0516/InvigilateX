@@ -1295,7 +1295,7 @@ def get_staff(id):
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 @login_required
 def admin_manageStaff():
-    user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.desc()).all()
+    user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.desc(), User.userName.asc()).all()
     department_data = Department.query.all()
 
     # === Dashboard Counts ===
@@ -1322,12 +1322,7 @@ def admin_manageStaff():
     staffDepartmentCounts = [row[1] for row in staff_dept_query]
 
     staff_id = request.form.get('editStaffId')
-    user_select = (
-        User.query
-        .filter(User.userId == staff_id)
-        .order_by(User.userName.asc())
-        .first()
-    )
+    user_select = User.query.filter_by(userId=staff_id).first()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
