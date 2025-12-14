@@ -1021,7 +1021,8 @@ def admin_manageExam():
             Exam.examStatus.desc(),
             case((Exam.examStartTime == None, 0), else_=1).asc(),  # NULLs first
             Exam.examStartTime.desc(),
-            Exam.examId.asc()
+            Exam.examId.asc(),
+            Exam.course.courseName.asc()
         )
         .all()
     )
