@@ -1022,10 +1022,20 @@ def admin_manageExam():
             case((Exam.examStartTime == None, 0), else_=1).asc(),  # NULLs first
             Exam.examStartTime.desc(),
             Exam.examId.asc(),
-            Exam.course.courseName.asc()
         )
         .all()
     )
+    edit_exam_data = (
+        Exam.query
+        .join(Exam.course)
+        .filter(
+            Exam.examStatus == True,
+            Course.courseStatus == True
+        )
+        .order_by(Course.courseName.asc())
+        .all()
+    )
+
     display_exam_data = [e for e in exam_data if e.examStatus]
     total_exam_activated = Exam.query.filter(
         Exam.examStatus == 1,
@@ -1143,7 +1153,8 @@ def admin_manageExam():
         department_data=department_data,
         complete_exam=complete_exam,
         exam_select=exam_select,
-        total_exam_activated=total_exam_activated
+        total_exam_activated=total_exam_activated,
+        edit_exam_data=edit_exam_data
     )
 
 

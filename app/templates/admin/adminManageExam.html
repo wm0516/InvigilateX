@@ -88,7 +88,7 @@
                 <label for="editExamCourseSection">Select Exam Course - Course Name</label>
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>Select Course</option>
-                    {% for exam in display_exam_data %}
+                    {% for exam in edit_exam_data %}
                         {% if exam.course %}
                             <option value="{{ exam.course.courseCodeSectionIntake.split('/')[0]  }}">
                                 [{{ exam.course.courseCodeSectionIntake.split('/')[0]  }}] - {{ exam.course.courseName }}
