@@ -109,7 +109,7 @@ document.getElementById('generatePDF').addEventListener('click', () => {
 
     const headerH2 = document.querySelector('h2'); // grab first h2
     const headerText = headerH2 ? headerH2.textContent : "Timetable";
-    const filename = `User_MergeTimetable.pdf`;
+    const filename = `{{ user_department }} MergeTimetable.pdf`;
 
     html2canvas(table, { scale: 2 }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');

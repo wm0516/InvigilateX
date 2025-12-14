@@ -158,7 +158,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
+    doc.text("{{ user_department }} Invigilation Report", pageWidth / 2, margin, { align: "center" });
 
     const startY = margin + 30;
 
@@ -222,7 +222,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     });
 
     // Save PDF
-    doc.save("Invigilation_Report.pdf");
+    doc.save("{{ user_department }}'s Invigilation_Report.pdf");
 });
 
 document.addEventListener("DOMContentLoaded", function () {

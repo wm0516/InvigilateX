@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // ===== Title =====
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
-        doc.text("View Staff", pageWidth / 2, margin, { align: "center" });
+        doc.text("{{ user_department }} Staff List", pageWidth / 2, margin, { align: "center" });
 
         const startY = margin + 25;
 
@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // ===== Save PDF =====
-        doc.save("{{ user_name }}'s Staff_List.pdf");
+        doc.save("{{ user_department }}'s Staff_List.pdf");
     });
 });
 
