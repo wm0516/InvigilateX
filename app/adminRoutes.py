@@ -104,7 +104,7 @@ def generate_managecourse_template():
     
     # --- Header row ---
     ws.append([])  # First row empty
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'No of Students']
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'No. of Students']
     ws.append(headers)
 
     # --- Hidden sheet for dropdown lists ---
