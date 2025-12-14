@@ -154,75 +154,78 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
+    const userLevel = "{{ current_user.userLevel }}";
+    const userName = "{{ current_user.userName }}";
+    const userDepartment = "{{ current_user.userDepartment }}";
 
-    // Title
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("{{ user_department }} Invigilation Report", pageWidth / 2, margin, { align: "center" });
+
+    if (userLevel === 1) {
+        doc.text(`${userName} Invigilation Report`, pageWidth/2, margin, {align: "center"});
+    } else {
+        doc.text(`${userDepartment} Invigilation Report`, pageWidth/2, margin, {align: "center"});
+    }
 
     const startY = margin + 30;
-
-    // Table headers
     const headers = ["Exam ID", "Exam Details", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
     const rows = [];
 
-    // Variables to store previous rowspan values
-    let lastExamID = "";
-    let lastExamDetails = "";
-
-    // Loop through table rows
     document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-
-        let examID = "", examDetails = "", invDetails = "", checkTimes = "", attendance = "", invStatus = "";
+        let examID = "";
+        let examDetails = "";
+        let invDetails = "";
+        let checkTimes = "";
+        let attendance = "";
+        let invStatus = "";
 
         if (tds.length === 6) {
-            // Full row (first row of exam group)
+            // First row of grouped exam
             examID = tds[0].innerText.trim();
             examDetails = tds[1].innerText.trim();
             invDetails = tds[2].innerText.trim();
-            checkTimes = tds[3].innerText.trim();
+            invStatus = tds[3].innerText.trim();
             attendance = tds[4].innerText.trim();
-            invStatus = tds[5].innerText.trim();
-
+            checkTimes = tds[5].innerText.trim();
         } else {
-            // Adjust columns for continuation row
+            // Continuation row
             invDetails = tds[0]?.innerText.trim() || "";
-            checkTimes = tds[1]?.innerText.trim() || "";
+            invStatus = tds[1]?.innerText.trim() || "";
             attendance = tds[2]?.innerText.trim() || "";
-            invStatus = tds[3]?.innerText.trim() || "";
+            checkTimes = tds[3]?.innerText.trim() || "";
         }
-        // Clean up text formatting
-        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-            text.replace(/\s*:\s*/g, " : ")
-        );
 
-        // Push row into PDF table
+        // Clean formatting
+        [examDetails, invDetails, checkTimes] =
+            [examDetails, invDetails, checkTimes].map(text =>
+                text.replace(/\s*:\s*/g, " : ")
+            );
+
         rows.push([examID, examDetails, invDetails, checkTimes, attendance, invStatus]);
     });
 
-    // Generate PDF table
     doc.autoTable({
         head: [headers],
         body: rows,
         startY: startY,
         theme: "grid",
-        styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left"},
+        styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top"},
         headStyles: {fillColor: [33, 37, 41], textColor: 255, fontStyle: "bold"},
-        tableWidth: "auto",
         margin: { top: margin, left: margin, right: margin, bottom: margin },
-        didDrawPage: function (data) {
-            // Page numbers
-            const pageCount = doc.internal.getNumberOfPages();
+        didDrawPage: function () {
             const pageHeight = doc.internal.pageSize.height;
+            const pageCount = doc.internal.getNumberOfPages();
             doc.setFontSize(9);
             doc.setTextColor(100);
-            doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, {align: "right"});
         }
     });
-
-    // Save PDF
-    doc.save("{{ user_department }}'s Invigilation_Report.pdf");
+    if (userLevel === 1) {
+        doc.save(`${userName}'s_Invigilation_Report.pdf`);
+    } else {
+        doc.save(`${userDepartment}_Invigilation_Report.pdf`);
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function () {

@@ -154,7 +154,6 @@ def user_invigilationReport():
     user = User.query.get(session.get('user_id'))
     if not user:
         return redirect(url_for('user_mergeTimetable'))
-    user_department = user.userDepartment 
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
@@ -167,7 +166,7 @@ def user_invigilationReport():
             exam.examStartTime if exam else datetime.min,
             exam.examId if exam else 0
         )
-    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats, current_user=user, user_department=user_department)
+    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats, current_user=user)
     
 # -------------------------------
 # Function for InviglationTimetable Route to read all the timetable in calendar mode
