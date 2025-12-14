@@ -778,12 +778,15 @@ def get_invigilator_slot_summary(user_id):
     confirmed = confirm_record(user_id).all()
     rejected = reject_record(user_id).all()
     open_slots = open_record(user_id)
+    open_slot_times = [slot.timeExpire.strftime('%Y-%m-%d %H:%M:%S') for slot in open_slots]
+
 
     return {
         "waiting_count": len(waiting),
         "confirmed_count": len(confirmed),
         "rejected_count": len(rejected),
-        "open_count": len(open_slots)
+        "open_count": len(open_slots),
+        "open_expiry_times": open_slot_times
     }
 
 def get_all_invigilators():
@@ -888,7 +891,8 @@ Here is your invigilation status update:
 📌 Slot Summary
 • Pending confirmation : {summary['waiting_count']}
 • Confirmed slots      : {summary['confirmed_count']}
-• Open public slots    : {summary['open_count']}
+• Open public slots    : {', '.join(summary['open_expiry_times']) if summary['open_expiry_times'] else 'None'}
+
 
 {expiry_notice}
 
