@@ -615,8 +615,6 @@ def check_profile(user_id, cardId, contact, password1, password2):
 # Excludes ANY reportId that user has previously rejected
 # ----------------------------------------------------
 def waiting_record(user_id):
-
-    # Subquery: reportIds that user has rejected before
     rejected_report_subq = (
         InvigilatorAttendance.query
         .filter(
@@ -750,7 +748,7 @@ def open_record(user_id):
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
             Exam.examStartTime > current_time,                # upcoming exams
-            InvigilatorAttendance.timeCreate <= two_days_ago, # created at least 2 days ago
+            # InvigilatorAttendance.timeCreate <= two_days_ago, # created at least 2 days ago
             InvigilatorAttendance.invigilationStatus == False,  # slot not yet accepted
             InvigilatorAttendance.rejectReason.is_(None),       # only unrejected slots
             InvigilatorAttendance.invigilator.has(userGender=user_gender), # match gender
@@ -788,46 +786,126 @@ def get_invigilator_slot_summary(user_id):
         "open_count": len(open_slots)
     }
 
+def get_all_invigilators():
+    return (
+        db.session.query(User)
+        .join(InvigilatorAttendance, User.userId == InvigilatorAttendance.invigilatorId)
+        .distinct()
+        .all()
+    )
+
+def get_expiring_slots(user_id, now):
+    tomorrow = now + timedelta(days=1)
+
+    return (
+        InvigilatorAttendance.query
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.timeAction.is_(None),
+            InvigilatorAttendance.rejectReason.is_(None),
+            InvigilatorAttendance.invigilationStatus == False,
+            func.date(InvigilatorAttendance.timeExpire) == tomorrow.date()
+        )
+        .all()
+    )
+
+
+def get_tomorrow_exams(user_id, now):
+    tomorrow_start = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
+    tomorrow_end = datetime.combine(now.date() + timedelta(days=1), datetime.max.time())
+
+    return (
+        db.session.query(
+            Exam,
+            Course,
+            InvigilatorAttendance
+        )
+        .join(InvigilationReport, InvigilationReport.examId == Exam.examId)
+        .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            Exam.examStartTime.between(tomorrow_start, tomorrow_end),
+            InvigilatorAttendance.invigilationStatus == True
+        )
+        .all()
+    )
+
+def build_exam_block(exams):
+    lines = []
+    for exam, course, attendance in exams:
+        lines.append(
+            f"""
+Course       : {course.courseName} ({course.courseCode})
+Venue        : {attendance.venueNumber}
+Date & Time  : {exam.examStartTime.strftime('%d %b %Y, %I:%M %p')}
+"""
+        )
+    return "\n".join(lines)
+
 
 # -------------------------------
 # Email: Notify Invigilator About Slot Summary
 # -------------------------------
-def send_invigilator_slot_notification(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        return False, "User not found."
+def send_invigilator_slot_notifications_for_all():
+    now = datetime.now() + timedelta(hours=8)
+    users = get_all_invigilators()
+    results = []
 
-    # Get summary data
-    summary = get_invigilator_slot_summary(user_id)
-    waiting = summary["waiting_count"]
-    confirmed = summary["confirmed_count"]
-    open_count = summary["open_count"]
+    for user in users:
+        summary = get_invigilator_slot_summary(user.userId)
+        expiring = get_expiring_slots(user.userId, now)
+        tomorrow_exams = get_tomorrow_exams(user.userId, now)
 
-    try:
+        # Skip if nothing important
+        if (
+            summary["waiting_count"] == 0 and
+            summary["open_count"] == 0 and
+            not expiring and
+            not tomorrow_exams
+        ):
+            continue
+
+        exam_block = build_exam_block(tomorrow_exams) if tomorrow_exams else "None"
+
+        expiry_notice = ""
+        if expiring:
+            expiry_notice = f"""
+⚠️ IMPORTANT REMINDER
+You have {len(expiring)} invigilation slot(s) expiring tomorrow.
+If no action is taken, these slots will be released to other invigilators.
+"""
+
         msg = Message(
-            'InvigilateX - Your Invigilation Slot Update',
+            'InvigilateX – Invigilation Slot Notification',
             recipients=[user.userEmail]
         )
 
-        msg.body = f'''Hi {user.userName},
+        msg.body = f"""Hi {user.userName},
 
-You have new updates regarding your invigilation status.
+Here is your invigilation status update:
 
-Here is your current summary:
-• Pending confirmation slots: {waiting}
-• Confirmed upcoming slots: {confirmed}
-• Open public slots available: {open_count}
+📌 Slot Summary
+• Pending confirmation : {summary['waiting_count']}
+• Confirmed slots      : {summary['confirmed_count']}
+• Open public slots    : {summary['open_count']}
 
-If any action is needed from your side (accept / reject), please login to your InvigilateX portal.
+{expiry_notice}
+
+📅 Tomorrow's Exam(s)
+{exam_block}
+
+Please login to InvigilateX to take action:
 https://wm05.pythonanywhere.com/login
 
 Thank you,
-The InvigilateX Team
-'''
-        mail.send(msg)
-        return True, None
-    
-    except Exception as e:
-        return False, f"Failed to send email. Error: {str(e)}"
-    
+InvigilateX System
+"""
+        try:
+            mail.send(msg)
+            results.append((user.userId, "sent"))
+        except Exception as e:
+            results.append((user.userId, f"failed: {str(e)}"))
+
+    return results
 
