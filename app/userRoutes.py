@@ -359,20 +359,9 @@ def user_viewStaff():
     total_deactivate = lecturers.filter_by(userStatus=0).count()
     total_deleted = lecturers.filter_by(userStatus=2).count()
 
-    # === Staff Department Distribution ===
-    staff_dept_query = (
-        db.session.query(Department.departmentCode, func.count(User.userId))
-        .join(User, User.userDepartment == Department.departmentCode)
-        .group_by(Department.departmentCode)
-        .all()
-    )
 
-    staffDepartmentLabels = [row[0] for row in staff_dept_query]
-    staffDepartmentCounts = [row[1] for row in staff_dept_query]
-
-
-    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,staffDepartmentLabels=staffDepartmentLabels,
-        staffDepartmentCounts=staffDepartmentCounts,total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,
+        total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
 
 # -------------------------------
 # Function for Profile Route
