@@ -162,7 +162,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.setFontSize(18);
 
     if (userLevel === 1) {
-        doc.text(`${userName} Invigilation Report`, pageWidth/2, margin, {align: "center"});
+        doc.text(`${userName}'s Invigilation Report`, pageWidth/2, margin, {align: "center"});
     } else {
         doc.text(`${userDepartment} Invigilation Report`, pageWidth/2, margin, {align: "center"});
     }
