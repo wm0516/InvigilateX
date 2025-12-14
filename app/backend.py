@@ -8,9 +8,9 @@ from itsdangerous import URLSafeTimedSerializer
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
-import random
 from datetime import datetime, timedelta
-from sqlalchemy import and_, or_, exists, tuple_
+from sqlalchemy import and_, or_, exists, tuple_, func, select
+
 
 
 # constants.py or at the top of your app.py
@@ -609,13 +609,13 @@ def check_profile(user_id, cardId, contact, password1, password2):
 
 
 
-# ----------------------------------------------------
+# -------------------------------
 # HELPER 1: Waiting Slots
-# System-assigned slots waiting for user action
-# Excludes ANY reportId that user has previously rejected
-# ----------------------------------------------------
+# -------------------------------
 def waiting_record(user_id):
-    rejected_report_subq = (
+    current_time = datetime.now() + timedelta(hours=8)
+    
+    rejected_subq = (
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
@@ -624,103 +624,70 @@ def waiting_record(user_id):
         .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
-
+    
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
-            Exam.examStatus == True,
             InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.timeAction.is_(None),       # user has not acted
             InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.rejectReason.is_(None),     # current record is not rejected
-            ~InvigilatorAttendance.reportId.in_(rejected_report_subq)  # block regenerated rows
+            InvigilatorAttendance.rejectReason.is_(None),
+            InvigilatorAttendance.timeAction.is_(None),
+            InvigilatorAttendance.timeCreate <= current_time,
+            ~InvigilatorAttendance.reportId.in_(select(rejected_subq))
         )
         .all()
     )
 
 
-
-# ----------------------------------------------------
+# -------------------------------
 # HELPER 2: Confirmed Slots
-# User has accepted these slots
-# ----------------------------------------------------
+# -------------------------------
 def confirm_record(user_id):
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == True
-        )
-    )
-
-# ----------------------------------------------------
-# HELPER 3: Rejected Slots
-# User has rejected these slots (rejectReason IS NOT NULL)
-# ----------------------------------------------------
-def reject_record(user_id):
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.rejectReason.isnot(None)  # only rejected rows
-        )
-    )
-
-
-# ----------------------------------------------------
-# HELPER 4: Open Slots
-# - Includes slots user rejected (can reselect)
-# - Excludes user's current waiting slots
-# - Picks only un-rejected slots (rejectReason IS NULL)
-# ----------------------------------------------------
-def open_record(user_id):
-    # Current time in your timezone
     current_time = datetime.now() + timedelta(hours=8)
-    # Cutoff: only show records created at least 2 days ago
-    two_days_ago = current_time - timedelta(minutes=1)
-
-    # 1. Get current user and gender
-    current_user = User.query.get(user_id)
-    if not current_user:
-        return []
-    user_gender = current_user.userGender
-
-    # 2. Subquery: user's rejected slots (allowed to reselect)
-    rejected_report_subq = (
+    tomorrow_start = current_time
+    tomorrow_end = current_time + timedelta(days=1)
+    
+    return (
         InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.rejectReason.isnot(None)
+            InvigilatorAttendance.invigilationStatus == True,
+            Exam.examStartTime.between(tomorrow_start, tomorrow_end)
         )
-        .with_entities(InvigilatorAttendance.reportId)
-        .subquery()
+        .all()
     )
 
-    # 3. Subquery: user's current waiting slots (must exclude)
-    waiting_report_subq = (
+
+# -------------------------------
+# HELPER 3: Open Slots
+# -------------------------------
+def open_record(user_id):
+    current_time = datetime.now() + timedelta(hours=8)
+    
+    user = User.query.get(user_id)
+    if not user:
+        return []
+    
+    user_gender = user.userGender
+    # Current waiting slots (exclude)
+    waiting_subq = (
         InvigilatorAttendance.query
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.timeAction.is_(None),
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.rejectReason.is_(None),
-            ~InvigilatorAttendance.reportId.in_(rejected_report_subq)
+            InvigilatorAttendance.timeAction.is_(None)
         )
         .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
 
-    # 3a. Subquery: exams user already has a slot for
+    # Exams user already has
     user_exam_subq = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -729,36 +696,35 @@ def open_record(user_id):
         .subquery()
     )
 
-    # 4. Subquery: latest attendance row per reportId & invigilatorId
-    latest_attendance_subq = (
+    # Latest attendance row per reportId & invigilator
+    latest_subq = (
         db.session.query(
             InvigilatorAttendance.reportId,
             InvigilatorAttendance.invigilatorId,
-            func.max(InvigilatorAttendance.attendanceId).label('latest_id')
+            func.max(InvigilatorAttendance.attendanceId).label("latest_id")
         )
         .group_by(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId)
         .subquery()
     )
 
-    # 5. Query: open slots
+    # Open slots query
     slots = (
         InvigilatorAttendance.query
-        .join(latest_attendance_subq, InvigilatorAttendance.attendanceId == latest_attendance_subq.c.latest_id)
+        .join(latest_subq, InvigilatorAttendance.attendanceId == latest_subq.c.latest_id)
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
-            Exam.examStartTime > current_time,                # upcoming exams
-            # InvigilatorAttendance.timeCreate <= two_days_ago, # created at least 2 days ago
-            InvigilatorAttendance.invigilationStatus == False,  # slot not yet accepted
-            InvigilatorAttendance.rejectReason.is_(None),       # only unrejected slots
-            InvigilatorAttendance.invigilator.has(userGender=user_gender), # match gender
-            ~InvigilatorAttendance.reportId.in_(waiting_report_subq),      # exclude current waiting
-            ~InvigilationReport.examId.in_(user_exam_subq)                  # exclude exams user already has
+            InvigilatorAttendance.invigilationStatus == False,
+            InvigilatorAttendance.rejectReason.is_(None),
+            InvigilatorAttendance.timeExpire <= current_time,  # slot expired -> open
+            InvigilatorAttendance.invigilator.has(userGender=user_gender),
+            ~InvigilatorAttendance.reportId.in_(select(waiting_subq)),
+            ~InvigilationReport.examId.in_(select(user_exam_subq))
         )
         .all()
     )
 
-    # 6. Remove duplicates by examId (one slot per exam)
+    # Remove duplicates by exam
     unique_slots = {}
     for slot in slots:
         exam_id = slot.report.examId
@@ -768,135 +734,100 @@ def open_record(user_id):
     return list(unique_slots.values())
 
 
-
-
 # -------------------------------
-# Helper to get invigilator slot summary
+# Helper: Slot Summary
 # -------------------------------
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
-    confirmed = confirm_record(user_id).all()
-    rejected = reject_record(user_id).all()
+    confirmed = confirm_record(user_id)
     open_slots = open_record(user_id)
-    open_slot_times = [slot.timeExpire.strftime('%Y-%m-%d %H:%M:%S') for slot in open_slots]
-
+    open_times = [slot.timeExpire.strftime("%Y-%m-%d %H:%M:%S") for slot in open_slots]
 
     return {
         "waiting_count": len(waiting),
         "confirmed_count": len(confirmed),
-        "rejected_count": len(rejected),
-        "open_count": len(open_slots),
-        "open_expiry_times": open_slot_times
+        "open_slots": open_slots,
+        "open_times": open_times
     }
-
-def get_all_invigilators():
-    return (
-        db.session.query(User)
-        .join(InvigilatorAttendance, User.userId == InvigilatorAttendance.invigilatorId)
-        .distinct()
-        .all()
-    )
-
-def get_expiring_slots(user_id, now):
-    tomorrow = now + timedelta(days=1)
-
-    return (
-        InvigilatorAttendance.query
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.timeAction.is_(None),
-            InvigilatorAttendance.rejectReason.is_(None),
-            InvigilatorAttendance.invigilationStatus == False,
-            func.date(InvigilatorAttendance.timeExpire) == tomorrow.date()
-        )
-        .all()
-    )
-
-
-def get_tomorrow_exams(user_id, now):
-    tomorrow_start = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
-    tomorrow_end = datetime.combine(now.date() + timedelta(days=1), datetime.max.time())
-
-    return (
-        db.session.query(
-            Exam,
-            Course,
-            InvigilatorAttendance
-        )
-        .join(InvigilationReport, InvigilationReport.examId == Exam.examId)
-        .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Course, Course.courseExamId == Exam.examId)
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            Exam.examStartTime.between(tomorrow_start, tomorrow_end),
-            InvigilatorAttendance.invigilationStatus == True
-        )
-        .all()
-    )
-
-def build_exam_block(exams):
-    lines = []
-    for exam, course, attendance in exams:
-        lines.append(
-            f"""
-Course       : {course.courseName} ({course.courseCode})
-Venue        : {attendance.venueNumber}
-Date & Time  : {exam.examStartTime.strftime('%d %b %Y, %I:%M %p')}
-"""
-        )
-    return "\n".join(lines)
 
 
 # -------------------------------
-# Email: Notify Invigilator About Slot Summary
+# Build exam block for email
+# -------------------------------
+def build_exam_block(exams):
+    lines = []
+    for attendance in exams:
+        course = Course.query.filter_by(courseExamId=attendance.report.examId).first()
+        exam = Exam.query.get(attendance.report.examId)
+        lines.append(
+            f"Course : {course.courseName} ({course.courseCode})\n"
+            f"Venue  : {attendance.venueNumber}\n"
+            f"Date   : {exam.examStartTime.strftime('%d %b %Y, %I:%M %p')}\n"
+        )
+    return "\n".join(lines) if lines else "None"
+
+
+# -------------------------------
+# Email: Notify Invigilator
 # -------------------------------
 def send_invigilator_slot_notifications_for_all():
     now = datetime.now() + timedelta(hours=8)
-    users = get_all_invigilators()
+    users = User.query.join(InvigilatorAttendance, User.userId == InvigilatorAttendance.invigilatorId).distinct().all()
     results = []
 
     for user in users:
         summary = get_invigilator_slot_summary(user.userId)
-        expiring = get_expiring_slots(user.userId, now)
-        tomorrow_exams = get_tomorrow_exams(user.userId, now)
 
-        # Skip if nothing important
-        if (
-            summary["waiting_count"] == 0 and
-            summary["open_count"] == 0 and
-            not expiring and
-            not tomorrow_exams
-        ):
+        # Expiring tomorrow
+        expiring = (
+            InvigilatorAttendance.query
+            .filter(
+                InvigilatorAttendance.invigilatorId == user.userId,
+                InvigilatorAttendance.invigilationStatus == False,
+                InvigilatorAttendance.rejectReason.is_(None),
+                func.date(InvigilatorAttendance.timeExpire) == (now + timedelta(days=1)).date()
+            )
+            .all()
+        )
+
+        # Confirmed exams tomorrow
+        confirmed_tomorrow = (
+            InvigilatorAttendance.query
+            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+            .join(Exam, InvigilationReport.examId == Exam.examId)
+            .filter(
+                InvigilatorAttendance.invigilatorId == user.userId,
+                InvigilatorAttendance.invigilationStatus == True,
+                Exam.examStartTime.between(now + timedelta(days=1), now + timedelta(days=2))
+            )
+            .all()
+        )
+
+        # Skip if nothing to notify
+        if summary["waiting_count"] == 0 and not summary["open_slots"] and not expiring and not confirmed_tomorrow:
             continue
 
-        exam_block = build_exam_block(tomorrow_exams) if tomorrow_exams else "None"
+        exam_block = build_exam_block(confirmed_tomorrow)
 
         expiry_notice = ""
         if expiring:
-            expiry_notice = f"""
-⚠️ IMPORTANT REMINDER
-You have {len(expiring)} invigilation slot(s) expiring tomorrow.
-If no action is taken, these slots will be released to other invigilators.
-"""
+            expiry_notice = f"⚠️ You have {len(expiring)} slot(s) expiring tomorrow.\n"
 
         msg = Message(
-            'InvigilateX – Invigilation Slot Notification',
+            "InvigilateX – Slot Notification",
             recipients=[user.userEmail]
         )
 
         msg.body = f"""Hi {user.userName},
 
-Here is your invigilation status update:
-
 📌 Slot Summary
-• Pending confirmation : {summary['waiting_count']}
-• Confirmed slots      : {summary['confirmed_count']}
-• Open public slots    : {', '.join(summary['open_expiry_times']) if summary['open_expiry_times'] else 'None'}
-
+• Waiting slots       : {summary['waiting_count']}
+• Confirmed slots     : {summary['confirmed_count']}
+• Open slots          : {', '.join(summary['open_times']) if summary['open_times'] else 'None'}
 
 {expiry_notice}
 
-📅 Tomorrow's Exam(s)
+📅 Tomorrow's Exams
 {exam_block}
 
 Please login to InvigilateX to take action:
