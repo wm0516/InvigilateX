@@ -63,11 +63,12 @@
             <div style="margin-top:20px; display: flex; gap: 30px; justify-content: center;">
                 <div class="form-left">
                     <label><b>Time to Distribute Exam Slots:</b></label>
-                    <input type="datetime-local" name="time_slot_share" required>
+                    <input type="datetime-local" name="time_slot_share" class="no-past-datetime" required>
                 </div>
                 <div class="form-right">
                     <label><b>Time to Open All Unselected Slots:</b></label>
                     <input type="datetime-local" name="time_slot_open" required>
+                    <input type="datetime-local" name="time_slot_open"  class="no-past-datetime" required>
                 </div>
             </div>
             <br>
@@ -110,14 +111,12 @@
 
                 <label>Exam Start Date & Time</label>
                 <div style="display: flex; gap: 2%;">
-                    <input type="date" id="startDate" name="startDate" required>
-                    <input type="time" id="startTime" name="startTime" required>
+                    <input type="datetime-local" id="manualStartTime" class="no-past-datetime" required>
                 </div><br>
 
                 <label>Exam End Date & Time</label>     
                 <div style="display: flex; gap: 2%;">
-                    <input type="date" id="endDate" name="endDate" required>
-                    <input type="time" id="endTime" name="endTime" required>
+                    <input type="datetime-local" id="manualEndTime"   class="no-past-datetime" required>
                 </div>
             </div>
 
@@ -386,49 +385,46 @@ document.addEventListener("DOMContentLoaded", function() {
 // Date & Time Restrictions
 // -------------------------
 document.addEventListener("DOMContentLoaded", function () {
-    const startDate = document.getElementById("startDate");
-    const startTime = document.getElementById("startTime");
-    const endDate = document.getElementById("endDate");
-    const endTime = document.getElementById("endTime");
-    if (!startDate || !startTime || !endDate || !endTime) return;
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
-    const nextYear = new Date(now); nextYear.setFullYear(nextYear.getFullYear() + 1);
-    const nextYearDate = nextYear.toISOString().split("T")[0];
+    const inputs = document.querySelectorAll(".no-past-datetime");
+    if (!inputs.length) return;
 
-    startDate.min = today; startDate.max = nextYearDate;
-    endDate.min = today; endDate.max = nextYearDate;
-
-    startDate.value = today; endDate.value = today;
-
-    function restrictStartTime() {
-        startTime.min = (startDate.value === today) 
-            ? String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0") 
-            : "00:00";
-    }
-    function restrictEndTime() {
-        endTime.min = (endDate.value === today)
-            ? String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0")
-            : "00:00";
+    function nowLocal() {
+        const now = new Date();
+        now.setSeconds(0, 0);
+        return now.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
     }
 
-    function adjustEndDate() {
-        if (!startDate.value || !startTime.value || !endTime.value) return;
-        const start = new Date(startDate.value + "T" + startTime.value);
-        let end = new Date(endDate.value + "T" + endTime.value);
-        if (end < start) {
-            let nextDay = new Date(start); nextDay.setDate(nextDay.getDate() + 1);
-            endDate.value = nextDay.toISOString().split("T")[0];
-        } else endDate.value = startDate.value;
+    function applyMinTime() {
+        const min = nowLocal();
+        inputs.forEach(input => {
+            input.min = min;
+
+            // Auto-fix invalid existing value
+            if (input.value && input.value < min) {
+                input.value = min;
+            }
+        });
     }
 
-    startDate.addEventListener("change", () => { endDate.value = startDate.value; restrictStartTime(); restrictEndTime(); });
-    endDate.addEventListener("change", restrictEndTime);
-    startTime.addEventListener("change", adjustEndDate);
-    endTime.addEventListener("change", adjustEndDate);
+    // Initial apply
+    applyMinTime();
 
-    restrictStartTime(); restrictEndTime();
+    // Update every minute (user may leave page open)
+    setInterval(applyMinTime, 60000);
+
+    // Pair logic (start → end)
+    inputs.forEach(input => {
+        input.addEventListener("change", () => {
+            inputs.forEach(other => {
+                if (other !== input && other.value && other.value < input.value) {
+                    other.value = input.value;
+                }
+                other.min = input.value;
+            });
+        });
+    });
+
 });
 
 // -------------------------
