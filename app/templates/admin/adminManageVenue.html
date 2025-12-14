@@ -161,7 +161,7 @@
                     <td>{{ row.venueCapacity }}</td>
                     <td>
                         {% if row.venueAddedBy and row.venueAddedOn %}
-                            By: <strong>[{{ row.venueAddedBy }}] {{ row.addedBy.userName }}</strong> | On: <strong>{{ row.venueAddedOn }}</strong>
+                            By: <strong>{{ row.addedBy.userName }}</strong> | On: <strong>{{ row.venueAddedOn }}</strong>
                         {% endif %}
                     </td>
                 </tr>

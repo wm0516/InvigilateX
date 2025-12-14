@@ -209,7 +209,6 @@
                     <td>
                         <div class="info-grid">
                             {% if row.departmentAddedBy and row.departmentAddedOn %}
-                                <div>By</div><div><strong>: {{ row.departmentAddedBy }}</strong></div>
                                 <div>By</div><div><strong>: {{ row.addedBy.userName }}</strong></div>
                                 <div>On</div><div><strong>: {{ row.departmentAddedOn }}</strong></div>
                             {% endif %}
