@@ -320,8 +320,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
             # Check overlap with exam period + buffer
             if class_start_dt < end_check and class_end_dt > start_check:
                 return False
-        except Exception as e:
-            flash(f"Error parsing timetable row {row.rowId}: {e}", "success")
+        except Exception:
             continue
 
     return True
