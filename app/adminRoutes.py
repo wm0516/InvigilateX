@@ -681,18 +681,29 @@ def download_exam_template():
 # -------------------------------
 def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
+
+    # --- Check if row is empty ---
+    important_columns = ['exam date', 'start time', 'end time', 'course code', 'exam venue']
+    if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
+        # Entire row is empty → skip it
+        return None, ''  # or False, '' if you prefer
+
     # --- Parse exam date ---
     examDate = row.get('exam date')
-    if not examDate or str(examDate).strip() == '':
-        return None, '' 
-    if isinstance(examDate, str):
-        try:
-            examDate = datetime.strptime(examDate.strip(), "%Y-%m-%d %H:%M:%S")
-        except ValueError:
+    if isinstance(examDate, datetime):
+        pass  # already datetime
+    elif isinstance(examDate, str):
+        examDate = examDate.strip()
+        for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
             try:
-                examDate = datetime.strptime(examDate.strip().split(" ")[0], "%Y-%m-%d")
+                examDate = datetime.strptime(examDate.split(" ")[0], fmt)
+                break
             except ValueError:
-                return False, f"Invalid exam date format: {examDate}"
+                continue
+        else:
+            return False, f"Invalid exam date format: {examDate}"
+    else:
+        return False, "Missing exam date"
 
     # --- Parse start & end time ---
     startTime_text = row.get('start time')
