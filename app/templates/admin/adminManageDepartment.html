@@ -210,7 +210,7 @@
                         <div class="info-grid">
                             {% if row.departmentAddedBy and row.departmentAddedOn %}
                                 <div>By</div><div><strong>: {{ row.addedBy.userName.split(' ')[0] }}</strong></div>
-                                <div>On</div><div><strong>: {{ row.departmentAddedOn }}</strong></div>
+                                <div>On</div><div><strong>: {{ row.courseAddedOn.strftime('%d%b%Y %H:%M') }}</strong></div>
                             {% endif %}
                         </div>
                     </td>

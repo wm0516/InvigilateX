@@ -242,7 +242,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         return False, "Students must be an integer"
     if students < 0:
         return False, "Students cannot be negative"
-    noInvigilator = 3 if students > 32 else 2
+    # noInvigilator = 3 if students > 32 else 2
 
     # Check if an Exam already exists for this course code (all sections share one exam)
     '''
@@ -274,7 +274,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
     new_exam = Exam(
         examStartTime=None,
         examEndTime=None,
-        examNoInvigilator=noInvigilator,
+        examNoInvigilator=None,
         examTotalStudents=students,
         examAddedBy=userid,
         examAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
@@ -288,7 +288,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
     new_course = Course(
         courseCodeSectionIntake=courseCodeSection_text,
         courseDepartment=department,
-        courseName=name.upper() if name else None,
+        courseName=name.upper(),
         courseHour=hour,
         courseStudent=students,
         courseExamId=exam_id,
