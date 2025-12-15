@@ -353,16 +353,13 @@ Exam Date	Day	Start	End 	Program	Course Code/Section	Course Name 	Lecturer	Total
 def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
     try:
         # BASIC VALIDATION (NO DB WRITES)
-        course = Course.query.filter(
-            Course.courseCodeSectionIntake == courseSection
-        ).first()
+        course = Course.query.filter(Course.courseCodeSectionIntake == courseSection).first()
         if not course:
             raise ValueError(f"No course section found for {courseSection}")
 
         exam = Exam.query.get(course.courseExamId)
         if not exam:
             raise ValueError(f"Exam for course {courseSection} not found")
-
         exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial, course.courseLecturer] if uid]
 
         # NORMALISE EXAM END TIME (MULTI-DAY SAFE)
