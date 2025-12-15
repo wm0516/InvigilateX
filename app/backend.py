@@ -741,7 +741,7 @@ def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
     confirmed = confirm_record(user_id)
     open_slots = open_record(user_id)
-    open_times = [slot.timeExpire.strftime("%Y-%m-%d %H:%M:%S") for slot in open_slots]
+    open_times = [slot.timeExpire.strftime("%Y-%m-%d %H:%M:%S") for slot in waiting]
 
     return {
         "waiting_count": len(waiting),
@@ -822,7 +822,7 @@ def send_invigilator_slot_notifications_for_all():
 
 📌 Slot Summary
 • Waiting slots       : {summary['waiting_count']}
-• Confirmed slots     : {summary['confirmed_count']}
+• Confirmed slots   : {summary['confirmed_count']}
 • Open slots          : {', '.join(summary['open_times']) if summary['open_times'] else 'None'}
 
 {expiry_notice}
