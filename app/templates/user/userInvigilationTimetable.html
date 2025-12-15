@@ -151,8 +151,11 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         // Move Y position for next day
         y += totalBlockHeight + 5;
     }
-
-    doc.save("Invigilation_Timetable.pdf");
+    if (userLevel === 1) {
+        doc.save(`${userName}'s_Invigilation_Report.pdf`);
+    } else {
+        doc.save(`${userDepartment}_Invigilation_Report.pdf`);
+    }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
