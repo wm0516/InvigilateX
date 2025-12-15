@@ -369,8 +369,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600
 
         # DETERMINE REQUIRED INVIGILATORS
-        total_students = sum(int(x) for x in studentPerVenue_list)
-        invigilatorNo_for_row = 3 if total_students > 32 else 2
+        invigilatorNo_for_row = 3 if studentPerVenue_list > 32 else 2
 
         # FILTER ELIGIBLE INVIGILATORS
         query = User.query.filter(User.userLevel == 1, User.userStatus == True)
@@ -403,7 +402,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         exam.examAddedOn = datetime.now() + timedelta(hours=8)
         exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
         exam.examEndTime = max(exam.examEndTime or adj_end_dt, adj_end_dt)
-        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row
+        exam.examNoInvigilator = invigilatorNo_for_row
 
         total_lecturers = query.count()
         not_flex_ids = [str(i.userId) for i, _, _ in not_flexible]
@@ -423,28 +422,55 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             venue = Venue.query.filter_by(venueNumber=venue_text).first()
             if not venue:
                 raise ValueError(f"Venue {venue_text} not found")
-            assigned_students = min(spv, venue.venueCapacity)
+            
+            # --- Check for existing exams in same venue and overlapping time ---
+            existing_venue_exam = VenueExam.query.filter_by(venueNumber=venue_text
+            ).filter(
+                VenueExam.startDateTime == start_dt,
+                VenueExam.endDateTime == adj_end_dt
+            ).first()
+            
+            if existing_venue_exam:
+                # Combine students
+                combined_students = existing_venue_exam.capacity + spv
+                if combined_students > venue.venueCapacity:
+                    raise ValueError(f"Combined students exceed capacity for venue {venue_text}")
+                existing_venue_exam.capacity = combined_students
 
-            db.session.add(
-                VenueExam(
-                    venueNumber=venue_text,
-                    startDateTime=start_dt,
-                    endDateTime=adj_end_dt,
-                    examId=exam.examId,
-                    capacity=assigned_students
+                # Recalculate number of invigilators
+                invigilatorNo_for_row = 3 if combined_students > 32 else 2
+
+                # Remove previous invigilator assignments for this report & venue
+                InvigilatorAttendance.query.filter_by(
+                    reportId=report.invigilationReportId,
+                    venueNumber=venue_text
+                ).delete()
+
+            else:
+                # No existing exam — create new
+                combined_students = min(spv, venue.venueCapacity)
+                db.session.add(
+                    VenueExam(
+                        venueNumber=venue_text,
+                        startDateTime=start_dt,
+                        endDateTime=adj_end_dt,
+                        examId=exam.examId,
+                        capacity=combined_students
+                    )
                 )
-            )
 
-            # Select invigilators
+            # --- Select invigilators based on combined student count ---
+            invigilatorNo_for_row = 3 if combined_students > 32 else 2
             chosen = []
             if invigilatorNo_for_row == 1:
-                pool = sorted( male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+                pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
                 chosen.append(pool.pop(0))
             else:
-                chosen.append(male.pop(0))
-                chosen.append(female.pop(0))
+                if male and female:
+                    chosen.append(male.pop(0))
+                    chosen.append(female.pop(0))
                 pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-                chosen.extend(pool[:invigilatorNo_for_row - 2])
+                chosen.extend(pool[:invigilatorNo_for_row - len(chosen)])
 
             for inv in chosen:
                 inv.userPendingCumulativeHours = ((inv.userPendingCumulativeHours or 0) + pending_hours)
