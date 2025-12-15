@@ -52,29 +52,31 @@
 <script>
 document.getElementById('generatePDF').addEventListener('click', () => {
     const { jsPDF } = window.jspdf;
-
-    // Capture the container including timeline
     const container = document.querySelector('.menu-section');
-
     html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('landscape', 'pt', 'a4');
 
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 20; // surrounding width
-        const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
-        
-        // ===== Title =====
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.text("{{ user_name }}'s Timetable View Download", pageWidth / 2, margin, { align: "center" });
+        const margin = 20;
 
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(10);
-        doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
+        const nowMY = new Date().toLocaleString("en-GB", {
+            timeZone: "Asia/Kuala_Lumpur", 
+            day: "2-digit", month: "short", year: "numeric", 
+            hour: "2-digit", minute: "2-digit", hour12: true
+        });
 
-        // Scale image to fit within margins
+        // Title
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(18);
+        pdf.text("{{ user_name }}'s Timetable View Download", pageWidth / 2, margin, { align: "center" });
+
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
+
+        // Scale image to fit
         const imgProps = pdf.getImageProperties(imgData);
         const ratio = Math.min((pageWidth - 2 * margin) / imgProps.width, (pageHeight - 60 - margin) / imgProps.height); 
         const imgWidth = imgProps.width * ratio;

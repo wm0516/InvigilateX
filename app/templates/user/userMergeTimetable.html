@@ -107,9 +107,17 @@ document.getElementById('generatePDF').addEventListener('click', () => {
     const table = document.querySelector('.user-table-container table');
     if (!table) return alert("No timetable table found!");
 
-    const headerH2 = document.querySelector('h2'); // grab first h2
+    const headerH2 = document.querySelector('h2');
     const headerText = headerH2 ? headerH2.textContent : "Timetable";
-    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur",day: "2-digit",month: "short",year: "numeric",hour: "2-digit",minute: "2-digit",hour12: true});
+    const nowMY = new Date().toLocaleString("en-GB", {
+        timeZone: "Asia/Kuala_Lumpur",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    });
     const filename = `{{ user_department }} MergeTimetable.pdf`;
 
     html2canvas(table, { scale: 2 }).then(canvas => {
@@ -117,6 +125,8 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         const pdf = new jsPDF('l', 'pt', 'a4'); // landscape
 
         const pdfWidth = pdf.internal.pageSize.getWidth();
+
+        // Title
         pdf.setFontSize(18);
         pdf.setFont(undefined, 'bold');
         pdf.text(headerText, pdfWidth / 2, 40, { align: "center" });
@@ -124,20 +134,16 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         // Timestamp
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
-        pdf.text(`Downloaded on: ${nowMY}`, pdfWidth / 2, yOffset + 20, { align: "center" });
+        pdf.text(`Downloaded on: ${nowMY}`, pdfWidth / 2, 60, { align: "center" });
 
+        // Table image
         const pdfHeight = (canvas.height * (pdfWidth - 40)) / canvas.width;
-        pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth - 40, pdfHeight);
+        pdf.addImage(imgData, 'PNG', 20, 80, pdfWidth - 40, pdfHeight);
+
         pdf.save(filename);
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const select = document.getElementById('lecturer');
-    if (window.jQuery && $(select).select2) {
-        $('#lecturer').select2({ placeholder: "Type to search...", allowClear: true });
-    }
-});
 
 
 document.addEventListener("DOMContentLoaded", function () {
