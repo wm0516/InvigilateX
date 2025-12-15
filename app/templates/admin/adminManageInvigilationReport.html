@@ -163,7 +163,7 @@
                             <div>
                                 {% if grouped[0].report.exam.venue_availabilities %}
                                     {% for va in grouped[0].report.exam.venue_availabilities %}
-                                        <strong>: {{ va.venueNumber }} [Capacity Use: {{ va.capacity }}]</strong><br>
+                                        <strong>: {{ va.venueNumber }}</strong><br>
                                     {% endfor %}
                                 {% else %}
                                     <strong>: None</strong>

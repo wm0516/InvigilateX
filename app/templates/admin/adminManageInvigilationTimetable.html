@@ -49,7 +49,7 @@
                             <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
                             {% if exam.venue %}
                                 {% for va in exam.venue %}
-                                    Venue: {{ va.venueNumber }} [Capacity Use: {{ va.capacity }}]<br>
+                                    Venue: {{ va.venueNumber }}<br>
                                 {% endfor %}
                             {% else %}
                                 <strong>: None</strong>

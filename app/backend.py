@@ -373,28 +373,31 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             query = query.filter(~User.userId.in_(exclude_ids))
 
         flexible = []
+        not_flexible = []
+
         for inv in query.all():
             total_hours = (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
-            if total_hours < 36 and is_lecturer_available(inv.userId, start_dt, adj_end_dt):
+            available = is_lecturer_available(inv.userId, start_dt, adj_end_dt)
+            if total_hours < 36 and available:
                 flexible.append(inv)
+            else:
+                not_flexible.append(inv)
 
         if not flexible:
             raise ValueError("No eligible invigilators available")
 
-        male = sorted(
-            [i for i in flexible if i.userGender == "MALE"],
-            key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
-        )
-        female = sorted(
-            [i for i in flexible if i.userGender == "FEMALE"],
-            key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
-        )
+        # SPLIT BY GENDER
+        male = sorted([i for i in flexible if i.userGender == "MALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+        female = sorted([i for i in flexible if i.userGender == "FEMALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
 
         # UPDATE EXAM CORE INFO
         exam.examAddedBy = user
         exam.examAddedOn = datetime.now() + timedelta(hours=8)
         exam.examStartTime = start_dt
         exam.examEndTime = adj_end_dt
+        total_lecturers = query.count()
+        not_flex_ids = [str(i.userId) for i, _, _ in not_flexible]
+        exam.examOutput = [total_lecturers, len(flexible), len(flexible), len(not_flexible), not_flex_ids, len(male), len(female)]
 
         # CREATE / UPDATE REPORT
         report = InvigilationReport.query.filter_by(examId=exam.examId).first()
@@ -471,7 +474,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                         timeExpire=close
                     )
                 )
-                
+
         exam.examNoInvigilator = sum(3 if v > 32 else 2 for v in venue_student_map.values())
         db.session.commit()
         return True, f"Exam created successfully for {courseSection}"
