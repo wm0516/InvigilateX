@@ -514,32 +514,32 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (td.cellIndex === 4 || td.cellIndex === 5 || td.cellIndex === 7) {
                     text = text
                         // ===== Course Details =====
-                        .replace(/Course Name\s*:/g, "\nCourse Name:")
-                        .replace(/Course Code\/Section\s*:/g, "\nCourse Code/Section:")
-                        .replace(/Program Code\s*:/g, "\nProgram Code:")
-                        .replace(/Number of Students\s*:/g, "\nNumber of Students:")
-                        .replace(/Practical Lecturer\s*:/g, "\nPractical Lecturer:")
-                        .replace(/Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
+                        .replace(/Course Name\s*:/g, "Course Name:")
+                        .replace(/Course Code\/Section\s*:/g, "Course Code/Section:")
+                        .replace(/Program Code\s*:/g, "Program Code:")
+                        .replace(/Number of Students\s*:/g, "Number of Students:")
+                        .replace(/Practical Lecturer\s*:/g, "Practical Lecturer:")
+                        .replace(/Tutorial Lecturer\s*:/g, "Tutorial Lecturer:")
 
                         // ===== Exam Details =====
-                        .replace(/Exam Date\s*:/g, "\nExam Date:")
-                        .replace(/Exam Day\s*:/g, "\nExam Day:")
-                        .replace(/Exam Time\s*:/g, "\nExam Time:")
-                        .replace(/Exam Period\s*:/g, "\nExam Period:")
-                        .replace(/Exam Venue\(s\)\s*:/g, "\nExam Venue(s):")
+                        .replace(/Exam Date\s*:/g, "Exam Date:")
+                        .replace(/Exam Day\s*:/g, "Exam Day:")
+                        .replace(/Exam Time\s*:/g, "Exam Time:")
+                        .replace(/Exam Period\s*:/g, "Exam Period:")
+                        .replace(/Exam Venue\(s\)\s*:/g, "Exam Venue(s):")
 
                         // ===== Invigilator Filter =====
-                        .replace(/Total Lecturers\s*:/g, "\nTotal Lecturers:")
-                        .replace(/Eligible Invigilators\s*:/g, "\nEligible Invigilators:")
-                        .replace(/Flexible Invigilators\s*:/g, "\nFlexible Invigilators:")
-                        .replace(/NonFlexible Invigilators\s*:/g, "\nNon-Flexible Invigilators:")
-                        .replace(/Non-Flexible List\s*:/g, "\nNon-Flexible List:")
-                        .replace(/Flexible Male\s*:/g, "\nFlexible Male:")
-                        .replace(/Flexible Female\s*:/g, "\nFlexible Female:")
+                        .replace(/Total Lecturers\s*:/g, "Total Lecturers:")
+                        .replace(/Eligible Invigilators\s*:/g, "Eligible Invigilators:")
+                        .replace(/Flexible Invigilators\s*:/g, "Flexible Invigilators:")
+                        .replace(/NonFlexible Invigilators\s*:/g, "Non-Flexible Invigilators:")
+                        .replace(/Non-Flexible List\s*:/g, "Non-Flexible List:")
+                        .replace(/Flexible Male\s*:/g, "Flexible Male:")
+                        .replace(/Flexible Female\s*:/g, "Flexible Female:")
 
                         // ===== Added/Edit Details =====
-                        .replace(/By\s*:/g, "\nBy:")
-                        .replace(/On\s*:/g, "\nOn:");
+                        .replace(/By\s*:/g, "By:")
+                        .replace(/On\s*:/g, "On:");
 
                     text = text.trim();
                 }
@@ -555,7 +555,7 @@ document.addEventListener("DOMContentLoaded", function () {
             startY: startY,
             theme: "grid",
             styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top", cellWidth: "wrap"},
-            columnStyles: {3: { cellWidth: 200 }, 4: { cellWidth: 180 }, 5: { cellWidth: 120 }, 7: { cellWidth: 90 }},
+            columnStyles: {3: { cellWidth: 200 }, 4: { cellWidth: 180 }, 5: { cellWidth: 130 }, 7: { cellWidth: 90 }},
             headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             margin: { top: margin, left: margin, right: margin, bottom: margin },
             didDrawPage: function () {
