@@ -400,8 +400,8 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         # ALL VALIDATION PASSED — START DB WRITES
         exam.examAddedBy = user
         exam.examAddedOn = datetime.now() + timedelta(hours=8)
-        exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
-        exam.examEndTime = max(exam.examEndTime or adj_end_dt, adj_end_dt)
+        exam.examStartTime = start_dt
+        exam.examEndTime = adj_end_dt
         exam.examNoInvigilator = invigilatorNo_for_row
 
         total_lecturers = query.count()
