@@ -242,34 +242,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         return False, "Students must be an integer"
     if students < 0:
         return False, "Students cannot be negative"
-    # noInvigilator = 3 if students > 32 else 2
 
-    # Check if an Exam already exists for this course code (all sections share one exam)
-    '''
-    existing_exam_course = Course.query.filter(Course.courseCodeSectionIntake.ilike(f"{code}/%")).first()
-    if existing_exam_course and existing_exam_course.courseExamId:
-        exam_id = existing_exam_course.courseExamId
-        exam = Exam.query.get(exam_id)
-
-        # 🧮 Update total students for that exam
-        total_students = db.session.query(db.func.sum(Course.courseStudent)).filter(
-            Course.courseCodeSectionIntake.ilike(f"{code}/%")
-        ).scalar() or 0
-        exam.examTotalStudents = total_students + students  # add new section’s students
-    else:
-        # 🆕 Create new Exam
-        new_exam = Exam(
-            examStartTime=None,
-            examEndTime=None,
-            examNoInvigilator=None,
-            examTotalStudents=students,  # only this section initially
-            examAddedBy=userid,
-            examAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
-        )
-        db.session.add(new_exam)
-        db.session.flush()  # Get examId
-        exam_id = new_exam.examId
-    '''
     exam_id = None
     new_exam = Exam(
         examStartTime=None,
@@ -284,7 +257,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
     db.session.flush()  # Get the examId before commit
     exam_id = new_exam.examId
 
-    # ➕ Create the new Course
+    # Create the new Course
     new_course = Course(
         courseCodeSectionIntake=courseCodeSection_text,
         courseDepartment=department,
@@ -510,6 +483,64 @@ def delete_exam_related(exam_id, commit=True):
         db.session.commit()
 
     return True, f"Related data for exam {exam_id} deleted successfully"
+
+
+# -------------------------------
+# Adjust invigilators based on venue & capacity
+# -------------------------------
+def recalc_invigilators_for_new_exams():
+    # Step 1: Group VenueExam by venue and datetime
+    grouped = (
+        db.session.query(
+            VenueExam.venueNumber,
+            VenueExam.startDateTime,
+            VenueExam.endDateTime,
+            func.sum(VenueExam.capacity).label('total_capacity')
+        )
+        .group_by(VenueExam.venueNumber, VenueExam.startDateTime, VenueExam.endDateTime)
+        .all()
+    )
+
+    for venue, start_dt, end_dt, total_capacity in grouped:
+        # Determine required invigilators
+        inv_count = 3 if total_capacity > 32 else 2
+
+        # Step 2: Get all VenueExam records for this venue/datetime
+        exams_in_slot = VenueExam.query.filter_by(
+            venueNumber=venue,
+            startDateTime=start_dt,
+            endDateTime=end_dt
+        ).all()
+
+        # Step 3: Collect all related InvigilatorAttendance entries
+        report_ids = [e.examId for e in exams_in_slot]
+        attendances = InvigilatorAttendance.query.join(InvigilationReport).filter(
+            InvigilationReport.examId.in_(report_ids),
+            InvigilatorAttendance.venueNumber == venue
+        ).all()
+
+        # Step 4: Sort current invigilators by cumulative hours ascending
+        attendances_sorted = sorted(
+            attendances,
+            key=lambda a: (
+                (a.invigilator.userCumulativeHours or 0) +
+                (a.invigilator.userPendingCumulativeHours or 0)
+            )
+        )
+
+        # Step 5: Reduce or select first N invigilators
+        to_remove = attendances_sorted[inv_count:]
+
+        # Adjust userPendingCumulativeHours for removed invigilators
+        duration_hours = (end_dt - start_dt).total_seconds() / 3600.0
+        for att in to_remove:
+            if att.invigilator:
+                att.invigilator.userPendingCumulativeHours = max(0.0, (att.invigilator.userPendingCumulativeHours or 0.0) - duration_hours)
+            db.session.delete(att)
+        db.session.commit()
+
+
+
 
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data

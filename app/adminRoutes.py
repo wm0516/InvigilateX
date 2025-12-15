@@ -1065,9 +1065,7 @@ def admin_manageExam():
 
     # Counters
     unassigned_exam = len([e for e in exam_data if e.examStatus and e.examStartTime is None])
-    complete_exam = len([
-        e for e in exam_data if e.examStatus and e.examStartTime and e.examEndTime and e.examNoInvigilator not in (None, 0)
-    ])
+    complete_exam = len([e for e in exam_data if e.examStatus and e.examStartTime and e.examEndTime and e.examNoInvigilator not in (None, 0)])
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -1081,7 +1079,7 @@ def admin_manageExam():
             slot_open_dt = datetime.strptime(time_slot_open, "%Y-%m-%dT%H:%M")
             
             #process_row_fn=process_exam_row,
-            return handle_file_upload(
+            result = handle_file_upload(
                 file_key='exam_file',
                 expected_cols=['exam date','day','start','end','program','course code/section','course name','lecturer','total student by venue','venue'],
                 process_row_fn=lambda row: process_exam_row(row, slot_share_dt, slot_open_dt),
@@ -1089,6 +1087,10 @@ def admin_manageExam():
                 usecols="A:J",
                 skiprows=1 
             )
+        
+            recalc_invigilators_for_new_exams()
+            flash("✅ Invigilators recalculated and balanced for overlapping venue/time slots.", "success")
+            return result
 
         # 2️⃣ Edit exam
         if form_type == 'edit' and exam_select:
