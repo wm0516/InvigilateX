@@ -346,14 +346,18 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
+'''
+Exam Date	Day	Start	End 	Program	Course Code/Section	Course Name 	Lecturer	Total Student by venue 	Venue 
+26/11/2026	WED	9:00 AM	12:10 PM	BBSUT	FIN10002/SU1	FINANCIAL STATISTICS	CHEE BENG BARK	46	ER 
+'''
 def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
     # --- Fetch course sections ---
-    course_sections = Course.query.filter(Course.courseCodeSectionIntake.like(f"{courseSection}/%")).all()
+    course_sections = Course.query.filter(Course.courseCodeSectionIntake == courseSection).first()
     if not course_sections:
         return False, f"No course sections found for {courseSection}"
 
     # Shared exam ID
-    exam = Exam.query.filter_by(examId=course_sections[0].courseExamId).first()
+    exam = Exam.query.filter_by(examId=course_sections.courseExamId).first()
     if not exam:
         return False, f"Exam for course {courseSection} not found"
 

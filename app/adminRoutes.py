@@ -581,7 +581,6 @@ def generate_manageexam_template():
     ws.append([])
 
     # --- Row 2 headers (updated)
-    # headers = ['Exam Date','Day','Start Time','End Time','Course Code','Course Name','Total number of students','Total number of students by venue','Exam Venue']
     headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Lecturer','Total Student by venue','Venue']
     ws.append(headers)
 
@@ -683,7 +682,8 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
 
     # --- Check if row is empty ---
-    important_columns = ['exam date', 'start time', 'end time', 'course code', 'exam venue']
+    # headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Lecturer','Total Student by venue','Venue']
+    important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
     if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
         # Entire row is empty → skip it
         return None, ''  # or False, '' if you prefer
@@ -721,13 +721,13 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     end_dt   = datetime.combine(examDate.date(), end_time)
 
     try:
-        requested_capacity = int(row.get('total number of students by venue', 0))
+        requested_capacity = int(row.get('total student by venue', 0))
     except ValueError:
-        return False, f"Invalid total number of students by venue: {row.get('total number of students by venue')}"
+        return False, f"Invalid total number of students by venue: {row.get('total student by venue')}"
 
-    venue = str(row.get('exam venue', '')).upper()
+    venue = str(row.get('venue', '')).upper()
     if not venue:
-        return False, "Venue missing"
+        return False, "Exam Venue missing"
 
     # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
@@ -1079,10 +1079,10 @@ def admin_manageExam():
             #process_row_fn=process_exam_row,
             return handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['exam date', 'day', 'start time', 'end time', 'course code', 'course name', 'total number of students', 'total number of students by venue', 'exam venue'],
+                expected_cols=['exam date','day','start','end','program','course code/section','course name','lecturer','total student by venue','venue'],
                 process_row_fn=lambda row: process_exam_row(row, slot_share_dt, slot_open_dt),
                 redirect_endpoint='admin_manageExam',
-                usecols="A:I",
+                usecols="A:J",
                 skiprows=1 
             )
 
