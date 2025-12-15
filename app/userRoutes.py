@@ -227,7 +227,7 @@ def user_invigilationTimetable():
     if not user:
         return redirect(url_for('user_invigilationTimetable'))
     calendar_data = get_calendar_data()
-    return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', calendar_data=calendar_data)
+    return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', calendar_data=calendar_data, current_user=user)
 
 
 
