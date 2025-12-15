@@ -404,15 +404,14 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         # MERGE VENUE STUDENTS
         venue_student_map = {}
-        for venue_text, spv in zip(venue_list, studentPerVenue_list):
+        for spv, venue_text in zip(studentPerVenue_list, venue_list):
             venue_text = venue_text.upper()
             spv = int(spv)
             venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
 
-        # Then, create VenueExam row for each exam
-        for venue_text, spv in zip(venue_list, studentPerVenue_list):
+        # 2️⃣ Then, create a VenueExam row for each exam with the total capacity
+        for spv, venue_text in zip(studentPerVenue_list, venue_list):
             venue_text = venue_text.upper()
-            spv = int(spv)
 
             venue = Venue.query.filter_by(venueNumber=venue_text).first()
             if not venue:
@@ -422,13 +421,13 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             if total_capacity > venue.venueCapacity:
                 raise ValueError(f"Venue {venue_text} capacity exceeded")
 
-            # Create a row for this examId with the combined capacity
+            # Each examId gets its own row, but with combined capacity
             db.session.add(
                 VenueExam(
                     venueNumber=venue_text,
                     startDateTime=start_dt,
                     endDateTime=adj_end_dt,
-                    examId=exam.examId,
+                    examId=exam.examId,  # make sure this loops over the correct examIds
                     capacity=total_capacity
                 )
             )
