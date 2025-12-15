@@ -2018,7 +2018,7 @@ def get_calendar_data():
             return {
                 "exam_id": exam.examId,
                 "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake.split('/')[0],
+                "course_code": exam.course.courseCodeSectionIntake,
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,
@@ -2028,13 +2028,9 @@ def get_calendar_data():
 
         if is_overnight:
             # Part 1: From start time to 23:59 on start day
-            calendar_data[start_date].append(
-                exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59))
-            )
+            calendar_data[start_date].append(exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)))
             # Part 2: From 00:00 on next day to end time
-            calendar_data[end_date].append(
-                exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt)
-            )
+            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt))
         else:
             # Normal same-day exam
             calendar_data[start_date].append(exam_dict(start_dt, end_dt))
