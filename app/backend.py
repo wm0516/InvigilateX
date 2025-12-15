@@ -404,33 +404,37 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         # MERGE VENUE STUDENTS
         venue_student_map = {}
-        for spv, venue_text in zip(studentPerVenue_list, venue_list):
+        for venue_text, spv in zip(venue_list, studentPerVenue_list):
             venue_text = venue_text.upper()
             spv = int(spv)
-            venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
-
-        # 2️⃣ Then, create a VenueExam row for each exam with the total capacity
-        for spv, venue_text in zip(studentPerVenue_list, venue_list):
-            venue_text = venue_text.upper()
 
             venue = Venue.query.filter_by(venueNumber=venue_text).first()
             if not venue:
                 raise ValueError(f"Venue {venue_text} not found")
 
-            total_capacity = venue_student_map[venue_text]
-            if total_capacity > venue.venueCapacity:
-                raise ValueError(f"Venue {venue_text} capacity exceeded")
+            existing = VenueExam.query.filter(
+                VenueExam.venueNumber == venue_text,
+                VenueExam.startDateTime == start_dt,
+                VenueExam.endDateTime == adj_end_dt
+            ).first()
 
-            # Each examId gets its own row, but with combined capacity
-            db.session.add(
-                VenueExam(
-                    venueNumber=venue_text,
-                    startDateTime=start_dt,
-                    endDateTime=adj_end_dt,
-                    examId=exam.examId,  # make sure this loops over the correct examIds
-                    capacity=total_capacity
+            if existing:
+                combined = existing.capacity + spv
+                if combined > venue.venueCapacity:
+                    raise ValueError(f"Venue {venue_text} capacity exceeded")
+                existing.capacity = combined
+                db.session.add(existing)
+            else:
+                db.session.add(
+                    VenueExam(
+                        venueNumber=venue_text,
+                        startDateTime=start_dt,
+                        endDateTime=adj_end_dt,
+                        examId=exam.examId,
+                        capacity=spv
+                    )
                 )
-            )
+            venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
 
         # REASSIGN INVIGILATORS (ONCE PER VENUE)
         for venue_text, total_students in venue_student_map.items():
