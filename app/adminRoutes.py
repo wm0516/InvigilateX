@@ -756,7 +756,6 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
             "error"
         )
         return None, ''
-    flash(f"Start: {start_dt}, End: {end_dt}, CourseCode: {str(row.get('course code/section')).upper()}, Venue: {[venue]}, Capacity: {[requested_capacity]}, Open: {slot_share_dt}, Close: {slot_open_dt}", "success")
     create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     return True, ''
 
