@@ -676,7 +676,6 @@ def waiting_record(user_id):
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.rejectReason.is_(None),
             InvigilatorAttendance.timeAction.is_(None),
-            InvigilatorAttendance.timeCreate <= current_time,
             ~InvigilatorAttendance.reportId.in_(select(rejected_subq))
         )
         .all()
@@ -867,7 +866,7 @@ def send_invigilator_slot_notifications_for_all():
 
         expiry_notice = ""
         if expiring:
-            expiry_notice = f"⚠️ You have {len(expiring)} slot(s) expiring tomorrow.\n"
+            expiry_notice = f"⚠️ You have {len(expiring)} slot(s) to accept or reject expiring tomorrow.\n"
 
         msg = Message(
             "InvigilateX – Slot Notification",

@@ -445,15 +445,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     statusSpan.className = `status ${statusClass} invigilation-status`;
                     statusSpan.textContent = statusText;
 
-                    if (!result.invigilation_status) {
-                        const timeActionDivs = tr.querySelectorAll("div");
-                        timeActionDivs.forEach(div => {
-                            if (div.innerText.includes("TimeAction")) {
-                                div.remove();
-                            }
-                        });
-                    }
-
                     // Remove total time display (regenerated on refresh)
                     const totalDiv = tr.querySelector("div[style*='color: green']");
                     if (totalDiv) totalDiv.remove();
