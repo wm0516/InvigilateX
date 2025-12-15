@@ -98,10 +98,16 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const pageHeight = doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.getWidth();
     let y = margin;
+    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+    
+    // ===== Title =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Invigilation Timetable View Download", pageWidth / 2, margin, { align: "center" });
 
-    // Title header (first page)
-    doc.setFontSize(20);
-    doc.text("Invigilation Timetable", pageWidth / 2, y, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
     y += 15;
 
     const days = document.querySelectorAll(".calendar-day");

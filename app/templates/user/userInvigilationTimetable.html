@@ -89,7 +89,7 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
     const margin = 15;
     const pageHeight = doc.internal.pageSize.getHeight();
-    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageWidth = doc.internal.pageSize.getWidth(); 
     let y = margin;
 
     // Title header (first page)

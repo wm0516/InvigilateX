@@ -427,12 +427,16 @@ document.addEventListener("DOMContentLoaded", function () {
         const margin = 20;
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
-
+        const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+        
         // ===== Title =====
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(15);
-        doc.text("Manage Courses", pageWidth / 2, margin, { align: "center" });
+        doc.setFontSize(18);
+        doc.text("Course View Download", pageWidth / 2, margin, { align: "center" });
 
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
         const startY = margin + 25;
 
         // ===== Get table =====
@@ -463,7 +467,7 @@ document.addEventListener("DOMContentLoaded", function () {
             body: rows,
             startY: startY,
             theme: "grid",
-            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "middle"},
             headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             // Automatically calculate table width to fit page
             tableWidth: pageWidth - 2 * margin,

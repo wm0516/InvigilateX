@@ -259,12 +259,16 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
-
-    // Title
+    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+    
+    // ===== Title =====
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("Lecturer Invigilation Report", pageWidth / 2, margin, { align: "center" });
+    doc.text("Invigilation Report View Download", pageWidth / 2, margin, { align: "center" });
 
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
     const startY = margin + 30;
 
     // Table headers

@@ -157,6 +157,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const userLevel = Number("{{ current_user.userLevel }}");
     const userName = "{{ current_user.userName }}";
     const userDepartment = "{{ current_user.userDepartment }}";
+    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
@@ -166,6 +167,10 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     } else {
         doc.text(`${userDepartment} Invigilation Report`, pageWidth/2, margin, {align: "center"});
     }
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
 
     const startY = margin + 30;
     const headers = ["Exam ID", "Exam Details", "Invigilator Details", "Check-in/out Time", "Attendance Status", "Invigilation Status"];
@@ -265,3 +270,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 {% endblock %}
+
