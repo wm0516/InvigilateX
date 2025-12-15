@@ -109,6 +109,7 @@ document.getElementById('generatePDF').addEventListener('click', () => {
 
     const headerH2 = document.querySelector('h2'); // grab first h2
     const headerText = headerH2 ? headerH2.textContent : "Timetable";
+    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur",day: "2-digit",month: "short",year: "numeric",hour: "2-digit",minute: "2-digit",hour12: true});
     const filename = `{{ user_department }} MergeTimetable.pdf`;
 
     html2canvas(table, { scale: 2 }).then(canvas => {
@@ -119,6 +120,11 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         pdf.setFontSize(18);
         pdf.setFont(undefined, 'bold');
         pdf.text(headerText, pdfWidth / 2, 40, { align: "center" });
+
+        // Timestamp
+        pdf.setFontSize(10);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(`Downloaded on: ${nowMY}`, pdfWidth / 2, yOffset + 20, { align: "center" });
 
         const pdfHeight = (canvas.height * (pdfWidth - 40)) / canvas.width;
         pdf.addImage(imgData, 'PNG', 20, 60, pdfWidth - 40, pdfHeight);

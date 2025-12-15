@@ -63,10 +63,16 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const margin = 20; // surrounding width
+        const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+        
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("{{ user_name }}'s Timetable View Download", pageWidth / 2, margin, { align: "center" });
 
-        // Header text
-        pdf.setFontSize(16);
-        pdf.text("{{ user_name }}'s Timetable", margin, 30);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
 
         // Scale image to fit within margins
         const imgProps = pdf.getImageProperties(imgData);

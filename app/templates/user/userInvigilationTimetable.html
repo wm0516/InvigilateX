@@ -90,12 +90,19 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const margin = 15;
     const pageHeight = doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.getWidth(); 
-    let y = margin;
+    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+    
+    if (userLevel === 1) {
+        doc.text(`${userName}'s Invigilation Report`, pageWidth/2, margin, {align: "center"});
+    } else {
+        doc.text(`${userDepartment} Invigilation Report`, pageWidth/2, margin, {align: "center"});
+    }
 
-    // Title header (first page)
-    doc.setFontSize(20);
-    doc.text("Invigilation Timetable", pageWidth / 2, y, { align: "center" });
-    y += 15;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 8, { align: "center" });
+
+    let y = margin + 15;
 
     const days = document.querySelectorAll(".calendar-day");
     if (!days.length) return alert("No timetable found!");
