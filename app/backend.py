@@ -773,6 +773,7 @@ def open_record(user_id):
     # Open slots query
     slots = (
         InvigilatorAttendance.query
+        .join(latest_subq, InvigilatorAttendance.attendanceId == latest_subq.c.latest_id)
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
