@@ -341,8 +341,6 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 
     return True
 
-
-
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
