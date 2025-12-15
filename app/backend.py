@@ -704,6 +704,20 @@ def confirm_record(user_id):
         .all()
     )
 
+def reject_record(user_id):
+    return (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Course, Course.courseExamId == Exam.examId)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.rejectReason.isnot(None)  # only rejected rows
+        )
+        .all()
+    )
+
 
 # -------------------------------
 # HELPER 3: Open Slots

@@ -313,8 +313,8 @@ def user_homepage():
     user_id = session.get('user_id')
     chosen = User.query.filter_by(userId=user_id).first()
     waiting = waiting_record(user_id)
-    confirm = confirm_record(user_id).filter(Exam.examEndTime > (datetime.now() + timedelta(hours=8))).all()
-    reject = reject_record(user_id).all()
+    confirm = confirm_record(user_id)
+    reject = reject_record(user_id)
 
     # Get open slots + gender filter
     open_slots = open_record(user_id)
