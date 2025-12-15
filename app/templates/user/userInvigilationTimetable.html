@@ -89,31 +89,29 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
     const margin = 15;
     const pageHeight = doc.internal.pageSize.getHeight();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const nowMY = new Date().toLocaleString("en-GB", { 
-        timeZone: "Asia/Kuala_Lumpur", 
-        day: "2-digit", month: "short", year: "numeric", 
-        hour: "2-digit", minute: "2-digit", hour12: true 
-    });
-
-    // Header
-    const headerText = (userLevel === 1) ? `${userName}'s Invigilation Report` : `${userDepartment} Invigilation Report`;
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text(headerText, pageWidth/2, margin, { align: "center" });
+    const pageWidth = doc.internal.pageSize.getWidth(); 
+    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+    
+    if (userLevel === 1) {
+        doc.text(`${userName}'s Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
+    } else {
+        doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
+    }
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 8, { align: "center" });
 
     let y = margin + 15;
+
     const days = document.querySelectorAll(".calendar-day");
     if (!days.length) return alert("No timetable found!");
 
-    for (const day of days) {
+    for (const [i, day] of days.entries()) {
         const dateText = day.querySelector(".calendar-date").innerText;
         const examList = day.querySelector(".exam-grid");
 
+        // Capture this day's exam list
         const canvas = await html2canvas(examList, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
 
@@ -121,35 +119,38 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         const imgProps = doc.getImageProperties(imgData);
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
+        // Padding & border calculations
         const topPadding = 6;
         const bottomPadding = 10;
-        const totalBlockHeight = imgHeight + topPadding + bottomPadding + 8;
+        const totalBlockHeight = imgHeight + topPadding + bottomPadding + 8; // better spacing
 
+        // Add new page if block exceeds height
         if (y + totalBlockHeight > pageHeight - margin) {
             doc.addPage();
             y = margin;
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
+            doc.setFontSize(20);
             doc.text("Invigilation Timetable", pageWidth / 2, y, { align: "center" });
             y += 15;
         }
 
+        // Draw border box
         doc.setDrawColor(0);
         doc.rect(margin - 3, y - 5, pdfWidth + 6, totalBlockHeight);
 
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
+        // Day title
+        doc.setFontSize(14);
         doc.text(dateText, margin, y + 5);
 
+        // Image (exam content)
         const imageY = y + topPadding + 8;
         doc.addImage(imgData, 'PNG', margin, imageY, pdfWidth, imgHeight);
 
+        // Move Y position for next day
         y += totalBlockHeight + 5;
     }
 
     doc.save("Invigilation_Timetable.pdf");
 });
-
 
 document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("searchInput");
