@@ -200,7 +200,7 @@ def get_calendar_data():
                 "end_time": end,
                 "status": exam.examStatus,
                 "is_overnight": is_overnight,
-                "venue": [{"venueNumber": v.venueNumber, "capacity": v.capacity} for v in venues],
+                "venue": venues,
             }
 
         if is_overnight:
