@@ -755,9 +755,9 @@ def open_record(user_id):
             InvigilatorAttendance.invigilatorId == user_id,
             InvigilatorAttendance.rejectReason.isnot(None)
         )
+        .distinct()
         .subquery()
     )
-
 
     # Latest attendance row per reportId & invigilator
     latest_subq = (
@@ -773,21 +773,18 @@ def open_record(user_id):
     # Open slots query
     slots = (
         InvigilatorAttendance.query
-        .join(latest_subq, InvigilatorAttendance.attendanceId == latest_subq.c.latest_id)
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.rejectReason.is_(None),
-            InvigilatorAttendance.timeExpire <= current_time,  # slot expired -> open
+            InvigilatorAttendance.timeExpire <= current_time,
             InvigilatorAttendance.invigilator.has(userGender=user_gender),
-            ~InvigilatorAttendance.reportId.in_(select(waiting_subq)),      # exclude current waiting slots
-            ~InvigilationReport.examId.in_(select(user_exam_subq)),         # exclude assigned exams
-            ~InvigilationReport.examId.in_(select(rejected_exam_subq))      # exclude previously rejected exams
+            ~InvigilationReport.examId.in_(select(rejected_exam_subq))  # block all slots for rejected exams
         )
         .all()
     )
-    
+
     # Remove duplicates by exam
     unique_slots = {}
     for slot in slots:
