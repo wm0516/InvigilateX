@@ -719,11 +719,11 @@ def reject_record(user_id):
 # -------------------------------
 def open_record(user_id):
     current_time = datetime.now() + timedelta(hours=8)
-    
+
     user = User.query.get(user_id)
     if not user:
         return []
-    
+
     user_gender = user.userGender
 
     # Subquery: Exams the user previously rejected
@@ -738,7 +738,7 @@ def open_record(user_id):
         .subquery()
     )
 
-    # Open slots query
+    # Fetch all open slots matching gender and not rejected
     slots = (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -748,19 +748,52 @@ def open_record(user_id):
             InvigilatorAttendance.rejectReason.is_(None),
             InvigilatorAttendance.timeExpire <= current_time,
             InvigilatorAttendance.invigilator.has(userGender=user_gender),
-            ~InvigilationReport.examId.in_(select(rejected_exam_subq))  # block all slots for rejected exams
+            ~InvigilationReport.examId.in_(select(rejected_exam_subq))
         )
         .all()
     )
 
-    # Remove duplicates by exam
+    # Fetch all accepted slots for the user to check conflicts
+    assigned_slots = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
+        .join(Exam, Exam.examId == InvigilationReport.examId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.invigilationStatus == True
+        )
+        .all()
+    )
+
+    def is_overlap(start1, end1, start2, end2):
+        return max(start1, start2) < min(end1, end2)
+
     unique_slots = {}
     for slot in slots:
-        exam_id = slot.report.examId
-        if exam_id not in unique_slots:
-            unique_slots[exam_id] = slot
+        exam = slot.report.exam
+        slot_start, slot_end = exam.examStartTime, exam.examEndTime
+        if slot_end < slot_start:
+            slot_end += timedelta(days=1)
+
+        # Skip slot if it conflicts with any assigned slot
+        conflict = False
+        for assigned in assigned_slots:
+            assigned_exam = assigned.report.exam
+            assigned_start, assigned_end = assigned_exam.examStartTime, assigned_exam.examEndTime
+            if assigned_end < assigned_start:
+                assigned_end += timedelta(days=1)
+            if is_overlap(slot_start, slot_end, assigned_start, assigned_end):
+                conflict = True
+                break
+        if conflict:
+            continue  # Skip conflicting slot
+
+        # Deduplicate by examId
+        if exam.examId not in unique_slots:
+            unique_slots[exam.examId] = slot
 
     return list(unique_slots.values())
+
 
 
 # -------------------------------
