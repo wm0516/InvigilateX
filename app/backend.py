@@ -747,6 +747,18 @@ def open_record(user_id):
         .subquery()
     )
 
+    # Subquery: Exams the user previously rejected
+    rejected_exam_subq = (
+        db.session.query(InvigilationReport.examId)
+        .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
+        .filter(
+            InvigilatorAttendance.invigilatorId == user_id,
+            InvigilatorAttendance.rejectReason.isnot(None)
+        )
+        .subquery()
+    )
+
+
     # Latest attendance row per reportId & invigilator
     latest_subq = (
         db.session.query(
@@ -769,12 +781,13 @@ def open_record(user_id):
             InvigilatorAttendance.rejectReason.is_(None),
             InvigilatorAttendance.timeExpire <= current_time,  # slot expired -> open
             InvigilatorAttendance.invigilator.has(userGender=user_gender),
-            ~InvigilatorAttendance.reportId.in_(select(waiting_subq)),
-            ~InvigilationReport.examId.in_(select(user_exam_subq))
+            ~InvigilatorAttendance.reportId.in_(select(waiting_subq)),      # exclude current waiting slots
+            ~InvigilationReport.examId.in_(select(user_exam_subq)),         # exclude assigned exams
+            ~InvigilationReport.examId.in_(select(rejected_exam_subq))      # exclude previously rejected exams
         )
         .all()
     )
-
+    
     # Remove duplicates by exam
     unique_slots = {}
     for slot in slots:
