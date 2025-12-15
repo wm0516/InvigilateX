@@ -708,8 +708,8 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
         return False, "Missing exam date"
 
     # --- Parse start & end time ---
-    startTime_text = row.get('start time')
-    endTime_text   = row.get('end time')
+    startTime_text = row.get('start')
+    endTime_text   = row.get('end')
     if not startTime_text or not endTime_text:
         return False, "Start or end time missing"
 
