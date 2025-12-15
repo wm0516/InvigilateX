@@ -778,7 +778,7 @@ def get_exam_details(course_code):
     venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
 
     response_data = {
-        "courseCode": course.courseCodeSectionIntake.split('/')[0],
+        "courseCode": course.courseCodeSectionIntake,
         "courseDepartment": course.courseDepartment or "",
         "courseStudent": exam.examTotalStudents if exam else 0,
         "examVenues": [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],

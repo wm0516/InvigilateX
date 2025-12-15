@@ -206,7 +206,7 @@
                     <td>
                         <div class="info-grid">
                             <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
-                            <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake.split('/')[0] }}</strong></div>
+                            <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
                             <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
                             <div>Number of Students</div><div><strong>: {{ row.examTotalStudents }}</strong></div>
                             <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
