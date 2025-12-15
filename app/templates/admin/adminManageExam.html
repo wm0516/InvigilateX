@@ -510,10 +510,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
             const cells = Array.from(tr.querySelectorAll("td")).map(td => {
                 let text = td.innerText.trim();
-
-                // Fix multi-line readability
-                text = text.replace(/\s*\n\s*/g, " ");
-
                 // Add newlines before each field label, not after colon
                 if (td.cellIndex === 4 || td.cellIndex === 5 || td.cellIndex === 7) {
                     text = text
@@ -531,7 +527,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         .replace(/Exam Time\s*:/g, "\nExam Time:")
                         .replace(/Exam Period\s*:/g, "\nExam Period:")
                         .replace(/Exam Venue\(s\)\s*:/g, "\nExam Venue(s):")
-                        .replace(/\[Capacity Use:/g, "\n[Capacity Use:")
 
                         // ===== Invigilator Filter =====
                         .replace(/Total Lecturers\s*:/g, "\nTotal Lecturers:")
