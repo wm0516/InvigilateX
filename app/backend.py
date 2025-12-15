@@ -725,27 +725,6 @@ def open_record(user_id):
         return []
     
     user_gender = user.userGender
-    # Current waiting slots (exclude)
-    waiting_subq = (
-        InvigilatorAttendance.query
-        .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.rejectReason.is_(None),
-            InvigilatorAttendance.timeAction.is_(None)
-        )
-        .with_entities(InvigilatorAttendance.reportId)
-        .subquery()
-    )
-
-    # Exams user already has
-    user_exam_subq = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .filter(InvigilatorAttendance.invigilatorId == user_id)
-        .with_entities(InvigilationReport.examId)
-        .subquery()
-    )
 
     # Subquery: Exams the user previously rejected
     rejected_exam_subq = (
@@ -759,21 +738,9 @@ def open_record(user_id):
         .subquery()
     )
 
-    # Latest attendance row per reportId & invigilator
-    latest_subq = (
-        db.session.query(
-            InvigilatorAttendance.reportId,
-            InvigilatorAttendance.invigilatorId,
-            func.max(InvigilatorAttendance.attendanceId).label("latest_id")
-        )
-        .group_by(InvigilatorAttendance.reportId, InvigilatorAttendance.invigilatorId)
-        .subquery()
-    )
-
     # Open slots query
     slots = (
         InvigilatorAttendance.query
-        .join(latest_subq, InvigilatorAttendance.attendanceId == latest_subq.c.latest_id)
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(
