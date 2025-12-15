@@ -153,7 +153,7 @@ def get_all_attendances():
 def user_invigilationReport():
     user = User.query.get(session.get('user_id'))
     if not user:
-        return redirect(url_for('user_mergeTimetable'))
+        return redirect(url_for('user_invigilationReport'))
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
@@ -223,6 +223,9 @@ def get_calendar_data():
 @app.route('/user/invigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def user_invigilationTimetable():
+    user = User.query.get(session.get('user_id'))
+    if not user:
+        return redirect(url_for('user_invigilationTimetable'))
     calendar_data = get_calendar_data()
     return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', calendar_data=calendar_data)
 
