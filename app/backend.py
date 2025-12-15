@@ -341,6 +341,8 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 
     return True
 
+
+
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
@@ -349,123 +351,133 @@ Exam Date	Day	Start	End 	Program	Course Code/Section	Course Name 	Lecturer	Total
 26/11/2026	WED	9:00 AM	12:10 PM	BBSUT	FIN10002/SU1	FINANCIAL STATISTICS	CHEE BENG BARK	46	ER 
 '''
 def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
-    try:
-        # BASIC VALIDATION
-        course = Course.query.filter_by(courseCodeSectionIntake=courseSection).first()
-        if not course:
-            raise ValueError(f"No course section found for {courseSection}")
+    # --- Fetch course sections ---
+    course_sections = Course.query.filter(Course.courseCodeSectionIntake == courseSection).first()
+    if not course_sections:
+        return False, f"No course sections found for {courseSection}"
+    exclude_ids = [uid for uid in [course_sections.coursePractical, course_sections.courseTutorial, course_sections.courseLecturer] if uid]
 
-        exam = Exam.query.get(course.courseExamId)
-        if not exam:
-            raise ValueError(f"Exam for course {courseSection} not found")
-        exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial, course.courseLecturer] if uid]
+    # Shared exam ID
+    exam = Exam.query.filter_by(examId=course_sections.courseExamId).first()
+    if not exam:
+        return False, f"Exam for course {courseSection} not found"
 
-        # Normalize end time (cross-day safe)
-        adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
-        pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
+    # --- Invigilator count for this row ---
+    if studentPerVenue_list:
+        invigilatorNo_for_row = 3 if sum(studentPerVenue_list) > 32 else 2
+        exam.examNoInvigilator = (exam.examNoInvigilator or 0) + invigilatorNo_for_row
 
-        # FETCH ELIGIBLE INVIGILATORS
-        query = User.query.filter(User.userLevel == 1, User.userStatus == True)
-        if exclude_ids:
-            query = query.filter(~User.userId.in_(exclude_ids))
+    # --- Times ---
+    exam.examAddedBy = user
+    exam.examAddedOn = datetime.now() + timedelta(hours=8)
+    exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
+    exam.examEndTime = max(exam.examEndTime or end_dt, end_dt)
+    adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
+    pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-        flexible = []
-        not_flexible = []
-        for inv in query.all():
-            total_hours = (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
-            available = is_lecturer_available(inv.userId, start_dt, adj_end_dt)
-            if total_hours < 36 and available:
-                flexible.append(inv)
-            else:
-                not_flexible.append(inv)
+    # --- Report ---
+    report = InvigilationReport.query.filter_by(examId=exam.examId).first()
+    if not report:
+        report = InvigilationReport(examId=exam.examId)
+        db.session.add(report)
+        db.session.flush()
 
-        if not flexible:
-            raise ValueError("No eligible invigilators available")
+    # --- Filter potential invigilators ---
+    query = User.query.filter(User.userLevel == 1,User.userStatus == True)
+    total_lecturers = query.count()
+    if exclude_ids:
+        query = query.filter(~User.userId.in_(exclude_ids))
 
-        # Split by gender
-        male = sorted([i for i in flexible if i.userGender == "MALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-        female = sorted([i for i in flexible if i.userGender == "FEMALE"], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+    # --- Flexibility checks ---
+    flexible = []
+    not_flexible = []
 
-        # UPDATE EXAM CORE INFO
-        exam.examAddedBy = user
-        exam.examAddedOn = datetime.now() + timedelta(hours=8)
-        exam.examStartTime = start_dt
-        exam.examEndTime = adj_end_dt
+    for inv in query.all():
+        total_hours = (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
+        available = is_lecturer_available(inv.userId, start_dt, adj_end_dt)
 
-        total_lecturers = query.count()
-        exam.examOutput = [total_lecturers, len(flexible), len(not_flexible), [str(i.userId) for i in not_flexible], len(male), len(female)]
+        if total_hours < 36 and available:
+            flexible.append(inv)
+        else:
+            not_flexible.append((inv, total_hours, available))
 
-        # CREATE / UPDATE REPORT
-        report = InvigilationReport.query.filter_by(examId=exam.examId).first()
-        if not report:
-            report = InvigilationReport(examId=exam.examId)
-            db.session.add(report)
-            db.session.flush()
+    eligible_invigilators = flexible
+    if not eligible_invigilators:
+        return False, "No eligible invigilators available due to timetable conflicts or workload limits"
 
-        # MERGE VENUE STUDENTS
-        venue_student_map = {}
+    # --- Male / Female pools ---
+    male = sorted(
+        [i for i in eligible_invigilators if i.userGender == "MALE"],
+        key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
+    )
+    female = sorted(
+        [i for i in eligible_invigilators if i.userGender == "FEMALE"],
+        key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
+    )
 
-        for venue_text, spv in zip(venue_list, studentPerVenue_list):
-            venue_text = venue_text.upper()
-            spv = int(spv)
+    # --- Summary Flash Message (One Line) ---
+    not_flex_ids = [str(i.userId) for i, t, a in not_flexible]
+    exam.examOutput = [total_lecturers, len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids, len(male), len(female)]
 
-            venue = Venue.query.filter_by(venueNumber=venue_text).first()
-            if not venue:
-                raise ValueError(f"Venue {venue_text} not found")
-            
-            if spv > venue.venueCapacity:
-                raise ValueError(f"Venue {venue_text} capacity exceeded")
+    # ---------------------------------------
+    # Handle each venue independently
+    # ---------------------------------------
+    for venue_text, spv in zip(venue_list, studentPerVenue_list):
+        spv = int(spv)
+        venue_text = venue_text.upper()
 
-            # Always insert a new row for this exam
-            new_venue_exam = VenueExam(
-                venueNumber=venue_text,
-                startDateTime=start_dt,
-                endDateTime=adj_end_dt,
-                examId=exam.examId,
-                capacity=spv
+        venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
+        if not venue_obj:
+            flash(f"Venue {venue_text} not found, skipping", "error")
+            continue
+
+        assigned_students = min(spv, venue_obj.venueCapacity)
+        # Create venue exam
+        new_venue_exam = VenueExam(
+            venueNumber=venue_text,
+            startDateTime=start_dt,
+            endDateTime=adj_end_dt,
+            examId=exam.examId,
+            capacity=assigned_students
+        )
+        db.session.add(new_venue_exam)
+        db.session.flush()
+
+        # --- Select invigilators ---
+        if invigilatorNo_for_row == 1:
+            pool = sorted(
+                male + female,
+                key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
             )
-            db.session.add(new_venue_exam)
+            chosen_invigilators = [pool[0]]
 
-            # Update the map for reporting or tracking
-            venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
+        else:
+            if not male or not female:
+                return False, "Need both male and female invigilators for 2+ invigilators"
 
-        # REASSIGN INVIGILATORS (ONCE PER VENUE)
-        for venue_text, total_students in venue_student_map.items():
-            inv_required = 3 if total_students > 32 else 2
-            chosen = []
+            chosen_invigilators = [male.pop(0), female.pop(0)]
 
-            if inv_required >= 2:
-                if male:
-                    chosen.append(male.pop(0))
-                if female and len(chosen) < inv_required:
-                    chosen.append(female.pop(0))
+            pool = sorted(
+                male + female,
+                key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
+            )
+            chosen_invigilators += pool[:invigilatorNo_for_row - 2]
 
-            pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
-            chosen.extend(pool[:inv_required - len(chosen)])
+        # --- Store attendance & pending hours ---
+        for chosen in chosen_invigilators:
+            chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
 
-            if len(chosen) < inv_required:
-                raise ValueError("Insufficient invigilators after merge")
-
-            # Remove old assignments for this venue
-            InvigilatorAttendance.query.filter_by(reportId=report.invigilationReportId,venueNumber=venue_text).delete()
-            for inv in chosen:
-                inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
-                db.session.add(
-                    InvigilatorAttendance(
-                        reportId=report.invigilationReportId,
-                        invigilatorId=inv.userId,
-                        venueNumber=venue_text,
-                        timeCreate=open,
-                        timeExpire=close
-                    )
+            db.session.add(
+                InvigilatorAttendance(
+                    reportId=report.invigilationReportId,
+                    invigilatorId=chosen.userId,
+                    venueNumber=venue_text,
+                    timeCreate=open,
+                    timeExpire=close
                 )
-        exam.examNoInvigilator = sum(3 if v > 32 else 2 for v in venue_student_map.values())
-        db.session.commit()
-        return True, f"Exam created successfully for {courseSection}"
-
-    except Exception as e:
-        db.session.rollback()
-        return False, str(e)
+            )
+    db.session.commit()
+    return True, f"Exam updated for course {courseSection} with total {exam.examTotalStudents} students"
 
 
 # -------------------------------

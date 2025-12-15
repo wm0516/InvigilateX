@@ -239,11 +239,12 @@
                         {% if row.examOutput %}
                         <div class="info-grid">
                             <div>Total Lecturers</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
-                            <div>Flexible Invigilators</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
-                            <div>Non-Flexible Invigilators</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
-                            <div>Non-Flexible List</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
-                            <div>Flexible Male</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
-                            <div>Flexible Female</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
+                            <div>Eligible Invigilators</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
+                            <div>Flexible Invigilators</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
+                            <div>Non-Flexible Invigilators</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
+                            <div>Non-Flexible List</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
+                            <div>Flexible Male</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
+                            <div>Flexible Female</div><div><strong>: {{ row.examOutput[6] }}</strong></div>
                         </div>
                         {% else %}None
                         {% endif %}
@@ -529,6 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         // ===== Invigilator Filter =====
                         .replace(/Total Lecturers\s*:/g, "Total Lecturers:")
+                        .replace(/Eligible Invigilators\s*:/g, "Eligible Invigilators:")
                         .replace(/Flexible Invigilators\s*:/g, "Flexible Invigilators:")
                         .replace(/NonFlexible Invigilators\s*:/g, "Non-Flexible Invigilators:")
                         .replace(/Non-Flexible List\s*:/g, "Non-Flexible List:")
