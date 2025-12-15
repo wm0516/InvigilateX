@@ -515,33 +515,40 @@ document.addEventListener("DOMContentLoaded", function () {
                 text = text.replace(/\s*\n\s*/g, " ");
 
                 // Add newlines before each field label, not after colon
-                if (td.cellIndex === 4 || td.cellIndex === 5 || td.cellIndex === 6 ) {
+                if (td.cellIndex === 4 || td.cellIndex === 5 || td.cellIndex === 7) {
+
                     text = text
-                        .replace(/\s*Course Name\s*:/g, "\nCourse Name:") 
-                        .replace(/\s*Course Code\/Section\s*:/g, "\nCourse Code/Section:")
-                        .replace(/\s*Program Code\s*:/g, "\nProgram Code:")
-                        .replace(/\s*Number of Students\s*:/g, "\nNumber of Students:")
-                        .replace(/\s*Practical Lecturer\s*:/g, "\nPractical Lecturer:")
-                        .replace(/\s*Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
-                        .replace(/\s*Exam Date\s*:/g, "\nExam Date:")
-                        .replace(/\s*Exam Day\s*:/g, "\nExam Day:")
-                        .replace(/\s*Exam Time\s*:/g, "\nExam Time:")
-                        .replace(/\s*Exam Period\s*:/g, "\nExam Period:")
-                        .replace(/\s*Exam Venue\s*:/g, "\nExam Venue:")
-                        .replace(/\s*Total Lecturers\s*:/g, "\nTotal Lecturers:")
-                        .replace(/\s*Eligible Invigilators\s*:/g, "\nEligible Invigilators:")
-                        .replace(/\s*Flexible Invigilators\s*:/g, "\nFlexible Invigilators:")
-                        .replace(/\s*Non-Flexible Invigilators\s*:/g, "\nNon-Flexible Invigilators:")
-                        .replace(/\s*Non-Flexible List\s*:/g, "\nNon-Flexible List:")
-                        .replace(/\s*Flexible Male\s*:/g, "\nFlexible Male:")
-                        .replace(/\s*Flexible Female\s*:/g, "\nFlexible Female:")
-                        .replace(/\s*By\s*:/g, "\nBy:")
-                        .replace(/\s*On\s*:/g, "\nOn:");
+                        // ===== Course Details =====
+                        .replace(/Course Name\s*:/g, "\nCourse Name:")
+                        .replace(/Course Code\/Section\s*:/g, "\nCourse Code/Section:")
+                        .replace(/Program Code\s*:/g, "\nProgram Code:")
+                        .replace(/Number of Students\s*:/g, "\nNumber of Students:")
+                        .replace(/Practical Lecturer\s*:/g, "\nPractical Lecturer:")
+                        .replace(/Tutorial Lecturer\s*:/g, "\nTutorial Lecturer:")
 
-                    // Clean up possible leading newline
-                    text = text.trimStart();
+                        // ===== Exam Details =====
+                        .replace(/Exam Date\s*:/g, "\nExam Date:")
+                        .replace(/Exam Day\s*:/g, "\nExam Day:")
+                        .replace(/Exam Time\s*:/g, "\nExam Time:")
+                        .replace(/Exam Period\s*:/g, "\nExam Period:")
+                        .replace(/Exam Venue\(s\)\s*:/g, "\nExam Venue(s):")
+                        .replace(/\[Capacity Use:/g, "\n[Capacity Use:")
+
+                        // ===== Invigilator Filter =====
+                        .replace(/Total Lecturers\s*:/g, "\nTotal Lecturers:")
+                        .replace(/Eligible Invigilators\s*:/g, "\nEligible Invigilators:")
+                        .replace(/Flexible Invigilators\s*:/g, "\nFlexible Invigilators:")
+                        .replace(/NonFlexible Invigilators\s*:/g, "\nNon-Flexible Invigilators:")
+                        .replace(/Non-Flexible List\s*:/g, "\nNon-Flexible List:")
+                        .replace(/Flexible Male\s*:/g, "\nFlexible Male:")
+                        .replace(/Flexible Female\s*:/g, "\nFlexible Female:")
+
+                        // ===== Added/Edit Details =====
+                        .replace(/By\s*:/g, "\nBy:")
+                        .replace(/On\s*:/g, "\nOn:");
+
+                    text = text.trim();
                 }
-
                 return text;
             });
             return cells;
@@ -554,7 +561,7 @@ document.addEventListener("DOMContentLoaded", function () {
             startY: startY,
             theme: "grid",
             styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "top", cellWidth: "wrap"},
-            columnStyles: {3: { cellWidth: 200 }, 4: { cellWidth: 200 }, 5: { cellWidth: 100 }, 7: { cellWidth: 100 }},
+            columnStyles: {3: { cellWidth: 200 }, 4: { cellWidth: 180 }, 5: { cellWidth: 120 }, 7: { cellWidth: 90 }},
             headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             margin: { top: margin, left: margin, right: margin, bottom: margin },
             didDrawPage: function () {
