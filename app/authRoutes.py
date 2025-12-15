@@ -402,9 +402,9 @@ def user_homepage():
                 .filter(
                     InvigilatorAttendance.reportId == report_id,
                     InvigilatorAttendance.invigilatorId == user_id,
-                    InvigilatorAttendance.invigilationStatus == False  # only unaccepted slots
+                    InvigilatorAttendance.invigilationStatus == False
                 )
-                .order_by(InvigilatorAttendance.attendanceId.desc())  # pick newest row first
+                .order_by(InvigilatorAttendance.attendanceId.desc())
                 .first()
             )
 
@@ -426,34 +426,62 @@ def user_homepage():
                 flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Step 5: Subtract pending hours from previous invigilator if slot reassigned
+            # Step 5: Check for time conflicts with already assigned slots
+            def is_overlap(start1, end1, start2, end2):
+                return max(start1, start2) < min(end1, end2)
+
+            # Candidate exam times
+            candidate_start, candidate_end = exam.examStartTime, exam.examEndTime
+            if candidate_end < candidate_start:
+                candidate_end += timedelta(days=1)
+
+            # Fetch all accepted slots for the user
+            existing_slots = (
+                InvigilatorAttendance.query
+                .join(InvigilationReport, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
+                .join(Exam, Exam.examId == InvigilationReport.examId)
+                .filter(
+                    InvigilatorAttendance.invigilatorId == user_id,
+                    InvigilatorAttendance.invigilationStatus == True
+                )
+                .all()
+            )
+
+            # Check for overlap
+            conflict = False
+            for slot in existing_slots:
+                s_exam = slot.report.exam
+                start_dt, end_dt = s_exam.examStartTime, s_exam.examEndTime
+                if end_dt < start_dt:
+                    end_dt += timedelta(days=1)
+                if is_overlap(start_dt, end_dt, candidate_start, candidate_end):
+                    conflict = True
+                    break
+
+            if conflict:
+                flash("Cannot accept this slot: timing overlaps with another assigned exam.", "error")
+                return redirect(url_for('user_homepage'))
+
+            # Step 6: Subtract pending hours from previous invigilator if slot reassigned
             if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
                 prev_user = User.query.get(open_slot.invigilatorId)
-                if prev_user and exam and exam.examStartTime and exam.examEndTime:
-                    start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                    if end_dt < start_dt:
-                        end_dt += timedelta(days=1)
-                    hours_to_remove = (end_dt - start_dt).total_seconds() / 3600.0
+                if prev_user and exam:
+                    hours_to_remove = (candidate_end - candidate_start).total_seconds() / 3600.0
                     prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
 
-            # Step 6: Assign slot to current user
+            # Step 7: Assign slot to current user
             open_slot.invigilatorId = user_id
             open_slot.invigilationStatus = True
             open_slot.rejectReason = None  # clear previous reject reason
             open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
-            # Step 7: Add pending hours to current user
-            hours_to_add = 0
-            if exam and exam.examStartTime and exam.examEndTime:
-                start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                if end_dt < start_dt:
-                    end_dt += timedelta(days=1)
-                hours_to_add = (end_dt - start_dt).total_seconds() / 3600.0
+            # Step 8: Add pending hours to current user
+            hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
 
             # Avoid double-counting: check if the user already has a waiting slot for this exam
             existing_waiting = (
                 InvigilatorAttendance.query
-                .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+                .join(InvigilationReport, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
                 .filter(
                     InvigilatorAttendance.invigilatorId == user_id,
                     InvigilatorAttendance.invigilationStatus == False,
@@ -464,7 +492,7 @@ def user_homepage():
             )
             if not existing_waiting:
                 chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
-
+            
             db.session.commit()
             flash(f"Open Slot Course Code: {course_code} Accepted Successfully", "success")
             return redirect(url_for('user_homepage'))
