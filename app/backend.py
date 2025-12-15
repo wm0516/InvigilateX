@@ -822,7 +822,7 @@ def send_invigilator_slot_notifications_for_all():
 
 📌 Slot Summary
 • Waiting slots       : {summary['waiting_count']}
-• Confirmed slots   : {summary['confirmed_count']}
+• Confirmed slots  : {summary['confirmed_count']}
 • Open slots          : {', '.join(summary['open_times']) if summary['open_times'] else 'None'}
 
 {expiry_notice}
