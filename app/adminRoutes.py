@@ -628,11 +628,12 @@ def generate_manageexam_template():
         ws_lists[f"B{i}"] = c.courseDepartment
         ws_lists[f"C{i}"] = c.courseName
         ws_lists[f"D{i}"] = lecturer_str
+        ws_lists[f"E{i}"] = c.courseStudent
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"E{i}"] = v.venueNumber
+        ws_lists[f"F{i}"] = v.venueNumber
 
     # === Data Validations ===
     if courses:
@@ -646,10 +647,11 @@ def generate_manageexam_template():
             ws[f"E{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))')
             ws[f"G{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))')
             ws[f"H{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))')
+            ws[f"I{row}"] = f'=IF(F{row}="","",VLOOKUP(F{row},Lists!$A$1:$E${len(courses)},5,FALSE))'
 
     # Dropdown for Exam Venue
     if venues:
-        dv_venue = DataValidation(type="list",formula1=f"=Lists!$E$1:$E${len(venues)}",allow_blank=False)
+        dv_venue = DataValidation(type="list",formula1=f"=Lists!$F$1:$F${len(venues)}",allow_blank=False)
         ws.add_data_validation(dv_venue)
         dv_venue.add("J3:J502")
 
