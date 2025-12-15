@@ -1059,7 +1059,7 @@ def admin_manageExam():
 
     # For edit section
     exam_selected_code = request.form.get('editExamCourseSection')
-    course = Course.query.filter(Course.courseCodeSectionIntake.like(f"{exam_selected_code}/%")).first()
+    course = Course.query.filter(Course.courseCodeSectionIntake==exam_selected_code).first()
     exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
     venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
 
