@@ -769,8 +769,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 @login_required
 def get_exam_details(course_code):
     # Match first course that starts with course_code + '/'
-    course = Course.query.filter(Course.courseCodeSectionIntake.like(f"{course_code}/%")).first()
-
+    course = Course.query.filter(Course.courseCodeSectionIntake==course_code).first()
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
