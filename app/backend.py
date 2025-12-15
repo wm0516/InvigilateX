@@ -528,16 +528,27 @@ def recalc_invigilators_for_new_exams():
             )
         )
 
-        # Step 5: Reduce or select first N invigilators
+        # Step 5: Remove excess invigilators
         to_remove = attendances_sorted[inv_count:]
-
-        # Adjust userPendingCumulativeHours for removed invigilators
         duration_hours = (end_dt - start_dt).total_seconds() / 3600.0
         for att in to_remove:
             if att.invigilator:
                 att.invigilator.userPendingCumulativeHours = max(0.0, (att.invigilator.userPendingCumulativeHours or 0.0) - duration_hours)
             db.session.delete(att)
+
+        db.session.flush()  # Flush changes before updating exam
+
+        # Step 6: Update examNoInvigilator for each exam
+        for ve in exams_in_slot:
+            exam = ve.exam
+            remaining_attendance_count = InvigilatorAttendance.query.join(InvigilationReport).filter(
+                InvigilationReport.examId == exam.examId,
+                InvigilatorAttendance.venueNumber == ve.venueNumber
+            ).count()
+            exam.examNoInvigilator = remaining_attendance_count
+
         db.session.commit()
+
 
 
 
