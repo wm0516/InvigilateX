@@ -99,7 +99,7 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
     
-    // ===== PDF Header =====
+    // ===== Title =====
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Invigilation Timetable View Download", pageWidth / 2, margin, { align: "center" });
@@ -107,34 +107,16 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 8, { align: "center" });
-
     let y = margin + 15;
 
     const days = document.querySelectorAll(".calendar-day");
     if (!days.length) return alert("No timetable found!");
 
-    for (const day of days) {
+    for (const [i, day] of days.entries()) {
         const dateText = day.querySelector(".calendar-date").innerText;
         const examList = day.querySelector(".exam-grid");
 
-        // ===== Draw Day Title =====
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.text(dateText, margin, y);
-        y += 8;
-
-        // ===== Draw Exam Times =====
-        const examTimes = Array.from(examList.querySelectorAll(".exam-card")).map(card => {
-            const timeMatch = card.innerText.match(/Time: (\d{2}:\d{2} - \d{2}:\d{2})/);
-            return timeMatch ? timeMatch[1] : '';
-        }).join(', ');
-
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(12);
-        doc.text(`Exam Times: ${examTimes}`, margin, y);
-        y += 8;
-
-        // ===== Draw Exam Grid =====
+        // Capture this day's exam list
         const canvas = await html2canvas(examList, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
 
@@ -142,8 +124,13 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         const imgProps = doc.getImageProperties(imgData);
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        // Add new page if content exceeds
-        if (y + imgHeight > pageHeight - margin) {
+        // Padding & border calculations
+        const topPadding = 6;
+        const bottomPadding = 10;
+        const totalBlockHeight = imgHeight + topPadding + bottomPadding + 8; // better spacing
+
+        // Add new page if block exceeds height
+        if (y + totalBlockHeight > pageHeight - margin) {
             doc.addPage();
             y = margin;
             doc.setFontSize(20);
@@ -151,13 +138,24 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
             y += 15;
         }
 
-        doc.addImage(imgData, 'PNG', margin, y, pdfWidth, imgHeight);
-        y += imgHeight + 10; // spacing after grid
+        // Draw border box
+        doc.setDrawColor(0);
+        doc.rect(margin - 3, y - 5, pdfWidth + 6, totalBlockHeight);
+
+        // Day title
+        doc.setFontSize(14);
+        doc.text(dateText, margin, y + 5);
+
+        // Image (exam content)
+        const imageY = y + topPadding + 8;
+        doc.addImage(imgData, 'PNG', margin, imageY, pdfWidth, imgHeight);
+
+        // Move Y position for next day
+        y += totalBlockHeight + 5;
     }
 
     doc.save("Admin_ViewInvigilationTimetable.pdf");
 });
-
 
 document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("searchInput");
