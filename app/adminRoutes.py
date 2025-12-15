@@ -582,7 +582,7 @@ def generate_manageexam_template():
 
     # --- Row 2 headers (updated)
     # headers = ['Exam Date','Day','Start Time','End Time','Course Code','Course Name','Total number of students','Total number of students by venue','Exam Venue']
-    headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Total Student by venue','Venue']
+    headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Lecturer','Total Student by venue','Venue']
     ws.append(headers)
 
     # === Formatting for date/time ===
@@ -616,14 +616,24 @@ def generate_manageexam_template():
 
     # --- Fill lookup data ---
     for i, (c, e) in enumerate(courses, start=1):
+        lecturer_names = []
+        if c.practicalLecturer:
+            lecturer_names.append(c.practicalLecturer.userName)
+        if c.tutorialLecturer:
+            lecturer_names.append(c.tutorialLecturer.userName)
+        if c.classLecturer:
+            lecturer_names.append(c.classLecturer.userName)
+
+        lecturer_str = ", ".join(lecturer_names) if lecturer_names else ""
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake
         ws_lists[f"B{i}"] = c.courseDepartment
         ws_lists[f"C{i}"] = c.courseName
+        ws_lists[f"D{i}"] = lecturer_str
 
     # --- Venues ---
     venues = Venue.query.all()
     for i, v in enumerate(venues, start=1):
-        ws_lists[f"D{i}"] = v.venueNumber
+        ws_lists[f"E{i}"] = v.venueNumber
 
     # === Data Validations ===
     if courses:
@@ -634,14 +644,15 @@ def generate_manageexam_template():
 
         # Auto-fill Course Name and Total number of students
         for row in range(3, 503):
-            ws[f"E{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},2,FALSE))')
-            ws[f"G{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$C${len(courses)},3,FALSE))')
+            ws[f"E{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},2,FALSE))')
+            ws[f"G{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},3,FALSE))')
+            ws[f"H{row}"] = (f'=IF(F{row}="","",'f'VLOOKUP(F{row},Lists!$A$1:$D${len(courses)},4,FALSE))')
 
     # Dropdown for Exam Venue
     if venues:
-        dv_venue = DataValidation(type="list",formula1=f"=Lists!$D$1:$D${len(venues)}",allow_blank=False)
+        dv_venue = DataValidation(type="list",formula1=f"=Lists!$E$1:$E${len(venues)}",allow_blank=False)
         ws.add_data_validation(dv_venue)
-        dv_venue.add("I3:I502")
+        dv_venue.add("J3:J502")
 
     # Hide lookup sheet
     ws_lists.sheet_state = 'hidden'
