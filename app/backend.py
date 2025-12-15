@@ -418,21 +418,19 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                 VenueExam.endDateTime == adj_end_dt
             ).first()
 
+            capacity_to_use = spv
             if existing:
-                combined = existing.capacity + spv
-                if combined > venue.venueCapacity:
-                    raise ValueError(f"Venue {venue_text} capacity exceeded")
-                existing.capacity = combined
-            else:
-                db.session.add(
-                    VenueExam(
-                        venueNumber=venue_text,
-                        startDateTime=start_dt,
-                        endDateTime=adj_end_dt,
-                        examId=exam.examId,
-                        capacity=spv
-                    )
+                capacity_to_use = existing.capacity
+
+            db.session.add(
+                VenueExam(
+                    venueNumber=venue_text,
+                    startDateTime=start_dt,
+                    endDateTime=adj_end_dt,
+                    examId=exam.examId,
+                    capacity=capacity_to_use
                 )
+            )
             venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
 
         # REASSIGN INVIGILATORS (ONCE PER VENUE)
