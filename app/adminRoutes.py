@@ -2376,12 +2376,6 @@ def admin_manageInvigilationReport():
                         # Update the attendance
                         att.invigilatorId = new_invigilator_id
             db.session.commit()
-
-            # Send notifications
-            for key, value in request.form.items():
-                if key.startswith("slot_"):
-                    send_invigilator_slot_notification(int(value))
-
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
     return render_template('admin/adminManageInvigilationReport.html', active_tab='admin_manageInvigilationReporttab', attendances=attendances, **stats, reports=reports)
