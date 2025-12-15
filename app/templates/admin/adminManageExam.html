@@ -549,17 +549,17 @@ document.addEventListener("DOMContentLoaded", function () {
             body: rows,
             startY: startY,
             theme: "grid",
-            tableWidth: "auto",
-            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            styles: {font: "helvetica", fontSize: 9, cellPadding: 4, overflow: "linebreak", valign: "top", cellWidth: "wrap"},
+            columnStyles: {3: { cellWidth: 180 }, 4: { cellWidth: 200 }, 5: { cellWidth: 200 }, 7: { cellWidth: 160 }  },
             headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
             margin: { top: margin, left: margin, right: margin, bottom: margin },
-            didDrawPage: function (data) {
+            didDrawPage: function () {
                 const pageCount = doc.internal.getNumberOfPages();
                 const pageHeight = doc.internal.pageSize.height;
                 doc.setFontSize(9);
                 doc.setTextColor(100);
                 doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
-            },
+            }
         });
 
         // ===== Save =====
