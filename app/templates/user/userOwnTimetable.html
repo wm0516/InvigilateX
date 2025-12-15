@@ -70,7 +70,7 @@ document.getElementById('generatePDF').addEventListener('click', () => {
         // Title
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(18);
-        pdf.text("{{ user_name }}'s Timetable View Download", pageWidth / 2, margin, { align: "center" });
+        pdf.text("{{ user_name }}'s Timetable View", pageWidth / 2, margin, { align: "center" });
 
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(10);
