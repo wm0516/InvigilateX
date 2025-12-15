@@ -360,12 +360,12 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         exam = Exam.query.get(course.courseExamId)
         if not exam:
             raise ValueError(f"Exam for course {courseSection} not found")
+
         exclude_ids = [uid for uid in [course.coursePractical, course.courseTutorial, course.courseLecturer] if uid]
 
         # Normalize end time (cross-day safe)
         adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
         pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
-
         # FETCH ELIGIBLE INVIGILATORS
         query = User.query.filter(User.userLevel == 1, User.userStatus == True)
         if exclude_ids:
@@ -414,62 +414,64 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             if not venue:
                 raise ValueError(f"Venue {venue_text} not found")
 
-            existing = VenueExam.query.filter_by(venueNumber=venue_text, examId=exam.examId).first()
+            existing = VenueExam.query.filter(
+                VenueExam.venueNumber == venue_text,
+                VenueExam.startDateTime == start_dt,
+                VenueExam.endDateTime == adj_end_dt
+            ).first()
+
             if existing:
                 combined = existing.capacity + spv
                 if combined > venue.venueCapacity:
                     raise ValueError(f"Venue {venue_text} capacity exceeded")
                 existing.capacity = combined
             else:
-                db.session.add(VenueExam(
-                    venueNumber=venue_text,
-                    startDateTime=start_dt,
-                    endDateTime=adj_end_dt,
-                    examId=exam.examId,
-                    capacity=spv
-                ))
+                db.session.add(
+                    VenueExam(
+                        venueNumber=venue_text,
+                        startDateTime=start_dt,
+                        endDateTime=adj_end_dt,
+                        examId=exam.examId,
+                        capacity=spv
+                    )
+                )
             venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
 
-        # VENUE-CENTRIC INVIGILATOR ASSIGNMENT
-        venue_invigilator_map = {}  # venue_number -> list of invigilators
-        for venue_number, total_students in venue_student_map.items():
+        # REASSIGN INVIGILATORS (ONCE PER VENUE)
+        for venue_text, total_students in venue_student_map.items():
             inv_required = 3 if total_students > 32 else 2
             chosen = []
 
-            # Assign male/female first
-            if male:
-                chosen.append(male.pop(0))
-            if female and len(chosen) < inv_required:
-                chosen.append(female.pop(0))
+            if inv_required >= 2:
+                if male:
+                    chosen.append(male.pop(0))
+                if female and len(chosen) < inv_required:
+                    chosen.append(female.pop(0))
 
-            # Fill remaining from pool
             pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
             chosen.extend(pool[:inv_required - len(chosen)])
 
             if len(chosen) < inv_required:
-                raise ValueError(f"Not enough invigilators for venue {venue_number}")
+                raise ValueError("Insufficient invigilators after merge")
 
-            venue_invigilator_map[venue_number] = chosen
-
-        # APPLY INVIGILATOR ASSIGNMENTS
-        for venue_text, chosen_invigilators in venue_invigilator_map.items():
-            # Remove old assignments for this exam & venue
+            # Remove old assignments for this venue
             InvigilatorAttendance.query.filter_by(
                 reportId=report.invigilationReportId,
                 venueNumber=venue_text
             ).delete()
 
-            for inv in chosen_invigilators:
+            for inv in chosen:
                 inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0) + pending_hours
-                db.session.add(InvigilatorAttendance(
-                    reportId=report.invigilationReportId,
-                    invigilatorId=inv.userId,
-                    venueNumber=venue_text,
-                    timeCreate=open,
-                    timeExpire=close
-                ))
+                db.session.add(
+                    InvigilatorAttendance(
+                        reportId=report.invigilationReportId,
+                        invigilatorId=inv.userId,
+                        venueNumber=venue_text,
+                        timeCreate=open,
+                        timeExpire=close
+                    )
+                )
 
-        # Update exam total invigilator count
         exam.examNoInvigilator = sum(3 if v > 32 else 2 for v in venue_student_map.values())
         db.session.commit()
         return True, f"Exam created successfully for {courseSection}"
@@ -477,7 +479,6 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     except Exception as e:
         db.session.rollback()
         return False, str(e)
-
 
 
 
