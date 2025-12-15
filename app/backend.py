@@ -676,6 +676,7 @@ def waiting_record(user_id):
             InvigilatorAttendance.invigilationStatus == False,
             InvigilatorAttendance.rejectReason.is_(None),
             InvigilatorAttendance.timeAction.is_(None),
+            InvigilatorAttendance.timeCreate <= current_time,
             ~InvigilatorAttendance.reportId.in_(select(rejected_subq))
         )
         .all()
@@ -686,10 +687,6 @@ def waiting_record(user_id):
 # HELPER 2: Confirmed Slots
 # -------------------------------
 def confirm_record(user_id):
-    current_time = datetime.now() + timedelta(hours=8)
-    tomorrow_start = current_time
-    tomorrow_end = current_time + timedelta(days=1)
-    
     return (
         InvigilatorAttendance.query
         .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
@@ -698,7 +695,6 @@ def confirm_record(user_id):
         .filter(
             InvigilatorAttendance.invigilatorId == user_id,
             InvigilatorAttendance.invigilationStatus == True,
-            Exam.examStartTime.between(tomorrow_start, tomorrow_end)
         )
         .all()
     )
