@@ -624,7 +624,7 @@ def generate_manageexam_template():
         if c.classLecturer:
             lecturer_names.append(c.classLecturer.userName)
 
-        lecturer_str = ", ".join(lecturer_names) if lecturer_names else ""
+        lecturer_str = ", ".join(lecturer_names) if lecturer_names else "None"
         ws_lists[f"A{i}"] = c.courseCodeSectionIntake
         ws_lists[f"B{i}"] = c.courseDepartment
         ws_lists[f"C{i}"] = c.courseName
