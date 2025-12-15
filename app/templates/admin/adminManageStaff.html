@@ -473,7 +473,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 text = text.replace(/\s*\n\s*/g, " ");
 
                 // Handle cumulative and pending hours in Invigilation Time column (td.cellIndex === 9)
-                if (td.cellIndex === 9) {
+                if (td.cellIndex === 11) {
                     text = text
                         .replace(/\s*Cumulative\s*:/g, "\nCumulative:") 
                         .replace(/\s*Pending\s*:/g, "\nPending:");
