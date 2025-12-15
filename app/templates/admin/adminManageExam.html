@@ -509,40 +509,22 @@ document.addEventListener("DOMContentLoaded", function () {
         const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
         const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
             const cells = Array.from(tr.querySelectorAll("td")).map(td => {
-                let text = td.innerText.trim();
-                // Add newlines before each field label, not after colon
-                if (td.cellIndex === 4 || td.cellIndex === 5 || td.cellIndex === 7) {
-                    text = text
-                        // ===== Course Details =====
-                        .replace(/Course Name\s*:/g, "Course Name:")
-                        .replace(/Course Code\/Section\s*:/g, "Course Code/Section:")
-                        .replace(/Program Code\s*:/g, "Program Code:")
-                        .replace(/Number of Students\s*:/g, "Number of Students:")
-                        .replace(/Practical Lecturer\s*:/g, "Practical Lecturer:")
-                        .replace(/Tutorial Lecturer\s*:/g, "Tutorial Lecturer:")
+                // Get raw text & normalize layout-generated newlines
+                let text = td.innerText
+                    .replace(/\n+/g, " ")   // flatten grid newlines
+                    .replace(/\s+/g, " ")   // normalize spacing
+                    .trim();
 
-                        // ===== Exam Details =====
-                        .replace(/Exam Date\s*:/g, "Exam Date:")
-                        .replace(/Exam Day\s*:/g, "Exam Day:")
-                        .replace(/Exam Time\s*:/g, "Exam Time:")
-                        .replace(/Exam Period\s*:/g, "Exam Period:")
-                        .replace(/Exam Venue\(s\)\s*:/g, "Exam Venue(s):")
+                // Insert newline BEFORE each known label
+                text = text
+                    .replace(/(Course Name:|Course Code\/Section:|Program Code:|Number of Students:|Practical Lecturer:|Tutorial Lecturer:)/g, "\n$1")
+                    .replace(/(Exam Date:|Exam Day:|Exam Time:|Exam Period:|Exam Venue\(s\):)/g, "\n$1")
+                    .replace(/(Total Lecturers:|Eligible Invigilators:|Flexible Invigilators:|Non-Flexible Invigilators:|Non-Flexible List:|Flexible Male:|Flexible Female:)/g, "\n$1")
+                    .replace(/(By:|On:)/g, "\n$1")
+                    .replace(/^\n/, "");
 
-                        // ===== Invigilator Filter =====
-                        .replace(/Total Lecturers\s*:/g, "Total Lecturers:")
-                        .replace(/Eligible Invigilators\s*:/g, "Eligible Invigilators:")
-                        .replace(/Flexible Invigilators\s*:/g, "Flexible Invigilators:")
-                        .replace(/NonFlexible Invigilators\s*:/g, "Non-Flexible Invigilators:")
-                        .replace(/Non-Flexible List\s*:/g, "Non-Flexible List:")
-                        .replace(/Flexible Male\s*:/g, "Flexible Male:")
-                        .replace(/Flexible Female\s*:/g, "Flexible Female:")
-
-                        // ===== Added/Edit Details =====
-                        .replace(/By\s*:/g, "By:")
-                        .replace(/On\s*:/g, "On:");
-
-                    text = text.trim();
-                }
+                // Remove leading newline if exists
+                text = text.replace(/^\n/, "");
                 return text;
             });
             return cells;
