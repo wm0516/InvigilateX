@@ -404,6 +404,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         # MERGE VENUE STUDENTS
         venue_student_map = {}
+
         for venue_text, spv in zip(venue_list, studentPerVenue_list):
             venue_text = venue_text.upper()
             spv = int(spv)
@@ -411,29 +412,21 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             venue = Venue.query.filter_by(venueNumber=venue_text).first()
             if not venue:
                 raise ValueError(f"Venue {venue_text} not found")
+            
+            if spv > venue.venueCapacity:
+                raise ValueError(f"Venue {venue_text} capacity exceeded")
 
-            existing = VenueExam.query.filter(
-                VenueExam.venueNumber == venue_text,
-                VenueExam.startDateTime == start_dt,
-                VenueExam.endDateTime == adj_end_dt
-            ).first()
+            # Always insert a new row for this exam
+            new_venue_exam = VenueExam(
+                venueNumber=venue_text,
+                startDateTime=start_dt,
+                endDateTime=adj_end_dt,
+                examId=exam.examId,
+                capacity=spv
+            )
+            db.session.add(new_venue_exam)
 
-            if existing:
-                combined = existing.capacity + spv
-                if combined > venue.venueCapacity:
-                    raise ValueError(f"Venue {venue_text} capacity exceeded")
-                existing.capacity = combined
-                db.session.add(existing)
-            else:
-                db.session.add(
-                    VenueExam(
-                        venueNumber=venue_text,
-                        startDateTime=start_dt,
-                        endDateTime=adj_end_dt,
-                        examId=exam.examId,
-                        capacity=spv
-                    )
-                )
+            # Update the map for reporting or tracking
             venue_student_map[venue_text] = venue_student_map.get(venue_text, 0) + spv
 
         # REASSIGN INVIGILATORS (ONCE PER VENUE)
