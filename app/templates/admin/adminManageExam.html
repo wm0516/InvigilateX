@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 text = text.replace(/\s*\n\s*/g, " ");
 
                 // Add newlines before each field label, not after colon
-                if (td.cellIndex === 2 || td.cellIndex === 4) {
+                if (td.cellIndex === 4 || td.cellIndex === 5 || td.cellIndex === 6 ) {
                     text = text
                         .replace(/\s*Course Name\s*:/g, "\nCourse Name:") 
                         .replace(/\s*Course Code\/Section\s*:/g, "\nCourse Code/Section:")
@@ -523,7 +523,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         .replace(/\s*Exam Day\s*:/g, "\nExam Day:")
                         .replace(/\s*Exam Time\s*:/g, "\nExam Time:")
                         .replace(/\s*Exam Period\s*:/g, "\nExam Period:")
-                        .replace(/\s*Exam Venue\s*:/g, "\nExam Venue:");
+                        .replace(/\s*Exam Venue\s*:/g, "\nExam Venue:")
+                        .replace(/\s*Total Lecturers\s*:/g, "\nTotal Lecturers:")
+                        .replace(/\s*Eligible Invigilators\s*:/g, "\nEligible Invigilators:")
+                        .replace(/\s*Flexible Invigilators\s*:/g, "\nFlexible Invigilators:")
+                        .replace(/\s*Non-Flexible Invigilators\s*:/g, "\nNon-Flexible Invigilators:")
+                        .replace(/\s*Non-Flexible List\s*:/g, "\nNon-Flexible List:")
+                        .replace(/\s*Flexible Male\s*:/g, "\nFlexible Male:")
+                        .replace(/\s*Flexible Female\s*:/g, "\nFlexible Female:")
+                        .replace(/\s*By\s*:/g, "\nBy:")
+                        .replace(/\s*On\s*:/g, "\nOn:");
 
                     // Clean up possible leading newline
                     text = text.trimStart();
