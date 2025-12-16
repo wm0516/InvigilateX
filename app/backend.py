@@ -330,8 +330,17 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
         pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-        # Create a dummy / standby report
-        report = InvigilationReport()
+        dummy_exam = Exam(
+            examStartTime=start_dt,
+            examEndTime=adj_end_dt,
+            examAddedBy=user,
+            examAddedOn=datetime.now() + timedelta(hours=8),
+            examNoInvigilator=1
+        )
+        db.session.add(dummy_exam)
+        db.session.flush()
+
+        report = InvigilationReport(examId=dummy_exam.examId)
         db.session.add(report)
         db.session.flush()
 
