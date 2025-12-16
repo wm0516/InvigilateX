@@ -2007,40 +2007,40 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_calendar_data():
-    venue_exams = VenueExam.query.join(Exam).filter(Exam.examStatus == True).all()
-    calendar_data = defaultdict(list)
+    venue_exams = (VenueExam.query.join(Exam).filter(Exam.examStatus == True).all())
+    calendar_data = defaultdict(dict)
 
     for ve in venue_exams:
         exam = ve.exam
         start_dt = ve.startDateTime
         end_dt = ve.endDateTime
-        start_date = start_dt.date()
-        end_date = end_dt.date()
-        is_overnight = start_date != end_date
+        date_key = start_dt.date()
 
-        def exam_dict(start, end):
-            return {
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "start_time": start,
-                "end_time": end,
-                "status": exam.examStatus,
+        # 👇 GROUPING KEY
+        group_key = (start_dt,end_dt,ve.venueNumber)
+        if group_key not in calendar_data[date_key]:
+            calendar_data[date_key][group_key] = {
+                "start_time": start_dt,
+                "end_time": end_dt,
                 "venue": ve.venueNumber,
-                "capacity": ve.capacity,
-                "has_invigilator": exam.examNoInvigilator > 0,
-                "is_overnight": is_overnight
+                "courses": [],
+                "is_overnight": start_dt.date() != end_dt.date(),
+                "status": exam.examStatus
             }
 
-        if is_overnight:
-            # Part 1
-            calendar_data[start_date].append(exam_dict(start_dt,datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)))
-            # Part 2
-            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, datetime.min.time()),end_dt))
-        else:
-            calendar_data[start_date].append(exam_dict(start_dt, end_dt))
+        # 👇 ADD COURSE INTO SUBLIST
+        calendar_data[date_key][group_key]["courses"].append({
+            "course_code": exam.course.courseCodeSectionIntake,
+            "course_name": exam.course.courseName
+        })
 
-    return dict(sorted(calendar_data.items()))
+    # convert inner dict → list
+    final_calendar = {}
+    for date, groups in calendar_data.items():
+        final_calendar[date] = list(groups.values())
+
+    return dict(sorted(final_calendar.items()))
+
 
 
 # -------------------------------

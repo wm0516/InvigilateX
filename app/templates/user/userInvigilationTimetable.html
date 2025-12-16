@@ -32,27 +32,42 @@
 
     <div class="calendar-container">
         {% for date, exams in calendar_data.items() %}
-            <div class="calendar-day">
-                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
-                <div class="exam-grid">
-                    {% for exam in exams %}
-                        <div class="exam-card" style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
-                            <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
-                            {% if exam.venue %}
-                                {% for va in exam.venue %}
-                                    Venue: {{ va.venueNumber }}<br>
-                                {% endfor %}
-                            {% else %}
-                                <strong>: None</strong>
-                            {% endif %}
-                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
-                            {% if exam.is_overnight %}
-                                <span style="font-size: 12px; color: #700;"><strong>[Overnight]</strong></span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+        <div class="calendar-day">
+            <h3 class="calendar-date" data-date="{{ date.isoformat() }}">
+                {{ date.strftime("%A, %d %B %Y") }}
+                | [Total Exams: {{ exams|length }}]
+            </h3>
+
+            <div class="exam-grid">
+                {% for exam in exams %}
+                <div class="exam-card"
+                    style="background-color:
+                    {% if exam.is_overnight %}#dc74f7
+                    {% elif exam.status %}#75bdf9
+                    {% else %}lightgrey{% endif %};">
+
+                    <strong>Venue:</strong> {{ exam.venue }}<br>
+                    <strong>Time:</strong>
+                    {{ exam.start_time.strftime("%H:%M") }}
+                    -
+                    {{ exam.end_time.strftime("%H:%M") }}<br><br>
+
+                    <strong>Courses:</strong>
+                    <ul style="margin: 5px 0 0 15px;">
+                        {% for c in exam.courses %}
+                            <li>{{ c.course_code }} — {{ c.course_name }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if exam.is_overnight %}
+                        <span style="font-size: 12px; color: #700;">
+                            <strong>[Overnight]</strong>
+                        </span>
+                    {% endif %}
                 </div>
+                {% endfor %}
             </div>
+        </div>
         {% endfor %}
     </div>
 </div>
