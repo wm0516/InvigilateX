@@ -2007,34 +2007,42 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_calendar_data():
-    venue_exams = (VenueExam.query.join(Exam).filter(Exam.examStatus == True).all())
+    venue_exams = (
+        VenueExam.query
+        .join(Exam)
+        .filter(Exam.examStatus == True)
+        .all()
+    )
+
     calendar_data = defaultdict(dict)
 
     for ve in venue_exams:
         exam = ve.exam
-        start_dt = ve.startDateTime
-        end_dt = ve.endDateTime
-        date_key = start_dt.date()
+        date_key = ve.startDateTime.date()
 
-        # 👇 GROUPING KEY
-        group_key = (start_dt,end_dt,ve.venueNumber)
+        # 🔑 group by SAME session
+        group_key = (
+            ve.startDateTime,
+            ve.endDateTime,
+            ve.venueNumber
+        )
+
         if group_key not in calendar_data[date_key]:
             calendar_data[date_key][group_key] = {
-                "start_time": start_dt,
-                "end_time": end_dt,
                 "venue": ve.venueNumber,
-                "courses": [],
-                "is_overnight": start_dt.date() != end_dt.date(),
-                "status": exam.examStatus
+                "start_time": ve.startDateTime,
+                "end_time": ve.endDateTime,
+                "courses": []
             }
 
-        # 👇 ADD COURSE INTO SUBLIST
-        calendar_data[date_key][group_key]["courses"].append({
-            "course_code": exam.course.courseCodeSectionIntake,
-            "course_name": exam.course.courseName
-        })
+        # ✅ FETCH COURSE CORRECTLY
+        course = Course.query.filter_by(courseExamId=exam.examId).first()
+        if course:
+            calendar_data[date_key][group_key]["courses"].append(
+                course.courseCodeSectionIntake
+            )
 
-    # convert inner dict → list
+    # convert grouped dict → list
     final_calendar = {}
     for date, groups in calendar_data.items():
         final_calendar[date] = list(groups.values())
