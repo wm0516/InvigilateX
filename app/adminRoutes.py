@@ -685,8 +685,8 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 
     # 1. Detect STANDBY row
     is_standby = (
-        str(row.get('program', '')).strip().upper() == 'STANDY' or
-        str(row.get('course code/section', '')).strip().upper() == 'STANDY'
+        str(row.get('program', '')).strip().upper() == 'STANDBY' or
+        str(row.get('course code/section', '')).strip().upper() == 'STANDBY'
     )
 
     # --- Check if row is empty ---
@@ -766,7 +766,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
             "error"
         )
         return None, ''
-    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt, standy)
+    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt, is_standby)
     return True, ''
 
 
