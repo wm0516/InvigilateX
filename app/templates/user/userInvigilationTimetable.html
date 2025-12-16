@@ -33,32 +33,24 @@
     <div class="calendar-container">
         {% for date, exams in calendar_data.items() %}
             <div class="calendar-day">
-                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
+                {% set total_exams = exams.values() | map('length') | sum %}
+                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ total_exams }}]</h3>
                 <div class="exam-grid">
-                    {% for venue， exam in exams %}
-                        <div class="exam-card" style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
-                            <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
-                            {% if exam.venue %}
-                                {% for va in exam.venue %}
-                                    Venue: {{ va.venueNumber }}<br>
-                                {% endfor %}
-                            {% else %}
-                                <strong>: None</strong>
-                            {% endif %}
-                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
-                            {% if exam.is_overnight %}
-                                <span style="font-size: 12px; color: #700;"><strong>[Overnight]</strong></span>
-                            {% endif %}
-
+                    {% for venue, exam_list in exams.items() %}
+                        <div class="exam-card">
                             <strong>Venue: {{ venue }}</strong><br><br>
-                            {% for exam in exams %}
-                                • <strong>{{ exam.course_code }}</strong>
-                                ({{ exam.start_time.strftime("%H:%M") }}–{{ exam.end_time.strftime("%H:%M") }})
-                                | Capacity: {{ exam.capacity }}
+
+                            {% for exam in exam_list %}
+                                • <strong>{{ exam.course_code }}</strong> - {{ exam.course_name }}<br>
+                                Time: {{ exam.start_time.strftime("%H:%M") }} – {{ exam.end_time.strftime("%H:%M") }}<br>
+                                Capacity: {{ exam.capacity }}
                                 {% if not exam.has_invigilator %}
                                     <span style="color:red;">[No Invigilator]</span>
                                 {% endif %}
-                                <br>
+                                {% if exam.is_overnight %}
+                                    <span style="color:#700;"><strong>[Overnight]</strong></span>
+                                {% endif %}
+                                <br><br>
                             {% endfor %}
                         </div>
                     {% endfor %}
