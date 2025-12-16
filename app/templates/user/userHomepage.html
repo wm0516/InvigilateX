@@ -129,6 +129,13 @@
                             style="background-color: #f8d7da; color: #721c24; padding: 5%;">
                             Reject
                         </button>
+
+                        {% if open %}
+                        <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}"
+                            style="background-color: #f8d7da; color: #a19d9d; padding: 5%;">
+                            <strong>Expired</strong>
+                        </button>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
