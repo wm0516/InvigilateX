@@ -2006,9 +2006,11 @@ def update_attendance_time():
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
+
 def get_calendar_data():
-    venue_exams = VenueExam.query.join(Exam).filter(Exam.examStatus == True).all()
+    venue_exams = (VenueExam.query.join(Exam).filter(Exam.examStatus == True).all())
     calendar_data = defaultdict(list)
+    seen = set()  # ✅ prevent duplicate cards
 
     for ve in venue_exams:
         exam = ve.exam
@@ -2018,6 +2020,12 @@ def get_calendar_data():
         end_date = end_dt.date()
         is_overnight = start_date != end_date
 
+        # ✅ unique key per exam + venue + start time
+        unique_key = (exam.examId, ve.venueNumber, start_dt)
+        if unique_key in seen:
+            continue
+        seen.add(unique_key)
+
         def exam_dict(start, end):
             return {
                 "exam_id": exam.examId,
@@ -2026,20 +2034,21 @@ def get_calendar_data():
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,
-                "venue": ve.venueNumber,
+                "venue": ve.venueNumber,     # ✅ correct source
                 "capacity": ve.capacity,
                 "has_invigilator": exam.examNoInvigilator > 0,
                 "is_overnight": is_overnight
             }
 
         if is_overnight:
-            # Part 1
-            calendar_data[start_date].append(exam_dict(start_dt,datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)))
-            # Part 2
-            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, datetime.min.time()),end_dt))
+            # Part 1 (start day)
+            calendar_data[start_date].append(exam_dict(start_dt,datetime.combine(start_date, time(23, 59))))
+            # Part 2 (end day)
+            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, time(0, 0)),end_dt))
         else:
             calendar_data[start_date].append(exam_dict(start_dt, end_dt))
 
+    # ✅ sort by date
     return dict(sorted(calendar_data.items()))
 
 
@@ -2051,7 +2060,6 @@ def get_calendar_data():
 def admin_manageInvigilationTimetable():
     calendar_data = get_calendar_data()
     return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
-
 
 
 
