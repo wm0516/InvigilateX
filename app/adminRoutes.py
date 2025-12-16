@@ -2007,24 +2007,16 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_calendar_data():
-    attendances = get_all_attendances()
+    venue_exams = VenueExam.query.join(Exam).filter(Exam.examStatus == True).all()
     calendar_data = defaultdict(list)
-    seen_exams = set()  # ✅ To skip duplicate exam sessions
 
-    for att in attendances:
-        exam = att.report.exam
-
-        # Skip if this exam already processed
-        if exam.examId in seen_exams:
-            continue
-        seen_exams.add(exam.examId)
-
-        start_dt = exam.examStartTime
-        end_dt = exam.examEndTime
+    for ve in venue_exams:
+        exam = ve.exam
+        start_dt = ve.startDateTime
+        end_dt = ve.endDateTime
         start_date = start_dt.date()
         end_date = end_dt.date()
-        is_overnight = start_date != end_date and exam.examStatus == True
-        venues = exam.venue_availabilities
+        is_overnight = start_date != end_date
 
         def exam_dict(start, end):
             return {
@@ -2034,21 +2026,21 @@ def get_calendar_data():
                 "start_time": start,
                 "end_time": end,
                 "status": exam.examStatus,
-                "is_overnight": is_overnight,
-                "venue": venues,
+                "venue": ve.venueNumber,
+                "capacity": ve.capacity,
+                "has_invigilator": exam.examNoInvigilator > 0,
+                "is_overnight": is_overnight
             }
 
         if is_overnight:
-            # Part 1: From start time to 23:59 on start day
+            # Part 1
             calendar_data[start_date].append(exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)))
-            # Part 2: From 00:00 on next day to end time
+            # Part 2
             calendar_data[end_date].append(exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt))
         else:
-            # Normal same-day exam
             calendar_data[start_date].append(exam_dict(start_dt, end_dt))
 
-    calendar_data = dict(sorted(calendar_data.items()))
-    return calendar_data
+    return dict(sorted(calendar_data.items()))
 
 
 # -------------------------------
