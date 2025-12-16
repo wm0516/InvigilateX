@@ -32,32 +32,28 @@
 
     <div class="calendar-container">
         {% for date, exams in calendar_data.items() %}
-        <div class="calendar-day">
-            <h3 class="calendar-date">
-                {{ date.strftime("%A, %d December %Y") }}
-                | [Total Exams: {{ exams|length }}]
-            </h3>
-
-            {% for exam in exams %}
-            <div class="exam-card">
-
-                <strong>Venue = {{ exam.venue }}</strong><br><br>
-
-                {% for code in exam.courses %}
-                    {{ code }}<br>
-                {% endfor %}
-
-                <br>
-                <strong>Time =</strong>
-                {{ exam.start_time.strftime("%H%M") }}
-                -
-                {{ exam.end_time.strftime("%H%M") }}
-
+            <div class="calendar-day">
+                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
+                <div class="exam-grid">
+                    {% for exam in exams %}
+                        <div class="exam-card" style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
+                            <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
+                            {% if exam.venue %}
+                                {% for va in exam.venue %}
+                                    Venue: {{ va.venueNumber }}<br>
+                                {% endfor %}
+                            {% else %}
+                                <strong>: None</strong>
+                            {% endif %}
+                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                            {% if exam.is_overnight %}
+                                <span style="font-size: 12px; color: #700;"><strong>[Overnight]</strong></span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-            {% endfor %}
-        </div>
         {% endfor %}
-
     </div>
 </div>
 {% endblock %}
