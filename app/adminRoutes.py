@@ -2008,7 +2008,8 @@ def update_attendance_time():
 # -------------------------------
 def get_calendar_data():
     venue_exams = VenueExam.query.join(Exam).filter(Exam.examStatus == True).all()
-    calendar_data = defaultdict(list)
+    # date -> venue -> exams[]
+    calendar_data = defaultdict(lambda: defaultdict(list))
 
     for ve in venue_exams:
         exam = ve.exam
@@ -2018,28 +2019,25 @@ def get_calendar_data():
         end_date = end_dt.date()
         is_overnight = start_date != end_date
 
-        def exam_dict(start, end):
-            return {
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "start_time": start,
-                "end_time": end,
-                "status": exam.examStatus,
-                "venue": ve.venueNumber,
-                "capacity": ve.capacity,
-                "has_invigilator": exam.examNoInvigilator > 0,
-                "is_overnight": is_overnight
-            }
+        exam_item = {
+            "exam_id": exam.examId,
+            "course_name": exam.course.courseName,
+            "course_code": exam.course.courseCodeSectionIntake,
+            "start_time": start_dt,
+            "end_time": end_dt,
+            "capacity": ve.capacity,
+            "has_invigilator": exam.examNoInvigilator > 0,
+            "is_overnight": is_overnight
+        }
 
         if is_overnight:
-            # Part 1
-            calendar_data[start_date].append(exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)))
-            # Part 2
-            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt))
+            # Day 1
+            calendar_data[start_date][ve.venueNumber].append({**exam_item, "start_time": start_dt, "end_time": datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)})
+            # Day 2
+            calendar_data[end_date][ve.venueNumber].append({**exam_item, "start_time": datetime.combine(end_date, datetime.min.time()), "end_time": end_dt})
         else:
-            calendar_data[start_date].append(exam_dict(start_dt, end_dt))
-
+            calendar_data[start_date][ve.venueNumber].append(exam_item)
+    # Sort dates
     return dict(sorted(calendar_data.items()))
 
 
