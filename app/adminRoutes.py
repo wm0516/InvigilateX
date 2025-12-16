@@ -683,6 +683,12 @@ def download_exam_template():
 def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
 
+    # 1. Detect STANDBY row
+    is_standby = (
+        str(row.get('program', '')).strip().upper() == 'STANDY' or
+        str(row.get('course code/section', '')).strip().upper() == 'STANDY'
+    )
+
     # --- Check if row is empty ---
     # headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Lecturer','Total Student by venue','Venue']
     important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
@@ -721,6 +727,10 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
+    
+    if is_standby:
+        create_exam_and_related(user_id, start_dt, end_dt, None, [], [0], slot_share_dt, slot_open_dt, 1)
+        return True, ''
 
     try:
         requested_capacity = int(row.get('total student by venue', 0))
@@ -756,7 +766,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
             "error"
         )
         return None, ''
-    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
+    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt, standy)
     return True, ''
 
 

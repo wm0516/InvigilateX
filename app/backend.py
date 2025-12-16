@@ -323,7 +323,40 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 Exam Date	Day	Start	End 	Program	Course Code/Section	Course Name 	Lecturer	Total Student by venue 	Venue 
 26/11/2026	WED	9:00 AM	12:10 PM	BBSUT	FIN10002/SU1	FINANCIAL STATISTICS	CHEE BENG BARK	46	ER 
 '''
-def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
+def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close, standy):
+
+    # STANDBY MODE (backup invigilator, no exam, no venue)
+    if standy == 1:
+        adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
+        pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
+
+        # Create a dummy / standby report
+        report = InvigilationReport()
+        db.session.add(report)
+        db.session.flush()
+
+        # Get eligible invigilators
+        query = User.query.filter(User.userLevel == 1,User.userStatus == True)
+        eligible = [inv for inv in query.all() if is_lecturer_available(inv.userId, start_dt, adj_end_dt)]
+
+        if not eligible:
+            return False, "No eligible invigilators for standby slot"
+
+        # Pick ONE backup (lowest workload)
+        chosen = min(eligible, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+        chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + pending_hours
+        db.session.add(
+            InvigilatorAttendance(
+                reportId=report.invigilationReportId,
+                invigilatorId=chosen.userId,
+                venueNumber=None,        
+                timeCreate=open,
+                timeExpire=close
+            )
+        )
+        db.session.commit()
+        return True, "Standby invigilator slot reserved"
+
     # --- Fetch course sections ---
     course_sections = Course.query.filter(Course.courseCodeSectionIntake == courseSection).first()
     if not course_sections:
@@ -343,8 +376,8 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     # --- Times ---
     exam.examAddedBy = user
     exam.examAddedOn = datetime.now() + timedelta(hours=8)
-    exam.examStartTime = min(exam.examStartTime or start_dt, start_dt)
-    exam.examEndTime = max(exam.examEndTime or end_dt, end_dt)
+    exam.examStartTime = start_dt
+    exam.examEndTime = end_dt
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
     pending_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
