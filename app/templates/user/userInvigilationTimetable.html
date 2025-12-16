@@ -39,9 +39,7 @@
                         <div class="exam-card" style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
                             <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
                             {% if exam.venue %}
-                                {% for va in exam.venue %}
-                                    Venue: {{ va.venueNumber }}<br>
-                                {% endfor %}
+                                Venue: {{ va.exam.venue }}<br>
                             {% else %}
                                 <strong>: None</strong>
                             {% endif %}
