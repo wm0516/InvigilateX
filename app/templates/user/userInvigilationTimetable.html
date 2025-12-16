@@ -38,20 +38,26 @@
                 <div class="exam-grid">
                     {% for venue, exam_list in exams.items() %}
                         <div class="exam-card">
+
                             <strong>Venue: {{ venue }}</strong><br><br>
 
                             {% for exam in exam_list %}
-                                • <strong>{{ exam.course_code }}</strong> - {{ exam.course_name }}<br>
-                                Time: {{ exam.start_time.strftime("%H:%M") }} – {{ exam.end_time.strftime("%H:%M") }}<br>
+                                <strong>{{ exam.course_code }} - {{ exam.course_name }}</strong><br>
+                                Time: {{ exam.start_time.strftime("%H:%M") }}
+                                –
+                                {{ exam.end_time.strftime("%H:%M") }}<br>
                                 Capacity: {{ exam.capacity }}
+
                                 {% if not exam.has_invigilator %}
                                     <span style="color:red;">[No Invigilator]</span>
                                 {% endif %}
+
                                 {% if exam.is_overnight %}
                                     <span style="color:#700;"><strong>[Overnight]</strong></span>
                                 {% endif %}
                                 <br><br>
                             {% endfor %}
+
                         </div>
                     {% endfor %}
                 </div>
