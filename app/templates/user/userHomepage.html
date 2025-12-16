@@ -117,6 +117,7 @@
                     <td>{{ w.report.exam.course.courseName }}</td>
                     <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
                     <td>
+                        {% if not open %}
                         <!-- Accept Form -->
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
                             <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
@@ -129,10 +130,10 @@
                             style="background-color: #f8d7da; color: #721c24; padding: 5%;">
                             Reject
                         </button>
+                        {% endif %}
 
                         {% if open %}
-                        <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}"
-                            style="background-color: #f8d7da; color: #a19d9d; padding: 5%;">
+                        <button type="button" style="background-color: #a8a8a8; color: #9da19f; padding: 5%; cursor: not-allowed;">
                             <strong>Expired</strong>
                         </button>
                         {% endif %}
