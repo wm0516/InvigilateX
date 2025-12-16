@@ -33,31 +33,22 @@
     <div class="calendar-container">
         {% for date, exams in calendar_data.items() %}
             <div class="calendar-day">
-                {% set total_exams = exams.values() | map('length') | sum %}
-                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ total_exams }}]</h3>
+                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
                 <div class="exam-grid">
-                    {% for venue, exam_list in exams.items() %}
-                        <div class="exam-card">
-
-                            <strong>Venue: {{ venue }}</strong><br><br>
-
-                            {% for exam in exam_list %}
-                                <strong>{{ exam.course_code }} - {{ exam.course_name }}</strong><br>
-                                Time: {{ exam.start_time.strftime("%H:%M") }}
-                                –
-                                {{ exam.end_time.strftime("%H:%M") }}<br>
-                                Capacity: {{ exam.capacity }}
-
-                                {% if not exam.has_invigilator %}
-                                    <span style="color:red;">[No Invigilator]</span>
-                                {% endif %}
-
-                                {% if exam.is_overnight %}
-                                    <span style="color:#700;"><strong>[Overnight]</strong></span>
-                                {% endif %}
-                                <br><br>
-                            {% endfor %}
-
+                    {% for exam in exams %}
+                        <div class="exam-card" style="background-color: {% if exam.is_overnight %}#dc74f7{% elif exam.status %}#75bdf9{% else %}lightgrey{% endif %};">
+                            <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
+                            {% if exam.venue %}
+                                {% for va in exam.venue %}
+                                    Venue: {{ va.venueNumber }}<br>
+                                {% endfor %}
+                            {% else %}
+                                <strong>: None</strong>
+                            {% endif %}
+                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                            {% if exam.is_overnight %}
+                                <span style="font-size: 12px; color: #700;"><strong>[Overnight]</strong></span>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -97,9 +88,6 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
     const margin = 15;
-    const userLevel = Number("{{ current_user.userLevel }}");
-    const userName = "{{ current_user.userName }}";
-    const userDepartment = "{{ current_user.userDepartment }}";
     const pageHeight = doc.internal.pageSize.getHeight();
     const pageWidth = doc.internal.pageSize.getWidth(); 
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
@@ -160,11 +148,8 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         // Move Y position for next day
         y += totalBlockHeight + 5;
     }
-    if (userLevel === 1) {
-        doc.save(`${userName}'s_Invigilation_Report.pdf`);
-    } else {
-        doc.save(`${userDepartment}_Invigilation_Report.pdf`);
-    }
+
+    doc.save("Invigilation_Timetable.pdf");
 });
 
 document.addEventListener("DOMContentLoaded", () => {
