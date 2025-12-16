@@ -892,8 +892,11 @@ def send_invigilator_slot_notifications_for_all():
 📅 Tomorrow's Exams
 {exam_block}
 
-Please login to InvigilateX to take action:
+Please login to InvigilateX to check your invigilation slot(s):
 https://wm05.pythonanywhere.com/login
+
+Reminder:
+Please make sure to check in 30 minutes earlier before the commencement of the exam at the Exam Office. 
 
 Thank you,
 InvigilateX System
