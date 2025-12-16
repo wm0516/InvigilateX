@@ -2013,6 +2013,7 @@ def get_calendar_data():
 
     for ve in venue_exams:
         exam = ve.exam
+        course = exam.course 
         start_dt = ve.startDateTime
         end_dt = ve.endDateTime
         start_date = start_dt.date()
@@ -2021,12 +2022,12 @@ def get_calendar_data():
 
         exam_item = {
             "exam_id": exam.examId,
-            "course_name": exam.course.courseName,
-            "course_code": exam.course.courseCodeSectionIntake,
+            "course_name": course.courseName if course else "N/A",
+            "course_code": course.courseCodeSectionIntake if course else "N/A",
             "start_time": start_dt,
             "end_time": end_dt,
             "capacity": ve.capacity,
-            "has_invigilator": exam.examNoInvigilator > 0,
+            "has_invigilator": (exam.examNoInvigilator or 0) > 0,
             "is_overnight": is_overnight
         }
 

@@ -33,16 +33,10 @@
     <div class="calendar-container">
         {% for date, venues in calendar_data.items() %}
         <div class="calendar-day">
-            <h3 class="calendar-date" data-date="{{ date.isoformat() }}">
-                {{ date.strftime("%A, %d %B %Y") }} |
-                [Total Venues: {{ venues|length }}]
-            </h3>
-
+            <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Venues: {{ venues|length }}]</h3>
             <div class="exam-grid">
                 {% for venue, exams in venues.items() %}
-                <div class="exam-card"
-                    style="background-color:
-                    {% if exams | selectattr('is_overnight') | list | length > 0 %}#dc74f7{% else %}#75bdf9{% endif %};">
+                <div class="exam-card" style="background-color: {% if exams | selectattr('is_overnight') | list | length > 0 %}#dc74f7{% else %}#75bdf9{% endif %};">
                     <strong>Venue: {{ venue }}</strong><br><br>
 
                     {% for exam in exams %}
