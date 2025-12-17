@@ -448,11 +448,16 @@ def admin_manageDepartment():
                 department_select.departmentAddedOn = datetime.now(timezone.utc) + timedelta(hours=8)
                 db.session.commit()
                 flash("Department updated successfully", "success")
-
+            
             elif action == 'delete':
-                db.session.delete(department_select)
-                db.session.commit()
-                flash("Department deleted successfully", "success")
+                users_using_department = User.query.filter_by(userDepartment=department_select.departmentCode).count()
+                if users_using_department > 0:
+                    flash(f"Cannot delete department. There are number of {users_using_department} users still assigned to this department.", "error")
+                else:
+                    db.session.delete(department_select)
+                    db.session.commit()
+                    flash("Department deleted successfully", "success")
+
 
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)
