@@ -42,7 +42,7 @@
     <div class="calendar-container">
         {% for date, venues in calendar_data.items() %}
         <div class="calendar-day">
-            <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }}</h3>
+            <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }} | Total Exams: {{ venues.values() | map('length') | sum }}</h3>            
             <div class="exam-grid">
                 {% for venue, exams in venues.items() %}
                     <div class="exam-card" style="margin-bottom: 15px; padding: 10px;">
@@ -52,6 +52,7 @@
                             {{ exam.course_code }} – {{ exam.course_name }}<br>
                         {% endfor %}<br>
                         Time: {{ exams[0].start_time.strftime("%H:%M") }} - {{ exams[0].end_time.strftime("%H:%M") }}
+                        <strong>Total Students: {{ exams | map(attribute='capacity') | sum }}</strong>
                     </div>
                 {% endfor %}
             </div>

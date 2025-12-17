@@ -2022,6 +2022,7 @@ def get_calendar_data():
             "course_name": exam.course.courseName,
             "start_time": start_dt,
             "end_time": end_dt,
+            "capacity": ve.capacity,
             "is_overnight": start_dt.date() != end_dt.date(),
         })
 
