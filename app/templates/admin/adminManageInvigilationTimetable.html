@@ -49,7 +49,7 @@
                         <strong>Venue: {{ venue }} | Total Exams: {{ exams|length }}</strong>
                         <hr>
                         {% for exam in exams %}
-                            {{ exam.course_code }} – {{ exam.course_name }}
+                            {{ exam.course_code }} – {{ exam.course_name }}<br>
                         {% endfor %}<br>
                         Time: {{ exams[0].start_time.strftime("%H:%M") }} - {{ exams[0].end_time.strftime("%H:%M") }}
                     </div>
