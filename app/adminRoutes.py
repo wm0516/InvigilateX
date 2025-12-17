@@ -458,7 +458,6 @@ def admin_manageDepartment():
                     db.session.commit()
                     flash("Department deleted successfully", "success")
 
-
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)
 
@@ -547,13 +546,16 @@ def admin_manageVenue():
 
             elif action == 'delete':
                 try:
-                    # Set related foreign keys to NULL
-                    VenueExam.query.filter_by(venueNumber=venue_select.venueNumber).update({"venueNumber": None})
-                    db.session.commit()  # Commit the updates first
+                    venue_number = venue_select.venueNumber
+                    exam_count = VenueExam.query.filter_by(venueNumber=venue_number).count()
+                    attendance_count = InvigilatorAttendance.query.filter_by(venueNumber=venue_number).count()
 
-                    db.session.delete(venue_select)  # Delete the venue
-                    db.session.commit()
-                    flash("Venue Deleted, related references set to NULL", "success")
+                    if exam_count > 0 or attendance_count > 0:
+                        flash(f"Cannot delete venue. It is still used by {exam_count} exams or {attendance_count} invigilator attendance records.", "error")
+                    else:
+                        db.session.delete(venue_select)
+                        db.session.commit()
+                        flash("Venue deleted successfully", "success")
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Failed to delete venue: {str(e)}", "error")
