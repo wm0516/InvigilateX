@@ -51,7 +51,7 @@
                         {% for exam in exams %}
                             {{ exam.course_code }} – {{ exam.course_name }}
                         {% endfor %}<br>
-                        Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                        Time: {{ exams[0].start_time.strftime("%H:%M") }} - {{ exams[0].end_time.strftime("%H:%M") }}
                     </div>
                 {% endfor %}
             </div>
