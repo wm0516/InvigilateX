@@ -40,21 +40,45 @@
     </div>
     
     <div class="calendar-container">
+        {% for date, exams in calendar_data.items() %}
+            <div class="calendar-day">
+                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
+                <div class="exam-grid">
+                    {% for exam in exams %}
+                        <div class="exam-card" style="background-color: {% if exam.is_overnight %}#e3bded{% elif exam.status %}#b5deff{% else %}lightgrey{% endif %};">
+                            <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
+                            {% if exam.venue %}
+                                {% for va in exam.venue %}
+                                    Venue: {{ va.venueNumber }}<br>
+                                {% endfor %}
+                            {% else %}
+                                <strong>: None</strong>
+                            {% endif %}
+                            Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                            {% if exam.is_overnight %}
+                                <span style="font-size: 12px; color: #700;"><strong>[Overnight]</strong></span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+
         {% for date, venues in calendar_data.items() %}
         <div class="calendar-day">
             <h3 class="calendar-date">{{ date.strftime("%A, %d %B %Y") }}</h3>
-
-            {% for venue, exams in venues.items() %}
-            <div class="exam-card" style="margin-bottom: 15px; padding: 10px;">
-                <strong>Venue: {{ venue }} | Total Exams: {{ exams|length }}</strong>
-                <hr>
-                {% for exam in exams %}
-                    {{ exam.course_code }} – {{ exam.course_name }} <br>
-                    Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
-                    <br><br>
+            <div class="exam-grid">
+                {% for venue, exams in venues.items() %}
+                    <div class="exam-card" style="margin-bottom: 15px; padding: 10px;">
+                        <strong>Venue: {{ venue }} | Total Exams: {{ exams|length }}</strong>
+                        <hr>
+                        {% for exam in exams %}
+                            {{ exam.course_code }} – {{ exam.course_name }}
+                        {% endfor %}<br>
+                        Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
+                    </div>
                 {% endfor %}
             </div>
-            {% endfor %}
         </div>
         {% endfor %}
     </div>
