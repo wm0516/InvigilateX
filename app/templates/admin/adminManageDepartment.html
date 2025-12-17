@@ -90,7 +90,7 @@
             <div class="form-middle">
                 <label>Dean Name</label>
                 <select id="deanName" name="deanName">
-                    <option value="" disabled selected>Select a Dean</option>
+                    <option value="None" disabled selected>Select a Dean</option>
                     {% for dean in deans %}
                         <option value="{{ dean.userId }}">
                             [{{ dean.userDepartment }}] {{ dean.userName }}
@@ -100,7 +100,7 @@
 
                 <label>Hos Name</label>
                 <select id="hosName" name="hosName">
-                    <option value="" disabled selected>Select a Hos</option>
+                    <option value="None" disabled selected>Select a Hos</option>
                     {% for hos in hoss %}
                         <option value="{{ hos.userId }}">
                             [{{ hos.userDepartment }}] {{ hos.userName }}
@@ -111,7 +111,7 @@
             <div class="form-right">
                 <label>Hop Name</label>
                 <select id="hopName" name="hopName">
-                    <option value="" disabled selected>Select a Hop</option>
+                    <option value="None" disabled selected>Select a Hop</option>
                     {% for hop in hops %}
                         <option value="{{ hop.userId }}">
                             [{{ hop.userDepartment }}] {{ hop.userName }}

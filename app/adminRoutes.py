@@ -418,9 +418,9 @@ def admin_manageDepartment():
         elif form_type == 'edit' and department_select:
             action           = request.form.get('action')
             departmentName   = request.form.get('departmentName')
-            hosId            = request.form.get('hosName')
-            deanId           = request.form.get('deanName')
-            hopId            = request.form.get('hopName')
+            hosId            = request.form.get('hosName') or None
+            deanId           = request.form.get('deanName') or None
+            hopId            = request.form.get('hopName') or None
 
             # Validate Dean belongs to this department (only if a new selection is made)
             if deanId:
