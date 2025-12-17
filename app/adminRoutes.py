@@ -2006,49 +2006,25 @@ def update_attendance_time():
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
-
 def get_calendar_data():
     venue_exams = (VenueExam.query.join(Exam).filter(Exam.examStatus == True).all())
-    calendar_data = defaultdict(list)
-    seen = set()  # ✅ prevent duplicate cards
+    calendar_data = defaultdict(lambda: defaultdict(list))
 
     for ve in venue_exams:
         exam = ve.exam
         start_dt = ve.startDateTime
         end_dt = ve.endDateTime
-        start_date = start_dt.date()
-        end_date = end_dt.date()
-        is_overnight = start_date != end_date
+        date_key = start_dt.date()
 
-        # ✅ unique key per exam + venue + start time
-        unique_key = (exam.examId, ve.venueNumber, start_dt)
-        if unique_key in seen:
-            continue
-        seen.add(unique_key)
+        calendar_data[date_key][ve.venueNumber].append({
+            "exam_id": exam.examId,
+            "course_code": exam.course.courseCodeSectionIntake,
+            "course_name": exam.course.courseName,
+            "start_time": start_dt,
+            "end_time": end_dt,
+            "is_overnight": start_dt.date() != end_dt.date(),
+        })
 
-        def exam_dict(start, end):
-            return {
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "start_time": start,
-                "end_time": end,
-                "status": exam.examStatus,
-                "venue": ve.venueNumber,     # ✅ correct source
-                "capacity": ve.capacity,
-                "has_invigilator": exam.examNoInvigilator > 0,
-                "is_overnight": is_overnight
-            }
-
-        if is_overnight:
-            # Part 1 (start day)
-            calendar_data[start_date].append(exam_dict(start_dt,datetime.combine(start_date, time(23, 59))))
-            # Part 2 (end day)
-            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, time(0, 0)),end_dt))
-        else:
-            calendar_data[start_date].append(exam_dict(start_dt, end_dt))
-
-    # ✅ sort by date
     return dict(sorted(calendar_data.items()))
 
 
