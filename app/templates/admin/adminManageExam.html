@@ -249,7 +249,13 @@
                         {% else %}None
                         {% endif %}
                     </td>
-                    <td>{{ row.examNoInvigilator }}</td>
+                    <td>
+                        {% if row.examNoInvigilator == 0 %}
+                            {{ row.examNoInvigilator }} (Combine Venue Exam)
+                        {% else %}
+                            {{ row.examNoInvigilator }}
+                        {% endif %}
+                    </td>
                     <td>
                         <div class="info-grid">
                             {% if row.examAddedBy and row.examAddedOn %}
