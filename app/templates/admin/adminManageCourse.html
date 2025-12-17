@@ -16,15 +16,15 @@
             <!-- Overview -->
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame">
-                    <h3>Total Courses</h3>
+                    <h3>Total Course(s)</h3>
                     <p class="dashboard-text">{{ course_data|length }}</p>
                 </div>
                 <div class="dashboard-frame">
-                    <h3>Courses With Missing Data/Errors</h3>
+                    <h3>Course(s) With Missing Data/Error</h3>
                     <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
                 </div>
                 <div class="dashboard-frame pie">
-                    <h3>Courses by Department</h3>
+                    <h3>Course(s) by Department</h3>
                     <canvas id="courseDeptPieChart"></canvas>
                 </div>
                 <div class="dashboard-frame">
@@ -103,6 +103,14 @@
                 <label>Course Name</label>
                 <input type="text" name="courseName" value="{{ courseName_text }}" required><br>
 
+                <label>Course Credit Hour(s)</label>
+                <input type="number" name="courseHour" value="{{ courseHour_text }}" min="1" step="1" required><br>
+
+                <label>Course Number of Student(s)</label>
+                <input type="number" name="courseStudent" value="{{ courseStudent_text }}" min="1" step="1" required>
+            </div>
+
+            <div class="form-right">
                 <label>Practical Lecturer (Optional)</label>
                 <select id="practicalLecturerSelect" name="practicalLecturerSelect">
                     <option value="" selected>-- Select Practical Lecturer --</option>
@@ -111,20 +119,12 @@
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="tutorialLecturerSelect" name="tutorialLecturerSelect">
                     <option value="" selected>-- Select Tutorial Lecturer --</option>
-                </select>
-            </div>
+                </select><br>
 
-            <div class="form-right">
                 <label>Class Lecturer (Optional)</label>
                 <select id="lecturerSelect" name="lecturerSelect">
                     <option value="" selected>-- Select Class Lecturer --</option>
-                </select><br>
-                
-                <label>Course Credit Hour(s)</label>
-                <input type="number" name="courseHour" value="{{ courseHour_text }}" min="1" step="1" required><br>
-
-                <label>Course Number of Student(s)</label>
-                <input type="number" name="courseStudent" value="{{ courseStudent_text }}" min="1" step="1" required>
+                </select>
             </div>
         </div>
         
@@ -172,6 +172,21 @@
             </div>
 
             <div class="form-middle">
+                <label>Course Credit Hour(s)</label>
+                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required><br>
+
+                <label>Course Number of Student(s)</label>
+                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
+
+                <label>Course Status</label>
+                <select id="editCourseStatus" name="courseStatus" required>
+                    <option value="" disabled selected>Select Status</option>
+                    <option value="1">Activated</option>   <!-- True -->
+                    <option value="0">Deactivated</option> <!-- False -->
+                </select>
+            </div>
+
+            <div class="form-right">
                 <label>Practical Lecturer (Optional)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect">
                     <option value="" selected>Select Practical Lecturer</option>
@@ -185,21 +200,6 @@
                 <label>Class Lecturer (Optional)</label>
                 <select id="editLecturer" name="lecturerSelect">
                     <option value="" selected>Select Class Lecturer</option>
-                </select>
-            </div>
-
-            <div class="form-right">
-                <label>Course Credit Hour(s)</label>
-                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required><br>
-
-                <label>Course Number of Student(s)</label>
-                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
-
-                <label>Course Status</label>
-                <select id="editCourseStatus" name="courseStatus" required>
-                    <option value="" disabled selected>Select Status</option>
-                    <option value="1">Activated</option>   <!-- True -->
-                    <option value="0">Deactivated</option> <!-- False -->
                 </select>
             </div>
         </div>
@@ -225,7 +225,7 @@
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>List of Courses</h2>
+        <h2>List of Course(s)</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_courses" placeholder="Search..." value="{{ search_courses }}" style="border-radius: 6px; width: 100%;">

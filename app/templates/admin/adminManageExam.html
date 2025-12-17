@@ -62,11 +62,11 @@
 
             <div style="margin-top:20px; display: flex; gap: 30px; justify-content: center;">
                 <div class="form-left">
-                    <label><b>Time to Distribute Exam Slots:</b></label>
+                    <label><b>Time to Release Automatically Assigned Exam Slots:</b></label>
                     <input type="datetime-local" name="time_slot_share" required>
                 </div>
                 <div class="form-right">
-                    <label><b>Time to Open All Unselected Slots:</b></label>
+                    <label><b>Time to Open Unclaimed Exam Slots for Manual Selection:</b></label>
                     <input type="datetime-local" name="time_slot_open" required>
                 </div>
             </div>
@@ -306,18 +306,25 @@ function createVenueRow(venueNumber = '', capacity = '', isFirst = false) {
     div.style.marginBottom = "5px";
 
     div.innerHTML = `
-        <select name="venue[]" class="venue-dropdown" required>
-            ${venueOptionsHTML.replace(`value="${venueNumber}"`, `value="${venueNumber}" selected`)}
-        </select>
-        <input type="number" name="venueStudents[]" placeholder="Capacity" min="1" 
-               value="${capacity}" style="width: 100px;" required>
-        <button type="button" class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
+        <select name="venue[]" class="venue-dropdown" required>${venueOptionsHTML}</select>
+        <input type="number" name="venueStudents[]" placeholder="Capacity" min="1" value="${capacity}" style="width: 100px;" required>
+
+        <button type="button"
+            class="${isFirst ? 'add-btn' : 'removeVenueBtn'}"
             style="background-color: ${isFirst ? '#28a745' : '#dc3545'};
-                   color: white; border: none; border-radius: 5px; padding: 10px; font-size: large;">
+                   color: white; border: none; border-radius: 5px;
+                   padding: 10px; font-size: large;">
             ${isFirst ? '+' : '×'}
         </button>
     `;
+
     venueContainer.appendChild(div);
+
+    // ✅ SAFE: set selected value after DOM insertion
+    const select = div.querySelector("select");
+    if (venueNumber) {
+        select.value = venueNumber;
+    }
 
     if (isFirst) {
         div.querySelector('.add-btn').addEventListener('click', () => {
@@ -328,9 +335,11 @@ function createVenueRow(venueNumber = '', capacity = '', isFirst = false) {
             createVenueRow('', '', false);
         });
     } else {
-        div.querySelector(".removeVenueBtn").addEventListener("click", () => div.remove());
+        div.querySelector(".removeVenueBtn")
+           .addEventListener("click", () => div.remove());
     }
 }
+
 
 // Populate Edit Form (with venue capacity)
 function populateEditForm(data) {
