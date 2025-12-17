@@ -397,7 +397,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     # ---------------------------------------
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
         spv = int(spv)
-        venue_text = venue_text.upper()
+        venue_text = venue_text.strip().upper()
 
         venue_obj = Venue.query.filter_by(venueNumber=venue_text).first()
         if not venue_obj:
@@ -418,22 +418,14 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         # --- Select invigilators ---
         if invigilatorNo_for_row == 1:
-            pool = sorted(
-                male + female,
-                key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
-            )
+            pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
             chosen_invigilators = [pool[0]]
 
         else:
             if not male or not female:
                 return False, "Need both male and female invigilators for 2+ invigilators"
-
             chosen_invigilators = [male.pop(0), female.pop(0)]
-
-            pool = sorted(
-                male + female,
-                key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
-            )
+            pool = sorted(male + female, key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
             chosen_invigilators += pool[:invigilatorNo_for_row - 2]
 
         # --- Store attendance & pending hours ---
