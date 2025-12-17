@@ -34,12 +34,14 @@
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="timetable_list">
                 <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
+                    <br>
                     <div class="upload-text">
                         Please upload your timetable files in <b>PDF format only</b>.<br><br>
                         You may click below to upload or drag and drop your files here.<br>
                         <b>Note:</b> Upload <i>one timetable per PDF file</i>. Multiple files are allowed,<br>
                         but <i>merged PDFs containing multiple timetables in a single file are not supported</i>.
-                    </div><br>
+                    </div>
+                    <br>
                     <div id="timetableSelectedFileName" class="file-name-display"></div>
                 </div>
             </label>
@@ -135,7 +137,7 @@
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Timetable</h2>
+        <h2>Timetable(s)</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_timetable" placeholder="Search..." value="{{ search_timetable }}" style="border-radius: 6px; width: 100%;">
