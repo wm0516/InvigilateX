@@ -373,6 +373,17 @@ def get_department(department_code):
         "hopId"         : dept.hopId
     })
 
+def validate_user_role(user_id, expected_level, department_code, role_name):
+    if not user_id:
+        return None
+
+    user = User.query.filter_by(userId=user_id, userLevel=expected_level).first()
+    if not user or user.userDepartment != department_code:
+        flash(f"Selected {role_name} does not belong to this department. Ignoring {role_name} selection.", "error")
+        return None
+
+    return user_id
+
 # -------------------------------
 # Admin Manage Department
 # -------------------------------
@@ -422,40 +433,22 @@ def admin_manageDepartment():
             deanId           = request.form.get('deanName') or None
             hopId            = request.form.get('hopName') or None
 
-            # Validate Dean belongs to this department (only if a new selection is made)
-            if deanId:
-                dean_user = User.query.filter_by(userId=deanId, userLevel=2).first()
-                if not dean_user or dean_user.userDepartment != department_select.departmentCode:
-                    flash("Selected Dean does not belong to this department. Ignoring Dean selection.", "error")
-                    deanId = None
-            # Validate Hos belongs to this department (only if a new selection is made)
-            if hosId:
-                hos_user = User.query.filter_by(userId=hosId, userLevel=3).first()
-                if not hos_user or hos_user.userDepartment != department_select.departmentCode:
-                    flash("Selected Hos does not belong to this department. Ignoring Hos selection.", "error")
-                    hosId = None
-            # Validate HOP belongs to this department (only if a new selection is made)
-            if hopId:
-                hop_user = User.query.filter_by(userId=hopId, userLevel=4).first()
-                if not hop_user or hop_user.userDepartment != department_select.departmentCode:
-                    flash("Selected Hop does not belong to this department. Ignoring Hop selection.", "error")
-                    hopId = None
+            deanId = validate_user_role(deanId, 2, department_select.departmentCode, "Dean")
+            hosId  = validate_user_role(hosId, 3, department_select.departmentCode, "HOS")
+            hopId  = validate_user_role(hopId, 4, department_select.departmentCode, "HOP")
 
             if action == 'update':
                 department_select.departmentName = departmentName
-                # Update Dean only if a valid selection is made
-                if deanId is not None:
-                    department_select.deanId = deanId
-                # Update Hos only if a valid selection is made
-                if hosId is not None:
-                    department_select.hosId = hosId
-                # Update HOP only if a valid selection is made
-                if hopId is not None:
-                    department_select.hopId = hopId
+
+                # These can be None → will reset previous values
+                department_select.deanId = deanId
+                department_select.hosId  = hosId
+                department_select.hopId  = hopId
                 department_select.departmentAddedBy = user_id
                 department_select.departmentAddedOn = datetime.now(timezone.utc) + timedelta(hours=8)
                 db.session.commit()
                 flash("Department updated successfully", "success")
+
             elif action == 'delete':
                 db.session.delete(department_select)
                 db.session.commit()
