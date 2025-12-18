@@ -103,8 +103,8 @@
                     <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
-                    <th>Course Name</th>
-                    <th>Course Code</th>
+                    <th>Course Code/Section - Name</th>
+                    <th>Exam Venue</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -115,8 +115,8 @@
                     <td>{{ w.report.exam.examStartTime.strftime("%A") }} - {{ w.report.exam.examEndTime.strftime("%A") }}</td>
                     <td>{{ w.report.exam.examStartTime.strftime("%H:%M") }} - {{ w.report.exam.examEndTime.strftime("%H:%M") }}</td>
                     <td>{{ (w.report.exam.examEndTime - w.report.exam.examStartTime).seconds // 3600 }}h {{ ((w.report.exam.examEndTime - w.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                    <td>{{ w.report.exam.course.courseName }}</td>
-                    <td>{{ w.report.exam.course.courseCodeSectionIntake }}</td>
+                    <td>[{{ w.report.exam.course.courseCodeSectionIntake }}] - {{ w.report.exam.course.courseName }}</td>
+                    <td>{{ w.venueNumber }}</td>
                     <td>
                         {% if not open %}
                         <!-- Accept Form -->
@@ -134,7 +134,7 @@
                         {% endif %}
 
                         {% if open %}
-                        <button type="button" style="background-color: #6e6e6e; color: #000000; padding: 5%; cursor: not-allowed;">
+                        <button type="button" style="background-color: #afafaf; color: #000000; padding: 5%; cursor: not-allowed;">
                             <strong>Expired</strong>
                         </button>
                         {% endif %}
