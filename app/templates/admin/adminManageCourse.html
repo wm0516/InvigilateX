@@ -83,8 +83,8 @@
         <div class="profile-frame">
             <div class="form-left">
                 <label>Department</label>
-                <select id="departmentCode" name="departmentCode" required>
-                    <option value="" disabled selected>Select Department</option>
+                <select id="departmentCode" name="departmentCode" class="searchable-select" data-placeholder="Select Department" required>
+                    <option></option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
@@ -112,18 +112,18 @@
 
             <div class="form-right">
                 <label>Practical Lecturer (Optional)</label>
-                <select id="practicalLecturerSelect" name="practicalLecturerSelect">
-                    <option value="" selected>-- Select Practical Lecturer --</option>
+                <select id="practicalLecturerSelect" name="practicalLecturerSelect" class="searchable-select" data-placeholder="Select Practical Lecturer">
+                    <option></option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
-                <select id="tutorialLecturerSelect" name="tutorialLecturerSelect">
-                    <option value="" selected>-- Select Tutorial Lecturer --</option>
+                <select id="tutorialLecturerSelect" name="tutorialLecturerSelect" class="searchable-select" data-placeholder="Select Tutorial Lecturer">
+                    <option></option>
                 </select><br>
 
                 <label>Class Lecturer (Optional)</label>
-                <select id="lecturerSelect" name="lecturerSelect">
-                    <option value="" selected>-- Select Class Lecturer --</option>
+                <select id="lecturerSelect" name="lecturerSelect" class="searchable-select" data-placeholder="Select Class Lecturer">
+                    <option></option>
                 </select>
             </div>
         </div>
@@ -149,11 +149,10 @@
             <div class="form-left">
                 <!-- Select Existing Course -->
                 <label>Select Course Code - Course Name</label>
-                <select id="editCourseSelect" name="editCourseSelect" required>
-                    <option value="" disabled selected>Select Course</option>
+                <select id="editCourseSelect" name="editCourseSelect" class="searchable-select" data-placeholder="Select Course" required>
+                    <option></option>
                     {% for row in course_data %}
-                        <option value="{{ row.courseCodeSectionIntake }}"
-                            {% if course_select and course_select.courseCodeSectionIntake == row.courseCodeSectionIntake %}selected{% endif %}>
+                        <option value="{{ row.courseCodeSectionIntake }}">
                             {{ row.courseCodeSectionIntake }} - {{ row.courseName }}
                         </option>
                     {% endfor %}
@@ -163,10 +162,12 @@
                 <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required><br>
 
                 <label>Department</label>
-                <select id="editDepartment" name="departmentCode" required>
-                    <option value="" disabled selected>Select Department</option>
+                <select id="editDepartment" name="departmentCode" class="searchable-select" data-placeholder="Select Department"required>
+                    <option></option>
                     {% for dept in department_data %}
-                        <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
+                        <option value="{{ dept.departmentCode }}">
+                            {{ dept.departmentCode }} - {{ dept.departmentName }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>
@@ -187,19 +188,16 @@
             </div>
 
             <div class="form-right">
-                <label>Practical Lecturer (Optional)</label>
-                <select id="editPracticalLecturer" name="practicalLecturerSelect">
-                    <option value="" selected>Select Practical Lecturer</option>
-                </select><br>
+                <select id="editPracticalLecturer" name="practicalLecturerSelect" class="searchable-select" data-placeholder="Select Practical Lecturer">
+                    <option></option>
+                </select>
 
-                <label>Tutorial Lecturer (Optional)</label>
-                <select id="editTutorialLecturer" name="tutorialLecturerSelect">
-                    <option value="" selected>Select Tutorial Lecturer</option>
-                </select><br>
+                <select id="editTutorialLecturer" name="tutorialLecturerSelect" class="searchable-select" data-placeholder="Select Tutorial Lecturer">
+                    <option></option>
+                </select>
 
-                <label>Class Lecturer (Optional)</label>
-                <select id="editLecturer" name="lecturerSelect">
-                    <option value="" selected>Select Class Lecturer</option>
+                <select id="editLecturer" name="lecturerSelect" class="searchable-select" data-placeholder="Select Class Lecturer">
+                    <option></option>
                 </select>
             </div>
         </div>
@@ -333,11 +331,17 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // --- Helper: Populate lecturers ---
-    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
-        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option><option value="">None</option>';
-        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option><option value="">None</option>';
-        lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option><option value="">None</option>';
-        if (!deptCode) return;
+    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical=null, selectedTutorial=null, selectedLecturer=null) {
+        practicalSel.innerHTML = '<option></option>';
+        tutorialSel.innerHTML = '<option></option>';
+        lecturerSel.innerHTML = '<option></option>';
+
+        if (!deptCode) {
+            $(practicalSel).trigger('change.select2');
+            $(tutorialSel).trigger('change.select2');
+            $(lecturerSel).trigger('change.select2');
+            return;
+        }
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
             .then(r => r.json())
@@ -348,14 +352,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         opt.value = l.userId;
                         opt.textContent = l.userName.trim();
 
-                        if ((i === 0 && l.userId == selectedPractical) || 
-                            (i === 1 && l.userId == selectedTutorial) || 
-                            (i === 2 && l.userId == selectedLecturer)) {
+                        if (
+                            (i === 0 && l.userId == selectedPractical) ||
+                            (i === 1 && l.userId == selectedTutorial) ||
+                            (i === 2 && l.userId == selectedLecturer)
+                        ) {
                             opt.selected = true;
                         }
                         sel.appendChild(opt);
                     });
                 });
+
+                // 🔥 Refresh Select2
+                $(practicalSel).trigger('change.select2');
+                $(tutorialSel).trigger('change.select2');
+                $(lecturerSel).trigger('change.select2');
             })
             .catch(err => console.error("Error fetching lecturers:", err));
     }
