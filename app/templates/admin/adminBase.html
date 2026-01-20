@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 <body class="{{ body_class | default('') }}">
     <header class="header">
@@ -157,9 +156,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        
+    
     <script>
         function updateDateTime() {
             const now = new Date();
@@ -169,16 +166,6 @@
         }
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
-        
-        function initAllSearchableSelects() {
-            $('.searchable-select').each(function () {
-                $(this).select2({
-                    placeholder: $(this).data('placeholder') || 'Select an option',
-                    allowClear: true,
-                    width: '100%'
-                });
-            });
-        }
     </script>
 
     {% block extra_scripts %}{% endblock %}
