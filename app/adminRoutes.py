@@ -702,14 +702,11 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
         pass  # already datetime
     elif isinstance(examDate, str):
         examDate = examDate.strip()
-        for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d/%m/%Y %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
-            try:
-                examDate = datetime.strptime(examDate.split(" ")[0], fmt)
-                break
-            except ValueError:
-                continue
-        else:
-            return False, f"Invalid exam date format: {examDate}"
+        try:
+            # Excel upload ALWAYS DD/MM/YYYY
+            examDate = datetime.strptime(examDate, "%d/%m/%Y")
+        except ValueError:
+            return False, f"Invalid exam date format (expected DD/MM/YYYY): {examDate}"
     else:
         return False, "Missing exam date"
 
@@ -790,8 +787,8 @@ def get_exam_details(course_code):
         "courseDepartment": course.courseDepartment or "",
         "courseStudent": exam.examTotalStudents if exam else 0,
         "examVenues": [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],
-        "examStartTime": exam.examStartTime.isoformat() if exam and exam.examStartTime else "",
-        "examEndTime": exam.examEndTime.isoformat() if exam and exam.examEndTime else "",
+        "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
+        "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
     }
     return jsonify(response_data)
 
@@ -800,12 +797,10 @@ def get_exam_details(course_code):
 # -------------------------------
 def parse_datetime(date_str, time_str):
     raw = f"{date_str} {time_str}"
-    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %I:%M %p"):
-        try:
-            return datetime.strptime(raw, fmt)
-        except ValueError:
-            continue
-    raise ValueError(f"Unrecognized datetime format: {raw}")
+    try:
+        return datetime.strptime(raw, "%Y-%m-%d %H:%M")
+    except ValueError:
+        raise ValueError(f"Invalid datetime format (ISO expected): {raw}")
 
 # -------------------------------
 # Get VenueDetails for ManageExamEditPage

@@ -203,16 +203,17 @@
                             <div>Number of Students</div><div><strong>: {{ row.examTotalStudents }}</strong></div>
                             <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
                             <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
+                            <div>Class Lecturer</div><div><strong>: {{ row.course.classLecturer.userName if row.course.classLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                         </div>
                     </td>
                     <td>
                         {% if row.examStartTime and row.examEndTime %}
                         <div class="info-grid">
-                            <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d/%b/%Y") }} - {{ row.examEndTime.strftime("%d/%b/%Y") }}</strong></div>
+                            <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d%b%Y") }} - {{ row.examEndTime.strftime("%d%b%Y") }}</strong></div>
                             <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
                             <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
                             <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                            <div>No. Invigilator(s)</div>
+                            <div>Exam Invigilator(s)</div>
                             <div>
                                 {% if row.examNoInvigilator == 0 %}
                                     <strong>: {{ row.examNoInvigilator }} (Share Venue Exam)</strong>
@@ -238,13 +239,13 @@
                     <td>
                         {% if row.examOutput %}
                         <div class="info-grid">
-                            <div>Total Lecturers</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
-                            <div>Eligible Invigilators</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
-                            <div>Flexible Invigilators</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
-                            <div>Non-Flexible Invigilators</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
-                            <div>Non-Flexible List</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
-                            <div>Flexible Male</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
-                            <div>Flexible Female</div><div><strong>: {{ row.examOutput[6] }}</strong></div>
+                            <div>Total Academic Staff</div><div><strong>: {{ row.examOutput[0] }}</strong></div>
+                            <div>Eligible Invigilation Staff</div><div><strong>: {{ row.examOutput[1] }}</strong></div>
+                            <div>Flexible Invigilation Staff</div><div><strong>: {{ row.examOutput[2] }}</strong></div>
+                            <div>Non-Flexible Invigilation Staff</div><div><strong>: {{ row.examOutput[3] }}</strong></div>
+                            <div>Non-Flexible Staff List</div><div><strong>: {{ row.examOutput[4] }}</strong></div>
+                            <div>Flexible Male Staff</div><div><strong>: {{ row.examOutput[5] }}</strong></div>
+                            <div>Flexible Female Staff</div><div><strong>: {{ row.examOutput[6] }}</strong></div>
                         </div>
                         {% else %}None
                         {% endif %}
@@ -483,7 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         .replace(/Exam Day\s*:/g, "Exam Day:")
                         .replace(/Exam Time\s*:/g, "Exam Time:")
                         .replace(/Exam Period\s*:/g, "Exam Period:")
-                        .replace(/No. Invigilator\(s\)\s*:/g, "No. Invigilator(s):")
+                        .replace(/Exam Invigilator\(s\)\s*:/g, "Exam Invigilator(s):")
                         .replace(/Exam Venue\(s\)\s*:/g, "Exam Venue(s):")
 
                         // ===== Invigilator Filter =====
