@@ -560,6 +560,9 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
     if not dept:
         department_code = None
 
+    cardId = cardId if cardId else None
+    contact = contact if contact else None
+
     # Create staff object after validation passes
     new_staff = User(
         userId=id,

@@ -31,8 +31,7 @@ from app import db
 # DROP TABLE Course, Exam, VenueExam, InvigilationReport, InvigilatorAttendance;
 # UPDATE User SET userPendingCumulativeHours = 0, userCumulativeHours = 0;
 # UPDATE InvigilatorAttendance SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0;
-
-
+# UPDATE Exam SET examStartTime = NULL, examEndTime = NULL, examNoInvigilator = NULL, examOutput = NULL;
 
 
 class Department(db.Model):
