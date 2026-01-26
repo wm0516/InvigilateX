@@ -790,8 +790,8 @@ def get_exam_details(course_code):
         "courseDepartment": course.courseDepartment or "",
         "courseStudent": exam.examTotalStudents if exam else 0,
         "examVenues": [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],
-        "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
-        "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
+        "examStartTime": exam.examStartTime.isoformat() if exam and exam.examStartTime else "",
+        "examEndTime": exam.examEndTime.isoformat() if exam and exam.examEndTime else "",
     }
     return jsonify(response_data)
 

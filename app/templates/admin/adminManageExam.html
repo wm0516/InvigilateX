@@ -177,7 +177,6 @@
                     <th>Course Details</th>
                     <th>Exam Details</th>
                     <th>Invigilator Filter</th>
-                    <th>Number of Invigilators</th>
                     <th>Added/Edit Details</th>
                 </tr>
             </thead>    
@@ -223,6 +222,14 @@
                                     <strong>: None</strong>
                                 {% endif %}
                             </div>
+                            <div>No. Invigilator</div>
+                            <div>
+                                {% if row.examNoInvigilator == 0 %}
+                                    <strong>{{ row.examNoInvigilator }} (Share Venue Exam)</strong>
+                                {% else %}
+                                    <strong>{{ row.examNoInvigilator }}</strong>
+                                {% endif %}
+                            </div>
                         </div>
                         {% else %}
                         <span class="status frame-expired">Exam details not yet assigned</span>
@@ -240,13 +247,6 @@
                             <div>Flexible Female</div><div><strong>: {{ row.examOutput[6] }}</strong></div>
                         </div>
                         {% else %}None
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if row.examNoInvigilator == 0 %}
-                            {{ row.examNoInvigilator }} (Share Venue Exam)
-                        {% else %}
-                            {{ row.examNoInvigilator }}
                         {% endif %}
                     </td>
                     <td>
