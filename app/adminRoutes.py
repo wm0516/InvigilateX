@@ -1130,32 +1130,36 @@ def admin_manageExam():
                     return redirect(request.url)
 
             elif action == 'delete':
-                # Delete all invigilators and reports
-                reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
-                for report in reports:
-                    for att in report.attendances:
-                        if exam_select.examStartTime and exam_select.examEndTime:
-                            duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
-                            user = User.query.get(att.invigilatorId)
-                            if user:
-                                user.userPendingCumulativeHours = max(0, user.userPendingCumulativeHours - duration)
-                        db.session.delete(att)
-                    db.session.delete(report)
+                try:
+                    # 1️⃣ Delete all invigilator attendances and reports
+                    reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
+                    for report in reports:
+                        for att in report.attendances:
+                            # Adjust user pending hours if needed
+                            if exam_select.examStartTime and exam_select.examEndTime:
+                                duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
+                                user = User.query.get(att.invigilatorId)
+                                if user:
+                                    user.userPendingCumulativeHours = max(0, user.userPendingCumulativeHours - duration)
+                            db.session.delete(att)
+                        db.session.delete(report)
 
-                # Delete all venue assignments
-                for ve in VenueExam.query.filter_by(examId=exam_select.examId).all():
-                    db.session.delete(ve)
+                    # 2️⃣ Delete all venue assignments
+                    VenueExam.query.filter_by(examId=exam_select.examId).delete(synchronize_session=False)
 
-                # Reset exam times
-                exam_select.examStartTime = None
-                exam_select.examEndTime = None
-                exam_select.examNoInvigilator = None
-                exam_select.examOutput = None
-                exam_select.examAddedBy = user_id
-                exam_select.examAddedOn = datetime.now() + timedelta(hours=8)
-                db.session.commit()
-                flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
+                    # 3️⃣ Reset exam fields instead of deleting exam record
+                    exam_select.examStartTime = None
+                    exam_select.examEndTime = None
+                    exam_select.examNoInvigilator = None
+                    exam_select.examOutput = None
+                    exam_select.examAddedBy = user_id  # current admin/user performing delete
+                    exam_select.examAddedOn = datetime.now(timezone.utc)
 
+                    db.session.commit()
+                    flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
+                except Exception as e:
+                    db.session.rollback()
+                    flash(f"❌ Error deleting exam: {str(e)}", "error")
             return redirect(url_for('admin_manageExam'))
 
 

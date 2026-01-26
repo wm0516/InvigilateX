@@ -142,7 +142,7 @@ class Exam(db.Model):
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
     venue_availabilities = db.relationship("VenueExam", back_populates="exam")                   # One Exam ↔ Many VenueExam
-    invigilation_reports = db.relationship("InvigilationReport", backref="exam")                 # One Exam ↔ Many InvigilationReport
+    invigilation_reports = db.relationship("InvigilationReport", backref="exam", cascade="all, delete-orphan") # One Exam ↔ Many InvigilationReport
     addedBy = db.relationship("User", foreign_keys=[examAddedBy])
 
     '''
