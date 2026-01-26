@@ -1103,12 +1103,8 @@ def admin_manageExam():
         # 2️⃣ Edit exam
         if form_type == 'edit' and exam_select:
             action = request.form.get('action')
-            start_date_raw = request.form.get('startDate', '').strip()
-            start_time_raw = request.form.get('startTime', '').strip()
-            end_date_raw = request.form.get('endDate', '').strip()
-            end_time_raw = request.form.get('endTime', '').strip()
-            start_dt = parse_datetime(start_date_raw, start_time_raw)
-            end_dt = parse_datetime(end_date_raw, end_time_raw)
+            start_dt = datetime.fromisoformat(request.form['startDateTime'])
+            end_dt   = datetime.fromisoformat(request.form['endDateTime'])
             venue_list = request.form.getlist("venue[]")
             student_list = request.form.getlist("venueStudents[]")
 
@@ -1209,7 +1205,7 @@ def generate_user_template():
         ws_lists[f"A{i}"] = d.departmentCode
 
     # --- Roles ---
-    roles = ["Lecturer", "Dean", "HOS", "HOP", "Admin"]
+    roles = ["Lecturer", "ProgramOfficer", "Dean", "HOS", "HOP", "Admin"]
     for i, r in enumerate(roles, start=1):
         ws_lists[f"B{i}"] = r
 
