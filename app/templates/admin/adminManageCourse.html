@@ -8,19 +8,10 @@
 {% block head_title %}<h2>Manage Course</h2>{% endblock %}  
 
 {% block dashboard_section %}
-<div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
-    <label for="globalIntake">Select Intake:</label>
-    <select id="globalIntake" name="intake">
-        {% set current_year = namespace(value=2026) %} {# or dynamic #}
-        {% for y in range(current_year.value-1, current_year.value+2) %}
-            {% for month in ['JAN','APR','AUG','OCT'] %}
-                {% set intake_val = month ~ y %}
-                <option value="{{ intake_val }}" {% if intake_filter == intake_val %}selected{% endif %}>
-                    {{ intake_val }}
-                </option>
-            {% endfor %}
-        {% endfor %}
-    </select>
+<div>
+    <button id="prevIntake">&lt;</button>
+    <span id="currentIntake">Apr2026</span>
+    <button id="nextIntake">&gt;</button>
 </div>
 
 <!-- Dashboard Form -->
@@ -273,11 +264,6 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2>List of Courses</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div>
-                <button id="prevIntake">&lt;</button>
-                <span id="currentIntake">Apr2026</span>
-                <button id="nextIntake">&gt;</button>
-            </div>
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_courses" placeholder="Search..." value="{{ search_courses }}" style="border-radius: 6px; width: 100%;">
                 <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
@@ -356,14 +342,6 @@
 
 {% block extra_scripts %}
 <script>
-document.getElementById("globalIntake").addEventListener("change", function() {
-    const intake = this.value;
-    // Reload page with new intake as query parameter
-    const url = new URL(window.location.href);
-    url.searchParams.set("intake", intake);
-    window.location.href = url.toString();
-});
-
 document.addEventListener("DOMContentLoaded", () => {
     const currentYear = new Date().getFullYear();
     const semestersByYear = {
