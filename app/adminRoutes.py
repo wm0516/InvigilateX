@@ -104,7 +104,7 @@ def generate_managecourse_template():
     
     # --- Header row ---
     ws.append([])  # First row empty
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Intake', 'Course Name', 'Credit Hour', 'No. of Students']
+    headers = ['Program Code', 'Course Code', 'Course Section', 'Course Intake', 'Course Name', 'Credit Hour', 'No. of Students']
     ws.append(headers)
 
     # --- Hidden sheet for dropdown lists ---
@@ -175,7 +175,7 @@ def process_course_row(row):
     user_id = session.get('user_id')
     return create_course_and_exam(
         userid      = user_id,
-        department  = str(row['department code']).strip(),
+        department  = str(row['program code']).strip(),
         code        = str(row['course code']).strip().replace(" ", ""),
         section     = str(row['course section']).strip().replace(" ", ""),
         name        = str(row['course name']).strip(),
@@ -273,7 +273,7 @@ def admin_manageCourse():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='course_file',
-                expected_cols=['department code', 'course code', 'course section', 'course intake', 'course name', 'credit hour', 'no. of students'],
+                expected_cols=['program code', 'course code', 'course section', 'course intake', 'course name', 'credit hour', 'no. of students'],
                 process_row_fn=process_course_row,
                 redirect_endpoint='admin_manageCourse',
                 usecols="A:G",
