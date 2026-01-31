@@ -233,8 +233,6 @@ def admin_manageCourse():
         Course.courseDepartment.asc(),
         Course.courseName.asc()
     )
-    if intake_filter:
-        course_query = course_query.filter(Course.courseCodeSectionIntake.like(f"%/{intake_filter}"))
     course_data = course_query.all()
 
     department_data = Department.query.all()
