@@ -319,7 +319,7 @@ def admin_manageCourse():
                 else:
                     course_select.courseStatus = False
                     db.session.commit()
-                    flash("Course deleted successfully", "success")
+                    flash("Course deactivated successfully", "success")
                 return redirect(url_for('admin_manageCourse'))
 
         # --- Manual Add Section ---
