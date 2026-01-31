@@ -338,20 +338,26 @@
 
 {% block extra_scripts %}
 <script>
+document.addEventListener("DOMContentLoaded", () => {
     const currentYear = new Date().getFullYear();
-    // Define the semester months
-    const semesters = ['Jan', 'Apr', 'Aug', 'Oct'];
-    // Reference to the dropdown
     const intakeDropdown = document.getElementById('intakeSemester');
-    // Loop through year range (currentYear -1 to currentYear +1)
+
+    // Define semesters for each year relative to current year
+    const semestersByYear = {
+        [currentYear - 1]: ['Aug', 'Oct'],   // last year: last 2 semesters
+        [currentYear]: ['Jan', 'Apr', 'Aug', 'Oct'], // current year: all
+        [currentYear + 1]: ['Jan', 'Apr']    // next year: first 2 semesters
+    };
+
     for (let year = currentYear - 1; year <= currentYear + 1; year++) {
-        semesters.forEach(month => {
+        semestersByYear[year].forEach(month => {
             const option = document.createElement('option');
             option.value = `${month}${year}`;
             option.text = `${month}${year}`;
             intakeDropdown.appendChild(option);
         });
     }
+});
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- Cache DOM Elements ---
