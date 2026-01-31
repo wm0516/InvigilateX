@@ -188,23 +188,28 @@
                 </div><br>
 
                 <label>Course Name</label>
-                <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required><br>
+                <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required>
+            </div>
 
+            <div class="form-middle">
                 <label>Course Program</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>-- Select Department --</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
                     {% endfor %}
-                </select>
-            </div>
+                </select><br>
 
-            <div class="form-middle">
-                <label>Course Credit Hour(s)</label>
-                <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required><br>
-
-                <label>Course Number of Student(s)</label>
-                <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required><br>
+                <div class="profile-frame" style="justify-content: space-between;">
+                    <div class="form-left" style="width: 49%;">
+                        <label>Course Credit Hour(s)</label>
+                        <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required>
+                    </div>
+                    <div class="form-middle" style="width: 49%;">
+                        <label>Course Number of Student(s)</label>
+                        <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required>
+                    </div>
+                </div><br>
 
                 <label>Course Status</label>
                 <select id="editCourseStatus" name="courseStatus" required>
