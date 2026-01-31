@@ -92,16 +92,16 @@
                     {% endfor %}
                 </select><br>
 
-                <div class="profile-frame">
-                    <div class="form-left">
+                <div class="profile-frame" style="justify-content: space-between;">
+                    <div class="form-left" style="width: 35;">
                         <label>Course Code</label>
                         <input type="text" name="courseCode" value="{{ courseCode_text }}" required>
                     </div>
-                    <div class="form-middle">
+                    <div class="form-middle" style="width: 20;">
                         <label>Course Section</label>
                         <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
                     </div>
-                    <div class="form-right">
+                    <div class="form-right" style="width: 35;">
                         <label>Course Intake Semester</label>
                         <select id="intakeSemester" name="intakeSemester">
                             <option value="" selected>-- Select Intake Semester --</option>
