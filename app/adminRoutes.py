@@ -264,68 +264,63 @@ def admin_manageCourse():
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and course_select:
-                # Update course values
-                course_select.courseDepartment  = request.form.get('departmentCode', '').strip()
-                course_select.courseName        = request.form.get('courseName', '').strip()
-                course_select.coursePractical   = request.form.get('practicalLecturerSelect', '').strip() or None
-                course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip() or None
-                course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
-                course_select.courseStatus      = True if request.form.get('courseStatus') == '1' else False
-                # Update added staff and date
-                course_select.courseAddedBy = user_id
-                course_select.courseAddedOn = datetime.now() + timedelta(hours=8)
+                course_status = True if request.form.get('courseStatus') == '1' else False
 
-                # Safe int conversion
-                try:
-                    course_select.courseHour = int(request.form.get('courseHour', 0))
-                except (ValueError, TypeError):
-                    course_select.courseHour = 0
+                # courseStatus = TRUE (UPDATE)
+                if course_status is True:
+                    course_select.courseDepartment  = request.form.get('departmentCode', '').strip()
+                    course_select.courseName        = request.form.get('courseName', '').strip()
+                    course_select.coursePractical   = request.form.get('practicalLecturerSelect', '').strip() or None
+                    course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip() or None
+                    course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
+                    course_select.courseStatus      = True
+                    course_select.courseAddedBy = user_id
+                    course_select.courseAddedOn = datetime.now() + timedelta(hours=8)
 
-                try:
-                    course_select.courseStudent = int(request.form.get('courseStudent', 0))
-                except (ValueError, TypeError):
-                    course_select.courseStudent = 0
+                    # Safe int conversion
+                    try:
+                        course_select.courseHour = int(request.form.get('courseHour', 0))
+                    except (ValueError, TypeError):
+                        course_select.courseHour = 0
 
-                # -------------------------
-                # Validate required fields
-                # -------------------------
-                required_fields = [
-                    course_select.courseDepartment,
-                    course_select.courseName,
-                    course_select.coursePractical,
-                    course_select.courseTutorial,
-                    course_select.courseLecturer,
-                    course_select.courseHour,
-                    course_select.courseStudent,
-                    course_select.courseAddedBy,
-                    course_select.courseAddedOn
-                ]
+                    try:
+                        course_select.courseStudent = int(request.form.get('courseStudent', 0))
+                    except (ValueError, TypeError):
+                        course_select.courseStudent = 0
 
-                if all(f is not None and f != '' for f in required_fields):
-                    # Update existing exam if it already exists
-                    if course_select.courseExamId:
-                        existing_exam = Exam.query.get(course_select.courseExamId)
-                        if existing_exam:
-                            pass
-                    else:
-                        # Create new exam if none exists
-                        new_exam = Exam(
-                            examStartTime=None,
-                            examEndTime=None,
-                            examNoInvigilator=None
-                        )
-                        db.session.add(new_exam)
-                        db.session.flush()
-                        course_select.courseExamId = new_exam.examId
+                    # Validate required fields
+                    required_fields = [
+                        course_select.courseDepartment,
+                        course_select.courseName,
+                        course_select.coursePractical,
+                        course_select.courseTutorial,
+                        course_select.courseLecturer,
+                        course_select.courseHour,
+                        course_select.courseStudent,
+                        course_select.courseAddedBy,
+                        course_select.courseAddedOn
+                    ]
 
-                db.session.commit()
-                flash("Course updated successfully", "success")
+                    if all(f not in (None, '') for f in required_fields):
+                        if not course_select.courseExamId:
+                            new_exam = Exam(
+                                examStartTime=None,
+                                examEndTime=None,
+                                examNoInvigilator=None
+                            )
+                            db.session.add(new_exam)
+                            db.session.flush()
+                            course_select.courseExamId = new_exam.examId
 
-            elif action == 'delete' and course_select:
-                course_select.courseStatus = False
-                db.session.commit()
-                flash("Course deleted successfully", "success")
-            return redirect(url_for('admin_manageCourse'))
+                    db.session.commit()
+                    flash("Course updated successfully", "success")
+
+                # courseStatus = FALSE (DELETE / DISABLE)
+                else:
+                    course_select.courseStatus = False
+                    db.session.commit()
+                    flash("Course deleted successfully", "success")
+                return redirect(url_for('admin_manageCourse'))
 
         # --- Manual Add Section ---
         elif form_type == 'manual':
