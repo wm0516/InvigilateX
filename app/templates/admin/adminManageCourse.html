@@ -591,7 +591,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Determine year of the selected period
         const selectedYear = parseInt(intakePeriods[idx].slice(-4));
-        currentIntake = [intakePeriods[idx]];
+        
+
+        // Special handling for AUG+OCT multi-intake period
+        if (intakePeriods[idx] === `AUG${selectedYear}`) {
+            currentIntake = [`AUG${selectedYear}`, `OCT${selectedYear}`];
+        } else {
+            currentIntake = [intakePeriods[idx]];
+        }
+
         filterTableByIntake(currentIntake);
     }
 
