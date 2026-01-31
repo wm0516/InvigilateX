@@ -84,7 +84,7 @@
             <div class="form-left">
                 <label>Department</label>
                 <select id="departmentCode" name="departmentCode" required>
-                    <option value="" disabled selected>Select Department</option>
+                    <option value="" disabled selected>-- Select Department --</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
@@ -96,7 +96,12 @@
                 <input type="text" name="courseCode" value="{{ courseCode_text }}" required><br>
 
                 <label>Course Section</label>
-                <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
+                <input type="text" name="courseSection" value="{{ courseSection_text }}" required><br>
+                
+                <label>Course Intake Semester</label>
+                <select id="intakeSemester" name="intakeSemester">
+                    <option value="" selected>-- Select Intake Semester --</option>
+                </select>
             </div>
 
             <div class="form-middle">
@@ -108,11 +113,6 @@
 
                 <label>Course Number of Student(s)</label>
                 <input type="number" name="courseStudent" value="{{ courseStudent_text }}" min="1" step="1" required>
-
-                <label>Intake Semester</label>
-                <select id="intakeSemester" name="intakeSemester">
-                    <option value="" selected>-- Select Intake Semester --</option>
-                </select><br>
             </div>
 
             <div class="form-right">
@@ -155,7 +155,7 @@
                 <!-- Select Existing Course -->
                 <label>Select Course Code - Course Name</label>
                 <select id="editCourseSelect" name="editCourseSelect" required>
-                    <option value="" disabled selected>Select Course</option>
+                    <option value="" disabled selected>-- Select Course --</option>
                     {% for row in course_data %}
                         <option value="{{ row.courseCodeSectionIntake }}"
                             {% if course_select and course_select.courseCodeSectionIntake == row.courseCodeSectionIntake %}selected{% endif %}>
@@ -169,7 +169,7 @@
 
                 <label>Department</label>
                 <select id="editDepartment" name="departmentCode" required>
-                    <option value="" disabled selected>Select Department</option>
+                    <option value="" disabled selected>-- Select Department --</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}">{{ dept.departmentCode }} - {{ dept.departmentName }}</option>
                     {% endfor %}
@@ -185,7 +185,7 @@
 
                 <label>Course Status</label>
                 <select id="editCourseStatus" name="courseStatus" required>
-                    <option value="" selected disabled hidden>Select Status</option>
+                    <option value="" selected disabled hidden>-- Select Status --</option>
                     <option value="1">Activated</option>   <!-- True -->
                     <option value="0">Deactivated</option> <!-- False -->
                 </select>
@@ -194,17 +194,17 @@
             <div class="form-right">
                 <label>Practical Lecturer (Optional)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect">
-                    <option value="" selected>Select Practical Lecturer</option>
+                    <option value="" selected>-- Select Practical Lecturer --</option>
                 </select><br>
 
                 <label>Tutorial Lecturer (Optional)</label>
                 <select id="editTutorialLecturer" name="tutorialLecturerSelect">
-                    <option value="" selected>Select Tutorial Lecturer</option>
+                    <option value="" selected>-- Select Tutorial Lecturer --</option>
                 </select><br>
 
                 <label>Class Lecturer (Optional)</label>
                 <select id="editLecturer" name="lecturerSelect">
-                    <option value="" selected>Select Class Lecturer</option>
+                    <option value="" selected>-- Select Class Lecturer --</option>
                 </select>
             </div>
         </div>
