@@ -104,29 +104,48 @@ def generate_managecourse_template():
     
     # --- Header row ---
     ws.append([])  # First row empty
-    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Name', 'Credit Hour', 'No. of Students']
+    headers = ['Department Code', 'Course Code', 'Course Section', 'Course Intake', 'Course Name', 'Credit Hour', 'No. of Students']
     ws.append(headers)
 
     # --- Hidden sheet for dropdown lists ---
     ws_lists = wb.create_sheet(title="Lists")
 
-    # Fetch all department codes
+    # --- Department Codes ---
     departments = [d.departmentCode for d in Department.query.order_by(Department.departmentCode).all()]
     for i, dept in enumerate(departments, start=1):
         ws_lists[f"A{i}"] = dept
 
+    # --- Intake Semester/Month-Year Combos ---
+    current_year = datetime.now().year
+    semesters_by_year = {
+        current_year - 1: ['AUG', 'OCT'],
+        current_year: ['JAN', 'APR', 'AUG', 'OCT'],
+        current_year + 1: ['JAN', 'APR']
+    }
+
+    # Flatten into a single list like "JAN2026", "APR2026", etc.
+    intake_list = []
+    for year, months in semesters_by_year.items():
+        for month in months:
+            intake_list.append(f"{month}{year}")
+
+    # Write intake options into hidden sheet column B
+    for i, intake in enumerate(intake_list, start=1):
+        ws_lists[f"B{i}"] = intake
+
     # Hide the Lists sheet
     ws_lists.sheet_state = 'hidden'
 
-    # Create dropdown for Department Code column (A3:A1000)
+    # --- Data Validations ---
     if departments:
-        dv_dept = DataValidation(
-            type="list",
-            formula1=f"=Lists!$A$1:$A${len(departments)}",
-            allow_blank=False
-        )
+        dv_dept = DataValidation(type="list", formula1=f"=Lists!$A$1:$A${len(departments)}", allow_blank=False)
         ws.add_data_validation(dv_dept)
-        dv_dept.add("A3:A1000")
+        dv_dept.add("A3:A1000")  # Department Code column
+
+    if intake_list:
+        dv_intake = DataValidation(type="list", formula1=f"=Lists!$B$1:$B${len(intake_list)}", allow_blank=False)
+        ws.add_data_validation(dv_intake)
+        dv_intake.add("D3:D1000")  # Course Intake column
 
     # Return as BytesIO for Flask send_file
     output = BytesIO()
@@ -162,6 +181,7 @@ def process_course_row(row):
         name        = str(row['course name']).strip(),
         hour        = int(row['credit hour']),
         students    = int(row['no. of students']),
+        intake      = str(row['course intake']).strip(),
     )
 
 # -------------------------------
@@ -253,10 +273,10 @@ def admin_manageCourse():
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='course_file',
-                expected_cols=['department code', 'course code', 'course section', 'course name', 'credit hour', 'no. of students'],
+                expected_cols=['department code', 'course code', 'course section', 'course intake', 'course name', 'credit hour', 'no. of students'],
                 process_row_fn=process_course_row,
                 redirect_endpoint='admin_manageCourse',
-                usecols="A:F",
+                usecols="A:G",
                 skiprows=1 
             )
 
