@@ -226,13 +226,21 @@ def get_courseCodeSection(courseCodeSection_select):
 @login_required
 def admin_manageCourse():
     user_id = session.get('user_id')
-    course_data = Course.query.order_by(
+    
+    # === Intake filter from query params or POST ===
+    intake_filter = request.args.get('intake') or request.form.get('intake') or None
+
+    # === Get all courses, optionally filtered by intake ===
+    course_query = Course.query.order_by(
         Course.courseStatus.desc(),
         Course.courseDepartment.asc(),
         Course.courseName.asc()
-    ).all()
-    department_data = Department.query.all()
+    )
+    if intake_filter:
+        course_query = course_query.filter(Course.courseCodeSectionIntake.like(f"%/{intake_filter}"))
+    course_data = course_query.all()
 
+    department_data = Department.query.all()
     course_id = request.form.get('editCourseSelect')
     course_select = Course.query.filter_by(courseCodeSectionIntake=course_id).first()
 
@@ -245,14 +253,15 @@ def admin_manageCourse():
         (Course.courseStudent.is_(None))
     ).count()
 
-    # === Courses by department safely ===
+    # Courses by department safely (only active courses in selected intake)
     courses_by_department_raw = (
         db.session.query(
             func.coalesce(Department.departmentCode, "Unknown").label("department"),
             func.count(Course.courseCodeSectionIntake).label("course_count")
         )
         .outerjoin(Course, Department.departmentCode == Course.courseDepartment)
-        .filter(Course.courseStatus == True)   # ✅ filter BEFORE group_by
+        .filter(Course.courseStatus == True)
+        .filter(Course.courseCodeSectionIntake.like(f"%/{intake_filter}") if intake_filter else True)
         .group_by(func.coalesce(Department.departmentCode, "Unknown"))
         .having(func.count(Course.courseCodeSectionIntake) > 0)
         .order_by(func.coalesce(Department.departmentCode, "Unknown").asc())
@@ -383,7 +392,7 @@ def admin_manageCourse():
 
     # === GET Request ===
     return render_template('admin/adminManageCourse.html', active_tab='admin_manageCoursetab', course_data=course_data, course_select=course_select,
-                            department_data=department_data, courses_by_department=courses_by_department, error_rows=error_rows)
+                            department_data=department_data, courses_by_department=courses_by_department, error_rows=error_rows, intake_filter=intake_filter)
 
 
 

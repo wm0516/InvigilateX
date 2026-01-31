@@ -8,6 +8,21 @@
 {% block head_title %}<h2>Manage Course</h2>{% endblock %}  
 
 {% block dashboard_section %}
+<div style="display:flex; align-items:center; gap:10px; margin-bottom:20px;">
+    <label for="globalIntake">Select Intake:</label>
+    <select id="globalIntake" name="intake">
+        {% set current_year = namespace(value=2026) %} {# or dynamic #}
+        {% for y in range(current_year.value-1, current_year.value+2) %}
+            {% for month in ['JAN','APR','AUG','OCT'] %}
+                {% set intake_val = month ~ y %}
+                <option value="{{ intake_val }}" {% if intake_filter == intake_val %}selected{% endif %}>
+                    {{ intake_val }}
+                </option>
+            {% endfor %}
+        {% endfor %}
+    </select>
+</div>
+
 <!-- Dashboard Form -->
 <form id="dashboardForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
     <div id="dashboardSection">
@@ -341,6 +356,14 @@
 
 {% block extra_scripts %}
 <script>
+document.getElementById("globalIntake").addEventListener("change", function() {
+    const intake = this.value;
+    // Reload page with new intake as query parameter
+    const url = new URL(window.location.href);
+    url.searchParams.set("intake", intake);
+    window.location.href = url.toString();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     const currentYear = new Date().getFullYear();
     const semestersByYear = {
