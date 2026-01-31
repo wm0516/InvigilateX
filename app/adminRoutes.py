@@ -338,6 +338,7 @@ def admin_manageCourse():
                 "name"      : request.form.get('courseName', '').strip(),
                 "hour"      : safe_int(request.form.get('courseHour')),
                 "students"  : safe_int(request.form.get('courseStudent')),
+                "intake"    : request.form.get('intakeSemester', '').strip(),
             }
             success, message = create_course_and_exam(**form_data)
             flash(message, "success" if success else "error")
