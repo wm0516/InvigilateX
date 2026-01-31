@@ -526,32 +526,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
 document.addEventListener("DOMContentLoaded", () => {
     const currentDate = new Date();
-    const month = currentDate.getMonth() + 1; // JS months are 0-11
+    const month = currentDate.getMonth() + 1; // JS months: 0-11
     const year = currentDate.getFullYear();
 
-    // Define intake periods
+    const tableRows = document.querySelectorAll("#manageCourse tbody tr");
+    const currentIntakeDisplay = document.getElementById("currentIntake");
+    const prevBtn = document.getElementById("prevIntake");
+    const nextBtn = document.getElementById("nextIntake");
+
+    // Define all intake options
     const intakeOrder = ['JAN', 'APR', 'AUG', 'OCT'];
 
+    // ===== Determine default intake based on current month =====
     function getCurrentIntake() {
-        if (month >= 1 && month <= 3) return `JAN${year}`;
-        if (month >= 4 && month <= 7) return `APR${year}`;
-        if (month >= 8 && month <= 9) return `AUG${year}`;
-        if (month >= 10 && month <= 12) return `OCT${year}`;
+        if (month >= 1 && month <= 3) return [`JAN${year}`];
+        if (month >= 4 && month <= 7) return [`APR${year}`];
+        if (month >= 8 && month <= 9) return [`AUG${year}`, `OCT${year}`]; // Show both AUG+OCT
+        if (month >= 10 && month <= 12) return [`OCT${year}`];             // Only OCT
     }
 
     let currentIntake = getCurrentIntake();
 
-    const currentIntakeDisplay = document.getElementById("currentIntake");
-    const prevBtn = document.getElementById("prevIntake");
-    const nextBtn = document.getElementById("nextIntake");
-    const tableRows = document.querySelectorAll("#manageCourse tbody tr");
-
-    // Show only rows matching current intake
-    function filterTableByIntake(intake) {
+    // ===== Filter table by intake array =====
+    function filterTableByIntake(intakeArray) {
         let hasVisible = false;
         tableRows.forEach(row => {
-            const intakeCell = row.children[2].textContent.trim().split('/')[2]; // Split code/section/intake
-            if (intakeCell === intake) {
+            const intakeCell = row.children[2].textContent.trim().split('/')[2];
+            if (intakeArray.includes(intakeCell)) {
                 row.style.display = "";
                 hasVisible = true;
             } else {
@@ -559,32 +560,44 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
         document.getElementById("noResults").style.display = hasVisible ? "none" : "block";
-        currentIntakeDisplay.textContent = intake;
+        currentIntakeDisplay.textContent = intakeArray.join(' + ');
     }
 
-    // Navigate intake
-    function navigateIntake(direction) {
-        const currentMonthCode = currentIntake.slice(0, 3);
-        const currentYear = parseInt(currentIntake.slice(3));
+    // ===== Generate full list of intake periods for navigation =====
+    // We create periods for current year and next year
+    let intakePeriods = [];
+    for (let y = year; y <= year + 1; y++) {
+        intakeOrder.forEach(m => {
+            intakePeriods.push(`${m}${y}`);
+        });
+    }
 
-        // Flatten intake array to include repeated years if necessary
-        const allIntakes = intakeOrder.flatMap(m => [`${m}${currentYear}`, `${m}${currentYear+1}`]);
-        let idx = allIntakes.indexOf(currentIntake);
+    // ===== Handle prev/next buttons =====
+    function navigateIntake(direction) {
+        // Find the index of the first intake in currentIntake
+        let idx = intakePeriods.findIndex(i => i === currentIntake[0]);
         if (idx === -1) idx = 0;
 
         if (direction === "prev") idx = Math.max(0, idx - 1);
-        if (direction === "next") idx = Math.min(allIntakes.length - 1, idx + 1);
+        if (direction === "next") idx = Math.min(intakePeriods.length - 1, idx + 1);
 
-        currentIntake = allIntakes[idx];
+        // Special handling for AUG+OCT multi-intake period
+        if (intakePeriods[idx] === `AUG${year}`) {
+            currentIntake = [`AUG${year}`, `OCT${year}`];
+        } else {
+            currentIntake = [intakePeriods[idx]];
+        }
+
         filterTableByIntake(currentIntake);
     }
 
     prevBtn.addEventListener("click", () => navigateIntake("prev"));
     nextBtn.addEventListener("click", () => navigateIntake("next"));
 
-    // Initialize table with current intake
+    // ===== Initialize table =====
     filterTableByIntake(currentIntake);
 });
+
 </script>
 {% endblock %}
 
