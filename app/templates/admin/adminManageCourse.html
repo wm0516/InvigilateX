@@ -82,7 +82,7 @@
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
             <div class="form-left">
-                <label>Department</label>
+                <label>Course Program</label>
                 <select id="departmentCode" name="departmentCode" required>
                     <option value="" disabled selected>-- Select Department --</option>
                     {% for dept in department_data %}
@@ -97,14 +97,14 @@
                         <label>Course Code</label>
                         <input type="text" name="courseCode" value="{{ courseCode_text }}" required>
                     </div>
-                    <div class="form-middle" style="width: 20%;">
+                    <div class="form-middle" style="width: 25%;">
                         <label>Course Section</label>
                         <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
                     </div>
                     <div class="form-right" style="width: 35%;">
-                        <label>Course Intake Semester</label>
+                        <label>Course Intake</label>
                         <select id="intakeSemester" name="intakeSemester" required>
-                            <option value="" selected>-- Select Intake Semester --</option>
+                            <option value="" selected>-- Select Intake --</option>
                         </select>
                     </div>
                 </div><br>
@@ -175,14 +175,14 @@
                         <label>Course Code</label>
                         <input type="text" name="courseCode" value="{{ courseCode_text }}" required>
                     </div>
-                    <div class="form-middle" style="width: 20%;">
+                    <div class="form-middle" style="width: 25%;">
                         <label>Course Section</label>
                         <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
                     </div>
                     <div class="form-right" style="width: 35%;">
-                        <label>Course Intake Semester</label>
+                        <label>Course Intake</label>
                         <select id="intakeSemester" name="intakeSemester" required>
-                            <option value="" selected>-- Select Intake Semester --</option>
+                            <option value="" selected>-- Select Intake --</option>
                         </select>
                     </div>
                 </div><br>
@@ -190,7 +190,7 @@
                 <label>Course Name</label>
                 <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required><br>
 
-                <label>Department</label>
+                <label>Course Program</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>-- Select Department --</option>
                     {% for dept in department_data %}
@@ -338,6 +338,21 @@
 
 {% block extra_scripts %}
 <script>
+    const currentYear = new Date().getFullYear();
+    // Define the semester months
+    const semesters = ['Jan', 'Apr', 'Aug', 'Oct'];
+    // Reference to the dropdown
+    const intakeDropdown = document.getElementById('intakeSemester');
+    // Loop through year range (currentYear -1 to currentYear +1)
+    for (let year = currentYear - 1; year <= currentYear + 1; year++) {
+        semesters.forEach(month => {
+            const option = document.createElement('option');
+            option.value = `${month}${year}`;
+            option.text = `${month}${year}`;
+            intakeDropdown.appendChild(option);
+        });
+    }
+
 document.addEventListener("DOMContentLoaded", () => {
     // --- Cache DOM Elements ---
     const els = {
