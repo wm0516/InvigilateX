@@ -181,7 +181,7 @@
                     </div>
                     <div class="form-right" style="width: 35%;">
                         <label>Course Intake</label>
-                        <select id="intakeSemester" name="intakeSemester" required>
+                        <select id="intakeSemesterEdit" name="intakeSemesterEdit" required>
                             <option value="" selected>-- Select Intake --</option>
                         </select>
                     </div>
@@ -340,23 +340,22 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const currentYear = new Date().getFullYear();
-    const intakeDropdown = document.getElementById('intakeSemester');
-
-    // Define semesters for each year relative to current year
     const semestersByYear = {
-        [currentYear - 1]: ['Aug', 'Oct'],   // last year: last 2 semesters
-        [currentYear]: ['Jan', 'Apr', 'Aug', 'Oct'], // current year: all
-        [currentYear + 1]: ['Jan', 'Apr']    // next year: first 2 semesters
+        [currentYear - 1]: ['Aug', 'Oct'],
+        [currentYear]: ['Jan', 'Apr', 'Aug', 'Oct'],
+        [currentYear + 1]: ['Jan', 'Apr']
     };
 
-    for (let year = currentYear - 1; year <= currentYear + 1; year++) {
-        semestersByYear[year].forEach(month => {
-            const option = document.createElement('option');
-            option.value = `${month}${year}`;
-            option.text = `${month}${year}`;
-            intakeDropdown.appendChild(option);
+    // Populate dropdown for multiple selects
+    ['intakeSemester', 'intakeSemesterEdit'].forEach(id => {
+        const dropdown = document.getElementById(id);
+        if (!dropdown) return;
+        Object.keys(semestersByYear).forEach(year => {
+            semestersByYear[year].forEach(month => {
+                dropdown.add(new Option(`${month}${year}`, `${month}${year}`));
+            });
         });
-    }
+    });
 });
 
 document.addEventListener("DOMContentLoaded", () => {
