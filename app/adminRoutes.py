@@ -263,21 +263,35 @@ def admin_manageCourse():
         # --- Edit Section ---
         elif form_type == 'edit':
             action = request.form.get('action')
+            code = request.form.get('courseCode', '').strip()
+            section = request.form.get('courseSection', '').strip()
+            intake = request.form.get('intakeSemesterEdit', '').strip()  # fixed name
+            courseCodeSection_text = f"{code}/{section}/{intake}".upper() if code and section and intake else None
+
             if action == 'update' and course_select:
                 course_status = True if request.form.get('courseStatus') == '1' else False
 
-                # courseStatus = TRUE (UPDATE)
-                if course_status is True:
+                # --- UPDATE COURSE ---
+                if course_status:
+                    # Validate PK uniqueness before updating
+                    if courseCodeSection_text != course_select.courseCodeSectionIntake:
+                        existing_course = Course.query.get(courseCodeSection_text)
+                        if existing_course:
+                            flash("This Course Code/Section/Intake already exists!", "error")
+                            return redirect(request.url)
+
+                    # Update PK and other fields
+                    course_select.courseCodeSectionIntake = courseCodeSection_text
                     course_select.courseDepartment  = request.form.get('departmentCode', '').strip()
                     course_select.courseName        = request.form.get('courseName', '').strip()
                     course_select.coursePractical   = request.form.get('practicalLecturerSelect', '').strip() or None
                     course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip() or None
                     course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
                     course_select.courseStatus      = True
-                    course_select.courseAddedBy = user_id
-                    course_select.courseAddedOn = datetime.now() + timedelta(hours=8)
+                    course_select.courseAddedBy     = user_id
+                    course_select.courseAddedOn     = datetime.now() + timedelta(hours=8)
 
-                    # Safe int conversion
+                    # Safe integer conversion
                     try:
                         course_select.courseHour = int(request.form.get('courseHour', 0))
                     except (ValueError, TypeError):
@@ -302,6 +316,7 @@ def admin_manageCourse():
                     ]
 
                     if all(f not in (None, '') for f in required_fields):
+                        # Ensure Exam exists
                         if not course_select.courseExamId:
                             new_exam = Exam(
                                 examStartTime=None,
@@ -309,18 +324,20 @@ def admin_manageCourse():
                                 examNoInvigilator=None
                             )
                             db.session.add(new_exam)
-                            db.session.flush()
+                            db.session.flush()  # Assign examId
                             course_select.courseExamId = new_exam.examId
 
                     db.session.commit()
                     flash("Course updated successfully", "success")
 
-                # courseStatus = FALSE (DELETE / DISABLE)
+                # --- DEACTIVATE COURSE ---
                 else:
                     course_select.courseStatus = False
                     db.session.commit()
                     flash("Course deactivated successfully", "success")
+
                 return redirect(url_for('admin_manageCourse'))
+
 
         # --- Manual Add Section ---
         elif form_type == 'manual':
