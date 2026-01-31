@@ -543,7 +543,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (month >= 8 && month <= 9) return [`AUG${year}`, `OCT${year}`]; // Show both AUG+OCT
         if (month >= 10 && month <= 12) return [`OCT${year}`];
     }
-
+    function renumberVisibleRows() {
+        let visibleIndex = 1;
+        tableRows.forEach(row => {
+            if (row.style.display !== "none") {
+                row.children[0].textContent = visibleIndex++;
+            }
+        });
+    }
     let currentIntake = getCurrentIntake();
 
     // ===== Filter table by intake array =====
@@ -560,6 +567,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         document.getElementById("noResults").style.display = hasVisible ? "none" : "block";
         currentIntakeDisplay.textContent = intakeArray.join(' + ');
+        renumberVisibleRows();
     }
 
     // ===== Generate full list of intake periods for navigation =====
