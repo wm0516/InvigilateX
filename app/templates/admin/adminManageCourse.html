@@ -525,29 +525,41 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const currentDate = new Date();
-    const month = currentDate.getMonth() + 1; // JS months: 0-11
-    const year = currentDate.getFullYear();
+    // ===== 1️⃣ Get current local date/time =====
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kuala_Lumpur" }));
+    const localMonth = now.getMonth() + 1; // 1-12
+    const localYear = now.getFullYear();
 
     const tableRows = document.querySelectorAll("#manageCourse tbody tr");
     const currentIntakeDisplay = document.getElementById("currentIntake");
     const prevBtn = document.getElementById("prevIntake");
     const nextBtn = document.getElementById("nextIntake");
 
-    // Define all intake options
+    // ===== 2️⃣ Define intake order =====
     const intakeOrder = ['JAN', 'APR', 'AUG', 'OCT'];
 
-    // ===== Determine default intake based on current month =====
-    function getCurrentIntake() {
-        if (month >= 1 && month <= 3) return [`JAN${year}`];
-        if (month >= 4 && month <= 7) return [`APR${year}`];
-        if (month >= 8 && month <= 9) return [`AUG${year}`, `OCT${year}`]; // Show both AUG+OCT
-        if (month >= 10 && month <= 12) return [`OCT${year}`];             // Only OCT
+    // ===== 3️⃣ Determine default intake based on local month =====
+    function getDefaultIntake() {
+        if (localMonth >= 1 && localMonth <= 3) return [`JAN${localYear}`];
+        if (localMonth >= 4 && localMonth <= 7) return [`APR${localYear}`];
+        if (localMonth >= 8 && localMonth <= 9) return [`AUG${localYear}`, `OCT${localYear}`]; // show both
+        if (localMonth >= 10 && localMonth <= 12) return [`OCT${localYear}`];
     }
 
-    let currentIntake = getCurrentIntake();
+    let currentIntake = getDefaultIntake();
 
-    // ===== Filter table by intake array =====
+    // ===== 4️⃣ Generate intake periods for the entire year =====
+    let intakePeriods = intakeOrder.map(m => m + localYear);
+
+    // ===== 5️⃣ Multi-intake handler =====
+    function getMultiIntake(period) {
+        const month = period.slice(0,3);
+        const year = period.slice(3);
+        if (month === "AUG") return [`AUG${year}`, `OCT${year}`]; // special case
+        return [period];
+    }
+
+    // ===== 6️⃣ Filter table rows by intake array =====
     function filterTableByIntake(intakeArray) {
         let hasVisible = false;
         tableRows.forEach(row => {
@@ -563,40 +575,25 @@ document.addEventListener("DOMContentLoaded", () => {
         currentIntakeDisplay.textContent = intakeArray.join(' + ');
     }
 
-    // ===== Generate full list of intake periods for navigation =====
-    // We create periods for current year and next year
-    let intakePeriods = [];
-    for (let y = year; y <= year + 1; y++) {
-        intakeOrder.forEach(m => {
-            intakePeriods.push(`${m}${y}`);
-        });
-    }
-
-    // ===== Handle prev/next buttons =====
+    // ===== 7️⃣ Handle swipe buttons =====
     function navigateIntake(direction) {
-        // Find the index of the first intake in currentIntake
         let idx = intakePeriods.findIndex(i => i === currentIntake[0]);
         if (idx === -1) idx = 0;
 
         if (direction === "prev") idx = Math.max(0, idx - 1);
         if (direction === "next") idx = Math.min(intakePeriods.length - 1, idx + 1);
 
-        // Special handling for AUG+OCT multi-intake period
-        if (intakePeriods[idx] === `AUG${year}`) {
-            currentIntake = [`AUG${year}`, `OCT${year}`];
-        } else {
-            currentIntake = [intakePeriods[idx]];
-        }
-
+        currentIntake = getMultiIntake(intakePeriods[idx]);
         filterTableByIntake(currentIntake);
     }
 
     prevBtn.addEventListener("click", () => navigateIntake("prev"));
     nextBtn.addEventListener("click", () => navigateIntake("next"));
 
-    // ===== Initialize table =====
+    // ===== 8️⃣ Initialize table with default intake =====
     filterTableByIntake(currentIntake);
 });
+
 
 </script>
 {% endblock %}
