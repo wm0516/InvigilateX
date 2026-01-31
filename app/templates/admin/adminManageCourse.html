@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 els.editCourseName.value = c.courseName;
                 els.editCourseHour.value = c.courseHour;
                 els.editCourseStudents.value = c.courseStudent;
-                els.editStatus.value = c.courseStatus.toString();
+                els.editStatus.value = c.courseStatus ? "1" : "0";
 
                 populateLecturers(c.courseDepartment, els.editPractical, els.editTutorial, els.editLecturer, c.coursePractical, c.courseTutorial, c.courseLecturer);
             })
