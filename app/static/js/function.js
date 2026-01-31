@@ -179,38 +179,33 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-// Universal Admin Search Utility
-// Works for tables (multiple IDs) + card layouts
 function searchContent() {
     const input = document.getElementById("searchInput");
+    const noResults = document.getElementById("noResults");
     if (!input) return;
     const filter = input.value.toLowerCase();
     let anyVisible = false;
 
-    // TABLE SEARCH (for common admin pages)
     const tables = ["manageCourse","manageDepartment","manageVenue","manageExam","manageStaff","viewStaff"];
-
     for (const tableId of tables) {
         const table = document.getElementById(tableId);
         if (!table) continue;
-
         const rows = table.getElementsByTagName("tr");
         for (let i = 1; i < rows.length; i++) {
             const cells = rows[i].getElementsByTagName("td");
             let match = false;
-
             for (let j = 0; j < cells.length; j++) {
-                const text = cells[j].textContent.toLowerCase();
-                if (text.includes(filter)) {
+                if (cells[j].textContent.toLowerCase().includes(filter)) {
                     match = true;
                     break;
                 }
             }
-
             rows[i].style.display = match ? "" : "none";
             if (match) anyVisible = true;
         }
     }
+
+    if (noResults) noResults.style.display = anyVisible ? "none" : "block";
 }
 
 // Setup Function: Runs once per page
