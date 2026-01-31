@@ -283,7 +283,7 @@ document.getElementById('generatePDF')?.addEventListener('click', () => {
     const table = document.querySelector('.user-table-container table');
     if (!table) return alert("No timetable table found!");
 
-    const headerText = "Merge Timetable View Download";
+    const headerText = "Admin View - Merge Timetable Download";
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur",day: "2-digit",month: "short",year: "numeric",hour: "2-digit",minute: "2-digit",hour12: true});
     const filename = `Admin_ViewMergeTimetable.pdf`;
 

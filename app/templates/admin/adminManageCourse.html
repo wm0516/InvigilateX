@@ -469,7 +469,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // ===== Title =====
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
-        doc.text("Course View Download", pageWidth / 2, margin, { align: "center" });
+        doc.text("Admin View - Courses Download", pageWidth / 2, margin, { align: "center" });
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(10);
@@ -488,12 +488,10 @@ document.addEventListener("DOMContentLoaded", function () {
             return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
                 let text = td.innerText.trim();
 
-                if (idx === 9 || idx === 10) {  // Lecturer details
+                if (idx === 9) {  // Lecturer details
                     text = text
                         .replace(/\s*Practical\s*:/g, "Practical:")
                         .replace(/\s*Tutorial\s*:/g, "\nTutorial:")
-                        .replace(/\s*By\s*:/g, "\nBy:")
-                        .replace(/\s*On\s*:/g, "\nOn:")
                         .trim();
                 }
                 return text.replace(/\s*\n\n\s*/g, " ");
