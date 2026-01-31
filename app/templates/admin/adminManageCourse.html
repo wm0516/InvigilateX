@@ -153,7 +153,7 @@
         <div class="profile-frame">
             <div class="form-left">
                 <!-- Select Existing Course -->
-                <label>Select Course Code - Course Name</label>
+                <label>Select Course Code/Section/Intake - Course Name</label>
                 <select id="editCourseSelect" name="editCourseSelect" required>
                     <option value="" disabled selected>-- Select Course --</option>
                     {% for row in course_data %}
@@ -185,7 +185,7 @@
 
                 <label>Course Status</label>
                 <select id="editCourseStatus" name="courseStatus" required>
-                    <option value="" selected>-- Select Status --</option>
+                    <option value="" disabled selected>-- Select Status --</option>
                     <option value="1">Activated</option>   <!-- True -->
                     <option value="0">Deactivated</option> <!-- False -->
                 </select>
