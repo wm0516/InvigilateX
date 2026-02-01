@@ -73,7 +73,7 @@
             <div class="form-left">
                 <label>Select Exam</label>
                 <select id="editReport" name="reportId" required>
-                    <option value="" disabled selected>Select Exam</option>
+                    <option value="" disabled selected>-- Select Exam --</option>
                     {% for r in reports %}
                         <option value="{{ r.invigilationReportId }}">
                             {{ r.invigilationReportId }} - {{ r.exam.course.courseName }}

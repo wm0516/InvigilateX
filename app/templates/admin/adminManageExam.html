@@ -547,6 +547,97 @@ document.getElementById("uploadForm").addEventListener("submit", function (event
         event.preventDefault();
     }
 });
+
+function renumberVisibleRowsExam() {
+    const rows = document.querySelectorAll("#manageExam tbody tr");
+    let index = 1;
+    rows.forEach(row => {
+        if (row.style.display !== "none") {
+            row.children[0].textContent = index++;
+        }
+    });
+}
+
+let examDashboardInitialized = false;
+function updateExamDashboardFromTable() {
+    const rows = document.querySelectorAll("#manageExam tbody tr");
+    const visibleRows = [...rows].filter(r => r.style.display !== "none");
+
+    let total = visibleRows.length;
+    let active = 0;
+    let inactive = 0;
+    let unassigned = 0;
+
+    visibleRows.forEach(r => {
+        const statusText = r.children[1].innerText.trim();
+        if (statusText === "ONGOING") active++;
+        else inactive++;
+
+        if (r.classList.contains("error-row-show")) unassigned++;
+    });
+
+    // Update dashboard elements
+    const dashTotal = document.querySelector("#dashboardSection p:nth-child(1)");
+    const dashCompleted = document.querySelector("#dashboardSection p:nth-child(2)");
+    const dashUpcoming = document.querySelector("#dashboardSection p:nth-child(3)");
+    const dashUnassigned = document.querySelector("#dashboardSection p:nth-child(4)");
+
+    if (dashTotal) dashTotal.textContent = total;
+    if (dashCompleted) dashCompleted.textContent = total - active - unassigned;
+    if (dashUpcoming) dashUpcoming.textContent = active;
+    if (dashUnassigned) dashUnassigned.textContent = unassigned;
+}
+
+// Intake swipe/filter functionality
+document.addEventListener("DOMContentLoaded", () => {
+    const currentYear = new Date().getFullYear();
+    const semestersByYear = {
+        [currentYear - 1]: ['AUG', 'OCT'],
+        [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
+        [currentYear + 1]: ['JAN', 'APR']
+    };
+
+    const intakeColumns = [3]; // Column index for "Course Details" (Course Code/Section/Intake)
+    const table = document.getElementById("manageExam");
+    const tbody = table.querySelector("tbody");
+
+    // Add dropdown for intake swipe
+    const intakeSwipeContainer = document.createElement("div");
+    intakeSwipeContainer.style.display = "flex";
+    intakeSwipeContainer.style.gap = "10px";
+    intakeSwipeContainer.style.marginBottom = "10px";
+
+    const intakeSelect = document.createElement("select");
+    intakeSelect.id = "examIntakeSelect";
+    intakeSelect.innerHTML = `<option value="">-- All Intakes --</option>`;
+    
+    Object.keys(semestersByYear).forEach(year => {
+        semestersByYear[year].forEach(month => {
+            intakeSelect.add(new Option(`${month}${year}`, `${month}${year}`));
+        });
+    });
+
+    intakeSwipeContainer.appendChild(intakeSelect);
+    table.parentNode.insertBefore(intakeSwipeContainer, table);
+
+    intakeSelect.addEventListener("change", () => {
+        const selected = intakeSelect.value;
+        [...tbody.rows].forEach(row => {
+            const courseDetail = row.children[3].innerText.trim(); // Course Code/Section/Intake
+            if (!selected || courseDetail.includes(selected)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+        renumberVisibleRowsExam();
+        updateExamDashboardFromTable();
+    });
+
+    // Initial numbering and dashboard update
+    renumberVisibleRowsExam();
+    updateExamDashboardFromTable();
+});
 </script>
 {% endblock %}
 
