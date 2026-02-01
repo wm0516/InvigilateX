@@ -424,32 +424,6 @@ document.addEventListener("DOMContentLoaded", () => {
             })
             .catch(err => console.error("Error fetching course:", err));
     });
-
-    new Chart(document.getElementById('courseDeptPieChart'), {
-        type: 'pie',
-        data: {
-            labels: {{ (courses_by_department | map(attribute='department') | list) | tojson | safe }},
-            datasets: [{
-                data: {{ (courses_by_department | map(attribute='count') | list) | tojson | safe }},
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C7C7C7', '#5366FF', '#FF66FF', '#66FFB2', '#FFB266', '#66B2FF'],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'right' },
-                tooltip: {
-                    callbacks: {
-                        label: ({ dataset, parsed, label }) => {
-                            const sum = dataset.data.reduce((a, b) => a + b, 0);
-                            return `${label}: ${parsed} (${(parsed/sum*100).toFixed(1)}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -530,66 +504,65 @@ document.addEventListener("DOMContentLoaded", () => {
         btnNext: "nextIntake",
         noResults: "noResults"
     });
-
-    let deptChart = null;
-    function updateDashboardFromTable() {
-        const rows = document.querySelectorAll("#manageCourse tbody tr");
-        const visibleRows = [...rows].filter(r => r.style.display !== "none");
-
-        let total = visibleRows.length;
-        let active = 0;
-        let inactive = 0;
-        let error = 0;
-        let deptCount = {};
-
-        visibleRows.forEach(r => {
-            // Status column
-            const statusText = r.children[1].innerText.trim();
-            if (statusText === "Activated") active++;
-            else inactive++;
-
-            // Error rows
-            if (r.classList.contains("error-row-show")) error++;
-
-            // Department column
-            const dept = r.children[5].innerText.trim() || "Unknown";
-            deptCount[dept] = (deptCount[dept] || 0) + 1;
-        });
-
-        // Update numbers
-        document.getElementById("dashTotal").textContent = total;
-        document.getElementById("dashActive").textContent = active;
-        document.getElementById("dashInactive").textContent = inactive;
-        document.getElementById("dashError").textContent = error;
-
-        // Update pie chart
-        const labels = Object.keys(deptCount);
-        const data = Object.values(deptCount);
-
-        if (deptChart) deptChart.destroy();
-
-        deptChart = new Chart(document.getElementById("courseDeptPieChart"), {
-            type: "pie",
-            data: {
-                labels,
-                datasets: [{
-                    data,
-                    backgroundColor: [
-                        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
-                        "#9966FF", "#FF9F40", "#66FFB2", "#C7C7C7"
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { position: "right" }
-                }
-            }
-        });
-    }
-
 });
+
+let deptChart = null;
+function updateDashboardFromTable() {
+    const rows = document.querySelectorAll("#manageCourse tbody tr");
+    const visibleRows = [...rows].filter(r => r.style.display !== "none");
+
+    let total = visibleRows.length;
+    let active = 0;
+    let inactive = 0;
+    let error = 0;
+    let deptCount = {};
+
+    visibleRows.forEach(r => {
+        // Status column
+        const statusText = r.children[1].innerText.trim();
+        if (statusText === "Activated") active++;
+        else inactive++;
+
+        // Error rows
+        if (r.classList.contains("error-row-show")) error++;
+
+        // Department column
+        const dept = r.children[5].innerText.trim() || "Unknown";
+        deptCount[dept] = (deptCount[dept] || 0) + 1;
+    });
+
+    // Update numbers
+    document.getElementById("dashTotal").textContent = total;
+    document.getElementById("dashActive").textContent = active;
+    document.getElementById("dashInactive").textContent = inactive;
+    document.getElementById("dashError").textContent = error;
+
+    // Update pie chart
+    const labels = Object.keys(deptCount);
+    const data = Object.values(deptCount);
+
+    if (deptChart) deptChart.destroy();
+
+    deptChart = new Chart(document.getElementById("courseDeptPieChart"), {
+        type: "pie",
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: [
+                    "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+                    "#9966FF", "#FF9F40", "#66FFB2", "#C7C7C7"
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: "right" }
+            }
+        }
+    });
+}
 </script>
 {% endblock %}
 
