@@ -338,26 +338,6 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const currentYear = new Date().getFullYear();
-    const semestersByYear = {
-        [currentYear - 1]: ['AUG', 'OCT'],
-        [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
-        [currentYear + 1]: ['JAN', 'APR']
-    };
-
-    // Populate dropdown for multiple selects
-    ['intakeSemester', 'intakeSemesterEdit'].forEach(id => {
-        const dropdown = document.getElementById(id);
-        if (!dropdown) return;
-        Object.keys(semestersByYear).forEach(year => {
-            semestersByYear[year].forEach(month => {
-                dropdown.add(new Option(`${month}${year}`, `${month}${year}`));
-            });
-        });
-    });
-});
-
-document.addEventListener("DOMContentLoaded", () => {
     const editCourseSelect = document.getElementById("editCourseSelect");
     const editCourseCode = document.getElementById("editCourseCode");
     const editCourseSection = document.getElementById("editCourseSection");
@@ -495,17 +475,35 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    initIntakeSwipe({
-        tableId: "manageCourse",
-        intakeCol: 2,              // Course Code/Section/Intake
-        cur: "currentIntake",
-        prev: "prevLabel",
-        next: "nextLabel",
-        btnPrev: "prevIntake",
-        btnNext: "nextIntake",
-        noResults: "noResults"
+    const currentYear = new Date().getFullYear();
+    const semestersByYear = {
+        [currentYear - 1]: ['AUG', 'OCT'],
+        [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
+        [currentYear + 1]: ['JAN', 'APR']
+    };
+
+    ['intakeSemester', 'intakeSemesterEdit'].forEach(id => {
+        const dropdown = document.getElementById(id);
+        if (!dropdown) return;
+
+        Object.keys(semestersByYear).forEach(year => {
+            semestersByYear[year].forEach(month => {
+                dropdown.add(new Option(`${month}${year}`, `${month}${year}`));
+            });
+        });
     });
 });
+
+function renumberVisibleRows() {
+    const rows = document.querySelectorAll("#manageCourse tbody tr");
+    let index = 1;
+
+    rows.forEach(row => {
+        if (row.style.display !== "none") {
+            row.children[0].textContent = index++;
+        }
+    });
+}
 
 let deptChart = null;
 function updateDashboardFromTable() {
@@ -519,51 +517,80 @@ function updateDashboardFromTable() {
     let deptCount = {};
 
     visibleRows.forEach(r => {
-        // Status column
         const statusText = r.children[1].innerText.trim();
         if (statusText === "Activated") active++;
         else inactive++;
 
-        // Error rows
         if (r.classList.contains("error-row-show")) error++;
 
-        // Department column
         const dept = r.children[5].innerText.trim() || "Unknown";
         deptCount[dept] = (deptCount[dept] || 0) + 1;
     });
 
-    // Update numbers
     document.getElementById("dashTotal").textContent = total;
     document.getElementById("dashActive").textContent = active;
     document.getElementById("dashInactive").textContent = inactive;
     document.getElementById("dashError").textContent = error;
 
-    // Update pie chart
-    const labels = Object.keys(deptCount);
-    const data = Object.values(deptCount);
-
     if (deptChart) deptChart.destroy();
 
-    deptChart = new Chart(document.getElementById("courseDeptPieChart"), {
-        type: "pie",
-        data: {
-            labels,
-            datasets: [{
-                data,
-                backgroundColor: [
-                    "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
-                    "#9966FF", "#FF9F40", "#66FFB2", "#C7C7C7"
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: "right" }
+    deptChart = new Chart(
+        document.getElementById("courseDeptPieChart"),
+        {
+            type: "pie",
+            data: {
+                labels: Object.keys(deptCount),
+                datasets: [{
+                    data: Object.values(deptCount),
+                    backgroundColor: [
+                        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+                        "#9966FF", "#FF9F40", "#66FFB2", "#C7C7C7"
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "right" }
+                }
             }
         }
-    });
+    );
 }
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    initIntakeSwipe({
+        tableId: "manageCourse",
+        intakeCol: 2,              // Course Code/Section/Intake
+        cur: "currentIntake",
+        prev: "prevLabel",
+        next: "nextLabel",
+        btnPrev: "prevIntake",
+        btnNext: "nextIntake",
+        noResults: "noResults"
+    });
+
+    // Initial numbering + dashboard
+    renumberVisibleRows();
+    updateDashboardFromTable();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const tbody = document.querySelector("#manageCourse tbody");
+    if (!tbody) return;
+
+    const observer = new MutationObserver(() => {
+        renumberVisibleRows();
+        updateDashboardFromTable();
+    });
+
+    observer.observe(tbody, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style"]
+    });
+});
 </script>
 {% endblock %}
 
