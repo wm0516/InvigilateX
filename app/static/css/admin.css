@@ -325,6 +325,36 @@ html, body {
 }
 
 
+.intake-swipe {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.intake-btn {
+    border: none;
+    background: #f1f1f1;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.intake-display {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-weight: bold;
+}
+
+.intake-side {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+.intake-current {
+    font-size: 1.2rem;
+    color: #222;
+}
 
 
 

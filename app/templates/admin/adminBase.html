@@ -74,6 +74,22 @@
             {% if show_tabs %}
                 <!-- Top Navigation Tabs -->
                 <div class="tab-container">
+                    <div class="intake-swipe">
+                        <button id="prevIntake" class="intake-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+
+                        <div class="intake-display">
+                            <span id="prevLabel" class="intake-side"></span>
+                            <span id="currentIntake" class="intake-current"></span>
+                            <span id="nextLabel" class="intake-side"></span>
+                        </div>
+
+                        <button id="nextIntake" class="intake-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
                     <div class="second-nav">
                         {% if show_dashboard %}
                             <a href="#dashboard" class="tab-link active" data-section="dashboardSection">
@@ -166,8 +182,47 @@
         }
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
-    </script>
+        
+        function initIntakeSwipe({tableId, intakeCol, cur, prev, next, btnPrev, btnNext,noResults}) {
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            const $ = id => document.getElementById(id);
+            const order = ["JAN", "APR", "AUG"];
 
+            const now = new Date();
+            let state = {
+                year: now.getFullYear(),
+                intake: now.getMonth() < 3 ? "JAN" : now.getMonth() < 7 ? "APR" : "AUG"
+            };
+
+            const adj = dir => {
+                let i = order.indexOf(state.intake) + dir;
+                if (i < 0) return { intake: "AUG", year: state.year - 1 };
+                if (i > 2) return { intake: "JAN", year: state.year + 1 };
+                return { intake: order[i], year: state.year };
+            };
+
+            const render = () => {
+                const key = state.intake + state.year;
+                const p = adj(-1), n = adj(1);
+                $(cur).textContent = key;
+                $(prev).textContent = p.intake + p.year;
+                $(next).textContent = n.intake + n.year;
+
+                let visible = false;
+                rows.forEach(r => {
+                    const match = r.children[intakeCol].textContent.split('/')[2] === key;
+                    r.style.display = match ? "" : "none";
+                    visible ||= match;
+                });
+
+                if (noResults) $(noResults).style.display = visible ? "none" : "block";
+            };
+
+            $(btnPrev).onclick = () => (state = adj(-1), render());
+            $(btnNext).onclick = () => (state = adj(1), render());
+            render();
+        }
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
