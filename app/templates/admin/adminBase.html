@@ -74,6 +74,7 @@
             {% if show_tabs %}
                 <!-- Top Navigation Tabs -->
                 <div class="tab-container">
+                    {% if show_cal %}
                     <div class="intake-swipe">
                         <button id="prevIntake" class="intake-btn">
                             <i class="fas fa-chevron-left"></i>
@@ -89,6 +90,7 @@
                             <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
+                    {% endif %}
 
                     <div class="second-nav">
                         {% if show_dashboard %}
@@ -140,6 +142,9 @@
                 {% endif %}
 
                 <!-- Tab Content Sections -->
+                {% if show_cal %}
+                    {% block cal_section %}{% endblock %}
+                {% endif %}
                 {% if show_dashboard %}
                     {% block dashboard_section %}{% endblock %}
                 {% endif %}
