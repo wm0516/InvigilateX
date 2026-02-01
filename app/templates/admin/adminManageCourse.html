@@ -519,7 +519,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-
+document.addEventListener("DOMContentLoaded", () => {
+    initIntakeSwipe({
+        tableId: "manageCourse",
+        intakeCol: 2,              // Course Code/Section/Intake
+        cur: "currentIntake",
+        prev: "prevLabel",
+        next: "nextLabel",
+        btnPrev: "prevIntake",
+        btnNext: "nextIntake",
+        noResults: "noResults"
+    });
+});
 </script>
 {% endblock %}
 
