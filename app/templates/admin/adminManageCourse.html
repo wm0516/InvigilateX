@@ -541,7 +541,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function getCurrentIntake() {
         if (month >= 1 && month <= 3) return [`JAN${year}`];
         if (month >= 4 && month <= 7) return [`APR${year}`];
-        if (month >= 8 && month <= 9) return [`AUG${year}`, `OCT${year}`]; // Show both AUG+OCT
+        if (month >= 8 && month <= 12) return [`AUG${year}`]; 
         if (month >= 10 && month <= 12) return [`OCT${year}`];
     }
     function renumberVisibleRows() {
@@ -591,15 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Determine year of the selected period
         const selectedYear = parseInt(intakePeriods[idx].slice(-4));
-        
-
-        // Special handling for AUG+OCT multi-intake period
-        if (intakePeriods[idx] === `AUG${selectedYear}`) {
-            currentIntake = [`AUG${selectedYear}`, `OCT${selectedYear}`];
-        } else {
-            currentIntake = [intakePeriods[idx]];
-        }
-
+        currentIntake = [intakePeriods[idx]];
         filterTableByIntake(currentIntake);
     }
 
