@@ -75,7 +75,7 @@
             <div class="form-left">
                 <label>Select Department</label>
                 <select id="editDepartment" name="editDepartment" required>
-                    <option value="" disabled selected>Select Department</option>
+                    <option value="" disabled selected>-- Select Department --</option>
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}"
                                 {% if department_select and dept.departmentCode == department_select.departmentCode %}selected{% endif %}>
@@ -91,7 +91,7 @@
             <div class="form-middle">
                 <label>Dean Name</label>
                 <select id="deanName" name="deanName">
-                    <option value="None">None</option>
+                    <option value="None">-- None --</option>
                     {% for dean in deans %}
                         <option value="{{ dean.userId }}">
                             [{{ dean.userDepartment }}] {{ dean.userName }}
@@ -101,7 +101,7 @@
 
                 <label>Hos Name</label>
                 <select id="hosName" name="hosName">
-                    <option value="None">None</option>
+                    <option value="None">-- None --</option>
                     {% for hos in hoss %}
                         <option value="{{ hos.userId }}">
                             [{{ hos.userDepartment }}] {{ hos.userName }}
@@ -112,7 +112,7 @@
             <div class="form-right">
                 <label>Hop Name</label>
                 <select id="hopName" name="hopName">
-                    <option value="None">None</option>
+                    <option value="None">-- None --</option>
                     {% for hop in hops %}
                         <option value="{{ hop.userId }}">
                             [{{ hop.userDepartment }}] {{ hop.userName }}
@@ -142,7 +142,7 @@
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>List of Department(s)</h2>
+        <h2>List of Departments</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_department" placeholder="Search..." value="{{ search_department }}" style="border-radius: 6px; width: 100%;">
@@ -165,7 +165,6 @@
                     <th>Dean Details</th>
                     <th>Hos Details</th>
                     <th>Hop Details</th>
-                    <th>Added/Edit Details</th>
                 </tr>
             </thead>
             <tbody>
@@ -206,14 +205,6 @@
                                 <div>Department</div><div><strong>: {{ row.hop.userDepartment }}</strong></div>
                             </div>
                         {% endif %}
-                    </td>
-                    <td>
-                        <div class="info-grid">
-                            {% if row.departmentAddedBy and row.departmentAddedOn %}
-                                <div>By</div><div><strong>: {{ row.addedBy.userName.split(' ')[0] }}</strong></div>
-                                <div>On</div><div><strong>: {{ row.departmentAddedOn.strftime('%d%b%Y %H:%M') }}</strong></div>
-                            {% endif %}
-                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -325,8 +316,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         .replace(/\s*Email\s*:/g, "\nEmail:")
                         .replace(/\s*Contact\s*:/g, "\nContact:")
                         .replace(/\s*Department\s*:/g, "\nDepartment:")
-                        .replace(/\s*By\s*:/g, "\nBy:")
-                        .replace(/\s*On\s*:/g, "\nOn:")
                         .trim();
                 }
                 return text;

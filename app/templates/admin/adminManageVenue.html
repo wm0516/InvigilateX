@@ -21,7 +21,7 @@
             <div class="form-middle">
                 <label>Level</label>
                 <select name="venueLevel" required>
-                    <option value="" disabled selected>Level</option>
+                    <option value="" disabled selected>-- Level --</option>
                     <option value="LEVEL 2">LEVEL 2</option>
                     <option value="LEVEL 3">LEVEL 3</option>
                     <option value="LEVEL 4">LEVEL 4</option>
@@ -55,7 +55,7 @@
             <div class="form-left">
                 <label>Venue</label>
                 <select name="editVenueNumber" id="editVenueNumber" required>
-                    <option value="" disabled selected>Select Venue</option>
+                    <option value="" disabled selected>-- Select Venue --</option>
                     {% for v in venue_data %}
                         <option value="{{ v.venueNumber }}">{{ v.venueNumber }}</option>
                     {% endfor %}
@@ -64,7 +64,7 @@
             <div class="form-middle">   
                 <label>Level</label>
                 <select name="venueLevel" id="editVenueLevel" required>
-                    <option value="" disabled selected>Level</option>
+                    <option value="" disabled selected>-- Level --</option>
                     <option value="LEVEL 2">LEVEL 2</option>
                     <option value="LEVEL 3">LEVEL 3</option>
                     <option value="LEVEL 4">LEVEL 4</option>
@@ -96,7 +96,7 @@
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>List of Venue(s)</h2>
+        <h2>List of Venues</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_venue" placeholder="Search..." value="{{ search_venue }}" style="border-radius: 6px; width: 100%;">

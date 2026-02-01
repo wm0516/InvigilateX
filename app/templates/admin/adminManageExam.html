@@ -88,7 +88,7 @@
             <div class="form-left">
                 <label for="editExamCourseSection">Select Exam Course - Course Name</label>
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
-                    <option value="" disabled selected>Select Course</option>
+                    <option value="" disabled selected>-- Select Course --</option>
                     {% for exam in edit_exam_data %}
                         {% if exam.course %}
                             <option value="{{ exam.course.courseCodeSectionIntake }}">
@@ -120,7 +120,7 @@
                 <div id="venueContainer">
                     <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
                         <select name="venue[]" id="editVenue" class="venue-dropdown" required>
-                            <option value="" disabled selected>Select Exam Venue</option>
+                            <option value="" disabled selected>-- Select Exam Venue --</option>
                             {% for venue in venue_data %}
                                 <option value="{{ venue.venueNumber }}">[Capacity: {{ venue.venueCapacity }}] - {{ venue.venueNumber }}</option>
                             {% endfor %}

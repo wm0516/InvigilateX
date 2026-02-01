@@ -65,7 +65,7 @@
             <div class="form-left">
                 <label>Unassigned Lecturers</label>
                 <select name="lecturerName" id="lecturerName" required>
-                    <option value="" disabled selected>Select Lecturer</option>
+                    <option value="" disabled selected>-- Select Lecturer --</option>
                     {% for item in unassigned_summary %}
                         <option value="{{ item.lecturer }}">[{{ item.count }} row(s)] {{ item.lecturer }}</option>
                     {% endfor %}
@@ -74,7 +74,7 @@
             <div class="form-right">
                 <label>Staff Linked</label>
                 <select name="staffList" id="staffList" required>
-                    <option value="" disabled selected>Select Staff</option>
+                    <option value="" disabled selected>-- Select Staff --</option>
                     {% for staff in unassigned_staff_list %}
                         <option value="{{ staff.userId }}">[{{ staff.userId }}] {{ staff.userName }}</option>
                     {% endfor %}
@@ -98,7 +98,7 @@
             <div class="form-left">
                 <label>Existing Timetable List</label>
                 <select name="editTimetableList" id="editTimetableList" required>
-                    <option value="" disabled selected>Select Timetable</option>
+                    <option value="" disabled selected>-- Select Timetable --</option>
                     {% for t in timetable_list %}
                         <option value="{{ t.timetableId }}">
                             [{{ t.timetableId }}] {{ t.rows[0].lecturerName if t.rows else "No Lecturer" }}
@@ -109,7 +109,7 @@
             <div class="form-right">
                 <label>Staff Linked</label>
                 <select name="editStaffList" id="editStaffList" required>
-                    <option value="" disabled selected>Select Staff</option>
+                    <option value="" disabled selected>-- Select Staff --</option>
                     {% for staff in staff_list %}
                         {% set tid = timetable_map.get(staff.userId) %}
                         <option value="{{ staff.userId }}" {% if timetable_select and staff.userId == timetable_select.user_id %}selected{% endif %}>
