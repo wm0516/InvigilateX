@@ -231,6 +231,7 @@
                 });
 
                 if (noResults) $(noResults).style.display = visible ? "none" : "block";
+                updateDashboardFromTable();
             };
             $(btnPrev).onclick = () => { state = adj(-1); render(); };
             $(btnNext).onclick = () => { state = adj(1); render(); };

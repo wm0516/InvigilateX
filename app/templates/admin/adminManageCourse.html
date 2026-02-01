@@ -17,11 +17,11 @@
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame">
                     <h3>Total Course(s)</h3>
-                    <p class="dashboard-text">{{ course_data|length }}</p>
+                    <p class="dashboard-text" id="dashTotal"></p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Course(s) With Missing Data/Error</h3>
-                    <p class="dashboard-text" style="color:red;">{{ error_rows }}</p>
+                    <p class="dashboard-text" id="dashError" style="color:red;"></p>
                 </div>
                 <div class="dashboard-frame pie">
                     <h3>Course(s) by Department</h3>
@@ -29,11 +29,11 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Active Course</h3>
-                    <p class="dashboard-text" style="color:green;">{{ courses_by_department | sum(attribute='count') }}</p>
+                    <p class="dashboard-text" id="dashActive" style="color:green;"></p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Inactive Course</h3>
-                    <p class="dashboard-text" style="color:red;">{{ course_data|length - courses_by_department | sum(attribute='count') }}</p>
+                    <p class="dashboard-text" id="dashInactive" style="color:red;"></p>
                 </div>
             </div>
         </div>
@@ -530,6 +530,65 @@ document.addEventListener("DOMContentLoaded", () => {
         btnNext: "nextIntake",
         noResults: "noResults"
     });
+
+    let deptChart = null;
+    function updateDashboardFromTable() {
+        const rows = document.querySelectorAll("#manageCourse tbody tr");
+        const visibleRows = [...rows].filter(r => r.style.display !== "none");
+
+        let total = visibleRows.length;
+        let active = 0;
+        let inactive = 0;
+        let error = 0;
+        let deptCount = {};
+
+        visibleRows.forEach(r => {
+            // Status column
+            const statusText = r.children[1].innerText.trim();
+            if (statusText === "Activated") active++;
+            else inactive++;
+
+            // Error rows
+            if (r.classList.contains("error-row-show")) error++;
+
+            // Department column
+            const dept = r.children[5].innerText.trim() || "Unknown";
+            deptCount[dept] = (deptCount[dept] || 0) + 1;
+        });
+
+        // Update numbers
+        document.getElementById("dashTotal").textContent = total;
+        document.getElementById("dashActive").textContent = active;
+        document.getElementById("dashInactive").textContent = inactive;
+        document.getElementById("dashError").textContent = error;
+
+        // Update pie chart
+        const labels = Object.keys(deptCount);
+        const data = Object.values(deptCount);
+
+        if (deptChart) deptChart.destroy();
+
+        deptChart = new Chart(document.getElementById("courseDeptPieChart"), {
+            type: "pie",
+            data: {
+                labels,
+                datasets: [{
+                    data,
+                    backgroundColor: [
+                        "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0",
+                        "#9966FF", "#FF9F40", "#66FFB2", "#C7C7C7"
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "right" }
+                }
+            }
+        });
+    }
+
 });
 </script>
 {% endblock %}
