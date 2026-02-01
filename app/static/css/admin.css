@@ -328,7 +328,7 @@ html, body {
 .intake-swipe {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 20px;
 }
 
 .intake-btn {

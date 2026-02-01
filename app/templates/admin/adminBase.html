@@ -183,43 +183,57 @@
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
         
-        function initIntakeSwipe({tableId, intakeCol, cur, prev, next, btnPrev, btnNext,noResults}) {
+        function initIntakeSwipe({ tableId, intakeCol, cur, prev, next, btnPrev, btnNext, noResults }) {
             const rows = document.querySelectorAll(`#${tableId} tbody tr`);
             const $ = id => document.getElementById(id);
             const order = ["JAN", "APR", "AUG", "OCT"];
-
             const now = new Date();
+            const month = now.getMonth(); // 0–11
+
             let state = {
                 year: now.getFullYear(),
-                intake: now.getMonth() < 3 ? "JAN" : now.getMonth() < 7 ? "APR" : "AUG"
+                intake:
+                    month <= 2 ? "JAN" :     // Jan–Mar
+                    month <= 6 ? "APR" :     // Apr–Jul
+                    "AUG"                    // Aug–Dec (OCT reachable by swipe)
             };
 
             const adj = dir => {
                 let i = order.indexOf(state.intake) + dir;
-                if (i < 0) return { intake: "AUG", year: state.year - 1 };
-                if (i > 2) return { intake: "JAN", year: state.year + 1 };
-                return { intake: order[i], year: state.year };
+                let y = state.year;
+
+                if (i < 0) {
+                    i = order.length - 1;
+                    y--;
+                }
+                if (i >= order.length) {
+                    i = 0;
+                    y++;
+                }
+                return { intake: order[i], year: y };
             };
 
             const render = () => {
                 const key = state.intake + state.year;
-                const p = adj(-1), n = adj(1);
+                const p = adj(-1);
+                const n = adj(1);
+
                 $(cur).textContent = key;
                 $(prev).textContent = p.intake + p.year;
                 $(next).textContent = n.intake + n.year;
 
                 let visible = false;
                 rows.forEach(r => {
-                    const match = r.children[intakeCol].textContent.split('/')[2] === key;
+                    const intake = r.children[intakeCol].textContent.split('/')[2]?.trim();
+                    const match = intake === key;
                     r.style.display = match ? "" : "none";
                     visible ||= match;
                 });
 
                 if (noResults) $(noResults).style.display = visible ? "none" : "block";
             };
-
-            $(btnPrev).onclick = () => (state = adj(-1), render());
-            $(btnNext).onclick = () => (state = adj(1), render());
+            $(btnPrev).onclick = () => { state = adj(-1); render(); };
+            $(btnNext).onclick = () => { state = adj(1); render(); };
             render();
         }
     </script>
