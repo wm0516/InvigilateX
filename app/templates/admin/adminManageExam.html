@@ -63,11 +63,11 @@
 
             <div style="margin-top:20px; display: flex; gap: 30px; justify-content: center;">
                 <div class="form-left">
-                    <label><b>Time to Release Automatically Assigned Exam Slots:</b></label>
+                    <label><b>Time to Release Automatically Assigned Exam Slots</b></label>
                     <input type="datetime-local" name="time_slot_share" required>
                 </div>
                 <div class="form-right">
-                    <label><b>Time to Open Unclaimed Exam Slots for Manual Selection:</b></label>
+                    <label><b>Time to Open Unclaimed Exam Slots for Manual Selection</b></label>
                     <input type="datetime-local" name="time_slot_open" required>
                 </div>
             </div>
@@ -113,6 +113,9 @@
 
                 <label>Exam End Date & Time</label>
                 <input type="datetime-local" id="editEndDateTime" name="endDateTime" required>
+
+                <label>Time to Open Unclaimed Exam Slots for Manual Selection</label>
+                <input type="datetime-local" id="editTimeSlotOpen" name="editTimeSlotOpen" required><br>
             </div>
 
             <div class="form-right">
@@ -287,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // EDIT FORM HELPERS
 // =====================================================
 function clearEditFields() {
-    ["editProgramCode", "editStudent", "editStartDateTime", "editEndDateTime"]
+    ["editProgramCode", "editStudent", "editStartDateTime", "editEndDateTime", "editTimeSlotOpen"]
         .forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = "";
@@ -341,6 +344,9 @@ function populateEditForm(data) {
 
     if (data.examEndTime)
         document.getElementById("editEndDateTime").value = data.examEndTime.slice(0,16);
+
+    if (data.editTimeSlotOpen)
+        document.getElementById("editTimeSlotOpen").value = data.editTimeSlotOpen.slice(0,16);
 
     const container = document.getElementById("venueContainer");
     container.innerHTML = "";
@@ -417,7 +423,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // ===== Edit exam =====
     enforceDateTime(
         document.getElementById("editStartDateTime"),
-        document.getElementById("editEndDateTime")
+        document.getElementById("editEndDateTime"),
+        document.getElementById("editTimeSlotOpen")
     );
 });
 

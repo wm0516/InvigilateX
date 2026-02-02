@@ -878,7 +878,7 @@ def get_available_venues():
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_exam(exam, new_start, new_end, new_venues, new_students):
+def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire):
     user_id = session.get('user_id')
     old_start = exam.examStartTime
     old_end = exam.examEndTime
@@ -980,6 +980,9 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
         pool = sorted(males + females, key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
         chosen += pool[:(inv_count - len(chosen))]
 
+        if time_expire is None:
+            raise ValueError("time_expire must not be NULL")
+
         # Save attendance entries with venueNumber
         for inv in chosen:
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
@@ -988,6 +991,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students):
                 invigilatorId=inv.userId,
                 venueNumber=venue_no,
                 timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
+                timeExpire=time_expire, 
                 invigilationStatus=False
             ))
 
@@ -1138,6 +1142,7 @@ def admin_manageExam():
             end_dt   = datetime.fromisoformat(request.form['endDateTime'])
             venue_list = request.form.getlist("venue[]")
             student_list = request.form.getlist("venueStudents[]")
+            time_expire = datetime.fromisoformat(request.form['editTimeSlotOpen'])
 
             # Get total students across all course sections for this exam
             total_students = exam_select.examTotalStudents
@@ -1149,6 +1154,10 @@ def admin_manageExam():
                     if assigned_total != total_students:
                         flash(f"❌ Assigned students ({assigned_total}) do not match exam total ({total_students})", "error")
                         return redirect(request.url)
+                    
+                    if not time_expire:
+                        flash("❌ Time to open unclaimed exam slots cannot be empty.", "error")
+                        return redirect(request.url)
 
                     # Call adjust_exam to update times, invigilators, and venue assignment
                     adjust_exam(
@@ -1156,7 +1165,8 @@ def admin_manageExam():
                         new_start=start_dt,
                         new_end=end_dt,
                         new_venues=venue_list,
-                        new_students=student_list
+                        new_students=student_list,
+                        time_expire=time_expire
                     )
                     flash(f"💾 Exam {exam_select.course.courseCodeSectionIntake} updated successfully.", "success")
                 except ValueError as e:
