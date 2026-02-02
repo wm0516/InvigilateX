@@ -5,8 +5,8 @@
 {% set show_dashboard = true %}
 {% set show_manual = false %}
 {% set show_edit = true %}
-{% block title %}Admin ManageExams{% endblock %}
-{% block head_title %}<h2>Manage Exams</h2>{% endblock %}
+{% block title %}Admin ManageExam{% endblock %}
+{% block head_title %}<h2>Manage Exam</h2>{% endblock %}
 
 {% block dashboard_section %}
 <form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST">
@@ -16,19 +16,19 @@
             <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h3>Total Exams</h3>
-                    <p class="dashboard-text">{{ exam_data|length }}</p>
+                    <p class="dashboard-text" id="dashTotalExam">{{ exam_data|length }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Completed Exams</h3>
-                    <p class="dashboard-text" style="color:blue;">{{ exam_data|length - total_exam_activated - unassigned_exam }}</p>
+                    <p class="dashboard-text" style="color:blue;" id="dashCompleteExam">{{ exam_data|length - total_exam_activated - unassigned_exam }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Upcoming Exams</h3>
-                    <p class="dashboard-text" style="color:green;">{{ total_exam_activated }}</p>
+                    <p class="dashboard-text" style="color:green;" id="dashUpcomingExam">{{ total_exam_activated }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Unassigned Exam Details</h3>
-                    <p class="dashboard-text" style="color:red;">{{ unassigned_exam }}</p>
+                    <p class="dashboard-text" style="color:red;" id="dashUnassignedExam">{{ unassigned_exam }}</p>
                 </div>
             </div>
         </div>
@@ -155,7 +155,7 @@
 {% block content %}
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>List of Exams</h2>
+        <h2>List of Exam</h2>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_exams" placeholder="Search..." value="{{ search_exams }}" style="border-radius: 6px; width: 100%;">
