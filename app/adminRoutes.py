@@ -2063,7 +2063,7 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_calendar_data():
-    venue_exams = (VenueExam.query.join(Exam).filter(Exam.examStatus == True).all())
+    venue_exams = (VenueExam.query.join(Exam).all())
     calendar_data = defaultdict(lambda: defaultdict(list))
 
     for ve in venue_exams:
