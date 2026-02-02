@@ -188,59 +188,70 @@
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
         
-        function initIntakeSwipe({ tableId, intakeCol, cur, prev, next, btnPrev, btnNext, noResults }) {
-            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-            const $ = id => document.getElementById(id);
-            const order = ["JAN", "APR", "AUG", "OCT"];
-            const now = new Date();
-            const month = now.getMonth(); // 0–11
+        function initIntakeSwipe({tableId, intakeCol, dashboardUpdater = null, noResultsId = null}) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
 
-            let state = {
-                year: now.getFullYear(),
-                intake:
-                    month <= 2 ? "JAN" :     // Jan–Mar
-                    month <= 6 ? "APR" :     // Apr–Jul
-                    "AUG"                    // Aug–Dec (OCT reachable by swipe)
+            const tbody = table.querySelector("tbody");
+            const rows = [...tbody.rows];
+
+            const currentYear = new Date().getFullYear();
+            const semestersByYear = {
+                [currentYear - 1]: ['AUG', 'OCT'],
+                [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
+                [currentYear + 1]: ['JAN', 'APR']
             };
 
-            const adj = dir => {
-                let i = order.indexOf(state.intake) + dir;
-                let y = state.year;
+            // ===== Create dropdown =====
+            const wrapper = document.createElement("div");
+            wrapper.style.display = "flex";
+            wrapper.style.gap = "10px";
+            wrapper.style.marginBottom = "10px";
 
-                if (i < 0) {
-                    i = order.length - 1;
-                    y--;
-                }
-                if (i >= order.length) {
-                    i = 0;
-                    y++;
-                }
-                return { intake: order[i], year: y };
-            };
+            const select = document.createElement("select");
+            select.innerHTML = `<option value="">-- All Intakes --</option>`;
 
-            const render = () => {
-                const key = state.intake + state.year;
-                const p = adj(-1);
-                const n = adj(1);
+            Object.entries(semestersByYear).forEach(([year, months]) => {
+                months.forEach(m => {
+                    select.add(new Option(`${m}${year}`, `${m}${year}`));
+                });
+            });
 
-                $(cur).textContent = key;
-                $(prev).textContent = p.intake + p.year;
-                $(next).textContent = n.intake + n.year;
+            wrapper.appendChild(select);
+            table.parentNode.insertBefore(wrapper, table);
 
-                let visible = false;
+            function renumber() {
+                let i = 1;
                 rows.forEach(r => {
-                    const intake = r.children[intakeCol].textContent.split('/')[2]?.trim();
-                    const match = intake === key;
-                    r.style.display = match ? "" : "none";
-                    visible ||= match;
+                    if (r.style.display !== "none") {
+                        r.children[0].textContent = i++;
+                    }
+                });
+            }
+
+            select.addEventListener("change", () => {
+                const value = select.value;
+                let visible = 0;
+
+                rows.forEach(r => {
+                    const text = r.children[intakeCol].innerText;
+                    const show = !value || text.includes(value);
+                    r.style.display = show ? "" : "none";
+                    if (show) visible++;
                 });
 
-                if (noResults) $(noResults).style.display = visible ? "none" : "block";
-                updateDashboardFromTable();
-            };
-            $(btnPrev).onclick = () => { state = adj(-1); render(); };
-            $(btnNext).onclick = () => { state = adj(1); render(); };
-            render();
+                renumber();
+                dashboardUpdater && dashboardUpdater();
+
+                if (noResultsId) {
+                    document.getElementById(noResultsId).style.display =
+                        visible ? "none" : "block";
+                }
+            });
+
+            // Initial state
+            renumber();
+            dashboardUpdater && dashboardUpdater();
         }
     </script>
     {% block extra_scripts %}{% endblock %}

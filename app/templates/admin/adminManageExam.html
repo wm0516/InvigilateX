@@ -638,6 +638,15 @@ document.addEventListener("DOMContentLoaded", () => {
     renumberVisibleRowsExam();
     updateExamDashboardFromTable();
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    initIntakeSwipe({
+        tableId: "manageExam",
+        intakeCol: 3,   // Course Details column
+        dashboardUpdater: updateExamDashboardFromTable,
+        noResultsId: "noResults"
+    });
+});
 </script>
 {% endblock %}
 
