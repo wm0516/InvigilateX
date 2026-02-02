@@ -1168,7 +1168,7 @@ def admin_manageExam():
                         new_students=student_list,
                         time_expire=time_expire
                     )
-                    flash(f"💾 {len(exam_select.course.courseCodeSectionIntake)} exam updated successfully.", "success")
+                    flash(f"💾 Exam {exam_select.course.courseCodeSectionIntake} updated successfully.", "success")
                 except ValueError as e:
                     db.session.rollback()
                     flash(str(e), "error")

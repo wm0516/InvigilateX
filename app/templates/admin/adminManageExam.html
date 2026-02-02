@@ -108,14 +108,27 @@
             </div>
 
             <div class="form-middle">
-                <label>Exam Start Date & Time</label>
-                <input type="datetime-local" id="editStartDateTime" name="startDateTime" required><br>
+                <div class="profile-frame" style="justify-content: space-between;">
+                    <div class="form-left" style="width: 48%;">
+                        <label>Exam Start Date & Time</label>
+                        <input type="datetime-local" id="editStartDateTime" name="startDateTime" required>
+                    </div>
+                    <div class="form-right" style="width: 48%;">
+                        <label>Exam End Date & Time</label>
+                        <input type="datetime-local" id="editEndDateTime" name="endDateTime" required>
+                    </div>
+                </div>
 
-                <label>Exam End Date & Time</label>
-                <input type="datetime-local" id="editEndDateTime" name="endDateTime" required>
-
-                <label>Time to Open Unclaimed Exam Slots for Manual Selection</label>
-                <input type="datetime-local" id="editTimeSlotOpen" name="editTimeSlotOpen" required><br>
+                <div class="profile-frame" style="justify-content: space-between;">
+                    <div class="form-left" style="width: 48%;">
+                        <label><b>Time to Release Automatically Assigned Exam Slots</b></label>
+                        <input type="datetime-local" id="editTimeSlotShare" name="editTimeSlotShare" required>
+                    </div>
+                    <div class="form-right" style="width: 48%;">
+                        <label>Time to Open Unclaimed Exam Slots for Manual Selection</label>
+                        <input type="datetime-local" id="editTimeSlotOpen" name="editTimeSlotOpen" required>
+                    </div>
+                </div>
             </div>
 
             <div class="form-right">
