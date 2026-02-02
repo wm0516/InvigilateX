@@ -818,13 +818,23 @@ def get_exam_details(course_code):
     exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
     venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
 
+    attendance = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport)
+        .filter(InvigilationReport.examId == exam.examId)
+        .order_by(InvigilatorAttendance.timeExpire.desc())
+        .first()
+    )
+
     response_data = {
-        "courseCode": course.courseCodeSectionIntake,
-        "courseDepartment": course.courseDepartment or "",
-        "courseStudent": exam.examTotalStudents if exam else 0,
-        "examVenues": [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],
-        "examStartTime": exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
-        "examEndTime": exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
+        "courseCode"        : course.courseCodeSectionIntake,
+        "courseDepartment"  : course.courseDepartment or "",
+        "courseStudent"     : exam.examTotalStudents if exam else 0,
+        "examVenues"        : [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],
+        "examStartTime"     : exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
+        "examEndTime"       : exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
+        "examTimeCreate"    : attendance.timeCreate.strftime("%Y-%m-%dT%H:%M") if attendance else "",
+        "examTimeExpire"    : attendance.timeExpire.strftime("%Y-%m-%dT%H:%M") if attendance else "",
     }
     return jsonify(response_data)
 
