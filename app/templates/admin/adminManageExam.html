@@ -597,14 +597,9 @@ document.addEventListener("DOMContentLoaded", () => {
         [currentYear + 1]: ['JAN', 'APR']
     };
 
-    const intakeColumns = [3]; // Column index for "Course Details" (Course Code/Section/Intake)
+    const intakeColumns = [3];
     const table = document.getElementById("manageExam");
     const tbody = table.querySelector("tbody");
-    Object.keys(semestersByYear).forEach(year => {
-        semestersByYear[year].forEach(month => {
-            intakeSelect.add(new Option(`${month}${year}`, `${month}${year}`));
-        });
-    });
 
     intakeSwipeContainer.appendChild(intakeSelect);
     table.parentNode.insertBefore(intakeSwipeContainer, table);
@@ -631,19 +626,15 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
     initIntakeSwipe({
         tableId: "manageExam",
-        intakeCol: 3,              // Course Code/Section/Intake
-        cur: "currentIntake",
-        prev: "prevLabel",
-        next: "nextLabel",
-        btnPrev: "prevIntake",
-        btnNext: "nextIntake",
-        noResults: "noResults"
+        intakeCol: 3, // Course Code/Section/Intake inside Course Details column
+        noResultsId: "noResults",
+        dashboardUpdater: updateExamDashboardFromTable
     });
 
-    // Initial numbering + dashboard
-    renumberVisibleRows();
-    updateDashboardFromTable();
+    renumberVisibleRowsExam();
+    updateExamDashboardFromTable();
 });
+
 </script>
 {% endblock %}
 
