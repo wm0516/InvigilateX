@@ -810,33 +810,34 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 @app.route('/get_exam_details/<path:course_code>')
 @login_required
 def get_exam_details(course_code):
-    # Match first course that starts with course_code + '/'
-    course = Course.query.filter(Course.courseCodeSectionIntake==course_code).first()
+    course = Course.query.filter(Course.courseCodeSectionIntake == course_code).first()
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
-    exam = Exam.query.filter_by(examId=course.courseExamId).first() if course.courseExamId else None
+    exam = Exam.query.get(course.courseExamId) if course.courseExamId else None
     venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
-
-    attendance = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport)
-        .filter(InvigilationReport.examId == exam.examId)
-        .order_by(InvigilatorAttendance.timeExpire.desc())
-        .first()
-    )
+    attendance = None
+    if exam:
+        attendance = (
+            InvigilatorAttendance.query
+            .join(InvigilationReport)
+            .filter(InvigilationReport.examId == exam.examId)
+            .order_by(InvigilatorAttendance.timeExpire.desc())  # or asc()
+            .first()
+        )
 
     response_data = {
         "courseCode"        : course.courseCodeSectionIntake,
         "courseDepartment"  : course.courseDepartment or "",
         "courseStudent"     : exam.examTotalStudents if exam else 0,
-        "examVenues"        : [{"venueNumber": v.venueNumber,"capacity": v.capacity}for v in venues],
+        "examVenues"        : [{"venueNumber": v.venueNumber, "capacity": v.capacity} for v in venues],
         "examStartTime"     : exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
         "examEndTime"       : exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
         "examTimeCreate"    : attendance.timeCreate.strftime("%Y-%m-%dT%H:%M") if attendance else "",
         "examTimeExpire"    : attendance.timeExpire.strftime("%Y-%m-%dT%H:%M") if attendance else "",
     }
     return jsonify(response_data)
+
 
 # -------------------------------
 # Reformat the datetime for ManageExamEditPage
