@@ -1004,7 +1004,6 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire,
                 reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
                 venueNumber=venue_no,
-                timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
                 timeExpire=time_expire,
                 timeCreate=time_open,
                 invigilationStatus=False
