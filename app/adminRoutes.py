@@ -993,6 +993,9 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire,
 
         if time_expire is None:
             raise ValueError("time_expire must not be NULL")
+        
+        if time_open is None:
+            raise ValueError("time_open must not be NULL")
 
         # Save attendance entries with venueNumber
         for inv in chosen:
