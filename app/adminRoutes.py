@@ -878,7 +878,7 @@ def get_available_venues():
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire):
+def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire, time_open):
     user_id = session.get('user_id')
     old_start = exam.examStartTime
     old_end = exam.examEndTime
@@ -991,7 +991,8 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire)
                 invigilatorId=inv.userId,
                 venueNumber=venue_no,
                 timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
-                timeExpire=time_expire, 
+                timeExpire=time_expire,
+                timeCreate=time_open,
                 invigilationStatus=False
             ))
 
@@ -1143,6 +1144,7 @@ def admin_manageExam():
             venue_list = request.form.getlist("venue[]")
             student_list = request.form.getlist("venueStudents[]")
             time_expire = datetime.fromisoformat(request.form['editTimeSlotOpen'])
+            time_open = datetime.fromisoformat(request.form['editTimeSlotShare'])
 
             # Get total students across all course sections for this exam
             total_students = exam_select.examTotalStudents
@@ -1155,7 +1157,7 @@ def admin_manageExam():
                         flash(f"❌ Assigned students ({assigned_total}) do not match exam total ({total_students})", "error")
                         return redirect(request.url)
                     
-                    if not time_expire:
+                    if not time_expire or not time_open:
                         flash("❌ Time to open unclaimed exam slots cannot be empty.", "error")
                         return redirect(request.url)
 
@@ -1166,7 +1168,8 @@ def admin_manageExam():
                         new_end=end_dt,
                         new_venues=venue_list,
                         new_students=student_list,
-                        time_expire=time_expire
+                        time_expire=time_expire,
+                        time_open=time_open
                     )
                     flash(f"💾 Exam {exam_select.course.courseCodeSectionIntake} updated successfully.", "success")
                 except ValueError as e:
