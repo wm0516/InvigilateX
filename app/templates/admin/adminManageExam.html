@@ -562,78 +562,43 @@ let examDashboardInitialized = false;
 function updateExamDashboardFromTable() {
     const rows = document.querySelectorAll("#manageExam tbody tr");
     const visibleRows = [...rows].filter(r => r.style.display !== "none");
-
-    let total = visibleRows.length;
-    let active = 0;
-    let inactive = 0;
+    let total = 0;
+    let upcoming = 0;
+    let completed = 0;
     let unassigned = 0;
 
     visibleRows.forEach(r => {
-        const statusText = r.children[1].innerText.trim();
-        if (statusText === "ONGOING") active++;
-        else inactive++;
+        total++;
 
-        if (r.classList.contains("error-row-show")) unassigned++;
+        if (r.classList.contains("error-row-show")) {
+            unassigned++;
+        } else {
+            const status = r.children[1].innerText.trim();
+            if (status === "ONGOING") {
+                upcoming++;
+            } else {
+                completed++;
+            }
+        }
     });
-
-    // Update dashboard elements
-    const dashTotal = document.querySelector("#dashboardSection p:nth-child(1)");
-    const dashCompleted = document.querySelector("#dashboardSection p:nth-child(2)");
-    const dashUpcoming = document.querySelector("#dashboardSection p:nth-child(3)");
-    const dashUnassigned = document.querySelector("#dashboardSection p:nth-child(4)");
-
-    if (dashTotal) dashTotal.textContent = total;
-    if (dashCompleted) dashCompleted.textContent = total - active - unassigned;
-    if (dashUpcoming) dashUpcoming.textContent = active;
-    if (dashUnassigned) dashUnassigned.textContent = unassigned;
+    document.getElementById("dashTotalExam").textContent = total;
+    document.getElementById("dashUpcomingExam").textContent = upcoming;
+    document.getElementById("dashCompleteExam").textContent = completed;
+    document.getElementById("dashUnassignedExam").textContent = unassigned;
 }
 
-// Intake swipe/filter functionality
-document.addEventListener("DOMContentLoaded", () => {
-    const currentYear = new Date().getFullYear();
-    const semestersByYear = {
-        [currentYear - 1]: ['AUG', 'OCT'],
-        [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
-        [currentYear + 1]: ['JAN', 'APR']
-    };
-
-    const intakeColumns = [3];
-    const table = document.getElementById("manageExam");
-    const tbody = table.querySelector("tbody");
-
-    intakeSwipeContainer.appendChild(intakeSelect);
-    table.parentNode.insertBefore(intakeSwipeContainer, table);
-
-    intakeSelect.addEventListener("change", () => {
-        const selected = intakeSelect.value;
-        [...tbody.rows].forEach(row => {
-            const courseDetail = row.children[3].innerText.trim(); // Course Code/Section/Intake
-            if (!selected || courseDetail.includes(selected)) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        });
-        renumberVisibleRowsExam();
-        updateExamDashboardFromTable();
-    });
-
-    // Initial numbering and dashboard update
-    renumberVisibleRowsExam();
-    updateExamDashboardFromTable();
-});
 
 document.addEventListener("DOMContentLoaded", () => {
     initIntakeSwipe({
         tableId: "manageExam",
-        intakeCol: 3, // Course Code/Section/Intake inside Course Details column
+        intakeCol: 3,          // Course Details column
         noResultsId: "noResults",
         dashboardUpdater: updateExamDashboardFromTable
     });
-
     renumberVisibleRowsExam();
     updateExamDashboardFromTable();
 });
+
 
 </script>
 {% endblock %}
