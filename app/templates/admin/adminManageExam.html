@@ -120,10 +120,10 @@
                 </div><br>
 
                 <label>Time to Release Automatically Assigned Exam Slots</label>
-                <input type="datetime-local" id="editTimeSlotShare" name="editTimeSlotShare" required><br>
+                <input type="datetime-local" id="examTimeExpire" name="examTimeExpire" required><br>
             
                 <label>Time to Open Unclaimed Exam Slots for Manual Selection</label>
-                <input type="datetime-local" id="editTimeSlotOpen" name="editTimeSlotOpen" required>
+                <input type="datetime-local" id="examTimeCreate" name="examTimeCreate" required>
             </div>
 
             <div class="form-right">
@@ -298,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // EDIT FORM HELPERS
 // =====================================================
 function clearEditFields() {
-    ["editProgramCode", "editStudent", "editStartDateTime", "editEndDateTime", "editTimeSlotOpen", "editTimeSlotShare"]
+    ["editProgramCode", "editStudent", "editStartDateTime", "editEndDateTime", "examTimeCreate", "examTimeExpire"]
         .forEach(id => {
             const el = document.getElementById(id);
             if (el) el.value = "";
@@ -353,11 +353,11 @@ function populateEditForm(data) {
     if (data.examEndTime)
         document.getElementById("editEndDateTime").value = data.examEndTime.slice(0,16);
 
-    if (data.editTimeSlotOpen)
-        document.getElementById("editTimeSlotOpen").value = data.editTimeSlotOpen.slice(0,16);
+    if (data.examTimeCreate)
+        document.getElementById("examTimeCreate").value = data.examTimeCreate.slice(0,16);
 
-    if (data.editTimeSlotShare)
-        document.getElementById("editTimeSlotShare").value = data.editTimeSlotShare.slice(0,16);
+    if (data.examTimeExpire)
+        document.getElementById("examTimeExpire").value = data.examTimeExpire.slice(0,16);
 
     const container = document.getElementById("venueContainer");
     container.innerHTML = "";
@@ -435,8 +435,8 @@ document.addEventListener("DOMContentLoaded", () => {
     enforceDateTime(
         document.getElementById("editStartDateTime"),
         document.getElementById("editEndDateTime"),
-        document.getElementById("editTimeSlotOpen"),
-        document.getElementById("editTimeSlotShare"),
+        document.getElementById("examTimeCreate"),
+        document.getElementById("examTimeExpire"),
     );
 });
 

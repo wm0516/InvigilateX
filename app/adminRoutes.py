@@ -1156,8 +1156,8 @@ def admin_manageExam():
             end_dt   = datetime.fromisoformat(request.form['endDateTime'])
             venue_list = request.form.getlist("venue[]")
             student_list = request.form.getlist("venueStudents[]")
-            time_expire = datetime.fromisoformat(request.form['editTimeSlotOpen'])
-            time_open = datetime.fromisoformat(request.form['editTimeSlotShare'])
+            time_expire = datetime.fromisoformat(request.form['examTimeCreate'])
+            time_open = datetime.fromisoformat(request.form['examTimeExpire'])
 
             # Get total students across all course sections for this exam
             total_students = exam_select.examTotalStudents
