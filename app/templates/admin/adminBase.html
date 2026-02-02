@@ -187,50 +187,28 @@
         }
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
-        
+       
         function initIntakeSwipe({tableId, intakeCol, dashboardUpdater = null, noResultsId = null}) {
             const table = document.getElementById(tableId);
             if (!table) return;
 
             const tbody = table.querySelector("tbody");
             const rows = [...tbody.rows];
-
             const currentYear = new Date().getFullYear();
-            const semestersByYear = {
-                [currentYear - 1]: ['AUG', 'OCT'],
-                [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
-                [currentYear + 1]: ['JAN', 'APR']
-            };
+            const intakes = [
+                `AUG${currentYear - 1}`, `OCT${currentYear - 1}`,
+                `JAN${currentYear}`, `APR${currentYear}`,
+                `AUG${currentYear}`, `OCT${currentYear}`,
+                `JAN${currentYear + 1}`, `APR${currentYear + 1}`
+            ];
 
-            // ===== Create dropdown =====
-            const wrapper = document.createElement("div");
-            wrapper.style.display = "flex";
-            wrapper.style.gap = "10px";
-            wrapper.style.marginBottom = "10px";
+            let index = 0;
+            const currentEl = document.getElementById("currentIntake");
+            const prevEl = document.getElementById("prevLabel");
+            const nextEl = document.getElementById("nextLabel");
 
-            const select = document.createElement("select");
-            select.innerHTML = `<option value="">-- All Intakes --</option>`;
-
-            Object.entries(semestersByYear).forEach(([year, months]) => {
-                months.forEach(m => {
-                    select.add(new Option(`${m}${year}`, `${m}${year}`));
-                });
-            });
-
-            wrapper.appendChild(select);
-            table.parentNode.insertBefore(wrapper, table);
-
-            function renumber() {
-                let i = 1;
-                rows.forEach(r => {
-                    if (r.style.display !== "none") {
-                        r.children[0].textContent = i++;
-                    }
-                });
-            }
-
-            select.addEventListener("change", () => {
-                const value = select.value;
+            function applyFilter() {
+                const value = intakes[index];
                 let visible = 0;
 
                 rows.forEach(r => {
@@ -240,18 +218,31 @@
                     if (show) visible++;
                 });
 
-                renumber();
+                renumberVisibleRows();
                 dashboardUpdater && dashboardUpdater();
-
                 if (noResultsId) {
                     document.getElementById(noResultsId).style.display =
                         visible ? "none" : "block";
                 }
-            });
+                currentEl.textContent = value || "ALL";
+                prevEl.textContent = intakes[index - 1] || "";
+                nextEl.textContent = intakes[index + 1] || "";
+            }
 
-            // Initial state
-            renumber();
-            dashboardUpdater && dashboardUpdater();
+            document.getElementById("prevIntake").onclick = () => {
+                if (index > 0) {
+                    index--;
+                    applyFilter();
+                }
+            };
+
+            document.getElementById("nextIntake").onclick = () => {
+                if (index < intakes.length - 1) {
+                    index++;
+                    applyFilter();
+                }
+            };
+            applyFilter();
         }
     </script>
     {% block extra_scripts %}{% endblock %}

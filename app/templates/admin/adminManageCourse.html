@@ -557,21 +557,15 @@ function updateDashboardFromTable() {
 
 
 document.addEventListener("DOMContentLoaded", () => {
-    initIntakeSwipe({
+        initIntakeSwipe({
         tableId: "manageCourse",
-        intakeCol: 2,              // Course Code/Section/Intake
-        cur: "currentIntake",
-        prev: "prevLabel",
-        next: "nextLabel",
-        btnPrev: "prevIntake",
-        btnNext: "nextIntake",
-        noResults: "noResults"
+        intakeCol: 2,
+        dashboardUpdater: updateDashboardFromTable,
+        noResultsId: "noResults"
     });
 
-    // Initial numbering + dashboard
-    renumberVisibleRows();
-    updateDashboardFromTable();
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.querySelector("#manageCourse tbody");
