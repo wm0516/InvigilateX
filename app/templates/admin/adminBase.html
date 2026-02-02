@@ -187,62 +187,70 @@
         }
         updateDateTime(); // initial run
         setInterval(updateDateTime, 1000); // update every second
-       
-        function initIntakeSwipe({tableId, intakeCol, dashboardUpdater = null, noResultsId = null}) {
-            const table = document.getElementById(tableId);
-            if (!table) return;
+        
+        function initIntakeSwipe({tableId, intakeCol, dashboardUpdater, noResultsId = null}) {
+            const order = ["JAN", "APR", "AUG", "OCT"];
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            const $ = id => document.getElementById(id);
+            const now = new Date();
+            const m = now.getMonth();
 
-            const tbody = table.querySelector("tbody");
-            const rows = [...tbody.rows];
-            const currentYear = new Date().getFullYear();
-            const intakes = [
-                `AUG${currentYear - 1}`, `OCT${currentYear - 1}`,
-                `JAN${currentYear}`, `APR${currentYear}`,
-                `AUG${currentYear}`, `OCT${currentYear}`,
-                `JAN${currentYear + 1}`, `APR${currentYear + 1}`
-            ];
+            let state = {
+                year: now.getFullYear(),
+                intake:
+                    m <= 2 ? "JAN" :
+                    m <= 6 ? "APR" :
+                    m <= 9 ? "AUG" :
+                    "OCT"
+            };
 
-            let index = 0;
-            const currentEl = document.getElementById("currentIntake");
-            const prevEl = document.getElementById("prevLabel");
-            const nextEl = document.getElementById("nextLabel");
+            function shift(dir) {
+                let i = order.indexOf(state.intake) + dir;
+                let y = state.year;
 
-            function applyFilter() {
-                const value = intakes[index];
-                let visible = 0;
+                if (i < 0) { i = order.length - 1; y--; }
+                if (i >= order.length) { i = 0; y++; }
 
-                rows.forEach(r => {
-                    const text = r.children[intakeCol].innerText;
-                    const show = !value || text.includes(value);
-                    r.style.display = show ? "" : "none";
-                    if (show) visible++;
-                });
-
-                renumberVisibleRows();
-                dashboardUpdater && dashboardUpdater();
-                if (noResultsId) {
-                    document.getElementById(noResultsId).style.display =
-                        visible ? "none" : "block";
-                }
-                currentEl.textContent = value || "ALL";
-                prevEl.textContent = intakes[index - 1] || "";
-                nextEl.textContent = intakes[index + 1] || "";
+                state = { intake: order[i], year: y };
+                render();
             }
 
-            document.getElementById("prevIntake").onclick = () => {
-                if (index > 0) {
-                    index--;
-                    applyFilter();
-                }
-            };
+            function render() {
+                const key = state.intake + state.year;
+                $("currentIntake").textContent = key;
 
-            document.getElementById("nextIntake").onclick = () => {
-                if (index < intakes.length - 1) {
-                    index++;
-                    applyFilter();
+                const prev = getAdjacent(-1);
+                const next = getAdjacent(1);
+
+                $("prevLabel").textContent = prev.intake + prev.year;
+                $("nextLabel").textContent = next.intake + next.year;
+
+                let visible = 0;
+                rows.forEach(r => {
+                    const cellText = r.children[intakeCol]?.innerText || "";
+                    const match = cellText.includes(key);
+                    r.style.display = match ? "" : "none";
+                    if (match) visible++;
+                });
+
+                if (noResultsId) {
+                    $(noResultsId).style.display = visible ? "none" : "block";
                 }
-            };
-            applyFilter();
+                renumberVisibleRowsExam?.();
+                dashboardUpdater?.();
+            }
+
+            function getAdjacent(dir) {
+                let i = order.indexOf(state.intake) + dir;
+                let y = state.year;
+                if (i < 0) { i = order.length - 1; y--; }
+                if (i >= order.length) { i = 0; y++; }
+                return { intake: order[i], year: y };
+            }
+
+            $("prevIntake").onclick = () => shift(-1);
+            $("nextIntake").onclick = () => shift(1);
+            render();
         }
     </script>
     {% block extra_scripts %}{% endblock %}
