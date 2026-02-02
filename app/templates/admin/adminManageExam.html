@@ -269,11 +269,8 @@
 
 {% block extra_scripts %}
 <script>
-// =====================================================
 // VENUE OPTIONS CACHE
-// =====================================================
 let venueOptionsHTML = "";
-
 document.addEventListener("DOMContentLoaded", () => {
     const venueSelect = document.querySelector(".venue-dropdown");
     if (venueSelect) {
@@ -283,9 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// =====================================================
 // EDIT FORM HELPERS
-// =====================================================
 function clearEditFields() {
     ["editProgramCode", "editStudent", "editStartDateTime", "editEndDateTime"]
         .forEach(id => {
@@ -318,7 +313,6 @@ function createVenueRow(venue = "", capacity = "", isFirst = false) {
     container.appendChild(div);
 
     if (venue) div.querySelector("select").value = venue;
-
     if (isFirst) {
         div.querySelector(".addVenueBtn").onclick = () => {
             if (container.children.length >= 20) {
@@ -354,9 +348,7 @@ function populateEditForm(data) {
     }
 }
 
-// =====================================================
 // LOAD EXAM INTO EDIT FORM
-// =====================================================
 document.addEventListener("DOMContentLoaded", () => {
     const select = document.getElementById("editExamCourseSection");
     if (!select) return;
@@ -372,9 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// =====================================================
 // DATETIME-LOCAL RESTRICTIONS (UPLOAD + EDIT)
-// =====================================================
 document.addEventListener("DOMContentLoaded", () => {
     function nowLocal() {
         const n = new Date();
@@ -421,9 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 });
 
-// =====================================================
 // UPLOAD FORM FINAL VALIDATION
-// =====================================================
 document.getElementById("uploadForm")?.addEventListener("submit", e => {
     const share = document.querySelector("input[name='time_slot_share']").value;
     const open  = document.querySelector("input[name='time_slot_open']").value;
@@ -434,9 +422,7 @@ document.getElementById("uploadForm")?.addEventListener("submit", e => {
     }
 });
 
-// -------------------------
 // PDF Export
-// -------------------------
 document.addEventListener("DOMContentLoaded", function () {
     const generateBtn = document.getElementById("generatePDF");
     if (!generateBtn) return;
@@ -600,16 +586,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const intakeColumns = [3]; // Column index for "Course Details" (Course Code/Section/Intake)
     const table = document.getElementById("manageExam");
     const tbody = table.querySelector("tbody");
-
-    // Add dropdown for intake swipe
-    const intakeSwipeContainer = document.createElement("div");
-    intakeSwipeContainer.style.display = "flex";
-    intakeSwipeContainer.style.gap = "10px";
-    intakeSwipeContainer.style.marginBottom = "10px";
-
-    const intakeSelect = document.createElement("select");
-    intakeSelect.id = "examIntakeSelect";
-    intakeSelect.innerHTML = `<option value="">-- All Intakes --</option>`;
     
     Object.keys(semestersByYear).forEach(year => {
         semestersByYear[year].forEach(month => {
