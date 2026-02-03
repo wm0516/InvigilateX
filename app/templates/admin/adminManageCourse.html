@@ -498,7 +498,7 @@ function renumberVisibleRows() {
     const rows = document.querySelectorAll("#manageCourse tbody tr");
     let index = 1;
     rows.forEach(row => {
-        if (row.style.display !== "none") {
+        if (row.offsetParent !== null) {            
             const cell = row.querySelector("td.row-number");
             if (cell) {
                 cell.textContent = index++;
