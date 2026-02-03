@@ -198,7 +198,7 @@
                     {% if not row.examStatus %}inactive-row-show
                     {% elif row.examStartTime is none %}error-row-show
                     {% endif %}">
-                    <td>{{ loop.index }}</td>
+                    <td class="row-number"></td>
                     <td>
                         {% if row.examStatus %}
                             <span class="status frame-completed">ONGOING</span>
@@ -498,6 +498,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         .replace(/Number of Students\s*:/g, "Number of Students:")
                         .replace(/Practical Lecturer\s*:/g, "Practical Lecturer:")
                         .replace(/Tutorial Lecturer\s*:/g, "Tutorial Lecturer:")
+                        .replace(/Class Lecturer\s*:/g, "Class Lecturer:")
 
                         // ===== Exam Details =====
                         .replace(/Exam Date\s*:/g, "Exam Date:")
@@ -567,12 +568,12 @@ document.getElementById("uploadForm").addEventListener("submit", function (event
     }
 });
 
-function renumberVisibleRowsExam() {
+function renumberVisibleRows() {
     const rows = document.querySelectorAll("#manageExam tbody tr");
     let index = 1;
     rows.forEach(row => {
         if (row.style.display !== "none") {
-            row.children[0].textContent = index++;
+            row.querySelector(".row-number").textContent = index++;
         }
     });
 }

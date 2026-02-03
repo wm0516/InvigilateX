@@ -294,7 +294,7 @@
                             error-row-show
                         {% endif %}
                     ">
-                        <td>{{ loop.index }}</td>
+                        <td class="row-number"></td>
                         <td>
                             {% if row.courseStatus %}
                                 <span class="status frame-completed">
@@ -497,10 +497,9 @@ document.addEventListener("DOMContentLoaded", () => {
 function renumberVisibleRows() {
     const rows = document.querySelectorAll("#manageCourse tbody tr");
     let index = 1;
-
     rows.forEach(row => {
         if (row.style.display !== "none") {
-            row.children[0].textContent = index++;
+            row.querySelector(".row-number").textContent = index++;
         }
     });
 }
