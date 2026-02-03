@@ -499,7 +499,10 @@ function renumberVisibleRows() {
     let index = 1;
     rows.forEach(row => {
         if (row.style.display !== "none") {
-            row.querySelector(".row-number").textContent = index++;
+            const cell = row.querySelector("td.row-number");
+            if (cell) {
+                cell.textContent = index++;
+            }
         }
     });
 }
