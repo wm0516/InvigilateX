@@ -485,9 +485,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
-        const rows = Array.from(table.querySelectorAll("tbody tr")).map(tr => {
-            const cells = Array.from(tr.querySelectorAll("td")).map(td => {
-                let text = td.innerText.trim();
+        const rows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(tr => tr.offsetParent !== null)
+            .map(tr => {
+                return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
+                    let text = td.innerText.trim();
                 // Add newlines before each field label, not after colon
                 if ([3, 4, 5, 6].includes(td.cellIndex)) {
                     text = text
@@ -548,7 +550,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // ===== Save =====
-        doc.save("Admin_ExamList.pdf");
+        doc.save(`Admin_ExamList_${currentIntake}.pdf`);
     });
 });
 
