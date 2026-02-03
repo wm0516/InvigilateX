@@ -568,7 +568,7 @@ document.getElementById("uploadForm").addEventListener("submit", function (event
     }
 });
 
-function renumberVisibleRows() {
+function renumberVisibleRowsExam() {
     const rows = document.querySelectorAll("#manageExam tbody tr");
     let index = 1;
     rows.forEach(row => {
@@ -619,6 +619,11 @@ document.addEventListener("DOMContentLoaded", () => {
         dashboardUpdater: updateExamDashboardFromTable
     });
     renumberVisibleRowsExam();
+    updateExamDashboardFromTable();
+});
+
+window.addEventListener("load", () => {
+    renumberVisibleRows();
     updateExamDashboardFromTable();
 });
 

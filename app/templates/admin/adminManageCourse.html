@@ -510,7 +510,7 @@ function renumberVisibleRows() {
 let deptChart = null;
 function updateDashboardFromTable() {
     const rows = document.querySelectorAll("#manageCourse tbody tr");
-    const visibleRows = [...rows].filter(r => r.style.display !== "none");
+    const visibleRows = [...rows].filter(r => r.offsetParent !== null);
 
     let total = visibleRows.length;
     let active = 0;
@@ -589,6 +589,11 @@ document.addEventListener("DOMContentLoaded", () => {
         attributes: true,
         attributeFilter: ["style"]
     });
+});
+
+window.addEventListener("load", () => {
+    renumberVisibleRows();
+    updateDashboardFromTable();
 });
 </script>
 {% endblock %}
