@@ -337,74 +337,8 @@
 
 {% block extra_scripts %}
 <script>
-/* =========================================================
-   CORE UTILITIES
-========================================================= */
-
-function renumberVisibleRows() {
-    const rows = document.querySelectorAll("#manageCourse tbody tr");
-    let index = 1;
-    rows.forEach(row => {
-        if (row.offsetParent !== null) {
-            const cell = row.querySelector(".row-number");
-            if (cell) cell.textContent = index++;
-        }
-    });
-}
-
-let deptChart = null;
-function updateDashboardFromTable() {
-    const rows = document.querySelectorAll("#manageCourse tbody tr");
-    const visibleRows = [...rows].filter(r => r.offsetParent !== null);
-
-    let active = 0, inactive = 0, error = 0;
-    const deptCount = {};
-
-    visibleRows.forEach(r => {
-        const statusText = r.children[1].innerText.trim();
-        statusText === "Activated" ? active++ : inactive++;
-
-        if (r.classList.contains("error-row-show")) error++;
-
-        const dept = r.children[5].innerText.trim() || "Unknown";
-        deptCount[dept] = (deptCount[dept] || 0) + 1;
-    });
-
-    document.getElementById("dashTotalCourse").textContent = visibleRows.length;
-    document.getElementById("dashActiveCourse").textContent = active;
-    document.getElementById("dashInactiveCourse").textContent = inactive;
-    document.getElementById("dashErrorCourse").textContent = error;
-
-    if (deptChart) deptChart.destroy();
-
-    deptChart = new Chart(document.getElementById("courseDeptPieChart"), {
-        type: "pie",
-        data: {
-            labels: Object.keys(deptCount),
-            datasets: [{
-                data: Object.values(deptCount),
-                backgroundColor: [
-                    "#FF6384", "#36A2EB", "#FFCE56",
-                    "#4BC0C0", "#9966FF", "#FF9F40",
-                    "#66FFB2", "#C7C7C7"
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: "right" } }
-        }
-    });
-}
-
-/* =========================================================
-   INITIALIZERS
-========================================================= */
-
-function initEditForm() {
+document.addEventListener("DOMContentLoaded", () => {
     const editCourseSelect = document.getElementById("editCourseSelect");
-    if (!editCourseSelect) return;
-
     const editCourseCode = document.getElementById("editCourseCode");
     const editCourseSection = document.getElementById("editCourseSection");
     const editIntake = document.getElementById("intakeSemesterEdit");
@@ -417,19 +351,21 @@ function initEditForm() {
     const editTutorial = document.getElementById("editTutorialLecturer");
     const editLecturer = document.getElementById("editLecturer");
 
-    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, p = null, t = null, l = null) {
-        practicalSel.innerHTML = '<option value="">None</option>';
-        tutorialSel.innerHTML = '<option value="">None</option>';
-        lecturerSel.innerHTML = '<option value="">None</option>';
+    function populateLecturers(deptCode, practicalSel, tutorialSel, lecturerSel, selectedPractical = null, selectedTutorial = null, selectedLecturer = null) {
+        practicalSel.innerHTML = '<option value="" disabled>Select Practical Lecturer</option><option value="">None</option>';
+        tutorialSel.innerHTML = '<option value="" disabled>Select Tutorial Lecturer</option><option value="">None</option>';
+        lecturerSel.innerHTML = '<option value="" disabled>Select Class Lecturer</option><option value="">None</option>';
         if (!deptCode) return;
 
         fetch(`/get_lecturers_by_department/${encodeURIComponent(deptCode)}`)
             .then(r => r.json())
-            .then(list => {
-                list.forEach(u => {
-                    [[practicalSel, p], [tutorialSel, t], [lecturerSel, l]].forEach(([sel, selected]) => {
-                        const opt = new Option(u.userName.trim(), u.userId);
-                        if (u.userId == selected) opt.selected = true;
+            .then(lecturers => {
+                lecturers.forEach(l => {
+                    [[practicalSel, selectedPractical], [tutorialSel, selectedTutorial], [lecturerSel, selectedLecturer]].forEach(([sel, selected]) => {
+                        const opt = document.createElement("option");
+                        opt.value = l.userId;
+                        opt.textContent = l.userName.trim();
+                        if (l.userId == selected) opt.selected = true;
                         sel.appendChild(opt);
                     });
                 });
@@ -437,76 +373,212 @@ function initEditForm() {
     }
 
     editCourseSelect.addEventListener("change", e => {
-        const value = e.target.value;
-        if (!value) return;
+        const codeSectionIntake = e.target.value;
+        if (!codeSectionIntake) return;
 
-        const [code, section, intake] = value.split("/");
-        editCourseCode.value = code || "";
-        editCourseSection.value = section || "";
+        // Split code/section/intake
+        const parts = codeSectionIntake.split('/');
+        editCourseCode.value = parts[0] || '';
+        editCourseSection.value = parts[1] || '';
+        const intakeValue = parts[2] || '';
 
-        [...editIntake.options].forEach((o, i) => {
-            if (o.value === intake) editIntake.selectedIndex = i;
-        });
+        // Set intake dropdown
+        for (let i = 0; i < editIntake.options.length; i++) {
+            if (editIntake.options[i].value === intakeValue) {
+                editIntake.selectedIndex = i;
+                break;
+            }
+        }
 
-        fetch(`/get_courseCodeSection/${encodeURIComponent(value)}`)
+        // Fetch rest of the course data
+        fetch(`/get_courseCodeSection/${encodeURIComponent(codeSectionIntake)}`)
             .then(r => r.json())
             .then(c => {
                 if (c.error) return alert(c.error);
-                editCourseName.value = c.courseName || "";
-                editDept.value = c.courseDepartment || "";
-                editCourseHour.value = c.courseHour || "";
-                editCourseStudents.value = c.courseStudent || "";
+                editCourseName.value = c.courseName || '';
+                editDept.value = c.courseDepartment || '';
+                editCourseHour.value = c.courseHour || '';
+                editCourseStudents.value = c.courseStudent || '';
                 editStatus.value = c.courseStatus ? "1" : "0";
 
-                populateLecturers(
-                    c.courseDepartment,
-                    editPractical, editTutorial, editLecturer,
-                    c.coursePractical, c.courseTutorial, c.courseLecturer
-                );
-            });
+                populateLecturers(c.courseDepartment, editPractical, editTutorial, editLecturer, c.coursePractical, c.courseTutorial, c.courseLecturer);
+            })
+            .catch(err => console.error("Error fetching course:", err));
     });
-}
+});
 
-function initPDF() {
-    const btn = document.getElementById("generatePDF");
-    if (!btn) return;
+document.addEventListener("DOMContentLoaded", function () {
+    const generateBtn = document.getElementById("generatePDF");
+    if (!generateBtn) return;
 
-    btn.addEventListener("click", () => {
+    generateBtn.addEventListener("click", function () {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+        const doc = new jsPDF({orientation: "landscape",unit: "pt",format: "a4"});
+        const margin = 20;
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
+        
+        // ===== Title =====
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.text("Admin View - Courses Download", pageWidth / 2, margin, { align: "center" });
 
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
+        const startY = margin + 25;
+
+        // ===== Get table =====
         const table = document.querySelector(".user-data-table");
-        if (!table) return alert("No table found");
+        if (!table) {
+            alert("No table found to export!");
+            return;
+        }
 
-        const headers = [...table.querySelectorAll("thead th")].map(th => th.innerText);
-        const rows = [...table.querySelectorAll("tbody tr")]
-            .filter(r => r.offsetParent !== null)
-            .map(r => [...r.children].map(td => td.innerText.trim()));
+        const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+        const rows = Array.from(table.querySelectorAll("tbody tr"))
+            .filter(tr => tr.offsetParent !== null)
+            .map(tr => {
+                return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
+                    let text = td.innerText.trim();
 
-        doc.text("Admin View - Courses", 420, 30, { align: "center" });
-        doc.autoTable({ head: [headers], body: rows, startY: 50 });
-        doc.save("Admin_ViewCourseList.pdf");
+                    if (idx === 9) {  // Lecturer details
+                        text = text
+                            .replace(/\s*Practical\s*:/g, "Practical:")
+                            .replace(/\s*Tutorial\s*:/g, "\nTutorial:")
+                            .trim();
+                    }
+
+                    return text.replace(/\s*\n\n\s*/g, " ");
+                });
+            });
+
+        // ===== Generate table =====
+        doc.autoTable({
+            head: [headers],
+            body: rows,
+            startY: startY,
+            theme: "grid",
+            styles: {font: "helvetica", fontSize: 8, cellPadding: 4, overflow: "linebreak", valign: "middle"},
+            headStyles: {fillColor: [33, 37, 41], textColor: [255, 255, 255], halign: "center"},
+            // Automatically calculate table width to fit page
+            tableWidth: pageWidth - 2 * margin,
+            margin: { top: margin, left: margin, right: margin, bottom: margin },
+            didDrawPage: function (data) {
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
+            },
+        });
+
+        doc.save(`Admin_CourseList_${currentIntake}.pdf`);
     });
-}
+});
 
-function initIntakeDropdowns() {
-    const year = new Date().getFullYear();
-    const map = {
-        [year - 1]: ["AUG", "OCT"],
-        [year]: ["JAN", "APR", "AUG", "OCT"],
-        [year + 1]: ["JAN", "APR"]
+document.addEventListener("DOMContentLoaded", () => {
+    const currentYear = new Date().getFullYear();
+    const semestersByYear = {
+        [currentYear - 1]: ['AUG', 'OCT'],
+        [currentYear]: ['JAN', 'APR', 'AUG', 'OCT'],
+        [currentYear + 1]: ['JAN', 'APR']
     };
 
-    ["intakeSemester", "intakeSemesterEdit"].forEach(id => {
-        const sel = document.getElementById(id);
-        if (!sel) return;
-        Object.entries(map).forEach(([y, months]) =>
-            months.forEach(m => sel.add(new Option(`${m}${y}`, `${m}${y}`)))
-        );
+    ['intakeSemester', 'intakeSemesterEdit'].forEach(id => {
+        const dropdown = document.getElementById(id);
+        if (!dropdown) return;
+
+        Object.keys(semestersByYear).forEach(year => {
+            semestersByYear[year].forEach(month => {
+                dropdown.add(new Option(`${month}${year}`, `${month}${year}`));
+            });
+        });
+    });
+});
+
+function renumberVisibleRows() {
+    const rows = document.querySelectorAll("#manageCourse tbody tr");
+    let index = 1;
+    rows.forEach(row => {
+        if (row.offsetParent !== null) {            
+            const cell = row.querySelector("td.row-number");
+            if (cell) {
+                cell.textContent = index++;
+            }
+        }
     });
 }
 
-function initObserver() {
+let deptChart = null;
+function updateDashboardFromTable() {
+    const rows = document.querySelectorAll("#manageCourse tbody tr");
+    const visibleRows = [...rows].filter(r => r.offsetParent !== null);
+
+    let total = visibleRows.length;
+    let active = 0;
+    let inactive = 0;
+    let error = 0;
+    let deptCount = {};
+
+    visibleRows.forEach(r => {
+        const statusText = r.children[1].innerText.trim();
+        if (statusText === "Activated") active++;
+        else inactive++;
+
+        if (r.classList.contains("error-row-show")) error++;
+
+        const dept = r.children[5].innerText.trim() || "Unknown";
+        deptCount[dept] = (deptCount[dept] || 0) + 1;
+    });
+
+    document.getElementById("dashTotalCourse").textContent = total;
+    document.getElementById("dashActiveCourse").textContent = active;
+    document.getElementById("dashInactiveCourse").textContent = inactive;
+    document.getElementById("dashErrorCourse").textContent = error;
+
+    if (deptChart) deptChart.destroy();
+
+    deptChart = new Chart(
+        document.getElementById("courseDeptPieChart"),
+        {
+            type: "pie",
+            data: {
+                labels: Object.keys(deptCount),
+                datasets: [{
+                    data: Object.values(deptCount),
+                    backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40", "#66FFB2", "#C7C7C7"]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: "right" }
+                }
+            }
+        }
+    );
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    initIntakeSwipe({
+        tableId: "manageCourse",
+        intakeCol: 2,              // Course Code/Section/Intake
+        cur: "currentIntake",
+        prev: "prevLabel",
+        next: "nextLabel",
+        btnPrev: "prevIntake",
+        btnNext: "nextIntake",
+        noResults: "noResults"
+    });
+
+    // Initial numbering + dashboard
+    renumberVisibleRows();
+    updateDashboardFromTable();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
     const tbody = document.querySelector("#manageCourse tbody");
     if (!tbody) return;
 
@@ -515,27 +587,11 @@ function initObserver() {
         updateDashboardFromTable();
     });
 
-    observer.observe(tbody, { subtree: true, attributes: true, attributeFilter: ["style"] });
-}
-
-/* =========================================================
-   MAIN BOOTSTRAP
-========================================================= */
-
-document.addEventListener("DOMContentLoaded", () => {
-    initEditForm();
-    initPDF();
-    initIntakeDropdowns();
-
-    initIntakeSwipe({
-        tableId: "manageCourse",
-        intakeCol: 2,
-        noResults: "noResults"
+    observer.observe(tbody, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style"]
     });
-
-    initObserver();
-    renumberVisibleRows();
-    updateDashboardFromTable();
 });
 
 window.addEventListener("load", () => {
@@ -543,6 +599,5 @@ window.addEventListener("load", () => {
     updateDashboardFromTable();
 });
 </script>
-
 {% endblock %}
 
