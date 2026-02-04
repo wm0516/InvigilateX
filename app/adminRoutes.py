@@ -912,196 +912,69 @@ def get_available_venues():
 
     return jsonify({'venues': available_venues})
 
+
+# Remove all venue exams, attendances, reports, and rollback pending hours SAFELY.
+def reset_exam_relations(exam):
+    if not exam.examStartTime or not exam.examEndTime:
+        return
+
+    duration_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+    reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
+    for report in reports:
+        for att in report.attendances:
+            inv = att.invigilator
+            if inv:
+                inv.userPendingCumulativeHours = max(
+                    0.0,
+                    (inv.userPendingCumulativeHours or 0.0) - duration_hours
+                )
+        db.session.delete(report)
+    VenueExam.query.filter_by(examId=exam.examId).delete()
+
+
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
 # -------------------------------
-def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_expire, time_open):
-    user_id = session.get('user_id')
-    old_start = exam.examStartTime
-    old_end = exam.examEndTime
+def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, time_expire):
+    user_id = session.get("user_id")
 
-    # -------------------------------
-    # 1️⃣ Update exam times
-    # -------------------------------
-    exam.examStartTime = new_start
-    exam.examEndTime = new_end
-    exam.examAddedBy = user_id
-    exam.examAddedOn = datetime.now() + timedelta(hours=8)
+    # Validate input
+    if not new_start or not new_end:
+        raise ValueError("Exam start and end time required")
+    if time_open is None or time_expire is None:
+        raise ValueError("Open / Expire time cannot be NULL")
 
-    # -------------------------------
-    # 2️⃣ Calculate total invigilators
-    # -------------------------------
-    total_invigilators = 0
-    for s in new_students:
-        try:
-            student_count = int(s)
-        except ValueError:
-            student_count = 0
-        if student_count > 32:
-            total_invigilators += 3
-        elif student_count > 0:
-            total_invigilators += 2
+    assigned_total = sum(int(s) for s in new_students if str(s).isdigit())
+    if assigned_total != exam.examTotalStudents:
+        raise ValueError(f"Assigned students ({assigned_total})" f"≠ exam total ({exam.examTotalStudents})")
 
-    exam.examNoInvigilator = total_invigilators
-    db.session.flush()  # Ensure exam updated
+    # FULL RESET (important)
+    reset_exam_relations(exam)
 
-    # Duration
-    new_hours = (new_end - new_start).total_seconds() / 3600.0
-    old_hours = (old_end - old_start).total_seconds() / 3600.0 if old_start and old_end else 0
-
-    # -------------------------------
-    # 3️⃣ Handle InvigilationReport
-    # -------------------------------
-    report = InvigilationReport.query.filter_by(examId=exam.examId).first()
-    if not report:
-        report = InvigilationReport(examId=exam.examId)
-        db.session.add(report)
-        db.session.commit()  # Generate ID
-
-    # Remove existing attendances
-    for att in report.attendances:
-        inv = att.invigilator
-        if inv:
-            inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - old_hours)
-        db.session.delete(att)
+    # Reset exam core fields
+    exam.examStartTime = None
+    exam.examEndTime = None
+    exam.examNoInvigilator = None
+    exam.examOutput = None
     db.session.flush()
 
-    # -------------------------------
-    # 4️⃣ Assign invigilators per venue
-    # -------------------------------
-    for i, venue_no in enumerate(new_venues):
-        try:
-            students_for_venue = int(new_students[i])
-        except (IndexError, ValueError):
-            students_for_venue = 0
+    # RECREATE using SAME logic as upload
+    success, msg = create_exam_and_related(
+        user=user_id,
+        start_dt=new_start,
+        end_dt=new_end,
+        courseSection=exam.course.courseCodeSectionIntake,
+        venue_list=new_venues,
+        studentPerVenue_list=new_students,
+        open=time_open,
+        close=time_expire,
+        standby=False
+    )
 
-        if students_for_venue <= 0:
-            continue
-
-        # Determine how many invigilators needed
-        inv_count = 3 if students_for_venue > 32 else 2
-
-        # Fetch eligible invigilators (excluding course lecturers)
-        lecturers = [exam.course.coursePractical, exam.course.courseTutorial, exam.course.courseLecturer]
-        eligible = User.query.filter(
-            User.userLevel == 1,
-            User.userStatus == 1
-            #,~User.userId.in_(lecturers)
-        ).all()
-
-         # Filter by max 36 hours total
-        eligible = [
-            u for u in eligible
-            if (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0) < 36
-        ]
-
-        # Sort by gender and hours (to balance load)
-        males = sorted(
-            [u for u in eligible if u.userGender == "MALE"],
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-        females = sorted(
-            [u for u in eligible if u.userGender == "FEMALE"],
-            key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0)
-        )
-
-        chosen = []
-        # Ensure at least one male and one female (if possible)
-        if inv_count >= 2:
-            if males:
-                chosen.append(males.pop(0))
-            if females and len(chosen) < inv_count:
-                chosen.append(females.pop(0))
-
-        # Fill remaining slots with lowest-hour invigilators
-        pool = sorted(males + females, key=lambda u: (u.userCumulativeHours or 0) + (u.userPendingCumulativeHours or 0))
-        chosen += pool[:(inv_count - len(chosen))]
-
-        if time_expire is None:
-            raise ValueError("time_expire must not be NULL")
-        
-        if time_open is None:
-            raise ValueError("time_open must not be NULL")
-
-        # Save attendance entries with venueNumber
-        for inv in chosen:
-            inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + new_hours
-            db.session.add(InvigilatorAttendance(
-                reportId=report.invigilationReportId,
-                invigilatorId=inv.userId,
-                venueNumber=venue_no,
-                timeExpire=time_expire,
-                timeCreate=time_open,
-                invigilationStatus=False
-            ))
-
-        flash(f"Eligible invigilators: {len(eligible)}","success")
-        flash(f"Chosen invigilators for venue {venue_no}: {[inv.userId for inv in chosen]}","success")
-
-    # -------------------------------
-    # 5️⃣ Update or create VenueExam records
-    # -------------------------------
-    old_records = {v.venueNumber: v for v in VenueExam.query.filter_by(examId=exam.examId).all()}
-    used_venues = set()
-
-    for i, venue_no in enumerate(new_venues):
-        try:
-            students_for_venue = int(new_students[i])
-        except (IndexError, ValueError):
-            students_for_venue = 0
-
-        if students_for_venue <= 0:
-            continue
-
-        venue_obj = Venue.query.filter_by(venueNumber=venue_no).first()
-        if not venue_obj:
-            continue
-
-        # If venue existed before, update it
-        if venue_no in old_records:
-            rec = old_records[venue_no]
-            rec.startDateTime = new_start
-            rec.endDateTime = new_end
-            rec.capacity = students_for_venue
-            used_venues.add(venue_no)
-            continue
-
-        # Check for overlapping exams
-        overlapping_exams = VenueExam.query.filter(
-            VenueExam.venueNumber == venue_no,
-            VenueExam.examId != exam.examId,
-            VenueExam.startDateTime < new_end + timedelta(minutes=30),
-            VenueExam.endDateTime > new_start - timedelta(minutes=30)
-        ).all()
-
-        total_students_in_use = sum(e.capacity for e in overlapping_exams)
-        available_capacity = venue_obj.venueCapacity - total_students_in_use
-
-        if available_capacity < students_for_venue:
-            raise ValueError(
-                f"Venue {venue_no} cannot accommodate {students_for_venue} students "
-                f"(available: {available_capacity})"
-            )
-
-        new_ve = VenueExam(
-            examId=exam.examId,
-            venueNumber=venue_no,
-            startDateTime=new_start,
-            endDateTime=new_end,
-            capacity=students_for_venue
-        )
-        db.session.add(new_ve)
-        used_venues.add(venue_no)
-
-    # Remove old venues not used anymore
-    for venue_no, rec in old_records.items():
-        if venue_no not in used_venues:
-            db.session.delete(rec)
-
+    if not success:
+        db.session.rollback()
+        raise ValueError(msg)
     db.session.commit()
-
-    
-
 
 # -------------------------------
 # Function for Admin ManageExam Route
@@ -1123,9 +996,7 @@ def admin_manageExam():
         )
         .all()
     )
-    edit_exam_data = (
-        Exam.query
-        .join(Exam.course)
+    edit_exam_data = (Exam.query.join(Exam.course)
         .filter(
             Exam.examStatus == True,
             Course.courseStatus == True
@@ -1176,80 +1047,25 @@ def admin_manageExam():
             return result
 
         # 2️⃣ Edit exam
-        if form_type == 'edit' and exam_select:
-            action = request.form.get('action')
-            start_dt = datetime.fromisoformat(request.form['startDateTime'])
-            end_dt   = datetime.fromisoformat(request.form['endDateTime'])
-            venue_list = request.form.getlist("venue[]")
-            student_list = request.form.getlist("venueStudents[]")
-            time_expire = datetime.fromisoformat(request.form['examTimeCreate'])
-            time_open = datetime.fromisoformat(request.form['examTimeExpire'])
-
-            # Get total students across all course sections for this exam
-            total_students = exam_select.examTotalStudents
-
-            if action == 'update':
+        if form_type == "edit" and exam_select:
+            action = request.form.get("action")
+            if action == "update":
                 try:
-                    # Validate student split matches total students
-                    assigned_total = sum(int(s) for s in student_list if s.strip().isdigit())
-                    if assigned_total != total_students:
-                        flash(f"❌ Assigned students ({assigned_total}) do not match exam total ({total_students})", "error")
-                        return redirect(request.url)
-                    
-                    if not time_expire or not time_open:
-                        flash("❌ Time to open unclaimed exam slots cannot be empty.", "error")
-                        return redirect(request.url)
-
-                    # Call adjust_exam to update times, invigilators, and venue assignment
                     adjust_exam(
                         exam=exam_select,
-                        new_start=start_dt,
-                        new_end=end_dt,
-                        new_venues=venue_list,
-                        new_students=student_list,
-                        time_expire=time_expire,
-                        time_open=time_open
+                        new_start=datetime.fromisoformat(request.form["startDateTime"]),
+                        new_end=datetime.fromisoformat(request.form["endDateTime"]),
+                        new_venues=request.form.getlist("venue[]"),
+                        new_students=request.form.getlist("venueStudents[]"),
+                        time_open=datetime.fromisoformat(request.form["examTimeCreate"]),
+                        time_expire=datetime.fromisoformat(request.form["examTimeExpire"]),
                     )
-                    flash(f"💾 Exam {exam_select.course.courseCodeSectionIntake} updated successfully.", "success")
-                except ValueError as e:
-                    db.session.rollback()
-                    flash(str(e), "error")
-                    flash("❌ Please reselect venues and try again.", "error")
-                    return redirect(request.url)
-
-            elif action == 'delete':
-                try:
-                    # 1️⃣ Delete all invigilator attendances and reports
-                    reports = InvigilationReport.query.filter_by(examId=exam_select.examId).all()
-                    for report in reports:
-                        for att in report.attendances:
-                            # Adjust user pending hours if needed
-                            if exam_select.examStartTime and exam_select.examEndTime:
-                                duration = (exam_select.examEndTime - exam_select.examStartTime).total_seconds() / 3600.0
-                                user = User.query.get(att.invigilatorId)
-                                if user:
-                                    user.userPendingCumulativeHours = max(0, user.userPendingCumulativeHours - duration)
-                            db.session.delete(att)
-                        db.session.delete(report)
-
-                    # 2️⃣ Delete all venue assignments
-                    VenueExam.query.filter_by(examId=exam_select.examId).delete(synchronize_session=False)
-
-                    # 3️⃣ Reset exam fields instead of deleting exam record
-                    exam_select.examStartTime = None
-                    exam_select.examEndTime = None
-                    exam_select.examNoInvigilator = None
-                    exam_select.examOutput = None
-                    exam_select.examAddedBy = user_id  # current admin/user performing delete
-                    exam_select.examAddedOn = datetime.now(timezone.utc)
-
-                    db.session.commit()
-                    flash(f"🗑️ Exam {exam_select.course.courseCodeSectionIntake} deleted successfully.", "success")
+                    flash("💾 Exam updated successfully", "success")
                 except Exception as e:
                     db.session.rollback()
-                    flash(f"❌ Error deleting exam: {str(e)}", "error")
-            return redirect(url_for('admin_manageExam'))
+                    flash(str(e), "error")
 
+            return redirect(url_for("admin_manageExam"))
 
     return render_template(
         'admin/adminManageExam.html',
