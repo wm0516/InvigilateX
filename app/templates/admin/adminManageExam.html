@@ -495,7 +495,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
                     let text = td.innerText.trim();
                 // Add newlines before each field label, not after colon
-                if ([3, 4, 5, 6].includes(td.cellIndex)) {
+                if ([3, 4, 5, 6, 7].includes(td.cellIndex)) {
                     text = text
                         // ===== Course Details =====
                         .replace(/Course Name\s*:/g, "Course Name:")
