@@ -493,7 +493,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .filter(tr => tr.offsetParent !== null)
             .map(tr => {
                 return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
-                    let text = td.innerText.trim();
                 // Add newlines before each field label, not after colon
                 if ([3, 4, 5, 6, 7].includes(td.cellIndex)) {
                     text = text
@@ -636,5 +635,4 @@ window.addEventListener("load", () => {
 
 </script>
 {% endblock %}
-
 
