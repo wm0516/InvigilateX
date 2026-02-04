@@ -737,23 +737,24 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 
     if examDate is None or str(examDate).strip() == "":
         return False, "Missing exam date"
-
-    # ✅ Handle pandas Timestamp (Excel upload)
     if hasattr(examDate, "to_pydatetime"):
         examDate = examDate.to_pydatetime()
 
     if isinstance(examDate, datetime):
         pass
-
     elif isinstance(examDate, date):
         examDate = datetime.combine(examDate, datetime.min.time())
-
     elif isinstance(examDate, str):
+        examDate = examDate.strip()
         try:
-            examDate = datetime.strptime(examDate.strip(), "%m/%d/%Y")
+            # MM/DD/YYYY (template expectation)
+            examDate = datetime.strptime(examDate, "%m/%d/%Y")
         except ValueError:
-            return False, f"Invalid exam date format (MM/DD/YYYY): {examDate}"
-
+            try:
+                # ISO string from pandas: YYYY-MM-DD HH:MM:SS
+                examDate = datetime.strptime(examDate, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return False, f"Invalid exam date format: {examDate}"
     else:
         return False, f"Unsupported exam date type: {type(examDate)}"
 
