@@ -12,7 +12,7 @@
 <form id="dashboardForm" action="{{ url_for('admin_manageTimetable') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">    
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr;">
                 <div class="dashboard-frame">
                     <h3>Total Timetable Sets</h3>
@@ -31,7 +31,7 @@
 {% block upload_section %}
 <form id="uploadForm" action="{{ url_for('admin_manageTimetable') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" style="margin: auto;">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="timetable_list">
                 <div class="upload-container" style="width: 80%;" id="timetableUploadContainer">
@@ -62,7 +62,7 @@
     <div id="manualSection" style="width: 100%; margin:auto;">
         <h4 style="text-align: center;">Link Timetable With Staff</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Unassigned Lecturers</label>
                 <select name="lecturerName" id="lecturerName" required>
                     <option value="" disabled selected>-- Select Lecturer --</option>
@@ -71,7 +71,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Staff Linked</label>
                 <select name="staffList" id="staffList" required>
                     <option value="" disabled selected>-- Select Staff --</option>
@@ -95,7 +95,7 @@
     <div id="editSection" style="width: 100%; margin:auto;">
         <h4 style="text-align: center;">Edit or Delete Timetable Link</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Existing Timetable List</label>
                 <select name="editTimetableList" id="editTimetableList" required>
                     <option value="" disabled selected>-- Select Timetable --</option>
@@ -106,7 +106,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Staff Linked</label>
                 <select name="editStaffList" id="editStaffList" required>
                     <option value="" disabled selected>-- Select Staff --</option>
@@ -153,7 +153,7 @@
 
     <form method="get" action="{{ url_for('admin_manageTimetable') }}">
         <div class="profile-frame" style="margin-top: 1%;">
-            <div class="form-left">
+            <div class="form-profile">
                 <label for="department">Select Department:</label>
                 <select name="department" id="department" onchange="this.form.submit()">
                     <option value="">All Departments</option>
@@ -165,7 +165,7 @@
                 </select>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label for="lecturer">Select Lecturer:</label>
                 <select name="lecturer" id="lecturer" onchange="this.form.submit()">
                     <option value="">All Lecturers</option>

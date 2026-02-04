@@ -13,7 +13,7 @@
 <form id="dashboardForm" action="{{ url_for('admin_manageStaff') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <div class="dashboard-row">
                 <div class="dashboard-frame pie">
                     <h3>Department Distribution</h3>
@@ -43,7 +43,7 @@
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageStaff') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" class="function-frame" style="width:80%">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="staff_list">
                 <div class="upload-container" id="staffUploadContainer">
@@ -80,7 +80,7 @@
     <div id="manualSection" class="function-frame">
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Staff ID</label>
                 <input type="text" name="userid" value="{{ id_text }}" required><br>
 
@@ -91,7 +91,7 @@
                 <input type="text" name="username" value="{{ name_text }}" required>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Staff Email Address</label>
                 <input type="email" name="email" value="{{ email_text }}" required><br>
 
@@ -106,7 +106,7 @@
                 </select>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Staff Role</label>
                 <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}" required>
                     <option value="" disabled selected>-- Select Role --</option>
@@ -145,7 +145,7 @@
     <div id="editSection" style="width: 100%; margin:auto;">
         <h4 style="text-align: center;">Edit Existing Staff</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Staff ID</label>
                 <select id="editStaffId" name="editStaffId" required>
                     <option value="" disabled selected>-- Select Staff --</option>
@@ -163,7 +163,7 @@
                 <input type="text" id="editUsername" name="editUsername" required>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Staff Email Address</label>
                 <input type="email" id="editEmail" name="editEmail" required><br>
 
@@ -178,7 +178,7 @@
                 </select>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Staff Status</label>
                 <select id="editStatus" name="editStatus" required>
                     <option value="" disabled selected>-- Select Status --</option>

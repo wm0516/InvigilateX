@@ -13,9 +13,7 @@
 <form id="dashboardForm" action="{{ url_for('admin_manageDepartment') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
-
-            <!-- Overview -->
+        <div class="form-profile" style="width: 100%">
             <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h3>Total Department(s)</h3>
@@ -46,11 +44,11 @@
     <div id="manualSection" class="function-frame">
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Department Code</label>
                 <input type="text" name="departmentCode" required>
             </div>
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Department Name</label>
                 <input type="text" name="departmentName" required>
             </div>
@@ -72,7 +70,7 @@
     <div id="editSection" class="function-frame">
         <h4 style="text-align: center;">Edit Existing Department</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Select Department</label>
                 <select id="editDepartment" name="editDepartment" required>
                     <option value="" disabled selected>-- Select Department --</option>
@@ -88,7 +86,7 @@
                 <input type="text" name="departmentName" value="{{ department_select.departmentName if department_select else '' }}" required>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Dean Name</label>
                 <select id="deanName" name="deanName">
                     <option value="None">-- None --</option>
@@ -109,7 +107,7 @@
                     {% endfor %}
                 </select>
             </div> 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Hop Name</label>
                 <select id="hopName" name="hopName">
                     <option value="None">-- None --</option>

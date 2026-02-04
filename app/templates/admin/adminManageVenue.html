@@ -14,11 +14,11 @@
     <div id="manualSection" class="function-frame">
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Venue</label>
                 <input type="text" name="venueNumber" value="{{ venueNumber_text }}" required>
             </div>
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Level</label>
                 <select name="venueLevel" required>
                     <option value="" disabled selected>-- Level --</option>
@@ -29,7 +29,7 @@
                     <option value="LEVEL 6">LEVEL 6</option>
                 </select>
             </div>
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Venue Capacity</label>
                 <input type="number" name="venueCapacity" value="{{ venueCapacity_text }}" min="1" step="1" required>
             </div>
@@ -52,7 +52,7 @@
     <div id="editSection" class="function-frame">
         <h4 style="text-align: center;">Edit Existing Venue</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Venue</label>
                 <select name="editVenueNumber" id="editVenueNumber" required>
                     <option value="" disabled selected>-- Select Venue --</option>
@@ -61,7 +61,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="form-middle">   
+            <div class="form-profile">   
                 <label>Level</label>
                 <select name="venueLevel" id="editVenueLevel" required>
                     <option value="" disabled selected>-- Level --</option>
@@ -72,7 +72,7 @@
                     <option value="LEVEL 6">LEVEL 6</option>
                 </select>
             </div>
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Venue Capacity</label>
                 <input type="number" name="venueCapacity" id="editVenueCapacity" min="1" step="1" required>
             </div>

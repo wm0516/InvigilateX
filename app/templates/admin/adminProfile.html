@@ -5,7 +5,7 @@
     <h2>Profile</h2>
     <form method="post" style="border-radius: None; border: None; box-shadow: None;">
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Full Name as per IC</label>
                 <input value="{{ admin_data.userName }}" readonly><br>
                 
@@ -16,7 +16,7 @@
                 <input value="{{ admin_data.userEmail }}" readonly>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Gender</label>
                 <input  value="{{ admin_data.userGender }}" readonly><br>
 
@@ -27,7 +27,7 @@
                 <input value="{{ admin_data.userDepartment }}" readonly>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Staff Card UID</label>
                 <input type="text" name="cardUID" value="{{ admin_cardUID or '' }}"><br>
 

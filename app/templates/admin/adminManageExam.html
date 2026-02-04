@@ -12,7 +12,7 @@
 <form id="dashboardForm" action="{{ url_for('admin_manageExam') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h3>Total Exams</h3>
@@ -40,7 +40,7 @@
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageExam') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" class="function-frame" style="width:80%">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="exam_list">
                 <div class="upload-container" id="examUploadContainer">
@@ -62,11 +62,11 @@
             <input type="hidden" name="form_type" value="upload">
 
             <div style="margin-top:20px; display: flex; gap: 30px; justify-content: center;">
-                <div class="form-left">
+                <div class="form-profile">
                     <label>Time to Release Automatically Assigned Exam Slots</label>
                     <input type="datetime-local" name="time_slot_share" required>
                 </div>
-                <div class="form-right">
+                <div class="form-profile">
                     <label>Time to Open Unclaimed Exam Slots for Manual Selection</label>
                     <input type="datetime-local" name="time_slot_open" required>
                 </div>
@@ -85,7 +85,7 @@
     <div id="editSection" class="function-frame">
         <h4 style="text-align: center;">Edit Existing Exams</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label for="editExamCourseSection">Select Exam Course - Course Name</label>
                 <select name="editExamCourseSection" id="editExamCourseSection" required>
                     <option value="" disabled selected>-- Select Course --</option>
@@ -107,13 +107,13 @@
                 <input type="number" id="editStudent" name="student" value="" readonly>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <div class="profile-frame" style="justify-content: space-between;">
-                    <div class="form-left" style="width: 48%;">
+                    <div class="form-profile" style="width: 48%;">
                         <label>Exam Start Date & Time</label>
                         <input type="datetime-local" id="editStartDateTime" name="startDateTime" required>
                     </div>
-                    <div class="form-right" style="width: 48%;">
+                    <div class="form-profile" style="width: 48%;">
                         <label>Exam End Date & Time</label>
                         <input type="datetime-local" id="editEndDateTime" name="endDateTime" required>
                     </div>
@@ -126,7 +126,7 @@
                 <input type="datetime-local" id="examTimeCreate" name="examTimeCreate" required>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Exam Venues</label>
                 <div id="venueContainer">
                     <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">

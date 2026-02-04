@@ -13,7 +13,7 @@
 <form id="dashboardForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <div class="dashboard-row">
                 <div class="dashboard-frame">
                     <h3>Pending Invigilation Duties</h3>
@@ -41,7 +41,7 @@
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" class="function-frame" style="width:80%">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="attendance_list">
                 <div class="upload-container" id="attendanceUploadContainer">
@@ -88,8 +88,8 @@
                 <input type="text" id="examTime" readonly>
             </div>
 
-            <div class="form-middle" id="middleSlots"></div>
-            <div class="form-right" id="rightSlots"></div>
+            <div class="form-profile" id="middleSlots"></div>
+            <div class="form-profile" id="rightSlots"></div>
         </div>
 
         <input type="hidden" name="form_type" value="edit">

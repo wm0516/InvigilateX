@@ -13,7 +13,7 @@
 <form id="dashboardForm" action="{{ url_for('admin_manageCourse') }}" method="POST">
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
-        <div class="form-left" style="width: 100%">
+        <div class="form-profile" style="width: 100%">
             <!-- Overview -->
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="dashboard-frame">
@@ -47,7 +47,7 @@
 <!-- Upload Form -->
 <form id="uploadForm" action="{{ url_for('admin_manageCourse') }}" method="POST" enctype="multipart/form-data">
     <div id="uploadSection" class="function-frame" style="width:80%;">
-        <div class="form-left" style="width: 100%;">
+        <div class="form-profile" style="width: 100%;">
             <h4 style="text-align: center;">File Upload Section</h4>
             <label for="course_list">
                 <div class="upload-container" id="courseUploadContainer">
@@ -82,7 +82,7 @@
     <div id="manualSection" class="function-frame">
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Course Program</label>
                 <select id="departmentCode" name="departmentCode" required>
                     <option value="" disabled selected>-- Select Department --</option>
@@ -94,19 +94,19 @@
                 </select><br>
 
                 <div class="profile-frame" style="justify-content: space-between;">
-                    <div class="form-left" style="width: 35%;">
-                        <label>Course Code</label>
-                        <input type="text" name="courseCode" value="{{ courseCode_text }}" required>
-                    </div>
-                    <div class="form-middle" style="width: 25%;">
-                        <label>Course Section</label>
-                        <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
-                    </div>
-                    <div class="form-right" style="width: 35%;">
+                    <div class="form-profile" style="width: 25%;">
                         <label>Course Intake</label>
                         <select id="intakeSemester" name="intakeSemester" required>
                             <option value="" selected>-- Select Intake --</option>
                         </select>
+                    </div>
+                    <div class="form-profile" style="width: 36%;">
+                        <label>Course Code</label>
+                        <input type="text" name="courseCode" value="{{ courseCode_text }}" required>
+                    </div>
+                    <div class="form-profile" style="width: 36%;">
+                        <label>Course Section</label>
+                        <input type="text" name="courseSection" value="{{ courseSection_text }}" required>
                     </div>
                 </div><br>
 
@@ -114,7 +114,7 @@
                 <input type="text" name="courseName" value="{{ courseName_text }}" required>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Course Credit Hour(s)</label>
                 <input type="number" name="courseHour" value="{{ courseHour_text }}" min="1" step="1" required><br>
 
@@ -122,7 +122,7 @@
                 <input type="number" name="courseStudent" value="{{ courseStudent_text }}" min="1" step="1" required>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Practical Lecturer (Optional)</label>
                 <select id="practicalLecturerSelect" name="practicalLecturerSelect">
                     <option value="" selected>-- Select Practical Lecturer --</option>
@@ -158,7 +158,7 @@
 
         <!-- Prefilled form (like manual section) -->
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <!-- Select Existing Course -->
                 <label>Select Course Code/Section/Intake - Course Name</label>
                 <select id="editCourseSelect" name="editCourseSelect" required>
@@ -172,7 +172,7 @@
                 </select><br>
 
                 <div class="profile-frame" style="justify-content: space-between;">
-                    <div class="form-left" style="width: 25%;">
+                    <div class="form-profile" style="width: 25%;">
                         <label>Course Intake</label>
                         <select id="intakeSemesterEdit" name="intakeSemesterEdit" required>
                             <option value="{{ course_select.courseCodeSectionIntake.split('/') [0] if course_select else '' }}" selected>
@@ -180,12 +180,12 @@
                             </option>
                         </select>
                     </div>
-                    <div class="form-middle" style="width: 36%;">
+                    <div class="form-profile" style="width: 36%;">
                         <label>Course Code</label>
                         <input type="text" id="editCourseCode" name="courseCode" 
                             value="{{ course_select.courseCodeSectionIntake.split('/') [1] if course_select else '' }}" required>
                     </div>
-                    <div class="form-right" style="width: 36%;">
+                    <div class="form-profile" style="width: 36%;">
                         <label>Course Section</label>
                         <input type="text" id="editCourseSection" name="courseSection" 
                             value="{{ course_select.courseCodeSectionIntake.split('/') [2] if course_select else '' }}" required>
@@ -196,7 +196,7 @@
                 <input type="text" id="editCourseName" name="courseName" value="{{ course_select.courseName if course_select else '' }}" required>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Course Program</label>
                 <select id="editDepartment" name="departmentCode" required>
                     <option value="" disabled selected>-- Select Department --</option>
@@ -206,11 +206,11 @@
                 </select><br>
 
                 <div class="profile-frame" style="justify-content: space-between;">
-                    <div class="form-left" style="width: 48%;">
+                    <div class="form-profile" style="width: 48%;">
                         <label>Course Credit Hour(s)</label>
                         <input type="number" id="editCourseHour" name="courseHour" min="1" step="1" value="{{ course_select.courseHour if course_select else '' }}" required>
                     </div>
-                    <div class="form-middle" style="width: 48%;">
+                    <div class="form-profile" style="width: 48%;">
                         <label>Course Number of Student(s)</label>
                         <input type="number" id="editCourseStudents" name="courseStudent" min="1" step="1" value="{{ course_select.courseStudent if course_select else '' }}" required>
                     </div>
@@ -224,7 +224,7 @@
                 </select>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Practical Lecturer (Optional)</label>
                 <select id="editPracticalLecturer" name="practicalLecturerSelect">
                     <option value="" selected>-- Select Practical Lecturer --</option>
