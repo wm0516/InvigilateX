@@ -998,7 +998,7 @@ def admin_manageExam():
             Exam.examStatus == True,
             Course.courseStatus == True
         )
-        .order_by(Course.courseName.asc())
+        .order_by(Course.courseCodeSectionIntake.asc())
         .all()
     )
 
