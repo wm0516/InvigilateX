@@ -231,7 +231,7 @@ def admin_manageCourse():
     course_query = Course.query.order_by(
         Course.courseStatus.desc(),
         Course.courseDepartment.asc(),
-        Course.courseName.asc()
+        Course.courseCodeSectionIntake.asc()
     )
     course_data = course_query.all()
 
