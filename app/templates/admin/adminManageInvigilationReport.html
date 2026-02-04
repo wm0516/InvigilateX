@@ -76,7 +76,7 @@
                     <option value="" disabled selected>-- Select Exam --</option>
                     {% for r in reports %}
                         <option value="{{ r.invigilationReportId }}">
-                            {{ r.invigilationReportId }} - {{ r.exam.course.courseName }}
+                            {{ r.invigilationReportId }} - [{{ r.exam.course.courseCodeSectionIntake }}] {{ r.exam.course.courseName }}
                         </option>
                     {% endfor %}
                 </select><br>

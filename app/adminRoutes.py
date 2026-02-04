@@ -2179,7 +2179,8 @@ def admin_manageInvigilationReport():
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .filter(Exam.examStatus==True)
         .all()
-    )    
+    )
+    
     attendances = get_all_attendances()
     stats = calculate_invigilation_stats()
 
