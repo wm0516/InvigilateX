@@ -800,9 +800,12 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
             "error"
         )
         return None, ''
-    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
-    return True, ''
 
+    success, msg = create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
+    if not success:
+        flash(msg, "error")
+        return None, ''
+    return True, ''
 
 
 # -------------------------------
