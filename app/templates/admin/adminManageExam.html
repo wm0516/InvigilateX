@@ -127,7 +127,7 @@
             </div>
 
             <div class="form-right">
-                <label>Exam Venue(s)</label>
+                <label>Exam Venues</label>
                 <div id="venueContainer">
                     <div class="venue-item" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
                         <select name="venue[]" id="editVenue" class="venue-dropdown" required>
@@ -225,7 +225,7 @@
                             <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
                             <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
                             <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                            <div>Exam Invigilator(s)</div>
+                            <div>Exam Invigilators</div>
                             <div>
                                 {% if row.examNoInvigilator == 0 %}
                                     <strong>: {{ row.examNoInvigilator }} (Share Venue Exam)</strong>
@@ -233,7 +233,7 @@
                                     <strong>: {{ row.examNoInvigilator }}</strong>
                                 {% endif %}
                             </div>
-                            <div>Exam Venue(s)</div>
+                            <div>Exam Venues</div>
                             <div>
                                 {% if row.venue_availabilities %}
                                     {% for va in row.venue_availabilities %}
@@ -511,8 +511,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         .replace(/Exam Day\s*:/g, "Exam Day:")
                         .replace(/Exam Time\s*:/g, "Exam Time:")
                         .replace(/Exam Period\s*:/g, "Exam Period:")
-                        .replace(/Exam Invigilator\(s\)\s*:/g, "Exam Invigilator(s):")
-                        .replace(/Exam Venue\(s\)\s*:/g, "Exam Venue(s):")
+                        .replace(/Exam Invigilators\s*:/g, "Exam Invigilators:")
+                        .replace(/Exam Venues\s*:/g, "Exam Venues:")
 
                         // ===== Invigilator Filter =====
                         .replace(/Total Lecturers\s*:/g, "Total Lecturers:")
