@@ -172,7 +172,7 @@
                 </select><br>
 
                 <div class="profile-frame" style="justify-content: space-between;">
-                    <div class="form-left" style="width: 35%;">
+                    <div class="form-left" style="width: 25%;">
                         <label>Course Intake</label>
                         <select id="intakeSemesterEdit" name="intakeSemesterEdit" required>
                             <option value="{{ course_select.courseCodeSectionIntake.split('/') [0] if course_select else '' }}" selected>
@@ -180,12 +180,12 @@
                             </option>
                         </select>
                     </div>
-                    <div class="form-middle" style="width: 35%;">
+                    <div class="form-middle" style="width: 36%;">
                         <label>Course Code</label>
                         <input type="text" id="editCourseCode" name="courseCode" 
                             value="{{ course_select.courseCodeSectionIntake.split('/') [1] if course_select else '' }}" required>
                     </div>
-                    <div class="form-right" style="width: 25%;">
+                    <div class="form-right" style="width: 36%;">
                         <label>Course Section</label>
                         <input type="text" id="editCourseSection" name="courseSection" 
                             value="{{ course_select.courseCodeSectionIntake.split('/') [2] if course_select else '' }}" required>
