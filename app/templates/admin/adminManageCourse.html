@@ -378,9 +378,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Split code/section/intake
         const parts = codeSectionIntake.split('/');
-        editCourseCode.value = parts[0] || '';
+        const intakeValue = parts[0] || '';
         editCourseSection.value = parts[1] || '';
-        const intakeValue = parts[2] || '';
+        editCourseCode.value = parts[2] || '';
 
         // Set intake dropdown
         for (let i = 0; i < editIntake.options.length; i++) {
