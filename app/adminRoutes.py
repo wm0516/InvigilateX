@@ -914,7 +914,7 @@ def get_available_venues():
 
 
 # Remove all venue exams, attendances, reports, and rollback pending hours SAFELY.
-def reset_exam_relations(exam):
+def reset_exam_relations(exam, user):
     if not exam.examStartTime or not exam.examEndTime:
         return
 
@@ -930,6 +930,15 @@ def reset_exam_relations(exam):
                 )
         db.session.delete(report)
     VenueExam.query.filter_by(examId=exam.examId).delete()
+
+    exam.examStartTime = None
+    exam.examEndTime = None
+    exam.examNoInvigilator = None
+    exam.examOutput = None
+    exam.examAddedBy = user  # current admin/user performing delete
+    exam.examAddedOn = datetime.now(timezone.utc)
+
+    db.session.commit()
 
 
 # -------------------------------
@@ -949,7 +958,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, t
         raise ValueError(f"Assigned students ({assigned_total})" f"≠ exam total ({exam.examTotalStudents})")
 
     # FULL RESET (important)
-    reset_exam_relations(exam)
+    reset_exam_relations(exam, user_id)
 
     # Reset exam core fields
     exam.examStartTime = None
@@ -1065,7 +1074,9 @@ def admin_manageExam():
                     db.session.rollback()
                     flash(str(e), "error")
 
-            return redirect(url_for("admin_manageExam"))
+            elif action == 'delete':    
+                reset_exam_relations(exam_select, user_id)
+            return redirect(url_for('admin_manageExam'))
 
     return render_template(
         'admin/adminManageExam.html',
