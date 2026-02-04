@@ -3,7 +3,7 @@ import re
 import warnings
 from io import BytesIO
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, time, date
 import random
 import pandas as pd
 import openpyxl
@@ -621,8 +621,8 @@ def generate_manageexam_template():
     ws.append(headers)
 
     # === Formatting for date/time ===
-    date_style = NamedStyle(name="date_style", number_format="DD/MM/YYYY")
-    time_style = NamedStyle(name="time_style", number_format="hh:mm:ss AM/PM")
+    date_style = NamedStyle(number_format="MM/DD/YYYY")
+    time_style = NamedStyle(number_format="hh:mm:ss AM/PM")
 
     for row in range(3, 503):
         ws[f"A{row}"].style = date_style
@@ -735,14 +735,14 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     # --- Parse exam date ---
     examDate = row.get('exam date')
     if isinstance(examDate, datetime):
-        pass  # already datetime
+        pass
+    elif isinstance(examDate, date):
+        examDate = datetime.combine(examDate, datetime.min.time())
     elif isinstance(examDate, str):
-        examDate = examDate.strip()
         try:
-            # Excel upload ALWAYS DD/MM/YYYY
-            examDate = datetime.strptime(examDate, "%d/%m/%Y")
+            examDate = datetime.strptime(examDate.strip(), "%m/%d/%Y")
         except ValueError:
-            return False, f"Invalid exam date format (expected DD/MM/YYYY): {examDate}"
+            return False, f"Invalid exam date format (MM/DD/YYYY): {examDate}"
     else:
         return False, "Missing exam date"
 
@@ -753,10 +753,10 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
         return False, "Start or end time missing"
 
     try:
-        start_time = datetime.strptime(startTime_text.strip(), "%H:%M:%S").time()
-        end_time   = datetime.strptime(endTime_text.strip(), "%H:%M:%S").time()
-    except ValueError:
-        return False, "Invalid time format (expected HH:MM:SS)"
+        start_time = parse_excel_time(row.get('start'))
+        end_time   = parse_excel_time(row.get('end'))
+    except ValueError as e:
+        return False, str(e)
 
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
@@ -848,6 +848,20 @@ def parse_datetime(date_str, time_str):
         return datetime.strptime(raw, "%Y-%m-%d %H:%M")
     except ValueError:
         raise ValueError(f"Invalid datetime format (ISO expected): {raw}")
+
+def parse_excel_time(val):
+    if isinstance(val, time):
+        return val
+    if isinstance(val, datetime):
+        return val.time()
+    if isinstance(val, str):
+        val = val.strip()
+        for fmt in ("%I:%M:%S %p", "%H:%M:%S"):
+            try:
+                return datetime.strptime(val, fmt).time()
+            except ValueError:
+                pass
+    raise ValueError(f"Invalid time format: {val}")
 
 # -------------------------------
 # Get VenueDetails for ManageExamEditPage

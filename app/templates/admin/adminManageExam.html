@@ -52,7 +52,7 @@
                         Data should begin from columns <b>A to J</b>, with headers as follows:<br><br>
                         <i>[Exam Date, Day, Start, End, Program, Course Code/Section, Course Name, Lecturer, Total Student by venue, Venue]</i><br><br>
                         You may also download the exam template using the link above.<br><br>
-                        Format: Date in <b>DD/MM/YYYY</b> format, and Start & End times in <b>hh:mm:ss AM/PM</b> format (e.g. 8:00:00 AM).<br><br>
+                        Format: Date in <b>MM/DD/YYYY</b>, and Start & End times in <b>hh:mm:ss AM/PM</b> (e.g. 8:00:00 AM).
                         Click below to upload, or drag and drop a file (accepted formats: <b>XLSX, XLS, XLSM</b>).
                     </div><br>
                     <div id="examSelectedFileName" class="file-name-display"></div>
@@ -431,12 +431,16 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelector("input[name='time_slot_open']")
     );
 
-    // ===== Edit exam =====
+    // Exam duration
     enforceDateTime(
         document.getElementById("editStartDateTime"),
-        document.getElementById("editEndDateTime"),
-        document.getElementById("examTimeCreate"),
+        document.getElementById("editEndDateTime")
+    );
+
+    // Slot timing
+    enforceDateTime(
         document.getElementById("examTimeExpire"),
+        document.getElementById("examTimeCreate")
     );
 });
 
@@ -550,7 +554,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         // ===== Save =====
-        doc.save(`Admin_ExamList_${currentIntake}.pdf`);
+        doc.save(`Admin_ExamList.pdf`);
     });
 });
 
