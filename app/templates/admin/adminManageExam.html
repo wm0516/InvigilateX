@@ -492,47 +492,52 @@ document.addEventListener("DOMContentLoaded", function () {
         const rows = Array.from(table.querySelectorAll("tbody tr"))
             .filter(tr => tr.offsetParent !== null)
             .map(tr => {
-                return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
+                return Array.from(tr.querySelectorAll("td")).map(td => {
+
+                    // ===== Normalize grid text (IMPORTANT FIX) =====
                     let text = td.innerText
-                // Add newlines before each field label, not after colon
-                if ([3, 4, 5, 6, 7].includes(td.cellIndex)) {
-                    text = text
-                        // ===== Course Details =====
-                        .replace(/Course Name\s*:/g, "Course Name:")
-                        .replace(/Course Code\/Section\s*:/g, "Course Code/Section:")
-                        .replace(/Program Code\s*:/g, "Program Code:")
-                        .replace(/Number of Students\s*:/g, "Number of Students:")
-                        .replace(/Practical Lecturer\s*:/g, "Practical Lecturer:")
-                        .replace(/Tutorial Lecturer\s*:/g, "Tutorial Lecturer:")
-                        .replace(/Class Lecturer\s*:/g, "Class Lecturer:")
+                        .replace(/\n\s*:\s*/g, " : ")
+                        .replace(/\n{2,}/g, "\n")
+                        .trim();
 
-                        // ===== Exam Details =====
-                        .replace(/Exam Date\s*:/g, "Exam Date:")
-                        .replace(/Exam Day\s*:/g, "Exam Day:")
-                        .replace(/Exam Time\s*:/g, "Exam Time:")
-                        .replace(/Exam Period\s*:/g, "Exam Period:")
-                        .replace(/Exam Invigilators\s*:/g, "Exam Invigilators:")
-                        .replace(/Exam Venues\s*:/g, "Exam Venues:")
+                    // ===== Only format detail columns =====
+                    if ([3, 4, 5, 6, 7].includes(td.cellIndex)) {
+                        text = text
+                            // ===== Course Details =====
+                            .replace(/Course Name\s*:/g, "Course Name:")
+                            .replace(/Course Code\/Section\s*:/g, "Course Code/Section:")
+                            .replace(/Program Code\s*:/g, "Program Code:")
+                            .replace(/Number of Students\s*:/g, "Number of Students:")
+                            .replace(/Practical Lecturer\s*:/g, "Practical Lecturer:")
+                            .replace(/Tutorial Lecturer\s*:/g, "Tutorial Lecturer:")
+                            .replace(/Class Lecturer\s*:/g, "Class Lecturer:")
 
-                        // ===== Invigilator Filter =====
-                        .replace(/Total Lecturers\s*:/g, "Total Lecturers:")
-                        .replace(/Eligible Invigilators\s*:/g, "Eligible Invigilators:")
-                        .replace(/Flexible Invigilators\s*:/g, "Flexible Invigilators:")
-                        .replace(/NonFlexible Invigilators\s*:/g, "Non-Flexible Invigilators:")
-                        .replace(/Non-Flexible List\s*:/g, "Non-Flexible List:")
-                        .replace(/Flexible Male\s*:/g, "Flexible Male:")
-                        .replace(/Flexible Female\s*:/g, "Flexible Female:")
+                            // ===== Exam Details =====
+                            .replace(/Exam Date\s*:/g, "Exam Date:")
+                            .replace(/Exam Day\s*:/g, "Exam Day:")
+                            .replace(/Exam Time\s*:/g, "Exam Time:")
+                            .replace(/Exam Period\s*:/g, "Exam Period:")
+                            .replace(/Exam Invigilators\s*:/g, "Exam Invigilators:")
+                            .replace(/Exam Venues\s*:/g, "Exam Venues:")
 
-                        // ===== Added/Edit Details =====
-                        .replace(/By\s*:/g, "By:")
-                        .replace(/On\s*:/g, "On:");
+                            // ===== Invigilator Filter (FIXED LABELS) =====
+                            .replace(/Total Academic Staff\s*:/g, "Total Academic Staff:")
+                            .replace(/Eligible Invigilation Staff\s*:/g, "Eligible Invigilation Staff:")
+                            .replace(/Flexible Invigilation Staff\s*:/g, "Flexible Invigilation Staff:")
+                            .replace(/Non-Flexible Invigilation Staff\s*:/g, "Non-Flexible Invigilation Staff:")
+                            .replace(/Non-Flexible Staff List\s*:/g, "Non-Flexible Staff List:")
+                            .replace(/Flexible Male Staff\s*:/g, "Flexible Male Staff:")
+                            .replace(/Flexible Female Staff\s*:/g, "Flexible Female Staff:")
 
-                    text = text.trim();
-                }
-                return text;
+                            // ===== Added/Edit Details =====
+                            .replace(/By\s*:/g, "By:")
+                            .replace(/On\s*:/g, "On:");
+                    }
+
+                    return text;
+                });
             });
-            return cells;
-        });
+
 
         // ===== Generate AutoTable =====
         doc.autoTable({
