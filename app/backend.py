@@ -497,11 +497,7 @@ def recalc_invigilators_for_new_exams():
         # Step 6: Update examNoInvigilator for each exam
         for ve in exams_in_slot:
             exam = ve.exam
-            remaining_attendance_count = InvigilatorAttendance.query.join(InvigilationReport).filter(
-                InvigilationReport.examId == exam.examId,
-                InvigilatorAttendance.venueNumber == ve.venueNumber
-            ).count()
-            exam.examNoInvigilator = remaining_attendance_count
+            exam.examNoInvigilator = exam.examNoInvigilator
 
         db.session.commit()
 
