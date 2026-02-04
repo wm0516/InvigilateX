@@ -289,7 +289,7 @@ def admin_manageCourse():
             code = request.form.get('courseCode', '').strip()
             section = request.form.get('courseSection', '').strip()
             intake = request.form.get('intakeSemesterEdit', '').strip()  # fixed name
-            courseCodeSection_text = f"{code}/{section}/{intake}".upper() if code and section and intake else None
+            courseCodeSection_text = f"{intake}/{code}/{section}".upper() if code and section and intake else None
 
             if action == 'update' and course_select:
                 course_status = True if request.form.get('courseStatus') == '1' else False
