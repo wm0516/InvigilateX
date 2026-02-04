@@ -620,8 +620,14 @@ def generate_manageexam_template():
     ws.append(headers)
 
     # === Formatting for date/time ===
-    date_style = NamedStyle(number_format="MM/DD/YYYY")
-    time_style = NamedStyle(number_format="hh:mm:ss AM/PM")
+    date_style = NamedStyle(name="exam_date", number_format="MM/DD/YYYY")
+    time_style = NamedStyle(name="exam_time", number_format="hh:mm:ss AM/PM")
+
+    # Add styles ONCE
+    if "exam_date" not in wb.named_styles:
+        wb.add_named_style(date_style)
+    if "exam_time" not in wb.named_styles:
+        wb.add_named_style(time_style)
 
     for row in range(3, 503):
         ws[f"A{row}"].style = date_style
