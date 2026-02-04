@@ -137,7 +137,6 @@ class Exam(db.Model):
     examOutput = db.Column(db.JSON, nullable=True)                                               # Refer to exam filter output ()
     examAddedBy = db.Column(db.Integer, db.ForeignKey('User.userId'), nullable=False)
     examAddedOn = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    examBackUpInvigilator = db.Column(db.Integer, nullable=False, default=0)
 
     # Relationships
     course = db.relationship("Course", back_populates="exam", uselist=False)                     # One Exam ↔ One Course
@@ -155,7 +154,6 @@ class Exam(db.Model):
         examOutput JSON NULL,
         examStatus TINYINT(1) NOT NULL DEFAULT 1,
         examAddedBy INT NOT NULL,
-        examBackUpInvigilator INT NOT NULL DEFAULT 0,
         examAddedOn DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (examAddedBy) REFERENCES User(userId)
     );

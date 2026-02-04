@@ -719,12 +719,6 @@ def download_exam_template():
 def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
 
-    # 1. Detect STANDBY row
-    is_standby = (
-        str(row.get('program', '')).strip().upper() == 'STANDBY' or
-        str(row.get('course code/section', '')).strip().upper() == 'STANDBY'
-    )
-
     # --- Check if row is empty ---
     # headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Lecturer','Total Student by venue','Venue']
     important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
@@ -772,10 +766,6 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
-    
-    if is_standby:
-        create_exam_and_related(user_id, start_dt, end_dt, None, [], [0], slot_share_dt, slot_open_dt, 1)
-        return True, ''
 
     try:
         requested_capacity = int(row.get('total student by venue', 0))
@@ -811,7 +801,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
             "error"
         )
         return None, ''
-    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt, is_standby)
+    create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     return True, ''
 
 
@@ -929,17 +919,15 @@ def reset_exam_relations(exam, user):
                     (inv.userPendingCumulativeHours or 0.0) - duration_hours
                 )
         db.session.delete(report)
-    VenueExam.query.filter_by(examId=exam.examId).delete()
 
+    VenueExam.query.filter_by(examId=exam.examId).delete()
     exam.examStartTime = None
     exam.examEndTime = None
     exam.examNoInvigilator = None
     exam.examOutput = None
     exam.examAddedBy = user  # current admin/user performing delete
     exam.examAddedOn = datetime.now(timezone.utc)
-
     db.session.commit()
-
 
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
@@ -960,13 +948,6 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, t
     # FULL RESET (important)
     reset_exam_relations(exam, user_id)
 
-    # Reset exam core fields
-    exam.examStartTime = None
-    exam.examEndTime = None
-    exam.examNoInvigilator = None
-    exam.examOutput = None
-    db.session.flush()
-
     # RECREATE using SAME logic as upload
     success, msg = create_exam_and_related(
         user=user_id,
@@ -976,8 +957,7 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, t
         venue_list=new_venues,
         studentPerVenue_list=new_students,
         open=time_open,
-        close=time_expire,
-        standby=False
+        close=time_expire
     )
 
     if not success:
@@ -1077,7 +1057,7 @@ def admin_manageExam():
             elif action == 'delete':    
                 reset_exam_relations(exam_select, user_id)
             return redirect(url_for('admin_manageExam'))
-
+        
     return render_template(
         'admin/adminManageExam.html',
         active_tab='admin_manageExamtab',

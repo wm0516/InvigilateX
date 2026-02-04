@@ -222,7 +222,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         department = department.upper()
 
     # Validate courseCodeSection
-    courseCodeSection_text = f"{code}/{section}/{intake}".upper() if code and section else None
+    courseCodeSection_text = f"{intake}/{code}/{section}".upper() if code and section else None
     existing_courseCodeSection = Course.query.filter(Course.courseCodeSectionIntake.ilike(courseCodeSection_text)).first()
     if existing_courseCodeSection:
         return False, "Course Already Registered"
@@ -319,11 +319,7 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 # -------------------------------
 # Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
 # -------------------------------
-'''
-Exam Date	Day	Start	End 	Program	Course Code/Section	Course Name 	Lecturer	Total Student by venue 	Venue 
-26/11/2026	WED	9:00 AM	12:10 PM	BBSUT	FIN10002/SU1	FINANCIAL STATISTICS	CHEE BENG BARK	46	ER 
-'''
-def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close, standby):
+def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
     # --- Fetch course sections ---
     course_sections = Course.query.filter(Course.courseCodeSectionIntake == courseSection).first()
     if not course_sections:
@@ -446,38 +442,6 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
 
 # -------------------------------
-# Delete All Related Exam after get modify
-# -------------------------------
-def delete_exam_related(exam_id, commit=True):
-    exam = Exam.query.get(exam_id)
-    if not exam:
-        return False, f"Exam {exam_id} not found"   
-
-    pending_hours = 0
-    if exam.examStartTime and exam.examEndTime:
-        pending_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
-
-    # Roll back pending hours from invigilators
-    reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
-    for report in reports:
-        for att in report.attendances:
-            invigilator = att.invigilator
-            if invigilator:
-                invigilator.userPendingCumulativeHours = max(
-                    0.0,
-                    (invigilator.userPendingCumulativeHours or 0.0) - pending_hours
-                )
-        db.session.delete(report)  # Use ORM delete to trigger cascade
-
-    VenueExam.query.filter_by(examId=exam.examId).delete()
-
-    if commit:
-        db.session.commit()
-
-    return True, f"Related data for exam {exam_id} deleted successfully"
-
-
-# -------------------------------
 # Adjust invigilators based on venue & capacity
 # -------------------------------
 def recalc_invigilators_for_new_exams():
@@ -540,9 +504,6 @@ def recalc_invigilators_for_new_exams():
             exam.examNoInvigilator = remaining_attendance_count
 
         db.session.commit()
-
-
-
 
 
 # -------------------------------
