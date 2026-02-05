@@ -13,8 +13,8 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Action</th>
                         <th>Section</th>
+                        <th>Action</th>
                         <th>Action Id</th>
                         <th>Action By</th>
                         <th>Action Time</th>
@@ -27,8 +27,8 @@
                     {% for row in record %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ row.actionTake }}</td>
                         <td>{{ row.actionTargetType }}</td>
+                        <td>{{ row.actionTake }}</td>
                         <td>{{ row.actionTargetId }}</td>
                         <td>{{ row.actionBy }}</td> 
                         <td>{{ row.actionTime }}</td>

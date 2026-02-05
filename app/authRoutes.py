@@ -71,7 +71,7 @@ def login():
         session['user_id'] = result
         session['user_role'] = role
         session['user_department'] = department
-        record_action(f"LOGIN AS {role}-{department}", "LOGIN", result, result)
+        record_action(f"LOGIN AS [{department}-{role}]", "LOGIN", result, result)
 
         if role == "ADMIN":
             return redirect(url_for('admin_homepage'))
@@ -137,7 +137,7 @@ def register():
                 userLevel=role_text
             )
             db.session.add(new_user)
-            record_action(f"REGISTER AS {role_text}-{department_text.upper()}", "REGISTER", id_text, id_text)
+            record_action(f"REGISTER AS [{department_text.upper()}-{role_text}]", "REGISTER", id_text, id_text)
             db.session.commit()
 
             # Send verification email after saving user

@@ -457,7 +457,7 @@ def admin_manageDepartment():
                     )
                 db.session.commit()
                 flash(f"New department [{departmentCode}] added", "success")               
-                record_action(f"ADD NEW DEPARTMENT-[{departmentCode}]", "DEPARTMENT", user_id, user_id)
+                record_action(f"ADD NEW DEPARTMENT - [{departmentCode}]", "DEPARTMENT", user_id, user_id)
                 return redirect(url_for('admin_manageDepartment'))
 
         # ---------------- Edit Section ----------------
@@ -481,7 +481,7 @@ def admin_manageDepartment():
                 department_select.hopId  = hopId
                 db.session.commit()
                 flash(f"Department [{department_select.departmentCode}] updated successfully", "success")
-                record_action(f"EDIT DEPARTMENT-[{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
+                record_action(f"EDIT DEPARTMENT - [{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
             
             elif action == 'delete':
                 users_using_department = User.query.filter_by(userDepartment=department_select.departmentCode).count()
@@ -491,7 +491,7 @@ def admin_manageDepartment():
                     db.session.delete(department_select)
                     db.session.commit()
                     flash(f"Department [{department_select.departmentCode}] deleted successfully", "success")
-                    record_action(f"DELETE DEPARTMENT-[{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
+                    record_action(f"DELETE DEPARTMENT - [{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
 
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)
@@ -553,7 +553,7 @@ def admin_manageVenue():
                     ))
                     db.session.commit()
                     flash(f"Venue [{venueNumber}] Added", "success")
-                    record_action(f"ADD NEW VENUE-[{venueNumber}]", "VENUE", user_id, user_id)
+                    record_action(f"ADD NEW VENUE - [{venueNumber}]", "VENUE", user_id, user_id)
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
             return redirect(url_for('admin_manageVenue'))
@@ -573,7 +573,7 @@ def admin_manageVenue():
                     venue_select.venueCapacity = capacity
                     db.session.commit()
                     flash(f"Venue [{venue_select.venueNumber}] Updated", "success")
-                    record_action(f"EDIT VENUE-[{venue_select.venueNumber}]", "VENUE", user_id, user_id)
+                    record_action(f"EDIT VENUE - [{venue_select.venueNumber}]", "VENUE", user_id, user_id)
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
 
@@ -588,7 +588,7 @@ def admin_manageVenue():
                         db.session.delete(venue_select)
                         db.session.commit()
                         flash(f"Venue [{venue_select.venueNumber}] deleted successfully", "success")
-                        record_action(f"DELETE VENUE-[{venue_select.venueNumber}]", "VENUE", user_id, user_id)
+                        record_action(f"DELETE VENUE - [{venue_select.venueNumber}]", "VENUE", user_id, user_id)
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Failed to delete venue: {str(e)}", "error")
