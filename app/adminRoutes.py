@@ -1185,7 +1185,7 @@ def get_staff(id):
         "userName": user.userName,
         "userEmail": user.userEmail,
         "userContact": user.userContact or "",
-        "userGender": user.userGender,
+        "userGender": "Male" if user.userGender else "Female",
         "userLevel": user.userLevel,
         "userDepartment": user.userDepartment or "",
         "userStatus": str(user.userStatus),
