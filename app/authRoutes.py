@@ -73,9 +73,11 @@ def login():
         session['user_role'] = role
 
         if role == "ADMIN":
-            return redirect(url_for('admin_homepage'))
+            # return redirect(url_for('admin_homepage'))
+            return redirect(url_for('register'))
         elif role in ("DEAN", "HOS", "HOP", "LECTURER", "PROGRAM OFFICERS"):
-            return redirect(url_for('user_homepage'))
+            # return redirect(url_for('user_homepage'))
+            return redirect(url_for('register'))
         else:
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
@@ -795,4 +797,3 @@ def update_attendanceStatus():
 
 
 
-    
