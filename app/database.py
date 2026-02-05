@@ -99,22 +99,28 @@ class User(db.Model):
 class Action(db.Model):
     __tablename__       = 'Action'
     actionId            = Column(Integer, primary_key=True, autoincrement=True)
-    actionTake          = Column(Enum("EDIT","DELETE","ADD","RECALL","DOWNLOAD","UPLOAD","REGISTER","APPROVED","ACCEPT","REJECT", name="action_enum"), nullable=False)
+    actionTake          = Column(String(50), nullable=False)
     actionTargetType    = Column(String(50), nullable=False)
     actionTargetId      = Column(Integer, nullable=False)
     actionTime          = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     actionBy            = Column(Integer, ForeignKey('User.userId'), nullable=False)
+    actionDevice        = Column(String(100), nullable=False)
+    actionIp            = Column(String(20), nullable=False)
+    actionBrowser       = Column(String(50), nullable=False)
 
     # Relationship
     user = relationship("User")
     '''
     CREATE TABLE Action (
         actionId INT AUTO_INCREMENT PRIMARY KEY,
-        actionTake ENUM('EDIT', 'DELETE', 'ADD', 'RECALL', 'DOWNLOAD', 'UPLOAD', 'REGISTER', 'APPROVED', 'ACCEPT', 'REJECT') NOT NULL,
+        actionTake VARCHAR(50) NOT NULL,
         actionTargetType VARCHAR(50) NOT NULL,
         actionTargetId INT NOT NULL,
         actionTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         actionBy INT NOT NULL,
+        actionDevice VARCHAR(100) NOT NULL,
+        actionIp VARCHAR(20) NOT NULL,
+        actionBrowser VARCHAR(50) NOT NULL,
         CONSTRAINT fk_action_user
             FOREIGN KEY (actionBy)
             REFERENCES User(userId)
