@@ -25,7 +25,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # cleanup_expired_timetable_rows()
-    update_attendanceStatus()
+    # update_attendanceStatus()
     login_text = ''
     password_text = ''
 
@@ -297,7 +297,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
+'''
 # -------------------------------
 # Function for Admin Homepage route
 # -------------------------------
@@ -789,7 +789,7 @@ def update_attendanceStatus():
                 attendance.invigilator.userCumulativeHours += worked_hours
 
     db.session.commit()
-
+'''
 
 
 
