@@ -13,7 +13,7 @@ import PyPDF2
 from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
-from sqlalchemy import func, and_, or_, case
+from sqlalchemy import func, and_, or_, case, desc
 from app import app
 from .authRoutes import login_required
 from .backend import *
@@ -2294,7 +2294,7 @@ def admin_profile():
 @app.route('/admin/activity', methods=['GET', 'POST'])
 @login_required
 def admin_activity():
-    record = Action.query.all()
+    record = Action.query.order_by(desc(Action.actionTime)).all()
     return render_template('admin/adminActivity.html', active_tab='admin_activitytab', record=record)
 
 
