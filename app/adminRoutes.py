@@ -458,6 +458,7 @@ def admin_manageDepartment():
                 db.session.commit()
                 flash("New Department Added", "success")               
                 record_action(f"ADDING NEW DEPARTMENT-[{departmentCode}]", "DEPARTMENT", user_id, user_id)
+                return redirect(url_for('admin_manageDepartment'))
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
