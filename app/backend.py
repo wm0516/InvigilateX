@@ -277,8 +277,8 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
     )
     db.session.add(new_course)
     db.session.commit()
-    record_action(f"UPLOAD NEW COURSE - [{courseCodeSection_text}-{name.upper()}]", "COURSE", {courseCodeSection_text}-{name.upper()}, userid)
-    return True, "Course created successfully"
+    record_action(f"UPLOAD/ADD NEW COURSE - [{courseCodeSection_text} - {name.upper()}]", "COURSE", {courseCodeSection_text}-{name.upper()}, userid)
+    return True, f"Course {courseCodeSection_text} - {name.upper()} created successfully"
 
 
 # -------------------------------

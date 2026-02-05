@@ -232,19 +232,15 @@ def admin_manageCourse():
         Course.courseStatus.desc(),
         Course.courseCodeSectionIntake.asc()
     )
-    course_data = course_query.all()
 
+    course_data = course_query.all()
     department_data = Department.query.all()
     course_id = request.form.get('editCourseSelect')
     course_select = Course.query.filter_by(courseCodeSectionIntake=course_id).first()
 
     # Count rows with missing/empty values
     error_rows = Course.query.filter(
-        (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '') |
-        (Course.courseCodeSectionIntake.is_(None)) | (Course.courseCodeSectionIntake == '') |
-        (Course.courseName.is_(None)) | (Course.courseName == '') |
-        (Course.courseHour.is_(None)) |
-        (Course.courseStudent.is_(None))
+        (Course.courseDepartment.is_(None)) | (Course.courseDepartment == '')
     ).count()
 
     # Courses by department safely (only active courses in selected intake)
@@ -310,8 +306,6 @@ def admin_manageCourse():
                     course_select.courseTutorial    = request.form.get('tutorialLecturerSelect', '').strip() or None
                     course_select.courseLecturer    = request.form.get('lecturerSelect', '').strip() or None
                     course_select.courseStatus      = True
-                    course_select.courseAddedBy     = user_id
-                    course_select.courseAddedOn     = datetime.now() + timedelta(hours=8)
 
                     # Safe integer conversion
                     try:
@@ -332,31 +326,30 @@ def admin_manageCourse():
                         course_select.courseTutorial,
                         course_select.courseLecturer,
                         course_select.courseHour,
-                        course_select.courseStudent,
-                        course_select.courseAddedBy,
-                        course_select.courseAddedOn
+                        course_select.courseStudent
                     ]
 
                     if all(f not in (None, '') for f in required_fields):
                         # Ensure Exam exists
                         if not course_select.courseExamId:
                             new_exam = Exam(
-                                examStartTime=None,
-                                examEndTime=None,
                                 examNoInvigilator=None
+                                examOutput=None
                             )
                             db.session.add(new_exam)
                             db.session.flush()  # Assign examId
                             course_select.courseExamId = new_exam.examId
 
                     db.session.commit()
-                    flash("Course updated successfully", "success")
+                    flash(f"Course {course_select.courseCodeSectionIntake} - {course_select.courseName} updated successfully", "success")
+                    record_action(f"EDIT COURSE - [{course_select.courseCodeSectionIntake} - {course_select.courseName}]", "COURSE", {course_select.courseCodeSectionIntake}-{course_select.courseName}, user_id)
 
                 # --- DEACTIVATE COURSE ---
                 else:
                     course_select.courseStatus = False
                     db.session.commit()
-                    flash("Course deactivated successfully", "success")
+                    flash(f"Course {course_select.courseCodeSectionIntake} - {course_select.courseName} deactivated successfully", "success")
+                    record_action(f"DEACTIVATE COURSE - [{course_select.courseCodeSectionIntake} - {course_select.courseName}]", "COURSE", {course_select.courseCodeSectionIntake}-{course_select.courseName}, user_id)
 
                 return redirect(url_for('admin_manageCourse'))
 
