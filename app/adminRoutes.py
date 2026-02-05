@@ -1188,8 +1188,8 @@ def get_staff(id):
         "userStatus": str(user.userStatus),
         "userLevel": user.userLevel,
         "userDepartment": user.userDepartment or "",
-        "userStatus": str(user.userStatus),
-        "userCardId": user.userCardId or ""
+        "userCardId": user.userCardId or "",
+        "userGender": user.userGender
     })
 
 # -------------------------------

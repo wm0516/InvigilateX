@@ -345,7 +345,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     // Set dropdowns
                     document.getElementById("editStatus").value = data.userStatus ?? "";
-                    document.getElementById("editGender").value = data.userGender ? "1" : "0";
+                    document.getElementById("editGender").value = String(data.userGender);
                     document.getElementById("editRoleSelect").value = data.userLevel ?? "";
                     document.getElementById("editDepartment").value = data.userDepartment ?? "";
                 })
