@@ -457,7 +457,7 @@ def admin_manageDepartment():
                     )
                 db.session.commit()
                 flash("New Department Added", "success")               
-                record_action(f"ADDING NEW DEPARTMENT {departmentCode}", "DEPARTMENT", 'userId', 'userId')
+                record_action(f"ADDING NEW DEPARTMENT {departmentCode}", "DEPARTMENT", user_id, user_id)
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
@@ -480,7 +480,7 @@ def admin_manageDepartment():
                 department_select.hopId  = hopId
                 db.session.commit()
                 flash("Department updated successfully", "success")
-                record_action("EDIT DEPARTMENT", "DEPARTMENT", 'userId', 'userId')
+                record_action("EDIT DEPARTMENT", "DEPARTMENT", user_id, user_id)
             
             elif action == 'delete':
                 users_using_department = User.query.filter_by(userDepartment=department_select.departmentCode).count()
@@ -490,7 +490,7 @@ def admin_manageDepartment():
                     db.session.delete(department_select)
                     db.session.commit()
                     flash("Department deleted successfully", "success")
-                    record_action(f"DELETE DEPARTMENT {department_select.departmentCode}", "DEPARTMENT", 'userId', 'userId')
+                    record_action(f"DELETE DEPARTMENT {department_select.departmentCode}", "DEPARTMENT", user_id, user_id)
 
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)
