@@ -204,20 +204,18 @@ def get_courseCodeSection(courseCodeSection_select):
     course = Course.query.filter_by(courseCodeSectionIntake=courseCodeSection_select).first()
     if not course:
         return jsonify({"error": "Course not found"}), 404
-
+    
     return jsonify({
-        "courseCodeSection" : course.courseCodeSectionIntake,
-        "courseDepartment"  : course.courseDepartment,
-        "coursePractical"   : course.coursePractical,
-        "courseTutorial"    : course.courseTutorial,
-        "courseLecturer"    : course.courseLecturer,
-        "courseName"        : course.courseName,
-        "courseHour"        : course.courseHour,
-        "courseStudent"     : course.courseStudent,
-        "courseStatus"      : course.courseStatus,
-        "addedBy"           : course.courseAddedBy if course.courseAddedBy else None,
-        "addedOn"           : course.courseAddedOn.isoformat()if course.courseAddedOn else None
+        "courseDepartment": course.courseDepartment,
+        "courseName": course.courseName,
+        "courseHour": course.courseHour,
+        "courseStudent": course.courseStudent,
+        "courseStatus": course.courseStatus,
+        "practicalLecturerId": course.coursePractical,
+        "tutorialLecturerId": course.courseTutorial,
+        "classLecturerId": course.courseLecturer
     })
+
 
 # -------------------------------
 # Function for Admin ManageCourse Route

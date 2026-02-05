@@ -374,35 +374,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const codeSectionIntake = e.target.value;
         if (!codeSectionIntake) return;
 
-        // Split code/section/intake
         const parts = codeSectionIntake.split('/');
-        const intakeValue = parts[0] || '';
-        editCourseSection.value = parts[1] || '';
-        editCourseCode.value = parts[2] || '';
+        editIntake.value         = parts[0] || '';
+        editCourseCode.value    = parts[1] || '';
+        editCourseSection.value = parts[2] || '';
 
-        // Set intake dropdown
-        for (let i = 0; i < editIntake.options.length; i++) {
-            if (editIntake.options[i].value === intakeValue) {
-                editIntake.selectedIndex = i;
-                break;
-            }
-        }
-
-        // Fetch rest of the course data
         fetch(`/get_courseCodeSection/${encodeURIComponent(codeSectionIntake)}`)
             .then(r => r.json())
             .then(c => {
                 if (c.error) return alert(c.error);
-                editCourseName.value = c.courseName || '';
-                editDept.value = c.courseDepartment || '';
-                editCourseHour.value = c.courseHour || '';
-                editCourseStudents.value = c.courseStudent || '';
-                editStatus.value = c.courseStatus ? "1" : "0";
 
+                editCourseName.value     = c.courseName || '';
+                editDept.value           = c.courseDepartment || '';
+                editCourseHour.value     = c.courseHour || '';
+                editCourseStudents.value = c.courseStudent || '';
+                editStatus.value         = c.courseStatus ? "1" : "0";
                 populateLecturers(c.courseDepartment, editPractical, editTutorial, editLecturer, c.coursePractical, c.courseTutorial, c.courseLecturer);
             })
             .catch(err => console.error("Error fetching course:", err));
     });
+
 });
 
 document.addEventListener("DOMContentLoaded", function () {
