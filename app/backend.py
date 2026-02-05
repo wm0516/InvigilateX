@@ -277,7 +277,7 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
     )
     db.session.add(new_course)
     db.session.commit()
-    record_action("UPLOAD/ADD NEW COURSE", "COURSE", {courseCodeSection_text}-{name.upper()}, userid)
+    record_action("UPLOAD/ADD NEW COURSE", "COURSE", courseCodeSection_text, userid)
     return True, f"Course [{courseCodeSection_text} - {name.upper()}] created successfully"
 
 
@@ -572,7 +572,7 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
         db.session.add(dept)
 
     db.session.commit()
-    record_action("UPLOAD/ADD STAFF", "STAFF", f"{id}-{name.split()[0].upper()}", userId)
+    record_action("UPLOAD/ADD STAFF", "STAFF", id, userId)
     return True, f"Staff [{id} - {name.upper()}] created successfully"
 
 

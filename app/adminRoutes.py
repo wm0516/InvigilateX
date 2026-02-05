@@ -338,14 +338,14 @@ def admin_manageCourse():
 
                     db.session.commit()
                     flash(f"Course [{course_select.courseCodeSectionIntake} - {course_select.courseName}] updated successfully", "success")
-                    record_action("EDIT COURSE", "COURSE", {course_select.courseCodeSectionIntake}-{course_select.courseName}, user_id)
+                    record_action("EDIT COURSE", "COURSE", course_select.courseCodeSectionIntake, user_id)
 
                 # --- DEACTIVATE COURSE ---
                 else:
                     course_select.courseStatus = False
                     db.session.commit()
                     flash(f"Course [{course_select.courseCodeSectionIntake} - {course_select.courseName}] deactivated successfully", "success")
-                    record_action("DEACTIVATE COURSE", "COURSE", {course_select.courseCodeSectionIntake}-{course_select.courseName}, user_id)
+                    record_action("DEACTIVATE COURSE", "COURSE", course_select.courseCodeSectionIntake, user_id)
 
                 return redirect(url_for('admin_manageCourse'))
 
@@ -1213,7 +1213,7 @@ def get_staff(id):
 @login_required
 def admin_manageStaff():
     user_id = session.get('user_id')
-    user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.desc(), User.userName.asc()).all()
+    user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.asc(), User.userName.asc()).all()
     department_data = Department.query.all()
 
     # === Dashboard Counts ===
@@ -1297,13 +1297,13 @@ def admin_manageStaff():
 
                 db.session.commit()
                 flash(f"Staff [{user_select.userId} - {user_select.userName}] updated successfully", "success")
-                record_action("EDIT STAFF", "STAFF", {user_select.userId}-{user_select.userName.split()[0]}, user_id)
+                record_action("EDIT STAFF", "STAFF", user_select.userId, user_id)
 
             elif action == 'delete' and user_select:
                 user_select.userStatus = 2
                 db.session.commit() 
                 flash("Staff deleted successfully", "success")
-                record_action("DELETE STAFF", "STAFF", {user_select.userId}-{user_select.userName.split()[0]}, user_id)
+                record_action("DELETE STAFF", "STAFF", user_select.userId, user_id)
 
             return redirect(url_for('admin_manageStaff'))
 
