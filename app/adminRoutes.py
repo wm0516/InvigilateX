@@ -341,14 +341,14 @@ def admin_manageCourse():
                             course_select.courseExamId = new_exam.examId
 
                     db.session.commit()
-                    flash(f"Course {course_select.courseCodeSectionIntake} - {course_select.courseName} updated successfully", "success")
+                    flash(f"Course [{course_select.courseCodeSectionIntake} - {course_select.courseName}] updated successfully", "success")
                     record_action(f"EDIT COURSE - [{course_select.courseCodeSectionIntake} - {course_select.courseName}]", "COURSE", {course_select.courseCodeSectionIntake}-{course_select.courseName}, user_id)
 
                 # --- DEACTIVATE COURSE ---
                 else:
                     course_select.courseStatus = False
                     db.session.commit()
-                    flash(f"Course {course_select.courseCodeSectionIntake} - {course_select.courseName} deactivated successfully", "success")
+                    flash(f"Course [{course_select.courseCodeSectionIntake} - {course_select.courseName}] deactivated successfully", "success")
                     record_action(f"DEACTIVATE COURSE - [{course_select.courseCodeSectionIntake} - {course_select.courseName}]", "COURSE", {course_select.courseCodeSectionIntake}-{course_select.courseName}, user_id)
 
                 return redirect(url_for('admin_manageCourse'))
