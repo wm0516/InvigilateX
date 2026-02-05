@@ -103,7 +103,7 @@ class Action(db.Model):
     actionId            = Column(Integer, primary_key=True, autoincrement=True)
     actionTake          = Column(String(50), nullable=False)
     actionTargetType    = Column(String(50), nullable=False)
-    actionTargetId      = Column(Integer, nullable=False)
+    actionTargetId      = Column(String(50), nullable=False)
     actionTime          = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     actionBy            = Column(Integer, ForeignKey('User.userId'), nullable=False)
     actionDevice        = Column(String(100), nullable=False)
@@ -117,7 +117,7 @@ class Action(db.Model):
         actionId INT AUTO_INCREMENT PRIMARY KEY,
         actionTake VARCHAR(50) NOT NULL,
         actionTargetType VARCHAR(50) NOT NULL,
-        actionTargetId INT NOT NULL,
+        actionTargetId VARCHAR(50) NOT NULL,
         actionTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         actionBy INT NOT NULL,
         actionDevice VARCHAR(100) NOT NULL,
