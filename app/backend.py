@@ -258,13 +258,8 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
 
     exam_id = None
     new_exam = Exam(
-        examStartTime=None,
-        examEndTime=None,
         examNoInvigilator=None,
-        examTotalStudents=students,
-        examAddedBy=userid,
-        examAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
-
+        examOutput=None
     )
     db.session.add(new_exam)
     db.session.flush()  # Get the examId before commit
@@ -278,12 +273,11 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
         courseHour=hour,
         courseStudent=students,
         courseExamId=exam_id,
-        courseStatus=True,
-        courseAddedBy=userid,
-        courseAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
+        courseStatus=True
     )
     db.session.add(new_course)
     db.session.commit()
+    record_action(f"UPLOAD NEW COURSE - [{courseCodeSection_text}-{name.upper()}]", "COURSE", {courseCodeSection_text}-{name.upper()}, userid)
     return True, "Course created successfully"
 
 

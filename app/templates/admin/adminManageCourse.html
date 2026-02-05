@@ -182,13 +182,11 @@
                     </div>
                     <div class="form-profile" style="width: 36%;">
                         <label>Course Code</label>
-                        <input type="text" id="editCourseCode" name="courseCode" 
-                            value="{{ course_select.courseCodeSectionIntake.split('/') [1] if course_select else '' }}" required>
+                        <input type="text" id="editCourseCode" name="courseCode" value="{{ course_select.courseCodeSectionIntake.split('/') [1] if course_select else '' }}" required>
                     </div>
                     <div class="form-profile" style="width: 36%;">
                         <label>Course Section</label>
-                        <input type="text" id="editCourseSection" name="courseSection" 
-                            value="{{ course_select.courseCodeSectionIntake.split('/') [2] if course_select else '' }}" required>
+                        <input type="text" id="editCourseSection" name="courseSection" value="{{ course_select.courseCodeSectionIntake.split('/') [2] if course_select else '' }}" required>
                     </div>
                 </div><br>
 
