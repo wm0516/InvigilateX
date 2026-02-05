@@ -20,12 +20,12 @@
                 <label>Full Name as per IC</label>
                 <input type="text" name="username" value="{{ name_text }}" required><br>
                 
-                <div style="display: flex; flex-direction: row; justify-content: space-between; padding: 3%;">
-                    <div class="form-left">
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                    <div class="form-left" style="width: 48%;">
                         <label>Staff ID</label>
                         <input type="number" name="userid" value="{{ id_text }}" required>
                     </div>   
-                    <div class="form-left">
+                    <div class="form-left" style="width: 48%;">
                         <label>Card UID (Optional)</label>
                         <input type="text" name="cardid" value="{{ card_text }}">
                     </div>
@@ -48,7 +48,7 @@
                     <option value="HOS">Head Of School</option>
                     <option value="LECTURER">Lecturer</option>
                     <option value="PO">Program Officers</option>
-                </select>
+                </select><br>
 
                 <label id="departmentLabel">Department</label>
                 <select name="department" required>
