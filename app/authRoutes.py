@@ -41,7 +41,7 @@ def login():
                 all_messages = get_flashed_messages(with_categories=True)
                 return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
-        valid, result, role = check_login(login_text, password_text)
+        valid, result, role, department = check_login(login_text, password_text)
 
         if not valid:
             # Increment failed attempts
@@ -70,7 +70,8 @@ def login():
 
         session['user_id'] = result
         session['user_role'] = role
-        record_action(f"LOGIN AS {role}", "LOGIN", result, result)
+        session['user_department'] = department
+        record_action(f"LOGIN AS {role}-{department}", "LOGIN", result, result)
 
         if role == "ADMIN":
             return redirect(url_for('admin_homepage'))
@@ -229,8 +230,9 @@ def resetPassword(token):
 def logout():
     user_id = session.get('user_id')
     role = session.get('user_role')
+    department = session.get('user_department')
     if user_id and role:
-        record_action(f"LOGOUT AS {role}", "LOGOUT", user_id, user_id)
+        record_action(f"LOGOUT AS {role}-{department}", "LOGOUT", user_id, user_id)
     
     session.clear()
     return redirect(url_for('login'))

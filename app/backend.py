@@ -80,13 +80,13 @@ def record_action(action, target, targetId, userId):
 def check_login(loginEmail, loginPassword):
     user = User.query.filter_by(userEmail=loginEmail).first()
     if not user:
-        return False, "Invalid Email or Password", None
+        return False, "Invalid Email or Password", None, None
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
-        return False, "Invalid Password", None 
-    if user.userLevel not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER", "PROGRAM OFFICERS"]:
-        return False, "User Role is NotRecognized", None
+        return False, "Invalid Password", None, None
+    if user.userLevel not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER", "PO"]:
+        return False, "User Role is NotRecognized", None, None
 
-    return True, user.userId, user.userLevel
+    return True, user.userId, user.userLevel, user.userDepartment
 
 # -------------------------------
 # Auth Function 2: Check Access [If Not User Will Show "Unauthorized Access"]
