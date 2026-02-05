@@ -429,9 +429,9 @@ def admin_manageDepartment():
     # Load all departments and stats
     department_data     = Department.query.all()
     total_department    = len(department_data)
-    deans               = User.query.filter_by(userLevel=2).all()
-    hoss                = User.query.filter_by(userLevel=3).all()
-    hops                = User.query.filter_by(userLevel=4).all()
+    deans               = User.query.filter_by(userLevel="DEAN").all()
+    hoss                = User.query.filter_by(userLevel="HOS").all()
+    hops                = User.query.filter_by(userLevel="HOP").all()
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
@@ -453,12 +453,11 @@ def admin_manageDepartment():
                     Department(
                         departmentCode=departmentCode, 
                         departmentName=departmentName,
-                        departmentAddedBy=user_id,
-                        departmentAddedOn=datetime.now(timezone.utc) + timedelta(hours=8),
                         )
                     )
                 db.session.commit()
-                flash("New Department Added", "success")
+                flash("New Department Added", "success")               
+                record_action(f"ADDING NEW DEPARTMENT {departmentCode}", "DEPARTMENT", 'userId', 'userId')
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
@@ -468,9 +467,9 @@ def admin_manageDepartment():
             deanId           = request.form.get('deanName') or None
             hopId            = request.form.get('hopName') or None
 
-            deanId = validate_user_role(deanId, 2, department_select.departmentCode, "Dean")
-            hosId  = validate_user_role(hosId, 3, department_select.departmentCode, "HOS")
-            hopId  = validate_user_role(hopId, 4, department_select.departmentCode, "HOP")
+            deanId = validate_user_role(deanId, "DEAN", department_select.departmentCode, "Dean")
+            hosId  = validate_user_role(hosId, "HOS", department_select.departmentCode, "HOS")
+            hopId  = validate_user_role(hopId, "HOP", department_select.departmentCode, "HOP")
 
             if action == 'update':
                 department_select.departmentName = departmentName
@@ -479,10 +478,9 @@ def admin_manageDepartment():
                 department_select.deanId = deanId
                 department_select.hosId  = hosId
                 department_select.hopId  = hopId
-                department_select.departmentAddedBy = user_id
-                department_select.departmentAddedOn = datetime.now(timezone.utc) + timedelta(hours=8)
                 db.session.commit()
                 flash("Department updated successfully", "success")
+                record_action("EDIT DEPARTMENT", "DEPARTMENT", 'userId', 'userId')
             
             elif action == 'delete':
                 users_using_department = User.query.filter_by(userDepartment=department_select.departmentCode).count()
@@ -492,6 +490,7 @@ def admin_manageDepartment():
                     db.session.delete(department_select)
                     db.session.commit()
                     flash("Department deleted successfully", "success")
+                    record_action(f"DELETE DEPARTMENT {department_select.departmentCode}", "DEPARTMENT", 'userId', 'userId')
 
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)

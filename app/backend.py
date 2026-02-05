@@ -162,7 +162,7 @@ Thank you,
 The InvigilateX Team'''
         
         mail.send(msg)
-        record_action("FORGOT PASSWORD", "FORGOT PASSWORD", user.userId, user.userId)
+        record_action("REQUEST RESET PASSWORD", "FORGOT PASSWORD", user.userId, user.userId)
         return True, None
     except Exception as e:
         return False, f"Failed to Send Email. Error: {str(e)}"
@@ -214,7 +214,7 @@ def check_resetPassword(token, resetPassword1, resetPassword2):
     if not user:
         return None, "User Not Found."
 
-    record_action("RESET PASSWORD", "RESET PASSWORD", user.userId, user.userId)
+    record_action("RESET PASSWORD SUCCESSFUL", "RESET PASSWORD", user.userId, user.userId)
     user.userPassword = bcrypt.generate_password_hash(resetPassword1).decode('utf-8')
     user.isLocked = False             # ✅ unlock the account
     user.failedAttempts = 0           # ✅ reset counter
