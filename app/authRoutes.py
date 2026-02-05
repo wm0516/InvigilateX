@@ -116,10 +116,7 @@ def register():
         is_valid, error_message = check_register(id_text, card_text, email_text, contact_text, password1_text, password2_text)
         # Convert to boolean
         # Assuming 0 = Female (False), 1 = Male (True)
-        if gender_text == "0":
-            gender_bool = False
-        else:
-            gender_bool = True
+        gender_bool = True if gender_text == "1" else False
 
         if error_message:
             flash(error_message, 'error')
