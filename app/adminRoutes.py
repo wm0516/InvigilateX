@@ -442,9 +442,9 @@ def admin_manageDepartment():
 
         # ---------------- Manual Section ----------------
         if form_type == 'manual':
-            departmentCode = request.form.get('departmentCode', '').upper()
-            departmentName = request.form.get('departmentName', '').upper()
-
+            departmentCode = request.form.get('departmentCode', '').strip().upper()
+            departmentName = request.form.get('departmentName', '').strip().upper()
+            
             # Check if department code already exists
             if Department.query.filter_by(departmentCode=departmentCode).first():
                 flash("Department code already exists. Please use a unique code.", "error")
@@ -456,7 +456,7 @@ def admin_manageDepartment():
                         )
                     )
                 db.session.commit()
-                flash(f"{departmentCode} new department added", "success")               
+                flash(f"New department [{departmentCode}] added", "success")               
                 record_action(f"ADDING NEW DEPARTMENT-[{departmentCode}]", "DEPARTMENT", user_id, user_id)
                 return redirect(url_for('admin_manageDepartment'))
 
@@ -480,7 +480,7 @@ def admin_manageDepartment():
                 department_select.hosId  = hosId
                 department_select.hopId  = hopId
                 db.session.commit()
-                flash(f"{department_select.departmentCode} department updated successfully", "success")
+                flash(f"Department [{department_select.departmentCode}] updated successfully", "success")
                 record_action(f"EDIT DEPARTMENT-[{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
             
             elif action == 'delete':
@@ -490,7 +490,7 @@ def admin_manageDepartment():
                 else:
                     db.session.delete(department_select)
                     db.session.commit()
-                    flash(f"{department_select.departmentCode} department deleted successfully", "success")
+                    flash(f"Department [{department_select.departmentCode}] deleted successfully", "success")
                     record_action(f"DELETE DEPARTMENT-[{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
 
             return redirect(url_for('admin_manageDepartment'))
