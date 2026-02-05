@@ -1152,7 +1152,7 @@ def process_staff_row(row):
     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
     # Handle empty cardid properly
-    cardid = row.get('cardid')
+    cardid = row['cardid']
     if pd.isna(cardid) or str(cardid).strip().lower() in ["", "nan", "none"]:
         cardid = None
     else:
@@ -1167,6 +1167,9 @@ def process_staff_row(row):
     else:
         gender_bool = None  # or raise an error if invalid value
 
+    # Clean contact
+    contact_cleaned = clean_contact(row['contact'])
+
     return create_staff(
         userId=user_id,
         id=row['id'],
@@ -1174,10 +1177,10 @@ def process_staff_row(row):
         name=str(row['name']).upper(),
         role=str(row['role']).upper(),
         email=str(row['email']),
-        contact=clean_contact(row.get('contact')),
-        gender=gender_bool,  # now a boolean
+        contact=contact_cleaned,
+        gender=gender_bool, 
         hashed_pw=hashed_pw,
-        cardId=cardid,  # cleaned card ID
+        cardId=cardid, 
     )
 
 
