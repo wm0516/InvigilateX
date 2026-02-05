@@ -135,7 +135,7 @@ def register():
                 userLevel=role_text
             )
             db.session.add(new_user)
-            record_action("REGISTER AS NEW USER", "REGISTER", "id_text", "id_text")
+            record_action("REGISTER AS NEW USER", "REGISTER", id_text, id_text)
             db.session.commit()
 
             # Send verification email after saving user
