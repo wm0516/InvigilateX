@@ -562,16 +562,17 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
             row.timetable_id = timetable.timetableId
 
     if dept:
-        if role == 2: # Dean
+        role_upper = role.upper()
+        if role_upper == "DEAN":
             dept.deanId = new_staff.userId
-        elif role == 3: # HOS
+        elif role_upper == "HOS":
             dept.hosId = new_staff.userId
-        elif role == 4: # HOP
+        elif role_upper == "HOP":
             dept.hopId = new_staff.userId
         db.session.add(dept)
 
     db.session.commit()
-    record_action("UPLOAD/ADD STAFF", "STAFF", {id}-{name.split[0].upper()}, userId)
+    record_action("UPLOAD/ADD STAFF", "STAFF", f"{id}-{name.split()[0].upper()}", userId)
     return True, f"Staff [{id} - {name.upper()}] created successfully"
 
 
