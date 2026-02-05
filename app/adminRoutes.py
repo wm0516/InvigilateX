@@ -403,9 +403,9 @@ def get_department(department_code):
     return jsonify({
         "departmentCode": dept.departmentCode,
         "departmentName": dept.departmentName,
-        "deanId"        : dept.deanId,
-        "hosId"         : dept.hosId,
-        "hopId"         : dept.hopId
+        "deanId"        : dept.deanId or None,
+        "hosId"         : dept.hosId or None,
+        "hopId"         : dept.hopId or None
     })
 
 def validate_user_role(user_id, expected_level, department_code, role_name):
@@ -457,7 +457,7 @@ def admin_manageDepartment():
                     )
                 db.session.commit()
                 flash("New Department Added", "success")               
-                record_action(f"ADDING NEW DEPARTMENT {departmentCode}", "DEPARTMENT", user_id, user_id)
+                record_action(f"ADDING NEW DEPARTMENT-[{departmentCode}]", "DEPARTMENT", user_id, user_id)
 
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
@@ -490,7 +490,7 @@ def admin_manageDepartment():
                     db.session.delete(department_select)
                     db.session.commit()
                     flash("Department deleted successfully", "success")
-                    record_action(f"DELETE DEPARTMENT {department_select.departmentCode}", "DEPARTMENT", user_id, user_id)
+                    record_action(f"DELETE DEPARTMENT-[{department_select.departmentCode}]", "DEPARTMENT", user_id, user_id)
 
             return redirect(url_for('admin_manageDepartment'))
     return render_template('admin/adminManageDepartment.html', active_tab='admin_manageDepartmenttab', department_data=department_data, department_select=department_select, total_department=total_department, deans=deans, hoss=hoss, hops=hops)
