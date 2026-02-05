@@ -4,8 +4,12 @@
 <div class="menu-section">
     <h2>Activity</h2>
     <form method="post" style="border-radius: None; border: None; box-shadow: None;">
-    <div class="user-table-container">
-            <table class="user-data-table" id="manageDepartment">
+        <div style="position: relative;">
+            <input type="text" id="searchInput" name="search_department" placeholder="Search..." value="{{ search_department }}" style="border-radius: 6px; width: 100%;">
+            <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+        </div>
+        <div class="user-table-container">
+            <table class="user-data-table" id="activity">
                 <thead>
                     <tr>
                         <th>No</th>
