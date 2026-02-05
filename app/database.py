@@ -217,7 +217,6 @@ class VenueExam(db.Model):
     # Relationships
     exam    = relationship("Exam", back_populates="venue_availabilities")
     session = relationship("VenueSession", back_populates="exams")
-    venue   = relationship("Venue", back_populates="availabilities", viewonly=True, secondary="VenueSession")
     '''
     CREATE TABLE VenueExam (
         examVenueId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
