@@ -25,7 +25,6 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # cleanup_expired_timetable_rows()
-    update_exam_status()
     update_attendanceStatus()
     login_text = ''
     password_text = ''
