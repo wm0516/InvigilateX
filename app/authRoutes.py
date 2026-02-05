@@ -74,7 +74,7 @@ def login():
 
         if role == "ADMIN":
             return redirect(url_for('register'))
-        elif role in ("DEAN", "HOS", "HOP", "LECTURER", "PROGRAM OFFICERS"):
+        elif role in ("DEAN", "HOS", "HOP", "LECTURER", "PO"):
             return redirect(url_for('register'))
         else:
             flash("Unknown role", "login_error")
