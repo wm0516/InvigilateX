@@ -72,7 +72,7 @@ def check_login(loginEmail, loginPassword):
         return False, "Invalid Email or Password", None
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid Password", None 
-    if user.userLevel not in [ADMIN, DEAN, HOS, HOP, LECTURER]:
+    if user.userLevel not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER"]:
         return False, "User Role is NotRecognized", None
 
     return True, user.userId, user.userLevel

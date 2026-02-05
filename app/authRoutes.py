@@ -71,9 +71,9 @@ def login():
         session['user_id'] = result
         session['user_role'] = role
 
-        if role == ADMIN:
+        if role == "ADMIN":
             return redirect(url_for('admin_homepage'))
-        elif role in (DEAN, HOS, HOP, LECTURER):
+        elif role in ("DEAN", "HOS", "HOP", "LECTURER"):
             return redirect(url_for('user_homepage'))
         else:
             flash("Unknown role", "login_error")
