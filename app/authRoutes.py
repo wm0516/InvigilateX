@@ -70,7 +70,7 @@ def login():
 
         session['user_id'] = result
         session['user_role'] = role
-        record_action("LOGIN AS {role}", "LOGIN", result, result)
+        record_action(f"LOGIN AS {role}", "LOGIN", result, result)
 
         if role == "ADMIN":
             return redirect(url_for('admin_homepage'))
@@ -227,11 +227,13 @@ def resetPassword(token):
 # -------------------------------
 @app.route('/logout')
 def logout():
-    # Clear the session
+    user_id = session.get('user_id')
+    role = session.get('user_role')
+    if user_id and role:
+        record_action(f"LOGOUT AS {role}", "LOGOUT", user_id, user_id)
+    
     session.clear()
-    # Redirect to login page
-    return redirect(url_for('login')) 
-
+    return redirect(url_for('login'))
 
 # -------------------------------
 # Function for Auth SaveLoginCredentials 
