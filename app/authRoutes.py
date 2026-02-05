@@ -73,7 +73,7 @@ def login():
 
         if role == "ADMIN":
             return redirect(url_for('admin_homepage'))
-        elif role in ("DEAN", "HOS", "HOP", "LECTURER"):
+        elif role in ("DEAN", "HOS", "HOP", "LECTURER", "PROGRAM OFFICERS"):
             return redirect(url_for('user_homepage'))
         else:
             flash("Unknown role", "login_error")
@@ -132,7 +132,7 @@ def register():
                 userGender=gender_bool,
                 userStatus=0,  # not verified yet
                 userCardId=card_text,
-                userLevel="ADMIN"
+                userLevel=role_text
             )
             db.session.add(new_user)
             db.session.commit()

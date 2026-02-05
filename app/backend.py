@@ -12,25 +12,6 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_, or_, exists, tuple_, func, select
 
 
-
-# constants.py or at the top of your app.py
-ADMIN = 5
-HOP = 4
-HOS = 3
-DEAN = 2
-LECTURER = 1
-
-# Declare the Role Map of User Level
-role_map = {
-    'LECTURER': LECTURER,
-    'DEAN': DEAN,
-    'HOS': HOS,
-    'HOP': HOP,
-    'ADMIN': ADMIN
-}
-
-
-
 # -------------------------------
 # Basic User Details Function 1: Email Format [End with @newinti.edu.my]
 # -------------------------------
@@ -72,7 +53,7 @@ def check_login(loginEmail, loginPassword):
         return False, "Invalid Email or Password", None
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid Password", None 
-    if user.userLevel not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER"]:
+    if user.userLevel not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER", "PROGRAM OFFICERS"]:
         return False, "User Role is NotRecognized", None
 
     return True, user.userId, user.userLevel
