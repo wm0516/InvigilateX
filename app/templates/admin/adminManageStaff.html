@@ -101,8 +101,8 @@
                 <label>Staff Gender</label>
                 <select name="gender" required>
                     <option value="" disabled selected>-- Select Gender --</option>
-                    <option value="MALE">MALE</option>
-                    <option value="FEMALE">FEMALE</option>
+                    <option value="1">MALE</option>
+                    <option value="0">FEMALE</option>
                 </select>
             </div>
 
@@ -110,11 +110,12 @@
                 <label>Staff Role</label>
                 <select name="role" id="roleSelect" onchange="updateDepartmentLabel()" value="{{ role_text }}" required>
                     <option value="" disabled selected>-- Select Role --</option>
-                    <option value="1">LECTURER</option>
-                    <option value="2">DEAN</option>
-                    <option value="3">(HOS) HEAD OF SCHOOL</option>
-                    <option value="4">(HOP) HEAD OF PROGRAMME</option>
-                    <option value="5">ADMIN</option>
+                    <option value="LECTURER">LECTURER</option>
+                    <option value="PO">(PO) PROGRAM OFFICER</option>
+                    <option value="DEAN">DEAN</option>
+                    <option value="HOS">(HOS) HEAD OF SCHOOL</option>
+                    <option value="HOP">(HOP) HEAD OF PROGRAMME</option>
+                    <option value="ADMIN">ADMIN</option>
                 </select><br>
 
                 <label id="departmentLabel">Department</label>
@@ -173,8 +174,8 @@
                 <label>Staff Gender</label>
                 <select id="editGender" name="editGender" required>
                     <option value="" disabled selected>-- Select Gender --</option>
-                    <option value="MALE">MALE</option>
-                    <option value="FEMALE">FEMALE</option>
+                    <option value="1">MALE</option>
+                    <option value="0">FEMALE</option>
                 </select>
             </div>
 
@@ -190,11 +191,12 @@
                 <label>Staff Role</label>
                 <select id="editRoleSelect" name="editRole" required>
                     <option value="" disabled selected>-- Select Role --</option>
-                    <option value="1">LECTURER</option>
-                    <option value="2">DEAN</option>
-                    <option value="3">(HOS) HEAD OF SCHOOL</option>
-                    <option value="4">(HOP) HEAD OF PROGRAMME</option>
-                    <option value="5">ADMIN</option>
+                    <option value="LECTURER">LECTURER</option>
+                    <option value="PO">(PO) PROGRAM OFFICER</option>
+                    <option value="DEAN">DEAN</option>
+                    <option value="HOS">(HOS) HEAD OF SCHOOL</option>
+                    <option value="HOP">(HOP) HEAD OF PROGRAMME</option>
+                    <option value="ADMIN">ADMIN</option>
                 </select><br>
 
                 <label id="departmentLabel">Department</label>
@@ -245,7 +247,7 @@
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Account Status</th> 
+                    <th>Acc Status</th> 
                     <th>User ID</th>
                     <th>Card UID</th>
                     <th>Full Name</th>
@@ -279,6 +281,11 @@
                     <td>{{ row.userId }}</td>
                     <td>{{ row.userCardId or '---' }}</td>
                     <td>{{ row.userName }}</td>
+                    <td>
+                        {% if row.userGender == 0 %}
+                            FEMALE
+                        {% else %}MALE{% endif %}
+                    </td>
                     <td>{{ row.userGender }}</td>
                     <td>{{ row.userEmail }}</td>
                     <td>
@@ -287,16 +294,17 @@
                         {% else %}---{% endif %}
                     </td>
                     <td>
-                        {% if row.userLevel == 1 %}LECTURER
-                        {% elif row.userLevel == 2 %}DEAN
-                        {% elif row.userLevel == 3 %}HOS
-                        {% elif row.userLevel == 4 %}HOP
-                        {% elif row.userLevel == 5 %}ADMIN
+                        {% if row.userLevel == "LECTURER" %}LECTURER
+                        {% elif row.userLevel == "PO" %}PROGRAM OFFICER
+                        {% elif row.userLevel == "DEAN" %}DEAN
+                        {% elif row.userLevel == "HOS" %}HOS
+                        {% elif row.userLevel == "HOP" %}HOP
+                        {% elif row.userLevel == "ADMIN" %}ADMIN
                         {% else %}Unknown{% endif %}
                     </td>
                     <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">N/A</span>' | safe }}</td>
                     <td>
-                        {% if row.userLevel == 1 %}
+                        {% if row.userLevel == "LECTURER" %}
                             <div class="info-grid">
                                 <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
                                 <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>

@@ -153,7 +153,6 @@ def generate_managecourse_template():
     output.seek(0)
     return output
 
-
 # -------------------------------
 # Function for Admin ManageCourse Download Excel File Template  
 # -------------------------------
@@ -215,7 +214,6 @@ def get_courseCodeSection(courseCodeSection_select):
         "tutorialLecturerId": course.courseTutorial,
         "classLecturerId": course.courseLecturer
     })
-
 
 # -------------------------------
 # Function for Admin ManageCourse Route
@@ -591,6 +589,7 @@ def admin_manageVenue():
 
 
 
+
 # -------------------------------
 # Function for Admin ManageExam Download Excel File Format
 # -------------------------------
@@ -630,17 +629,8 @@ def generate_manageexam_template():
     # --- Fetch courses and exams ---
     courses = (
         db.session.query(Course, Exam)
-        .join(Exam, Course.courseExamId == Exam.examId)
-        .filter(
-            and_(
-                Course.courseStatus == True,
-                or_(
-                    Exam.examStartTime.is_(None),
-                    Exam.examEndTime.is_(None)
-                )
-            )
-        )
-        .all()
+        .join(Exam, Course.courseExamId == Exam.examId).filter(
+            and_(Course.courseStatus == True)).all()
     )
 
     # --- Fill lookup data ---
@@ -713,51 +703,39 @@ def download_exam_template():
 def process_exam_row(row, slot_share_dt, slot_open_dt):
     user_id = session.get('user_id')
 
-    # --- Check if row is empty ---
-    # headers = ['Exam Date','Day','Start','End','Program','Course Code/Section','Course Name','Lecturer','Total Student by venue','Venue']
     important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
     if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
         # Entire row is empty → skip it
         return None, ''  # or False, '' if you prefer
 
-    # --- Parse exam date ---
-    examDate = row.get('exam date')
-
-    if examDate is None or str(examDate).strip() == "":
+    # --- Parse exam date (MM/DD/YYYY) ---
+    examDate_text = row.get('exam date')
+    if not examDate_text or str(examDate_text).strip() == "":
         return False, "Missing exam date"
-    if hasattr(examDate, "to_pydatetime"):
-        examDate = examDate.to_pydatetime()
 
-    if isinstance(examDate, datetime):
-        pass
-    elif isinstance(examDate, date):
-        examDate = datetime.combine(examDate, datetime.min.time())
-    elif isinstance(examDate, str):
-        examDate = examDate.strip()
-        try:
-            # MM/DD/YYYY (template expectation)
-            examDate = datetime.strptime(examDate, "%m/%d/%Y")
-        except ValueError:
-            try:
-                # ISO string from pandas: YYYY-MM-DD HH:MM:SS
-                examDate = datetime.strptime(examDate, "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                return False, f"Invalid exam date format: {examDate}"
-    else:
-        return False, f"Unsupported exam date type: {type(examDate)}"
+    examDate_text = examDate_text.strip()
+    try:
+        examDate = datetime.strptime(examDate_text, "%m/%d/%Y")
+    except ValueError:
+        return False, f"Invalid exam date format: {examDate_text}"
 
-    # --- Parse start & end time ---
-    startTime_text = row.get('start')
-    endTime_text   = row.get('end')
-    if not startTime_text or not endTime_text:
+    # --- Parse start & end time (hh:mm:ss AM/PM) ---
+    start_text = row.get('start')
+    end_text   = row.get('end')
+
+    if not start_text or not end_text:
         return False, "Start or end time missing"
 
-    try:
-        start_time = parse_excel_time(row.get('start'))
-        end_time   = parse_excel_time(row.get('end'))
-    except ValueError as e:
-        return False, str(e)
+    start_text = start_text.strip()
+    end_text   = end_text.strip()
 
+    try:
+        start_time = datetime.strptime(start_text, "%I:%M:%S %p").time()
+        end_time   = datetime.strptime(end_text, "%I:%M:%S %p").time()
+    except ValueError:
+        return False, "Invalid time format (expected hh:mm:ss AM/PM)"
+
+    # --- Combine date and time ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
 
@@ -777,6 +755,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     venue_capacity = venue_obj.venueCapacity
 
     # --- Find overlapping exams ---
+    '''
     overlapping_exams = VenueExam.query.filter(
         VenueExam.venueNumber == venue,
         VenueExam.startDateTime < end_dt + timedelta(minutes=30),
@@ -795,6 +774,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
             "error"
         )
         return None, ''
+    '''
 
     success, msg = create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     if not success:
@@ -1096,7 +1076,7 @@ def generate_user_template():
         ws_lists[f"A{i}"] = d.departmentCode
 
     # --- Roles ---
-    roles = ["Lecturer", "ProgramOfficer", "Dean", "HOS", "HOP", "Admin"]
+    roles = ["Lecturer", "Program Officer", "Dean", "HOS", "HOP", "Admin"]
     for i, r in enumerate(roles, start=1):
         ws_lists[f"B{i}"] = r
 
@@ -1168,7 +1148,6 @@ def clean_contact(contact):
 # Function for Admin ManageStaff Route Upload File
 # -------------------------------
 def process_staff_row(row):
-    role_mapping = {'lecturer': 1, 'dean': 2, 'hos': 3, 'hop': 4, 'admin': 5}
     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
     # Handle empty cardid properly
@@ -1182,7 +1161,7 @@ def process_staff_row(row):
         id=row['id'],
         department=str(row['department']).upper(),
         name=str(row['name']).upper(),
-        role=role_mapping.get(str(row['role']).strip().lower()),
+        role=(str(row['role']).upper()),
         email=str(row['email']),
         contact=clean_contact(row.get('contact')),
         gender=str(row['gender']).upper(),
@@ -1207,7 +1186,7 @@ def get_staff(id):
         "userEmail": user.userEmail,
         "userContact": user.userContact or "",
         "userGender": user.userGender,
-        "userLevel": str(user.userLevel),
+        "userLevel": user.userLevel,
         "userDepartment": user.userDepartment or "",
         "userStatus": str(user.userStatus),
         "userCardId": user.userCardId or ""
@@ -1224,13 +1203,13 @@ def admin_manageStaff():
 
     # === Dashboard Counts ===
     total_staff = User.query.count()
-    total_admin = User.query.filter_by(userLevel=5).count()
-    total_hop = User.query.filter_by(userLevel=4).count()
-    total_hos = User.query.filter_by(userLevel=3).count()
-    total_dean = User.query.filter_by(userLevel=2).count()
-    total_lecturer = User.query.filter_by(userLevel=1).count()
-    total_male_staff = User.query.filter_by(userGender="MALE").count()
-    total_female_staff = User.query.filter_by(userGender="FEMALE").count()
+    total_admin = User.query.filter_by(userLevel="ADMIN").count()
+    total_hop = User.query.filter_by(userLevel="HOP").count()
+    total_hos = User.query.filter_by(userLevel="HOS").count()
+    total_dean = User.query.filter_by(userLevel="DEAN").count()
+    total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
+    total_male_staff = User.query.filter_by(userGender=True).count()
+    total_female_staff = User.query.filter_by(userGender=False).count()
     total_activated = User.query.filter_by(userStatus=1).count()
     total_deactivate = User.query.filter_by(userStatus=0).count()
     total_deleted = User.query.filter_by(userStatus=2).count()
@@ -1268,13 +1247,10 @@ def admin_manageStaff():
                 user_select.userEmail = request.form['editEmail']
                 user_select.userContact = request.form['editContact']
                 user_select.userGender = request.form['editGender']
-                user_select.userLevel = int(request.form['editRole'])
+                user_select.userLevel = request.form['editRole']
                 user_select.userStatus = int(request.form['editStatus'])
                 user_select.userCardId = request.form['editCardId']
                 new_department_code = request.form['editDepartment']
-
-                if user_select.userStatus == 2:
-                    user_select.userRegisterDateTime = datetime.now(timezone.utc)
 
                 # Always update department and related dean/hop/hos fields
                 old_department = Department.query.filter_by(departmentCode=user_select.userDepartment).first()
@@ -1291,16 +1267,15 @@ def admin_manageStaff():
 
                 # Assign to new department
                 if new_department:
-                    if user_select.userLevel == 3:  # HOS
+                    if user_select.userLevel == "HOS":  # HOS
                         new_department.hosId = user_select.userId
-                    elif user_select.userLevel == 4:  # HOP
+                    elif user_select.userLevel == "HOP":  # HOP
                         new_department.hopId = user_select.userId
-                    elif user_select.userLevel == 2:  # Dean
+                    elif user_select.userLevel == "DEAN":  # Dean
                         new_department.deanId = user_select.userId
 
                 # Update user department & timestamp
                 user_select.userDepartment = new_department_code
-                user_select.userRegisterDateTime = datetime.now(timezone.utc)
                 
                 if user_select.userContact == '':
                     user_select.userContact = None
@@ -1310,7 +1285,6 @@ def admin_manageStaff():
 
             elif action == 'delete' and user_select:
                 user_select.userStatus = 2
-                user_select.userRegisterDateTime = datetime.now(timezone.utc)
                 db.session.commit() 
                 flash("Staff deleted successfully", "success")
 
