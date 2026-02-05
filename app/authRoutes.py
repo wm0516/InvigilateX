@@ -64,7 +64,7 @@ def login():
 
         # Successful login — reset counters
         if user:
-            record_action("LOGIN", "LOGIN", user.userId, user.userId)
+            # record_action("LOGIN", "LOGIN", user.userId, user.userId)
             user.failedAttempts = 0
             user.isLocked = False
             db.session.commit()
@@ -73,8 +73,7 @@ def login():
         session['user_role'] = role
 
         if role == "ADMIN":
-            # return redirect(url_for('admin_homepage'))
-            return redirect(url_for('register'))
+            return redirect(url_for('admin_homepage'))
         elif role in ("DEAN", "HOS", "HOP", "LECTURER", "PROGRAM OFFICERS"):
             return redirect(url_for('user_homepage'))
         else:
@@ -137,7 +136,7 @@ def register():
                 userLevel=role_text
             )
             db.session.add(new_user)
-            record_action("REGISTER AS NEW USER", "REGISTER", id_text, id_text)
+            # record_action("REGISTER AS NEW USER", "REGISTER", id_text, id_text)
             db.session.commit()
 
             # Send verification email after saving user
