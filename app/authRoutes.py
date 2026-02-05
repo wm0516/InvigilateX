@@ -78,7 +78,8 @@ def login():
         else:
             flash("Unknown role", "login_error")
             return redirect(url_for('login'))
-
+    
+    record_action("LOGIN", "LOGIN", 'user_id', 'id_text')
     all_messages = get_flashed_messages(with_categories=True)
     return render_template('auth/login.html', login_text=login_text, password_text=password_text, all_messages=all_messages)
 
