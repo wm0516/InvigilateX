@@ -2309,7 +2309,7 @@ def admin_profile():
 # -------------------------------
 @app.route('/admin/activity', methods=['GET', 'POST'])
 @login_required
-def admin_profile():
+def admin_activity():
     return render_template('admin/adminActivity.html', active_tab='admin_activitytab')
 
 
