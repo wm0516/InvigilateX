@@ -309,7 +309,7 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-
+'''
 # -------------------------------
 # Main User Homepage
 # -------------------------------
@@ -474,7 +474,7 @@ def user_homepage():
                 prev_user = User.query.get(open_slot.invigilatorId)
                 if prev_user and exam:
                     # hours_to_remove = (candidate_end - candidate_start).total_seconds() / 3600.0
-                    prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
+                    # prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
 
             # Step 7: Assign slot to current user
             open_slot.invigilatorId = user_id
@@ -504,7 +504,7 @@ def user_homepage():
             flash(f"Open Slot Course Code: {course_code} Accepted Successfully", "success")
             return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
-
+'''
 
 
 # -------------------------------
