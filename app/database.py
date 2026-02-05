@@ -28,25 +28,25 @@ from app import db
 # DEPARTMENT
 # ------------------------------
 class Department(db.Model):
-    __tablename__       = 'Department'
-    departmentCode      = Column(String(10), primary_key=True)
-    departmentName      = Column(String(60), nullable=False)
-    deanId              = Column(Integer, ForeignKey('User.userId'), nullable=True)
-    hopId               = Column(Integer, ForeignKey('User.userId'), nullable=True)
-    hosId               = Column(Integer, ForeignKey('User.userId'), nullable=True)
+    __tablename__   = 'Department'
+    departmentCode  = Column(String(10), primary_key=True)
+    departmentName  = Column(String(60), nullable=False)
+    deanId          = Column(Integer, ForeignKey('User.userId'), nullable=True)
+    hopId           = Column(Integer, ForeignKey('User.userId'), nullable=True)
+    hosId           = Column(Integer, ForeignKey('User.userId'), nullable=True)
 
     # Relationships
-    dean    = relationship("User", foreign_keys=[deanId], backref="dean_of_departments")
-    hop     = relationship("User", foreign_keys=[hopId], backref="hop_of_departments")
-    hos     = relationship("User", foreign_keys=[hosId], backref="hos_of_departments")
-    users   = relationship("User", back_populates="department", foreign_keys="[User.userDepartment]")
+    dean  = relationship("User", foreign_keys=[deanId], backref="dean_of_departments")
+    hop   = relationship("User", foreign_keys=[hopId], backref="hop_of_departments")
+    hos   = relationship("User", foreign_keys=[hosId], backref="hos_of_departments")
+    users = relationship("User", back_populates="department", foreign_keys="User.userDepartment")
     '''
     CREATE TABLE Department (
         departmentCode VARCHAR(10) NOT NULL PRIMARY KEY,
         departmentName VARCHAR(60) NOT NULL,
         deanId INT NULL,
         hopId INT NULL,
-        hosId INT NULL
+        hosId INT NULL  
     );
     '''
 
@@ -71,7 +71,7 @@ class User(db.Model):
     failedAttempts              = Column(Integer, default=0, nullable=False)
 
     # Relationships
-    department  = relationship("Department", back_populates="users", foreign_keys=[userDepartment] )
+    department = relationship("Department", back_populates="users", foreign_keys=[userDepartment])
     timetable   = relationship("Timetable", back_populates="user", uselist=False)
     '''
     CREATE TABLE User (
