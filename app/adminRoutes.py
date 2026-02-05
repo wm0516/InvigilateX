@@ -1246,7 +1246,7 @@ def admin_manageStaff():
                 user_select.userName = request.form['editUsername']
                 user_select.userEmail = request.form['editEmail']
                 user_select.userContact = request.form['editContact']
-                user_select.userGender = request.form['editGender']
+                user_select.userGender = int(request.form['editGender'])
                 user_select.userLevel = request.form['editRole']
                 user_select.userStatus = int(request.form['editStatus'])
                 user_select.userCardId = request.form['editCardId']
