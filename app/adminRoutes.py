@@ -1189,7 +1189,7 @@ def get_staff(id):
         "userLevel": user.userLevel,
         "userDepartment": user.userDepartment or "",
         "userCardId": user.userCardId or "",
-        "userGender": user.userGender
+        "userGender": 1 if user.userGender else 0
     })
 
 # -------------------------------
