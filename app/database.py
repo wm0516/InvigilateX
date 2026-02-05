@@ -154,7 +154,6 @@ class VenueSession(db.Model):
     venue           = relationship("Venue", back_populates="sessions")
     exams           = relationship("VenueExam", back_populates="session")
     invigilators    = relationship("VenueSessionInvigilator", back_populates="session", cascade="all, delete-orphan")
-
     '''
     CREATE TABLE VenueSession (
         venueSessionId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -206,13 +205,12 @@ class Exam(db.Model):
         examOutput JSON NULL
     );
     '''
-
 class VenueExam(db.Model):
     __tablename__   = 'VenueExam'
     examVenueId     = Column(Integer, primary_key=True, autoincrement=True)
     examId          = Column(Integer, ForeignKey('Exam.examId'), nullable=False)
     venueSessionId  = Column(Integer, ForeignKey('VenueSession.venueSessionId'), nullable=False)
-    studentCount         = Column(Integer, nullable=False)
+    studentCount    = Column(Integer, nullable=False)
 
     # Relationships
     exam    = relationship("Exam", back_populates="venue_availabilities")
