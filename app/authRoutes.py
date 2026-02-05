@@ -64,13 +64,13 @@ def login():
 
         # Successful login — reset counters
         if user:
-            record_action("LOGIN", "LOGIN", user.userId, user.userId)
             user.failedAttempts = 0
             user.isLocked = False
             db.session.commit()
 
         session['user_id'] = result
         session['user_role'] = role
+        record_action("LOGIN AS {role}", "LOGIN", result, result)
 
         if role == "ADMIN":
             return redirect(url_for('admin_homepage'))
