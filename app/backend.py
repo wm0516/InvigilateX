@@ -572,7 +572,7 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
 
     db.session.commit()
     record_action("UPLOAD/ADD STAFF", "STAFF", {id}-{name.split[0].upper()}, userId)
-    return True, "Staff created successfully"
+    return True, f"Staff [{id} - {name.upper()}] created successfully"
 
 
 # -------------------------------
