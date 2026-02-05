@@ -1158,15 +1158,24 @@ def process_staff_row(row):
     else:
         cardid = str(cardid).upper()
 
+    # Convert gender string to boolean: Male=True, Female=False
+    gender_str = str(row['gender']).strip().lower()
+    if gender_str == "male":
+        gender_bool = True
+    elif gender_str == "female":
+        gender_bool = False
+    else:
+        gender_bool = None  # or raise an error if invalid value
+
     return create_staff(
         userId=user_id,
         id=row['id'],
         department=str(row['department']).upper(),
         name=str(row['name']).upper(),
-        role=(str(row['role']).upper()),
+        role=str(row['role']).upper(),
         email=str(row['email']),
         contact=clean_contact(row.get('contact')),
-        gender=str(row['gender']).upper(),
+        gender=gender_bool,  # now a boolean
         hashed_pw=hashed_pw,
         cardId=cardid,  # cleaned card ID
     )
