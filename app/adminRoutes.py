@@ -552,7 +552,7 @@ def admin_manageVenue():
                         venueCapacity=capacity
                     ))
                     db.session.commit()
-                    flash("Venue Added", "success")
+                    flash(f"Venue [{venueNumber}] Added", "success")
                     record_action(f"ADD NEW VENUE-[{venueNumber}]", "VENUE", user_id, user_id)
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
@@ -572,7 +572,7 @@ def admin_manageVenue():
                     venue_select.venueLevel = venueLevel
                     venue_select.venueCapacity = capacity
                     db.session.commit()
-                    flash("Venue Updated", "success")
+                    flash(f"Venue [{venue_select.venueNumber}] Updated", "success")
                     record_action(f"EDIT VENUE-[{venue_select.venueNumber}]", "VENUE", user_id, user_id)
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
@@ -580,15 +580,14 @@ def admin_manageVenue():
             elif action == 'delete':
                 try:
                     venue_number = venue_select.venueNumber
-                    exam_count = VenueExam.query.filter_by(venueNumber=venue_number).count()
-                    attendance_count = InvigilatorAttendance.query.filter_by(venueNumber=venue_number).count()
+                    exam_count = VenueSession.query.filter_by(venueNumber=venue_number).count()
 
-                    if exam_count > 0 or attendance_count > 0:
-                        flash(f"Cannot delete venue. It is still used by {exam_count} exams or {attendance_count} invigilator attendance records.", "error")
+                    if exam_count > 0:
+                        flash(f"Cannot delete venue. It is still used by {exam_count} exams", "error")
                     else:
                         db.session.delete(venue_select)
                         db.session.commit()
-                        flash("Venue deleted successfully", "success")
+                        flash(f"Venue [{venue_select.venueNumber}] deleted successfully", "success")
                         record_action(f"DELETE VENUE-[{venue_select.venueNumber}]", "VENUE", user_id, user_id)
                 except Exception as e:
                     db.session.rollback()

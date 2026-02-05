@@ -149,7 +149,6 @@
                             </select>
                         </div>
                     </th>
-                    <th>Added/Edit Details</th>
                 </tr>
             </thead>
 
@@ -160,11 +159,6 @@
                     <td>{{ row.venueNumber }}</td>
                     <td>{{ row.venueLevel }}</td>
                     <td>{{ row.venueCapacity }}</td>
-                    <td>
-                        {% if row.venueAddedBy and row.venueAddedOn %}
-                            By: <strong>{{ row.addedBy.userName }}</strong> | On: <strong>{{ row.venueAddedOn.strftime('%d%b%Y %H:%M') }}</strong>
-                        {% endif %}
-                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
