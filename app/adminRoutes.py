@@ -1148,6 +1148,7 @@ def clean_contact(contact):
 # Function for Admin ManageStaff Route Upload File
 # -------------------------------
 def process_staff_row(row):
+    user_id = session.get('user_id')
     hashed_pw = bcrypt.generate_password_hash('Abc12345!').decode('utf-8')
 
     # Handle empty cardid properly
@@ -1158,6 +1159,7 @@ def process_staff_row(row):
         cardid = str(cardid).upper()
 
     return create_staff(
+        userId=user_id,
         id=row['id'],
         department=str(row['department']).upper(),
         name=str(row['name']).upper(),
@@ -1198,6 +1200,7 @@ def get_staff(id):
 @app.route('/admin/manageStaff', methods=['GET', 'POST'])
 @login_required
 def admin_manageStaff():
+    user_id = session.get('user_id')
     user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.desc(), User.userName.asc()).all()
     department_data = Department.query.all()
 
@@ -1281,18 +1284,21 @@ def admin_manageStaff():
                     user_select.userContact = None
 
                 db.session.commit()
-                flash("Staff updated successfully", "success")
+                flash(f"Staff [{user_select.userId} - {user_select.userName}] updated successfully", "success")
+                record_action("EDIT STAFF", "STAFF", {user_select.userId}-{user_select.userName.split()[0]}, user_id)
 
             elif action == 'delete' and user_select:
                 user_select.userStatus = 2
                 db.session.commit() 
                 flash("Staff deleted successfully", "success")
+                record_action("DELETE STAFF", "STAFF", {user_select.userId}-{user_select.userName.split()[0]}, user_id)
 
             return redirect(url_for('admin_manageStaff'))
 
         elif form_type == 'manual':
             role_text = request.form.get('role', '0')
             form_data = {
+                "userId": user_id,
                 "id": request.form.get('userid', '').strip(),
                 "department": request.form.get('department', '').strip(),
                 "name": request.form.get('username', '').strip(),

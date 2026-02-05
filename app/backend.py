@@ -518,7 +518,7 @@ def recalc_invigilators_for_new_exams():
 # -------------------------------
 # Admin Function 3: Create Staff when with all correct data
 # -------------------------------
-def create_staff(id, department, name, role, email, contact, gender, hashed_pw, cardId):
+def create_staff(userId, id, department, name, role, email, contact, gender, hashed_pw, cardId):
     # Call shared validation logic here
     valid, message = check_register(id, cardId, email, contact)
     if not valid:
@@ -572,7 +572,7 @@ def create_staff(id, department, name, role, email, contact, gender, hashed_pw, 
         db.session.add(dept)
 
     db.session.commit()
-
+    record_action("UPLOAD/ADD STAFF", "STAFF", {id}-{name.split[0].upper()}, userId)
     return True, "Staff created successfully"
 
 
