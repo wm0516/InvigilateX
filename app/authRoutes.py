@@ -131,7 +131,8 @@ def register():
                 userPassword=hashed_pw,
                 userGender=gender_bool,
                 userStatus=0,  # not verified yet
-                userCardId=card_text
+                userCardId=card_text,
+                userLevel="ADMIN"
             )
             db.session.add(new_user)
             db.session.commit()
