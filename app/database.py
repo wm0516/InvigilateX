@@ -64,7 +64,6 @@ class User(db.Model):
     userGender                  = Column(Boolean, nullable=False)
     userPassword                = Column(String(255), nullable=False)
     userStatus                  = Column(Integer, default=0, nullable=False)
-    userRegisterDateTime        = Column(DateTime, server_default=func.now(), nullable=False)
     userCumulativeHours         = Column(Float, default=0.0, nullable=False)
     userPendingCumulativeHours  = Column(Float, default=0.0, nullable=False)
     userCardId                  = Column(String(15), nullable=True)
@@ -85,7 +84,6 @@ class User(db.Model):
         userGender BOOLEAN NOT NULL,
         userPassword VARCHAR(255) NOT NULL,
         userStatus INT NOT NULL DEFAULT 0,
-        userRegisterDateTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         userCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         userPendingCumulativeHours FLOAT NOT NULL DEFAULT 0.0,
         userCardId VARCHAR(15) NULL,
@@ -99,20 +97,20 @@ class User(db.Model):
 # ACTION
 # ------------------------------
 class Action(db.Model):
-    __tablename__ = 'Action'
-    actionId = Column(Integer, primary_key=True, autoincrement=True)
-    actionTake = Column(Enum("EDIT","DELETE","ADDED","RECALL","DOWNLOADED","UPLOADED", name="action_enum"), nullable=False)
-    actionTargetType = Column(String(50), nullable=False)
-    actionTargetId = Column(Integer, nullable=False)
-    actionTime = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    actionBy = Column(Integer, ForeignKey('User.userId'), nullable=False)
+    __tablename__       = 'Action'
+    actionId            = Column(Integer, primary_key=True, autoincrement=True)
+    actionTake          = Column(Enum("EDIT","DELETE","ADD","RECALL","DOWNLOAD","UPLOAD","REGISTER","APPROVED","ACCEPT","REJECT", name="action_enum"), nullable=False)
+    actionTargetType    = Column(String(50), nullable=False)
+    actionTargetId      = Column(Integer, nullable=False)
+    actionTime          = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    actionBy            = Column(Integer, ForeignKey('User.userId'), nullable=False)
 
     # Relationship
     user = relationship("User")
     '''
     CREATE TABLE Action (
         actionId INT AUTO_INCREMENT PRIMARY KEY,
-        actionTake ENUM('EDIT', 'DELETE', 'ADDED', 'RECALL', 'DOWNLOADED', 'UPLOADED') NOT NULL,
+        actionTake ENUM('EDIT', 'DELETE', 'ADD', 'RECALL', 'DOWNLOAD', 'UPLOAD', 'REGISTER', 'APPROVED', 'ACCEPT', 'REJECT') NOT NULL,
         actionTargetType VARCHAR(50) NOT NULL,
         actionTargetId INT NOT NULL,
         actionTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
