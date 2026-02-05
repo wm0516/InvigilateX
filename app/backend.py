@@ -45,6 +45,31 @@ def check_contact(contact):
 # Basic User Details Function 5: Record every action taken
 # -------------------------------
 def record_action(action, target, targetId, userId):
+    # Parse user-agent header to detect device and browser
+    user_agent_str = request.headers.get('User-Agent', '')
+    user_agent = parse(user_agent_str)
+
+    # Get device info
+    device = f"{user_agent.device.family} {user_agent.device.model or ''}".strip()
+    # Get browser info
+    browser = f"{user_agent.browser.family} {user_agent.browser.version_string}"
+    # Get IP address (consider reverse proxy headers if needed)
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+
+    new_action = Action(
+        actionTake=action,
+        actionTargetType=target,
+        actionTargetId=targetId,
+        actionBy=userId,
+        actionDevice=device or 'UNKNOWN',
+        actionIp=ip_address or '0.0.0.0',
+        actionBrowser=browser or 'UNKNOWN',
+        actionTime=datetime.now(timezone.utc)
+    )
+
+    # Save to database
+    db.session.add(new_action)
+    db.session.commit()
     return True
 
 
