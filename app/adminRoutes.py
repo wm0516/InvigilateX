@@ -444,7 +444,7 @@ def admin_manageDepartment():
         if form_type == 'manual':
             departmentCode = request.form.get('departmentCode', '').strip().upper()
             departmentName = request.form.get('departmentName', '').strip().upper()
-            
+
             # Check if department code already exists
             if Department.query.filter_by(departmentCode=departmentCode).first():
                 flash("Department code already exists. Please use a unique code.", "error")
@@ -457,7 +457,7 @@ def admin_manageDepartment():
                     )
                 db.session.commit()
                 flash(f"New department [{departmentCode}] added", "success")               
-                record_action(f"ADDING NEW DEPARTMENT-[{departmentCode}]", "DEPARTMENT", user_id, user_id)
+                record_action(f"ADD NEW DEPARTMENT-[{departmentCode}]", "DEPARTMENT", user_id, user_id)
                 return redirect(url_for('admin_manageDepartment'))
 
         # ---------------- Edit Section ----------------
@@ -549,12 +549,11 @@ def admin_manageVenue():
                     db.session.add(Venue(
                         venueNumber=venueNumber,
                         venueLevel=venueLevel,
-                        venueCapacity=capacity,
-                        venueAddedBy=user_id,
-                        venueAddedOn=datetime.now(timezone.utc) + timedelta(hours=8)
+                        venueCapacity=capacity
                     ))
                     db.session.commit()
                     flash("Venue Added", "success")
+                    record_action(f"ADD NEW VENUE-[{venueNumber}]", "VENUE", user_id, user_id)
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
             return redirect(url_for('admin_manageVenue'))
@@ -572,10 +571,9 @@ def admin_manageVenue():
                         raise ValueError
                     venue_select.venueLevel = venueLevel
                     venue_select.venueCapacity = capacity
-                    venue_select.venueAddedBy = user_id
-                    venue_select.venueAddedOn = datetime.now(timezone.utc) + timedelta(hours=8)
                     db.session.commit()
                     flash("Venue Updated", "success")
+                    record_action(f"EDIT VENUE-[{venue_select.venueNumber}]", "VENUE", user_id, user_id)
                 except ValueError:
                     flash("Capacity must be a non-negative integer", "error")
 
@@ -591,6 +589,7 @@ def admin_manageVenue():
                         db.session.delete(venue_select)
                         db.session.commit()
                         flash("Venue deleted successfully", "success")
+                        record_action(f"DELETE VENUE-[{venue_select.venueNumber}]", "VENUE", user_id, user_id)
                 except Exception as e:
                     db.session.rollback()
                     flash(f"Failed to delete venue: {str(e)}", "error")
