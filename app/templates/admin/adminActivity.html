@@ -4,6 +4,37 @@
 <div class="menu-section">
     <h2>Activity</h2>
     <form method="post" style="border-radius: None; border: None; box-shadow: None;">
+    <div class="user-table-container">
+            <table class="user-data-table" id="manageDepartment">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Action</th>
+                        <th>Section</th>
+                        <th>Action Id</th>
+                        <th>Action By</th>
+                        <th>Action Time</th>
+                        <th>IP address</th>
+                        <th>Browser</th>
+                        <th>Device</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in record %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row.actionTake }}</td>
+                        <td>{{ row.actionTargetType }}</td>
+                        <td>{{ row.actionTargetId }}</td>
+                        <td>{{ row.actionBy }}</td> 
+                        <td>{{ row.actionTime }}</td>
+                        <td>{{ row.actionIp }}</td>
+                        <td>{{ row.actionBrowser }}</td>
+                        <td>{{ row.actionDevice }}</td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </form>
 </div>
 {% endblock %}

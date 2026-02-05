@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
     '/admin/manageInvigilationReport': 'admin_manageInvigilationReporttab',
     '/admin/manageDepartment': 'admin_manageDepartmenttab',
     '/admin/manageVenue': 'admin_manageVenuetab',
+    '/admin/activity': 'admin_activitytab',
+    '/admin/profile': 'admin_profiletab',
 
     '/user/home': 'user_hometab',
     '/user/ownTimetable': 'user_ownTimetabletab',
