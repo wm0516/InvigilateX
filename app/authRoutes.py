@@ -64,7 +64,7 @@ def login():
 
         # Successful login — reset counters
         if user:
-            # record_action("LOGIN", "LOGIN", user.userId, user.userId)
+            record_action("LOGIN", "LOGIN", user.userId, user.userId)
             user.failedAttempts = 0
             user.isLocked = False
             db.session.commit()
@@ -136,7 +136,7 @@ def register():
                 userLevel=role_text
             )
             db.session.add(new_user)
-            # record_action("REGISTER AS NEW USER", "REGISTER", id_text, id_text)
+            record_action("REGISTER AS NEW USER", "REGISTER", id_text, id_text)
             db.session.commit()
 
             # Send verification email after saving user
@@ -436,9 +436,9 @@ def user_homepage():
                 return max(start1, start2) < min(end1, end2)
 
             # Candidate exam times
-            candidate_start, candidate_end = exam.examStartTime, exam.examEndTime
-            if candidate_end < candidate_start:
-                candidate_end += timedelta(days=1)
+            # candidate_start, candidate_end = exam.examStartTime, exam.examEndTime
+            # if candidate_end < candidate_start:
+            #     candidate_end += timedelta(days=1)
 
             # Fetch all accepted slots for the user
             existing_slots = (
@@ -459,9 +459,9 @@ def user_homepage():
                 start_dt, end_dt = s_exam.examStartTime, s_exam.examEndTime
                 if end_dt < start_dt:
                     end_dt += timedelta(days=1)
-                if is_overlap(start_dt, end_dt, candidate_start, candidate_end):
-                    conflict = True
-                    break
+                # if is_overlap(start_dt, end_dt, candidate_start, candidate_end):
+                #     conflict = True
+                #     break
 
             if conflict:
                 flash("Cannot accept this slot: timing overlaps with another assigned exam.", "error")
@@ -471,7 +471,7 @@ def user_homepage():
             if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
                 prev_user = User.query.get(open_slot.invigilatorId)
                 if prev_user and exam:
-                    hours_to_remove = (candidate_end - candidate_start).total_seconds() / 3600.0
+                    # hours_to_remove = (candidate_end - candidate_start).total_seconds() / 3600.0
                     prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
 
             # Step 7: Assign slot to current user
@@ -481,7 +481,7 @@ def user_homepage():
             open_slot.timeAction = datetime.now() + timedelta(hours=8)
 
             # Step 8: Add pending hours to current user
-            hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
+            # hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
 
             # Avoid double-counting: check if the user already has a waiting slot for this exam
             existing_waiting = (
@@ -496,9 +496,9 @@ def user_homepage():
                 .first()
             )
             if not existing_waiting:
-                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
+                # chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
             
-            db.session.commit()
+            # db.session.commit()
             flash(f"Open Slot Course Code: {course_code} Accepted Successfully", "success")
             return redirect(url_for('user_homepage'))
     return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
@@ -795,3 +795,4 @@ def update_attendanceStatus():
 
 
 
+    
