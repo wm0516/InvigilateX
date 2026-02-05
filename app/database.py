@@ -130,8 +130,8 @@ class Venue(db.Model):
     venueLevel      = Column(String(10), nullable=False)
     venueCapacity   = Column(Integer, nullable=False)
 
-    # Relationships
-    availabilities  = relationship("VenueExam", back_populates="venue")
+    # Relationship
+    sessions = relationship("VenueSession", back_populates="venue", cascade="all, delete-orphan")
     '''
     CREATE TABLE Venue (
         venueNumber VARCHAR(20) NOT NULL PRIMARY KEY,
@@ -151,9 +151,10 @@ class VenueSession(db.Model):
     endDateTime     = Column(DateTime, nullable=False)
 
     # Relationships
+    venue           = relationship("Venue", back_populates="sessions")
     exams           = relationship("VenueExam", back_populates="session")
     invigilators    = relationship("VenueSessionInvigilator", back_populates="session", cascade="all, delete-orphan")
-    venue           = relationship("Venue")
+
     '''
     CREATE TABLE VenueSession (
         venueSessionId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
