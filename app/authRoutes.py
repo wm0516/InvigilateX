@@ -114,6 +114,12 @@ def register():
         password2_text = request.form.get('password2', '').strip()
 
         is_valid, error_message = check_register(id_text, card_text, email_text, contact_text, password1_text, password2_text)
+        # Convert to boolean
+        # Assuming 0 = Female (False), 1 = Male (True)
+        if gender_text == "0":
+            gender_bool = False
+        else:
+            gender_bool = True
 
         if error_message:
             flash(error_message, 'error')
@@ -126,7 +132,7 @@ def register():
                 userEmail=email_text,
                 userContact=contact_text,
                 userPassword=hashed_pw,
-                userGender=gender_text,
+                userGender=gender_bool,
                 userStatus=0,  # not verified yet
                 userCardId=card_text
             )
