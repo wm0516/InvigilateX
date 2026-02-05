@@ -2281,6 +2281,7 @@ def admin_profile():
 
             db.session.commit()
             flash("Successfully updated", 'success')
+            record_action("UPDATE", "PROFILE", adminId, adminId)
             return redirect(url_for('admin_profile'))
 
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
