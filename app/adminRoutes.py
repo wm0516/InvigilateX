@@ -333,7 +333,7 @@ def admin_manageCourse():
                         # Ensure Exam exists
                         if not course_select.courseExamId:
                             new_exam = Exam(
-                                examNoInvigilator=None
+                                examNoInvigilator=None,
                                 examOutput=None
                             )
                             db.session.add(new_exam)
