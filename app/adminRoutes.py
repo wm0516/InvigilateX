@@ -2303,3 +2303,13 @@ def admin_profile():
     return render_template('admin/adminProfile.html', active_tab='admin_profiletab', admin_data=admin, admin_contact_text=admin_contact_text, 
                            admin_password1_text=admin_password1_text, admin_password2_text=admin_password2_text, admin_cardUID=admin_cardUID)
 
+
+# -------------------------------
+# Function for Admin ViewActivity Route
+# -------------------------------
+@app.route('/admin/activity', methods=['GET', 'POST'])
+@login_required
+def admin_profile():
+    return render_template('admin/adminActivity.html', active_tab='admin_activitytab')
+
+

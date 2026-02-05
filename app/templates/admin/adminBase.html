@@ -58,6 +58,10 @@
                     <i class="fas fa-file-signature"></i>
                     <span>Manage Invigilation Report</span>
                 </a>
+                <a href="{{ url_for('admin_activity') }}" class="tab-link {% if active_tab == 'admin_activitytab' %}active{% endif %}">
+                    <i class="fas fa-id-badge"></i>
+                    <span>Activity</span>
+                </a>
                 <a href="{{ url_for('admin_profile') }}" class="tab-link {% if active_tab == 'admin_profiletab' %}active{% endif %}">
                     <i class="fas fa-id-badge"></i>
                     <span>Profile</span>
