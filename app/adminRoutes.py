@@ -1993,7 +1993,6 @@ def get_all_attendances():
         .join(Exam, InvigilationReport.examId == Exam.examId)
         .order_by(
             Exam.examStatus.desc(), 
-            Exam.examStartTime.desc(), 
             InvigilatorAttendance.invigilationStatus.desc(),
             InvigilatorAttendance.rejectReason.is_(None).desc())
         .all()
