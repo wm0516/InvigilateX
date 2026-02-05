@@ -497,7 +497,7 @@ def user_homepage():
                 )
                 .first()
             )
-            if not existing_waiting:
+            # if not existing_waiting:
                 # chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
             
             # db.session.commit()
