@@ -785,7 +785,7 @@ def update_attendanceStatus():
 
     db.session.commit()
 
-
+'''
 def update_exam_status():
     # Auto-expire exams
     now = datetime.now() + timedelta(hours=8)
@@ -793,6 +793,7 @@ def update_exam_status():
     for exam in expired_exams:
         exam.examStatus = False
     db.session.commit()
+'''
 
 
 
