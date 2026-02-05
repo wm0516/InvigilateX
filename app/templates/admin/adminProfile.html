@@ -18,7 +18,7 @@
 
             <div class="form-profile">
                 <label>Gender</label>
-                <input  value="{{ admin_data.userGender }}" readonly><br>
+                <input value="{{ admin_data.userGender ? 'Male' : 'Female' }}" readonly><br>
 
                 <label>Role Based</label>
                 <input value="ADMIN" readonly><br>
