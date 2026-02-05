@@ -543,7 +543,6 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
         userContact=contact,
         userGender=gender,
         userPassword=hashed_pw,
-        userRegisterDateTime=datetime.now(timezone.utc),
         userCardId=cardId
     )
 
