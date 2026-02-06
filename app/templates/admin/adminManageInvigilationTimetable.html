@@ -41,22 +41,43 @@
     </div>
     
     <div class="calendar-container">
+        {# First, loop over venues #}
         {% for venue, exams in venue_data.items() %}
-        <div class="venue-block">
-            <h3>Venue: {{ venue }} | Total Exams: {{ exams|length }}</h3>
-            <div class="exam-grid">
-                {% for exam in exams %}
-                <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-                    <strong>{{ exam.course_code }} – {{ exam.course_name }}</strong><br>
-                    Time: {{ exam.start_time.strftime("%d %b %Y %H:%M") }} - {{ exam.end_time.strftime("%d %b %Y %H:%M") }}<br>
-                    Students: {{ exam.students }}<br>
-                    {% if exam.is_overnight %}
-                        <span style="color: #b400b4;">Overnight Exam</span>
-                    {% endif %}
+            {# Group exams by date #}
+            {% set exams_by_date = {} %}
+            {% for exam in exams %}
+                {% set exam_date = exam.start_time.strftime("%d %b %Y") %}
+                {% if exam_date not in exams_by_date %}
+                    {% set _ = exams_by_date.update({exam_date: []}) %}
+                {% endif %}
+                {% set _ = exams_by_date[exam_date].append(exam) %}
+            {% endfor %}
+
+            {# Now loop over each date for this venue #}
+            {% for date, day_exams in exams_by_date.items() %}
+                <div class="venue-block" style="margin-bottom: 20px; padding: 10px; border: 1px solid #aaa; border-radius: 8px;">
+                    <h3>
+                        Date: {{ date }} | Total Exams: {{ day_exams|length }}<br>
+                        Venue: {{ venue }}
+                    </h3>
+
+                    <div class="exam-grid">
+                        {% set total_students = 0 %}
+                        {% for exam in day_exams %}
+                            <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                                <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }}</strong><br>
+                                Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}<br>
+                                Students: {{ exam.students }}<br>
+                                {% if exam.is_overnight %}
+                                    <span style="color: #b400b4;">Overnight Exam</span><br>
+                                {% endif %}
+                            </div>
+                            {% set total_students = total_students + exam.students %}
+                        {% endfor %}
+                        <strong>Total Students: {{ total_students }}</strong>
+                    </div>
                 </div>
-                {% endfor %}
-            </div>
-        </div>
+            {% endfor %}
         {% endfor %}
     </div>
 </div>
