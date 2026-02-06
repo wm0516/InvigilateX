@@ -468,6 +468,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             ))
 
     db.session.commit()
+    record_action("UPLOAD NEW EXAM", "EXAM", exam.examId, user)
     return True, f"Exam scheduled successfully for {courseSection}"
 
 # -------------------------------
