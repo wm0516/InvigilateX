@@ -265,9 +265,7 @@
 
 {% block extra_scripts %}
 <script>
-// =====================================================
 // VENUE OPTIONS CACHE
-// =====================================================
 let venueOptionsHTML = "";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -279,9 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// =====================================================
 // EDIT FORM HELPERS
-// =====================================================
 function clearEditFields() {
     ["editProgramCode", "editStudent", "editStartDateTime", "editEndDateTime", "examTimeCreate", "examTimeExpire"]
         .forEach(id => {
@@ -359,9 +355,7 @@ function populateEditForm(data) {
 }
 
 
-// =====================================================
 // LOAD EXAM INTO EDIT FORM
-// =====================================================
 document.addEventListener("DOMContentLoaded", () => {
     const select = document.getElementById("editExamCourseSection");
     if (!select) return;
@@ -377,9 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// =====================================================
 // DATETIME-LOCAL RESTRICTIONS (UPLOAD + EDIT)
-// =====================================================
 document.addEventListener("DOMContentLoaded", () => {
     function nowLocal() {
         const n = new Date();
@@ -432,9 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 });
 
-// =====================================================
 // UPLOAD FORM FINAL VALIDATION
-// =====================================================
 document.getElementById("uploadForm")?.addEventListener("submit", e => {
     const share = document.querySelector("input[name='time_slot_share']").value;
     const open  = document.querySelector("input[name='time_slot_open']").value;
@@ -445,9 +435,7 @@ document.getElementById("uploadForm")?.addEventListener("submit", e => {
     }
 });
 
-// -------------------------
 // PDF Export
-// -------------------------
 document.addEventListener("DOMContentLoaded", function () {
     const generateBtn = document.getElementById("generatePDF");
     if (!generateBtn) return;

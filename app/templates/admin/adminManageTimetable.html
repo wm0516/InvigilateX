@@ -210,26 +210,25 @@
                             <td>
                                 {% set ns = namespace(displayed=[]) %}
                                 {% for row in timetable_data %}
+                                <div class="timetable-block" data-intake="{{ row.courseIntake }}">
                                     {% if (not selected_lecturer or row.lecturerName == selected_lecturer) %}
-                                        {% set class_day = row.classDay %}
-                                        {% set start_time = row.classTime.split('-')[0] %}
-                                        {% set end_time = row.classTime.split('-')[1] %}
-                                        {% if class_day == day and time >= start_time and time < end_time %}
-                                            {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                            {% if key not in ns.displayed %}
-                                                {% set ns.displayed = ns.displayed + [key] %}
-                                                <div class="timetable-block"
-                                                    data-intake="{{ row.courseIntake }}"
-                                                    style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
-
-                                                    <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
-                                                    <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
-                                                    <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
-                                                    <strong>Room:</strong> <i>{{ row.classRoom }}</i>
-                                                </div>
+                                            {% set class_day = row.classDay %}
+                                            {% set start_time = row.classTime.split('-')[0] %}
+                                            {% set end_time = row.classTime.split('-')[1] %}
+                                            {% if class_day == day and time >= start_time and time < end_time %}
+                                                {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                                {% if key not in ns.displayed %}
+                                                    {% set ns.displayed = ns.displayed + [key] %}
+                                                    <div>
+                                                        <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
+                                                        <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
+                                                        <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
+                                                        <strong>Room:</strong> <i>{{ row.classRoom }}</i>
+                                                    </div>
+                                                {% endif %}
                                             {% endif %}
                                         {% endif %}
-                                    {% endif %}
+                                </div>
                                 {% endfor %}
                             </td>
                         {% endfor %}
@@ -384,7 +383,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function getAdjacent(dir) {
         let i = order.indexOf(state.intake) + dir;
         let y = state.year;
-
         if (i < 0) { i = order.length - 1; y--; }
         if (i >= order.length) { i = 0; y++; }
 
@@ -402,10 +400,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("nextLabel").textContent = next.intake + next.year;
 
         let visibleCount = 0;
-
         blocks.forEach(block => {
-            const intake = block.dataset.intake || "";
+            const intake = block.dataset.intake;
             const match = intake === key;
+
             block.style.display = match ? "" : "none";
             if (match) visibleCount++;
         });
@@ -425,8 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
         state = getAdjacent(1);
         render();
     };
-
-    render(); // initial
+    render(); // initial render
 });
 
 document.addEventListener("DOMContentLoaded", () => {
