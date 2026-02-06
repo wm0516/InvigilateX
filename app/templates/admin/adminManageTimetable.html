@@ -429,29 +429,28 @@ function updateTimetableDashboardFromTable() {
     const table = document.getElementById("manageTimetable");
     if (!table) return;
 
-    const visibleRows = [...table.querySelectorAll("tbody tr")].filter(tr => tr.style.display !== "none");
     const timetableSet = new Set();
     const unassignedSet = new Set();
 
-    visibleRows.forEach(row => {
-        const divs = [...row.querySelectorAll("div[data-intake]")].filter(div => div.style.display !== "none");
-        divs.forEach(div => {
-            // Build unique key for this timetable set
-            const key = [div.dataset.intake, div.dataset.lecturer || "", div.innerText.trim()].join("|");
-            timetableSet.add(key);
+    table.querySelectorAll("div[data-intake]").forEach(div => {
+        if (div.style.display === "none") return;
 
-            // Check if this timetable has linked staff
-            // Assuming you mark linked staff in dataset, e.g., div.dataset.linkedUser or div.dataset.staff
-            const hasStaff = div.dataset.staff || div.dataset.userId; // adapt based on your HTML
-            if (!hasStaff) {
-                unassignedSet.add(key);
-            }
-        });
+        const lecturer = div.dataset.lecturer || "";
+        const intake = div.dataset.intake;
+        const key = lecturer + "|" + intake;
+
+        timetableSet.add(key);
+
+        const hasStaff = div.dataset.staff;
+        if (!hasStaff) {
+            unassignedSet.add(lecturer); // group by lecturer
+        }
     });
 
     document.getElementById("total_timetable").textContent = timetableSet.size;
     document.getElementById("total_havent_assign").textContent = unassignedSet.size;
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {
