@@ -109,7 +109,7 @@
         <label>Change Using InvigilatorAttendance, Use VenueExam Table</label>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
-                <input type="text" id="searchInput" name="search_reports" placeholder="Search..." value="{{ search_reports }}" style="border-radius: 6px; width: 100%;">
+                <input type="text" id="searchInput" name="search_report" placeholder="Search..." value="{{ search_report }}" style="border-radius: 6px; width: 100%;">
                 <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
             </div>
             <div class="button-wrapper">
@@ -120,105 +120,145 @@
     <div id="noResults" style="display: none; text-align: center; font-weight: bold; color: #b00;">No results found.</div>
     
     <div class="user-table-container">
-<div class="user-table-container">
-    <table class="user-data-table" id="manageInvigilationReport">
-        <thead>
-            <tr>
-                <th>Venue</th>
-                <th>Session Time</th>
-                <th>Exam(s)</th>
-                <th>Invigilator(s)</th>
-                <th>Attendance</th>
-            </tr>
-        </thead>
+        <table class="user-data-table" id="manageInvigilationReport">
+            <thead>
+                <tr>
+                    <th>Exam ID</th>
+                    <th>Exam Details</th>
+                    <th>Invigilators</th>
+                    <th>Invigilator Details</th>
+                    <th>Invigilation Status</th>                      
+                     <th>Attendance Status</th>
+                     <th>Check-in/out Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
 
-        <tbody>
-        {% if venue_sessions and venue_sessions|length > 0 %}
-            {% for vs in venue_sessions %}
-            <tr>
-                <!-- ================= Venue ================= -->
-                <td>
-                    <strong>{{ vs.venue.venueNumber }}</strong><br>
-                    Capacity: {{ vs.venue.venueCapacity }}
-                </td>
+            {% for session_id, session_group in attendances|groupby("venueSessionId") %}
+                {% set session_starts = grouped|map(attribute='session.startDateTime')|select('defined')|list %}
+                {% set session_ends = grouped|map(attribute='session.endDateTime')|select('defined')|list %}
+                {% set report_start = session_starts|min if session_starts else None %}
+                {% set report_end = session_ends|max if session_ends else None %}
 
-                <!-- ================= Session ================= -->
-                <td>
-                    {{ vs.session.startDateTime.strftime("%d %b %Y %H:%M") }}<br>
-                    →
-                    {{ vs.session.endDateTime.strftime("%d %b %Y %H:%M") }}
-                </td>
+                <tbody data-exam="{{ grouped[0].report.exam.examId }}"
+                    data-exam-start="{{ report_start.isoformat() if report_start else '' }}"
+                    data-exam-end="{{ report_end.isoformat() if report_end else '' }}">
+                    
+                    {% set total_rows = grouped|length %}
+                    {% for i in range(total_rows) %}
+                    <tr data-exam="{{ grouped[0].report.exam.examId }}"
+                        class="{% if not grouped[0].report.exam.examStatus %}inactive-row-show{% elif report_start is none %}error-row-show{% endif %}">
+                        
+                        {% if i == 0 %}
+                        <!-- Exam ID -->
+                        <td rowspan="{{ total_rows }}" style="text-align:center;">
+                            [{{ grouped[0].report.exam.examId }}]
+                        </td>
 
-                <!-- ================= Exams ================= -->
-                <td>
-                    {% if vs.exams %}
-                        {% for e in vs.exams %}
-                            <div style="margin-bottom:4px;">
-                                <strong>[{{ e.courseCode }}]</strong><br>
-                                {{ e.courseName }}
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <span style="color:#888;">No exam assigned</span>
-                    {% endif %}
-                </td>
-
-                <!-- ================= Invigilators ================= -->
-                <td>
-                    {% if vs.invigilators %}
-                        {% for att in vs.invigilators %}
+                        <!-- Exam Details -->
+                        <td rowspan="{{ total_rows }}">
                             <div class="info-grid">
-                                <div>Name</div>
-                                <div>: {{ att.invigilator.userName }}</div>
+                                <div>Course Name</div><div><strong>: {{ grouped[0].report.exam.course.courseName }}</strong></div>
+                                <div>Course Code</div><div><strong>: {{ grouped[0].report.exam.course.courseCodeSectionIntake }}</strong></div>
+                                <div>Number of Students</div><div><strong>: {{ grouped[0].report.exam.examTotalStudents }}</strong></div>
+                                <div>Program Code</div><div><strong>: {{ grouped[0].report.exam.course.courseDepartment }}</strong></div>
 
-                                <div>Contact</div>
-                                <div>: {{ att.invigilator.userContact }}</div>
+                                {% if report_start and report_end %}
+                                    <div>Exam Date</div><div><strong>: {{ report_start.strftime("%d/%b/%Y") }} - {{ report_end.strftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Exam Day</div><div><strong>: {{ report_start.strftime("%A") }} - {{ report_end.strftime("%A") }}</strong></div>
+                                    <div>Exam Time</div><div><strong>: {{ report_start.strftime("%H:%M") }} - {{ report_end.strftime("%H:%M") }}</strong></div>
+                                    <div>Exam Period</div>
+                                    <div><strong>: {{ ((report_end - report_start).seconds // 3600) }}h {{ ((report_end - report_start).seconds % 3600) // 60 }}m</strong></div>
+                                {% else %}
+                                    <div>Exam Time</div><div><strong>: N/A</strong></div>
+                                {% endif %}
+
+                                <div>Exam Venue(s)</div>
+                                <div>
+                                    {% if grouped[0].report.exam.venue_availabilities %}
+                                        {% for va in grouped[0].report.exam.venue_availabilities %}
+                                            <strong>: {{ va.venueNumber }}</strong><br>
+                                        {% endfor %}
+                                    {% else %}
+                                        <strong>: None</strong>
+                                    {% endif %}
+                                </div>
                             </div>
-                            {% if not loop.last %}
-                                <hr>
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                        <span style="color:red;">No invigilator assigned</span>
-                    {% endif %}
-                </td>
+                        </td>
 
-                <!-- ================= Attendance ================= -->
-                <td>
-                    {% if vs.invigilators %}
-                        {% for att in vs.invigilators %}
-                            <div style="margin-bottom:6px;">
-                                <span class="status
-                                    {{ 'frame-completed'
-                                        if att.remark in ['CHECK IN','COMPLETED']
-                                        else 'frame-expired' }}">
-                                    {{ att.remark }}
-                                </span><br>
+                        <!-- Invigilators count -->
+                        <td rowspan="{{ total_rows }}">[{{ grouped[0].report.exam.examNoInvigilator }}]</td>
+                        {% endif %}
 
-                                In:
-                                {{ att.checkIn.strftime("%H:%M") if att.checkIn else "-" }}
-                                |
-                                Out:
-                                {{ att.checkOut.strftime("%H:%M") if att.checkOut else "-" }}
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <span style="color:#aaa;">—</span>
-                    {% endif %}
-                </td>
-            </tr>
+                        {% if i < grouped|length %}
+                            {% set att = grouped[i] %}
+                            <!-- Invigilator Details -->
+                            <td>
+                                <div class="info-grid">
+                                    <div>ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                    <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                    <div>Contact</div><div><strong>: {{ att.invigilator.userContact }}</strong></div>
+                                    <div>Gender</div><div><strong>: {{ att.invigilator.userGender }}</strong></div>
+                                    <div>Venue</div><div><strong>: {{ att.venueNumber }}</strong></div>
+                                </div>
+                            </td>
+
+                            <!-- Invigilation Status -->
+                            <td>
+                                {% if att.invigilationStatus %}
+                                    <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                                    <div style="max-width: 200px;"><strong>TimeAction: </strong>{{ att.timeAction }}</div>
+                                {% elif not att.invigilationStatus and att.rejectReason %}
+                                    <span class="status frame-expired invigilation-status">REJECTED</span>
+                                    <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
+                                    <div style="max-width: 200px;"><strong>TimeAction: </strong>{{ att.timeAction }}</div>
+                                {% else %}
+                                    <span class="status frame-pending invigilation-status">PENDING</span>
+                                {% endif %}
+                            </td>   
+
+                            <!-- Attendance Status -->
+                            <td>
+                                {% set remark_classes = {
+                                    "PENDING": "frame-pending",
+                                    "CHECK IN": "frame-completed",
+                                    "COMPLETED": "frame-completed",
+                                    "CHECK IN LATE": "frame-expired",
+                                    "CHECK OUT EARLY": "frame-expired",
+                                    "EXPIRED": "frame-expired"
+                                } %}
+                                <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
+                            </td>
+
+                            <!-- Check-in/out Time -->
+                            <td>
+                                <div class="info-grid">
+                                    <div>Check-in Time</div><div><strong>: <span class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</span></strong></div>
+                                    <div>Check-out Time</div><div><strong>: <span class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</span></strong></div>
+                                </div>
+                                {% if att.checkIn and att.checkOut and att.session %}
+                                    {% set exam_start = att.session.startDateTime %}
+                                    {% set exam_end = att.session.endDateTime %}
+                                    {% set check_in = att.checkIn %}
+                                    {% set check_out = att.checkOut %}
+                                    {% set actual_start = [check_in, exam_start] | max %}
+                                    {% set actual_end = [check_out, exam_end] | min %}
+                                    {% set total_seconds = (actual_end - actual_start).total_seconds() %}
+                                    {% if total_seconds < 0 %}{% set total_seconds = 0 %}{% endif %}
+                                    <div style="color: green;">Total Invigilation Time: {{ (total_seconds / 3600)|hours_format }}</div>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
+                        {% else %}
+                            <td colspan="5" style="text-align:center; color:gray;">No invigilator assigned</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+            </tbody>
             {% endfor %}
-        {% else %}
-            <tr>
-                <td colspan="5" style="text-align:center; color:#b00; font-weight:bold;">
-                    No invigilation sessions found.
-                </td>
-            </tr>
-        {% endif %}
-        </tbody>
-    </table>
-</div>
-
+        </table>
     </div>
 </div>
 {% endblock %}

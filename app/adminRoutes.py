@@ -2122,131 +2122,38 @@ def get_valid_invigilators():
     return jsonify([{"userId": u.userId, "userName": u.userName} for u in valid])
 
 
-def get_venue_session_report_data():
-    sessions = (
-        VenueSession.query
-        .join(Venue)
-        .outerjoin(VenueExam)
-        .outerjoin(Exam)
-        .outerjoin(Course)
-        .outerjoin(
-            InvigilatorAttendance,
-            InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId
-        )
-        .outerjoin(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .order_by(VenueSession.startDateTime, Venue.venueNumber)
-        .all()
-    )
-
-    session_map = {}
-
-    for s in sessions:
-        if s.venueSessionId not in session_map:
-            session_map[s.venueSessionId] = {
-                "session": s,
-                "venue": s.venue,
-                "exams": [],
-                "invigilators": []
-            }
-
-        # Exams (via VenueExam)
-        for ve in s.exams:
-            exam = ve.exam
-            course = exam.course if exam else None
-            if course:
-                entry = {
-                    "examId": exam.examId,
-                    "courseCode": course.courseCodeSectionIntake,
-                    "courseName": course.courseName
-                }
-                if entry not in session_map[s.venueSessionId]["exams"]:
-                    session_map[s.venueSessionId]["exams"].append(entry)
-
-        # Invigilators (via Attendance)
-        attendances = InvigilatorAttendance.query.filter_by(
-            venueSessionId=s.venueSessionId
-        ).all()
-
-        for att in attendances:
-            session_map[s.venueSessionId]["invigilators"].append(att)
-
-    return list(session_map.values())
-
-@app.route('/admin/updateAttendanceTime', methods=['POST'])
-@login_required
-def update_attendance_time():
-    data = request.get_json()
-    att = InvigilatorAttendance.query.get(data['attendance_id'])
-
-    if not att or not att.session:
-        return jsonify(success=False, message="Attendance not found")
-
-    check_in = data.get('check_in')
-    check_out = data.get('check_out')
-    inv_status = data.get('invigilation_status')
-
-    att.checkIn = datetime.fromisoformat(check_in) if check_in else None
-    att.checkOut = datetime.fromisoformat(check_out) if check_out else None
-    att.invigilationStatus = inv_status
-
-    # Recalculate remark
-    if att.checkIn and not att.checkOut:
-        att.remark = "CHECK IN"
-    elif att.checkIn and att.checkOut:
-        if att.checkIn > att.session.startDateTime:
-            att.remark = "CHECK IN LATE"
-        elif att.checkOut < att.session.endDateTime:
-            att.remark = "CHECK OUT EARLY"
-        else:
-            att.remark = "COMPLETED"
-    else:
-        att.remark = "PENDING"
-
-    db.session.commit()
-
-    return jsonify(
-        success=True,
-        message="Attendance updated",
-        check_in=att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None",
-        check_out=att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None",
-        remark=att.remark,
-        invigilation_status=att.invigilationStatus
-    )
-
-
-@app.route('/admin/deleteAttendance', methods=['POST'])
-@login_required
-def delete_attendance():
-    att_id = request.form.get('attendanceId')
-    att = InvigilatorAttendance.query.get(att_id)
-
-    if not att:
-        flash("Attendance not found", "error")
-        return redirect(url_for('admin_manageInvigilationReport'))
-
-    att.remark = "EXPIRED"
-    att.invigilationStatus = False
-    db.session.commit()
-
-    flash("Attendance expired.", "success")
-    return redirect(url_for('admin_manageInvigilationReport'))
-
-
-
 # -------------------------------
+# Admin: Manage Invigilation Report
+# -------------------------------
+@# -------------------------------
 # Admin: Manage Invigilation Report (VenueSession view)
 # -------------------------------
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
+    # Fetch all attendance entries with session, report, exam, and invigilator
+    attendances = (
+        InvigilatorAttendance.query
+        .join(VenueSession, InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId)
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
+        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(Venue)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .order_by(VenueSession.startDateTime, Venue.venueNumber, Exam.examId)
+        .all()
+    )
 
-    # -------------------------
-    # POST HANDLING
-    # -------------------------
+    # Stats (same as before)
+    stats = calculate_invigilation_stats()
+
+    # Attach grouping key for Jinja2
+    for att in attendances:
+        session = att.session
+        att.group_key = session.venueSessionId if session else None
+
+    # Handle POST (upload or edit)
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-
-        # ===== Upload Excel =====
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2256,61 +2163,67 @@ def admin_manageInvigilationReport():
                 usecols="A:E",
                 skiprows=0
             )
-
-        # ===== Edit Invigilator Assignment =====
-        if form_type == 'edit':
+        elif form_type == 'edit':
+            # Same as previous code for editing assignments
             report_id = request.form.get('reportId')
             report = InvigilationReport.query.get(report_id)
-
             if not report:
-                flash("Report not found", "error")
+                flash("Report not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
 
-            used_invigilators = set()
-
+            # Track assigned invigilators
+            selected_invigilators = []
             for key, value in request.form.items():
-                if not key.startswith("slot_"):
-                    continue
+                if key.startswith("slot_"):
+                    invigilator_id = int(value)
+                    if invigilator_id in selected_invigilators:
+                        flash("Invigilator assigned multiple times in same report.", "error")
+                        return redirect(url_for('admin_manageInvigilationReport'))
+                    selected_invigilators.append(invigilator_id)
 
-                attendance_id = int(key.replace("slot_", ""))
-                new_invigilator_id = int(value)
+                    # 30-minute gap check
+                    att_id = key.replace("slot_", "")
+                    att = InvigilatorAttendance.query.get(att_id)
+                    if not att.session:
+                        continue
+                    session_start = att.session.startDateTime
+                    session_end = att.session.endDateTime
 
-                if new_invigilator_id in used_invigilators:
-                    flash("Same invigilator assigned multiple times.", "error")
-                    return redirect(url_for('admin_manageInvigilationReport'))
+                    invig_attendances = InvigilatorAttendance.query.filter_by(invigilatorId=invigilator_id).all()
+                    for ia in invig_attendances:
+                        if ia.attendanceId == att.attendanceId or not ia.session:
+                            continue
+                        gap_start = ia.session.startDateTime - timedelta(minutes=30)
+                        gap_end = ia.session.endDateTime + timedelta(minutes=30)
+                        if session_start < gap_end and session_end > gap_start:
+                            flash(f"Invigilator {ia.invigilator.userName} does not have enough gap between sessions.", "error")
+                            return redirect(url_for('admin_manageInvigilationReport'))
 
-                used_invigilators.add(new_invigilator_id)
+            # Update assignments (same logic as before)
+            for key, value in request.form.items():
+                if key.startswith("slot_"):
+                    attendance_id = key.replace("slot_", "")
+                    new_invigilator_id = int(value)
+                    att = InvigilatorAttendance.query.get(attendance_id)
+                    if not att:
+                        continue
+                    old_invigilator = User.query.get(att.invigilatorId)
+                    new_invigilator = User.query.get(new_invigilator_id)
+                    session = att.session
+                    session_duration = ((session.endDateTime - session.startDateTime).total_seconds()) / 3600 if session else 0
 
-                att = InvigilatorAttendance.query.get(attendance_id)
-                if not att or not att.session:
-                    continue
-
-                old_inv = User.query.get(att.invigilatorId)
-                new_inv = User.query.get(new_invigilator_id)
-
-                session_hours = (
-                    (att.session.endDateTime - att.session.startDateTime)
-                    .total_seconds() / 3600
-                )
-
-                if old_inv.userId != new_inv.userId:
-                    old_inv.userPendingCumulativeHours -= session_hours
-                    new_inv.userPendingCumulativeHours += session_hours
-                    att.invigilatorId = new_invigilator_id
-
+                    if old_invigilator.userId != new_invigilator.userId:
+                        old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - session_duration)
+                        new_invigilator.userPendingCumulativeHours += session_duration
+                        att.invigilatorId = new_invigilator_id
             db.session.commit()
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
 
-    # -------------------------
-    # GET (DISPLAY PAGE)
-    # -------------------------
-    venue_sessions = get_venue_session_report_data()
-    stats = calculate_invigilation_stats()
-
     return render_template(
-        "admin/adminManageInvigilationReport.html",
-        venue_sessions=venue_sessions,
+        'admin/adminManageInvigilationReport.html',
+        active_tab='admin_manageInvigilationReporttab',
+        attendances=attendances,
         **stats
     )
 
