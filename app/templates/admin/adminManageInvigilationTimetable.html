@@ -50,13 +50,20 @@
                 {% endif %}
             {% endfor %}
         {% endfor %}
-        
+
         {% for date in all_dates %}
             <div class="date-block calendar-day">
                 <h2 class="calendar-date" data-date="{{ date }}">Date: {{ date }}</h2>
                 {% set grand_total_students = 0 %}
+
                 {% for venue, venue_exams in venue_data.items() %}
-                    {% set day_exams = venue_exams | selectattr("start_time.strftime('%d %b %Y')", "equalto", date) | list%}
+                    {% set day_exams = [] %}
+                    {% for exam in venue_exams %}
+                        {% if exam.start_time.strftime('%d %b %Y') == date %}
+                            {% set day_exams = day_exams + [exam] %}
+                        {% endif %}
+                    {% endfor %}
+
                     {% if day_exams %}
                         {% set venue_start = day_exams | map(attribute='start_time') | min %}
                         {% set venue_end   = day_exams | map(attribute='end_time') | max %}
@@ -64,13 +71,12 @@
 
                         <div class="venue-block exam-grid">
                             <h3>Venue: {{ venue }} | {{ venue_start.strftime('%H:%M') }} – {{ venue_end.strftime('%H:%M') }}</h3>
+                            
                             {% for exam in day_exams %}
                                 <div class="exam-card">
                                     <p><strong>{{ exam.course_code }} – {{ exam.course_name }} [Students: {{ exam.students }}]</strong>
                                         {% if exam.is_overnight %}
-                                            <span style="color:#b400b4;">
-                                                (Overnight Exam)
-                                            </span>
+                                            <span style="color:#b400b4;">(Overnight Exam)</span>
                                         {% endif %}
                                     </p>
                                 </div>
@@ -84,6 +90,7 @@
             </div>
         {% endfor %}
     </div>
+
 </div>
 {% endblock %}
 

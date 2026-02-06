@@ -1887,33 +1887,21 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_venue_calendar_data():
-    venue_exams = (
-        VenueExam.query
-        .join(Exam, VenueExam.exam)
-        .join(Course, Exam.course)
-        .join(VenueSession, VenueExam.session)
-        .filter(Exam.examStatus == True)
-        .all()
-    )
-
+    venue_exams = VenueExam.query.join(Exam).join(Course).join(VenueSession).filter(Exam.examStatus == True).all()
     venue_data = defaultdict(list)
 
     for ve in venue_exams:
-        exam = ve.exam
-        session = ve.session
-        course = exam.course
-
-        venue_data[session.venueNumber].append({
-            "exam_id": exam.examId,
-            "course_code": course.courseCodeSectionIntake,
-            "course_name": course.courseName,
-            "start_time": session.startDateTime,
-            "end_time": session.endDateTime,
-            "date_str": session.startDateTime.strftime('%d %b %Y'),
+        venue_data[ve.session.venueNumber].append({
+            "exam_id": ve.exam.examId,
+            "course_code": ve.exam.course.courseCodeSectionIntake,
+            "course_name": ve.exam.course.courseName,
+            "start_time": ve.session.startDateTime,
+            "end_time": ve.session.endDateTime,
             "students": ve.studentCount,
-            "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
+            "is_overnight": ve.session.startDateTime.date() != ve.session.endDateTime.date(),
         })
 
+    # Sort exams by start_time
     for venue in venue_data:
         venue_data[venue].sort(key=lambda x: x["start_time"])
 
