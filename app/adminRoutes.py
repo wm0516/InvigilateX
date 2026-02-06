@@ -1307,13 +1307,13 @@ def admin_manageStaff():
             return redirect(url_for('admin_manageStaff'))
 
         elif form_type == 'manual':
-            role_text = request.form.get('role', '0')
+            role_text = request.form['role']
             form_data = {
                 "userId": user_id,
                 "id": request.form.get('userid', '').strip(),
                 "department": request.form.get('department', '').strip(),
                 "name": request.form.get('username', '').strip(),
-                "role": int(role_text),
+                "role": role_text,
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
