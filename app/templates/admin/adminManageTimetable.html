@@ -20,7 +20,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Lecturers without Assigned Timetable</h3>
-                    <p class="dashboard-text" id="total_havent_assign" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
+                    <p class="dashboard-text" id="total_havent_assign" style="color:#e63e3e">{{ total_unassigned }}</p>
                 </div>
             </div>
         </div>
@@ -226,7 +226,6 @@
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
                                                     <strong>Room:</strong> <i>{{ row.classRoom }}</i>
                                                 </div>
-
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}
@@ -407,8 +406,8 @@ function initTimetableIntakeSwipe({containerId, noResultsId = null, dashboardUpd
 
         const p = adjacent(-1);
         const n = adjacent(1);
-        $("prevLabel").textContent = p.intake + p.year;
-        $("nextLabel").textContent = n.intake + n.year;
+        $("prevLabel")?.textContent = p.intake + p.year;
+        $("nextLabel")?.textContent = n.intake + n.year;
 
         let visible = 0;
         blocks.forEach(b => {
@@ -420,31 +419,29 @@ function initTimetableIntakeSwipe({containerId, noResultsId = null, dashboardUpd
         if (noResultsId) {
             $(noResultsId).style.display = visible ? "none" : "block";
         }
+
+        // Update dashboard counts per current intake
         dashboardUpdater?.();
     }
-    $("prevIntake").onclick = () => shift(-1);
-    $("nextIntake").onclick = () => shift(1);
-
-    render();
 }
 
 function updateTimetableDashboardFromTable() {
     const table = document.getElementById("manageTimetable");
     if (!table) return;
 
-    const timetableSet = new Set();     // all lecturer + intake combos
-    const unassignedSet = new Set();    // combos without staff
+    const timetableSet = new Set();     // lecturer + intake combos linked to staff
+    const unassignedSet = new Set();    // lecturer + intake combos without staff
 
     table.querySelectorAll("div[data-intake]").forEach(div => {
-        if (div.style.display === "none") return; // skip hidden rows
+        if (div.style.display === "none") return; // only visible intake
 
         const lecturer = div.dataset.lecturer;
         const intake = div.dataset.intake;
         const key = lecturer + "|" + intake;
 
-        timetableSet.add(key);
-
-        if (!div.dataset.timetable) {  // no linked staff
+        if (div.dataset.timetable) {
+            timetableSet.add(key);
+        } else {
             unassignedSet.add(key);
         }
     });
