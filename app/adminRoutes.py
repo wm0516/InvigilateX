@@ -1887,21 +1887,16 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_venue_calendar_data():
-    venue_exams = (
-        VenueExam.query
-        .join(VenueExam.exam)
-        .join(VenueExam.session)
-        .filter(Exam.examStatus == True)
-        .all()
-    )
-
+    venue_exams = VenueExam.query.join(Exam).join(VenueSession).join(Course).all()
     venue_data = defaultdict(list)
+
     for ve in venue_exams:
-        course = ve.exam.course
+        exam = ve.exam
         session = ve.session
+        course = exam.course
 
         venue_data[session.venueNumber].append({
-            "exam_id": ve.exam.examId,
+            "exam_id": exam.examId,
             "course_code": course.courseCodeSectionIntake,
             "course_name": course.courseName,
             "start_time": session.startDateTime,
@@ -1910,7 +1905,7 @@ def get_venue_calendar_data():
             "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
         })
 
-    # sort exams per venue
+    # Optional: sort exams for each venue by start time
     for venue in venue_data:
         venue_data[venue].sort(key=lambda x: x["start_time"])
 
@@ -1924,15 +1919,7 @@ def get_venue_calendar_data():
 @login_required
 def admin_manageInvigilationTimetable():
     venue_data = get_venue_calendar_data()
-
-    # collect all unique exam dates
-    all_dates = sorted({
-        exam["start_time"].strftime('%d %b %Y')
-        for exams in venue_data.values()
-        for exam in exams
-    })
-
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data, all_dates=all_dates)
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data)
 
 
 # -------------------------------
