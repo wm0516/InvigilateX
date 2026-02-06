@@ -20,7 +20,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Lecturers without Assigned Timetable</h3>
-                    <p class="dashboard-text" id="total_havent_assign" style="color:#e63e3e">{{ total_unassigned }}</p>
+                    <p class="dashboard-text" id="total_havent_assign" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
                 </div>
             </div>
         </div>
@@ -218,8 +218,7 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div data-intake="{{ row.courseIntake }}"
-                                                    data-lecturer="{{ row.lecturerName }}">
+                                                <div data-intake="{{ row.courseIntake }}">
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
@@ -405,8 +404,8 @@ function initTimetableIntakeSwipe({containerId, noResultsId = null, dashboardUpd
 
         const p = adjacent(-1);
         const n = adjacent(1);
-        $("prevLabel")?.textContent = p.intake + p.year;
-        $("nextLabel")?.textContent = n.intake + n.year;
+        $("prevLabel").textContent = p.intake + p.year;
+        $("nextLabel").textContent = n.intake + n.year;
 
         let visible = 0;
         blocks.forEach(b => {
@@ -418,30 +417,33 @@ function initTimetableIntakeSwipe({containerId, noResultsId = null, dashboardUpd
         if (noResultsId) {
             $(noResultsId).style.display = visible ? "none" : "block";
         }
-
-        // Update dashboard counts per current intake
         dashboardUpdater?.();
     }
+    $("prevIntake").onclick = () => shift(-1);
+    $("nextIntake").onclick = () => shift(1);
+
+    render();
 }
 
 function updateTimetableDashboardFromTable() {
     const table = document.getElementById("manageTimetable");
     if (!table) return;
 
-    const timetableSet = new Set();     // lecturer + intake combos linked to staff
-    const unassignedSet = new Set();    // lecturer + intake combos without staff
+    const timetableSet = new Set();
+    const unassignedSet = new Set();
 
     table.querySelectorAll("div[data-intake]").forEach(div => {
-        if (div.style.display === "none") return; // only visible intake
+        if (div.style.display === "none") return;
 
-        const lecturer = div.dataset.lecturer;
+        const lecturer = div.dataset.lecturer || "";
         const intake = div.dataset.intake;
         const key = lecturer + "|" + intake;
 
-        if (div.dataset.timetable) {
-            timetableSet.add(key);
-        } else {
-            unassignedSet.add(key);
+        timetableSet.add(key);
+
+        const hasStaff = div.dataset.staff;
+        if (!hasStaff) {
+            unassignedSet.add(lecturer); // group by lecturer
         }
     });
 
