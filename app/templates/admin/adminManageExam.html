@@ -225,8 +225,8 @@
                             {% set first_session = row.venue_availabilities[0].session %}
                             {% if first_session %}
                             <div class="info-grid">
-                                <div>Exam Date</div><div><strong>: {{ first_session.startDateTime.strftime("%d %b %Y") }}</strong></div>
-                                <div>Exam Day</div><div><strong>: {{ first_session.startDateTime.strftime("%A") }}</strong></div>
+                                <div>Exam Date</div><div><strong>: {{ first_session.startDateTime.strftime("%d %b %Y") }} - {{ first_session.endDateTime.strftime("%d %b %Y") }}</strong></div>
+                                <div>Exam Day</div><div><strong>: {{ first_session.startDateTime.strftime("%A") }} - {{ first_session.endDateTime.strftime("%A") }}</strong></div>
                                 <div>Exam Time</div><div><strong>: {{ first_session.startDateTime.strftime("%H:%M") }} - {{ first_session.endDateTime.strftime("%H:%M") }}</strong></div>
                                 <div>Exam Period</div><div><strong>: {{ ((first_session.endDateTime - first_session.startDateTime).seconds // 3600) }}h {{ (((first_session.endDateTime - first_session.startDateTime).seconds % 3600) // 60) }}m</strong></div>
                                 <div>Exam Venues</div>
