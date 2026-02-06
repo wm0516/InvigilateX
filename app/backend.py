@@ -377,7 +377,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     true_pool  = sorted([i for i in eligible_invigilators if i.userGender is True], key=workload)
     false_pool = sorted([i for i in eligible_invigilators if i.userGender is False], key=workload)
     if not true_pool or not false_pool:
-        return False, "Need at least one True and one False invigilator"
+        return False, "Need at least one Male and one Female invigilator"
 
     # Handle each venue
     total_invigilators_used = 0
@@ -545,12 +545,11 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
             row.timetable_id = timetable.timetableId
 
     if dept:
-        role_upper = role.upper()
-        if role_upper == "DEAN":
+        if role == "DEAN":
             dept.deanId = new_staff.userId
-        elif role_upper == "HOS":
+        elif role == "HOS":
             dept.hosId = new_staff.userId
-        elif role_upper == "HOP":
+        elif role == "HOP":
             dept.hopId = new_staff.userId
         db.session.add(dept)
 
