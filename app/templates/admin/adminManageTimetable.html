@@ -218,11 +218,7 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div 
-                                                    data-intake="{{ row.courseIntake }}"
-                                                    data-lecturer="{{ row.lecturerName }}"
-                                                    data-course="{{ row.courseName }}"
-                                                >
+                                                <div data-intake="{{ row.courseIntake }}">
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
@@ -365,19 +361,12 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-function initTimetableIntakeSwipe({
-    containerId,
-    noResultsId = null,
-    dashboardUpdater = null
-}) {
+function initTimetableIntakeSwipe({containerId, noResultsId = null, dashboardUpdater = null}) {
     const order = ["JAN", "APR", "AUG", "OCT"];
-    const blocks = document.querySelectorAll(
-        `#${containerId} div[data-intake]`
-    );
+    const blocks = document.querySelectorAll(`#${containerId} div[data-intake]`);
     const $ = id => document.getElementById(id);
 
     if (!blocks.length) return;
-
     const now = new Date();
     const m = now.getMonth();
 
@@ -403,6 +392,7 @@ function initTimetableIntakeSwipe({
     function adjacent(dir) {
         let i = order.indexOf(state.intake) + dir;
         let y = state.year;
+
         if (i < 0) { i = order.length - 1; y--; }
         if (i >= order.length) { i = 0; y++; }
         return { intake: order[i], year: y };
@@ -429,45 +419,38 @@ function initTimetableIntakeSwipe({
         }
         dashboardUpdater?.();
     }
-
     $("prevIntake").onclick = () => shift(-1);
     $("nextIntake").onclick = () => shift(1);
+
     render();
 }
-
 
 function updateTimetableDashboardFromTable() {
     const table = document.getElementById("manageTimetable");
     if (!table) return;
 
-    const visibleRows = [...table.querySelectorAll("tbody tr")]
-        .filter(tr => tr.style.display !== "none");
-
-    let totalTimetables = 0;
+    const visibleRows = [...table.querySelectorAll("tbody tr")].filter(tr => tr.style.display !== "none");
+    const timetableSet = new Set();
     const visibleLecturersSet = new Set();
 
     visibleRows.forEach(row => {
-        const divs = [...row.querySelectorAll("div[data-intake]")]
-            .filter(div => div.style.display !== "none");
-
-        totalTimetables += divs.length;
-
+        const divs = [...row.querySelectorAll("div[data-intake]")].filter(div => div.style.display !== "none");
         divs.forEach(div => {
+            // build unique timetable key
+            const key = [div.dataset.intake, div.dataset.lecturer || "", div.innerText.trim()].join("|");
+            timetableSet.add(key);
+
             if (div.dataset.lecturer) {
                 visibleLecturersSet.add(div.dataset.lecturer);
             }
         });
     });
 
-    document.getElementById("total_timetable").textContent = totalTimetables;
-
-    // Get all lecturers from Jinja template safely
-    const allLecturers = {{ unassigned_summary|map(attribute='lecturer')|list|tojson|safe }};
-    const unassignedLecturersCount = allLecturers.filter(l => !visibleLecturersSet.has(l)).length;
-    document.getElementById("total_havent_assign").textContent = unassignedLecturersCount;
+    document.getElementById("total_timetable").textContent = timetableSet.size;
+    const allLecturers = {{ unassigned_summary | map(attribute='lecturer') | list | tojson | safe }};
+    const unassignedCount = allLecturers.filter(l => !visibleLecturersSet.has(l)).length;
+    document.getElementById("total_havent_assign").textContent = unassignedCount;
 }
-
-
 
 document.addEventListener("DOMContentLoaded", () => {
     initTimetableIntakeSwipe({
@@ -475,13 +458,11 @@ document.addEventListener("DOMContentLoaded", () => {
         noResultsId: "noResults",
         dashboardUpdater: updateTimetableDashboardFromTable
     });
-
     updateTimetableDashboardFromTable();
 });
 
-// Update dashboard on window load as well
 window.addEventListener("load", () => {
     updateTimetableDashboardFromTable();
-})
+});
 </script>
 {% endblock %}  
