@@ -1,7 +1,7 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
 {% set show_upload = true %}
-{% set show_cal = false %}
+{% set show_cal = true %}
 {% set show_dashboard = true %}
 {% set show_manual = true %}
 {% set show_edit = true %}
@@ -218,7 +218,11 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div>
+                                                <div 
+                                                    data-intake="{{ row.courseIntake }}"
+                                                    data-lecturer="{{ row.lecturerName }}"
+                                                    data-course="{{ row.courseName }}"
+                                                >
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
@@ -361,48 +365,121 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-function renumberVisibleRowsTimetable() {
-    const rows = document.querySelectorAll("table");
-    let index = 1;
-    rows.forEach(row => {
-        if (row.offsetParent !== null) {
-            const cell = row.querySelector("td.row-number");
-            if (cell) {
-                cell.textContent = index++;
-            }
+function initTimetableIntakeSwipe({
+    containerId,
+    noResultsId = null,
+    dashboardUpdater = null
+}) {
+    const order = ["JAN", "APR", "AUG", "OCT"];
+    const blocks = document.querySelectorAll(
+        `#${containerId} div[data-intake]`
+    );
+    const $ = id => document.getElementById(id);
+
+    if (!blocks.length) return;
+
+    const now = new Date();
+    const m = now.getMonth();
+
+    let state = {
+        year: now.getFullYear(),
+        intake:
+            m <= 2 ? "JAN" :
+            m <= 6 ? "APR" :
+            m <= 9 ? "AUG" :
+            "OCT"
+    };
+
+    function shift(dir) {
+        let i = order.indexOf(state.intake) + dir;
+        let y = state.year;
+
+        if (i < 0) { i = order.length - 1; y--; }
+        if (i >= order.length) { i = 0; y++; }
+        state = { intake: order[i], year: y };
+        render();
+    }
+
+    function adjacent(dir) {
+        let i = order.indexOf(state.intake) + dir;
+        let y = state.year;
+        if (i < 0) { i = order.length - 1; y--; }
+        if (i >= order.length) { i = 0; y++; }
+        return { intake: order[i], year: y };
+    }
+
+    function render() {
+        const key = state.intake + state.year;
+        $("currentIntake").textContent = key;
+
+        const p = adjacent(-1);
+        const n = adjacent(1);
+        $("prevLabel").textContent = p.intake + p.year;
+        $("nextLabel").textContent = n.intake + n.year;
+
+        let visible = 0;
+        blocks.forEach(b => {
+            const show = b.dataset.intake === key;
+            b.style.display = show ? "" : "none";
+            if (show) visible++;
+        });
+
+        if (noResultsId) {
+            $(noResultsId).style.display = visible ? "none" : "block";
         }
-    });
+        dashboardUpdater?.();
+    }
+
+    $("prevIntake").onclick = () => shift(-1);
+    $("nextIntake").onclick = () => shift(1);
+    render();
 }
 
-let timetableDashboardInitialized = false;
+
 function updateTimetableDashboardFromTable() {
-    const rows = document.querySelectorAll("table");
-    const visibleRows = [...rows].filter(r => r.style.display !== "none");
-    let total = 0;
-    let assign = 0;
+    const table = document.getElementById("manageTimetable");
+    if (!table) return;
 
-    visibleRows.forEach(r => {
-        total++;
+    // All div blocks inside visible rows
+    const visibleRows = [...table.querySelectorAll("tbody tr")]
+        .filter(tr => tr.style.display !== "none");
+
+    let totalTimetables = 0;
+    let unassignedLecturersSet = new Set();
+
+    visibleRows.forEach(row => {
+        const divs = [...row.querySelectorAll("div[data-intake]")]
+            .filter(div => div.style.display !== "none");
+
+        totalTimetables += divs.length;
+
+        divs.forEach(div => {
+            const lecturer = div.dataset.lecturer;
+            if (lecturer && div.style.display !== "none") {
+                // Track lecturers displayed
+                visibleLecturers.add(lecturer);
+            }
+        });
     });
-    document.getElementById("total_timetable").textContent = total;
-    document.getElementById("total_havent_assign").textContent = assign;
-}
 
+    document.getElementById("total_timetable").textContent = totalTimetables;
+    // If you want lecturers without timetable, you can compute it from your unassigned_summary length
+    document.getElementById("total_havent_assign").textContent = {{ unassigned_summary|length }};
+}
 
 document.addEventListener("DOMContentLoaded", () => {
-    initIntakeSwipe({
-        tableId: "manageTimetable",
-        intakeCol: 1,   // example column index
+    initTimetableIntakeSwipe({
+        containerId: "manageTimetable",
         noResultsId: "noResults",
         dashboardUpdater: updateTimetableDashboardFromTable
     });
-    renumberVisibleRowsTimetable();
+
     updateTimetableDashboardFromTable();
 });
 
+// Update dashboard on window load as well
 window.addEventListener("load", () => {
-    renumberVisibleRowsTimetable();
     updateTimetableDashboardFromTable();
-});
+})
 </script>
 {% endblock %}  
