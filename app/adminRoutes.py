@@ -2078,8 +2078,6 @@ def process_attendance_row(row):
         return False, f"Error processing row: {e}"
 
 
-
-
 # -------------------------------
 # Get Single Report
 # -------------------------------
@@ -2122,6 +2120,10 @@ def get_report(report_id):
 def get_valid_invigilators():
     valid = User.query.filter_by(userLevel=1).all()
     return jsonify([{"userId": u.userId, "userName": u.userName} for u in valid])
+
+
+
+
 
 
 # -------------------------------
