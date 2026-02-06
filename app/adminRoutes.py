@@ -1620,12 +1620,14 @@ def admin_manageTimetable():
     selected_lecturer = request.args.get("lecturer")
 
     # Base query
-    timetable_data_query = (
+    abctimetable_data_query = (
         TimetableRow.query
         .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
         .join(User, Timetable.user_id == User.userId)
         # .filter(User.userStatus == 1)  # active staff only
     )
+
+    timetable_data_query = TimetableRow.query
 
     # Department filter
     if selected_department:
