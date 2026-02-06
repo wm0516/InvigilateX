@@ -1615,6 +1615,7 @@ def save_timetable_to_db(structured):
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
+    user_id = session.get('user_id')
     department_data = Department.query.all()
     selected_department = request.args.get("department")
     selected_lecturer = request.args.get("lecturer")
@@ -1707,6 +1708,7 @@ def admin_manageTimetable():
                     total_files_processed += 1
                     total_rows_inserted += rows_inserted or 0
             flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
+            record_action("UPLOAD TIMETABLE", "TIMETABLE", total_files_processed, user_id)
             return redirect(url_for('admin_manageTimetable'))
 
         # --- Manual link timetable to staff ---
@@ -1727,6 +1729,7 @@ def admin_manageTimetable():
 
                 db.session.commit()
                 flash(f"Timetable for {lecturer} has been successfully linked to Staff ID {user_id}.", "success")
+                record_action("LINK TIMETABLE", "TIMETABLE", timetable.user_id, user_id)
             else:
                 flash("Missing lecturer or staff", "error")
             return redirect(url_for('admin_manageTimetable'))
@@ -1750,12 +1753,14 @@ def admin_manageTimetable():
                     else:
                         timetable_select.user_id = new_user_id
                         db.session.commit()
-                        flash("Timetable updated successfully.", "success")
+                        flash(f"Timetable [{timetable_select.user_id}] updated successfully.", "success")
+                        record_action("EDIT TIMETABLE", "TIMETABLE", timetable_select.user_id, user_id)
 
             elif action == 'delete' and timetable_select:
                 db.session.delete(timetable_select)
                 db.session.commit()
                 flash("Timetable deleted successfully.", "success")
+                record_action("DELETE TIMETABLE", "TIMETABLE", timetable_select.user_id, user_id)
                 return redirect(url_for('admin_manageTimetable'))
 
     return render_template('admin/adminManageTimetable.html',active_tab='admin_manageTimetabletab',timetable_data=timetable_data,lecturers=lecturers,selected_lecturer=selected_lecturer,
