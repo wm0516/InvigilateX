@@ -1611,27 +1611,6 @@ def save_timetable_to_db(structured):
 
 # -------------------------------
 # Function for Admin ManageTimetable Route
-@app.route('/admin/timetable/dashboard/<intake>')
-@login_required
-def admin_timetable_dashboard(intake):
-    # Total timetable sets (distinct lecturer + intake combination)
-    total_timetable = (
-        db.session.query(func.count(distinct(TimetableRow.lecturerName + "|" + TimetableRow.courseIntake)))
-        .scalar()
-    )
-
-    # Timetable sets without assigned staff
-    unassigned_count = (
-        db.session.query(func.count(distinct(TimetableRow.lecturerName + "|" + TimetableRow.courseIntake)))
-        .filter(TimetableRow.timetable_id.is_(None))
-        .scalar()
-    )
-
-    return jsonify({
-        "total_timetable": total_timetable or 0,
-        "total_lecturer_no_assign": unassigned_count or 0
-    })
-
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
