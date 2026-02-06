@@ -51,30 +51,38 @@
         {% set unique_dates = all_dates | unique %}
 
         {% for date in unique_dates %}
-            <div class="date-block" style="margin-bottom: 25px; padding: 10px; border: 1px solid #888; border-radius: 8px;">
+            <div class="date-block">
                 <h2>Date: {{ date }}</h2>
                 {% set grand_total_students = 0 %}
 
-                {% for venue, exams in venue_data.items() %}
-                    {% set day_exams = exams | selectattr("start_time", "string", "contains", date) | list %}
+                {# Loop through all venues on this date #}
+                {% for venue, venue_exams in venue_data.items() %}
+                    {% set day_exams = [] %}
+                    {% for exam in venue_exams %}
+                        {% if exam.session.startDateTime.strftime("%d %b %Y") == date %}
+                            {% do day_exams.append(exam) %}
+                        {% endif %}
+                    {% endfor %}
+
                     {% if day_exams %}
-                        {% set venue_start = day_exams | map(attribute='start_time') | min %}
-                        {% set venue_end = day_exams | map(attribute='end_time') | max %}
+                        {% set venue_start = day_exams | map(attribute='session.startDateTime') | min %}
+                        {% set venue_end = day_exams | map(attribute='session.endDateTime') | max %}
                         {% set venue_total = 0 %}
-                        
-                        <div class="venue-block" style="margin-bottom: 15px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+
+                        <div class="venue-block">
                             <h3>Venue: {{ venue }} | {{ venue_start.strftime("%H:%M") }} - {{ venue_end.strftime("%H:%M") }}</h3>
                             {% for exam in day_exams %}
                                 <p>
-                                    <strong>{{ exam.course_code }} [Students: {{ exam.students }}]</strong>
-                                    {% if exam.is_overnight %}
+                                    <strong>{{ exam.exam.course.courseCodeSectionIntake }} – {{ exam.exam.course.courseName }} [Students: {{ exam.studentCount }}]</strong>
+                                    {% if exam.session.endDateTime.date() > exam.session.startDateTime.date() %}
                                         <span style="color: #b400b4;">(Overnight Exam)</span>
                                     {% endif %}
                                 </p>
-                                {% set venue_total = venue_total + exam.students %}
+                                {% set venue_total = venue_total + exam.studentCount %}
                             {% endfor %}
                             <strong>Total Students: {{ venue_total }}</strong>
                         </div>
+
                         {% set grand_total_students = grand_total_students + venue_total %}
                     {% endif %}
                 {% endfor %}
@@ -82,6 +90,7 @@
                 <p><strong>Grand Total Students for the Day: {{ grand_total_students }}</strong></p>
             </div>
         {% endfor %}
+
     </div>
 </div>
 {% endblock %}
