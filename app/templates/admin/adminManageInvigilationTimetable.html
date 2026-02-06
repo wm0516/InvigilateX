@@ -39,56 +39,70 @@
             <span>Overnight Exam (Starts Today, Ends Tomorrow)</span>
         </div>
     </div>
-    
+
     <div class="calendar-container">
-        {% set all_dates = [] %}
-        {% for venue_exams in venue_data.values() %}
-            {% for exam in venue_exams %}
-                {% set date_str = exam.start_time.strftime('%d %b %Y') %}
-                {% if date_str not in all_dates %}
-                    {% set all_dates = all_dates + [date_str] %}
-                {% endif %}
-            {% endfor %}
-        {% endfor %}
-
         {% for date in all_dates %}
-            <div class="date-block calendar-day">
-                <h2 class="calendar-date" data-date="{{ date }}">Date: {{ date }}</h2>
-                {% set grand_total_students = 0 %}
+        {% set day_total = 0 %}
 
-                {% for venue, venue_exams in venue_data.items() %}
-                    {% set day_exams = [] %}
-                    {% for exam in venue_exams %}
-                        {% if exam.start_time.strftime('%d %b %Y') == date %}
-                            {% set day_exams = day_exams + [exam] %}
-                        {% endif %}
-                    {% endfor %}
+        <div class="calendar-day date-block">
 
-                    {% if day_exams %}
-                        {% set venue_start = day_exams | map(attribute='start_time') | min %}
-                        {% set venue_end   = day_exams | map(attribute='end_time') | max %}
-                        {% set venue_total = day_exams | sum(attribute='students') %}
+            <h2 class="calendar-date" data-date="{{ date }}">
+                Date: {{ date }}
+            </h2>
 
-                        <div class="venue-block exam-grid">
-                            <h3>Venue: {{ venue }} | {{ venue_start.strftime('%H:%M') }} – {{ venue_end.strftime('%H:%M') }}</h3>
-                            
-                            {% for exam in day_exams %}
-                                <div class="exam-card">
-                                    <p><strong>{{ exam.course_code }} – {{ exam.course_name }} [Students: {{ exam.students }}]</strong>
-                                        {% if exam.is_overnight %}
-                                            <span style="color:#b400b4;">(Overnight Exam)</span>
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            {% endfor %}
-                            <strong>Total Students: {{ venue_total }}</strong>
-                        </div>
-                        {% set grand_total_students = grand_total_students + venue_total %}
+            {% for venue, venue_exams in venue_data.items() %}
+                {% set day_exams = [] %}
+
+                {% for exam in venue_exams %}
+                    {% if exam.start_time.strftime('%d %b %Y') == date %}
+                        {% set day_exams = day_exams + [exam] %}
                     {% endif %}
                 {% endfor %}
-                <p><strong>Grand Total Students for the Day: {{ grand_total_students }}</strong></p>
-            </div>
+
+                {% if day_exams %}
+                    {% set venue_start = day_exams | map(attribute='start_time') | min %}
+                    {% set venue_end = day_exams | map(attribute='end_time') | max %}
+                    {% set venue_total = day_exams | sum(attribute='students') %}
+                    {% set day_total = day_total + venue_total %}
+
+                    <div class="venue-block exam-grid" style="margin-bottom:15px; padding:10px; border:1px solid #ccc; border-radius:6px;">
+                        <h3>
+                            Venue: {{ venue }}
+                            | {{ venue_start.strftime('%H:%M') }} – {{ venue_end.strftime('%H:%M') }}
+                        </h3>
+
+                        {% for exam in day_exams %}
+                        <div class="exam-card"
+                             style="padding:8px; margin-bottom:5px;
+                             background-color:
+                                {% if exam.is_overnight %}
+                                    #e3bded
+                                {% elif exam.start_time < now() %}
+                                    #e0e0e0
+                                {% else %}
+                                    #b5deff
+                                {% endif %};
+                             border-radius:4px;">
+                            <strong>
+                                {{ exam.course_code }} – {{ exam.course_name }}
+                                (Students: {{ exam.students }})
+                            </strong>
+
+                            {% if exam.is_overnight %}
+                                <span style="color:#7a007a;">(Overnight)</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+
+                        <strong>Total Students (Venue): {{ venue_total }}</strong>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <p><strong>Grand Total Students (Day): {{ day_total }}</strong></p>
+        </div>
         {% endfor %}
+
     </div>
 
 </div>
