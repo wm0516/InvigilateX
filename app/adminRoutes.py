@@ -1976,24 +1976,6 @@ def calculate_invigilation_stats():
 
     return stats
 
-
-# -------------------------------
-# Read All InvigilatorAttendance Data
-# -------------------------------
-def get_all_attendances():
-    return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .order_by(
-            Exam.examStatus.desc(),
-            InvigilatorAttendance.invigilationStatus.desc(),
-            InvigilatorAttendance.rejectReason.is_(None).desc()
-        )
-        .all()
-    )
-
-
 # -------------------------------
 # Helper: Parse Date + Time from Excel
 # -------------------------------
@@ -2141,33 +2123,34 @@ def get_valid_invigilators():
 
 
 # -------------------------------
-# Admin: Manage Invigilation Report
+# Admin: Manage Invigilation Report (VenueSession view)
 # -------------------------------
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    reports = (
-        InvigilationReport.query
+    # Fetch all attendance entries with session, report, exam, and invigilator
+    attendances = (
+        InvigilatorAttendance.query
+        .join(VenueSession, InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId)
+        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
         .join(Exam, InvigilationReport.examId == Exam.examId)
-        .filter(Exam.examStatus == True)
+        .join(Venue)
+        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .order_by(VenueSession.startDateTime, Venue.venueNumber, Exam.examId)
         .all()
     )
 
-    attendances = get_all_attendances()
+    # Stats (same as before)
     stats = calculate_invigilation_stats()
 
-    # Attach composite key for sorting
+    # Attach grouping key for Jinja2
     for att in attendances:
         session = att.session
-        att.group_key = (
-            not session.startDateTime if session else True,
-            session.startDateTime if session else datetime.min,
-            att.attendanceId
-        )
+        att.group_key = session.venueSessionId if session else None
 
+    # Handle POST (upload or edit)
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2177,8 +2160,8 @@ def admin_manageInvigilationReport():
                 usecols="A:E",
                 skiprows=0
             )
-
         elif form_type == 'edit':
+            # Same as previous code for editing assignments
             report_id = request.form.get('reportId')
             report = InvigilationReport.query.get(report_id)
             if not report:
@@ -2187,7 +2170,6 @@ def admin_manageInvigilationReport():
 
             # Track assigned invigilators
             selected_invigilators = []
-
             for key, value in request.form.items():
                 if key.startswith("slot_"):
                     invigilator_id = int(value)
@@ -2196,7 +2178,7 @@ def admin_manageInvigilationReport():
                         return redirect(url_for('admin_manageInvigilationReport'))
                     selected_invigilators.append(invigilator_id)
 
-                    # 30-minute gap check using session times
+                    # 30-minute gap check
                     att_id = key.replace("slot_", "")
                     att = InvigilatorAttendance.query.get(att_id)
                     if not att.session:
@@ -2214,7 +2196,7 @@ def admin_manageInvigilationReport():
                             flash(f"Invigilator {ia.invigilator.userName} does not have enough gap between sessions.", "error")
                             return redirect(url_for('admin_manageInvigilationReport'))
 
-            # Update assignments
+            # Update assignments (same logic as before)
             for key, value in request.form.items():
                 if key.startswith("slot_"):
                     attendance_id = key.replace("slot_", "")
@@ -2239,9 +2221,9 @@ def admin_manageInvigilationReport():
         'admin/adminManageInvigilationReport.html',
         active_tab='admin_manageInvigilationReporttab',
         attendances=attendances,
-        **stats,
-        reports=reports
+        **stats
     )
+
 
 
 
