@@ -405,7 +405,8 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             session = VenueSession(
                 venueNumber=venue,
                 startDateTime=start_dt,
-                endDateTime=end_dt
+                endDateTime=end_dt,
+                backupInvigilatorId=None
             )
             db.session.add(session)
             db.session.flush()  # to get session ID

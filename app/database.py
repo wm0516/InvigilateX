@@ -157,7 +157,7 @@ class VenueSession(db.Model):
     venueNumber         = Column(String(20), ForeignKey('Venue.venueNumber'), nullable=False)
     startDateTime       = Column(DateTime, nullable=False)
     endDateTime         = Column(DateTime, nullable=False)
-    backupInvigilatorId = Column(Integer, ForeignKey('User.userId'), nullable=False)
+    backupInvigilatorId = Column(Integer, ForeignKey('User.userId'), nullable=True)
 
     # Relationships
     venue = relationship("Venue", back_populates="sessions")
@@ -170,7 +170,7 @@ class VenueSession(db.Model):
         venueNumber VARCHAR(20) NOT NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
-        backupInvigilatorId INT NOT NULL,
+        backupInvigilatorId INT NULL,
         UNIQUE (venueNumber, startDateTime, endDateTime),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber),
         FOREIGN KEY (backupInvigilatorId) REFERENCES User(userId)
