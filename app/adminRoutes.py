@@ -2148,7 +2148,7 @@ def admin_manageInvigilationReport():
 
     for att in attendances:
         session = att.session
-        if not session:
+        if not session or not att.report or not att.report.exam:
             continue
 
         session_key = (
@@ -2157,9 +2157,10 @@ def admin_manageInvigilationReport():
             session.endDateTime
         )
 
-    course_key = att.report.exam.course.courseCodeSectionIntake
+        course_key = att.report.exam.course.courseCodeSectionIntake
 
-    grouped_att[session_key][course_key].append(att)
+        grouped_att[session_key][course_key].append(att)
+
     # Stats (same as before)
     stats = calculate_invigilation_stats()
 
