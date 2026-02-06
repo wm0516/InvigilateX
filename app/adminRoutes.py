@@ -705,62 +705,56 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 
     important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
     if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
-        # Entire row is empty → skip it
         return None, ''
 
-    # --- Parse exam date ---
+    # Parse EXAM DATE (DATE ONLY)
     examDate_cell = row.get('exam date')
     if not examDate_cell:
         return False, "Missing exam date"
 
     if isinstance(examDate_cell, datetime):
-        examDate = examDate_cell
+        exam_date = examDate_cell.date()
     else:
-        examDate_text = str(examDate_cell).strip()
         try:
-            examDate = datetime.strptime(examDate_text, "%m/%d/%Y")
+            exam_date = datetime.strptime(str(examDate_cell).strip(), "%m/%d/%Y").date()
         except ValueError:
-            try:
-                # Try alternative format if Excel gives YYYY-MM-DD
-                examDate = datetime.strptime(examDate_text, "%Y-%m-%d")
-            except ValueError:
-                return False, f"Invalid exam date format: {examDate_text}"
+            return False, f"Invalid exam date format: {examDate_cell}"
 
-    # --- Parse start & end time ---
-    start_cell = row.get('start')
-    end_cell   = row.get('end')
-
-    if not start_cell or not end_cell:
-        return False, "Start or end time missing"
-
-    # Helper to convert Excel time/datetime or string to time
+    # Parse START / END TIME
     def parse_time(cell):
+        if isinstance(cell, time):
+            return cell
         if isinstance(cell, datetime):
             return cell.time()
-        else:
+        if isinstance(cell, str):
             try:
-                return datetime.strptime(str(cell).strip(), "%I:%M:%S %p").time()
+                return datetime.strptime(cell.strip(), "%I:%M:%S %p").time()
             except ValueError:
                 return None
+        return None
 
-    start_time = parse_time(start_cell)
-    end_time   = parse_time(end_cell)
+    start_time = parse_time(row.get('start'))
+    end_time   = parse_time(row.get('end'))
 
     if not start_time or not end_time:
-        return False, f"Invalid time format (expected hh:mm:ss AM/PM): start={start_cell}, end={end_cell}"
+        return False, "Invalid start or end time format"
 
-    # --- Combine date and time ---
-    start_dt = datetime.combine(examDate.date(), start_time)
-    end_dt   = datetime.combine(examDate.date(), end_time)
+    # Combine DATE + TIME
+    start_dt = datetime.combine(exam_date, start_time)
+    end_dt   = datetime.combine(exam_date, end_time)
 
-    # --- Parse total students ---
+    # Handle overnight exam
+    if end_dt <= start_dt:
+        end_dt += timedelta(days=1)
+
+    # Parse total students
     try:
         requested_capacity = int(row.get('total student by venue', 0))
     except ValueError:
         return False, f"Invalid total number of students by venue: {row.get('total student by venue')}"
 
-    # --- Parse venue ---
-    venue = str(row.get('venue', '')).upper()
+    # Parse venue
+    venue = str(row.get('venue', '')).strip().upper()
     if not venue:
         return False, "Exam Venue missing"
 
@@ -768,8 +762,8 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     if not venue_obj:
         return False, f"Venue {venue} not found in database"
 
-    # --- Create exam and related sessions ---
-    success, msg = create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
+    # Create exam & related records
+    success, msg = create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).strip().upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     if not success:
         flash(msg, "error")
         return None, ''
