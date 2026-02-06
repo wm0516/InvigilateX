@@ -1886,38 +1886,40 @@ def update_attendance_time():
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
-def get_calendar_data():
-    venue_exams = (VenueExam.query.join(Exam).all())
-    calendar_data = defaultdict(lambda: defaultdict(list))
+def get_venue_calendar_data():
+    venue_exams = VenueExam.query.join(Exam).join(VenueSession).join(Course).all()
+    venue_data = defaultdict(list)
 
     for ve in venue_exams:
         exam = ve.exam
-        start_dt = ve.startDateTime
-        end_dt = ve.endDateTime
-        date_key = start_dt.date()
+        session = ve.session
+        course = exam.course
 
-        calendar_data[date_key][ve.venueNumber].append({
+        venue_data[session.venueNumber].append({
             "exam_id": exam.examId,
-            "course_code": exam.course.courseCodeSectionIntake,
-            "course_name": exam.course.courseName,
-            "start_time": start_dt,
-            "end_time": end_dt,
-            "capacity": ve.capacity,
-            "is_overnight": start_dt.date() != end_dt.date(),
+            "course_code": course.courseCodeSectionIntake,
+            "course_name": course.courseName,
+            "start_time": session.startDateTime,
+            "end_time": session.endDateTime,
+            "students": ve.studentCount,
+            "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
         })
 
-    return dict(sorted(calendar_data.items()))
+    # Optional: sort exams for each venue by start time
+    for venue in venue_data:
+        venue_data[venue].sort(key=lambda x: x["start_time"])
+
+    return dict(sorted(venue_data.items()))
 
 
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
 # -------------------------------
-@app.route('/admin/manageInvigilationTimetable', methods=['GET'])
+@app.route('/admin/manageInvigilationTimetableByVenue', methods=['GET'])
 @login_required
-def admin_manageInvigilationTimetable():
-    calendar_data = get_calendar_data()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', calendar_data=calendar_data)
-
+def admin_manageInvigilationTimetableByVenue():
+    venue_data = get_venue_calendar_data()
+    return render_template('admin/adminManageInvigilationTimetableByVenue.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data)
 
 
 # -------------------------------
