@@ -412,7 +412,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         # 3. Create VenueExam for the course
         venue_exam = VenueExam(
-            examId=exam.exam.examId,
+            examId=exam.examId,
             venueSessionId=session.venueSessionId,
             studentCount=course.student_count
         )
