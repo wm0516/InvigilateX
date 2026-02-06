@@ -195,7 +195,7 @@
                 {% for row in exam_data %}
                 <tr class="
                     {% if not row.examStatus %}inactive-row-show
-                    {% elif row.exams.startDateTime is none %}error-row-show
+                    {% elif row.venue_availabilities[0].session.startDateTime is none %}error-row-show
                     {% endif %}">
                     <td class="row-number"></td>
                     <td>
@@ -222,28 +222,10 @@
                             {% set first_session = row.venue_availabilities[0].session %}
                             {% if first_session %}
                             <div class="info-grid">
-                                <div>Exam Date</div>
-                                <div><strong>:
-                                    {{ first_session.startDateTime.strftime("%d %b %Y") }}
-                                </strong></div>
-
-                                <div>Exam Day</div>
-                                <div><strong>:
-                                    {{ first_session.startDateTime.strftime("%A") }}
-                                </strong></div>
-
-                                <div>Exam Time</div>
-                                <div><strong>:
-                                    {{ first_session.startDateTime.strftime("%H:%M") }} -
-                                    {{ first_session.endDateTime.strftime("%H:%M") }}
-                                </strong></div>
-
-                                <div>Exam Period</div>
-                                <div><strong>:
-                                    {{ ((first_session.endDateTime - first_session.startDateTime).seconds // 3600) }}h
-                                    {{ (((first_session.endDateTime - first_session.startDateTime).seconds % 3600) // 60) }}m
-                                </strong></div>
-
+                                <div>Exam Date</div><div><strong>: {{ first_session.startDateTime.strftime("%d %b %Y") }}</strong></div>
+                                <div>Exam Day</div><div><strong>: {{ first_session.startDateTime.strftime("%A") }}</strong></div>
+                                <div>Exam Time</div><div><strong>: {{ first_session.startDateTime.strftime("%H:%M") }} - {{ first_session.endDateTime.strftime("%H:%M") }}</strong></div>
+                                <div>Exam Period</div><div><strong>: {{ ((first_session.endDateTime - first_session.startDateTime).seconds // 3600) }}h {{ (((first_session.endDateTime - first_session.startDateTime).seconds % 3600) // 60) }}m</strong></div>
                                 <div>Exam Venues</div>
                                 <div>
                                     {% for va in row.venue_availabilities %}
@@ -255,7 +237,6 @@
                         {% else %}
                             <span class="status frame-expired">Exam details not yet assigned</span>
                         {% endif %}
-
                     </td>
                     <td>
                         {% if row.examOutput %}
