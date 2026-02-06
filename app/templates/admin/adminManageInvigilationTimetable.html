@@ -59,10 +59,10 @@
                     <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
                     <div class="exam-grid">
                         {% set total_students = 0 %}
-                            {% set total_students = total_students + exam.students %}
                             <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
                                 Venue: {{ venue }}<br>
                                 {% for exam in day_exams %}
+                                {% set total_students = total_students + exam.students %}
                                     <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }} | Students: {{ exam.students }}</strong><br>
                                     {% if exam.is_overnight %}
                                         <span style="color: #b400b4;">Overnight Exam</span><br>
