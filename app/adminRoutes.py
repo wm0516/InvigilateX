@@ -616,7 +616,7 @@ def generate_manageexam_template():
 
     for row in range(3, 503):
         ws[f"A{row}"].style = date_style
-        ws[f"B{row}"] = f'=IF(A{row}="","",TEXT(DATEVALUE(A{row}),"dddd"))'
+        ws[f"B{row}"] = f'=IF(A{row}="","",TEXT(A{row},"dddd"))'
         ws[f"C{row}"].style = time_style  # Start Time
         ws[f"D{row}"].style = time_style  # End Time
 
