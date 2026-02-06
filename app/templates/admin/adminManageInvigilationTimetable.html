@@ -61,13 +61,13 @@
                         {% set total_students = 0 %}
                             {% set total_students = total_students + exam.students %}
                             <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-                                Venue: {{ venue }}<br> Time: {{ venue.start_time.strftime("%H:%M") }} - {{ venue.end_time.strftime("%H:%M") }}
+                                Venue: {{ venue }}<br>
                                 {% for exam in day_exams %}
-                                    Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
                                     <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }} | Students: {{ exam.students }}</strong><br>
                                     {% if exam.is_overnight %}
                                         <span style="color: #b400b4;">Overnight Exam</span><br>
                                     {% endif %}
+                                    Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
                                 {% endfor %}
                             </div>
                         <strong>Total Students: {{ total_students }}</strong>
