@@ -123,9 +123,9 @@
         <table class="user-data-table" id="manageInvigilationReport">
             <thead>
                 <tr>
-                    <th>Exam ID</th>
-                    <th>Exam Details</th>
-                    <th>Invigilators</th>
+                    <th>Venue</th>
+                    <th>Exam Date Start-End Time</th>
+                    <th>Exam CourseIntake/Code/Section - CourseName</th>
                     <th>Invigilator Details</th>
                     <th>Invigilation Status</th>
                     <th>Attendance Status</th>
@@ -138,11 +138,14 @@
                 {% for att in group %}
                 <tr>
                     {% if loop.index0 == 0 %}
-                    <td rowspan="{{ group|length }}">[{{ att.report.exam.examId }}]</td>
+                    <td rowspan="{{ group|length }}">[{{ att.report.exam.session.venueNumber }}]</td>
+                    <td rowspan="{{ group|length }}">
+                        {{ att.report.exam.session.startDateTime.strftime("%d/%b/%Y %H:%M") }} -
+                        {{ att.report.exam.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
+                    </td>
                     <td rowspan="{{ group|length }}">
                         {{ att.report.exam.course.courseCodeSectionIntake }} - {{ att.report.exam.course.courseName }}
                     </td>
-                    <td rowspan="{{ group|length }}">[{{ att.report.exam.examNoInvigilator }}]</td>
                     {% endif %}
                     <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
                     <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>

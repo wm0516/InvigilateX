@@ -22,7 +22,7 @@ from app import db
 # UPDATE User SET userPendingCumulativeHours = 0, userCumulativeHours = 0;
 # UPDATE InvigilatorAttendance SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0;
 # UPDATE Exam SET examStartTime = NULL, examEndTime = NULL, examNoInvigilator = NULL, examOutput = NULL;
-# UPDATE Exam SET examStatus = 1;
+# UPDATE Exam SET examOutput = NULL;
 # DELETE FROM User WHERE userId = 21013604; 
 
 # ------------------------------
