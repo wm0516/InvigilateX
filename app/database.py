@@ -152,24 +152,28 @@ class Venue(db.Model):
 # VENUE SESSION
 # ------------------------------
 class VenueSession(db.Model):
-    __tablename__   = 'VenueSession'
-    venueSessionId  = Column(Integer, primary_key=True, autoincrement=True)
-    venueNumber     = Column(String(20), ForeignKey('Venue.venueNumber'), nullable=False)
-    startDateTime   = Column(DateTime, nullable=False)
-    endDateTime     = Column(DateTime, nullable=False)
+    __tablename__       = 'VenueSession'
+    venueSessionId      = Column(Integer, primary_key=True, autoincrement=True)
+    venueNumber         = Column(String(20), ForeignKey('Venue.venueNumber'), nullable=False)
+    startDateTime       = Column(DateTime, nullable=False)
+    endDateTime         = Column(DateTime, nullable=False)
+    backupInvigilator   = Column(Integer, ForeignKey('User.userId'), nullable=True)
 
     # Relationships
-    venue           = relationship("Venue", back_populates="sessions")
-    exams           = relationship("VenueExam", back_populates="session")
-    invigilators    = relationship("VenueSessionInvigilator", back_populates="session", cascade="all, delete-orphan")
+    venue               = relationship("Venue", back_populates="sessions")
+    exams               = relationship("VenueExam", back_populates="session")
+    invigilators        = relationship("VenueSessionInvigilator", back_populates="session", cascade="all, delete-orphan")
+    backupInvigilator   = relationship("User", foreign_keys=[backupInvigilator])
     '''
     CREATE TABLE VenueSession (
         venueSessionId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         venueNumber VARCHAR(20) NOT NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
+        backupInvigilatorId INT NULL,
         UNIQUE (venueNumber, startDateTime, endDateTime),
-        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber)
+        FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber),
+        FOREIGN KEY (backupInvigilatorId) REFERENCES User(userId)
     );
     '''
 

@@ -753,13 +753,12 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     if not venue_obj:
         return False, f"Venue {venue} not found in database"
     venue_capacity = venue_obj.venueCapacity
-
-    # --- Find overlapping exams ---
     '''
-    overlapping_exams = VenueExam.query.filter(
-        VenueExam.venueNumber == venue,
-        VenueExam.startDateTime < end_dt + timedelta(minutes=30),
-        VenueExam.endDateTime > start_dt - timedelta(minutes=30)
+    # --- Find overlapping exams ---
+    overlapping_exams = VenueSession.query.filter(
+        VenueSession.venueNumber == venue,
+        VenueSession.startDateTime < end_dt + timedelta(minutes=30),
+        VenueSession.endDateTime > start_dt - timedelta(minutes=30)
     ).all()
 
     used_capacity = sum([v.capacity for v in overlapping_exams])
@@ -789,34 +788,48 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 @app.route('/get_exam_details/<path:course_code>')
 @login_required
 def get_exam_details(course_code):
-    course = Course.query.filter(Course.courseCodeSectionIntake == course_code).first()
+    course = Course.query.filter_by(courseCodeSectionIntake=course_code).first()
+
     if not course:
         return jsonify({"error": "Course not found"}), 404
+    exam = course.exam
+    if not exam:
+        return jsonify({"error": "Exam not found"}), 404
 
-    exam = Exam.query.get(course.courseExamId) if course.courseExamId else None
-    venues = VenueExam.query.filter_by(examId=exam.examId).all() if exam else []
-    attendance = None
-    if exam:
-        attendance = (
-            InvigilatorAttendance.query
-            .join(InvigilationReport)
-            .filter(InvigilationReport.examId == exam.examId)
-            .order_by(InvigilatorAttendance.timeExpire.desc())  # or asc()
-            .first()
-        )
+    # Latest attendance record (optional)
+    attendance = (
+        InvigilatorAttendance.query
+        .join(InvigilationReport)
+        .filter(InvigilationReport.examId == exam.examId)
+        .order_by(InvigilatorAttendance.timeExpire.desc())
+        .first()
+    )
+
+    exam_venues = []
+    for ve in exam.venue_availabilities:
+        session = ve.session
+        venue = session.venue
+        exam_venues.append({
+            "venueNumber": venue.venueNumber,
+            "venueLevel": venue.venueLevel,
+            "venueCapacity": venue.venueCapacity,
+            "studentCount": ve.studentCount,
+            "startDateTime": session.startDateTime.strftime("%Y-%m-%dT%H:%M"),
+            "endDateTime": session.endDateTime.strftime("%Y-%m-%dT%H:%M")
+        })
 
     response_data = {
-        "courseCode"        : course.courseCodeSectionIntake,
-        "courseDepartment"  : course.courseDepartment or "",
-        "courseStudent"     : exam.examTotalStudents if exam else 0,
-        "examVenues"        : [{"venueNumber": v.venueNumber, "capacity": v.capacity} for v in venues],
-        "examStartTime"     : exam.examStartTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examStartTime else "",
-        "examEndTime"       : exam.examEndTime.strftime("%Y-%m-%dT%H:%M") if exam and exam.examEndTime else "",
-        "examTimeCreate"    : attendance.timeCreate.strftime("%Y-%m-%dT%H:%M") if attendance else "",
-        "examTimeExpire"    : attendance.timeExpire.strftime("%Y-%m-%dT%H:%M") if attendance else "",
+        "courseCode": course.courseCodeSectionIntake,
+        "courseName": course.courseName,
+        "courseDepartment": course.courseDepartment,
+        "totalStudents": course.courseStudent,
+        "examId": exam.examId,
+        "examStatus": exam.examStatus,
+        "examVenues": exam_venues,
+        "examTimeCreate": (attendance.timeCreate.strftime("%Y-%m-%dT%H:%M") if attendance else ""),
+        "examTimeExpire": (attendance.timeExpire.strftime("%Y-%m-%dT%H:%M") if attendance else "")
     }
     return jsonify(response_data)
-
 
 # -------------------------------
 # Reformat the datetime for ManageExamEditPage
@@ -842,69 +855,41 @@ def parse_excel_time(val):
                 pass
     raise ValueError(f"Invalid time format: {val}")
 
-# -------------------------------
-# Get VenueDetails for ManageExamEditPage
-# -------------------------------
-@app.route('/get_available_venues', methods=['POST'])
-@login_required
-def get_available_venues():
-    start_date = request.form.get('startDate', '').strip()
-    start_time = request.form.get('startTime', '').strip()
-    end_date = request.form.get('endDate', '').strip()
-    end_time = request.form.get('endTime', '').strip()
-
-    if not all([start_date, start_time, end_date, end_time]):
-        return jsonify({'venues': []})
-
-    start_dt = parse_datetime(start_date, start_time)
-    end_dt = parse_datetime(end_date, end_time)
-
-    if not start_dt or not end_dt:
-        return jsonify({'venues': []})
-
-    # Get all venues
-    all_venues = Venue.query.all()
-    available_venues = []
-
-    for venue in all_venues:
-        # Check for any conflict in VenueExam
-        conflict = VenueExam.query.filter(
-            VenueExam.venueNumber == venue.venueNumber,
-            VenueExam.startDateTime < end_dt + timedelta(minutes=30),
-            VenueExam.endDateTime > start_dt - timedelta(minutes=30),
-        ).first()
-
-        if not conflict:
-            available_venues.append(venue.venueNumber)
-
-    return jsonify({'venues': available_venues})
-
 
 # Remove all venue exams, attendances, reports, and rollback pending hours SAFELY.
-def reset_exam_relations(exam, user):
-    if not exam.examStartTime or not exam.examEndTime:
+def reset_exam_relations(exam):
+    if not exam:
         return
 
-    duration_hours = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
+    # 1. Calculate total exam duration (from venue sessions)
+    total_hours = 0.0
+    for ve in exam.venue_availabilities:
+        session = ve.session
+        if session and session.startDateTime and session.endDateTime:
+            duration = (session.endDateTime - session.startDateTime).total_seconds() / 3600.0
+            total_hours += duration
+
+    # 2. Roll back invigilator hours + delete reports
     reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
+
     for report in reports:
         for att in report.attendances:
             inv = att.invigilator
-            if inv:
-                inv.userPendingCumulativeHours = max(
-                    0.0,
-                    (inv.userPendingCumulativeHours or 0.0) - duration_hours
-                )
+            if inv and total_hours > 0:
+                inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - total_hours)
         db.session.delete(report)
 
-    VenueExam.query.filter_by(examId=exam.examId).delete()
-    exam.examStartTime = None
-    exam.examEndTime = None
+    # 3. Remove venue-exam relations safely
+    for ve in exam.venue_availabilities:
+        db.session.delete(ve)
+
+    # 4. Reset exam fields
     exam.examNoInvigilator = None
     exam.examOutput = None
-    exam.examAddedBy = user  # current admin/user performing delete
-    exam.examAddedOn = datetime.now(timezone.utc)
+    exam.examStatus = False  # optional, but usually logical
     db.session.commit()
+
+
 
 # -------------------------------
 # Reassign invigilator for ManageExamEditPage
@@ -918,12 +903,8 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, t
     if time_open is None or time_expire is None:
         raise ValueError("Open / Expire time cannot be NULL")
 
-    assigned_total = sum(int(s) for s in new_students if str(s).isdigit())
-    if assigned_total != exam.examTotalStudents:
-        raise ValueError(f"Assigned students ({assigned_total})" f"≠ exam total ({exam.examTotalStudents})")
-
     # FULL RESET (important)
-    reset_exam_relations(exam, user_id)
+    reset_exam_relations(exam)
 
     # RECREATE using SAME logic as upload
     success, msg = create_exam_and_related(
@@ -949,20 +930,58 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, t
 @login_required
 def admin_manageExam():
     user_id = session.get('user_id')
-    # Load departments and exams
+
+    # Load static data
     department_data = Department.query.all()
-    exam_data_query = Exam.query.join(Exam.course).filter(Course.courseStatus == True)
+    venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
+
+    # Main exam list (ordered correctly)
     exam_data = (
-        exam_data_query
+        Exam.query
+        .join(Exam.course)
+        .outerjoin(Exam.venue_availabilities)
+        .outerjoin(VenueExam.session)
+        .filter(Course.courseStatus == True)
+        .group_by(Exam.examId)
         .order_by(
             Exam.examStatus.desc(),
-            case((Exam.examStartTime == None, 0), else_=1).asc(),  # NULLs first
-            Exam.examStartTime.desc(),
+            func.min(VenueSession.startDateTime).is_(None).asc(),  # unscheduled first
+            func.min(VenueSession.startDateTime).asc(),           # earliest exam first
             Exam.examId.asc(),
         )
         .all()
     )
-    edit_exam_data = (Exam.query.join(Exam.course)
+
+    display_exam_data = [e for e in exam_data if e.examStatus]
+
+    # Counters
+    unassigned_exam = len([
+        e for e in exam_data
+        if e.examStatus and not e.venue_availabilities
+    ])
+
+    complete_exam = len([
+        e for e in exam_data
+        if (
+            e.examStatus
+            and e.venue_availabilities
+            and e.examNoInvigilator not in (None, 0)
+        )
+    ])
+
+    total_exam_activated = (
+        Exam.query
+        .filter(
+            Exam.examStatus == True,
+            Exam.venue_availabilities.any()
+        )
+        .count()
+    )
+
+    # For edit section
+    edit_exam_data = (
+        Exam.query
+        .join(Exam.course)
         .filter(
             Exam.examStatus == True,
             Course.courseStatus == True
@@ -971,50 +990,41 @@ def admin_manageExam():
         .all()
     )
 
-    display_exam_data = [e for e in exam_data if e.examStatus]
-    total_exam_activated = Exam.query.filter(
-        Exam.examStatus == 1,
-        Exam.examStartTime.isnot(None)
-    ).count()
-
-    # For edit section
     exam_selected_code = request.form.get('editExamCourseSection')
-    course = Course.query.filter(Course.courseCodeSectionIntake==exam_selected_code).first()
-    exam_select = Exam.query.filter_by(examId=course.courseExamId).first() if course else None
-    venue_data = Venue.query.order_by(Venue.venueCapacity.asc()).all()
+    course = (
+        Course.query
+        .filter(Course.courseCodeSectionIntake == exam_selected_code)
+        .first()
+    )
+    exam_select = course.exam if course else None
 
-    # Counters
-    unassigned_exam = len([e for e in exam_data if e.examStatus and e.examStartTime is None])
-    complete_exam = len([e for e in exam_data if e.examStatus and e.examStartTime and e.examEndTime and e.examNoInvigilator not in (None, 0)])
-
+    # POST handling
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
         # 1️⃣ Upload exam file
         if form_type == 'upload':
-            # NEW: Read the two datetime-local inputs
-            time_slot_share = request.form.get("time_slot_share")      # yyyy-mm-ddTHH:MM
-            time_slot_open = request.form.get("time_slot_open")        # yyyy-mm-ddTHH:MM
+            time_slot_share = request.form.get("time_slot_share")
+            time_slot_open = request.form.get("time_slot_open")
             slot_share_dt = datetime.strptime(time_slot_share, "%Y-%m-%dT%H:%M")
             slot_open_dt = datetime.strptime(time_slot_open, "%Y-%m-%dT%H:%M")
-            
-            #process_row_fn=process_exam_row,
+
             result = handle_file_upload(
                 file_key='exam_file',
-                expected_cols=['exam date','day','start','end','program','course code/section','course name','lecturer','total student by venue','venue'],
+                expected_cols=['exam date', 'day', 'start', 'end', 'program', 'course code/section', 'course name', 'lecturer', 'total student by venue', 'venue'],
                 process_row_fn=lambda row: process_exam_row(row, slot_share_dt, slot_open_dt),
                 redirect_endpoint='admin_manageExam',
                 usecols="A:J",
-                skiprows=1 
+                skiprows=1
             )
-        
             recalc_invigilators_for_new_exams()
-            flash("✅ Invigilators recalculated and balanced for overlapping venue/time slots.", "success")
+            flash("✅ Invigilators recalculated and balanced  for overlapping venue/time slots.", "success")
             return result
 
-        # 2️⃣ Edit exam
+        # 2️⃣ Edit / delete exam
         if form_type == "edit" and exam_select:
             action = request.form.get("action")
+
             if action == "update":
                 try:
                     adjust_exam(
@@ -1027,27 +1037,32 @@ def admin_manageExam():
                         time_expire=datetime.fromisoformat(request.form["examTimeExpire"]),
                     )
                     flash("💾 Exam updated successfully", "success")
+
                 except Exception as e:
                     db.session.rollback()
                     flash(str(e), "error")
 
-            elif action == 'delete':    
-                reset_exam_relations(exam_select, user_id)
+            elif action == 'delete':
+                reset_exam_relations(exam_select)
+                flash("🗑️ Exam schedule removed", "success")
+
             return redirect(url_for('admin_manageExam'))
-        
+
+    # Render page
     return render_template(
         'admin/adminManageExam.html',
         active_tab='admin_manageExamtab',
         exam_data=exam_data,
-        unassigned_exam=unassigned_exam,
         display_exam_data=display_exam_data,
+        unassigned_exam=unassigned_exam,
+        complete_exam=complete_exam,
+        total_exam_activated=total_exam_activated,
+        edit_exam_data=edit_exam_data,
+        exam_select=exam_select,
         venue_data=venue_data,
         department_data=department_data,
-        complete_exam=complete_exam,
-        exam_select=exam_select,
-        total_exam_activated=total_exam_activated,
-        edit_exam_data=edit_exam_data
     )
+
 
 
 
