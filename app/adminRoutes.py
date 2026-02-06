@@ -1612,35 +1612,6 @@ def save_timetable_to_db(structured):
 # -------------------------------
 # Function for Admin ManageTimetable Route
 # -------------------------------
-@app.route('/admin/timetable/dashboard/<intake>')
-@login_required
-def admin_timetable_dashboard(intake):
-    # Total timetable sets (distinct lecturers WITH timetable linked)
-    total_timetable = (
-        db.session.query(func.count(func.distinct(TimetableRow.lecturerName)))
-        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
-        .filter(
-            TimetableRow.courseIntake == intake,
-            Timetable.user_id.isnot(None)
-        )
-        .scalar()
-    )
-
-    # Lecturers without assigned timetable (timetable_id is NULL)
-    unassigned_count = (
-        db.session.query(func.count(func.distinct(TimetableRow.lecturerName)))
-        .filter(
-            TimetableRow.courseIntake == intake,
-            TimetableRow.timetable_id.is_(None)
-        )
-        .scalar()
-    )
-
-    return jsonify({
-        "total_timetable": total_timetable or 0,
-        "unassigned": unassigned_count or 0
-    })
-
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
@@ -1651,8 +1622,8 @@ def admin_manageTimetable():
     # Base query
     timetable_data_query = (
         TimetableRow.query
-        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
-        .join(User, Timetable.user_id == User.userId)
+        .outerjoin(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
+        .outerjoin(User, Timetable.user_id == User.userId)
         # .filter(User.userStatus == 1)  # active staff only
     )
 
