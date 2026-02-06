@@ -52,26 +52,24 @@
             {% endfor %}
 
             {% for date, day_exams in exams_by_date.items() %}
-                {% set total_students = 0 %}  {# Initialize once per date #}
-                <div class="venue-block" style="margin-bottom: 20px; padding: 10px; border: 1px solid #aaa; border-radius: 8px;">
-                    <h2>Date: {{ date }} | Total Exams: {{ day_exams|length }}</h2>
-                    <div class="exam-grid">
-                        <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-                            <h2>Venue: {{ venue }}</h2>
-                            {% for exam in day_exams %}
-                                <h3>Time: {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}</h3>
+            <div class="venue-block" style="margin-bottom: 20px; padding: 10px; border: 1px solid #aaa; border-radius: 8px;">
+                <h2>Date: {{ date }} | Total Exams: {{ day_exams|length }}</h2>
+                {% for venue in day_exams|groupby('venue') %}
+                    {% set venue_name = venue.grouper %}
+                    <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                        <h3>Venue: {{ venue_name }}</h3>
+                        {% for time_slot in venue.list|groupby('start_time') %}
+                            {% set exams_at_time = time_slot.list %}
+                            <h4>Time: {{ exams_at_time[0].start_time.strftime("%H:%M") }} - {{ exams_at_time[0].end_time.strftime("%H:%M") }}</h4>
+                            {% for exam in exams_at_time %}
                                 <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }}</strong> [Students: {{ exam.students }}]<br>
-                                {% if exam.is_overnight %}
-                                    <span style="color: #b400b4;">Overnight Exam</span><br>
-                                {% endif %}
-                                {% set total_students = total_students + exam.students %}
                             {% endfor %}
-                        </div>
-                        <strong>Total Students: {{ total_students }}</strong>
+                        {% endfor %}
+                        <strong>Total Students: 0</strong>
                     </div>
-                </div>
+                {% endfor %}
+            </div>
             {% endfor %}
-
         {% endfor %}
     </div>
 </div>
