@@ -394,12 +394,17 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             endDateTime=end_dt
         ).first()
 
+        # Determine required invigilators
+        required_invigilators = 3 if assigned_students > 32 else 2
+        total_invigilators_used += required_invigilators
+
         if not session:
             session = VenueSession(
                 venueNumber=venue.venueNumber,
                 startDateTime=start_dt,
                 endDateTime=end_dt,
-                backupInvigilatorId=None
+                backupInvigilatorId=None,
+                noInvigilator=total_invigilators_used
             )
             db.session.add(session)
             db.session.flush()  # to get session ID
@@ -411,10 +416,6 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             studentCount=course.courseStudent
         )
         db.session.add(venue_exam)
-
-        # Determine required invigilators
-        required_invigilators = 3 if assigned_students > 32 else 2
-        total_invigilators_used += required_invigilators
 
         # Pick invigilators
         chosen = []
@@ -443,8 +444,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + duration_hours
             db.session.add(VenueSessionInvigilator(
                 venueSessionId=session.venueSessionId,
-                invigilatorId=inv.userId,
-                noInvigilator=total_invigilators_used
+                invigilatorId=inv.userId
             ))
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
