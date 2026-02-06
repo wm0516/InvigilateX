@@ -356,7 +356,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         db.session.flush()
 
     # --- Eligible invigilators ---
-    base_query = User.query.filter(User.userLevel == 1, User.userStatus == True)  # 1 = Lecturer
+    base_query = User.query.filter(User.userLevel == "LECTURER", User.userStatus == True)  # 1 = Lecturer
     if exclude_ids:
         base_query = base_query.filter(~User.userId.in_(exclude_ids))
 

@@ -940,14 +940,6 @@ def admin_manageExam():
         if e.examStatus and not e.venue_availabilities
     ])
 
-    complete_exam = len([
-        e for e in exam_data
-        if (
-            e.examStatus
-            and e.venue_availabilities
-        )
-    ])
-
     total_exam_activated = (
         Exam.query
         .filter(
@@ -1034,7 +1026,6 @@ def admin_manageExam():
         exam_data=exam_data,
         display_exam_data=display_exam_data,
         unassigned_exam=unassigned_exam,
-        complete_exam=complete_exam,
         total_exam_activated=total_exam_activated,
         edit_exam_data=edit_exam_data,
         exam_select=exam_select,
