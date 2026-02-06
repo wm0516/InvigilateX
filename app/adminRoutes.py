@@ -449,7 +449,7 @@ def admin_manageDepartment():
         # ---------------- Edit Section ----------------
         elif form_type == 'edit' and department_select:
             action           = request.form.get('action')
-            departmentName   = request.form.get('departmentName')
+            departmentName   = request.form.get('departmentName', '').strip().upper()
             hosId            = request.form.get('hosName') or None
             deanId           = request.form.get('deanName') or None
             hopId            = request.form.get('hopName') or None
