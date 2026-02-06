@@ -1312,7 +1312,7 @@ def admin_manageStaff():
                 "id": request.form.get('userid', '').strip(),
                 "department": request.form.get('department', '').strip(),
                 "name": request.form.get('username', '').strip(),
-                "role": request.form.get('role', '').strip(),
+                "role": request.form.get('role_text', '').strip(),
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
                 "gender": request.form.get('gender', '').strip(),
