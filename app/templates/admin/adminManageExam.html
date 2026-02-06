@@ -189,7 +189,6 @@
                     <th>Course Details</th>
                     <th>Exam Details</th>
                     <th>Invigilator Filter</th>
-                    <th>Added/Edit Details</th>
                 </tr>
             </thead>    
             <tbody>
@@ -212,7 +211,7 @@
                             <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
                             <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
                             <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
-                            <div>Number of Students</div><div><strong>: {{ row.examTotalStudents }}</strong></div>
+                            <div>Number of Students</div><div><strong>: {{ row.totalStudents }}</strong></div>
                             <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
                             <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                             <div>Class Lecturer</div><div><strong>: {{ row.course.classLecturer.userName if row.course.classLecturer else  '<span>N/A</span>' | safe }}</strong></div>
@@ -225,14 +224,6 @@
                             <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
                             <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
                             <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
-                            <div>Exam Invigilators</div>
-                            <div>
-                                {% if row.examNoInvigilator == 0 %}
-                                    <strong>: {{ row.examNoInvigilator }} (Share Venue Exam)</strong>
-                                {% else %}
-                                    <strong>: {{ row.examNoInvigilator }}</strong>
-                                {% endif %}
-                            </div>
                             <div>Exam Venues</div>
                             <div>
                                 {% if row.venue_availabilities %}
@@ -261,14 +252,6 @@
                         </div>
                         {% else %}None
                         {% endif %}
-                    </td>
-                    <td>
-                        <div class="info-grid">
-                            {% if row.examAddedBy and row.examAddedOn %}
-                                <div>By</div><div><strong>: {{ row.addedBy.userName.split(' ')[0] }}</strong></div>
-                                <div>On</div><div><strong>: {{ row.examAddedOn.strftime('%d%b%Y %H:%M') }}</strong></div>
-                            {% endif %}
-                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -527,13 +510,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             .replace(/Non-Flexible Invigilation Staff\s*:/g, "Non-Flexible Invigilation Staff:")
                             .replace(/Non-Flexible Staff List\s*:/g, "Non-Flexible Staff List:")
                             .replace(/Flexible Male Staff\s*:/g, "Flexible Male Staff:")
-                            .replace(/Flexible Female Staff\s*:/g, "Flexible Female Staff:")
-
-                            // ===== Added/Edit Details =====
-                            .replace(/By\s*:/g, "By:")
-                            .replace(/On\s*:/g, "On:");
+                            .replace(/Flexible Female Staff\s*:/g, "Flexible Female Staff:");
                     }
-
                     return text;
                 });
             });
@@ -637,8 +615,6 @@ window.addEventListener("load", () => {
     renumberVisibleRows();
     updateExamDashboardFromTable();
 });
-
-
 </script>
 {% endblock %}
 
