@@ -1,7 +1,7 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
 {% set show_upload = true %}
-{% set show_cal =  true %}
+{% set show_cal = false %}
 {% set show_dashboard = true %}
 {% set show_manual = true %}
 {% set show_edit = true %}
@@ -16,11 +16,11 @@
             <div class="dashboard-row" style="grid-template-columns: 1fr 1fr;">
                 <div class="dashboard-frame">
                     <h3>Total Timetable Sets</h3>
-                    <p class="dashboard-text" style="color:#1E90FF">{{ total_timetable }}</p>
+                    <p class="dashboard-text" id="total_timetable" style="color:#1E90FF">{{ total_timetable }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Lecturers without Assigned Timetable</h3>
-                    <p class="dashboard-text" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
+                    <p class="dashboard-text" id="total_havent_assign" style="color:#e63e3e">{{ unassigned_summary|length }}</p>
                 </div>
             </div>
         </div>
@@ -210,25 +210,23 @@
                             <td>
                                 {% set ns = namespace(displayed=[]) %}
                                 {% for row in timetable_data %}
-                                <div class="timetable-block" data-intake="{{ row.courseIntake }}">
-                                    {% if (not selected_lecturer or row.lecturerName == selected_lecturer) %}
-                                            {% set class_day = row.classDay %}
-                                            {% set start_time = row.classTime.split('-')[0] %}
-                                            {% set end_time = row.classTime.split('-')[1] %}
-                                            {% if class_day == day and time >= start_time and time < end_time %}
-                                                {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
-                                                {% if key not in ns.displayed %}
-                                                    {% set ns.displayed = ns.displayed + [key] %}
-                                                    <div>
-                                                        <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
-                                                        <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
-                                                        <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
-                                                        <strong>Room:</strong> <i>{{ row.classRoom }}</i>
-                                                    </div>
-                                                {% endif %}
+                                {% if (not selected_lecturer or row.lecturerName == selected_lecturer) %}
+                                        {% set class_day = row.classDay %}
+                                        {% set start_time = row.classTime.split('-')[0] %}
+                                        {% set end_time = row.classTime.split('-')[1] %}
+                                        {% if class_day == day and time >= start_time and time < end_time %}
+                                            {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
+                                            {% if key not in ns.displayed %}
+                                                {% set ns.displayed = ns.displayed + [key] %}
+                                                <div>
+                                                    <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
+                                                    <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
+                                                    <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
+                                                    <strong>Room:</strong> <i>{{ row.classRoom }}</i>
+                                                </div>
                                             {% endif %}
                                         {% endif %}
-                                </div>
+                                    {% endif %}
                                 {% endfor %}
                             </td>
                         {% endfor %}
@@ -362,95 +360,49 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("searchBtn")?.addEventListener("click", searchTimetable);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const order = ["JAN", "APR", "AUG", "OCT"];
-    const blocks = document.querySelectorAll(".timetable-block");
 
-    if (!blocks.length) return;
-
-    const now = new Date();
-    const m = now.getMonth();
-
-    let state = {
-        year: now.getFullYear(),
-        intake:
-            m <= 2 ? "JAN" :
-            m <= 6 ? "APR" :
-            m <= 9 ? "AUG" :
-            "OCT"
-    };
-
-    function getAdjacent(dir) {
-        let i = order.indexOf(state.intake) + dir;
-        let y = state.year;
-        if (i < 0) { i = order.length - 1; y--; }
-        if (i >= order.length) { i = 0; y++; }
-
-        return { intake: order[i], year: y };
-    }
-
-    function render() {
-        const key = state.intake + state.year;
-
-        // Update swipe labels
-        document.getElementById("currentIntake").textContent = key;
-        const prev = getAdjacent(-1);
-        const next = getAdjacent(1);
-        document.getElementById("prevLabel").textContent = prev.intake + prev.year;
-        document.getElementById("nextLabel").textContent = next.intake + next.year;
-
-        let visibleCount = 0;
-        blocks.forEach(block => {
-            const intake = block.dataset.intake;
-            const match = intake === key;
-
-            block.style.display = match ? "" : "none";
-            if (match) visibleCount++;
-        });
-
-        const noResults = document.getElementById("noResults");
-        if (noResults) {
-            noResults.style.display = visibleCount ? "none" : "block";
+function renumberVisibleRowsTimetable() {
+    const rows = document.querySelectorAll("table");
+    let index = 1;
+    rows.forEach(row => {
+        if (row.offsetParent !== null) {
+            const cell = row.querySelector("td.row-number");
+            if (cell) {
+                cell.textContent = index++;
+            }
         }
-    }
+    });
+}
 
-    document.getElementById("prevIntake").onclick = () => {
-        state = getAdjacent(-1);
-        render();
-    };
+let timetableDashboardInitialized = false;
+function updateTimetableDashboardFromTable() {
+    const rows = document.querySelectorAll("table");
+    const visibleRows = [...rows].filter(r => r.style.display !== "none");
+    let total = 0;
+    let assign = 0;
 
-    document.getElementById("nextIntake").onclick = () => {
-        state = getAdjacent(1);
-        render();
-    };
-    render(); // initial render
-});
+    visibleRows.forEach(r => {
+        total++;
+    });
+    document.getElementById("total_timetable").textContent = total;
+    document.getElementById("total_havent_assign").textContent = assign;
+}
+
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Initial numbering + dashboard
-    renumberVisibleRows();
-    updateDashboardFromTable();
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const tbody = document.querySelector("#manageTimetable tbody");
-    if (!tbody) return;
-
-    const observer = new MutationObserver(() => {
-        renumberVisibleRows();
-        updateDashboardFromTable();
+    initIntakeSwipe({
+        tableId: "manageTimetable",
+        intakeCol: 1,   // example column index
+        noResultsId: "noResults",
+        dashboardUpdater: updateTimetableDashboardFromTable
     });
-
-    observer.observe(tbody, {
-        subtree: true,
-        attributes: true,
-        attributeFilter: ["style"]
-    });
+    renumberVisibleRowsTimetable();
+    updateTimetableDashboardFromTable();
 });
 
 window.addEventListener("load", () => {
-    renumberVisibleRows();
-    updateDashboardFromTable();
+    renumberVisibleRowsTimetable();
+    updateTimetableDashboardFromTable();
 });
 </script>
 {% endblock %}  
