@@ -137,10 +137,10 @@
             {% for att in group %}
             <tr>
                 {% if loop.index0 == 0 %}
-                <td rowspan="{{ group|length }}">[{{ att.report.exam.session.venueNumber }}]</td>
+                <td rowspan="{{ group|length }}">[{{ att.session.venueNumber }}]</td>
                 <td rowspan="{{ group|length }}">
-                    {{ att.report.exam.session.startDateTime.strftime("%d/%b/%Y %H:%M") }} -
-                    {{ att.report.exam.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
+                    {{ att.session.startDateTime.strftime("%d/%b/%Y %H:%M") }} -
+                    {{ att.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
                 </td>
                 <td rowspan="{{ group|length }}">
                     {{ att.report.exam.course.courseCodeSectionIntake }} - {{ att.report.exam.course.courseName }}
