@@ -337,13 +337,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         return False, f"Exam for course {courseSection} not found"
 
     # Exclude course staff from invigilators
-    exclude_ids = [
-        uid for uid in (
-            course.coursePractical,
-            course.courseTutorial,
-            course.courseLecturer
-        ) if uid
-    ]
+    exclude_ids = [uid for uid in (course.coursePractical, course.courseTutorial, course.courseLecturer) if uid]
 
     # Adjust end datetime in case end < start
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
@@ -361,26 +355,28 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     if exclude_ids:
         base_query = base_query.filter(~User.userId.in_(exclude_ids))
 
-    eligible_invigilators = []
-    for inv in base_query.all():
-        total_hours = (inv.userCumulativeHours or 0.0) + (inv.userPendingCumulativeHours or 0.0)
-        if total_hours < 36 and is_lecturer_available(inv.userId, start_dt, adj_end_dt):
-            eligible_invigilators.append(inv)
+    eligible_invigilators = [
+        inv for inv in base_query.all()
+        if (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0) < 36
+        and is_lecturer_available(inv.userId, start_dt, adj_end_dt)
+    ]
 
     if not eligible_invigilators:
         return False, "No eligible invigilators available"
 
-    # Pools by boolean gender
+    # Pools by gender
     def workload(inv):
         return (inv.userCumulativeHours or 0) + (inv.userPendingCumulativeHours or 0)
 
-    true_pool  = sorted([i for i in eligible_invigilators if i.userGender is True], key=workload)
+    true_pool = sorted([i for i in eligible_invigilators if i.userGender is True], key=workload)
     false_pool = sorted([i for i in eligible_invigilators if i.userGender is False], key=workload)
+
     if not true_pool or not false_pool:
         return False, "Need at least one Male and one Female invigilator"
 
-    # Handle each venue
     total_invigilators_used = 0
+
+    # Handle each venue
     for venue_text, spv in zip(venue_list, studentPerVenue_list):
         spv = int(spv)
         venue_text = venue_text.strip().upper()
@@ -392,15 +388,13 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         assigned_students = min(spv, venue.venueCapacity)
 
-        # Create venue session
-        # 1. Check if session already exists
+        # --- Reuse existing VenueSession if exists ---
         session = db.session.query(VenueSession).filter_by(
             venueNumber=venue.venueNumber,
             startDateTime=start_dt,
             endDateTime=end_dt
         ).first()
 
-        # 2. If not, create it
         if not session:
             session = VenueSession(
                 venueNumber=venue.venueNumber,
@@ -411,7 +405,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             db.session.add(session)
             db.session.flush()  # to get session ID
 
-        # 3. Create VenueExam for the course
+        # Create VenueExam for the course
         venue_exam = VenueExam(
             examId=exam.examId,
             venueSessionId=session.venueSessionId,
@@ -419,50 +413,51 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         )
         db.session.add(venue_exam)
 
-        # 5c️⃣ Determine required invigilators
+        # Determine required invigilators
         required_invigilators = 3 if assigned_students > 32 else 2
         total_invigilators_used += required_invigilators
 
         # Pick invigilators
-        chosen = [true_pool.pop(0), false_pool.pop(0)]  # always one of each
-
+        chosen = []
+        if true_pool and false_pool:
+            chosen = [true_pool.pop(0), false_pool.pop(0)]
+        
         if required_invigilators == 3:
             next_true  = true_pool[0]  if true_pool  else None
             next_false = false_pool[0] if false_pool else None
 
             if next_true and next_false:
-                # Pick the one with higher workload
                 chosen.append(next_true if workload(next_true) > workload(next_false) else next_false)
             elif next_true:
                 chosen.append(next_true)
             elif next_false:
                 chosen.append(next_false)
 
-        # Assign pending hours & attendance
+        # --- Avoid duplicate assignments ---
+        existing_invigilators = {v.invigilatorId for v in session.invigilators}
+
         for inv in chosen:
+            if inv.userId in existing_invigilators:
+                continue  # skip duplicate
+
+            # Assign pending hours & attendance
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + duration_hours
-
-            db.session.add(
-                VenueSessionInvigilator(
-                    venueSessionId=session.venueSessionId,
-                    invigilatorId=inv.userId
-                )
-            )
-
-            db.session.add(
-                InvigilatorAttendance(
-                    reportId=report.invigilationReportId,
-                    invigilatorId=inv.userId,
-                    timeCreate=open,
-                    timeExpire=close
-                )
-            )
+            db.session.add(VenueSessionInvigilator(
+                venueSessionId=session.venueSessionId,
+                invigilatorId=inv.userId
+            ))
+            db.session.add(InvigilatorAttendance(
+                reportId=report.invigilationReportId,
+                invigilatorId=inv.userId,
+                timeCreate=open,
+                timeExpire=close,
+                venueSessionId=session.venueSessionId
+            ))
 
     # Final exam update
     exam.examNoInvigilator = total_invigilators_used
     db.session.commit()
     return True, f"Exam scheduled successfully for {courseSection}"
-
 
 
 # -------------------------------
