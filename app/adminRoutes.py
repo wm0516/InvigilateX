@@ -1315,7 +1315,7 @@ def admin_manageStaff():
                 "role": request.form.get('role_text', '').strip(),
                 "email": request.form.get('email', '').strip(),
                 "contact": request.form.get('contact', '').strip(),
-                "gender": request.form.get('gender', '').strip(),
+                "gender": bool(int(request.form.get('gender', 0))), 
                 "hashed_pw": bcrypt.generate_password_hash('Abc12345!').decode('utf-8'),
                 "cardId": request.form.get('cardId', '').strip(),
             }
