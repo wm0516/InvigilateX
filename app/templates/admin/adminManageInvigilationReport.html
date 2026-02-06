@@ -120,92 +120,105 @@
     <div id="noResults" style="display: none; text-align: center; font-weight: bold; color: #b00;">No results found.</div>
     
     <div class="user-table-container">
-        <table class="user-data-table">
-            <thead>
-                <tr>
-                    <th>Venue</th>
-                    <th>Session Time</th>
-                    <th>Exam(s)</th>
-                    <th>Invigilator(s)</th>
-                    <th>Attendance</th>
-                </tr>
-            </thead>
+<div class="user-table-container">
+    <table class="user-data-table" id="manageInvigilationReport">
+        <thead>
+            <tr>
+                <th>Venue</th>
+                <th>Session Time</th>
+                <th>Exam(s)</th>
+                <th>Invigilator(s)</th>
+                <th>Attendance</th>
+            </tr>
+        </thead>
 
+        <tbody>
+        {% if venue_sessions and venue_sessions|length > 0 %}
+            {% for vs in venue_sessions %}
+            <tr>
+                <!-- ================= Venue ================= -->
+                <td>
+                    <strong>{{ vs.venue.venueNumber }}</strong><br>
+                    Capacity: {{ vs.venue.venueCapacity }}
+                </td>
 
-            {% for session_id, session_group in attendances|groupby("venueSessionId") %}
-                {% set session_start = session_group[0].session.startDateTime %}
-                {% set session_end = session_group[0].session.endDateTime %}
-                {% set venue_number = session_group[0].session.venue.venueNumber %}
+                <!-- ================= Session ================= -->
+                <td>
+                    {{ vs.session.startDateTime.strftime("%d %b %Y %H:%M") }}<br>
+                    →
+                    {{ vs.session.endDateTime.strftime("%d %b %Y %H:%M") }}
+                </td>
 
+                <!-- ================= Exams ================= -->
+                <td>
+                    {% if vs.exams %}
+                        {% for e in vs.exams %}
+                            <div style="margin-bottom:4px;">
+                                <strong>[{{ e.courseCode }}]</strong><br>
+                                {{ e.courseName }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <span style="color:#888;">No exam assigned</span>
+                    {% endif %}
+                </td>
 
-                {% set session_starts = grouped|map(attribute='session.startDateTime')|select('defined')|list %}
-                {% set session_ends = grouped|map(attribute='session.endDateTime')|select('defined')|list %}
-                {% set report_start = session_starts|min if session_starts else None %}
-                {% set report_end = session_ends|max if session_ends else None %}
-
-                <tbody>
-                {% for vs in venue_sessions %}
-                <tr>
-                    <!-- Venue -->
-                    <td>
-                        <strong>{{ vs.venue.venueNumber }}</strong><br>
-                        Capacity: {{ vs.venue.venueCapacity }}
-                    </td>
-
-                    <!-- Session -->
-                    <td>
-                        {{ vs.session.startDateTime.strftime("%d/%b/%Y %H:%M") }}<br>
-                        →
-                        {{ vs.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
-                    </td>
-
-                    <!-- Exams (combined if multiple) -->
-                    <td>
-                        {% if vs.exams %}
-                            {% for e in vs.exams %}
-                                <div>
-                                    <strong>[{{ e.courseCode }}]</strong> {{ e.courseName }}
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <span style="color:gray;">No exam</span>
-                        {% endif %}
-                    </td>
-
-                    <!-- Invigilators -->
-                    <td>
-                        {% if vs.invigilators %}
-                            {% for att in vs.invigilators %}
-                                <div class="info-grid">
-                                    <div>Name</div><div>: {{ att.invigilator.userName }}</div>
-                                    <div>Contact</div><div>: {{ att.invigilator.userContact }}</div>
-                                </div>
-                                <hr>
-                            {% endfor %}
-                        {% else %}
-                            <span style="color:red;">No invigilator assigned</span>
-                        {% endif %}
-                    </td>
-
-                    <!-- Attendance -->
-                    <td>
+                <!-- ================= Invigilators ================= -->
+                <td>
+                    {% if vs.invigilators %}
                         {% for att in vs.invigilators %}
-                            <div>
-                                <span class="status {{ 'frame-completed' if att.remark in ['CHECK IN','COMPLETED'] else 'frame-expired' }}">
+                            <div class="info-grid">
+                                <div>Name</div>
+                                <div>: {{ att.invigilator.userName }}</div>
+
+                                <div>Contact</div>
+                                <div>: {{ att.invigilator.userContact }}</div>
+                            </div>
+                            {% if not loop.last %}
+                                <hr>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span style="color:red;">No invigilator assigned</span>
+                    {% endif %}
+                </td>
+
+                <!-- ================= Attendance ================= -->
+                <td>
+                    {% if vs.invigilators %}
+                        {% for att in vs.invigilators %}
+                            <div style="margin-bottom:6px;">
+                                <span class="status
+                                    {{ 'frame-completed'
+                                        if att.remark in ['CHECK IN','COMPLETED']
+                                        else 'frame-expired' }}">
                                     {{ att.remark }}
                                 </span><br>
-                                In: {{ att.checkIn.strftime("%H:%M") if att.checkIn else "-" }} |
-                                Out: {{ att.checkOut.strftime("%H:%M") if att.checkOut else "-" }}
-                            </div>
-                            <br>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
 
+                                In:
+                                {{ att.checkIn.strftime("%H:%M") if att.checkIn else "-" }}
+                                |
+                                Out:
+                                {{ att.checkOut.strftime("%H:%M") if att.checkOut else "-" }}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <span style="color:#aaa;">—</span>
+                    {% endif %}
+                </td>
+            </tr>
             {% endfor %}
-        </table>
+        {% else %}
+            <tr>
+                <td colspan="5" style="text-align:center; color:#b00; font-weight:bold;">
+                    No invigilation sessions found.
+                </td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+
     </div>
 </div>
 {% endblock %}

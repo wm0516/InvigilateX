@@ -2172,6 +2172,66 @@ def get_venue_session_report_data():
 
     return list(session_map.values())
 
+@app.route('/admin/updateAttendanceTime', methods=['POST'])
+@login_required
+def update_attendance_time():
+    data = request.get_json()
+    att = InvigilatorAttendance.query.get(data['attendance_id'])
+
+    if not att or not att.session:
+        return jsonify(success=False, message="Attendance not found")
+
+    check_in = data.get('check_in')
+    check_out = data.get('check_out')
+    inv_status = data.get('invigilation_status')
+
+    att.checkIn = datetime.fromisoformat(check_in) if check_in else None
+    att.checkOut = datetime.fromisoformat(check_out) if check_out else None
+    att.invigilationStatus = inv_status
+
+    # Recalculate remark
+    if att.checkIn and not att.checkOut:
+        att.remark = "CHECK IN"
+    elif att.checkIn and att.checkOut:
+        if att.checkIn > att.session.startDateTime:
+            att.remark = "CHECK IN LATE"
+        elif att.checkOut < att.session.endDateTime:
+            att.remark = "CHECK OUT EARLY"
+        else:
+            att.remark = "COMPLETED"
+    else:
+        att.remark = "PENDING"
+
+    db.session.commit()
+
+    return jsonify(
+        success=True,
+        message="Attendance updated",
+        check_in=att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None",
+        check_out=att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None",
+        remark=att.remark,
+        invigilation_status=att.invigilationStatus
+    )
+
+
+@app.route('/admin/deleteAttendance', methods=['POST'])
+@login_required
+def delete_attendance():
+    att_id = request.form.get('attendanceId')
+    att = InvigilatorAttendance.query.get(att_id)
+
+    if not att:
+        flash("Attendance not found", "error")
+        return redirect(url_for('admin_manageInvigilationReport'))
+
+    att.remark = "EXPIRED"
+    att.invigilationStatus = False
+    db.session.commit()
+
+    flash("Attendance expired.", "success")
+    return redirect(url_for('admin_manageInvigilationReport'))
+
+
 
 # -------------------------------
 # Admin: Manage Invigilation Report (VenueSession view)
@@ -2253,6 +2313,7 @@ def admin_manageInvigilationReport():
         venue_sessions=venue_sessions,
         **stats
     )
+
 
 
 
