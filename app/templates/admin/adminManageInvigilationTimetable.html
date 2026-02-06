@@ -41,56 +41,46 @@
     </div>
     
     <div class="calendar-container">
-        {# Group all exams by date first #}
-        {% set all_dates = [] %}
-        {% for venue, exams in venue_data.items() %}
-            {% for exam in exams %}
-                {% set _ = all_dates.append(exam.start_time.strftime("%d %b %Y")) %}
-            {% endfor %}
-        {% endfor %}
-        {% set unique_dates = all_dates | unique %}
+        {% set all_dates = venue_data.values()
+            | map('map', attribute='start_time')
+            | sum(start=[])
+            | map('strftime', '%d %b %Y')
+            | unique
+            | list
+        %}
 
-        {% for date in unique_dates %}
-            <div class="date-block">
-                <h2>Date: {{ date }}</h2>
+        {% for date in all_dates %}
+            <div class="date-block calendar-day">
+                <h2 class="calendar-date" data-date="{{ date }}">Date: {{ date }}</h2>
                 {% set grand_total_students = 0 %}
-
-                {# Loop through all venues on this date #}
                 {% for venue, venue_exams in venue_data.items() %}
-                    {% set day_exams = [] %}
-                    {% for exam in venue_exams %}
-                        {% if exam.session.startDateTime.strftime("%d %b %Y") == date %}
-                            {% do day_exams.append(exam) %}
-                        {% endif %}
-                    {% endfor %}
-
+                    {% set day_exams = venue_exams | selectattr("start_time.strftime('%d %b %Y')", "equalto", date) | list%}
                     {% if day_exams %}
-                        {% set venue_start = day_exams | map(attribute='session.startDateTime') | min %}
-                        {% set venue_end = day_exams | map(attribute='session.endDateTime') | max %}
-                        {% set venue_total = 0 %}
+                        {% set venue_start = day_exams | map(attribute='start_time') | min %}
+                        {% set venue_end   = day_exams | map(attribute='end_time') | max %}
+                        {% set venue_total = day_exams | sum(attribute='students') %}
 
-                        <div class="venue-block">
-                            <h3>Venue: {{ venue }} | {{ venue_start.strftime("%H:%M") }} - {{ venue_end.strftime("%H:%M") }}</h3>
+                        <div class="venue-block exam-grid">
+                            <h3>Venue: {{ venue }} | {{ venue_start.strftime('%H:%M') }} – {{ venue_end.strftime('%H:%M') }}</h3>
                             {% for exam in day_exams %}
-                                <p>
-                                    <strong>{{ exam.exam.course.courseCodeSectionIntake }} – {{ exam.exam.course.courseName }} [Students: {{ exam.studentCount }}]</strong>
-                                    {% if exam.session.endDateTime.date() > exam.session.startDateTime.date() %}
-                                        <span style="color: #b400b4;">(Overnight Exam)</span>
-                                    {% endif %}
-                                </p>
-                                {% set venue_total = venue_total + exam.studentCount %}
+                                <div class="exam-card">
+                                    <p><strong>{{ exam.course_code }} – {{ exam.course_name }} [Students: {{ exam.students }}]</strong>
+                                        {% if exam.is_overnight %}
+                                            <span style="color:#b400b4;">
+                                                (Overnight Exam)
+                                            </span>
+                                        {% endif %}
+                                    </p>
+                                </div>
                             {% endfor %}
                             <strong>Total Students: {{ venue_total }}</strong>
                         </div>
-
                         {% set grand_total_students = grand_total_students + venue_total %}
                     {% endif %}
                 {% endfor %}
-
                 <p><strong>Grand Total Students for the Day: {{ grand_total_students }}</strong></p>
             </div>
         {% endfor %}
-
     </div>
 </div>
 {% endblock %}
