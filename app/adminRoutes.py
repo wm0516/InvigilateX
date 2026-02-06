@@ -775,6 +775,10 @@ def get_exam_details(course_code):
             "endDateTime": session.endDateTime.strftime("%Y-%m-%dT%H:%M")
         })
 
+    # Use first venue session for exam times
+    examTimeCreate = exam_venues[0]["startDateTime"] if exam_venues else ""
+    examTimeExpire = exam_venues[0]["endDateTime"] if exam_venues else ""
+
     response_data = {
         "courseCode": course.courseCodeSectionIntake,
         "courseName": course.courseName,
@@ -783,9 +787,10 @@ def get_exam_details(course_code):
         "examId": exam.examId,
         "examStatus": exam.examStatus,
         "examVenues": exam_venues,
-        "examTimeCreate": (attendance.timeCreate.strftime("%Y-%m-%dT%H:%M") if attendance else ""),
-        "examTimeExpire": (attendance.timeExpire.strftime("%Y-%m-%dT%H:%M") if attendance else "")
+        "examTimeCreate": examTimeCreate,
+        "examTimeExpire": examTimeExpire
     }
+
     return jsonify(response_data)
 
 # -------------------------------
