@@ -135,9 +135,9 @@
             </thead>
             {% for session_id, group in grouped_att.items() %}
             <tbody>
-                {% for i, att in enumerate(group) %}
+                {% for att in group %}
                 <tr>
-                    {% if i==0 %}
+                    {% if loop.index0 == 0 %}
                     <td rowspan="{{ group|length }}">[{{ att.report.exam.examId }}]</td>
                     <td rowspan="{{ group|length }}">
                         {{ att.report.exam.course.courseCodeSectionIntake }} - {{ att.report.exam.course.courseName }}
@@ -146,7 +146,6 @@
                     {% endif %}
                     <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
                     <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
-
                     <td>{{ att.remark }}</td>
                     <td>
                         {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
@@ -155,6 +154,7 @@
                     <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}">Edit</button></td>
                 </tr>
                 {% endfor %}
+
             </tbody>
             {% endfor %}
         </table>

@@ -2178,6 +2178,7 @@ def admin_manageInvigilationReport():
                 return redirect(url_for('admin_manageInvigilationReport'))
 
             # Track assigned invigilators
+            '''
             selected_invigilators = []
             for key, value in request.form.items():
                 if key.startswith("slot_"):
@@ -2223,6 +2224,7 @@ def admin_manageInvigilationReport():
                         new_invigilator.userPendingCumulativeHours += session_duration
                         att.invigilatorId = new_invigilator_id
             db.session.commit()
+            '''
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
 
