@@ -219,8 +219,7 @@
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
                                                 <div data-intake="{{ row.courseIntake }}"
-                                                    data-lecturer="{{ row.lecturerName }}"
-                                                    {% if row.timetable_id %}data-timetable="{{ row.timetable_id }}"{% endif %}>
+                                                    data-lecturer="{{ row.lecturerName }}">
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
