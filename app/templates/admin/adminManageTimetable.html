@@ -440,12 +440,11 @@ function updateTimetableDashboardFromTable() {
     const table = document.getElementById("manageTimetable");
     if (!table) return;
 
-    // All div blocks inside visible rows
     const visibleRows = [...table.querySelectorAll("tbody tr")]
         .filter(tr => tr.style.display !== "none");
 
     let totalTimetables = 0;
-    let unassignedLecturersSet = new Set();
+    const visibleLecturersSet = new Set();
 
     visibleRows.forEach(row => {
         const divs = [...row.querySelectorAll("div[data-intake]")]
@@ -454,18 +453,21 @@ function updateTimetableDashboardFromTable() {
         totalTimetables += divs.length;
 
         divs.forEach(div => {
-            const lecturer = div.dataset.lecturer;
-            if (lecturer && div.style.display !== "none") {
-                // Track lecturers displayed
-                visibleLecturers.add(lecturer);
+            if (div.dataset.lecturer) {
+                visibleLecturersSet.add(div.dataset.lecturer);
             }
         });
     });
 
     document.getElementById("total_timetable").textContent = totalTimetables;
-    // If you want lecturers without timetable, you can compute it from your unassigned_summary length
-    document.getElementById("total_havent_assign").textContent = {{ unassigned_summary|length }};
+
+    // Get all lecturers from Jinja template safely
+    const allLecturers = {{ unassigned_summary|map(attribute='lecturer')|list|tojson|safe }};
+    const unassignedLecturersCount = allLecturers.filter(l => !visibleLecturersSet.has(l)).length;
+    document.getElementById("total_havent_assign").textContent = unassignedLecturersCount;
 }
+
+
 
 document.addEventListener("DOMContentLoaded", () => {
     initTimetableIntakeSwipe({
