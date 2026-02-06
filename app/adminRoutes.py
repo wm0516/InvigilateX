@@ -1915,11 +1915,11 @@ def get_venue_calendar_data():
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route
 # -------------------------------
-@app.route('/admin/manageInvigilationTimetableByVenue', methods=['GET'])
+@app.route('/admin/admin_manageInvigilationTimetable', methods=['GET'])
 @login_required
-def admin_manageInvigilationTimetableByVenue():
+def admin_manageInvigilationTimetable():
     venue_data = get_venue_calendar_data()
-    return render_template('admin/adminManageInvigilationTimetableByVenue.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data)
+    return render_template('admin/admin_manageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data)
 
 
 # -------------------------------
