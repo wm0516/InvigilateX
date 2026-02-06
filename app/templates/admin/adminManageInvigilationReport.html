@@ -132,35 +132,43 @@
                 <th>Action</th>
             </tr>
         </thead>
-        {% for session_id, group in grouped_att.items() %}
+        {% for (venue, start, end), courses in grouped_att.items() %}
         <tbody>
-            {% for att in group %}
-            <tr>
-                {% if loop.index0 == 0 %}
-                <td rowspan="{{ group|length }}">[{{ att.session.venueNumber }}]</td>
-                <td rowspan="{{ group|length }}">
-                    {{ att.session.startDateTime.strftime("%d/%b/%Y %H:%M") }} -
-                    {{ att.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
-                </td>
-                <td rowspan="{{ group|length }}">
-                    {{ att.report.exam.course.courseCodeSectionIntake }} - {{ att.report.exam.course.courseName }}
-                </td>
-                {% endif %}
-                <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
-                <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
-                <td>{{ att.remark or "None" }}</td>
-                <td>
-                    {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
-                    {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
-                </td>
-                <td>
-                    <form method="POST" style="display:inline;">
-                        <input type="hidden" name="form_type" value="edit">
-                        <input type="hidden" name="reportId" value="{{ att.report.invigilationReportId }}">
-                        <button type="submit" class="edit-btn">Edit</button>
-                    </form>
-                </td>
-            </tr>
+            {% set total_rows = courses.values() | map('length') | sum %}
+
+            {% for course_code, atts in courses.items() %}
+                {% for att in atts %}
+                <tr>
+                    {% if loop.first and loop.parent.first %}
+                    <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
+                    <td rowspan="{{ total_rows }}">
+                        {{ start.strftime("%d/%b/%Y %H:%M") }} -
+                        {{ end.strftime("%d/%b/%Y %H:%M") }}
+                    </td>
+                    {% endif %}
+
+                    {% if loop.first %}
+                    <td rowspan="{{ atts|length }}">
+                        {{ course_code }} - {{ att.report.exam.course.courseName }}
+                    </td>
+                    {% endif %}
+
+                    <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
+                    <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
+                    <td>{{ att.remark or "None" }}</td>
+                    <td>
+                        {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
+                        {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
+                    </td>
+                    <td>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="form_type" value="edit">
+                            <input type="hidden" name="reportId" value="{{ att.report.invigilationReportId }}">
+                            <button type="submit" class="edit-btn">Edit</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
             {% endfor %}
         </tbody>
         {% endfor %}

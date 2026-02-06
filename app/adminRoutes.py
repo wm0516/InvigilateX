@@ -2144,11 +2144,22 @@ def admin_manageInvigilationReport():
         .all()
     )
 
-    grouped_att = defaultdict(list)
-    for att in attendances:
-        session_id = att.session.venueSessionId if att.session else None
-        grouped_att[session_id].append(att)
+    grouped_att = defaultdict(lambda: defaultdict(list))
 
+    for att in attendances:
+        session = att.session
+        if not session:
+            continue
+
+        session_key = (
+            session.venue.venueNumber,
+            session.startDateTime,
+            session.endDateTime
+        )
+
+    course_key = att.report.exam.course.courseCodeSectionIntake
+
+    grouped_att[session_key][course_key].append(att)
     # Stats (same as before)
     stats = calculate_invigilation_stats()
 
