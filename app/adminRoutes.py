@@ -1612,36 +1612,6 @@ def save_timetable_to_db(structured):
 # -------------------------------
 # Function for Admin ManageTimetable Route
 # -------------------------------
-@app.route('/admin/timetable/dashboard/<intake>')
-@login_required
-def admin_timetable_dashboard(intake):
-    # Total timetable sets (distinct lecturers WITH timetable linked)
-    total_timetable = (
-        db.session.query(func.count(func.distinct(TimetableRow.lecturerName)))
-        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
-        .filter(
-            TimetableRow.courseIntake == intake,
-            Timetable.user_id.isnot(None)
-        )
-        .scalar()
-    )
-
-    # Lecturers without assigned timetable (timetable_id is NULL)
-    unassigned_count = (
-        db.session.query(func.count(func.distinct(TimetableRow.lecturerName)))
-        .filter(
-            TimetableRow.courseIntake == intake,
-            TimetableRow.timetable_id.is_(None)
-        )
-        .scalar()
-    )
-
-    return jsonify({
-        "total_timetable": total_timetable or 0,
-        "unassigned": unassigned_count or 0
-    })
-
-
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required
 def admin_manageTimetable():
@@ -1650,24 +1620,20 @@ def admin_manageTimetable():
     selected_lecturer = request.args.get("lecturer")
 
     # Base query
-    abctimetable_data_query = (
+    timetable_data_query = (
         TimetableRow.query
         .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
         .join(User, Timetable.user_id == User.userId)
         # .filter(User.userStatus == 1)  # active staff only
     )
 
-    timetable_data_query = TimetableRow.query
-
-    # Department filter
     if selected_department:
         timetable_data_query = timetable_data_query.filter(User.userDepartment == selected_department)
-    # Lecturer filter (by userId)
     if selected_lecturer:
         timetable_data_query = timetable_data_query.filter(TimetableRow.lecturerName == selected_lecturer)
 
-
     timetable_data = timetable_data_query.order_by(TimetableRow.rowId.asc()).all()
+
     lecturers = sorted({row.lecturerName for row in timetable_data})
     total_timetable = db.session.query(func.count(func.distinct(TimetableRow.lecturerName))).scalar()
     timetable_list = Timetable.query.filter(Timetable.timetableId != None).all()

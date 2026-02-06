@@ -218,7 +218,12 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div data-intake="{{ row.courseIntake }}" style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
+                                                <div
+                                                    data-intake="{{ row.courseIntake }}"
+                                                    data-staff="{{ 'true' if row.timetable_id else '' }}"
+                                                    data-lecturer="{{ row.lecturerName }}"
+                                                    style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;"
+                                                >
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
@@ -431,7 +436,7 @@ function updateTimetableDashboardFromTable() {
     if (!table) return;
 
     const timetableSet = new Set();
-    const lecturerMap = new Map(); // map to track if a lecturer has unassigned classes
+    const lecturerMap = new Map();
 
     table.querySelectorAll("div[data-intake]").forEach(div => {
         if (div.style.display === "none") return;
@@ -440,12 +445,10 @@ function updateTimetableDashboardFromTable() {
         const intake = (div.dataset.intake || "").trim();
         const key = lecturer + "|" + intake;
 
-        // Count unique lecturer + intake combinations
         timetableSet.add(key);
 
-        // Track unassigned lecturer
         const hasStaff = div.dataset.staff;
-        if (!hasStaff || hasStaff === "null" || hasStaff === "") {
+        if (!hasStaff) {
             lecturerMap.set(lecturer, true);
         } else if (!lecturerMap.has(lecturer)) {
             lecturerMap.set(lecturer, false);
@@ -453,8 +456,6 @@ function updateTimetableDashboardFromTable() {
     });
 
     document.getElementById("total_timetable").textContent = timetableSet.size;
-
-    // Count lecturers who have unassigned timetable
     const totalUnassigned = Array.from(lecturerMap.values()).filter(v => v).length;
     document.getElementById("total_havent_assign").textContent = totalUnassigned;
 }
