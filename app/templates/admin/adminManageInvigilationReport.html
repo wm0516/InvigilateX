@@ -119,49 +119,52 @@
     </div>
     <div id="noResults" style="display: none; text-align: center; font-weight: bold; color: #b00;">No results found.</div>
     
-    <div class="user-table-container">
-        <table class="user-data-table" id="manageInvigilationReport">
-            <thead>
-                <tr>
-                    <th>Venue</th>
-                    <th>Exam Date Start-End Time</th>
-                    <th>Exam CourseIntake/Code/Section - CourseName</th>
-                    <th>Invigilator Details</th>
-                    <th>Invigilation Status</th>
-                    <th>Attendance Status</th>
-                    <th>Check-in/out</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            {% for session_id, group in grouped_att.items() %}
-            <tbody>
-                {% for att in group %}
-                <tr>
-                    {% if loop.index0 == 0 %}
-                    <td rowspan="{{ group|length }}">[{{ att.report.exam.session.venueNumber }}]</td>
-                    <td rowspan="{{ group|length }}">
-                        {{ att.report.exam.session.startDateTime.strftime("%d/%b/%Y %H:%M") }} -
-                        {{ att.report.exam.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
-                    </td>
-                    <td rowspan="{{ group|length }}">
-                        {{ att.report.exam.course.courseCodeSectionIntake }} - {{ att.report.exam.course.courseName }}
-                    </td>
-                    {% endif %}
-                    <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
-                    <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
-                    <td>{{ att.remark }}</td>
-                    <td>
-                        {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
-                        {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
-                    </td>
-                    <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}">Edit</button></td>
-                </tr>
-                {% endfor %}
-
-            </tbody>
+    <table class="user-data-table" id="manageInvigilationReport">
+        <thead>
+            <tr>
+                <th>Venue</th>
+                <th>Exam Date Start-End Time</th>
+                <th>Exam CourseIntake/Code/Section - CourseName</th>
+                <th>Invigilator Details</th>
+                <th>Invigilation Status</th>
+                <th>Attendance Status</th>
+                <th>Check-in/out</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        {% for session_id, group in grouped_att.items() %}
+        <tbody>
+            {% for att in group %}
+            <tr>
+                {% if loop.index0 == 0 %}
+                <td rowspan="{{ group|length }}">[{{ att.report.exam.session.venueNumber }}]</td>
+                <td rowspan="{{ group|length }}">
+                    {{ att.report.exam.session.startDateTime.strftime("%d/%b/%Y %H:%M") }} -
+                    {{ att.report.exam.session.endDateTime.strftime("%d/%b/%Y %H:%M") }}
+                </td>
+                <td rowspan="{{ group|length }}">
+                    {{ att.report.exam.course.courseCodeSectionIntake }} - {{ att.report.exam.course.courseName }}
+                </td>
+                {% endif %}
+                <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
+                <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
+                <td>{{ att.remark or "None" }}</td>
+                <td>
+                    {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
+                    {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
+                </td>
+                <td>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="form_type" value="edit">
+                        <input type="hidden" name="reportId" value="{{ att.report.invigilationReportId }}">
+                        <button type="submit" class="edit-btn">Edit</button>
+                    </form>
+                </td>
+            </tr>
             {% endfor %}
-        </table>
-    </div>
+        </tbody>
+        {% endfor %}
+    </table>
 </div>
 {% endblock %}
 
