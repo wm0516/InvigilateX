@@ -368,20 +368,11 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
     # Optional: store IDs of non-flexible lecturers (same style as your sample)
     all_lecturers = base_query.all()
-    not_flexible_ids = [
-        str(i.userId) for i in all_lecturers
-        if i not in eligible_invigilators
-    ]
-
-    exam.examOutput = [
-        total_lecturers,     # total lecturers
-        flexible_count,      # flexible invigilators
-        male_count,          # male (True)
-        female_count,        # female (False)
-        not_flexible_ids     # optional detail
-    ]
+    not_flexible_ids = [str(i.userId) for i in all_lecturers if i not in eligible_invigilators] 
+    
+    # total lecturers, flexible invigilators, male (True), female (False), optional detail
+    exam.examOutput = [total_lecturers, flexible_count, male_count, female_count, not_flexible_ids]
     db.session.add(exam)
-
     if not eligible_invigilators:
         return False, "No eligible invigilators available"
 
