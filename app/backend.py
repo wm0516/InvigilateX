@@ -393,21 +393,30 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         assigned_students = min(spv, venue.venueCapacity)
 
         # Create venue session
-        session = VenueSession(
-            venueNumber=venue.venueNumber,
+        # 1. Check if session already exists
+        session = db.session.query(VenueSession).filter_by(
+            venueNumber=venue,
             startDateTime=start_dt,
-            endDateTime=adj_end_dt
-        )
-        db.session.add(session)
-        db.session.flush()
+            endDateTime=end_dt
+        ).first()
 
-        # Link exam to session via VenueExam
-        ve = VenueExam(
-            examId=exam.examId,
+        # 2. If not, create it
+        if not session:
+            session = VenueSession(
+                venueNumber=venue,
+                startDateTime=start_dt,
+                endDateTime=end_dt
+            )
+            db.session.add(session)
+            db.session.flush()  # to get session ID
+
+        # 3. Create VenueExam for the course
+        venue_exam = VenueExam(
+            examId=exam.id,
             venueSessionId=session.venueSessionId,
-            studentCount=assigned_students
+            studentCount=course.student_count
         )
-        db.session.add(ve)
+        db.session.add(venue_exam)
 
         # 5c️⃣ Determine required invigilators
         required_invigilators = 3 if assigned_students > 32 else 2
