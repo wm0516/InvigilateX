@@ -192,11 +192,11 @@
                 </tr>
             </thead>    
             <tbody>
-                {% for row in exam_data %}
+                {% for row in exam_data %}  
                 <tr class="
                     {% if not row.examStatus %}
                         inactive-row-show
-                    {% elif row.venue_availabilities and row.venue_availabilities[0].session.startDateTime is none %}
+                    {% elif row.examStatus and not row.venue_availabilities %}
                         error-row-show
                     {% endif %}
                 ">
