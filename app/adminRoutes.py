@@ -13,7 +13,7 @@ import PyPDF2
 from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
-from sqlalchemy import func, and_, or_, case, desc
+from sqlalchemy import func, and_, or_, case, des, distinct
 from app import app
 from .authRoutes import login_required
 from .backend import *
@@ -1611,36 +1611,26 @@ def save_timetable_to_db(structured):
 
 # -------------------------------
 # Function for Admin ManageTimetable Route
-# -------------------------------
 @app.route('/admin/timetable/dashboard/<intake>')
 @login_required
 def admin_timetable_dashboard(intake):
-    # Total timetable sets (distinct lecturers WITH timetable linked)
+    # Total timetable sets (distinct lecturer + intake combination)
     total_timetable = (
-        db.session.query(func.count(func.distinct(TimetableRow.lecturerName)))
-        .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
-        .filter(
-            TimetableRow.courseIntake == intake,
-            Timetable.user_id.isnot(None)
-        )
+        db.session.query(func.count(distinct(TimetableRow.lecturerName + "|" + TimetableRow.courseIntake)))
         .scalar()
     )
 
-    # Lecturers without assigned timetable (timetable_id is NULL)
+    # Timetable sets without assigned staff
     unassigned_count = (
-        db.session.query(func.count(func.distinct(TimetableRow.lecturerName)))
-        .filter(
-            TimetableRow.courseIntake == intake,
-            TimetableRow.timetable_id.is_(None)
-        )
+        db.session.query(func.count(distinct(TimetableRow.lecturerName + "|" + TimetableRow.courseIntake)))
+        .filter(TimetableRow.timetable_id.is_(None))
         .scalar()
     )
 
     return jsonify({
         "total_timetable": total_timetable or 0,
-        "unassigned": unassigned_count or 0
+        "total_lecturer_no_assign": unassigned_count or 0
     })
-
 
 @app.route('/admin/manageTimetable', methods=['GET', 'POST'])
 @login_required

@@ -218,12 +218,15 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div data-intake="{{ row.courseIntake }}">
+                                                <div data-intake="{{ row.courseIntake }}"
+                                                    data-lecturer="{{ row.lecturerName }}"
+                                                    {% if row.timetable_id %}data-timetable="{{ row.timetable_id }}"{% endif %}>
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
                                                     <strong>Room:</strong> <i>{{ row.classRoom }}</i>
                                                 </div>
+
                                             {% endif %}
                                         {% endif %}
                                     {% endif %}
@@ -429,21 +432,20 @@ function updateTimetableDashboardFromTable() {
     const table = document.getElementById("manageTimetable");
     if (!table) return;
 
-    const timetableSet = new Set();
-    const unassignedSet = new Set();
+    const timetableSet = new Set();     // all lecturer + intake combos
+    const unassignedSet = new Set();    // combos without staff
 
     table.querySelectorAll("div[data-intake]").forEach(div => {
-        if (div.style.display === "none") return;
+        if (div.style.display === "none") return; // skip hidden rows
 
-        const lecturer = div.dataset.lecturer || "";
+        const lecturer = div.dataset.lecturer;
         const intake = div.dataset.intake;
         const key = lecturer + "|" + intake;
 
         timetableSet.add(key);
 
-        const hasStaff = div.dataset.staff;
-        if (!hasStaff) {
-            unassignedSet.add(lecturer); // group by lecturer
+        if (!div.dataset.timetable) {  // no linked staff
+            unassignedSet.add(key);
         }
     });
 
