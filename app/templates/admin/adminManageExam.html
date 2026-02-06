@@ -331,10 +331,10 @@ function populateEditForm(data) {
     document.getElementById("editStudent").value = data.totalStudents || "";
 
     if (data.examStartTime)
-        document.getElementById("editStartDateTime").value = data.exam_venues.startDateTime.slice(0,16);
+        document.getElementById("editStartDateTime").value = data.examVenues.startDateTime.slice(0,16);
 
     if (data.examEndTime)
-        document.getElementById("editEndDateTime").value = data.exam_venues.endDateTime.slice(0,16);
+        document.getElementById("editEndDateTime").value = data.examVenues.endDateTime.slice(0,16);
 
     if (data.examTimeCreate)
         document.getElementById("examTimeCreate").value = data.examTimeCreate.slice(0,16);
