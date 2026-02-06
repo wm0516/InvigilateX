@@ -403,7 +403,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         # 2. If not, create it
         if not session:
             session = VenueSession(
-                venueNumber=venue,
+                venueNumber=venue.venueNumber,
                 startDateTime=start_dt,
                 endDateTime=end_dt,
                 backupInvigilatorId=None
