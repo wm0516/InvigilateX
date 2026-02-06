@@ -218,26 +218,44 @@
                         </div>
                     </td>
                     <td> 
-                        {% if row.exams.startDateTime and row.exams.endDateTime %}
-                        <div class="info-grid">
-                            <div>Exam Date</div><div><strong>: {{ row.exams.startDateTime.strftime("%d%b%Y") }} - {{ row.exams.endDateTime.strftime("%d%b%Y") }}</strong></div>
-                            <div>Exam Day</div><div><strong>: {{ row.exams.startDateTime.strftime("%A") }} - {{ row.exams.endDateTime.strftime("%A") }}</strong></div>
-                            <div>Exam Time</div><div><strong>: {{ row.exams.startDateTime.strftime("%H:%M") }} - {{ row.exams.endDateTime.strftime("%H:%M") }}</strong></div>
-                            <div>Exam Period</div><div><strong>: {{ (row.exams.endDateTime - row.exams.startDateTime).seconds // 3600 }}h {{ ((row.exams.endDateTime - row.exams.startDateTime).seconds % 3600) // 60 }}m</strong></div>
-                            <div>Exam Venues</div>
-                            <div>
-                                {% if row.venue %}
-                                    {% for va in row.venue %}
-                                        <strong>: {{ va.venueNumber }}</strong><br>
+                        {% if row.venue_availabilities %}
+                            {% set first_session = row.venue_availabilities[0].session %}
+                            {% if first_session %}
+                            <div class="info-grid">
+                                <div>Exam Date</div>
+                                <div><strong>:
+                                    {{ first_session.startDateTime.strftime("%d %b %Y") }}
+                                </strong></div>
+
+                                <div>Exam Day</div>
+                                <div><strong>:
+                                    {{ first_session.startDateTime.strftime("%A") }}
+                                </strong></div>
+
+                                <div>Exam Time</div>
+                                <div><strong>:
+                                    {{ first_session.startDateTime.strftime("%H:%M") }} -
+                                    {{ first_session.endDateTime.strftime("%H:%M") }}
+                                </strong></div>
+
+                                <div>Exam Period</div>
+                                <div><strong>:
+                                    {{ ((first_session.endDateTime - first_session.startDateTime).seconds // 3600) }}h
+                                    {{ (((first_session.endDateTime - first_session.startDateTime).seconds % 3600) // 60) }}m
+                                </strong></div>
+
+                                <div>Exam Venues</div>
+                                <div>
+                                    {% for va in row.venue_availabilities %}
+                                        <strong>: {{ va.session.venueNumber }}</strong><br>
                                     {% endfor %}
-                                {% else %}
-                                    <strong>: None</strong>
-                                {% endif %}
+                                </div>
                             </div>
-                        </div>
+                            {% endif %}
                         {% else %}
-                        <span class="status frame-expired">Exam details not yet assigned</span>
+                            <span class="status frame-expired">Exam details not yet assigned</span>
                         {% endif %}
+
                     </td>
                     <td>
                         {% if row.examOutput %}
@@ -329,30 +347,33 @@ function createVenueRow(venue = "", capacity = "", isFirst = false) {
 function populateEditForm(data) {
     document.getElementById("editProgramCode").value = data.courseDepartment || "";
     document.getElementById("editStudent").value = data.totalStudents || "";
+    const venues = data.examVenues || [];
 
-    if (data.examVenues.startDateTime)
-        document.getElementById("editStartDateTime").value = data.examVenues.startDateTime.slice(0,16);
+    // ===== FIX: get datetime from FIRST venue =====
+    if (venues.length > 0) {
+        document.getElementById("editStartDateTime").value = venues[0].startDateTime.slice(0, 16);
+        document.getElementById("editEndDateTime").value = venues[0].endDateTime.slice(0, 16);
+    }
 
-    if (data.examVenues.endDateTime)
-        document.getElementById("editEndDateTime").value = data.examVenues.endDateTime.slice(0,16);
+    if (data.examTimeCreate) {
+        document.getElementById("examTimeCreate").value = data.examTimeCreate.slice(0, 16);
+    }
 
-    if (data.examTimeCreate)
-        document.getElementById("examTimeCreate").value = data.examTimeCreate.slice(0,16);
+    if (data.examTimeExpire) {
+        document.getElementById("examTimeExpire").value = data.examTimeExpire.slice(0, 16);
+    }
 
-    if (data.examTimeExpire)
-        document.getElementById("examTimeExpire").value = data.examTimeExpire.slice(0,16);
-
+    // ===== Populate venues =====
     const container = document.getElementById("venueContainer");
     container.innerHTML = "";
 
-    if (data.examVenues?.length) {
-        data.examVenues.forEach((v, i) =>
-            createVenueRow(v.venueNumber, v.capacity, i === 0)
-        );
+    if (venues.length > 0) {
+        venues.forEach((v, i) => { createVenueRow(v.venueNumber, v.studentCount, i === 0);});
     } else {
         createVenueRow("", "", true);
     }
 }
+
 
 // =====================================================
 // LOAD EXAM INTO EDIT FORM
