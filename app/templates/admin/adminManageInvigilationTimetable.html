@@ -41,35 +41,46 @@
     </div>
     
     <div class="calendar-container">
+        {# Group all exams by date first #}
+        {% set all_dates = [] %}
         {% for venue, exams in venue_data.items() %}
-            {% set exams_by_date = {} %}
             {% for exam in exams %}
-                {% set exam_date = exam.start_time.strftime("%d %b %Y") %}
-                {% if exam_date not in exams_by_date %}
-                    {% set _ = exams_by_date.update({exam_date: []}) %}
-                {% endif %}
-                {% set _ = exams_by_date[exam_date].append(exam) %}
+                {% set _ = all_dates.append(exam.start_time.strftime("%d %b %Y")) %}
             {% endfor %}
+        {% endfor %}
+        {% set unique_dates = all_dates | unique %}
 
-            {% for date, day_exams in exams_by_date.items() %}
-            <div class="venue-block" style="margin-bottom: 20px; padding: 10px; border: 1px solid #aaa; border-radius: 8px;">
-                <h2>Date: {{ date }} | Total Exams: {{ day_exams|length }}</h2>
-                {% for venue in day_exams|groupby('venue') %}
-                    {% set venue_name = venue.grouper %}
-                    <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-                        <h3>Venue: {{ venue_name }}</h3>
-                        {% for time_slot in venue.list|groupby('start_time') %}
-                            {% set exams_at_time = time_slot.list %}
-                            <h4>Time: {{ exams_at_time[0].start_time.strftime("%H:%M") }} - {{ exams_at_time[0].end_time.strftime("%H:%M") }}</h4>
-                            {% for exam in exams_at_time %}
-                                <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }}</strong> [Students: {{ exam.students }}]<br>
+        {% for date in unique_dates %}
+            <div class="date-block" style="margin-bottom: 25px; padding: 10px; border: 1px solid #888; border-radius: 8px;">
+                <h2>Date: {{ date }}</h2>
+                {% set grand_total_students = 0 %}
+
+                {% for venue, exams in venue_data.items() %}
+                    {% set day_exams = exams | selectattr("start_time", "string", "contains", date) | list %}
+                    {% if day_exams %}
+                        {% set venue_start = day_exams | map(attribute='start_time') | min %}
+                        {% set venue_end = day_exams | map(attribute='end_time') | max %}
+                        {% set venue_total = 0 %}
+                        
+                        <div class="venue-block" style="margin-bottom: 15px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                            <h3>Venue: {{ venue }} | {{ venue_start.strftime("%H:%M") }} - {{ venue_end.strftime("%H:%M") }}</h3>
+                            {% for exam in day_exams %}
+                                <p>
+                                    <strong>{{ exam.course_code }} [Students: {{ exam.students }}]</strong>
+                                    {% if exam.is_overnight %}
+                                        <span style="color: #b400b4;">(Overnight Exam)</span>
+                                    {% endif %}
+                                </p>
+                                {% set venue_total = venue_total + exam.students %}
                             {% endfor %}
-                        {% endfor %}
-                        <strong>Total Students: 0</strong>
-                    </div>
+                            <strong>Total Students: {{ venue_total }}</strong>
+                        </div>
+                        {% set grand_total_students = grand_total_students + venue_total %}
+                    {% endif %}
                 {% endfor %}
+
+                <p><strong>Grand Total Students for the Day: {{ grand_total_students }}</strong></p>
             </div>
-            {% endfor %}
         {% endfor %}
     </div>
 </div>
