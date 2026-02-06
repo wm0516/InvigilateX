@@ -395,7 +395,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         # Create venue session
         # 1. Check if session already exists
         session = db.session.query(VenueSession).filter_by(
-            venueNumber=venue,
+            venueNumber=venue.venueNumber,
             startDateTime=start_dt,
             endDateTime=end_dt
         ).first()
