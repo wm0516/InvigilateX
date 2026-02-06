@@ -41,14 +41,16 @@
     </div>
     
     <div class="calendar-container">
-        {% set all_dates = venue_data.values()
-            | map('map', attribute='start_time')
-            | sum(start=[])
-            | map('strftime', '%d %b %Y')
-            | unique
-            | list
-        %}
-
+        {% set all_dates = [] %}
+        {% for venue_exams in venue_data.values() %}
+            {% for exam in venue_exams %}
+                {% set date_str = exam.start_time.strftime('%d %b %Y') %}
+                {% if date_str not in all_dates %}
+                    {% set all_dates = all_dates + [date_str] %}
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        
         {% for date in all_dates %}
             <div class="date-block calendar-day">
                 <h2 class="calendar-date" data-date="{{ date }}">Date: {{ date }}</h2>
