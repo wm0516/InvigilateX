@@ -1624,7 +1624,7 @@ def admin_manageTimetable():
         TimetableRow.query
         .join(Timetable, TimetableRow.timetable_id == Timetable.timetableId)
         .join(User, Timetable.user_id == User.userId)
-        .filter(User.userStatus == 1)  # active staff only
+        # .filter(User.userStatus == 1)  # active staff only
     )
 
     # Department filter
