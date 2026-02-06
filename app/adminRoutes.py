@@ -2125,9 +2125,6 @@ def get_valid_invigilators():
 # -------------------------------
 # Admin: Manage Invigilation Report
 # -------------------------------
-@# -------------------------------
-# Admin: Manage Invigilation Report (VenueSession view)
-# -------------------------------
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
