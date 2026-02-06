@@ -25,7 +25,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # cleanup_expired_timetable_rows()
-    update_attendanceStatus()
+    # update_attendanceStatus()
     login_text = ''
     password_text = ''
 
@@ -748,7 +748,7 @@ def cleanup_expired_timetable_rows():
 
     db.session.commit()  # Commit even if 0, or you can add a check
 
-
+'''
 def update_attendanceStatus():
     all_attendance = InvigilatorAttendance.query.all()
     time_now = datetime.now()
@@ -756,8 +756,8 @@ def update_attendanceStatus():
     for attendance in all_attendance:
         report = attendance.report
         exam = report.exam if report else None
-        if not exam or not exam.examEndTime or not exam.examStartTime:
-            continue
+        # if not exam or not exam.examEndTime or not exam.examStartTime:
+        #     continue
 
         exam_duration = (exam.examEndTime - exam.examStartTime).total_seconds() / 3600.0
 
@@ -793,7 +793,7 @@ def update_attendanceStatus():
                 attendance.invigilator.userCumulativeHours += worked_hours
 
     db.session.commit()
-
+'''
 
 
 
