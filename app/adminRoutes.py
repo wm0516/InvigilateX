@@ -1887,7 +1887,15 @@ def update_attendance_time():
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
 def get_venue_calendar_data():
-    venue_exams = VenueExam.query.join(Exam).join(VenueSession).join(Course).all()
+    venue_exams = (
+        VenueExam.query
+        .join(Exam, VenueExam.exam)
+        .join(Course, Exam.course)
+        .join(VenueSession, VenueExam.session)
+        .filter(Exam.examStatus == True)
+        .all()
+    )
+
     venue_data = defaultdict(list)
 
     for ve in venue_exams:
@@ -1901,11 +1909,11 @@ def get_venue_calendar_data():
             "course_name": course.courseName,
             "start_time": session.startDateTime,
             "end_time": session.endDateTime,
+            "date_str": session.startDateTime.strftime('%d %b %Y'),
             "students": ve.studentCount,
             "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
         })
 
-    # Optional: sort exams for each venue by start time
     for venue in venue_data:
         venue_data[venue].sort(key=lambda x: x["start_time"])
 
