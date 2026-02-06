@@ -218,12 +218,8 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div
-                                                    data-intake="{{ row.courseIntake }}"
-                                                    data-staff="{{ 'true' if row.timetable_id else '' }}"
-                                                    data-lecturer="{{ row.lecturerName }}"
-                                                    style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;"
-                                                >
+                                                <div data-intake="{{ row.courseIntake }}"
+                                                    style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
