@@ -2154,8 +2154,7 @@ def admin_manageInvigilationReport():
         session_key = (
             session.venue.venueNumber,
             session.startDateTime,
-            session.endDateTime,
-            session.examType
+            session.endDateTime
         )
 
     course_key = att.report.exam.course.courseCodeSectionIntake
