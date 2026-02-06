@@ -414,7 +414,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         venue_exam = VenueExam(
             examId=exam.examId,
             venueSessionId=session.venueSessionId,
-            studentCount=course.student_count
+            studentCount=course.courseStudent
         )
         db.session.add(venue_exam)
 
