@@ -195,7 +195,7 @@
                 {% for row in exam_data %}
                 <tr class="
                     {% if not row.examStatus %}inactive-row-show
-                    {% elif row.examStartTime is none %}error-row-show
+                    {% elif row.exams.startDateTime is none %}error-row-show
                     {% endif %}">
                     <td class="row-number"></td>
                     <td>
@@ -217,17 +217,17 @@
                             <div>Class Lecturer</div><div><strong>: {{ row.course.classLecturer.userName if row.course.classLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                         </div>
                     </td>
-                    <td>
-                        {% if row.examStartTime and row.examEndTime %}
+                    <td> 
+                        {% if row.exams.startDateTime and row.exams.endDateTime %}
                         <div class="info-grid">
-                            <div>Exam Date</div><div><strong>: {{ row.examStartTime.strftime("%d%b%Y") }} - {{ row.examEndTime.strftime("%d%b%Y") }}</strong></div>
-                            <div>Exam Day</div><div><strong>: {{ row.examStartTime.strftime("%A") }} - {{ row.examEndTime.strftime("%A") }}</strong></div>
-                            <div>Exam Time</div><div><strong>: {{ row.examStartTime.strftime("%H:%M") }} - {{ row.examEndTime.strftime("%H:%M") }}</strong></div>
-                            <div>Exam Period</div><div><strong>: {{ (row.examEndTime - row.examStartTime).seconds // 3600 }}h {{ ((row.examEndTime - row.examStartTime).seconds % 3600) // 60 }}m</strong></div>
+                            <div>Exam Date</div><div><strong>: {{ row.exams.startDateTime.strftime("%d%b%Y") }} - {{ row.exams.endDateTime.strftime("%d%b%Y") }}</strong></div>
+                            <div>Exam Day</div><div><strong>: {{ row.exams.startDateTime.strftime("%A") }} - {{ row.exams.endDateTime.strftime("%A") }}</strong></div>
+                            <div>Exam Time</div><div><strong>: {{ row.exams.startDateTime.strftime("%H:%M") }} - {{ row.exams.endDateTime.strftime("%H:%M") }}</strong></div>
+                            <div>Exam Period</div><div><strong>: {{ (row.exams.endDateTime - row.exams.startDateTime).seconds // 3600 }}h {{ ((row.exams.endDateTime - row.exams.startDateTime).seconds % 3600) // 60 }}m</strong></div>
                             <div>Exam Venues</div>
                             <div>
-                                {% if row.venue_availabilities %}
-                                    {% for va in row.venue_availabilities %}
+                                {% if row.venue %}
+                                    {% for va in row.venue %}
                                         <strong>: {{ va.venueNumber }}</strong><br>
                                     {% endfor %}
                                 {% else %}
@@ -330,10 +330,10 @@ function populateEditForm(data) {
     document.getElementById("editProgramCode").value = data.courseDepartment || "";
     document.getElementById("editStudent").value = data.totalStudents || "";
 
-    if (data.examStartTime)
+    if (data.examVenues.startDateTime)
         document.getElementById("editStartDateTime").value = data.examVenues.startDateTime.slice(0,16);
 
-    if (data.examEndTime)
+    if (data.examVenues.endDateTime)
         document.getElementById("editEndDateTime").value = data.examVenues.endDateTime.slice(0,16);
 
     if (data.examTimeCreate)
