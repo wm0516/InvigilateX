@@ -876,7 +876,6 @@ def reset_exam_relations(exam):
 
     # 4. Reset exam fields
     exam.examOutput = None
-    exam.examStatus = False  # optional, but usually logical
     db.session.commit()
 
 
@@ -1020,7 +1019,7 @@ def admin_manageExam():
                         time_open=safe_iso(request.form.get("examTimeCreate"), "Open Time"),
                         time_expire=safe_iso(request.form.get("examTimeExpire"), "Expire Time"),
                     )
-                    flash(f"💾 Exam {exam_select.examId} updated successfully", "success")
+                    flash(f"💾 Exam {exam_select.examId} - {exam_select.course.courseName} updated successfully", "success")
                     record_action("EDIT EXAM", "EXAM", exam_select.examId, user_id)
 
                 except Exception as e:
@@ -1029,7 +1028,7 @@ def admin_manageExam():
 
             elif action == 'delete':
                 reset_exam_relations(exam_select)
-                flash(f"🗑️ Exam {exam_select.examId} schedule removed", "success")
+                flash(f"🗑️ Exam {exam_select.examId} - {exam_select.course.courseName} schedule removed", "success")
                 record_action("DELETE EXAM", "EXAM", exam_select.examId, user_id)
 
             return redirect(url_for('admin_manageExam'))
