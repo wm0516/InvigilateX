@@ -211,7 +211,7 @@
                             <div>Course Name</div><div><strong>: {{ row.course.courseName }}</strong></div>
                             <div>Course Code/Section</div><div><strong>: {{ row.course.courseCodeSectionIntake }}</strong></div>
                             <div>Program Code</div><div><strong>: {{ row.course.courseDepartment }}</strong></div>
-                            <div>Number of Students</div><div><strong>: {{ row.totalStudents }}</strong></div>
+                            <div>Number of Students</div><div><strong>: {{ row.cours.courseStudent }}</strong></div>
                             <div>Practical Lecturer</div><div><strong>: {{ row.course.practicalLecturer.userName if row.course.practicalLecturer else '<span>N/A</span>' | safe }}</strong></div>
                             <div>Tutorial Lecturer</div><div><strong>: {{ row.course.tutorialLecturer.userName if row.course.tutorialLecturer else  '<span>N/A</span>' | safe }}</strong></div>
                             <div>Class Lecturer</div><div><strong>: {{ row.course.classLecturer.userName if row.course.classLecturer else  '<span>N/A</span>' | safe }}</strong></div>
