@@ -1944,138 +1944,106 @@ def admin_manageInvigilationTimetable():
 
 
 
-
-
-
-
 # -------------------------------
-# Calculate All InvigilatorAttendance and InvigilationReport Data
+# Calculate Stats
 # -------------------------------
 def calculate_invigilation_stats():
-    query = (
-        InvigilatorAttendance.query
-        .filter(InvigilatorAttendance.invigilationStatus == True)
-        .join(VenueSession, InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId)
-        .all()
-    )
-
+    query = InvigilatorAttendance.query.join(VenueSession).all()
     stats = {
         "total_report": InvigilationReport.query.count(),
-        "total_activeReport": InvigilationReport.query.join(Exam).filter(Exam.examStatus == True).count(),
+        "total_activeReport": InvigilationReport.query.join(Exam).filter(Exam.examStatus==True).count(),
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
 
     for att in query:
-        session_start = att.session.startDateTime if att.session else None
-        session_end = att.session.endDateTime if att.session else None
-        if att.checkIn and session_start and att.checkIn > session_start:
+        session = att.session
+        if not session:
+            continue
+        if att.checkIn and att.checkIn > session.startDateTime:
             stats["total_checkInLate"] += 1
-        if att.checkOut and session_end and att.checkOut < session_end:
+        if att.checkOut and att.checkOut < session.endDateTime:
             stats["total_checkOutEarly"] += 1
-
     return stats
 
+
 # -------------------------------
-# Helper: Parse Date + Time from Excel
+# Parse Excel datetime
 # -------------------------------
 def parse_attendance_datetime(date_val, time_val):
     try:
         if isinstance(date_val, datetime):
             date_part = date_val.date()
         else:
-            date_str = str(date_val).strip()
-            try:
-                date_part = datetime.strptime(date_str, "%d/%m/%Y").date()
-            except ValueError:
-                date_part = datetime.strptime(date_str.split()[0], "%Y-%m-%d").date()
-
+            date_part = datetime.strptime(str(date_val).split()[0], "%d/%m/%Y").date()
         if isinstance(time_val, datetime):
             time_part = time_val.time()
         else:
-            time_str = str(time_val).strip()
-            parts = time_str.split(":")
+            parts = str(time_val).strip().split(":")
             if len(parts) == 2:
                 hours, minutes = int(parts[0]), int(parts[1])
                 time_part = datetime.strptime(f"{hours:02d}:{minutes:02d}:00", "%H:%M:%S").time()
-            elif len(parts) == 3:
-                time_part = datetime.strptime(time_str, "%H:%M:%S").time()
             else:
-                raise ValueError(f"Invalid time format: {time_str}")
+                time_part = datetime.strptime(str(time_val), "%H:%M:%S").time()
         return datetime.combine(date_part, time_part)
     except Exception as e:
-        flash(f"Error parsing datetime: {e}", "error")
         return None
 
 
 # -------------------------------
-# Process Single Attendance Row
+# Process Attendance Row
 # -------------------------------
 def process_attendance_row(row):
     try:
-        raw_uid = str(row['card iud']).upper().replace('UID:', '').strip().replace(' ', '')
+        raw_uid = str(row['card iud']).upper().replace('UID:','').strip().replace(' ','')
         user = User.query.filter_by(userCardId=raw_uid).first()
         if not user:
-            return False, f"No matching user for UID {raw_uid}"
+            return False, f"No user for UID {raw_uid}"
 
         dt_obj = parse_attendance_datetime(row['date'], row['time'])
         if not dt_obj:
-            return False, f"Invalid date/time: {row['date']} {row['time']}"
+            return False, f"Invalid date/time {row['date']} {row['time']}"
 
         inout_val = str(row['in/out']).lower().strip()
-        if inout_val not in ['in', 'out']:
-            return False, f"Invalid in/out value: {row['in/out']}"
-
-        # Skip duplicates
-        existing = None
-        if inout_val == 'in':
-            existing = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId, checkIn=dt_obj).first()
-        else:
-            existing = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId, checkOut=dt_obj).first()
-        if existing:
-            return False, f"Duplicate entry skipped for {user.userName} at {dt_obj} ({inout_val.upper()})"
+        if inout_val not in ['in','out']:
+            return False, f"Invalid in/out {row['in/out']}"
 
         attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
         if not attendances:
-            return False, f"No sessions found for user {user.userName} near {dt_obj}"
+            return False, f"No sessions found for {user.userName}"
 
-        updated_count = 0
+        updated = 0
         for att in attendances:
             session = att.session
             if not session:
                 continue
-            session_start = session.startDateTime
-            session_end = session.endDateTime
-
-            # Allow 1-hour buffer before/after session
-            if not (session_start - timedelta(hours=1) <= dt_obj <= session_end + timedelta(hours=1)):
+            if not (session.startDateTime - timedelta(hours=1) <= dt_obj <= session.endDateTime + timedelta(hours=1)):
                 continue
 
-            if inout_val == "in" and att.checkIn is None:
+            if inout_val == "in" and not att.checkIn:
                 att.checkIn = dt_obj
-                att.remark = "CHECK IN" if dt_obj <= session_start else "CHECK IN LATE"
-                updated_count += 1
-            elif inout_val == "out" and att.checkOut is None:
+                att.remark = "CHECK IN" if dt_obj <= session.startDateTime else "CHECK IN LATE"
+                updated += 1
+            elif inout_val == "out" and not att.checkOut:
                 att.checkOut = dt_obj
                 if att.checkIn:
-                    checkin_for_hours = att.checkIn if att.remark == "CHECK IN LATE" else session_start
-                    checkout_for_hours = dt_obj if dt_obj < session_end else session_end
-                    hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
+                    checkin_for_hours = att.checkIn if att.remark=="CHECK IN LATE" else session.startDateTime
+                    checkout_for_hours = dt_obj if dt_obj < session.endDateTime else session.endDateTime
+                    hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds()/3600
                     user.userCumulativeHours += hours_worked
-                    att.remark = "COMPLETED" if dt_obj >= session_end else "CHECK OUT EARLY"
+                    att.remark = "COMPLETED" if dt_obj >= session.endDateTime else "CHECK OUT EARLY"
                 else:
                     att.remark = "PENDING"
-                updated_count += 1
+                updated += 1
 
-        if updated_count > 0:
+        if updated>0:
             db.session.commit()
-            return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
+            return True, f"Attendance updated for {user.userName} ({updated} record(s))"
         else:
-            return False, f"No attendance sessions updated for {user.userName} at {dt_obj}"
-
+            return False, f"No session updated for {user.userName}"
     except Exception as e:
         db.session.rollback()
-        return False, f"Error processing row: {e}"
+        return False, str(e)
 
 
 # -------------------------------
@@ -2086,23 +2054,20 @@ def process_attendance_row(row):
 def get_report(report_id):
     report = InvigilationReport.query.get(report_id)
     if not report:
-        return jsonify({"error": "Report not found"}), 404
+        return jsonify({"error":"Report not found"}),404
 
     exam = report.exam
     course = exam.course
 
-    attendances = [
-        {
-            "attendanceId": att.attendanceId,
-            "invigilatorId": att.invigilatorId,
-            "invigilatorName": att.invigilator.userName,
-            "gender": att.invigilator.userGender,
-            "venue": att.session.venue.venueNumber if att.session else None,
-            "sessionStart": att.session.startDateTime.strftime("%Y-%m-%d %H:%M") if att.session else None,
-            "sessionEnd": att.session.endDateTime.strftime("%Y-%m-%d %H:%M") if att.session else None
-        }
-        for att in report.attendances
-    ]
+    attendances = [{
+        "attendanceId": att.attendanceId,
+        "invigilatorId": att.invigilatorId,
+        "invigilatorName": att.invigilator.userName,
+        "gender": att.invigilator.userGender,
+        "venue": att.session.venue.venueNumber if att.session else None,
+        "startDateTime" : att.session.startDateTime,
+        "endDateTime": att.session.endDateTime
+    } for att in report.attendances]
 
     return jsonify({
         "examId": exam.examId,
@@ -2119,39 +2084,73 @@ def get_report(report_id):
 @login_required
 def get_valid_invigilators():
     valid = User.query.filter_by(userLevel=1).all()
-    return jsonify([{"userId": u.userId, "userName": u.userName} for u in valid])
+    return jsonify([{"userId":u.userId,"userName":u.userName} for u in valid])
 
 
 # -------------------------------
-# Admin: Manage Invigilation Report
+# Update Attendance (AJAX)
 # -------------------------------
-@app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
+@app.route('/admin/updateAttendanceTime', methods=['POST'])
+@login_required
+def update_attendance_time():
+    data = request.json
+    att = InvigilatorAttendance.query.get(data.get('attendance_id'))
+    if not att:
+        return jsonify(success=False, message="Attendance not found")
+
+    try:
+        att.checkIn = datetime.fromisoformat(data.get('check_in')) if data.get('check_in') else None
+        att.checkOut = datetime.fromisoformat(data.get('check_out')) if data.get('check_out') else None
+        att.invigilationStatus = data.get('invigilation_status', False)
+
+        session = att.session
+        if att.checkIn and att.checkOut and session:
+            start = max(att.checkIn, session.startDateTime)
+            end = min(att.checkOut, session.endDateTime)
+            hours = max(0,(end-start).total_seconds()/3600)
+            att.invigilator.userCumulativeHours += hours
+            att.remark = "COMPLETED" if att.checkOut >= session.endDateTime else "CHECK OUT EARLY"
+        else:
+            att.remark = "PENDING"
+
+        db.session.commit()
+        return jsonify(
+            success=True,
+            message="Attendance updated",
+            check_in=att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None",
+            check_out=att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None",
+            remark=att.remark,
+            invigilation_status=att.invigilationStatus
+        )
+    except Exception as e:
+        db.session.rollback()
+        return jsonify(success=False, message=str(e))
+
+
+# -------------------------------
+# Admin Manage Invigilation Report
+# -------------------------------
+@app.route('/admin/manageInvigilationReport', methods=['GET','POST'])
 @login_required
 def admin_manageInvigilationReport():
-    # Fetch all attendance entries with session, report, exam, and invigilator
     attendances = (
         InvigilatorAttendance.query
-        .join(VenueSession, InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId)
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
+        .join(VenueSession)
+        .join(InvigilationReport)
+        .join(Exam)
         .join(Venue)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
+        .join(User)
         .order_by(VenueSession.startDateTime, Venue.venueNumber, Exam.examId)
         .all()
     )
 
-    # Stats (same as before)
     stats = calculate_invigilation_stats()
+    reports = InvigilationReport.query.all()
 
-    # Attach grouping key for Jinja2
-    for att in attendances:
-        session = att.session
-        att.group_key = session.venueSessionId if session else None
-
-    # Handle POST (upload or edit)
-    if request.method == 'POST':
+    if request.method=="POST":
         form_type = request.form.get('form_type')
-        if form_type == 'upload':
+        if form_type=="upload":
+            from helpers import handle_file_upload  # Your existing upload function
             return handle_file_upload(
                 file_key='attendance_file',
                 expected_cols=['card iud', 'name', 'date', 'time', 'in/out'],
@@ -2160,68 +2159,23 @@ def admin_manageInvigilationReport():
                 usecols="A:E",
                 skiprows=0
             )
-        elif form_type == 'edit':
-            # Same as previous code for editing assignments
-            report_id = request.form.get('reportId')
-            report = InvigilationReport.query.get(report_id)
-            if not report:
-                flash("Report not found.", "error")
-                return redirect(url_for('admin_manageInvigilationReport'))
-
-            # Track assigned invigilators
-            selected_invigilators = []
-            for key, value in request.form.items():
-                if key.startswith("slot_"):
-                    invigilator_id = int(value)
-                    if invigilator_id in selected_invigilators:
-                        flash("Invigilator assigned multiple times in same report.", "error")
-                        return redirect(url_for('admin_manageInvigilationReport'))
-                    selected_invigilators.append(invigilator_id)
-
-                    # 30-minute gap check
-                    att_id = key.replace("slot_", "")
-                    att = InvigilatorAttendance.query.get(att_id)
-                    if not att.session:
-                        continue
-                    session_start = att.session.startDateTime
-                    session_end = att.session.endDateTime
-
-                    invig_attendances = InvigilatorAttendance.query.filter_by(invigilatorId=invigilator_id).all()
-                    for ia in invig_attendances:
-                        if ia.attendanceId == att.attendanceId or not ia.session:
-                            continue
-                        gap_start = ia.session.startDateTime - timedelta(minutes=30)
-                        gap_end = ia.session.endDateTime + timedelta(minutes=30)
-                        if session_start < gap_end and session_end > gap_start:
-                            flash(f"Invigilator {ia.invigilator.userName} does not have enough gap between sessions.", "error")
-                            return redirect(url_for('admin_manageInvigilationReport'))
-
-            # Update assignments (same logic as before)
-            for key, value in request.form.items():
-                if key.startswith("slot_"):
-                    attendance_id = key.replace("slot_", "")
-                    new_invigilator_id = int(value)
-                    att = InvigilatorAttendance.query.get(attendance_id)
-                    if not att:
-                        continue
-                    old_invigilator = User.query.get(att.invigilatorId)
-                    new_invigilator = User.query.get(new_invigilator_id)
-                    session = att.session
-                    session_duration = ((session.endDateTime - session.startDateTime).total_seconds()) / 3600 if session else 0
-
-                    if old_invigilator.userId != new_invigilator.userId:
-                        old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - session_duration)
-                        new_invigilator.userPendingCumulativeHours += session_duration
-                        att.invigilatorId = new_invigilator_id
-            db.session.commit()
-            flash("Invigilators updated successfully.", "success")
+        elif form_type=="edit":
+            flash("Edit handled via AJAX.", "info")
             return redirect(url_for('admin_manageInvigilationReport'))
 
+    # Group attendances by session
+    grouped_att = defaultdict(list)
+    for att in attendances:
+        if att.session:
+            grouped_att[att.session.venueSessionId].append(att)
+
     return render_template(
-        'admin/adminManageInvigilationReport.html',
-        active_tab='admin_manageInvigilationReporttab',
+        "admin/adminManageInvigilationReport.html",
         attendances=attendances,
-        **stats
+        grouped_att=grouped_att,
+        stats=stats,
+        reports=reports,
+        search_report=""
     )
 
 
