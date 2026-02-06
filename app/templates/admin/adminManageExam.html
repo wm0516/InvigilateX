@@ -194,9 +194,12 @@
             <tbody>
                 {% for row in exam_data %}
                 <tr class="
-                    {% if not row.examStatus %}inactive-row-show
-                    {% elif row.venue_availabilities[0].session.startDateTime is none %}error-row-show
-                    {% endif %}">
+                    {% if not row.examStatus %}
+                        inactive-row-show
+                    {% elif row.venue_availabilities and row.venue_availabilities[0].session.startDateTime is none %}
+                        error-row-show
+                    {% endif %}
+                ">
                     <td class="row-number"></td>
                     <td>
                         {% if row.examStatus %}
