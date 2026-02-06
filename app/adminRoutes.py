@@ -2144,6 +2144,11 @@ def admin_manageInvigilationReport():
         .all()
     )
 
+    grouped_att = defaultdict(list)
+    for att in attendances:
+        session_id = att.session.venueSessionId if att.session else None
+        grouped_att[session_id].append(att)
+
     # Stats (same as before)
     stats = calculate_invigilation_stats()
 
@@ -2225,6 +2230,7 @@ def admin_manageInvigilationReport():
         'admin/adminManageInvigilationReport.html',
         active_tab='admin_manageInvigilationReporttab',
         attendances=attendances,
+        grouped_att=grouped_att, 
         **stats
     )
 
