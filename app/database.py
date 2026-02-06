@@ -25,7 +25,6 @@ from app import db
 # UPDATE User SET userStatus = 1;
 # DELETE FROM User WHERE userId = 21013604; 
 
-
 # ------------------------------
 # DEPARTMENT
 # ------------------------------
@@ -157,6 +156,7 @@ class VenueSession(db.Model):
     venueNumber         = Column(String(20), ForeignKey('Venue.venueNumber'), nullable=False)
     startDateTime       = Column(DateTime, nullable=False)
     endDateTime         = Column(DateTime, nullable=False)
+    noInvigilator       = Column(Integer, nullable=True)
     backupInvigilatorId = Column(Integer, ForeignKey('User.userId'), nullable=True)
 
     # Relationships
@@ -170,6 +170,7 @@ class VenueSession(db.Model):
         venueNumber VARCHAR(20) NOT NULL,
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
+        noInvigilator INT NULL,
         backupInvigilatorId INT NULL,
         UNIQUE (venueNumber, startDateTime, endDateTime),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber),
@@ -201,7 +202,6 @@ class VenueSessionInvigilator(db.Model):
 class Exam(db.Model):
     __tablename__       = 'Exam'
     examId              = Column(Integer, primary_key=True, autoincrement=True)
-    examNoInvigilator   = Column(Integer, nullable=True)
     examStatus          = Column(Boolean, default=True, nullable=False)
     examOutput          = Column(JSON, nullable=True)
 
@@ -212,11 +212,11 @@ class Exam(db.Model):
     '''
     CREATE TABLE Exam (
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        examNoInvigilator INT NULL,
         examStatus BOOLEAN NOT NULL DEFAULT TRUE,
         examOutput JSON NULL
     );
     '''
+    
 class VenueExam(db.Model):
     __tablename__   = 'VenueExam'
     examVenueId     = Column(Integer, primary_key=True, autoincrement=True)

@@ -328,10 +328,7 @@ def admin_manageCourse():
                     if all(f not in (None, '') for f in required_fields):
                         # Ensure Exam exists
                         if not course_select.courseExamId:
-                            new_exam = Exam(
-                                examNoInvigilator=None,
-                                examOutput=None
-                            )
+                            new_exam = Exam(examOutput=None)
                             db.session.add(new_exam)
                             db.session.flush()  # Assign examId
                             course_select.courseExamId = new_exam.examId
@@ -868,7 +865,6 @@ def reset_exam_relations(exam):
         db.session.delete(ve)
 
     # 4. Reset exam fields
-    exam.examNoInvigilator = None
     exam.examOutput = None
     exam.examStatus = False  # optional, but usually logical
     db.session.commit()
@@ -949,7 +945,6 @@ def admin_manageExam():
         if (
             e.examStatus
             and e.venue_availabilities
-            and e.examNoInvigilator not in (None, 0)
         )
     ])
 

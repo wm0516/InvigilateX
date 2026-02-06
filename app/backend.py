@@ -258,7 +258,6 @@ def create_course_and_exam(userid, department, code, section, name, hour, studen
 
     exam_id = None
     new_exam = Exam(
-        examNoInvigilator=None,
         examOutput=None
     )
     db.session.add(new_exam)
@@ -444,7 +443,8 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + duration_hours
             db.session.add(VenueSessionInvigilator(
                 venueSessionId=session.venueSessionId,
-                invigilatorId=inv.userId
+                invigilatorId=inv.userId,
+                noInvigilator=total_invigilators_used
             ))
             db.session.add(InvigilatorAttendance(
                 reportId=report.invigilationReportId,
@@ -453,9 +453,6 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                 timeExpire=close,
                 venueSessionId=session.venueSessionId
             ))
-
-    # Final exam update
-    exam.examNoInvigilator = total_invigilators_used
     db.session.commit()
     return True, f"Exam scheduled successfully for {courseSection}"
 
@@ -499,7 +496,7 @@ def recalc_invigilators_for_new_exams():
         # Update examNoInvigilator for each exam in this session
         for ve in session.exams:
             exam = ve.exam
-            exam.examNoInvigilator = len(session.invigilators)
+            # exam.examNoInvigilator = len(session.invigilators)
     db.session.commit()
 
 
