@@ -702,7 +702,7 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
 
     important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
     if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
-        return None, ''
+        return None, None 
 
     # Parse exam start & end datetimes
     try:
@@ -734,9 +734,9 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     success, msg = create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).strip().upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     if not success:
         flash(msg, "error")
-        return None, ''
+        return False, msg
 
-    return True, ''
+    return True, None
 
 
 # -------------------------------
@@ -835,6 +835,11 @@ def parse_excel_time(val):
             except ValueError:
                 pass
     raise ValueError(f"Invalid time format: {val}")
+
+def safe_iso(val, field):
+    if not val:
+        raise ValueError(f"{field} is missing")
+    return datetime.fromisoformat(val)
 
 
 # Remove all venue exams, attendances, reports, and rollback pending hours SAFELY.
@@ -1003,9 +1008,12 @@ def admin_manageExam():
                         new_start=datetime.fromisoformat(request.form["startDateTime"]),
                         new_end=datetime.fromisoformat(request.form["endDateTime"]),
                         new_venues=request.form.getlist("venue[]"),
-                        new_students=request.form.getlist("venueStudents[]"),
-                        time_open=datetime.fromisoformat(request.form["examTimeCreate"]),
-                        time_expire=datetime.fromisoformat(request.form["examTimeExpire"]),
+                        new_students = [
+                            int(s) for s in request.form.getlist("venueStudents[]")
+                            if str(s).strip().isdigit()
+                        ],
+                        time_open=safe_iso(request.form.get("examTimeCreate"), "Open Time"),
+                        time_expire=safe_iso(request.form.get("examTimeExpire"), "Expire Time"),
                     )
                     flash("💾 Exam updated successfully", "success")
 
