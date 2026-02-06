@@ -707,43 +707,14 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
         return None, ''
 
-    # Parse EXAM DATE (DATE ONLY)
-    examDate_cell = row.get('exam date')
-    if not examDate_cell:
-        return False, "Missing exam date"
+    # Parse exam start & end datetimes
+    try:
+        start_dt = parse_datetime(row.get('exam date'), row.get('start'))
+        end_dt   = parse_datetime(row.get('exam date'), row.get('end'))
+    except ValueError as e:
+        return False, str(e)
 
-    if isinstance(examDate_cell, datetime):
-        exam_date = examDate_cell.date()
-    else:
-        try:
-            exam_date = datetime.strptime(str(examDate_cell).strip(), "%m/%d/%Y").date()
-        except ValueError:
-            return False, f"Invalid exam date format: {examDate_cell}"
-
-    # Parse START / END TIME
-    def parse_time(cell):
-        if isinstance(cell, time):
-            return cell
-        if isinstance(cell, datetime):
-            return cell.time()
-        if isinstance(cell, str):
-            try:
-                return datetime.strptime(cell.strip(), "%I:%M:%S %p").time()
-            except ValueError:
-                return None
-        return None
-
-    start_time = parse_time(row.get('start'))
-    end_time   = parse_time(row.get('end'))
-
-    if not start_time or not end_time:
-        return False, "Invalid start or end time format"
-
-    # Combine DATE + TIME
-    start_dt = datetime.combine(exam_date, start_time)
-    end_dt   = datetime.combine(exam_date, end_time)
-
-    # Handle overnight exam
+    # Handle overnight exams
     if end_dt <= start_dt:
         end_dt += timedelta(days=1)
 
@@ -824,11 +795,35 @@ def get_exam_details(course_code):
 # Reformat the datetime for ManageExamEditPage
 # -------------------------------
 def parse_datetime(date_str, time_str):
-    raw = f"{date_str} {time_str}"
-    try:
-        return datetime.strptime(raw, "%Y-%m-%d %H:%M")
-    except ValueError:
-        raise ValueError(f"Invalid datetime format (ISO expected): {raw}")
+    if not date_str or not time_str:
+        raise ValueError(f"Missing date or time: {date_str}, {time_str}")
+
+    # Try to parse date
+    date_formats = ["%m/%d/%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S"]
+    for fmt in date_formats:
+        try:
+            if isinstance(date_str, datetime):
+                exam_date = date_str.date()
+            else:
+                exam_date = datetime.strptime(str(date_str).strip(), fmt).date()
+            break
+        except ValueError:
+            continue
+    else:
+        raise ValueError(f"Invalid date format: {date_str}")
+
+    # Parse time
+    if isinstance(time_str, time):
+        exam_time = time_str
+    elif isinstance(time_str, datetime):
+        exam_time = time_str.time()
+    elif isinstance(time_str, str):
+        exam_time = parse_excel_time(time_str)
+    else:
+        raise ValueError(f"Invalid time value: {time_str}")
+
+    return datetime.combine(exam_date, exam_time)
+
 
 def parse_excel_time(val):
     if isinstance(val, time):
