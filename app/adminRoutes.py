@@ -706,79 +706,74 @@ def process_exam_row(row, slot_share_dt, slot_open_dt):
     important_columns = ['exam date', 'start', 'end', 'course code/section', 'total student by venue', 'venue']
     if all(not row.get(col) or str(row.get(col)).strip() == '' for col in important_columns):
         # Entire row is empty → skip it
-        return None, ''  # or False, '' if you prefer
+        return None, ''
 
-    # --- Parse exam date (MM/DD/YYYY) ---
-    examDate_text = row.get('exam date')
-    if not examDate_text or str(examDate_text).strip() == "":
+    # --- Parse exam date ---
+    examDate_cell = row.get('exam date')
+    if not examDate_cell:
         return False, "Missing exam date"
 
-    examDate_text = examDate_text.strip()
-    try:
-        examDate = datetime.strptime(examDate_text, "%m/%d/%Y")
-    except ValueError:
-        return False, f"Invalid exam date format: {examDate_text}"
+    if isinstance(examDate_cell, datetime):
+        examDate = examDate_cell
+    else:
+        examDate_text = str(examDate_cell).strip()
+        try:
+            examDate = datetime.strptime(examDate_text, "%m/%d/%Y")
+        except ValueError:
+            try:
+                # Try alternative format if Excel gives YYYY-MM-DD
+                examDate = datetime.strptime(examDate_text, "%Y-%m-%d")
+            except ValueError:
+                return False, f"Invalid exam date format: {examDate_text}"
 
-    # --- Parse start & end time (hh:mm:ss AM/PM) ---
-    start_text = row.get('start')
-    end_text   = row.get('end')
+    # --- Parse start & end time ---
+    start_cell = row.get('start')
+    end_cell   = row.get('end')
 
-    if not start_text or not end_text:
+    if not start_cell or not end_cell:
         return False, "Start or end time missing"
 
-    start_text = start_text.strip()
-    end_text   = end_text.strip()
+    # Helper to convert Excel time/datetime or string to time
+    def parse_time(cell):
+        if isinstance(cell, datetime):
+            return cell.time()
+        else:
+            try:
+                return datetime.strptime(str(cell).strip(), "%I:%M:%S %p").time()
+            except ValueError:
+                return None
 
-    try:
-        start_time = datetime.strptime(start_text, "%I:%M:%S %p").time()
-        end_time   = datetime.strptime(end_text, "%I:%M:%S %p").time()
-    except ValueError:
-        return False, "Invalid time format (expected hh:mm:ss AM/PM)"
+    start_time = parse_time(start_cell)
+    end_time   = parse_time(end_cell)
+
+    if not start_time or not end_time:
+        return False, f"Invalid time format (expected hh:mm:ss AM/PM): start={start_cell}, end={end_cell}"
 
     # --- Combine date and time ---
     start_dt = datetime.combine(examDate.date(), start_time)
     end_dt   = datetime.combine(examDate.date(), end_time)
 
+    # --- Parse total students ---
     try:
         requested_capacity = int(row.get('total student by venue', 0))
     except ValueError:
         return False, f"Invalid total number of students by venue: {row.get('total student by venue')}"
 
+    # --- Parse venue ---
     venue = str(row.get('venue', '')).upper()
     if not venue:
         return False, "Exam Venue missing"
 
-    # --- Get venue info ---
     venue_obj = Venue.query.filter_by(venueNumber=venue).first()
     if not venue_obj:
         return False, f"Venue {venue} not found in database"
-    venue_capacity = venue_obj.venueCapacity
-    '''
-    # --- Find overlapping exams ---
-    overlapping_exams = VenueSession.query.filter(
-        VenueSession.venueNumber == venue,
-        VenueSession.startDateTime < end_dt + timedelta(minutes=30),
-        VenueSession.endDateTime > start_dt - timedelta(minutes=30)
-    ).all()
 
-    used_capacity = sum([v.capacity for v in overlapping_exams])
-    available_capacity = venue_capacity - used_capacity
-
-    # --- Check if there’s enough room ---
-    if requested_capacity > available_capacity:
-        flash(
-            f"⚠️ Capacity conflict in {venue}: "
-            f"Used {used_capacity}/{venue_capacity}, "
-            f"requested {requested_capacity} more → exceeds capacity!",
-            "error"
-        )
-        return None, ''
-    '''
-
+    # --- Create exam and related sessions ---
     success, msg = create_exam_and_related(user_id, start_dt, end_dt, str(row.get('course code/section')).upper(), [venue], [requested_capacity], slot_share_dt, slot_open_dt)
     if not success:
         flash(msg, "error")
         return None, ''
+
     return True, ''
 
 
