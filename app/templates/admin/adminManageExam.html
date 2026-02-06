@@ -328,13 +328,13 @@ function createVenueRow(venue = "", capacity = "", isFirst = false) {
 
 function populateEditForm(data) {
     document.getElementById("editProgramCode").value = data.courseDepartment || "";
-    document.getElementById("editStudent").value = data.courseStudent || "";
+    document.getElementById("editStudent").value = data.totalStudents || "";
 
     if (data.examStartTime)
-        document.getElementById("editStartDateTime").value = data.examStartTime.slice(0,16);
+        document.getElementById("editStartDateTime").value = data.exam_venues.startDateTime.slice(0,16);
 
     if (data.examEndTime)
-        document.getElementById("editEndDateTime").value = data.examEndTime.slice(0,16);
+        document.getElementById("editEndDateTime").value = data.exam_venues.endDateTime.slice(0,16);
 
     if (data.examTimeCreate)
         document.getElementById("examTimeCreate").value = data.examTimeCreate.slice(0,16);
