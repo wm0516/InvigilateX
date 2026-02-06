@@ -218,7 +218,10 @@
                                             {% set key = row.lecturerName ~ row.classType ~ row.classDay ~ row.classTime ~ row.classRoom ~ row.courseName %}
                                             {% if key not in ns.displayed %}
                                                 {% set ns.displayed = ns.displayed + [key] %}
-                                                <div style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
+                                                <div class="timetable-block"
+                                                    data-intake="{{ row.courseIntake }}"
+                                                    style="border:1px solid #ccc; padding:4px; background:#f8f9fa; margin-bottom: 1%;">
+
                                                     <strong>Lecturer:</strong> <i>{{ row.lecturerName }}</i><br>
                                                     <strong>Course:</strong> <i>{{ row.courseName }}</i><br>
                                                     <strong>Class Type:</strong> <i>{{ row.classType }}</i><br>
@@ -358,6 +361,99 @@ document.addEventListener("DOMContentLoaded", function () {
 
     searchInput.addEventListener("keyup", searchTimetable);
     document.getElementById("searchBtn")?.addEventListener("click", searchTimetable);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const order = ["JAN", "APR", "AUG", "OCT"];
+    const blocks = document.querySelectorAll(".timetable-block");
+
+    if (!blocks.length) return;
+
+    const now = new Date();
+    const m = now.getMonth();
+
+    let state = {
+        year: now.getFullYear(),
+        intake:
+            m <= 2 ? "JAN" :
+            m <= 6 ? "APR" :
+            m <= 9 ? "AUG" :
+            "OCT"
+    };
+
+    function getAdjacent(dir) {
+        let i = order.indexOf(state.intake) + dir;
+        let y = state.year;
+
+        if (i < 0) { i = order.length - 1; y--; }
+        if (i >= order.length) { i = 0; y++; }
+
+        return { intake: order[i], year: y };
+    }
+
+    function render() {
+        const key = state.intake + state.year;
+
+        // Update swipe labels
+        document.getElementById("currentIntake").textContent = key;
+        const prev = getAdjacent(-1);
+        const next = getAdjacent(1);
+        document.getElementById("prevLabel").textContent = prev.intake + prev.year;
+        document.getElementById("nextLabel").textContent = next.intake + next.year;
+
+        let visibleCount = 0;
+
+        blocks.forEach(block => {
+            const intake = block.dataset.intake || "";
+            const match = intake === key;
+            block.style.display = match ? "" : "none";
+            if (match) visibleCount++;
+        });
+
+        const noResults = document.getElementById("noResults");
+        if (noResults) {
+            noResults.style.display = visibleCount ? "none" : "block";
+        }
+    }
+
+    document.getElementById("prevIntake").onclick = () => {
+        state = getAdjacent(-1);
+        render();
+    };
+
+    document.getElementById("nextIntake").onclick = () => {
+        state = getAdjacent(1);
+        render();
+    };
+
+    render(); // initial
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Initial numbering + dashboard
+    renumberVisibleRows();
+    updateDashboardFromTable();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const tbody = document.querySelector("#manageTimetable tbody");
+    if (!tbody) return;
+
+    const observer = new MutationObserver(() => {
+        renumberVisibleRows();
+        updateDashboardFromTable();
+    });
+
+    observer.observe(tbody, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style"]
+    });
+});
+
+window.addEventListener("load", () => {
+    renumberVisibleRows();
+    updateDashboardFromTable();
 });
 </script>
 {% endblock %}  
