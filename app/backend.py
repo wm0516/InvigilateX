@@ -360,6 +360,28 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         and is_lecturer_available(inv.userId, start_dt, adj_end_dt)
     ]
 
+    total_lecturers = base_query.count()
+    flexible_count = len(eligible_invigilators)
+
+    male_count = sum(1 for i in eligible_invigilators if i.userGender is True)
+    female_count = sum(1 for i in eligible_invigilators if i.userGender is False)
+
+    # Optional: store IDs of non-flexible lecturers (same style as your sample)
+    all_lecturers = base_query.all()
+    not_flexible_ids = [
+        str(i.userId) for i in all_lecturers
+        if i not in eligible_invigilators
+    ]
+
+    exam.examOutput = [
+        total_lecturers,     # total lecturers
+        flexible_count,      # flexible invigilators
+        male_count,          # male (True)
+        female_count,        # female (False)
+        not_flexible_ids     # optional detail
+    ]
+    db.session.add(exam)
+
     if not eligible_invigilators:
         return False, "No eligible invigilators available"
 
