@@ -2188,8 +2188,8 @@ def admin_manageInvigilationReport():
             )
         elif form_type == 'edit':
             # Fetch session + invigilator IDs from hidden inputs
-            venue_session_id = int(request.form.get('venueSessionId'))
-            invigilator_id = int(request.form.get('invigilatorId'))
+            venue_session_id = int(request.form.get('venueSessionId', ''))
+            invigilator_id = int(request.form.get('invigilatorId', ''))
             
             vsi = VenueSessionInvigilator.query.filter_by(
                 venueSessionId=venue_session_id,
@@ -2201,7 +2201,7 @@ def admin_manageInvigilationReport():
                 return redirect(url_for('admin_manageInvigilationReport'))
             
             # Example: reassign invigilator
-            new_invigilator_id = int(request.form.get('newInvigilatorId'))
+            new_invigilator_id = int(request.form.get('newInvigilatorId', ''))
             new_invigilator = User.query.get(new_invigilator_id)
             if not new_invigilator:
                 flash("New invigilator not found.", "error")
