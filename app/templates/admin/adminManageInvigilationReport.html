@@ -184,7 +184,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     // Table headers
     const headers = ["Venue", "Exam Date", "Courses", "Invigilator", "Status", "Attendance", "Check-in/out"];
     const rows = [];
-    let lastVenue = "", lastExamDate = "", lastCourses = "";
 
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
