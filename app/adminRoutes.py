@@ -2113,8 +2113,8 @@ def calculate_invigilation_stats():
     query = VenueSessionInvigilator.query.join(VenueSession).all()
 
     stats = {
-        "total_report": len(query),  # total assignments
-        "total_activeReport": sum(1 for v in query if v.invigilationStatus),
+        "total_report": len(query),  # total VenueSessionInvigilator records
+        "total_activeReport": 0,     # reports where checkIn or checkOut is missing
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
@@ -2123,12 +2123,20 @@ def calculate_invigilation_stats():
         session_start = att.session.startDateTime if att.session else None
         session_end = att.session.endDateTime if att.session else None
 
+        # Count reports where check-in or check-out is missing
+        if not att.checkIn or not att.checkOut:
+            stats["total_activeReport"] += 1
+
+        # Count late check-in
         if att.checkIn and session_start and att.checkIn > session_start:
             stats["total_checkInLate"] += 1
+
+        # Count early check-out
         if att.checkOut and session_end and att.checkOut < session_end:
             stats["total_checkOutEarly"] += 1
 
     return stats
+
 
 
 
