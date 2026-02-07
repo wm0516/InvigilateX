@@ -124,40 +124,29 @@
             </tr>
         </thead>
         <tbody>
-            {% for (venue, start, end), courses in grouped_att.items() %}
-                {% set all_atts = [] %}
-                {% for atts in courses.values() %}
-                    {% for att in atts %}
-                        {% set _ = all_atts.append(att) %}
-                    {% endfor %}
-                {% endfor %}
-
-                {% set total_rows = all_atts | length %}
-                {% for att in all_atts %}
+        {% for (venue, start, end), courses in grouped_att.items() %}
+            {% for course_code, atts in courses.items() %}
+                {% set total_rows = atts | length %}
+                {% for att in atts %}
                 <tr>
                     {% if loop.first %}
-                        <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
-                        <td rowspan="{{ total_rows }}">{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
-
-                        <td rowspan="{{ total_rows }}">
-                            {% for code, c_atts in courses.items() %}
-                                <div class="info-grid">
-                                    <div><strong>{{ code }}</strong></div>
-                                    <div><strong> - {{ c_atts[0].session.exams[0].exam.course.courseName if c_atts[0].session.exams else "N/A" }}</strong></div>
-                                </div>
-                            {% endfor %}
-                        </td>
+                    <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
+                    <td rowspan="{{ total_rows }}">{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
+                    <td rowspan="{{ total_rows }}">
+                        <div class="info-grid">
+                            <div><strong>{{ course_code }}</strong></div>
+                            <div><strong>- {{ att.session.exams[0].exam.course.courseName if att.session.exams else "N/A" }}</strong></div>
+                        </div>
+                    </td>
                     {% endif %}
 
                     <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
                     <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
                     <td>{{ att.remark or "PENDING" }}</td>
-
                     <td>
                         {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
                         {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
                     </td>
-
                     <td>
                         <form method="POST" style="display:inline;">
                             <input type="hidden" name="form_type" value="edit">
@@ -169,6 +158,7 @@
                 </tr>
                 {% endfor %}
             {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
 </div>
