@@ -542,7 +542,8 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
         userContact=contact,
         userGender=gender,
         userPassword=hashed_pw,
-        userCardId=cardId
+        userCardId=cardId,
+        userStatus=1
     )
 
     db.session.add(new_staff)
