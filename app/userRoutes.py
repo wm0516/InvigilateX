@@ -53,18 +53,21 @@ def get_all_attendances():
 # Calculate Invigilation Stats (Filtered by User Department or Own Data)
 # -------------------------------
 def calculate_invigilation_stats(user):
-    # Base query
-    query = VenueSessionInvigilator.query.join(VenueSession).join(VenueSession.exam).join(Exam.course)
-    
+    # Base query joining VenueSessionInvigilator -> VenueSession -> Exam -> Course -> Department
+    query = VenueSessionInvigilator.query.join(VenueSession).join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId).join(Exam, VenueExam.examId == Exam.examId).join(Course, Exam.examId == Course.courseExamId)
+
     if user.userLevel in ["LECTURER", "PO", "LAB_ACC"]:
+        # Only the user's own invigilation
         query = query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
     elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+        # All invigilations for courses under the same department
         query = query.join(Course.department).filter(Department.departmentCode == user.department.departmentCode)
 
     query = query.all()
+
     stats = {
         "total_report": len(query),
-        "user_total_activeReport": 0,  # changed name to match your template
+        "user_total_activeReport": 0,
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
@@ -80,8 +83,8 @@ def calculate_invigilation_stats(user):
         if att.checkOut and session_end and att.checkOut < session_end:
             stats["total_checkOutEarly"] += 1
 
-
     return stats
+
 
 
 
@@ -94,8 +97,10 @@ def calculate_invigilation_stats(user):
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
 @login_required
 def user_invigilationReport():
-    user = session.get('user_id')
-    # Base query joining VenueSession, Exam, Course, etc.
+    current_user_id = session.get('user_id')
+    user = User.query.get(current_user_id)
+
+    # Base query joining VenueSessionInvigilator -> VenueSession -> VenueExam -> Exam -> Course
     vsi_query = (
         VenueSessionInvigilator.query
         .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
@@ -106,25 +111,24 @@ def user_invigilationReport():
         .order_by(VenueSession.startDateTime, Course.courseCodeSectionIntake)
     )
 
-    # ---------------------------
     # Filter based on user level
-    # ---------------------------
     if user.userLevel in ["LECTURER", "PO", "LAB_ACC"]:
+        # Only show this user's invigilations
         vsi_query = vsi_query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
     elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+        # Show all invigilators for courses under the same department
         vsi_query = vsi_query.join(Course.department).filter(
             Department.departmentCode == user.department.departmentCode
         )
 
     vsi_entries = vsi_query.all()
 
-    # ---------------------------
     # Group by venue + start/end time
-    # ---------------------------
     grouped_att = defaultdict(lambda: {"courses": [], "invigilators": []})
     for vsi in vsi_entries:
         if not vsi.session or not vsi.session.venue:
             continue
+
         key = (
             vsi.session.venue.venueNumber,
             vsi.session.startDateTime,
@@ -133,11 +137,17 @@ def user_invigilationReport():
 
         # Add invigilator
         if vsi not in grouped_att[key]["invigilators"]:
+            # For Lecturers only include themselves (safety)
+            if user.userLevel in ["LECTURER", "PO", "LAB_ACC"] and vsi.invigilatorId != user.userId:
+                continue
             grouped_att[key]["invigilators"].append(vsi)
 
         # Add courses
         for ve in vsi.session.exams:
             if ve.exam and ve.exam.course:
+                # For DEAN/HOP/HOS, only include courses in their department
+                if user.userLevel in ["DEAN", "HOP", "HOS"] and ve.exam.course.department.departmentCode != user.department.departmentCode:
+                    continue
                 course = {
                     "code": ve.exam.course.courseCodeSectionIntake,
                     "name": ve.exam.course.courseName
@@ -145,15 +155,11 @@ def user_invigilationReport():
                 if course not in grouped_att[key]["courses"]:
                     grouped_att[key]["courses"].append(course)
 
-    # ---------------------------
-    # Stats
-    # ---------------------------
+    # Calculate stats
     stats = calculate_invigilation_stats(user)
-
-    # Attach group key for Jinja rowspan
     for vsi in vsi_entries:
         vsi.group_key = vsi.session.venueSessionId if vsi.session else None
-
+        
     return render_template(
         'user/userInvigilationReport.html',
         active_tab='user_invigilationReporttab',

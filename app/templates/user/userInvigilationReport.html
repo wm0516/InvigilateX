@@ -48,8 +48,19 @@
             </thead>
             <tbody>
                 {% for (venue, start, end), data in grouped_att.items() %}
-                    {% set num_invigilators = data.invigilators | length %}
-                    {% for att in data.invigilators %}
+                    {% set invigilators_to_show = [] %}
+                    {% if current_user.userLevel in ["LECTURER", "PO", "LAB_ACC"] %}
+                        {% for att in data.invigilators %}
+                            {% if att.invigilator.userId == current_user.userId %}
+                                {% do invigilators_to_show.append(att) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% set invigilators_to_show = data.invigilators %}
+                    {% endif %}
+
+                    {% set num_invigilators = invigilators_to_show | length %}
+                    {% for att in invigilators_to_show %}
                         <tr>
                             {% if loop.first %}
                                 <td rowspan="{{ num_invigilators }}">[{{ venue }}]</td>
