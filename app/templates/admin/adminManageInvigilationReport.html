@@ -130,8 +130,8 @@
                 {% for att in atts %}
                 <tr>
                     {% if loop.first %}
-                    <td>[{{ venue }}]</td>
-                    <td>{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
+                    <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
+                    <td rowspan="{{ total_rows }}">{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
                     <td rowspan="{{ total_rows }}">
                         <div class="info-grid">
                             <div><strong>{{ course_code }}</strong></div>
