@@ -224,7 +224,6 @@ class Exam(db.Model):
     # Relationships
     course                  = relationship("Course", back_populates="exam", uselist=False)
     venue_availabilities    = relationship("VenueExam", back_populates="exam")
-    invigilation_reports    = relationship("InvigilationReport", backref="exam", cascade="all, delete-orphan")
     '''
     CREATE TABLE Exam (
         examId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
