@@ -115,46 +115,38 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const startY = margin + 30;
     const headers = ["Venue", "Exam Date", "Courses", "Invigilator", "Status", "Attendance", "Check-in/out"];
     const rows = [];
-    let lastVenue = "";
-    let lastDate = "";
-    let lastCourses = "";
-
     document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        let venue = "";
-        let date = "";
-        let courses = "";
+        const tdCount = tds.length;
+
+        // Handle rowspan — fill missing columns from previous values
+        let examID = "";
+        let examDetails = "";
+        let invCount = "";
         let invDetails = "";
-        let invStatus = "";
-        let attendance = "";
         let checkTimes = "";
+        let attendance = "";
+        let invStatus = "";
 
-        if (tds.length === 7) {
-            // First row with rowspan
-            venue = tds[0].innerText.trim();
-            date = tds[1].innerText.trim();
-            courses = tds[2].innerText.trim();
-            invDetails = tds[3].innerText.trim();
-            invStatus = tds[4].innerText.trim();
-            attendance = tds[5].innerText.trim();
-            checkTimes = tds[6].innerText.trim();
+        if (tdCount === 7) {
+            // Normal full row
+            examID = tds[0]?.innerText.trim() || "";
+            examDetails = tds[1]?.innerText.trim() || "";
+            invCount = tds[2]?.innerText.trim() || "";
+            invDetails = tds[3]?.innerText.trim() || "";
+            invStatus = tds[4]?.innerText.trim() || "";
+            attendance = tds[5]?.innerText.trim() || "";
+            checkTimes = tds[6]?.innerText.trim() || "";
 
-            // store last values
-            lastVenue = venue;
-            lastDate = date;
-            lastCourses = courses;
-        } else if (tds.length === 4) {
-            // continuation row
-            venue = lastVenue;
-            date = lastDate;
-            courses = lastCourses;
-            invDetails = tds[0].innerText.trim();
-            invStatus = tds[1].innerText.trim();
-            attendance = tds[2].innerText.trim();
-            checkTimes = tds[3].innerText.trim();
+
+        } else if (tdCount === 4) {
+            // This is a "continuation row" — missing rowspan columns
+            invDetails = tds[0]?.innerText.trim() || "";
+            invStatus = tds[1]?.innerText.trim() || "";
+            attendance = tds[2]?.innerText.trim() || "";
+            checkTimes = tds[3]?.innerText.trim() || "";
         }
-
-        rows.push([venue, date, courses, invDetails, invStatus, attendance, checkTimes]);
+        rows.push([examID, examDetails, invCount, invDetails, invStatus, attendance, checkTimes]);
     });
 
 
