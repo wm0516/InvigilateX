@@ -135,23 +135,24 @@
         {% for (venue, start, end), courses in grouped_att.items() %}
         <tbody>
             {% set total_rows = courses.values() | map('length') | sum %}
+            {% set printed_header = false %}
 
             {% for course_code, atts in courses.items() %}
                 {% for att in atts %}
                 <tr>
-                    {% if loop.first and loop.parent.first %}
-                    <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
-                    <td rowspan="{{ total_rows }}">
-                        {{ start.strftime("%d/%b/%Y %H:%M") }} -
-                        {{ end.strftime("%d/%b/%Y %H:%M") }}
-                    </td>
+                    {% if not printed_header %}
+                        <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
+                        <td rowspan="{{ total_rows }}">
+                            {{ start.strftime("%d/%b/%Y %H:%M") }} -
+                            {{ end.strftime("%d/%b/%Y %H:%M") }}
+                        </td>
+                        {% set printed_header = true %}
                     {% endif %}
 
-
                     {% if loop.first %}
-                    <td rowspan="{{ atts|length }}">
-                        {{ course_code }} - {{ att.report.exam.course.courseName }}
-                    </td>
+                        <td rowspan="{{ atts|length }}">
+                            {{ course_code }} - {{ att.report.exam.course.courseName }}
+                        </td>
                     {% endif %}
 
                     <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
