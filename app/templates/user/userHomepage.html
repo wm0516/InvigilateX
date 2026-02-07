@@ -111,34 +111,21 @@
             <tbody>
                 {% for w in waiting %}
                 <tr>
-                    <td>{{ w.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ w.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                    <td>{{ w.report.exam.examStartTime.strftime("%A") }} - {{ w.report.exam.examEndTime.strftime("%A") }}</td>
-                    <td>{{ w.report.exam.examStartTime.strftime("%H:%M") }} - {{ w.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                    <td>{{ (w.report.exam.examEndTime - w.report.exam.examStartTime).seconds // 3600 }}h {{ ((w.report.exam.examEndTime - w.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                    <td>[{{ w.report.exam.course.courseCodeSectionIntake }}] - {{ w.report.exam.course.courseName }}</td>
-                    <td>{{ w.venueNumber }}</td>
-                    <td>
-                        {% if not open %}
-                        <!-- Accept Form -->
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
-                            <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
-                            <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" 
-                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
-                        </form>
-
-                        <!-- Reject Button (opens popup) -->
-                        <button type="button" class="reject-btn" data-id="{{ w.attendanceId }}"
-                            style="background-color: #f8d7da; color: #721c24; padding: 5%;">
-                            Reject
-                        </button>
-                        {% endif %}
-
-                        {% if open %}
-                        <button type="button" style="background-color: #afafaf; color: #000000; padding: 5%; cursor: not-allowed;">
-                            <strong>Expired</strong>
-                        </button>
-                        {% endif %}
-                    </td>
+                    {% set exam = w.session.exams[0].exam if w.session.exams else None %}
+                    {% if exam %}
+                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
+                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>[{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}</td>
+                        <td>{{ w.session.venueNumber }}</td>
+                        <td>
+                            <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
+                                <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
+                                <button type="submit" name="action" value="accept">Accept</button>
+                            </form>
+                        </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -168,22 +155,17 @@
             <tbody>
                 {% for c in confirm %}
                 <tr>
-                    <td>{{ c.timeAction }}</td>
-                    <td>{{ c.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ c.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                    <td>{{ c.report.exam.examStartTime.strftime("%A") }} - {{ c.report.exam.examEndTime.strftime("%A") }}</td>
-                    <td>{{ c.report.exam.examStartTime.strftime("%H:%M") }} - {{ c.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                    <td>{{ (c.report.exam.examEndTime - c.report.exam.examStartTime).seconds // 3600 }}h {{ ((c.report.exam.examEndTime - c.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                    <td>
-                        {% if c.report.exam.venue_availabilities %}
-                            {% for va in c.report.exam.venue_availabilities %}
-                                <strong>{{ va.venueNumber }}</strong> [Capacity Used: {{ va.capacity }}]<br>
-                            {% endfor %}
-                        {% else %}
-                            <strong>None</strong>
-                        {% endif %}
-                    </td>
-                    <td>{{ c.report.exam.course.courseName }}</td>
-                    <td>{{ c.report.exam.course.courseCodeSectionIntake }}</td>
+                    {% set exam = c.session.exams[0].exam if c.session.exams else None %}
+                    {% if exam %}
+                        <td>{{ c.timeAction }}</td>
+                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
+                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ c.session.venueNumber }}</td>
+                        <td>{{ exam.course.courseName }}</td>
+                        <td>{{ exam.course.courseCodeSectionIntake }}</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -215,20 +197,21 @@
             <tbody>
                 {% for a in open %}
                 <tr>
-                    <td>{{ a.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ a.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                    <td>{{ a.report.exam.examStartTime.strftime("%A") }} - {{ a.report.exam.examEndTime.strftime("%A") }}</td>
-                    <td>{{ a.report.exam.examStartTime.strftime("%H:%M") }} - {{ a.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                    <td>{{ (a.report.exam.examEndTime - a.report.exam.examStartTime).seconds // 3600 }}h {{ ((a.report.exam.examEndTime - a.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                    <td>{{ a.report.exam.course.courseName }}</td>
-                    <td>{{ a.report.exam.course.courseCodeSectionIntake }}</td>
-                    <td>
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                            <input type="hidden" name="a_id" value="{{ a.attendanceId }}">
-                            <button type="submit" name="action" value="open_accept" 
-                                onclick="return confirm('Are you sure to additional choose this slot?')" 
-                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
-                        </form>
-                    </td>
+                    {% set exam = a.session.exams[0].exam if a.session.exams else None %}
+                    {% if exam %}
+                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
+                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ exam.course.courseName }}</td>
+                        <td>{{ exam.course.courseCodeSectionIntake }}</td>
+                        <td>
+                            <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
+                                <input type="hidden" name="a_id" value="{{ a.attendanceId }}">
+                                <button type="submit" name="action" value="open_accept">Accept</button>
+                            </form>
+                        </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -258,14 +241,17 @@
             <tbody>
                 {% for r in reject %}
                 <tr>
-                    <td>{{ r.timeAction }}</td>
-                    <td><strong>{{ r.rejectReason }}</strong></td>
-                    <td>{{ r.report.exam.examStartTime.strftime("%d/%b/%Y") }} - {{ r.report.exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                    <td>{{ r.report.exam.examStartTime.strftime("%A") }} - {{ r.report.exam.examEndTime.strftime("%A") }}</td>
-                    <td>{{ r.report.exam.examStartTime.strftime("%H:%M") }} - {{ r.report.exam.examEndTime.strftime("%H:%M") }}</td>
-                    <td>{{ (r.report.exam.examEndTime - r.report.exam.examStartTime).seconds // 3600 }}h {{ ((r.report.exam.examEndTime - r.report.exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                    <td>{{ r.report.exam.course.courseName }}</td>
-                    <td>{{ r.report.exam.course.courseCodeSectionIntake }}</td>
+                    {% set exam = r.session.exams[0].exam if r.session.exams else None %}
+                    {% if exam %}
+                        <td>{{ r.timeAction }}</td>
+                        <td><strong>{{ r.rejectReason }}</strong></td>
+                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
+                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
+                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
+                        <td>{{ exam.course.courseName }}</td>
+                        <td>{{ exam.course.courseCodeSectionIntake }}</td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
