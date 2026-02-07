@@ -2153,18 +2153,31 @@ def admin_manageInvigilationReport():
         .all()
     )
 
-    # Group by session (venue, start, end) and then by course code
-    grouped_att = defaultdict(lambda: defaultdict(list))
+    grouped_att = defaultdict(dict)
+
     for vsi in vsi_entries:
         session = vsi.session
-        if not session or not session.exams:
+        if not session:
             continue
-        
-        session_key = (session.venue.venueNumber, session.startDateTime, session.endDateTime)
+
+        key = (
+            session.venue.venueNumber,
+            session.startDateTime,
+            session.endDateTime,
+            vsi.invigilatorId
+        )
+
+        if "courses" not in grouped_att[key]:
+            grouped_att[key]["courses"] = []
+            grouped_att[key]["vsi"] = vsi
+
         for ve in session.exams:
-            course = ve.exam.course if ve.exam else None
-            course_key = course.courseCodeSectionIntake if course else "UNKNOWN"
-            grouped_att[session_key][course_key].append(vsi)
+            if ve.exam and ve.exam.course:
+                grouped_att[key]["courses"].append({
+                    "code": ve.exam.course.courseCodeSectionIntake,
+                    "name": ve.exam.course.courseName
+                })
+
 
     # Stats (reuse your existing function)
     stats = calculate_invigilation_stats()
