@@ -125,18 +125,30 @@
         </thead>
         <tbody>
         {% for (venue, start, end), courses in grouped_att.items() %}
-            {% for course_code, atts in courses.items() %}
-                {% set total_rows = atts | length %}
+            {# Flatten all invigilators for this session to calculate total rows per session #}
+            {% set total_session_rows = 0 %}
+            {% for atts in courses.values() %}
+                {% set total_session_rows = total_session_rows + (atts | length) %}
+            {% endfor %}
+
+            {# Gather course titles for display in the course column #}
+            {% set course_titles = [] %}
+            {% for code, atts in courses.items() %}
+                {% set _ = course_titles.append(code ~ " - " ~ (atts[0].session.exams[0].exam.course.courseName if atts[0].session.exams else "N/A")) %}
+            {% endfor %}
+            {% set course_display = course_titles | join("<br>") %}
+
+            {% for code, atts in courses.items() %}
+                {% set total_course_rows = atts | length %}
                 {% for att in atts %}
                 <tr>
+                    {% if loop.first and loop.parent.loop.first %}
+                    <td rowspan="{{ total_session_rows }}">[{{ venue }}]<br>{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
+                    {% endif %}
+
                     {% if loop.first %}
-                    <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
-                    <td rowspan="{{ total_rows }}">{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
-                    <td rowspan="{{ total_rows }}">
-                        <div class="info-grid">
-                            <div><strong>{{ course_code }}</strong></div>
-                            <div><strong>- {{ att.session.exams[0].exam.course.courseName if att.session.exams else "N/A" }}</strong></div>
-                        </div>
+                    <td rowspan="{{ total_course_rows }}">
+                        {{ code }} - {{ att.session.exams[0].exam.course.courseName if att.session.exams else "N/A" }}
                     </td>
                     {% endif %}
 
@@ -160,6 +172,7 @@
             {% endfor %}
         {% endfor %}
         </tbody>
+
     </table>
 </div>
 {% endblock %}
