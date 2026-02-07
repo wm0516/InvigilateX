@@ -1135,13 +1135,16 @@ def download_user_template():
 # Function for Admin ManageStaff Route Upload File, Validate Contact Number
 # -------------------------------
 def clean_contact(contact):
-    if not contact:
-        return ""
+    if not contact or pd.isna(contact):
+        return None
     contact = str(contact).strip().replace(".0", "")
     contact = "".join(filter(str.isdigit, contact))
+    
     if contact and not contact.startswith("0"):
         contact = "0" + contact
-    return contact if 10 <= len(contact) <= 11 else ""
+
+    return contact if 10 <= len(contact) <= 11 else None
+
 
 # -------------------------------
 # Function for Admin ManageStaff Route Upload File
