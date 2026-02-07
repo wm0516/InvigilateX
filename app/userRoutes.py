@@ -351,19 +351,22 @@ def user_viewStaff():
     # Get all staff from the same department
     lecturers = User.query.filter_by(userDepartment=current_user.userDepartment)
     # Counts filtered by department
-    total_admin = lecturers.filter_by(userLevel=5).count()
-    total_hop = lecturers.filter_by(userLevel=4).count()
-    total_hos = lecturers.filter_by(userLevel=3).count()
-    total_dean = lecturers.filter_by(userLevel=2).count()
-    total_lecturer = lecturers.filter_by(userLevel=1).count()
-    total_male_staff = lecturers.filter_by(userGender="MALE").count()
-    total_female_staff = lecturers.filter_by(userGender="FEMALE").count()
-    total_activated = lecturers.filter_by(userStatus=1).count()
-    total_deactivate = lecturers.filter_by(userStatus=0).count()
-    total_deleted = lecturers.filter_by(userStatus=2).count()
+    total_staff = User.query.count()
+    total_admin = User.query.filter_by(userLevel="ADMIN").count()
+    total_hop = User.query.filter_by(userLevel="HOP").count()
+    total_hos = User.query.filter_by(userLevel="HOS").count()
+    total_dean = User.query.filter_by(userLevel="DEAN").count()
+    total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
+    total_po = User.query.filter_by(userLevel="PO").count()
+    total_lab_ass = User.query.filter_by(userLevel="LAB_ASS").count()
+    total_male_staff = User.query.filter_by(userGender=True).count()
+    total_female_staff = User.query.filter_by(userGender=False).count()
+    total_activated = User.query.filter_by(userStatus=1).count()
+    total_deactivate = User.query.filter_by(userStatus=0).count()
+    total_deleted = User.query.filter_by(userStatus=2).count()
 
 
-    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,total_po=total_po, total_lab_ass=total_lab_ass,
         total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
 
 # -------------------------------

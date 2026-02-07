@@ -3,8 +3,7 @@
 {% block head_title %}<h2>{{ user_department }} - Staff List</h2>{% endblock %}
 {% block content %}
 <div class="menu-section">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>List of Staff</h2>
+    <div style="display: flex;">
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_staff" placeholder="Search..." value="{{ search_staff }}" style="border-radius: 6px; width: 100%;">
@@ -73,20 +72,21 @@
                 <td>{{ row.userId }}</td>
                 <td>{{ row.userCardId or '---' }}</td>
                 <td>{{ row.userName }}</td>
-                <td>{{ row.userGender }}</td>
-                <td>{{ row.userEmail }}</td>
-                <td>{{ row.userContact }}</td>
                 <td>
-                    {% if row.userLevel == 1 %}LECTURER
-                    {% elif row.userLevel == 2 %}DEAN
-                    {% elif row.userLevel == 3 %}HOS
-                    {% elif row.userLevel == 4 %}HOP
-                    {% elif row.userLevel == 5 %}ADMIN
-                    {% else %}Unknown{% endif %}
+                    {% if row.userGender == 0 %}
+                        FEMALE
+                    {% else %}MALE{% endif %}
                 </td>
+                <td>{{ row.userEmail }}</td>
+                <td>
+                        {% if row.userContact %}
+                            {{ row.userContact }}
+                        {% else %}---{% endif %}
+                    </td>
+                <td>{{ row.userLevel }}</td>
                 <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">N/A</span>' | safe }}</td>
                 <td>
-                    {% if row.userLevel == 1 %}
+                    {% if row.userLevel in ["LECTURER", "PO", "LAB_ASS"] %}
                         <div class="info-grid">
                             <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
                             <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
@@ -234,8 +234,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const charts = [
         {
             id: 'staffPieChart',
-            labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer'],
-            data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}],
+            labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer', 'PO', 'LAB_ASS'],
+            data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}, {{ total_po }}, {{ total_lab_ass }}],
             label: 'Staff Distribution'
         },
         {

@@ -1236,6 +1236,8 @@ def admin_manageStaff():
     total_hos = User.query.filter_by(userLevel="HOS").count()
     total_dean = User.query.filter_by(userLevel="DEAN").count()
     total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
+    total_po = User.query.filter_by(userLevel="PO").count()
+    total_lab_ass = User.query.filter_by(userLevel="LAB_ASS").count()
     total_male_staff = User.query.filter_by(userGender=True).count()
     total_female_staff = User.query.filter_by(userGender=False).count()
     total_activated = User.query.filter_by(userStatus=1).count()
@@ -1356,6 +1358,8 @@ def admin_manageStaff():
         total_hos=total_hos,
         total_dean=total_dean,
         total_lecturer=total_lecturer,
+        total_po=total_po,
+        total_lab_ass=total_lab_ass,
         total_male_staff=total_male_staff,
         total_female_staff=total_female_staff,
         total_activated=total_activated,
