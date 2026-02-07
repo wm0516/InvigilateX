@@ -1075,7 +1075,7 @@ def generate_user_template():
         ws_lists[f"A{i}"] = d.departmentCode
 
     # --- Roles ---
-    roles = ["Lecturer", "Program Officer", "Dean", "HOS", "HOP", "Admin"]
+    roles = ["LECTURER", "PO", "LAB_ASS", "DEAN", "HOS", "HOP", "ADMIN"]
     for i, r in enumerate(roles, start=1):
         ws_lists[f"B{i}"] = r
 
