@@ -217,26 +217,26 @@ def get_calendar_data():
 
 
 
-def get_venue_calendar_data(user):
+def get_venue_calendar_data(userId):
     query = (VenueExam.query.join(Exam).join(VenueSession).join(Course))
 
     # Case 1: Lecturer / PO / Lab Assistant
-    if user.userLevel in ["LECTURER", "PO", "LAB_ASS"]:
+    if userId.userLevel in ["LECTURER", "PO", "LAB_ASS"]:
         query = (
             query
             .join(VenueSessionInvigilator,
                   VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
             .filter(
                 or_(
-                    VenueSessionInvigilator.invigilatorId == user.userId,
-                    VenueSession.backupInvigilatorId == user.userId
+                    VenueSessionInvigilator.invigilatorId == userId.userId,
+                    VenueSession.backupInvigilatorId == userId.userId
                 )
             )
         )
 
     # Case 2: Dean / HOP / HOS
-    elif user.userLevel in ["DEAN", "HOP", "HOS"]:
-        query = query.filter(Course.courseDepartment == user.userDepartment)
+    elif userId.userLevel in ["DEAN", "HOP", "HOS"]:
+        query = query.filter(Course.courseDepartment == userId.userDepartment)
 
     # Otherwise (admin, exam unit, etc.) → no filter
     venue_exams = query.all()
