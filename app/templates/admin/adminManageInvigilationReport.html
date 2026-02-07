@@ -133,50 +133,48 @@
             </tr>
         </thead>
         {% for (venue, start, end), courses in grouped_att.items() %}
+        <tbody>
             {% set total_invigilators = courses.values() | map('length') | sum %}
-            <tbody>
-                {% set first_invigilator = true %}
-                {% for course_code, atts in courses.items() %}
-                    {% for att in atts %}
-                        <tr>
-                            {% if first_invigilator %}
-                                <!-- Merge Venue and Exam Date columns -->
-                                <td rowspan="{{ total_invigilators }}">[{{ venue }}]</td>
-                                <td rowspan="{{ total_invigilators }}">
-                                    {{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}
-                                </td>
+            {% set printed_header = false %}
+            {% for course_code, atts in courses.items() %}
+            <tr>
+                {% if not printed_header %}
+                    <td rowspan="{{ total_invigilators }}">[{{ venue }}]</td>
+                    <td rowspan="{{ total_invigilators }}">
+                        {{ start.strftime("%d/%b/%Y %H:%M") }} -
+                        {{ end.strftime("%d/%b/%Y %H:%M") }}
+                    </td>
+                    <td rowspan="{{ total_invigilators }}">
+                        {% for code, c_atts in courses.items() %}
+                            {{ code }} - {{ c_atts[0].report.exam.course.courseName }}<br>
+                        {% endfor %}
+                    </td>
+                    {% set printed_header = true %}
+                {% endif %}
+                {% for att in atts %}
 
-                                <!-- Merge all course codes & names -->
-                                <td rowspan="{{ total_invigilators }}">
-                                    {% for code, c_atts in courses.items() %}
-                                        {{ code }} - {{ c_atts[0].report.exam.course.courseName }}<br>
-                                    {% endfor %}
-                                </td>
-
-                                {% set first_invigilator = false %}
-                            {% endif %}
-
-                            <!-- Invigilator details -->
-                            <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
-                            <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
-                            <td>{{ att.remark or "None" }}</td>
-                            <td>
-                                {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
-                                {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
-                            </td>
-                            <td>
-                                <form method="POST" style="display:inline;">
-                                    <input type="hidden" name="form_type" value="edit">
-                                    <input type="hidden" name="reportId" value="{{ att.report.invigilationReportId }}">
-                                    <button type="submit" class="edit-btn">Edit</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
+                    <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
+                    <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
+                    <td>{{ att.remark or "None" }}</td>
+                    <td>
+                        {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>
+                        {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
+                    </td>
+                    <td>
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="form_type" value="edit">
+                            <input type="hidden" name="reportId" value="{{ att.report.invigilationReportId }}">
+                            <button type="submit" class="edit-btn">Edit</button>
+                        </form>
+                    </td>
+                
                 {% endfor %}
-            </tbody>
+                </tr>
+            {% endfor %}
+        </tbody>
         {% endfor %}
     </table>
+
 </div>
 {% endblock %}
 
