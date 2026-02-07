@@ -188,25 +188,25 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-
-        let venue = tds[0]?.innerText.trim() || lastVenue;
-        let examDate = tds[1]?.innerText.trim() || lastExamDate;
-        let courses = tds[2]?.innerText.trim() || lastCourses;
-        let invigilator = tds[3]?.innerText.trim() || "";
-        let status = tds[4]?.innerText.trim() || "";
-        let attendance = tds[5]?.innerText.trim() || "";
-        let checkTimes = tds[6]?.innerText.trim() || "";
-
-        // Save last non-empty values
-        if (venue) lastVenue = venue;
-        if (examDate) lastExamDate = examDate;
-        if (courses) lastCourses = courses;
-
+        if (tds.length === 7) {
+            // First row of grouped exam
+            venue = tds[0].innerText.trim();
+            examDate = tds[1].innerText.trim();
+            courses = tds[2].innerText.trim();
+            invigilator = tds[3].innerText.trim();
+            status = tds[4].innerText.trim();
+            attendance = tds[5].innerText.trim();
+            checkTimes = tds[6].innerText.trim();
+        } else {
+            // Continuation row
+            invigilator = tds[0]?.innerText.trim() || "";
+            status = tds[1]?.innerText.trim() || "";
+            attendance = tds[2]?.innerText.trim() || "";
+            checkTimes = tds[3]?.innerText.trim() || "";
+        }
         rows.push([venue, examDate, courses, invigilator, status, attendance, checkTimes]);
     });
 
-
-    
     // Generate PDF table
     doc.autoTable({
         head: [headers],
