@@ -184,20 +184,27 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     // Table headers
     const headers = ["Venue", "Exam Date", "Courses", "Invigilator", "Status", "Attendance", "Check-in/out"];
     const rows = [];
-    let lastExamID = "", lastExamDetails = "", lastInvCount = "";
+    let lastVenue = "", lastExamDate = "", lastCourses = "";
 
-    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
+    document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        let venue = tds[0]?.innerText.trim() || "";
-        let examDate = tds[1]?.innerText.trim() || "";
-        let courses = tds[2]?.innerText.trim() || "";
+
+        let venue = tds[0]?.innerText.trim() || lastVenue;
+        let examDate = tds[1]?.innerText.trim() || lastExamDate;
+        let courses = tds[2]?.innerText.trim() || lastCourses;
         let invigilator = tds[3]?.innerText.trim() || "";
         let status = tds[4]?.innerText.trim() || "";
         let attendance = tds[5]?.innerText.trim() || "";
         let checkTimes = tds[6]?.innerText.trim() || "";
 
+        // Save last non-empty values
+        if (venue) lastVenue = venue;
+        if (examDate) lastExamDate = examDate;
+        if (courses) lastCourses = courses;
+
         rows.push([venue, examDate, courses, invigilator, status, attendance, checkTimes]);
     });
+
 
     
     // Generate PDF table
