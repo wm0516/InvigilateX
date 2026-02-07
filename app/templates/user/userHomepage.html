@@ -4,7 +4,7 @@
 {% block content %}
 <h1>Hey! 👋 <i>{{ user_name }}</i></h1>
 
-{% if user_level in [2, 3, 4] %}
+{% if user_level in ["DEAN", "HOS", "HOP"]%}
 <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;">
     <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;">
         <div class="menu-section">
@@ -75,7 +75,7 @@
 </div>
 {% endif %}
 
-{% if user_level == 1 %}    
+{% if user_level in ["LECTURER", "PO"]%} 
 <div class="dashboard-row" style="grid-template-columns: repeat(3, 1fr);">
     <div class="dashboard-frame">
         <h3>Completed Invigilation Hours</h3>
@@ -274,11 +274,10 @@
 </div>
 {% endif %}
 {% endif %}
-{% if user_level == 1 and not waiting and not confirm and not open and not reject %}
+{% if user_level in ["LECTURER", "PO"] and not waiting and not confirm and not open and not reject %}
     <h2>No Invigilation Slot</h2>
 {% endif %}
 {% endblock %}
-
 
 {% block extra_scripts %}
 <!-- Reject Reason Popup Modal -->
