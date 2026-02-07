@@ -401,7 +401,6 @@ def user_viewStaff():
     # Get all staff from the same department
     lecturers = User.query.filter_by(userDepartment=current_user.userDepartment)
     # Counts filtered by department
-    total_staff = User.query.count()
     total_admin = User.query.filter_by(userLevel="ADMIN").count()
     total_hop = User.query.filter_by(userLevel="HOP").count()
     total_hos = User.query.filter_by(userLevel="HOS").count()
