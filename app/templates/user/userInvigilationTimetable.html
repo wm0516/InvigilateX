@@ -112,7 +112,7 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const pageWidth = doc.internal.pageSize.getWidth(); 
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
     
-    if (userLevel === 1) {
+    if (userLevel in ["LECTURER", "PO", "LAB_ASS"]) {
         doc.text(`${userName}'s Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
     } else {
         doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
@@ -124,11 +124,11 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
 
     let y = margin + 15;
 
-    const days = document.querySelectorAll(".calendar-day");
+    const days = document.querySelectorAll(".venue-block");
     if (!days.length) return alert("No timetable found!");
 
     for (const [i, day] of days.entries()) {
-        const dateText = day.querySelector(".calendar-date").innerText;
+        const dateText = day.querySelector("h2").innerText;
         const examList = day.querySelector(".exam-grid");
 
         // Capture this day's exam list
