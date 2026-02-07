@@ -122,7 +122,7 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
         doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
     }
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 8, { align: "center" });
 
