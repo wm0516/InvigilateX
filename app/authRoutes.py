@@ -349,7 +349,10 @@ def user_homepage():
         # Handle waiting approval/rejection
         # -----------------------------
         waiting_id = request.form.get('w_id')
-        waiting_slot = VenueSessionInvigilator.query.get(waiting_id)
+        waiting_slot = VenueSessionInvigilator.query.filter_by(
+            venueSessionId=waiting_id,
+            invigilatorId=user_id  # optional if you want to ensure current user
+        ).first()
 
         if waiting_slot and waiting_slot.invigilatorId == user_id:
             session_obj = waiting_slot.session
