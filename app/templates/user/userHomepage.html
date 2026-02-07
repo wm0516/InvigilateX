@@ -1,17 +1,18 @@
 {% extends "user/userBase.html" %}
 {% set body_class = 'user-homepage' %}
 {% block title %}Homepage{% endblock %}
+
 {% block content %}
 <h1>Hey! 👋 <i>{{ user_name }}</i></h1>
 
-{% if user_level in ["DEAN", "HOS", "HOP"]%}
+{% if user_level in ["DEAN", "HOS", "HOP"] %}
 <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;">
     <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;">
         <div class="menu-section">
             <h2>Own Timetable</h2>
             <ul class="submenu">
                 <strong>Purpose:</strong>
-                <ul>    
+                <ul>
                     <li>- View personal timetable</li>
                     <li>- Check scheduled classes and times</li>
                 </ul>
@@ -24,7 +25,7 @@
             <h2>Invigilation Timetable</h2>
             <ul class="submenu">
                 <strong>Purpose:</strong>
-                <ul>    
+                <ul>
                     <li>- View invigilation timetable</li>
                     <li>- Check scheduled duties by date and time</li>
                 </ul>
@@ -52,7 +53,7 @@
             <h2>Merge Timetable</h2>
             <ul class="submenu">
                 <strong>Purpose:</strong>
-                <ul>    
+                <ul>
                     <li>- View all merged department timetables</li>
                     <li>- Access combined schedules across lecturers and classes</li>
                 </ul>
@@ -62,10 +63,10 @@
 
     <a href="{{ url_for('user_viewStaff') }}" style="text-decoration: none;">
         <div class="menu-section">
-            <h2>Merge Timetable</h2>
+            <h2>Department Lecturers</h2>
             <ul class="submenu">
                 <strong>Purpose:</strong>
-                <ul>    
+                <ul>
                     <li>- View all department lecturers</li>
                     <li>- View lecturer details and timetable information</li>
                 </ul>
@@ -75,7 +76,7 @@
 </div>
 {% endif %}
 
-{% if user_level in ["LECTURER", "PO", "LAB_ASS"] %} 
+{% if user_level in ["LECTURER", "PO", "LAB_ASS"] %}
 <div class="dashboard-row" style="grid-template-columns: repeat(3, 1fr);">
     <div class="dashboard-frame">
         <h3>Completed Invigilation Hours</h3>
@@ -91,6 +92,40 @@
     </div>
 </div><br>
 
+{# --- Jinja Macro for table rows --- #}
+{% macro slot_row(slot, show_actions=False, action_type="") %}
+    {% set venue_exam = slot.session.exams[0] if slot.session.exams else None %}
+    {% set course = venue_exam.exam.course if venue_exam else None %}
+    {% set start = slot.session.startDateTime %}
+    {% set end = slot.session.endDateTime %}
+    {% set duration = (end - start).total_seconds() %}
+<tr>
+    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
+    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
+    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
+    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
+    <td>{{ course.courseName if course else '' }}</td>
+    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
+    {% if show_actions %}
+    <td>
+        {% if action_type == 'waiting' %}
+        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="w_id" value="{{ slot.attendanceId }}">
+            <button type="submit" name="action" value="accept">Accept</button>
+        </form>
+        <button class="reject-btn" data-id="{{ slot.attendanceId }}">Reject</button>
+        {% elif action_type == 'open' %}
+        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="a_id" value="{{ slot.attendanceId }}">
+            <button type="submit" name="action" value="open_accept">Accept</button>
+        </form>
+        {% endif %}
+    </td>
+    {% endif %}
+</tr>
+{% endmacro %}
+
+{# --- Waiting Slots --- #}
 {% if waiting %}
 <div style="padding: 10px;">
     <h2>Confirm or Decline Invigilation Slot</h2>
@@ -103,30 +138,14 @@
                     <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
-                    <th>Course Code/Section - Name</th>
-                    <th>Exam Venue</th>
+                    <th>Course Name</th>
+                    <th>Course Code</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for w in waiting %}
-                <tr>
-                    {% set exam = w.session.exams[0].exam if w.session.exams else None %}
-                    {% if exam %}
-                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>[{{ exam.course.courseCodeSectionIntake }}] - {{ exam.course.courseName }}</td>
-                        <td>{{ w.session.venueNumber }}</td>
-                        <td>
-                            <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
-                                <input type="hidden" name="w_id" value="{{ w.attendanceId }}">
-                                <button type="submit" name="action" value="accept">Accept</button>
-                            </form>
-                        </td>
-                    {% endif %}
-                </tr>
+                    {{ slot_row(w, show_actions=True, action_type='waiting') }}
                 {% endfor %}
             </tbody>
         </table>
@@ -134,6 +153,7 @@
 </div><br>
 {% endif %}
 
+{# --- Confirmed Slots --- #}
 {% if confirm %}
 <div style="padding: 10px;">
     <h2>Incoming Invigilation Slot</h2>
@@ -147,25 +167,25 @@
                     <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
-                    <th>Exam Venue</th>
                     <th>Course Name</th>
                     <th>Course Code</th>
                 </tr>
             </thead>
             <tbody>
                 {% for c in confirm %}
+                    {% set start = c.session.startDateTime %}
+                    {% set end = c.session.endDateTime %}
+                    {% set duration = (end - start).total_seconds() %}
+                    {% set venue_exam = c.session.exams[0] if c.session.exams else None %}
+                    {% set course = venue_exam.exam.course if venue_exam else None %}
                 <tr>
-                    {% set exam = c.session.exams[0].exam if c.session.exams else None %}
-                    {% if exam %}
-                        <td>{{ c.timeAction }}</td>
-                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>{{ c.session.venueNumber }}</td>
-                        <td>{{ exam.course.courseName }}</td>
-                        <td>{{ exam.course.courseCodeSectionIntake }}</td>
-                    {% endif %}
+                    <td>{{ c.timeAction }}</td>
+                    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
+                    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
+                    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
+                    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
+                    <td>{{ course.courseName if course else '' }}</td>
+                    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -174,12 +194,13 @@
 </div><br>
 {% endif %}
 
+{# --- Open Slots --- #}
 {% if open %}
 <div style="padding: 10px;">
     <h2>Open Public Self-Selection Invigilation Slot</h2>
     <label>
-        The slots below are unselected by other lecturers, have expired, and are now open for public selection and also 
-        slots that you previously rejected will also be displayed here. All slots are assigned on a <b>first-come, first-served</b> basis.
+        The slots below are unselected by other lecturers, have expired, and are now open for public selection.  
+        Slots you previously rejected will also be displayed. First-come, first-served.
     </label>
     <div class="user-table-container">
         <table class="user-data-table">
@@ -196,23 +217,7 @@
             </thead>
             <tbody>
                 {% for a in open %}
-                <tr>
-                    {% set exam = a.session.exams[0].exam if a.session.exams else None %}
-                    {% if exam %}
-                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>{{ exam.course.courseName }}</td>
-                        <td>{{ exam.course.courseCodeSectionIntake }}</td>
-                        <td>
-                            <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                                <input type="hidden" name="a_id" value="{{ a.attendanceId }}">
-                                <button type="submit" name="action" value="open_accept">Accept</button>
-                            </form>
-                        </td>
-                    {% endif %}
-                </tr>
+                    {{ slot_row(a, show_actions=True, action_type='open') }}
                 {% endfor %}
             </tbody>
         </table>
@@ -220,10 +225,11 @@
 </div>
 {% endif %}
 
+{# --- Rejected Slots --- #}
 {% if reject %}
 <div style="padding: 10px;">
     <h2>Rejected Invigilation Slot</h2>
-    <label>The slots below show all invigilation slots you have rejected, including the reason and the date and time of rejection.</label>
+    <label>The slots below show all invigilation slots you have rejected, including the reason and the date/time of rejection.</label>
     <div class="user-table-container">
         <table class="user-data-table">
             <thead>
@@ -240,18 +246,20 @@
             </thead>
             <tbody>
                 {% for r in reject %}
+                    {% set start = r.session.startDateTime %}
+                    {% set end = r.session.endDateTime %}
+                    {% set duration = (end - start).total_seconds() %}
+                    {% set venue_exam = r.session.exams[0] if r.session.exams else None %}
+                    {% set course = venue_exam.exam.course if venue_exam else None %}
                 <tr>
-                    {% set exam = r.session.exams[0].exam if r.session.exams else None %}
-                    {% if exam %}
-                        <td>{{ r.timeAction }}</td>
-                        <td><strong>{{ r.rejectReason }}</strong></td>
-                        <td>{{ exam.examStartTime.strftime("%d/%b/%Y") }} - {{ exam.examEndTime.strftime("%d/%b/%Y") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%A") }} - {{ exam.examEndTime.strftime("%A") }}</td>
-                        <td>{{ exam.examStartTime.strftime("%H:%M") }} - {{ exam.examEndTime.strftime("%H:%M") }}</td>
-                        <td>{{ ((exam.examEndTime - exam.examStartTime).seconds // 3600) }}h {{ ((exam.examEndTime - exam.examStartTime).seconds % 3600) // 60 }}m</td>
-                        <td>{{ exam.course.courseName }}</td>
-                        <td>{{ exam.course.courseCodeSectionIntake }}</td>
-                    {% endif %}
+                    <td>{{ r.timeAction }}</td>
+                    <td><strong>{{ r.rejectReason }}</strong></td>
+                    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
+                    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
+                    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
+                    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
+                    <td>{{ course.courseName if course else '' }}</td>
+                    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -259,43 +267,23 @@
     </div>
 </div>
 {% endif %}
-{% endif %}
+
 {% if user_level in ["LECTURER", "PO", "LAB_ASS"] and not waiting and not confirm and not open and not reject %}
     <h2>No Invigilation Slot</h2>
 {% endif %}
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- Reject Reason Popup Modal -->
-<div id="rejectModal" class="modal" style="
-    display:none;
-    position: fixed;
-    z-index: 1000;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-">
-    <div style="
-        background:white;
-        padding: 20px;
-        width: 350px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    ">
+<!-- Reject Reason Modal -->
+<div id="rejectModal" class="modal" style="display:none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.5); justify-content:center; align-items:center;">
+    <div style="background:white; padding:20px; width:350px; border-radius:8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
         <h3>Reject Slot</h3>
-
         <form id="rejectModalForm" method="POST" action="{{ url_for('user_homepage') }}">
             <input type="hidden" name="w_id" id="reject_wid">
-            <textarea name="reject_reason" placeholder="Enter rejection reason" required
-                style="width:100%; height:100px; margin-top:10px;"></textarea>
-
+            <textarea name="reject_reason" placeholder="Enter rejection reason" required style="width:100%; height:100px; margin-top:10px;"></textarea>
             <div style="margin-top:15px; text-align:right;">
-                <button type="button" onclick="closeRejectModal()"
-                    style="padding:5px 12px; margin-right:10px;">Cancel</button>
-                <button type="submit" name="action" value="reject"
-                    style="padding:5px 12px; background:#e74c3c; color:white;">Submit</button>
+                <button type="button" onclick="closeRejectModal()" style="padding:5px 12px; margin-right:10px;">Cancel</button>
+                <button type="submit" name="action" value="reject" style="padding:5px 12px; background:#e74c3c; color:white;">Submit</button>
             </div>
         </form>
     </div>
