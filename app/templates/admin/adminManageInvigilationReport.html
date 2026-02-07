@@ -187,16 +187,10 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        let venue = "";
-        let examDate = "";
-        let courses = "";
-        let invigilator = "";
-        let status = "";
-        let attendance = "";
-        let checkTimes = "";
+        let venue = "", examDate = "", courses = "";
+        let invigilator = "", status = "", attendance = "", checkTimes = "";
 
-        if (tds.length === 7) {
-            // First row of grouped exam
+        if (tds.length === 8) { // first row with venue/exam/course
             venue = tds[0].innerText.trim();
             examDate = tds[1].innerText.trim();
             courses = tds[2].innerText.trim();
@@ -204,13 +198,20 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             status = tds[4].innerText.trim();
             attendance = tds[5].innerText.trim();
             checkTimes = tds[6].innerText.trim();
-        } else {
-            // Continuation row
+        } else if (tds.length === 7) { // continuation rows (venue/course/exam blank)
             invigilator = tds[0]?.innerText.trim() || "";
             status = tds[1]?.innerText.trim() || "";
             attendance = tds[2]?.innerText.trim() || "";
             checkTimes = tds[3]?.innerText.trim() || "";
         }
+
+        // For subsequent invigilators, blank venue/exam/courses
+        if (tds[0].hasAttribute("rowspan") === false) {
+            venue = "";
+            examDate = "";
+            courses = "";
+        }
+
         rows.push([venue, examDate, courses, invigilator, status, attendance, checkTimes]);
     });
     
