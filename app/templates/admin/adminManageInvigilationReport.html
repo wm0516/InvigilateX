@@ -68,32 +68,24 @@
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" class="function-frame">
-        <h4 style="text-align:center;">Edit Invigilation Report</h4>
+        <h4 style="text-align:center;">Edit Invigilation Assignments</h4>
         <div class="profile-frame">
             <div class="form-profile">
-                <label>Select Exam</label>
-                <select id="editReport" name="reportId" required>
-                    <option value="" disabled selected>-- Select Exam --</option>
-                    {% for r in reports %}
-                        <option value="{{ r.invigilationReportId }}">
-                            {{ r.invigilationReportId }} - [{{ r.exam.course.courseCodeSectionIntake }}] {{ r.exam.course.courseName }}
+                <label>Select Venue Session</label>
+                <select id="editSession" name="venueSessionId" required>
+                    <option value="" disabled selected>-- Select Session --</option>
+                    {% for (venue, start, end), courses in grouped_att.items() %}
+                        <option value="{{ venue }}|{{ start.isoformat() }}|{{ end.isoformat() }}">
+                            Venue [{{ venue }}] - {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }}
                         </option>
                     {% endfor %}
                 </select><br>
-
-                <label>Course Code - Name</label>
-                <input type="text" id="courseInfo" readonly><br>
-
-                <label>Exam Time (Start → End)</label>
-                <input type="text" id="examTime" readonly>
+                <label>Assigned Invigilators</label>
+                <div id="invigilatorList"></div>
             </div>
-
-            <div class="form-profile" id="middleSlots"></div>
-            <div class="form-profile" id="rightSlots"></div>
         </div>
 
         <input type="hidden" name="form_type" value="edit">
-
         <div class="button-wrapper">
             <button type="submit" style="background:#d4edda;color:#155724;">Update Invigilators</button>
         </div>
@@ -150,8 +142,9 @@
                         <td rowspan="{{ total_rows }}">
                             {% for code, c_atts in courses.items() %}
                                 <div class="info-grid">
-                                    <div><strong>{{ code }} </strong></div>
-                                    <div><strong> - {{ c_atts[0].report.exam.course.courseName }}</strong></div>
+                                    <div><strong>{{ code }}</strong></div>
+                                    <div><strong> - {{ c_atts[0].session.exams[0].exam.course.courseName if c_atts[0].session.exams else "N/A" }}</strong></div>
+                                </div>
                             {% endfor %}
                         </td>
                     {% endif %}
@@ -168,7 +161,8 @@
                     <td>
                         <form method="POST" style="display:inline;">
                             <input type="hidden" name="form_type" value="edit">
-                            <input type="hidden" name="reportId" value="{{ att.report.invigilationReportId }}">
+                            <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
+                            <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
                             <button type="submit" class="edit-btn">Edit</button>
                         </form>
                     </td>
@@ -349,7 +343,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        attendance_id: attendanceId,
+                        venueSessionId: att.venueSessionId,
+                        invigilatorId: att.invigilatorId,
                         check_in: newCheckIn,
                         check_out: newCheckOut,
                         invigilation_status: newStatus

@@ -2141,42 +2141,38 @@ def get_valid_invigilators():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    # Fetch all attendance entries with session, report, exam, and invigilator
-    attendances = (
-        InvigilatorAttendance.query
-        .join(VenueSession, InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId)
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Venue)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
-        .order_by(VenueSession.startDateTime, Venue.venueNumber, Exam.examId)
+    # Fetch all invigilator assignments with session, venue, exam, and course info
+    vsi_entries = (
+        VenueSessionInvigilator.query
+        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+        .join(Venue, VenueSession.venueNumber == Venue.venueNumber)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .join(Exam, VenueExam.examId == Exam.examId)
+        .join(Course, Exam.examId == Course.courseExamId)
+        .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
+        .order_by(VenueSession.startDateTime, Venue.venueNumber, Course.courseCodeSectionIntake)
         .all()
     )
 
+    # Group by session (venue, start, end) and then by course code
     grouped_att = defaultdict(lambda: defaultdict(list))
-
-    for att in attendances:
-        session = att.session
-        if not session or not att.report or not att.report.exam:
+    for vsi in vsi_entries:
+        session = vsi.session
+        if not session or not session.exams:
             continue
+        
+        session_key = (session.venue.venueNumber, session.startDateTime, session.endDateTime)
+        for ve in session.exams:
+            course = ve.exam.course if ve.exam else None
+            course_key = course.courseCodeSectionIntake if course else "UNKNOWN"
+            grouped_att[session_key][course_key].append(vsi)
 
-        session_key = (
-            session.venue.venueNumber,
-            session.startDateTime,
-            session.endDateTime
-        )
-
-        course_key = att.report.exam.course.courseCodeSectionIntake
-
-        grouped_att[session_key][course_key].append(att)
-
-    # Stats (same as before)
+    # Stats (reuse your existing function)
     stats = calculate_invigilation_stats()
 
-    # Attach grouping key for Jinja2
-    for att in attendances:
-        session = att.session
-        att.group_key = session.venueSessionId if session else None
+    # Attach grouping key for Jinja2 rowspan
+    for vsi in vsi_entries:
+        vsi.group_key = vsi.session.venueSessionId if vsi.session else None
 
     # Handle POST (upload or edit)
     if request.method == 'POST':
@@ -2191,69 +2187,44 @@ def admin_manageInvigilationReport():
                 skiprows=0
             )
         elif form_type == 'edit':
-            # Same as previous code for editing assignments
-            report_id = request.form.get('reportId')
-            report = InvigilationReport.query.get(report_id)
-            if not report:
-                flash("Report not found.", "error")
+            # Fetch session + invigilator IDs from hidden inputs
+            venue_session_id = int(request.form.get('venueSessionId'))
+            invigilator_id = int(request.form.get('invigilatorId'))
+            
+            vsi = VenueSessionInvigilator.query.filter_by(
+                venueSessionId=venue_session_id,
+                invigilatorId=invigilator_id
+            ).first()
+            
+            if not vsi:
+                flash("Assignment not found.", "error")
+                return redirect(url_for('admin_manageInvigilationReport'))
+            
+            # Example: reassign invigilator
+            new_invigilator_id = int(request.form.get('newInvigilatorId'))
+            new_invigilator = User.query.get(new_invigilator_id)
+            if not new_invigilator:
+                flash("New invigilator not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
 
-            # Track assigned invigilators
-            '''
-            selected_invigilators = []
-            for key, value in request.form.items():
-                if key.startswith("slot_"):
-                    invigilator_id = int(value)
-                    if invigilator_id in selected_invigilators:
-                        flash("Invigilator assigned multiple times in same report.", "error")
-                        return redirect(url_for('admin_manageInvigilationReport'))
-                    selected_invigilators.append(invigilator_id)
+            old_invigilator = vsi.invigilator
+            session_duration_hours = ((vsi.session.endDateTime - vsi.session.startDateTime).total_seconds()) / 3600
 
-                    # 30-minute gap check
-                    att_id = key.replace("slot_", "")
-                    att = InvigilatorAttendance.query.get(att_id)
-                    if not att.session:
-                        continue
-                    session_start = att.session.startDateTime
-                    session_end = att.session.endDateTime
-
-                    invig_attendances = InvigilatorAttendance.query.filter_by(invigilatorId=invigilator_id).all()
-                    for ia in invig_attendances:
-                        if ia.attendanceId == att.attendanceId or not ia.session:
-                            continue
-                        gap_start = ia.session.startDateTime - timedelta(minutes=30)
-                        gap_end = ia.session.endDateTime + timedelta(minutes=30)
-                        if session_start < gap_end and session_end > gap_start:
-                            flash(f"Invigilator {ia.invigilator.userName} does not have enough gap between sessions.", "error")
-                            return redirect(url_for('admin_manageInvigilationReport'))
-
-            # Update assignments (same logic as before)
-            for key, value in request.form.items():
-                if key.startswith("slot_"):
-                    attendance_id = key.replace("slot_", "")
-                    new_invigilator_id = int(value)
-                    att = InvigilatorAttendance.query.get(attendance_id)
-                    if not att:
-                        continue
-                    old_invigilator = User.query.get(att.invigilatorId)
-                    new_invigilator = User.query.get(new_invigilator_id)
-                    session = att.session
-                    session_duration = ((session.endDateTime - session.startDateTime).total_seconds()) / 3600 if session else 0
-
-                    if old_invigilator.userId != new_invigilator.userId:
-                        old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - session_duration)
-                        new_invigilator.userPendingCumulativeHours += session_duration
-                        att.invigilatorId = new_invigilator_id
-            db.session.commit()
-            '''
-            flash("Invigilators updated successfully.", "success")
+            # Update cumulative hours
+            if old_invigilator.userId != new_invigilator.userId:
+                old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - session_duration_hours)
+                new_invigilator.userPendingCumulativeHours += session_duration_hours
+                vsi.invigilatorId = new_invigilator.userId
+                db.session.commit()
+            
+            flash("Invigilator updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
 
     return render_template(
         'admin/adminManageInvigilationReport.html',
         active_tab='admin_manageInvigilationReporttab',
-        attendances=attendances,
-        grouped_att=grouped_att, 
+        attendances=vsi_entries,
+        grouped_att=grouped_att,
         **stats
     )
 
