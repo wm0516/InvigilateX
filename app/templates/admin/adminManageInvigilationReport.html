@@ -74,7 +74,7 @@
                 <label>Select Venue Session</label>
                 <select id="editSession" name="venueSessionId" required>
                     <option value="" disabled selected>-- Select Session --</option>
-                    {% for (venue, start, end, inv_id), data in grouped_att.items() %}
+                    {% for (venue, start, end), data in grouped_att.items() %}
                         <option value="{{ data.vsi.venueSessionId }}">
                             Venue [{{ venue }}] - {{ start.strftime("%d/%b/%Y %H:%M") }} →{{ end.strftime("%d/%b/%Y %H:%M") }}
                         </option>
@@ -124,32 +124,43 @@
             </tr>
         </thead>
         <tbody>
-        {% for (venue, start, end, inv_id), data in grouped_att.items() %}
-        {% set att = data.vsi %}
-        <tr>
-            <td>[{{ venue }}]</td>
-            <td>{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
-            <td>
-                <div class="info-grid">
+            {% for (venue, start, end), data in grouped_att.items() %}
+            <tr>
+                <td>[{{ venue }}]</td>
+                <td>{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
+                <td>
                     {% for c in data.courses %}
-                        <div><strong>{{ c.code }}</strong>- {{ c.name }}</div>
+                        <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
                     {% endfor %}
-                </div>
-            </td>
-            <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
-            <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
-            <td>{{ att.remark or "PENDING" }}</td>
-            <td>{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}<br>{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</td>
-            <td>
-                <form method="POST">
-                    <input type="hidden" name="form_type" value="edit">
-                    <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
-                    <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
-                    <button type="submit" class="edit-btn">Edit</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
+                </td>
+                <td>
+                    {% for att in data.invigilators %}
+                        <div>
+                            {{ att.invigilator.userName }} ({{ att.invigilator.userId }})<br>
+                            Status: {{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}<br>
+                            Attendance: {{ att.remark or "PENDING" }}
+                            <hr>
+                        </div>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for att in data.invigilators %}
+                        {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }} /
+                        {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}<br>
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for att in data.invigilators %}
+                    <form method="POST">
+                        <input type="hidden" name="form_type" value="edit">
+                        <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
+                        <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
+                        <button type="submit" class="edit-btn">Edit</button>
+                    </form>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
