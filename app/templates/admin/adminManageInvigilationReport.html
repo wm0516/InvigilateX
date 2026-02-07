@@ -139,13 +139,14 @@
             {% for course_code, atts in courses.items() %}
                 {% for att in atts %}
                 <tr>
-                    {% if loop.first and loop.parentloop.first %}
+                    {% if loop.first and loop.parent.first %}
                     <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
                     <td rowspan="{{ total_rows }}">
                         {{ start.strftime("%d/%b/%Y %H:%M") }} -
                         {{ end.strftime("%d/%b/%Y %H:%M") }}
                     </td>
                     {% endif %}
+
 
                     {% if loop.first %}
                     <td rowspan="{{ atts|length }}">

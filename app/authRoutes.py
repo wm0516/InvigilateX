@@ -232,7 +232,7 @@ def logout():
     role = session.get('user_role')
     department = session.get('user_department')
     if user_id and role:
-        record_action(f"LOGOUT AS {role}-{department}", "LOGOUT", user_id, user_id)
+        record_action(f"LOGOUT AS [{role}-{department}]", "LOGOUT", user_id, user_id)
     
     session.clear()
     return redirect(url_for('login'))
