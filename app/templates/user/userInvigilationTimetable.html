@@ -31,41 +31,48 @@
     </div><br>
 
     <div class="calendar-container">
-        {% for date, exams in calendar_data.items() %}
-            <div class="calendar-day">
-                <h3 class="calendar-date" data-date="{{ date.isoformat() }}">{{ date.strftime("%A, %d %B %Y") }} | [Total Exams: {{ exams|length }}]</h3>
-                <div class="exam-grid">
-                    {% for exam in exams %}
-                        <div class="exam-card"
-                            style="background-color:
-                                {% if exam.is_overnight %}
-                                    #dc74f7
-                                {% elif exam.status %}
-                                    #75bdf9
-                                {% else %}
-                                    lightgrey
-                                {% endif %};">
+        {% for venue, exams in venue_data.items() %}
+            {% set exams_by_date = {} %}
+            {% for exam in exams %}
+                {% set exam_date = exam.start_time.strftime("%d %b %Y") %}
+                {% if exam_date not in exams_by_date %}
+                    {% set _ = exams_by_date.update({exam_date: []}) %}
+                {% endif %}
+                {% set _ = exams_by_date[exam_date].append(exam) %}
+            {% endfor %}
 
-                            <strong>{{ exam.course_code }} - [{{ exam.course_name }}]</strong><br>
-
-                            {% if exam.venue is not none and exam.venue|trim != '' %}
-                                Venue: {{ exam.venue }}<br>
+            {% for date, day_exams in exams_by_date.items() %}
+                <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
+                    <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
+                    <div class="exam-grid">
+                        {% set grouped = {} %}
+                        {% for exam in day_exams %}
+                            {% set key = (exam.start_time, exam.end_time, venue) %}
+                            {% if key not in grouped %}
+                                {% set grouped = grouped.update({key: [exam]}) or grouped %}
                             {% else %}
-                                Venue: None<br>
+                                {% set grouped = grouped.update({key: grouped[key] + [exam]}) or grouped %}
                             {% endif %}
+                        {% endfor %}
 
-                            Time:
-                            {{ exam.start_time.strftime("%H:%M") }} - {{ exam.end_time.strftime("%H:%M") }}
-
-                            {% if exam.is_overnight %}
-                                <span style="font-size:12px;color:#700;">
-                                    <strong>[Overnight]</strong>
-                                </span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+                        {% for key, exams in grouped.items() %}
+                            {% set card_ns = namespace(total_students=0) %}
+                            <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                                {% set start_time, end_time, venue_name = key %}
+                                <h3>Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}<br>Venue: {{ venue_name }}<br></h3>
+                                {% for exam in exams %}
+                                    <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }} | Students: {{ exam.students }}</strong><br>
+                                    {% if exam.is_overnight %}
+                                        <span style="color: #b400b4;">Overnight Exam</span><br>
+                                    {% endif %}
+                                    {% set card_ns.total_students = card_ns.total_students + exam.students %}
+                                {% endfor %}
+                                <br><strong>Total Students: {{ card_ns.total_students }}</strong>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
+            {% endfor %}
         {% endfor %}
     </div>
 </div>

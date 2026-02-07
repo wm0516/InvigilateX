@@ -217,17 +217,66 @@ def get_calendar_data():
 
 
 
+def get_venue_calendar_data(user):
+    query = (VenueExam.query.join(Exam).join(VenueSession).join(Course))
+
+    # Case 1: Lecturer / PO / Lab Assistant
+    if user.userLevel in {"LECTURER", "PO", "LAB_ASS"}:
+        query = (
+            query
+            .join(VenueSessionInvigilator,
+                  VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+            .filter(
+                or_(
+                    VenueSessionInvigilator.invigilatorId == user.userId,
+                    VenueSession.backupInvigilatorId == user.userId
+                )
+            )
+        )
+
+    # Case 2: Dean / HOP / HOS
+    elif user.userLevel in {"DEAN", "HOP", "HOS"}:
+        query = query.filter(Course.courseDepartment == user.userDepartment)
+
+    # Otherwise (admin, exam unit, etc.) → no filter
+    venue_exams = query.all()
+
+    # BUILD VENUE CALENDAR DATA
+    venue_data = defaultdict(list)
+
+    for ve in venue_exams:
+        exam = ve.exam
+        session = ve.session
+        course = exam.course
+
+        venue_data[session.venueNumber].append({
+            "exam_id": exam.examId,
+            "course_code": course.courseCodeSectionIntake,
+            "course_name": course.courseName,
+            "start_time": session.startDateTime,
+            "end_time": session.endDateTime,
+            "students": ve.studentCount,
+            "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
+        })
+
+    # Sort exams per venue
+    for venue in venue_data:
+        venue_data[venue].sort(key=lambda x: x["start_time"])
+
+    return dict(sorted(venue_data.items()))
+
+
 # -------------------------------
 # Function for InviglationTimetable Route
 # -------------------------------
 @app.route('/user/invigilationTimetable', methods=['GET', 'POST'])
 @login_required
 def user_invigilationTimetable():
-    user = User.query.get(session.get('user_id'))
-    if not user:
-        return redirect(url_for('user_invigilationTimetable'))
-    calendar_data = get_calendar_data()
-    return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', calendar_data=calendar_data, current_user=user)
+    userId = session.get('user_id')
+    venue_data = get_venue_calendar_data(userId)
+    return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', venue_data=venue_data)
+
+
 
 
 
