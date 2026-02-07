@@ -1047,9 +1047,6 @@ def admin_manageExam():
         department_data=department_data,
     )
 
-
-
-
 # -------------------------------
 # Function for Admin User Download Excel Template
 # -------------------------------
@@ -1075,7 +1072,7 @@ def generate_user_template():
         ws_lists[f"A{i}"] = d.departmentCode
 
     # --- Roles ---
-    roles = ["LECTURER", "PO", "LAB_ASS", "DEAN", "HOS", "HOP", "ADMIN"]
+    roles = ["LECTURER", "PROGRAM OFFICER", "LAB ASSISSTANT", "DEAN", "HOS", "HOP", "ADMIN"]
     for i, r in enumerate(roles, start=1):
         ws_lists[f"B{i}"] = r
 
@@ -1171,13 +1168,27 @@ def process_staff_row(row):
 
     # Clean contact
     contact_cleaned = clean_contact(row['contact'])
+    ROLE_MAP = {
+        "PROGRAM OFFICER": "PO",
+        "LAB ASSISSTANT": "LAB_ASS",
+        "LECTURER": "LECTURER",
+        "DEAN": "DEAN",
+        "HOS": "HOS",
+        "HOP": "HOP",
+        "ADMIN": "ADMIN",
+    }
+
+    role_excel = str(row['role']).strip().upper()
+    role_text = ROLE_MAP.get(role_excel)
+    if not role_text:
+        raise ValueError(f"Invalid role value: {row['role']}")
 
     return create_staff(
         userId=user_id,
         id=row['id'],
         department=str(row['department']).upper(),
         name=str(row['name']).upper(),
-        role=str(row['role']).upper(),
+        role=role_text,
         email=str(row['email']),
         contact=contact_cleaned,
         gender=gender_bool, 
