@@ -17,8 +17,7 @@
     <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
     <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
     <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
-    <td>{{ course.courseName if course else '' }}</td>
-    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
+    <td>{{ venue_exam}}</td>
     {% if show_actions %}
     <td>
         {% if action_type == 'waiting' %}
@@ -139,8 +138,7 @@
                     <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
-                    <th>Course Name</th>
-                    <th>Course Code</th>
+                    <th>Exam Venue</th>
                     <th>Action</th>
                 </tr>
             </thead>
