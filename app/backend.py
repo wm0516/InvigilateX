@@ -320,13 +320,10 @@ def is_lecturer_available(lecturer_id, exam_start, exam_end, buffer_minutes=60):
 
     return True
 
-from datetime import timedelta
 
 # -------------------------------
-# Admin Function 2: Fill in Exam details and Automatically VenueExam, InvigilationReport, InvigilatorAttendance
+# Admin Function 2: Fill in Exam details and Automatically VenueExam
 # -------------------------------
-from datetime import timedelta
-
 def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, studentPerVenue_list, open, close):
     # --- Fetch course & exam ---
     course = Course.query.filter_by(courseCodeSectionIntake=courseSection).first()
@@ -616,64 +613,64 @@ def check_profile(user_id, cardId, contact, password1, password2):
 # -------------------------------
 def waiting_record(user_id):
     current_time = datetime.now() + timedelta(hours=8)
-    
+
+    # Subquery: sessions the user rejected
     rejected_subq = (
-        InvigilatorAttendance.query
+        db.session.query(VenueSessionInvigilator.venueSessionId)
         .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.rejectReason.isnot(None)
+            VenueSessionInvigilator.invigilatorId == user_id,
+            VenueSessionInvigilator.rejectReason.isnot(None)
         )
-        .with_entities(InvigilatorAttendance.reportId)
         .subquery()
     )
-    
+
+    # Fetch waiting slots: assigned to user but not yet checked in, not rejected
     return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
+        db.session.query(VenueSessionInvigilator)
+        .join(VenueSession)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .join(Exam, Exam.examId == VenueExam.examId)
         .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.rejectReason.is_(None),
-            InvigilatorAttendance.timeAction.is_(None),
-            InvigilatorAttendance.timeCreate <= current_time,
-            ~InvigilatorAttendance.reportId.in_(select(rejected_subq))
+            VenueSessionInvigilator.invigilatorId == user_id,
+            VenueSessionInvigilator.invigilationStatus == False,
+            VenueSessionInvigilator.rejectReason.is_(None),
+            VenueSessionInvigilator.timeAction.is_(None),
+            VenueSessionInvigilator.timeCreate <= current_time,
+            ~VenueSessionInvigilator.venueSessionId.in_(select(rejected_subq))
         )
         .all()
     )
-
 
 # -------------------------------
 # HELPER 2: Confirmed Slots
 # -------------------------------
 def confirm_record(user_id):
     return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
+        db.session.query(VenueSessionInvigilator)
+        .join(VenueSession)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .join(Exam, Exam.examId == VenueExam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
         .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == True,
+            VenueSessionInvigilator.invigilatorId == user_id,
+            VenueSessionInvigilator.invigilationStatus == True,
         )
         .all()
     )
 
 def reject_record(user_id):
     return (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
+        db.session.query(VenueSessionInvigilator)
+        .join(VenueSession)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .join(Exam, Exam.examId == VenueExam.examId)
         .join(Course, Course.courseExamId == Exam.examId)
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)
         .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.rejectReason.isnot(None)  # only rejected rows
+            VenueSessionInvigilator.invigilatorId == user_id,
+            VenueSessionInvigilator.rejectReason.isnot(None)
         )
         .all()
     )
-
-
 # -------------------------------
 # HELPER 3: Open Slots
 # -------------------------------
@@ -686,41 +683,39 @@ def open_record(user_id):
 
     user_gender = user.userGender
 
-    # Subquery: Exams the user previously rejected
+    # Subquery: exams the user rejected
     rejected_exam_subq = (
-        db.session.query(InvigilationReport.examId)
-        .join(InvigilatorAttendance, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
+        db.session.query(VenueExam.examId)
+        .join(VenueSessionInvigilator, VenueSessionInvigilator.venueSessionId == VenueExam.venueSessionId)
         .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.rejectReason.isnot(None)
+            VenueSessionInvigilator.invigilatorId == user_id,
+            VenueSessionInvigilator.rejectReason.isnot(None)
         )
         .distinct()
         .subquery()
     )
 
-    # Fetch all open slots matching gender and not rejected
+    # All open slots not yet accepted or rejected and matching gender
     slots = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
+        db.session.query(VenueSessionInvigilator)
+        .join(VenueSession)
         .filter(
-            InvigilatorAttendance.invigilationStatus == False,
-            InvigilatorAttendance.rejectReason.is_(None),
-            InvigilatorAttendance.timeExpire <= current_time,
-            InvigilatorAttendance.invigilator.has(userGender=user_gender),
-            ~InvigilationReport.examId.in_(select(rejected_exam_subq))
+            VenueSessionInvigilator.invigilationStatus == False,
+            VenueSessionInvigilator.rejectReason.is_(None),
+            VenueSessionInvigilator.timeExpire >= current_time,
+            VenueSessionInvigilator.invigilator.has(userGender=user_gender),
+            ~VenueSessionInvigilator.session.has(VenueSession.exams.any(VenueExam.examId.in_(select(rejected_exam_subq))))
         )
         .all()
     )
 
-    # Fetch all accepted slots for the user to check conflicts
+    # Fetch accepted slots for conflict checking
     assigned_slots = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
-        .join(Exam, Exam.examId == InvigilationReport.examId)
+        db.session.query(VenueSessionInvigilator)
+        .join(VenueSession)
         .filter(
-            InvigilatorAttendance.invigilatorId == user_id,
-            InvigilatorAttendance.invigilationStatus == True
+            VenueSessionInvigilator.invigilatorId == user_id,
+            VenueSessionInvigilator.invigilationStatus == True
         )
         .all()
     )
@@ -730,30 +725,22 @@ def open_record(user_id):
 
     unique_slots = {}
     for slot in slots:
-        exam = slot.report.exam
-        slot_start, slot_end = exam.examStartTime, exam.examEndTime
-        if slot_end < slot_start:
-            slot_end += timedelta(days=1)
-
-        # Skip slot if it conflicts with any assigned slot
+        vs = slot.session
+        # Check conflict with assigned slots
         conflict = False
         for assigned in assigned_slots:
-            assigned_exam = assigned.report.exam
-            assigned_start, assigned_end = assigned_exam.examStartTime, assigned_exam.examEndTime
-            if assigned_end < assigned_start:
-                assigned_end += timedelta(days=1)
-            if is_overlap(slot_start, slot_end, assigned_start, assigned_end):
+            a_vs = assigned.session
+            if is_overlap(vs.startDateTime, vs.endDateTime, a_vs.startDateTime, a_vs.endDateTime):
                 conflict = True
                 break
         if conflict:
-            continue  # Skip conflicting slot
+            continue
 
-        # Deduplicate by examId
-        if exam.examId not in unique_slots:
-            unique_slots[exam.examId] = slot
+        # Deduplicate by venueSessionId
+        if vs.venueSessionId not in unique_slots:
+            unique_slots[vs.venueSessionId] = slot
 
     return list(unique_slots.values())
-
 
 
 # -------------------------------
@@ -791,36 +778,40 @@ def build_exam_block(exams):
 
 # -------------------------------
 # Email: Notify Invigilator
-# -------------------------------
+# -------------------------------from sqlalchemy import func
+
 def send_invigilator_slot_notifications_for_all():
     now = datetime.now() + timedelta(hours=8)
-    users = User.query.join(InvigilatorAttendance, User.userId == InvigilatorAttendance.invigilatorId).distinct().all()
+
+    # Get all users who have any VenueSessionInvigilator records
+    users = User.query.join(VenueSessionInvigilator, User.userId == VenueSessionInvigilator.invigilatorId).distinct().all()
     results = []
 
     for user in users:
-        summary = get_invigilator_slot_summary(user.userId)
+        summary = get_invigilator_slot_summary(user.userId)  # Assuming you've updated this helper
 
-        # Expiring tomorrow
+        # Expiring slots tomorrow
         expiring = (
-            InvigilatorAttendance.query
+            VenueSessionInvigilator.query
             .filter(
-                InvigilatorAttendance.invigilatorId == user.userId,
-                InvigilatorAttendance.invigilationStatus == False,
-                InvigilatorAttendance.rejectReason.is_(None),
-                func.date(InvigilatorAttendance.timeExpire) == (now + timedelta(days=1)).date()
+                VenueSessionInvigilator.invigilatorId == user.userId,
+                VenueSessionInvigilator.invigilationStatus == False,
+                VenueSessionInvigilator.rejectReason.is_(None),
+                func.date(VenueSessionInvigilator.timeExpire) == (now + timedelta(days=1)).date()
             )
             .all()
         )
 
         # Confirmed exams tomorrow
         confirmed_tomorrow = (
-            InvigilatorAttendance.query
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .join(Exam, InvigilationReport.examId == Exam.examId)
+            VenueSessionInvigilator.query
+            .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+            .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+            .join(Exam, Exam.examId == VenueExam.examId)
             .filter(
-                InvigilatorAttendance.invigilatorId == user.userId,
-                InvigilatorAttendance.invigilationStatus == True,
-                Exam.examStartTime.between(now + timedelta(days=1), now + timedelta(days=2))
+                VenueSessionInvigilator.invigilatorId == user.userId,
+                VenueSessionInvigilator.invigilationStatus == True,
+                VenueSession.startDateTime.between(now + timedelta(days=1), now + timedelta(days=2))
             )
             .all()
         )
@@ -829,7 +820,8 @@ def send_invigilator_slot_notifications_for_all():
         if summary["waiting_count"] == 0 and not summary["open_slots"] and not expiring and not confirmed_tomorrow:
             continue
 
-        exam_block = build_exam_block(confirmed_tomorrow)
+        # Build exam block for email
+        exam_block = build_exam_block(confirmed_tomorrow)  # You may need to update this function to handle VenueSessionInvigilator objects
 
         expiry_notice = ""
         if expiring:
@@ -844,7 +836,7 @@ def send_invigilator_slot_notifications_for_all():
 
 📌 Slot Summary
 • Waiting slots       : {summary['waiting_count']}
-• Confirmed slots  : {summary['confirmed_count']}
+• Confirmed slots     : {summary['confirmed_count']}
 • Open slots          : {', '.join(summary['open_times']) if summary['open_times'] else 'None'}
 
 {expiry_notice}
@@ -868,4 +860,3 @@ InvigilateX System
             results.append((user.userId, f"failed: {str(e)}"))
 
     return results
-

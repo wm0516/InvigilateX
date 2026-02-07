@@ -838,7 +838,6 @@ def safe_iso(val, field):
     return datetime.fromisoformat(val)
 
 
-# Remove all venue exams, attendances, reports, and rollback pending hours SAFELY.
 def reset_exam_relations(exam):
     if not exam:
         return
@@ -851,18 +850,19 @@ def reset_exam_relations(exam):
             duration = (session.endDateTime - session.startDateTime).total_seconds() / 3600.0
             total_hours += duration
 
-    # 2. Roll back invigilator hours + delete reports
-    reports = InvigilationReport.query.filter_by(examId=exam.examId).all()
+    # 2. Roll back invigilator hours + delete VenueSessionInvigilator records
+    for ve in exam.venue_availabilities:
+        session = ve.session
+        if not session:
+            continue
 
-    for report in reports:
-        for att in report.attendances:
-            inv = att.invigilator
+        for inv_att in session.invigilators:
+            inv = inv_att.invigilator
             if inv and total_hours > 0:
                 inv.userPendingCumulativeHours = max(0.0, (inv.userPendingCumulativeHours or 0.0) - total_hours)
-        db.session.delete(report)
+            db.session.delete(inv_att)  # Delete the VenueSessionInvigilator record
 
-    # 3. Remove venue-exam relations safely
-    for ve in exam.venue_availabilities:
+        # 3. Delete the VenueExam relation
         db.session.delete(ve)
 
     # 4. Reset exam fields
@@ -1788,19 +1788,24 @@ def update_attendance_time():
     attendance_id = data.get("attendance_id")
     check_in_str = data.get("check_in")
     check_out_str = data.get("check_out")
-    invigilation_status = data.get("invigilation_status")  # Get the new status
+    invigilation_status = data.get("invigilation_status")  # new status
 
     # Handle empty values
     check_in_str = None if not check_in_str or check_in_str == "None" else check_in_str
     check_out_str = None if not check_out_str or check_out_str == "None" else check_out_str
 
-    att = InvigilatorAttendance.query.get(attendance_id)
+    att = VenueSessionInvigilator.query.get(attendance_id)
     if not att:
         return jsonify({"success": False, "message": "Attendance not found."}), 404
 
+    session = att.session
+    if not session:
+        return jsonify({"success": False, "message": "Venue session not found."}), 404
+
     # Parse datetime
     def parse_datetime(dt_str):
-        if not dt_str: return None
+        if not dt_str:
+            return None
         try:
             return datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S")
         except ValueError:
@@ -1812,21 +1817,25 @@ def update_attendance_time():
     except Exception as e:
         return jsonify({"success": False, "message": f"Invalid datetime format: {str(e)}"}), 400
 
-    exam = att.report.exam
-    exam_start = exam.examStartTime
-    exam_end = exam.examEndTime
+    # Exam time (assumes one exam per venue session via VenueExam)
+    exam = session.exams[0].exam if session.exams else None
+    if not exam:
+        return jsonify({"success": False, "message": "Exam not found for this session."}), 404
+
+    exam_start = session.startDateTime
+    exam_end = session.endDateTime
     allowed_start = exam_start - timedelta(hours=1)
     allowed_end = exam_end + timedelta(hours=1)
 
     # Validate times
     if check_in and check_out:
         if not (allowed_start <= check_in <= allowed_end and allowed_start <= check_out <= allowed_end):
-            return jsonify({"success": False, "message": "Time must be within 1 hour before/after exam period."}), 400
+            return jsonify({"success": False, "message": "Time must be within 1 hour before/after session period."}), 400
         if check_in >= check_out:
             return jsonify({"success": False, "message": "Check-in must be before check-out."}), 400
 
     def calculate_hours(start, end):
-        """Calculate overlapping hours between exam and attendance."""
+        """Calculate overlapping hours between session and attendance."""
         if not start or not end:
             return 0.0
         adj_start = max(start, exam_start)
@@ -1838,26 +1847,26 @@ def update_attendance_time():
     # --- Hours before & after update ---
     old_hours = calculate_hours(att.checkIn, att.checkOut)
     new_hours = calculate_hours(check_in, check_out)
-    exam_hours = round((exam_end - exam_start).total_seconds() / 3600.0, 2)
+    session_hours = round((exam_end - exam_start).total_seconds() / 3600.0, 2)
 
     # Update invigilation status if provided
     if invigilation_status is not None:
         att.invigilationStatus = invigilation_status
-        att.timeAction = datetime.now() + timedelta(hours=8)    
+        att.timeAction = datetime.now() + timedelta(hours=8)
 
     invigilator = att.invigilator
 
-    # --- Safely update cumulative hours and pending hours ---
+    # --- Safely update cumulative and pending hours ---
     if att.invigilationStatus:
         # Remove previous contribution
         if att.checkIn and att.checkOut:
             invigilator.userCumulativeHours -= old_hours
-            invigilator.userPendingCumulativeHours += exam_hours  # restore previous pending
+            invigilator.userPendingCumulativeHours += session_hours  # restore previous pending
 
         # Add new contribution
         if check_in and check_out:
             invigilator.userCumulativeHours += new_hours
-            invigilator.userPendingCumulativeHours -= exam_hours  # deduct for this completed exam
+            invigilator.userPendingCumulativeHours -= session_hours  # deduct for completed session
 
     # --- Determine remark ---
     remark = "PENDING"
@@ -1887,8 +1896,6 @@ def update_attendance_time():
         "check_in": check_in.strftime("%d/%b/%Y %H:%M:%S") if check_in else "None",
         "check_out": check_out.strftime("%d/%b/%Y %H:%M:%S") if check_out else "None"
     })
-
-
 
 
 
@@ -1989,12 +1996,12 @@ def parse_attendance_datetime(date_val, time_val):
         flash(f"Error parsing datetime: {e}", "error")
         return None
 
-
 # -------------------------------
 # Process Single Attendance Row
 # -------------------------------
 def process_attendance_row(row):
     try:
+        # Normalize UID
         raw_uid = str(row['card iud']).upper().replace('UID:', '').strip().replace(' ', '')
         user = User.query.filter_by(userCardId=raw_uid).first()
         if not user:
@@ -2011,13 +2018,14 @@ def process_attendance_row(row):
         # Skip duplicates
         existing = None
         if inout_val == 'in':
-            existing = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId, checkIn=dt_obj).first()
+            existing = VenueSessionInvigilator.query.filter_by(invigilatorId=user.userId, checkIn=dt_obj).first()
         else:
-            existing = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId, checkOut=dt_obj).first()
+            existing = VenueSessionInvigilator.query.filter_by(invigilatorId=user.userId, checkOut=dt_obj).first()
         if existing:
             return False, f"Duplicate entry skipped for {user.userName} at {dt_obj} ({inout_val.upper()})"
 
-        attendances = InvigilatorAttendance.query.filter_by(invigilatorId=user.userId).all()
+        # Fetch all invigilator assignments for this user
+        attendances = VenueSessionInvigilator.query.filter_by(invigilatorId=user.userId).all()
         if not attendances:
             return False, f"No sessions found for user {user.userName} near {dt_obj}"
 
@@ -2026,6 +2034,7 @@ def process_attendance_row(row):
             session = att.session
             if not session:
                 continue
+
             session_start = session.startDateTime
             session_end = session.endDateTime
 
@@ -2037,16 +2046,20 @@ def process_attendance_row(row):
                 att.checkIn = dt_obj
                 att.remark = "CHECK IN" if dt_obj <= session_start else "CHECK IN LATE"
                 updated_count += 1
+
             elif inout_val == "out" and att.checkOut is None:
                 att.checkOut = dt_obj
+
                 if att.checkIn:
-                    checkin_for_hours = att.checkIn if att.remark == "CHECK IN LATE" else session_start
+                    # Calculate working hours
+                    checkin_for_hours = att.checkIn if "LATE" in att.remark else session_start
                     checkout_for_hours = dt_obj if dt_obj < session_end else session_end
                     hours_worked = (checkout_for_hours - checkin_for_hours).total_seconds() / 3600
                     user.userCumulativeHours += hours_worked
                     att.remark = "COMPLETED" if dt_obj >= session_end else "CHECK OUT EARLY"
                 else:
                     att.remark = "PENDING"
+
                 updated_count += 1
 
         if updated_count > 0:
@@ -2060,36 +2073,48 @@ def process_attendance_row(row):
         return False, f"Error processing row: {e}"
 
 
+
 # -------------------------------
 # Get Single Report
 # -------------------------------
-@app.route('/get_report/<int:report_id>')
+@app.route('/get_report/<int:exam_id>')
 @login_required
-def get_report(report_id):
-    report = InvigilationReport.query.get(report_id)
-    if not report:
-        return jsonify({"error": "Report not found"}), 404
+def get_report(exam_id):
+    exam = Exam.query.get(exam_id)
+    if not exam:
+        return jsonify({"error": "Exam not found"}), 404
 
-    exam = report.exam
-    course = exam.course
+    # Get all VenueSessionInvigilator records for this exam
+    invigilator_records = (
+        VenueSessionInvigilator.query
+        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .filter(VenueExam.examId == exam_id)
+        .all()
+    )
 
-    attendances = [
-        {
-            "attendanceId": att.attendanceId,
+    attendances = []
+    for att in invigilator_records:
+        session = att.session
+        attendances.append({
+            "venueSessionId": session.venueSessionId if session else None,
             "invigilatorId": att.invigilatorId,
-            "invigilatorName": att.invigilator.userName,
-            "gender": att.invigilator.userGender,
-            "venue": att.session.venue.venueNumber if att.session else None,
-            "sessionStart": att.session.startDateTime.strftime("%Y-%m-%d %H:%M") if att.session else None,
-            "sessionEnd": att.session.endDateTime.strftime("%Y-%m-%d %H:%M") if att.session else None
-        }
-        for att in report.attendances
-    ]
+            "invigilatorName": att.invigilator.userName if att.invigilator else None,
+            "gender": att.invigilator.userGender if att.invigilator else None,
+            "venue": session.venue.venueNumber if session and session.venue else None,
+            "sessionStart": session.startDateTime.strftime("%Y-%m-%d %H:%M") if session and session.startDateTime else None,
+            "sessionEnd": session.endDateTime.strftime("%Y-%m-%d %H:%M") if session and session.endDateTime else None,
+            "status": att.remark,
+            "invigilationCompleted": att.invigilationStatus
+        })
+
+    # Assuming one course per exam
+    course = exam.course
 
     return jsonify({
         "examId": exam.examId,
-        "courseCode": course.courseCodeSectionIntake,
-        "courseName": course.courseName,
+        "courseCode": course.courseCodeSectionIntake if course else None,
+        "courseName": course.courseName if course else None,
         "attendances": attendances
     })
 

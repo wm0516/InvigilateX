@@ -311,7 +311,6 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
-
 # -------------------------------
 # Main User Homepage
 # -------------------------------
@@ -319,15 +318,29 @@ def admin_homepage():
 @login_required
 def user_homepage():
     user_id = session.get('user_id')
-    chosen = User.query.filter_by(userId=user_id).first()
-    waiting = waiting_record(user_id)
-    confirm = confirm_record(user_id)
-    reject = reject_record(user_id)
+    user = User.query.get(user_id)
 
-    # Get open slots + gender filter
+    # --- Fetch slots ---
+    waiting = [slot for slot in VenueSessionInvigilator.query.filter_by(
+        invigilatorId=user_id,
+        invigilationStatus=False,
+        remark="PENDING"
+    ).all()]
+
+    confirm = [slot for slot in VenueSessionInvigilator.query.filter_by(
+        invigilatorId=user_id,
+        invigilationStatus=True
+    ).all()]
+
+    reject = [slot for slot in VenueSessionInvigilator.query.filter(
+        VenueSessionInvigilator.invigilatorId == user_id,
+        VenueSessionInvigilator.remark.notin_(["PENDING", "CHECK IN", "CHECK IN LATE", "COMPLETED"])
+    ).all()]
+
+    # --- Open slots filtered by user gender ---
     open_slots = open_record(user_id)
-    if chosen:
-        open_slots = [slot for slot in open_slots if slot.invigilator.userGender == chosen.userGender]
+    if user:
+        open_slots = [slot for slot in open_slots if slot.invigilator.userGender == user.userGender]
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -336,177 +349,115 @@ def user_homepage():
         # Handle waiting approval/rejection
         # -----------------------------
         waiting_id = request.form.get('w_id')
-        waiting_slot = InvigilatorAttendance.query.filter_by(
-            invigilatorId=user_id,
-            attendanceId=waiting_id
-        ).first()
+        waiting_slot = VenueSessionInvigilator.query.get(waiting_id)
 
-        if waiting_slot:
-            exam = (
-                Exam.query
-                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == waiting_slot.reportId)
-                .first()
-            )
+        if waiting_slot and waiting_slot.invigilatorId == user_id:
+            session_obj = waiting_slot.session
+            if not session_obj:
+                flash("Session not found for this slot.", "error")
+                return redirect(url_for('user_homepage'))
 
-            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
-            pending_hours = 0
-            if exam and exam.examStartTime and exam.examEndTime:
-                start_dt, end_dt = exam.examStartTime, exam.examEndTime
-                if end_dt < start_dt:
-                    end_dt += timedelta(days=1)
-                pending_hours = (end_dt - start_dt).total_seconds() / 3600.0
+            candidate_start, candidate_end = session_obj.startDateTime, session_obj.endDateTime
+            hours = (candidate_end - candidate_start).total_seconds() / 3600.0
 
             if action == 'accept':
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
-                flash(f"{course_code} have been accepted", "success")
+                flash(f"Slot at {session_obj.venue.venueNumber} accepted successfully.", "success")
                 return redirect(url_for('user_homepage'))
 
             elif action == 'reject':
-                # Process reject reason
                 raw_reason = request.form.get('reject_reason', '')
-                lines = [line.strip() for line in raw_reason.splitlines() if line.strip()]
-                waiting_slot.rejectReason = ','.join(lines)
-
-                # ✅ Subtract hours for the user
-                chosen.userPendingCumulativeHours = max((chosen.userPendingCumulativeHours or 0) - pending_hours, 0)
-
+                waiting_slot.remark = "REJECTED"
+                waiting_slot.rejectReason = raw_reason.strip()
                 waiting_slot.invigilationStatus = False
 
-                # Create new record for reassignment (unassigned slot)
+                # Rollback pending hours
+                if user:
+                    user.userPendingCumulativeHours = max((user.userPendingCumulativeHours or 0) - hours, 0)
+
+                # Optional: create a new unassigned slot for reassignment
                 db.session.add(
-                    InvigilatorAttendance(
-                        reportId=waiting_slot.reportId,
-                        invigilatorId=waiting_slot.invigilatorId,
-                        venueNumber=waiting_slot.venueNumber,
-                        timeExpire=waiting_slot.timeExpire,
-                        timeCreate=datetime.now(timezone.utc) + timedelta(hours=8)
+                    VenueSessionInvigilator(
+                        venueSessionId=waiting_slot.venueSessionId,
+                        invigilatorId=None,
+                        checkIn=None,
+                        checkOut=None,
+                        timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
+                        timeExpire=session_obj.endDateTime,
+                        invigilationStatus=False,
+                        remark="PENDING"
                     )
                 )
 
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
-                flash(f"{course_code} has been rejected", "success")
+                flash(f"Slot at {session_obj.venue.venueNumber} rejected successfully.", "success")
                 return redirect(url_for('user_homepage'))
 
         # -----------------------------
         # Handle open slot acceptance
         # -----------------------------
         open_attendance_id = request.form.get('a_id')
-        if action == 'open_accept' and chosen:
-
-            # Step 0: Fetch the slot by attendanceId from the form
-            form_slot = InvigilatorAttendance.query.filter_by(attendanceId=open_attendance_id).first()
-            if not form_slot:
+        if action == 'open_accept' and user:
+            slot = VenueSessionInvigilator.query.get(open_attendance_id)
+            if not slot:
                 flash("Selected slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
-            report_id = form_slot.reportId
+            session_obj = slot.session
+            if not session_obj:
+                flash("Session not found for this slot.", "error")
+                return redirect(url_for('user_homepage'))
 
-            # Step 1: Try to fetch user's own unaccepted slot for this report
-            open_slot = (
-                InvigilatorAttendance.query
-                .filter(
-                    InvigilatorAttendance.reportId == report_id,
-                    InvigilatorAttendance.invigilatorId == user_id,
-                    InvigilatorAttendance.invigilationStatus == False
-                )
-                .order_by(InvigilatorAttendance.attendanceId.desc())
-                .first()
-            )
+            candidate_start, candidate_end = session_obj.startDateTime, session_obj.endDateTime
+            hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
 
-            # Step 2: Fallback to the slot from the form if no own slot exists
-            if not open_slot:
-                open_slot = form_slot
-
-            # Step 3: Get exam and course info
-            exam = (
-                Exam.query
-                .join(InvigilationReport, Exam.examId == InvigilationReport.examId)
-                .filter(InvigilationReport.invigilationReportId == open_slot.reportId)
-                .first()
-            )
-            course_code = exam.course.courseCodeSectionIntake if exam and exam.course else "Unknown"
-
-            # Step 4: Gender check
-            if open_slot.invigilator and open_slot.invigilator.userGender != chosen.userGender:
+            # Gender check
+            if slot.invigilator and slot.invigilator.userGender != user.userGender:
                 flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Step 5: Check for time conflicts with already assigned slots
-            def is_overlap(start1, end1, start2, end2):
-                return max(start1, start2) < min(end1, end2)
-
-            # Candidate exam times
-            candidate_start, candidate_end = exam.examStartTime, exam.examEndTime
-            if candidate_end < candidate_start:
-                candidate_end += timedelta(days=1)
-
-            # Fetch all accepted slots for the user
-            existing_slots = (
-                InvigilatorAttendance.query
-                .join(InvigilationReport, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
-                .join(Exam, Exam.examId == InvigilationReport.examId)
-                .filter(
-                    InvigilatorAttendance.invigilatorId == user_id,
-                    InvigilatorAttendance.invigilationStatus == True
-                )
-                .all()
-            )
-
-            # Check for overlap
+            # Check conflicts with already assigned slots
             conflict = False
-            for slot in existing_slots:
-                s_exam = slot.report.exam
-                start_dt, end_dt = s_exam.examStartTime, s_exam.examEndTime
-                if end_dt < start_dt:
-                    end_dt += timedelta(days=1)
-                if is_overlap(start_dt, end_dt, candidate_start, candidate_end):
-                    conflict = True
-                    break
-
+            for assigned in confirm:
+                assigned_session = assigned.session
+                if assigned_session:
+                    a_start, a_end = assigned_session.startDateTime, assigned_session.endDateTime
+                    if max(a_start, candidate_start) < min(a_end, candidate_end):
+                        conflict = True
+                        break
             if conflict:
-                flash("Cannot accept this slot: timing overlaps with another assigned exam.", "error")
+                flash("Cannot accept this slot: timing overlaps with another assigned session.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Step 6: Subtract pending hours from previous invigilator if slot reassigned
-            if open_slot.invigilatorId and open_slot.invigilatorId != user_id:
-                prev_user = User.query.get(open_slot.invigilatorId)
-                if prev_user and exam:
-                    hours_to_remove = (candidate_end - candidate_start).total_seconds() / 3600.0
-                    prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_remove, 0)
+            # Reassign slot to current user
+            if slot.invigilatorId and slot.invigilatorId != user_id:
+                prev_user = User.query.get(slot.invigilatorId)
+                if prev_user:
+                    prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_add, 0)
 
-            # Step 7: Assign slot to current user
-            open_slot.invigilatorId = user_id
-            open_slot.invigilationStatus = True
-            open_slot.rejectReason = None  # clear previous reject reason
-            open_slot.timeAction = datetime.now() + timedelta(hours=8)
+            slot.invigilatorId = user_id
+            slot.invigilationStatus = True
+            slot.rejectReason = None
+            slot.timeAction = datetime.now() + timedelta(hours=8)
 
-            # Step 8: Add pending hours to current user
-            hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
+            # Add pending hours for current user
+            user.userPendingCumulativeHours = (user.userPendingCumulativeHours or 0) + hours_to_add
 
-            # Avoid double-counting: check if the user already has a waiting slot for this exam
-            existing_waiting = (
-                InvigilatorAttendance.query
-                .join(InvigilationReport, InvigilationReport.invigilationReportId == InvigilatorAttendance.reportId)
-                .filter(
-                    InvigilatorAttendance.invigilatorId == user_id,
-                    InvigilatorAttendance.invigilationStatus == False,
-                    InvigilatorAttendance.timeAction.is_(None),
-                    InvigilationReport.examId == exam.examId
-                )
-                .first()
-            )
-            if not existing_waiting:
-                chosen.userPendingCumulativeHours = (chosen.userPendingCumulativeHours or 0) + hours_to_add
-            
             db.session.commit()
-            flash(f"Open Slot Course Code: {course_code} Accepted Successfully", "success")
+            flash(f"Open slot at {session_obj.venue.venueNumber} accepted successfully.", "success")
             return redirect(url_for('user_homepage'))
-    return render_template('user/userHomepage.html', active_tab='user_hometab', waiting=waiting, confirm=confirm, open=open_slots, reject=reject)
 
+    return render_template(
+        'user/userHomepage.html',
+        active_tab='user_hometab',
+        waiting=waiting,
+        confirm=confirm,
+        open=open_slots,
+        reject=reject
+    )
 
 
 # -------------------------------
@@ -522,9 +473,8 @@ def hours_diff(start, end):
 def hours_format(hours):
     h, m = divmod(round(hours * 60), 60)
     return f"{h}h {m}m" if h and m else (f"{h}h" if h else f"{m}m")
-
 # -------------------------------
-# Attendance route
+# Attendance route (for VenueSessionInvigilator)
 # -------------------------------
 last_scan_data = {"cardNumber": None, "time": None}
 @app.route('/attendance', methods=['GET', 'POST'])
@@ -534,6 +484,7 @@ def attendance_record():
         try:
             data = request.get_json()
             last_scan_data = {"cardNumber": data.get('cardNumber'), "time": datetime.now().isoformat()}
+
             card_input = data.get('cardNumber', '').replace(' ', '')
             action_type = data.get('actionType', '').lower().strip()
             click_time_str = data.get('clickTime', None)
@@ -543,142 +494,112 @@ def attendance_record():
             if action_type not in ['checkin', 'checkout']:
                 return jsonify({"success": False, "message": "Invalid action type!"})
 
-            # Find user by card
+            # --- Find user ---
             user = User.query.filter_by(userCardId=card_input).first()
             if not user:
                 return jsonify({"success": False, "message": "Card not recognized!"})
-            user_id = user.userId
 
-            # Fetch attendance records for this invigilator
-            timeSlots = InvigilatorAttendance.query.filter_by(invigilatorId=user_id).all()
-            if not timeSlots:
-                return jsonify({"success": False, "message": "No exam assigned!"})
-
-            # Malaysia local time (UTC +8)
-            scan_time = datetime.utcnow() 
-
-            # Optional: use click time from browser if provided
+            # --- Scan time in Malaysia UTC+8 ---
+            scan_time = datetime.utcnow()
             if click_time_str:
                 try:
-                    click_time = datetime.fromisoformat(click_time_str.replace("Z", "+00:00")) + timedelta(hours=8)
-                    scan_time = click_time.replace(tzinfo=None)
+                    scan_time = datetime.fromisoformat(click_time_str.replace("Z", "+00:00")) + timedelta(hours=8)
+                    scan_time = scan_time.replace(tzinfo=None)
                 except Exception:
                     pass
             else:
                 scan_time = scan_time.replace(tzinfo=None)
 
-            # Helper: find the exam nearest to scan_time
-            def exam_proximity(att):
-                exam = getattr(att.report, "exam", None)
-                if not exam or not exam.examStartTime:
-                    return float("inf")
-                exam_start = exam.examStartTime.replace(tzinfo=None)
-                return abs((exam_start - scan_time).total_seconds())
+            # --- Fetch all invigilator slots ---
+            slots = VenueSessionInvigilator.query.filter_by(invigilatorId=user.userId).all()
+            if not slots:
+                return jsonify({"success": False, "message": "No assigned sessions!"})
 
-            # Instead of picking the closest exam blindly
-            valid_slots = [att for att in timeSlots if att.report and att.report.exam]
-            upcoming_slots = [att for att in valid_slots
-                            if att.report.exam.examStartTime.replace(tzinfo=None) - timedelta(hours=1) <= scan_time <=
-                                att.report.exam.examEndTime.replace(tzinfo=None) + timedelta(hours=1)]
-
+            # --- Filter slots within 1 hour before/after session ---
+            upcoming_slots = [
+                s for s in slots
+                if s.session and s.session.startDateTime - timedelta(hours=1) <= scan_time <= s.session.endDateTime + timedelta(hours=1)
+            ]
             if not upcoming_slots:
-                return jsonify({"success": False, "message": "No upcoming exam slot within 1 hour!"})
+                return jsonify({"success": False, "message": "No session within 1 hour!"})
 
-            confirm = sorted(upcoming_slots, key=exam_proximity)[0]
-            report = getattr(confirm, "report", None)
-            exam = getattr(report, "exam", None)
-            if not exam or not exam.examStartTime or not exam.examEndTime:
-                return jsonify({"success": False, "message": "Exam details missing!"})
+            # --- Pick nearest session ---
+            def slot_proximity(s):
+                return abs((s.session.startDateTime.replace(tzinfo=None) - scan_time).total_seconds())
+            slot = sorted(upcoming_slots, key=slot_proximity)[0]
+            session_obj = slot.session
+            course = getattr(session_obj, "course", None) or getattr(session_obj.exam, "course", None)
 
-            # Convert to naive Malaysia time
-            start = exam.examStartTime.replace(tzinfo=None)
-            end = exam.examEndTime.replace(tzinfo=None)
+            start = session_obj.startDateTime.replace(tzinfo=None)
+            end = session_obj.endDateTime.replace(tzinfo=None)
             one_hour_before = start - timedelta(hours=1)
+            expire_time = end + timedelta(hours=1)
 
-            # Only valid if scan is within 1 hour before start
-            if scan_time < one_hour_before:
-                return jsonify({"success": False, "message": "No upcoming exam slot within 1 hour!"})
-
-            # CHECK-IN LOGIC
+            # --- Check-in ---
             if action_type == 'checkin':
-                # Check if exam already ended
                 if scan_time > end:
-                    return jsonify({"success": False, "message": "Exam already ended!"})
-
-                # Check if already checked in within this exam period
-                if confirm.checkIn and confirm.checkOut is None and start <= scan_time <= end:
+                    return jsonify({"success": False, "message": "Session already ended!"})
+                if slot.checkIn and not slot.checkOut:
                     return jsonify({"success": False, "message": "Already checked in!"})
 
-                # Check-in time rules
                 if one_hour_before <= scan_time <= start:
-                    confirm.checkIn = scan_time
-                    confirm.remark = "CHECK IN"
-                elif start < scan_time <= (end - timedelta(minutes=30)):
-                    confirm.checkIn = scan_time
-                    confirm.remark = "CHECK IN LATE"
+                    slot.checkIn = scan_time
+                    slot.remark = "CHECK IN"
+                elif start < scan_time <= end - timedelta(minutes=30):
+                    slot.checkIn = scan_time
+                    slot.remark = "CHECK IN LATE"
                 else:
-                    return jsonify({"success": False, "message": "Not allowed to check in after 30 mins before exam end!"})
+                    return jsonify({"success": False, "message": "Cannot check in after 30 mins before session end!"})
 
-            # CHECK-OUT LOGIC
+            # --- Check-out ---
             elif action_type == 'checkout':
-                if not confirm.checkIn:
+                if not slot.checkIn:
                     return jsonify({"success": False, "message": "Please check in before checking out!"})
-                if confirm.checkOut:
+                if slot.checkOut:
                     return jsonify({"success": False, "message": "Already checked out!"})
 
-                expire_time = end + timedelta(hours=1)
                 if scan_time < end:
-                    # Checked out before exam end
-                    confirm.checkOut = scan_time
-                    confirm.remark = "CHECK OUT EARLY"
+                    slot.checkOut = scan_time
+                    slot.remark = "CHECK OUT EARLY"
                 elif end <= scan_time <= expire_time:
-                    # Checked out normally (on time or slightly after)
-                    if confirm.remark == "CHECK IN LATE":
-                        # Keep previous remark if already late check-in
-                        confirm.checkOut = scan_time
-                        confirm.remark = "CHECK IN LATE"
+                    slot.checkOut = scan_time
+                    if slot.remark == "CHECK IN LATE":
+                        slot.remark = "CHECK IN LATE"
                     else:
-                        confirm.checkOut = scan_time
-                        confirm.remark = "COMPLETED"
+                        slot.remark = "COMPLETED"
                 else:
-                    # Checked out too late (after grace period)
-                    confirm.checkOut = expire_time
-                    confirm.remark = "EXPIRED"
+                    slot.checkOut = expire_time
+                    slot.remark = "EXPIRED"
 
-            # Hours & Status update
-            if confirm.checkIn and confirm.checkOut:
-                exam_hours = hours_diff(start, end)
-                # Determine effective start
-                effective_start = start if confirm.checkIn < start else confirm.checkIn
-                # Determine effective end
-                effective_end = end if confirm.checkOut > end else confirm.checkOut
-                # Compute actual working hours
-                actual_hours = hours_diff(effective_start, effective_end)
-                # Adjust cumulative hours correctly
-                user.userPendingCumulativeHours -= exam_hours
-                user.userCumulativeHours += actual_hours
-                confirm.invigilationStatus = True
+            # --- Hours calculation ---
+            if slot.checkIn and slot.checkOut:
+                effective_start = max(slot.checkIn, start)
+                effective_end = min(slot.checkOut, end)
+                actual_hours = round((effective_end - effective_start).total_seconds() / 3600.0, 2)
+                session_hours = round((end - start).total_seconds() / 3600.0, 2)
+                user.userPendingCumulativeHours = max((user.userPendingCumulativeHours or 0) - session_hours, 0)
+                user.userCumulativeHours = (user.userCumulativeHours or 0) + actual_hours
+                slot.invigilationStatus = True
+
             db.session.commit()
 
-            # Prepare response
-            course = getattr(exam, "course", None)
-            venues = []
-            if getattr(exam, "venue_availabilities", None):
-                venues = [v.venueNumber for v in exam.venue_availabilities]
-            venue_list = ", ".join(venues) if venues else "N/A"
+            # --- Response ---
+            venue_list = getattr(session_obj, "venue", None)
+            venue_str = venue_list.venueNumber if venue_list else "N/A"
 
-            response_data = {
-                "courseName": getattr(course, "courseName", "N/A"),
-                "courseCode": getattr(course, "courseCodeSectionIntake", "N/A"),
-                "students": getattr(course, "courseStudent", "N/A"),
-                "examStart": start.strftime("%d/%b/%Y %H:%M"),
-                "examEnd": end.strftime("%d/%b/%Y %H:%M"),
-                "examVenue": venue_list,
-                "checkIn": confirm.checkIn.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkIn else "None",
-                "checkOut": confirm.checkOut.strftime("%d/%b/%Y %H:%M:%S") if confirm.checkOut else "None",
-                "remark": confirm.remark or "",
-            }
-            return jsonify({"success": True, "data": response_data})
+            return jsonify({
+                "success": True,
+                "data": {
+                    "courseName": getattr(course, "courseName", "N/A"),
+                    "courseCode": getattr(course, "courseCodeSectionIntake", "N/A"),
+                    "examStart": start.strftime("%d/%b/%Y %H:%M"),
+                    "examEnd": end.strftime("%d/%b/%Y %H:%M"),
+                    "examVenue": venue_str,
+                    "checkIn": slot.checkIn.strftime("%d/%b/%Y %H:%M:%S") if slot.checkIn else "None",
+                    "checkOut": slot.checkOut.strftime("%d/%b/%Y %H:%M:%S") if slot.checkOut else "None",
+                    "remark": slot.remark
+                }
+            })
 
         except Exception as e:
             db.session.rollback()

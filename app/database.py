@@ -295,63 +295,6 @@ class Course(db.Model):
         FOREIGN KEY (courseExamId) REFERENCES Exam(examId)
     );
     '''
-
-# ------------------------------
-# INVIGILATION REPORTS
-# ------------------------------
-class InvigilationReport(db.Model):
-    __tablename__           = 'InvigilationReport'
-    invigilationReportId    = Column(Integer, primary_key=True, autoincrement=True)
-    examId                  = Column(Integer, ForeignKey('Exam.examId'), nullable=False)
-    
-    # Relationships
-    attendances = relationship("InvigilatorAttendance", backref="report", cascade="all, delete-orphan")
-    '''
-    CREATE TABLE InvigilationReport (
-        invigilationReportId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        examId INT NOT NULL,
-        FOREIGN KEY (examId) REFERENCES Exam(examId)
-    );
-    '''
-
-
-class InvigilatorAttendance(db.Model):
-    __tablename__       = 'InvigilatorAttendance'
-    attendanceId        = Column(Integer, primary_key=True, autoincrement=True)
-    reportId            = Column(Integer, ForeignKey('InvigilationReport.invigilationReportId'), nullable=False)
-    invigilatorId       = Column(Integer, ForeignKey('User.userId'), nullable=False)
-    checkIn             = Column(DateTime, nullable=True)
-    checkOut            = Column(DateTime, nullable=True)
-    timeAction          = Column(DateTime, nullable=True)
-    timeCreate          = Column(DateTime, nullable=False)
-    timeExpire          = Column(DateTime, nullable=False)
-    invigilationStatus  = Column(Boolean, default=False)
-    remark              = Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED", name="attendance_remark_enum"), nullable=False, default="PENDING")
-    venueSessionId      = Column(Integer, ForeignKey('VenueSession.venueSessionId'), nullable=True)
-    rejectReason        = Column(String(255), nullable=True)
-
-    # Relationships
-    invigilator = relationship("User")
-    session     = relationship("VenueSession")
-    '''
-    CREATE TABLE InvigilatorAttendance (
-        attendanceId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-        reportId INT NOT NULL,
-        invigilatorId INT NOT NULL,
-        checkIn DATETIME NULL,
-        checkOut DATETIME NULL,
-        timeAction DATETIME NULL,
-        timeCreate DATETIME NOT NULL,
-        timeExpire DATETIME NOT NULL,
-        invigilationStatus BOOLEAN NOT NULL DEFAULT FALSE,
-        remark ENUM('PENDING','CHECK IN LATE','CHECK IN','CHECK OUT EARLY','COMPLETED','EXPIRED') NOT NULL DEFAULT 'PENDING',
-        venueSessionId INT NULL,
-        rejectReason VARCHAR(255) NULL,
-        FOREIGN KEY (reportId) REFERENCES InvigilationReport(invigilationReportId),
-        FOREIGN KEY (invigilatorId) REFERENCES User(userId),
-        FOREIGN KEY (venueSessionId) REFERENCES VenueSession(venueSessionId)
-    );
-    '''
     
 # ------------------------------
 # TIMETABLE

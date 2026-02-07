@@ -7,45 +7,8 @@ from app import app
 from .authRoutes import login_required
 from .backend import *
 from .database import * 
-
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
-
-
-
-
-
-
-
-def get_all_attendances():
-    user = User.query.get(session.get('user_id'))
-    query = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-        .join(Exam, InvigilationReport.examId == Exam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)  # ✅ Join Course
-        .join(User, InvigilatorAttendance.invigilatorId == User.userId)  # Lecturer info
-    )
-
-    # Lecturer (Level 1) — can see only their own invigilation records
-    if user.userLevel == 1:
-        query = query.filter(
-            InvigilatorAttendance.invigilatorId == user.userId,
-            InvigilatorAttendance.invigilationStatus == True
-        )
-
-    # Dean, HOS, HOP (Level 2, 3, 4) — can see all invigilations under same department
-    elif user.userLevel in [2, 3, 4]:
-        query = query.filter(Course.courseDepartment == user.userDepartment)
-
-    # Order by exam status first (active > done), then by exam start time descending
-    return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.desc()).all()
-
-
-
-
-
-
 
 
 
@@ -84,9 +47,6 @@ def calculate_invigilation_stats(user):
             stats["total_checkOutEarly"] += 1
 
     return stats
-
-
-
 
 
 # Lecturer get own
@@ -172,60 +132,6 @@ def user_invigilationReport():
 
 
 
-
-
-
-
-
-# -------------------------------
-# Function for InviglationTimetable Route to read all the timetable in calendar mode
-# -------------------------------
-def get_calendar_data():
-    attendances = get_all_attendances()
-    calendar_data = defaultdict(list)
-    seen_exams = set()  # ✅ To skip duplicate exam sessions
-
-    for att in attendances:
-        exam = att.report.exam
-
-        # Skip if this exam already processed
-        if exam.examId in seen_exams:
-            continue
-        seen_exams.add(exam.examId)
-
-        start_dt = exam.examStartTime
-        end_dt = exam.examEndTime
-        start_date = start_dt.date()
-        end_date = end_dt.date()
-        is_overnight = start_date != end_date and exam.examStatus == True
-        venues = exam.venue_availabilities
-
-        def exam_dict(start, end):
-            return {
-                "exam_id": exam.examId,
-                "course_name": exam.course.courseName,
-                "course_code": exam.course.courseCodeSectionIntake,
-                "start_time": start,
-                "end_time": end,
-                "status": exam.examStatus,
-                "is_overnight": is_overnight,
-                "venue": venues,
-            }
-
-        if is_overnight:
-            # Part 1: From start time to 23:59 on start day
-            calendar_data[start_date].append(exam_dict(start_dt, datetime.combine(start_date, datetime.max.time()).replace(hour=23, minute=59)))
-            # Part 2: From 00:00 on next day to end time
-            calendar_data[end_date].append(exam_dict(datetime.combine(end_date, datetime.min.time()), end_dt))
-        else:
-            # Normal same-day exam
-            calendar_data[start_date].append(exam_dict(start_dt, end_dt))
-
-    calendar_data = dict(sorted(calendar_data.items()))
-    return calendar_data
-
-
-
 def get_venue_calendar_data(userId):
     query = (VenueExam.query.join(Exam).join(VenueSession).join(Course))
     user = User.query.get_or_404(userId)
@@ -275,7 +181,6 @@ def get_venue_calendar_data(userId):
 
     return dict(sorted(venue_data.items()))
 
-
 # -------------------------------
 # Function for InviglationTimetable Route
 # -------------------------------
@@ -285,30 +190,6 @@ def user_invigilationTimetable():
     userId = session.get('user_id')
     venue_data = get_venue_calendar_data(userId)
     return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', venue_data=venue_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # -------------------------------
