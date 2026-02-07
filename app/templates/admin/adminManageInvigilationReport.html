@@ -184,35 +184,46 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     // Table headers
     const headers = ["Venue", "Exam Date", "Courses", "Invigilator", "Status", "Attendance", "Check-in/out"];
     const rows = [];
+    let lastExamID = "", lastExamDetails = "", lastInvCount = "";
 
-    document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
+    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        let venue = "", examDate = "", courses = "";
-        let invigilator = "", status = "", attendance = "", checkTimes = "";
+        const tdCount = tds.length;
 
-        if (tds.length === 8) { // first row with venue/exam/course
-            venue = tds[0].innerText.trim();
-            examDate = tds[1].innerText.trim();
-            courses = tds[2].innerText.trim();
-            invigilator = tds[3].innerText.trim();
-            status = tds[4].innerText.trim();
-            attendance = tds[5].innerText.trim();
-            checkTimes = tds[6].innerText.trim();
-        } else if (tds.length === 7) { // continuation rows (venue/course/exam blank)
-            invigilator = tds[0]?.innerText.trim() || "";
-            status = tds[1]?.innerText.trim() || "";
+        // Handle rowspan — fill missing columns from previous values
+        let examID = "";
+        let examDetails = "";
+        let invCount = "";
+        let invDetails = "";
+        let checkTimes = "";
+        let attendance = "";
+        let invStatus = "";
+
+        if (tdCount === 8) {
+            // Normal full row
+            examID = tds[0]?.innerText.trim() || "";
+            examDetails = tds[1]?.innerText.trim() || "";
+            invCount = tds[2]?.innerText.trim() || "";
+            invDetails = tds[3]?.innerText.trim() || "";
+            invStatus = tds[4]?.innerText.trim() || "";
+            attendance = tds[5]?.innerText.trim() || "";
+            checkTimes = tds[6]?.innerText.trim() || "";
+
+
+        } else if (tdCount === 5) {
+            // This is a "continuation row" — missing rowspan columns
+            invDetails = tds[0]?.innerText.trim() || "";
+            invStatus = tds[1]?.innerText.trim() || "";
             attendance = tds[2]?.innerText.trim() || "";
             checkTimes = tds[3]?.innerText.trim() || "";
         }
 
-        // For subsequent invigilators, blank venue/exam/courses
-        if (tds[0].hasAttribute("rowspan") === false) {
-            venue = "";
-            examDate = "";
-            courses = "";
-        }
+        // Clean up text formatting
+        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
+            text.replace(/\s*:\s*/g, " : ")
+        );
 
-        rows.push([venue, examDate, courses, invigilator, status, attendance, checkTimes]);
+        rows.push([examID, examDetails, invCount, invDetails, invStatus, attendance, checkTimes]);
     });
     
     // Generate PDF table
