@@ -80,6 +80,10 @@
 
 {% block extra_scripts %}
 <script>
+const userLevel = {{ user_level | tojson }};
+const userName = {{ user_name | tojson }};  
+const userDepartment = {{ user_department | tojson }};
+
 document.addEventListener("DOMContentLoaded", () => {
     const days = [...document.querySelectorAll(".calendar-day")];
     if (!days.length) return;
@@ -112,10 +116,12 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const pageWidth = doc.internal.pageSize.getWidth(); 
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
     
-    if (userLevel === 1) {
-        doc.text(`${userName}'s Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
+    let title = "Invigilation Timetable";
+
+    if (["LECTURER", "PO", "LAB_ASS"].includes(userLevel)) {
+        title = `${userName}'s Invigilation Timetable`;
     } else {
-        doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
+        title = `${userDepartment} Invigilation Timetable`;
     }
 
     doc.setFont("helvetica", "normal");
