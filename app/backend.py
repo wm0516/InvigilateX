@@ -348,13 +348,6 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     adj_end_dt = end_dt if end_dt > start_dt else end_dt + timedelta(days=1)
     duration_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
-    # Create or fetch invigilation report
-    report = InvigilationReport.query.filter_by(examId=exam.examId).first()
-    if not report:
-        report = InvigilationReport(examId=exam.examId)
-        db.session.add(report)
-        db.session.flush()
-
     # --- Eligible invigilators ---
     base_query = User.query.filter(User.userLevel == "LECTURER", User.userStatus == True)  # 1 = Lecturer
     if exclude_ids:
@@ -457,14 +450,9 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + duration_hours
             db.session.add(VenueSessionInvigilator(
                 venueSessionId=session.venueSessionId,
-                invigilatorId=inv.userId
-            ))
-            db.session.add(InvigilatorAttendance(
-                reportId=report.invigilationReportId,
                 invigilatorId=inv.userId,
                 timeCreate=open,
-                timeExpire=close,
-                venueSessionId=session.venueSessionId
+                timeExpire=close
             ))
 
     db.session.commit()

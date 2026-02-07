@@ -753,15 +753,6 @@ def get_exam_details(course_code):
     if not exam:
         return jsonify({"error": "Exam not found"}), 404
 
-    # Latest attendance record (optional)
-    attendance = (
-        InvigilatorAttendance.query
-        .join(InvigilationReport)
-        .filter(InvigilationReport.examId == exam.examId)
-        .order_by(InvigilatorAttendance.timeExpire.desc())
-        .first()
-    )
-
     exam_venues = []
     for ve in exam.venue_availabilities:
         session = ve.session

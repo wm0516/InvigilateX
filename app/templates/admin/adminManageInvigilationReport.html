@@ -121,9 +121,9 @@
     <table class="user-data-table" id="manageInvigilationReport">
         <thead>
             <tr>
-                <th>Venue</th>
-                <th>Exam Date Start-End Time</th>
-                <th>Exam CourseIntake/Code/Section - CourseName</th>
+                <th>Exam Venue</th>
+                <th>Exam Date</th>
+                <th>Exam CourseCode</th>
                 <th>Invigilator Details</th>
                 <th>Invigilation Status</th>
                 <th>Attendance Status</th>
@@ -149,7 +149,9 @@
 
                         <td rowspan="{{ total_rows }}">
                             {% for code, c_atts in courses.items() %}
-                                {{ code }} - {{ c_atts[0].report.exam.course.courseName }}<br>
+                                <div class="info-grid">
+                                    <div><strong>{{ code }} </strong></div>
+                                    <div><strong> - {{ c_atts[0].report.exam.course.courseName }}</strong></div>
                             {% endfor %}
                         </td>
                     {% endif %}

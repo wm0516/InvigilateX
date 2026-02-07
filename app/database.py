@@ -179,10 +179,18 @@ class VenueSession(db.Model):
     '''
 
 class VenueSessionInvigilator(db.Model):
-    __tablename__   = 'VenueSessionInvigilator'
-    venueSessionId  = Column(Integer, ForeignKey('VenueSession.venueSessionId'), primary_key=True)
-    invigilatorId   = Column(Integer, ForeignKey('User.userId'), primary_key=True)
-
+    __tablename__       = 'VenueSessionInvigilator'
+    venueSessionId      = Column(Integer, ForeignKey('VenueSession.venueSessionId'), primary_key=True)
+    invigilatorId       = Column(Integer, ForeignKey('User.userId'), primary_key=True)
+    checkIn             = Column(DateTime, nullable=True)
+    checkOut            = Column(DateTime, nullable=True)
+    timeAction          = Column(DateTime, nullable=True)
+    timeCreate          = Column(DateTime, nullable=False)
+    timeExpire          = Column(DateTime, nullable=False)
+    invigilationStatus  = Column(Boolean, default=False)
+    remark              = Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED", name="attendance_remark_enum"), nullable=False, default="PENDING")
+    rejectReason        = Column(String(255), nullable=True)
+    
     # Relationships
     session     = relationship("VenueSession", back_populates="invigilators")
     invigilator = relationship("User")
@@ -190,6 +198,14 @@ class VenueSessionInvigilator(db.Model):
     CREATE TABLE VenueSessionInvigilator (
         venueSessionId INT NOT NULL,
         invigilatorId INT NOT NULL,
+        checkIn DATETIME NULL,
+        checkOut DATETIME NULL,
+        timeAction DATETIME NULL,
+        timeCreate DATETIME NOT NULL,
+        timeExpire DATETIME NOT NULL,
+        invigilationStatus BOOLEAN NOT NULL DEFAULT FALSE,
+        remark ENUM('PENDING','CHECK IN LATE','CHECK IN','CHECK OUT EARLY','COMPLETED','EXPIRED') NOT NULL DEFAULT 'PENDING',
+        rejectReason VARCHAR(255) NULL,
         PRIMARY KEY (venueSessionId, invigilatorId),
         FOREIGN KEY (venueSessionId) REFERENCES VenueSession(venueSessionId),
         FOREIGN KEY (invigilatorId) REFERENCES User(userId)
