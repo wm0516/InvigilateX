@@ -134,29 +134,23 @@
         </thead>
         {% for (venue, start, end), courses in grouped_att.items() %}
         <tbody>
-            {% set total_rows = courses.values() | map('length') | sum %}
+            {% set total_invigilators = courses.values() | map('length') | sum %}
             {% set printed_header = false %}
 
             {% for course_code, atts in courses.items() %}
                 {% for att in atts %}
                 <tr>
                     {% if not printed_header %}
-                        <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
-                        <td rowspan="{{ total_rows }}">
-                            {{ start.strftime("%d/%b/%Y %H:%M") }} 
-                            -
+                        <td rowspan="{{ total_invigilators }}">[{{ venue }}]</td>
+                        <td rowspan="{{ total_invigilators }}">
+                            {{ start.strftime("%d/%b/%Y %H:%M") }} -
                             {{ end.strftime("%d/%b/%Y %H:%M") }}
                         </td>
-
-                        {# Combine all course_code - courseName for this venue/time #}
-                        <td rowspan="{{ total_rows }}">
+                        <td rowspan="{{ total_invigilators }}">
                             {% for code, c_atts in courses.items() %}
-                                {% for c_att in c_atts %}
-                                    {{ code }} - {{ c_att.report.exam.course.courseName }}<br>
-                                {% endfor %}
+                                {{ code }} - {{ c_atts[0].report.exam.course.courseName }}<br>
                             {% endfor %}
                         </td>
-
                         {% set printed_header = true %}
                     {% endif %}
 
@@ -180,6 +174,7 @@
         </tbody>
         {% endfor %}
     </table>
+
 </div>
 {% endblock %}
 
