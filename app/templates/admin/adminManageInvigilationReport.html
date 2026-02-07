@@ -126,46 +126,36 @@
         </thead>
         <tbody>
             {% for (venue, start, end), data in grouped_att.items() %}
-            <tr>
-                <td>[{{ venue }}]</td>
-                <td>{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
-                <td>
-                    {% for c in data.courses %}
-                        <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for att in data.invigilators %}
-                        {{ att.invigilator.userName }} ({{ att.invigilator.userId }}){% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for att in data.invigilators %}
-                        {{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for att in data.invigilators %}
-                        {{ att.remark or "PENDING" }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for att in data.invigilators %}
-                        {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }} /
-                        {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}<br>
-                    {% endfor %}
-                </td>
-                <td>
-                    {% for att in data.invigilators %}
-                    <form method="POST" style="padding: 0px;">
-                        <input type="hidden" name="form_type" value="edit">
-                        <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
-                        <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
-                        <button type="submit" class="edit-btn">Edit</button>
-                    </form>
-                    {% endfor %}
-                </td>
-            </tr>
+                {% set num_invigilators = data.invigilators | length %}
+                {% for att in data.invigilators %}
+                    <tr>
+                        {% if loop.first %}
+                            <td rowspan="{{ num_invigilators }}">[{{ venue }}]</td>
+                            <td rowspan="{{ num_invigilators }}">{{ start.strftime("%d/%b/%Y %H:%M") }} - {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
+                            <td rowspan="{{ num_invigilators }}">
+                                {% for c in data.courses %}
+                                    <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
+                                {% endfor %}
+                            </td>
+                        {% endif %}
+
+                        <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
+                        <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
+                        <td>{{ att.remark or "PENDING" }}</td>
+                        <td>
+                            {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }} /
+                            {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
+                        </td>
+                        <td>
+                            <form method="POST" style="display:inline-block;">
+                                <input type="hidden" name="form_type" value="edit">
+                                <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
+                                <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
+                                <button type="submit" class="edit-btn">Edit</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
             {% endfor %}
         </tbody>
     </table>
