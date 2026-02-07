@@ -188,6 +188,14 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
+        let venue = "";
+        let examDate = "";
+        let courses = "";
+        let invigilator = "";
+        let status = "";
+        let attendance = "";
+        let checkTimes = "";
+
         if (tds.length === 7) {
             // First row of grouped exam
             venue = tds[0].innerText.trim();
@@ -206,7 +214,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         }
         rows.push([venue, examDate, courses, invigilator, status, attendance, checkTimes]);
     });
-
+    
     // Generate PDF table
     doc.autoTable({
         head: [headers],
