@@ -116,12 +116,10 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const pageWidth = doc.internal.pageSize.getWidth(); 
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
     
-    let title = "Invigilation Timetable";
-
     if (["LECTURER", "PO", "LAB_ASS"].includes(userLevel)) {
-        title = `${userName}'s Invigilation Timetable`;
+        doc.text(`${userName}'s Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
     } else {
-        title = `${userDepartment} Invigilation Timetable`;
+        doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
     }
 
     doc.setFont("helvetica", "normal");
