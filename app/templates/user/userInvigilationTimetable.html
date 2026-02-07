@@ -1,77 +1,70 @@
 {% extends "user/userBase.html" %}
 {% block title %}InvigilationTimetable{% endblock %}
 {% block head_title %}<h2>Invigilation Timetable</h2>{% endblock %}
+
 {% block content %}
 <div class="menu-section">
-    <div style="display: flex; align-items: center; gap: 10px;">
-        <div style="position: relative;">
-            <input type="text" id="searchInput" name="search_InvigilationTimetable" placeholder="Search..." value="{{ search_InvigilationTimetable }}" style="border-radius: 6px; width: 100%;">
-            <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+
+    <!-- Search + PDF -->
+    <div style="display:flex; align-items:center; gap:10px;">
+        <div style="position:relative;">
+            <input type="text" id="searchInput"
+                   placeholder="Search..."
+                   style="border-radius:6px; width:250px;">
+            <i class="fa fa-search"
+               style="position:absolute; right:10px; top:50%; transform:translateY(-50%);"></i>
         </div>
-        <div class="button-wrapper" style="margin-bottom: auto;">
-            <button id="generatePDF" style="background-color: black;">Download as PDF</button>
-        </div>
+        <button id="generatePDF" style="background:black; color:white;">
+            Download as PDF
+        </button>
     </div>
-    <div id="noResults" style="display: none; text-align: center; margin-top: 10px; font-weight: bold; color: #b00;">No results found.</div>
 
-    <div style="display: flex; gap: 15px; align-items: center;">
-        <h4>Exam Status:</h4>
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <span style="width: 20px; height: 20px; background-color: lightgrey; display: inline-block; border-radius: 4px;"></span>
-            <span>Past Exam</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <span style="width: 20px; height: 20px; background-color: #75bdf9; display: inline-block; border-radius: 4px;"></span>
-            <span>Upcoming Exam</span>
-        </div>
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <span style="width: 20px; height: 20px; background-color: #dc74f7; display: inline-block; border-radius: 4px;"></span>
-            <span>Overnight Exam (Starts Today, Ends Tomorrow)</span>
-        </div>
-    </div><br>
+    <div id="noResults"
+         style="display:none; text-align:center; margin-top:10px; font-weight:bold; color:#b00;">
+        No results found.
+    </div>
 
+    <br>
+
+    <!-- Timetable -->
     <div class="calendar-container">
         {% for venue, exams in venue_data.items() %}
             {% set exams_by_date = {} %}
             {% for exam in exams %}
-                {% set exam_date = exam.start_time.strftime("%d %b %Y") %}
-                {% if exam_date not in exams_by_date %}
-                    {% set _ = exams_by_date.update({exam_date: []}) %}
+                {% set d = exam.start_time.strftime("%d %b %Y") %}
+                {% if d not in exams_by_date %}
+                    {% set _ = exams_by_date.update({d: []}) %}
                 {% endif %}
-                {% set _ = exams_by_date[exam_date].append(exam) %}
+                {% set _ = exams_by_date[d].append(exam) %}
             {% endfor %}
 
             {% for date, day_exams in exams_by_date.items() %}
-                <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
-                    <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
-                    <div class="exam-grid">
-                        {% set grouped = {} %}
-                        {% for exam in day_exams %}
-                            {% set key = (exam.start_time, exam.end_time, venue) %}
-                            {% if key not in grouped %}
-                                {% set grouped = grouped.update({key: [exam]}) or grouped %}
-                            {% else %}
-                                {% set grouped = grouped.update({key: grouped[key] + [exam]}) or grouped %}
-                            {% endif %}
-                        {% endfor %}
+            <div class="venue-block"
+                 style="margin-bottom:20px; padding:15px; border:1px solid #aaa; border-radius:8px;">
 
-                        {% for key, exams in grouped.items() %}
-                            {% set card_ns = namespace(total_students=0) %}
-                            <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
-                                {% set start_time, end_time, venue_name = key %}
-                                <h3>Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}<br>Venue: {{ venue_name }}<br></h3>
-                                {% for exam in exams %}
-                                    <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }} | Students: {{ exam.students }}</strong><br>
-                                    {% if exam.is_overnight %}
-                                        <span style="color: #b400b4;">Overnight Exam</span><br>
-                                    {% endif %}
-                                    {% set card_ns.total_students = card_ns.total_students + exam.students %}
-                                {% endfor %}
-                                <br><strong>Total Students: {{ card_ns.total_students }}</strong>
-                            </div>
-                        {% endfor %}
+                <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
+
+                <div class="exam-grid">
+                    {% for exam in day_exams %}
+                    <div class="exam-card"
+                         style="border:1px solid #ccc; padding:8px; margin-bottom:6px; border-radius:5px;">
+                        <strong>
+                            {{ exam.course_code }}/{{ exam.section }}
+                            – {{ exam.course_name }}
+                        </strong><br>
+                        Time:
+                        {{ exam.start_time.strftime("%H:%M") }}
+                        -
+                        {{ exam.end_time.strftime("%H:%M") }}<br>
+                        Venue: {{ venue }}<br>
+                        Students: {{ exam.students }}
+                        {% if exam.is_overnight %}
+                            <br><span style="color:#b400b4;">Overnight Exam</span>
+                        {% endif %}
                     </div>
+                    {% endfor %}
                 </div>
+            </div>
             {% endfor %}
         {% endfor %}
     </div>
@@ -79,139 +72,89 @@
 {% endblock %}
 
 {% block extra_scripts %}
+
+<!-- REQUIRED LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const days = [...document.querySelectorAll(".calendar-day")];
-    if (!days.length) return;
-
-    const today = new Date().setHours(0, 0, 0, 0);
-    let target = null;
-
-    for (const d of days) {
-        // Use data-date attribute instead of parsing text
-        const dateAttr = d.querySelector(".calendar-date").dataset.date;
-        const date = new Date(dateAttr);
-
-        if (!isNaN(date) && date >= today) { 
-        target = d; 
-        break; 
-        }
-    }
-    if (!target) target = days[days.length - 1];
-    // Delay scroll until rendering done
-    setTimeout(() => {
-        target.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-    }, 100);
-});
+/* Inject Django variables safely */
+const userLevel = "{{ user.level|default:'' }}";
+const userName = "{{ user.get_full_name|default:'User' }}";
+const userDepartment = "{{ user.department.name|default:'Department' }}";
 
 document.getElementById("generatePDF").addEventListener("click", async () => {
+
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
+    const doc = new jsPDF("l", "mm", "a4");
+
     const margin = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const pageWidth = doc.internal.pageSize.getWidth(); 
-    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
-    
-    if (userLevel in ["LECTURER", "PO", "LAB_ASS"]) {
-        doc.text(`${userName}'s Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
-    } else {
-        doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
+
+    const now = new Date().toLocaleString("en-GB", {
+        timeZone: "Asia/Kuala_Lumpur",
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+    });
+
+    /* Header */
+    doc.setFontSize(18);
+    const title =
+        ["LECTURER","PO","LAB_ASS"].includes(userLevel)
+        ? `${userName}'s Invigilation Timetable`
+        : `${userDepartment} Invigilation Timetable`;
+
+    doc.text(title, pageWidth / 2, margin, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Downloaded on: ${now}`, pageWidth / 2, margin + 8, { align: "center" });
+
+    let y = margin + 20;
+
+    const blocks = document.querySelectorAll(".venue-block");
+    if (!blocks.length) {
+        alert("No timetable to download.");
+        return;
     }
 
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 8, { align: "center" });
+    for (const block of blocks) {
 
-    let y = margin + 15;
+        const canvas = await html2canvas(block, {
+            scale: 2,
+            useCORS: true
+        });
 
-    const days = document.querySelectorAll(".venue-block");
-    if (!days.length) return alert("No timetable found!");
-
-    for (const [i, day] of days.entries()) {
-        const dateText = day.querySelector("h2").innerText;
-        const examList = day.querySelector(".exam-grid");
-
-        // Capture this day's exam list
-        const canvas = await html2canvas(examList, { scale: 2 });
         const imgData = canvas.toDataURL("image/png");
-
-        const pdfWidth = pageWidth - 2 * margin;
         const imgProps = doc.getImageProperties(imgData);
+        const pdfWidth = pageWidth - margin * 2;
         const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-        // Padding & border calculations
-        const topPadding = 6;
-        const bottomPadding = 10;
-        const totalBlockHeight = imgHeight + topPadding + bottomPadding + 8; // better spacing
-
-        // Add new page if block exceeds height
-        if (y + totalBlockHeight > pageHeight - margin) {
+        if (y + imgHeight > pageHeight - margin) {
             doc.addPage();
             y = margin;
-            doc.setFontSize(20);
-            doc.text("Invigilation Timetable", pageWidth / 2, y, { align: "center" });
-            y += 15;
         }
 
-        // Draw border box
-        doc.setDrawColor(0);
-        doc.rect(margin - 3, y - 5, pdfWidth + 6, totalBlockHeight);
-
-        // Day title
-        doc.setFontSize(14);
-        doc.text(dateText, margin, y + 5);
-
-        // Image (exam content)
-        const imageY = y + topPadding + 8;
-        doc.addImage(imgData, 'PNG', margin, imageY, pdfWidth, imgHeight);
-
-        // Move Y position for next day
-        y += totalBlockHeight + 5;
+        doc.addImage(imgData, "PNG", margin, y, pdfWidth, imgHeight);
+        y += imgHeight + 10;
     }
 
     doc.save("Invigilation_Timetable.pdf");
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.getElementById("searchInput");
-    const noResults = document.getElementById("noResults");
+/* SEARCH */
+document.getElementById("searchInput").addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    let visible = false;
 
-    if (!searchInput) return;
-
-    searchInput.addEventListener("input", () => {
-        const filter = searchInput.value.toLowerCase();
-        let anyVisible = false;
-
-        const days = document.querySelectorAll(".calendar-day");
-        days.forEach(day => {
-            const dateText = day.querySelector(".calendar-date").innerText.toLowerCase();
-            let dayHasVisible = false;
-
-            // Check if date matches filter
-            if (dateText.includes(filter)) {
-                dayHasVisible = true;
-                day.querySelectorAll(".exam-card").forEach(card => card.style.display = "block");
-            } else {
-                // Check each exam card under this date
-                const cards = day.querySelectorAll(".exam-card");
-                cards.forEach(card => {
-                    const text = card.innerText.toLowerCase();
-                    if (text.includes(filter)) {
-                        card.style.display = "block";
-                        dayHasVisible = true;
-                    } else {
-                        card.style.display = "none";
-                    }
-                });
-            }
-
-            // Hide entire day if no cards or date match
-            day.style.display = dayHasVisible ? "block" : "none";
-            if (dayHasVisible) anyVisible = true;
-        });
-
-        noResults.style.display = anyVisible ? "none" : "block";
+    document.querySelectorAll(".venue-block").forEach(block => {
+        const text = block.innerText.toLowerCase();
+        const show = text.includes(filter);
+        block.style.display = show ? "block" : "none";
+        if (show) visible = true;
     });
+
+    document.getElementById("noResults").style.display =
+        visible ? "none" : "block";
 });
 </script>
 {% endblock %}
