@@ -134,16 +134,11 @@
                         <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
                     {% endfor %}
                 </td>
-                <td>
-                    {% for att in data.invigilators %}
-                        <div>
-                            {{ att.invigilator.userName }} ({{ att.invigilator.userId }})<br>
-                            Status: {{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}<br>
-                            Attendance: {{ att.remark or "PENDING" }}
-                            <hr>
-                        </div>
-                    {% endfor %}
-                </td>
+                {% for att in data.invigilators %}
+                    <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
+                    <td>Status: {{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
+                    <td>Attendance: {{ att.remark or "PENDING" }}</td>
+                {% endfor %}
                 <td>
                     {% for att in data.invigilators %}
                         {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }} /
@@ -152,7 +147,7 @@
                 </td>
                 <td>
                     {% for att in data.invigilators %}
-                    <form method="POST">
+                    <form method="POST" style="padding: 0px;">
                         <input type="hidden" name="form_type" value="edit">
                         <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
                         <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
