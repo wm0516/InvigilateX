@@ -2105,14 +2105,16 @@ def get_valid_invigilators():
 
 
 
-# Calculate Invigilation Stats (no InvigilatorAttendance or InvigilationReport)
+
+# -------------------------------
+# Calculate All InvigilatorAttendance and InvigilationReport Data
 # -------------------------------
 def calculate_invigilation_stats():
-    query = VenueSessionInvigilator.query.join(VenueSession)    
+    query = VenueSessionInvigilator.query.join(VenueSession).all()
 
     stats = {
-        "total_report": query.count(),  # total assignments
-        "total_activeReport": sum(1 for v in query if v.invigilationStatus),  # completed
+        "total_report": len(query),  # total assignments
+        "total_activeReport": sum(1 for v in query if v.invigilationStatus),
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
@@ -2127,6 +2129,8 @@ def calculate_invigilation_stats():
             stats["total_checkOutEarly"] += 1
 
     return stats
+
+
 
 
 
