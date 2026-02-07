@@ -13,111 +13,7 @@ bcrypt = Bcrypt()
 
 
 
-# -------------------------------
-# Calculate Invigilation Stats (Filtered by User Department or Own Data)
-# -------------------------------
-def calculate_invigilation_stats():
-    user = User.query.get(session.get('user_id'))
 
-    stats = {
-        "total_report": 0,
-        "user_total_activeReport": 0,
-        "total_checkInLate": 0,
-        "total_checkOutEarly": 0,
-    }
-
-    # -------------------------------
-    # LEVEL 1: Personal stats for lecturer
-    # -------------------------------
-    if user.userLevel == 1:
-        # Total reports assigned to this user (any exam)
-        stats["total_report"] = (
-            InvigilationReport.query
-            .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .filter(InvigilatorAttendance.invigilatorId == user.userId)
-            .filter(InvigilatorAttendance.invigilationStatus == True)
-            .distinct()
-            .count()
-        )
-
-        # Active reports for this user (examStatus == True)
-        stats["user_total_activeReport"] = (
-            InvigilationReport.query
-            .join(InvigilatorAttendance, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .filter(
-                InvigilatorAttendance.invigilatorId == user.userId,
-                InvigilatorAttendance.invigilationStatus == True,
-                Exam.examStatus == True
-            )
-            .distinct()
-            .count()
-        )
-
-        # Attendance stats (lateness / early checkout)
-        records = (
-            InvigilatorAttendance.query
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .filter(
-                InvigilatorAttendance.invigilatorId == user.userId,
-                InvigilatorAttendance.invigilationStatus == True,
-                Exam.examStatus == True
-            )
-            .all()
-        )
-
-    # -------------------------------
-    # LEVEL 2-4: Department stats
-    # -------------------------------
-    else:
-        # Total reports in department (all exams)
-        stats["total_report"] = (
-            InvigilationReport.query
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .join(Course, Course.courseExamId == Exam.examId)
-            .filter(Course.courseDepartment == user.userDepartment)
-            .distinct()
-            .count()
-        )
-
-        # Active reports in department (examStatus == True)
-        stats["user_total_activeReport"] = (
-            InvigilationReport.query
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .join(Course, Course.courseExamId == Exam.examId)
-            .filter(
-                Course.courseDepartment == user.userDepartment,
-                Exam.examStatus == True
-            )
-            .distinct()
-            .count()
-        )
-
-        # Attendance stats (lateness / early checkout)
-        records = (
-            InvigilatorAttendance.query
-            .join(InvigilationReport, InvigilatorAttendance.reportId == InvigilationReport.invigilationReportId)
-            .join(Exam, InvigilationReport.examId == Exam.examId)
-            .join(Course, Course.courseExamId == Exam.examId)
-            .filter(
-                Course.courseDepartment == user.userDepartment,
-                InvigilatorAttendance.invigilationStatus == True,
-                Exam.examStatus == True
-            )
-            .all()
-        )
-
-    # -------------------------------
-    # Analyze lateness / early checkout
-    # -------------------------------
-    for r in records:
-        if r.checkIn and r.checkIn > r.exam.examStartTime:
-            stats["total_checkInLate"] += 1
-        if r.checkOut and r.checkOut < r.exam.examEndTime:
-            stats["total_checkOutEarly"] += 1
-
-    return stats
 
 
 
@@ -146,28 +42,135 @@ def get_all_attendances():
     return query.order_by(Exam.examStatus.desc(), Exam.examStartTime.desc()).all()
 
 
+
+
+
+
+
+
+
+# -------------------------------
+# Calculate Invigilation Stats (Filtered by User Department or Own Data)
+# -------------------------------
+def calculate_invigilation_stats(user):
+    # Base query
+    query = VenueSessionInvigilator.query.join(VenueSession).join(VenueSession.exam).join(Exam.course)
+    
+    if user.userLevel in ["LECTURER", "PO", "LAB_ACC"]:
+        query = query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
+    elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+        query = query.join(Course.department).filter(Department.departmentCode == user.department.departmentCode)
+
+    query = query.all()
+    stats = {
+        "total_report": len(query),
+        "user_total_activeReport": 0,  # changed name to match your template
+        "total_checkInLate": 0,
+        "total_checkOutEarly": 0,
+    }
+
+    for att in query:
+        session_start = att.session.startDateTime if att.session else None
+        session_end = att.session.endDateTime if att.session else None
+
+        if not att.checkIn or not att.checkOut:
+            stats["user_total_activeReport"] += 1
+        if att.checkIn and session_start and att.checkIn > session_start:
+            stats["total_checkInLate"] += 1
+        if att.checkOut and session_end and att.checkOut < session_end:
+            stats["total_checkOutEarly"] += 1
+
+
+    return stats
+
+
+
+
 # Lecturer get own
 # DEAN, HOS, HOP get under own
+# -------------------------------
+# User: View Invigilation Report (Filtered by User Level)
+# -------------------------------
 @app.route('/user/invigilationReport', methods=['GET', 'POST'])
 @login_required
 def user_invigilationReport():
-    user = User.query.get(session.get('user_id'))
-    if not user:
-        return redirect(url_for('user_invigilationReport'))
-    attendances = get_all_attendances()
-    stats = calculate_invigilation_stats()
+    user = session.get('user_id')
+    # Base query joining VenueSession, Exam, Course, etc.
+    vsi_query = (
+        VenueSessionInvigilator.query
+        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .join(Exam, VenueExam.examId == Exam.examId)
+        .join(Course, Exam.examId == Course.courseExamId)
+        .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
+        .order_by(VenueSession.startDateTime, Course.courseCodeSectionIntake)
+    )
 
-    # Add composite group key: (examStatus, examStartTime)
-    for att in attendances:
-        report = att.report
-        exam = Exam.query.get(report.examId) if report else None
-        att.group_key = (
-            not exam.examStatus if exam else True,
-            exam.examStartTime if exam else datetime.min,
-            exam.examId if exam else 0
+    # ---------------------------
+    # Filter based on user level
+    # ---------------------------
+    if user.userLevel in ["LECTURER", "PO", "LAB_ACC"]:
+        vsi_query = vsi_query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
+    elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+        vsi_query = vsi_query.join(Course.department).filter(
+            Department.departmentCode == user.department.departmentCode
         )
-    return render_template('user/userInvigilationReport.html', active_tab='user_invigilationReporttab', attendances=attendances, **stats, current_user=user)
-    
+
+    vsi_entries = vsi_query.all()
+
+    # ---------------------------
+    # Group by venue + start/end time
+    # ---------------------------
+    grouped_att = defaultdict(lambda: {"courses": [], "invigilators": []})
+    for vsi in vsi_entries:
+        if not vsi.session or not vsi.session.venue:
+            continue
+        key = (
+            vsi.session.venue.venueNumber,
+            vsi.session.startDateTime,
+            vsi.session.endDateTime
+        )
+
+        # Add invigilator
+        if vsi not in grouped_att[key]["invigilators"]:
+            grouped_att[key]["invigilators"].append(vsi)
+
+        # Add courses
+        for ve in vsi.session.exams:
+            if ve.exam and ve.exam.course:
+                course = {
+                    "code": ve.exam.course.courseCodeSectionIntake,
+                    "name": ve.exam.course.courseName
+                }
+                if course not in grouped_att[key]["courses"]:
+                    grouped_att[key]["courses"].append(course)
+
+    # ---------------------------
+    # Stats
+    # ---------------------------
+    stats = calculate_invigilation_stats(user)
+
+    # Attach group key for Jinja rowspan
+    for vsi in vsi_entries:
+        vsi.group_key = vsi.session.venueSessionId if vsi.session else None
+
+    return render_template(
+        'user/userInvigilationReport.html',
+        active_tab='user_invigilationReporttab',
+        attendances=vsi_entries,
+        grouped_att=grouped_att,
+        **stats,
+        current_user=user
+    )
+
+
+
+
+
+
+
+
+
 # -------------------------------
 # Function for InviglationTimetable Route to read all the timetable in calendar mode
 # -------------------------------
