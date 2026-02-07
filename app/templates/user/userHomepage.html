@@ -5,6 +5,39 @@
 {% block content %}
 <h1>Hey! 👋 <i>{{ user_name }}</i></h1>
 
+{# --- Jinja Macro for table rows --- #}
+{% macro slot_row(slot, show_actions=False, action_type="") %}
+    {% set venue_exam = slot.session.exams[0] if slot.session.exams else None %}
+    {% set course = venue_exam.exam.course if venue_exam else None %}
+    {% set start = slot.session.startDateTime %}
+    {% set end = slot.session.endDateTime %}
+    {% set duration = (end - start).total_seconds() %}
+<tr>
+    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
+    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
+    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
+    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
+    <td>{{ course.courseName if course else '' }}</td>
+    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
+    {% if show_actions %}
+    <td>
+        {% if action_type == 'waiting' %}
+        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="w_id" value="{{ slot.attendanceId }}">
+            <button type="submit" name="action" value="accept">Accept</button>
+        </form>
+        <button class="reject-btn" data-id="{{ slot.attendanceId }}">Reject</button>
+        {% elif action_type == 'open' %}
+        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+            <input type="hidden" name="a_id" value="{{ slot.attendanceId }}">
+            <button type="submit" name="action" value="open_accept">Accept</button>
+        </form>
+        {% endif %}
+    </td>
+    {% endif %}
+</tr>
+{% endmacro %}
+
 {% if user_level in ["DEAN", "HOS", "HOP"] %}
 <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;">
     <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;">
@@ -91,39 +124,7 @@
         <p class="dashboard-text" style="color:blueviolet;">{{ user_pendingInvigilationHour|hours_format }}</p>
     </div>
 </div><br>
-
-{# --- Jinja Macro for table rows --- #}
-{% macro slot_row(slot, show_actions=False, action_type="") %}
-    {% set venue_exam = slot.session.exams[0] if slot.session.exams else None %}
-    {% set course = venue_exam.exam.course if venue_exam else None %}
-    {% set start = slot.session.startDateTime %}
-    {% set end = slot.session.endDateTime %}
-    {% set duration = (end - start).total_seconds() %}
-<tr>
-    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
-    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
-    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
-    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
-    <td>{{ course.courseName if course else '' }}</td>
-    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
-    {% if show_actions %}
-    <td>
-        {% if action_type == 'waiting' %}
-        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
-            <input type="hidden" name="w_id" value="{{ slot.attendanceId }}">
-            <button type="submit" name="action" value="accept">Accept</button>
-        </form>
-        <button class="reject-btn" data-id="{{ slot.attendanceId }}">Reject</button>
-        {% elif action_type == 'open' %}
-        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
-            <input type="hidden" name="a_id" value="{{ slot.attendanceId }}">
-            <button type="submit" name="action" value="open_accept">Accept</button>
-        </form>
-        {% endif %}
-    </td>
-    {% endif %}
-</tr>
-{% endmacro %}
+{% endif %}
 
 {# --- Waiting Slots --- #}
 {% if waiting %}
