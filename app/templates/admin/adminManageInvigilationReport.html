@@ -99,7 +99,6 @@
 <div class="menu-section">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>List of Invigilator's Invigilation Report(s)</h3>
-        <label>Change Using InvigilatorAttendance, Use VenueExam Table</label>
         <div style="display: flex; align-items: center; gap: 10px;">
             <div style="position: relative;">
                 <input type="text" id="searchInput" name="search_report" placeholder="Search..." value="{{ search_report }}" style="border-radius: 6px; width: 100%;">
@@ -183,49 +182,23 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const startY = margin + 30;
 
     // Table headers
-    const headers = ["Exam ID", "Exam Details", "Invigilators", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
+    const headers = ["Venue", "Exam Date", "Courses", "Invigilator", "Status", "Attendance", "Check-in/out"];
     const rows = [];
     let lastExamID = "", lastExamDetails = "", lastInvCount = "";
 
     document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
-        const tdCount = tds.length;
+        let venue = tds[0]?.innerText.trim() || "";
+        let examDate = tds[1]?.innerText.trim() || "";
+        let courses = tds[2]?.innerText.trim() || "";
+        let invigilator = tds[3]?.innerText.trim() || "";
+        let status = tds[4]?.innerText.trim() || "";
+        let attendance = tds[5]?.innerText.trim() || "";
+        let checkTimes = tds[6]?.innerText.trim() || "";
 
-        // Handle rowspan — fill missing columns from previous values
-        let examID = "";
-        let examDetails = "";
-        let invCount = "";
-        let invDetails = "";
-        let checkTimes = "";
-        let attendance = "";
-        let invStatus = "";
-
-        if (tdCount === 8) {
-            // Normal full row
-            examID = tds[0]?.innerText.trim() || "";
-            examDetails = tds[1]?.innerText.trim() || "";
-            invCount = tds[2]?.innerText.trim() || "";
-            invDetails = tds[3]?.innerText.trim() || "";
-            invStatus = tds[4]?.innerText.trim() || "";
-            attendance = tds[5]?.innerText.trim() || "";
-            checkTimes = tds[6]?.innerText.trim() || "";
-
-
-        } else if (tdCount === 5) {
-            // This is a "continuation row" — missing rowspan columns
-            invDetails = tds[0]?.innerText.trim() || "";
-            invStatus = tds[1]?.innerText.trim() || "";
-            attendance = tds[2]?.innerText.trim() || "";
-            checkTimes = tds[3]?.innerText.trim() || "";
-        }
-
-        // Clean up text formatting
-        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-            text.replace(/\s*:\s*/g, " : ")
-        );
-
-        rows.push([examID, examDetails, invCount, invDetails, invStatus, attendance, checkTimes]);
+        rows.push([venue, examDate, courses, invigilator, status, attendance, checkTimes]);
     });
+
     
     // Generate PDF table
     doc.autoTable({
@@ -407,37 +380,24 @@ document.addEventListener("DOMContentLoaded", function () {
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
     const noResults = document.getElementById("noResults");
-    const allGroups = document.querySelectorAll("#manageInvigilationReport tbody");
+    const tableRows = document.querySelectorAll("#manageInvigilationReport tbody tr");
 
     searchInput.addEventListener("input", function () {
         const filter = this.value.toLowerCase().trim();
         let foundAny = false;
 
-        allGroups.forEach(tbody => {
-            const rows = Array.from(tbody.querySelectorAll("tr"));
-            let groupMatch = false;
-
-            // Check if any row matches the filter
-            rows.forEach(row => {
-                const text = row.innerText.toLowerCase();
-                if (!filter || text.includes(filter)) {
-                    groupMatch = true;
-                }
-            });
-
-            if (groupMatch) {
-                // Show all rows in the group, so rowspan cells are preserved
-                rows.forEach(row => row.style.display = "");
+        tableRows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            if (!filter || text.includes(filter)) {
+                row.style.display = ""; // show row
                 foundAny = true;
             } else {
-                // Hide all rows in the group
-                rows.forEach(row => row.style.display = "none");
+                row.style.display = "none"; // hide row
             }
         });
 
-        // Toggle "No results found"
         noResults.style.display = foundAny ? "none" : "block";
-    }); 
+    });
 });
 
 function formatExamDateTime(dtString) {
