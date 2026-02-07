@@ -134,24 +134,30 @@
         </thead>
         {% for (venue, start, end), courses in grouped_att.items() %}
         <tbody>
-            {% set total_invigilators = courses.values() | map('length') | sum %}
+            {% set total_rows = courses.values() | map('length') | sum %}
             {% set printed_header = false %}
+
             {% for course_code, atts in courses.items() %}
-            <tr>
-                {% if not printed_header %}
-                    <td rowspan="{{ total_invigilators }}">[{{ venue }}]</td>
-                    <td rowspan="{{ total_invigilators }}">
-                        {{ start.strftime("%d/%b/%Y %H:%M") }} -
-                        {{ end.strftime("%d/%b/%Y %H:%M") }}
-                    </td>
-                    <td rowspan="{{ total_invigilators }}">
-                        {% for code, c_atts in courses.items() %}
-                            {{ code }} - {{ c_atts[0].report.exam.course.courseName }}<br>
-                        {% endfor %}
-                    </td>
-                    {% set printed_header = true %}
-                {% endif %}
                 {% for att in atts %}
+                <tr>
+                    {% if not printed_header %}
+                        <td rowspan="{{ total_rows }}">[{{ venue }}]</td>
+                        <td rowspan="{{ total_rows }}">
+                            {{ start.strftime("%d/%b/%Y %H:%M") }} 
+                            -
+                            {{ end.strftime("%d/%b/%Y %H:%M") }}
+                        </td>
+
+                        <td rowspan="{{ total_rows }}">
+                            {% for code, c_atts in courses.items() %}
+                                {% for c_att in c_atts %}
+                                    {{ code }} - {{ c_att.report.exam.course.courseName }}<br>
+                                {% endfor %}
+                            {% endfor %}
+                        </td>
+
+                        {% set printed_header = true %}
+                    {% endif %}
 
                     <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
                     <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
@@ -167,14 +173,12 @@
                             <button type="submit" class="edit-btn">Edit</button>
                         </form>
                     </td>
-                
-                {% endfor %}
                 </tr>
+                {% endfor %}
             {% endfor %}
         </tbody>
         {% endfor %}
     </table>
-
 </div>
 {% endblock %}
 
