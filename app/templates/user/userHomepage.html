@@ -123,7 +123,7 @@
         <p class="dashboard-text" style="color:blueviolet;">{{ user_pendingInvigilationHour|hours_format }}</p>
     </div>
 </div><br>
-{% endif %}
+
 
 {# --- Waiting Slots --- #}
 {% if waiting %}
@@ -266,6 +266,7 @@
 
 {% if user_level in ["LECTURER", "PO", "LAB_ASS"] and not waiting and not confirm and not open and not reject %}
     <h2>No Invigilation Slot</h2>
+{% endif %}
 {% endif %}
 {% endblock %}
 
