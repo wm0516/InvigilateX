@@ -43,7 +43,7 @@
 
             {% for date, day_exams in exams_by_date.items() %}
                 <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
-                    <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
+                    <h2 data-venue="{{ venue }}">{{ date }} | Venue: {{ venue }} | Total Exams: {{ day_exams|length }}</h2>
                     <div class="exam-grid">
                         {% set grouped = {} %}
                         {% for exam in day_exams %}

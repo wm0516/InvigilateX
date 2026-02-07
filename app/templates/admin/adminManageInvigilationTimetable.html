@@ -53,7 +53,7 @@
 
             {% for date, day_exams in exams_by_date.items() %}
                 <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
-                    <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
+                    <h2 data-venue="{{ venue }}">{{ date }} | Venue: {{ venue }} | Total Exams: {{ day_exams|length }}</h2>
                     <div class="exam-grid">
                         {% set grouped = {} %}
                         {% for exam in day_exams %}
@@ -186,38 +186,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("searchInput");
     const noResults = document.getElementById("noResults");
 
-    if (!searchInput) return;
-
     searchInput.addEventListener("input", () => {
         const filter = searchInput.value.toLowerCase();
         let anyVisible = false;
 
-        const days = document.querySelectorAll(".calendar-day");
-        days.forEach(day => {
-            const dateText = day.querySelector(".calendar-date").innerText.toLowerCase();
-            let dayHasVisible = false;
+        document.querySelectorAll(".venue-block").forEach(block => {
+            const headerText = block.querySelector("h2").innerText.toLowerCase();
+            let blockVisible = false;
 
-            // Check if date matches filter
-            if (dateText.includes(filter)) {
-                dayHasVisible = true;
-                day.querySelectorAll(".exam-card").forEach(card => card.style.display = "block");
-            } else {
-                // Check each exam card under this date
-                const cards = day.querySelectorAll(".exam-card");
-                cards.forEach(card => {
-                    const text = card.innerText.toLowerCase();
-                    if (text.includes(filter)) {
-                        card.style.display = "block";
-                        dayHasVisible = true;
-                    } else {
-                        card.style.display = "none";
-                    }
-                });
-            }
+            const cards = block.querySelectorAll(".exam-card");
 
-            // Hide entire day if no cards or date match
-            day.style.display = dayHasVisible ? "block" : "none";
-            if (dayHasVisible) anyVisible = true;
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                if (text.includes(filter) || headerText.includes(filter)) {
+                    card.style.display = "block";
+                    blockVisible = true;
+                } else {
+                    card.style.display = "none";
+                }
+            });
+
+            block.style.display = blockVisible ? "block" : "none";
+            if (blockVisible) anyVisible = true;
         });
 
         noResults.style.display = anyVisible ? "none" : "block";
