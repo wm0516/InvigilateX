@@ -1257,7 +1257,7 @@ def admin_manageStaff():
         elif form_type == 'edit':
             action = request.form.get('action')
             if action == 'update' and user_select:
-                user_select.userName = request.form['editUsername']
+                user_select.userName = request.form['editUsername'].strip().upper()
                 user_select.userEmail = request.form['editEmail']
                 user_select.userContact = request.form['editContact']
                 user_select.userGender = int(request.form['editGender'])
