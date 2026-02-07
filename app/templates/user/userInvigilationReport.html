@@ -61,22 +61,7 @@
                                     {% endfor %}
                                 </td>
                             {% endif %}
-
-                            <td>{{ att.invigilator.userName }} ({{ att.invigilator.userId }})</td>
-                            <td>{{ "ACCEPTED" if att.invigilationStatus else "PENDING" }}</td>
-                            <td>{{ att.remark or "PENDING" }}</td>
-                            <td>
-                                {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }} /
-                                {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
-                            </td>
-                            <td>
-                                <form method="POST" style="display:inline-block;">
-                                    <input type="hidden" name="form_type" value="edit">
-                                    <input type="hidden" name="venueSessionId" value="{{ att.venueSessionId }}">
-                                    <input type="hidden" name="invigilatorId" value="{{ att.invigilatorId }}">
-                                    <button type="submit" class="edit-btn">Edit</button>
-                                </form>
-                            </td>
+                            ...
                         </tr>
                     {% endfor %}
                 {% endfor %}
