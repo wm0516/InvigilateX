@@ -1957,33 +1957,6 @@ def admin_manageInvigilationTimetable():
 
 
 
-# -------------------------------
-# Calculate All InvigilatorAttendance and InvigilationReport Data
-# -------------------------------
-def calculate_invigilation_stats():
-    query = (
-        InvigilatorAttendance.query
-        .filter(InvigilatorAttendance.invigilationStatus == True)
-        .join(VenueSession, InvigilatorAttendance.venueSessionId == VenueSession.venueSessionId)
-        .all()
-    )
-
-    stats = {
-        "total_report": InvigilationReport.query.count(),
-        "total_activeReport": InvigilationReport.query.join(Exam).filter(Exam.examStatus == True).count(),
-        "total_checkInLate": 0,
-        "total_checkOutEarly": 0,
-    }
-
-    for att in query:
-        session_start = att.session.startDateTime if att.session else None
-        session_end = att.session.endDateTime if att.session else None
-        if att.checkIn and session_start and att.checkIn > session_start:
-            stats["total_checkInLate"] += 1
-        if att.checkOut and session_end and att.checkOut < session_end:
-            stats["total_checkOutEarly"] += 1
-
-    return stats
 
 # -------------------------------
 # Helper: Parse Date + Time from Excel
@@ -2132,6 +2105,28 @@ def get_valid_invigilators():
 
 
 
+# Calculate Invigilation Stats (no InvigilatorAttendance or InvigilationReport)
+# -------------------------------
+def calculate_invigilation_stats():
+    query = VenueSessionInvigilator.query.join(VenueSession)    
+
+    stats = {
+        "total_report": query.count(),  # total assignments
+        "total_activeReport": sum(1 for v in query if v.invigilationStatus),  # completed
+        "total_checkInLate": 0,
+        "total_checkOutEarly": 0,
+    }
+
+    for att in query:
+        session_start = att.session.startDateTime if att.session else None
+        session_end = att.session.endDateTime if att.session else None
+
+        if att.checkIn and session_start and att.checkIn > session_start:
+            stats["total_checkInLate"] += 1
+        if att.checkOut and session_end and att.checkOut < session_end:
+            stats["total_checkOutEarly"] += 1
+
+    return stats
 
 
 
