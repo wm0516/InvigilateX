@@ -74,11 +74,11 @@
                 <label>Select Venue Session</label>
                 <select id="editSession" name="venueSessionId" required>
                     <option value="" disabled selected>-- Select Session --</option>
-                    {% for (venue, start, end), courses in grouped_att.items() %}
-                        <option value="{{ venue }}|{{ start.isoformat() }}|{{ end.isoformat() }}">
-                            Venue [{{ venue }}] - {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }}
+                    {% for (venue, start, end, inv_id), data in grouped_att.items() %}
+                        <option value="{{ data.vsi.venueSessionId }}">
+                            Venue [{{ venue }}] - {{ start.strftime("%d/%b/%Y %H:%M") }} →{{ end.strftime("%d/%b/%Y %H:%M") }}
                         </option>
-                    {% endfor %}
+                    {% endfor %}    
                 </select><br>
                 <label>Assigned Invigilators</label>
                 <div id="invigilatorList"></div>
