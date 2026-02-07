@@ -390,11 +390,10 @@ def user_profile():
         valid, message = check_profile(userId, user_cardUID, user_contact_text, user_password1_text, user_password2_text)
         if not valid:
             flash(message, 'error')
-            return render_template('user/userProfile.html',active_tab='user_profiletab',user=user,user_contact_text=user_contact_text,
-                                   user_password1_text=user_password1_text,user_password2_text=user_password2_text,user_cardUID=user_cardUID)
+            return redirect(url_for('user_profile'))
 
         # Update user info
-        if user:
+        if valid and user:
             user.userContact = user_contact_text or None
             user.userCardId = user_cardUID or None
             if user_password1_text:
@@ -403,8 +402,14 @@ def user_profile():
 
             db.session.commit()
             flash("Successfully updated", 'success')
+            record_action("UPDATE", "PROFILE", userId, userId)
             return redirect(url_for('user_profile'))
 
     return render_template('user/userProfile.html',active_tab='user_profiletab',user=user,user_contact_text=user_contact_text,
                            user_password1_text=user_password1_text,user_password2_text=user_password2_text,user_cardUID=user_cardUID)
+
+
+
+
+
 

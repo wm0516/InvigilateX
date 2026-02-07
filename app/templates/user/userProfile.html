@@ -5,7 +5,7 @@
     <h2>Profile</h2>
     <form method="post" style="border-radius: None; border: None; box-shadow: None;">
         <div class="profile-frame">
-            <div class="form-left">
+            <div class="form-profile">
                 <label>Full Name as per IC</label>
                 <input value="{{ user.userName }}" readonly><br>
                 
@@ -16,22 +16,18 @@
                 <input value="{{ user.userEmail }}" readonly>
             </div>
 
-            <div class="form-middle">
+            <div class="form-profile">
                 <label>Gender</label>
                 <input  value="{{ user.userGender }}" readonly><br>
 
                 <label>Role Based</label>
-                <input type="text" value="{% if user_level == 1 %}LECTURER
-                                            {% elif user_level == 2 %}DEAN
-                                            {% elif user_level == 3 %}HOS
-                                            {% elif user_level == 4 %}HOP
-                                            {% else %}UNKNOWN{% endif %}" readonly><br>
+                <input type="text" value="{{ user_level }}" readonly><br>
 
                 <label>Department</label>
                 <input value="{{ user.userDepartment }}" readonly>
             </div>
 
-            <div class="form-right">
+            <div class="form-profile">
                 <label>Staff Card UID</label>
                 <input type="text" name="cardUID" value="{{ user_cardUID or '' }}"><br>
 
