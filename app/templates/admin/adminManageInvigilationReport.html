@@ -77,7 +77,7 @@
                     {% for (venue, start, end), data in grouped_att.items() %}
                         {% set first_att = data.invigilators[0] %}
                         <option value="{{ first_att.venueSessionId }}">
-                            Venue [{{ venue }}] - {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }}
+                            {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }} - Venue [{{ venue }}]
                         </option>
                     {% endfor %}
                 </select><br>
@@ -134,8 +134,8 @@
                             <td rowspan="{{ num_invigilators }}">{{ ns.rowno }}</td>
                             <td rowspan="{{ num_invigilators }}">
                                 <div class="info-grid">
-                                    <div>Date: </div><div><strong>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
-                                    <div>Time: </div><div><strong>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
+                                    <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
                                 </div>
                             </td>
                             <td rowspan="{{ num_invigilators }}">[ {{ venue }} ]</td>
@@ -172,8 +172,8 @@
                         </td>
                         <td>
                             <div class="info-grid">
-                                <div>CheckIn:</div><div><strong>{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                                <div>CheckOut:</div><div><strong>{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                                <div>CheckIn</div><div><strong>: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                <div>CheckOut</div><div><strong>: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
                             </div>
                         </td>
                         <td>
@@ -523,6 +523,60 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
     reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
+});
+
+function renumberVisibleRows() {
+    const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
+    let index = 1;
+    rows.forEach(row => {
+        if (row.offsetParent !== null) {
+            const cell = row.querySelector("td.row-number");
+            if (cell) cell.textContent = index++;
+        }
+    });
+}
+
+let dashboardChart = null;
+function updateDashboardFromTable() {
+    const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
+    const visibleRows = [...rows].filter(r => r.offsetParent !== null);
+
+    let pending = 0, completed = 0, late = 0, early = 0;
+    const venueCount = {};
+
+    visibleRows.forEach(r => {
+        const statusText = r.children[5]?.innerText.trim();
+        const attendanceText = r.children[6]?.innerText.trim();
+
+        if (statusText === "PENDING") pending++;
+        else completed++;
+
+        if (attendanceText === "CHECK IN LATE") late++;
+        if (attendanceText === "CHECK OUT EARLY") early++;
+
+        const venue = r.children[2]?.innerText.trim() || "Unknown";
+        venueCount[venue] = (venueCount[venue] || 0) + 1;
+    });
+
+    document.querySelector("#dashboardSection .dashboard-frame:nth-child(1) p").textContent = pending;
+    document.querySelector("#dashboardSection .dashboard-frame:nth-child(2) p").textContent = completed;
+    document.querySelector("#dashboardSection .dashboard-frame:nth-child(3) p").textContent = late;
+    document.querySelector("#dashboardSection .dashboard-frame:nth-child(4) p").textContent = early;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    renumberVisibleRows();
+    updateDashboardFromTable();
+
+    const tbody = document.querySelector("#manageInvigilationReport tbody");
+    if (!tbody) return;
+
+    const observer = new MutationObserver(() => {
+        renumberVisibleRows();
+        updateDashboardFromTable();
+    });
+
+    observer.observe(tbody, { subtree: true, attributes: true, attributeFilter: ["style"] });
 });
 </script>
 {% endblock %}
