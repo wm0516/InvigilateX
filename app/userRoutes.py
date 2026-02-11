@@ -98,7 +98,7 @@ def user_invigilationReport():
         # Add invigilator
         if vsi not in grouped_att[key]["invigilators"]:
             # For Lecturers only include themselves (safety)
-            if user.userLevel in ["LECTURER", "PO", "LAB_ACC"] and vsi.invigilatorId != user.userId:
+            if user.userLevel in ["LECTURER", "PO", "LAB_ASST"] and vsi.invigilatorId != user.userId:
                 continue
             grouped_att[key]["invigilators"].append(vsi)
 
@@ -305,13 +305,21 @@ def user_mergeTimetable():
 @login_required
 def user_viewStaff():
     userId = session.get('user_id')
+
     current_user = User.query.filter_by(userId=userId).first()
     if not current_user:
         flash("User not found.", "danger")
         return redirect(url_for('user_dashboard'))
 
     # Get all staff from the same department
-    lecturers = User.query.filter_by(userDepartment=current_user.userDepartment)
+    lecturers = (
+        User.query
+        .filter(
+            User.userDepartment == current_user.userDepartment,
+            User.userStatus.in_([1, 0, 2]))
+        .order_by(User.userLevel.asc(), User.userName.asc())
+        .all()
+    )
     # Counts filtered by department
     total_admin = User.query.filter_by(userLevel="ADMIN").count()
     total_hop = User.query.filter_by(userLevel="HOP").count()
