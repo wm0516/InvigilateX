@@ -65,12 +65,13 @@
 </form>
 {% endblock %}
 
+
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" class="function-frame">
         <h4 style="text-align:center;">Edit Invigilation Report</h4>
-        <div class="profile-frame">
-            <div class="form-profile">
+        <div class="profile-frame" style="display:flex; gap:30px; align-items:flex-start;">
+            <div class="form-profile" style="flex:1;">
                 <label>Select Venue Session</label>
                 <select id="editSession" name="venueSessionId" required>
                     <option value="" disabled selected>-- Select Session --</option>
@@ -80,7 +81,7 @@
                             {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }} - Venue [{{ venue }}]
                         </option>
                     {% endfor %}
-                </select>
+                </select><br>
 
                 <label>Course Code - Name</label>
                 <input type="text" id="courseInfo" readonly>
@@ -88,18 +89,25 @@
                 <label>Exam Time</label>
                 <input type="text" id="examTime" readonly>
             </div>
-            <div class="form-profile" id="slotContainer"></div>
-        </div>
 
+            <div class="form-profile" style="flex:1;">
+                <label style="font-weight:bold;">Current Invigilator</label>
+                <div id="currentInvigilatorContainer"></div>
+            </div>
+
+            <div class="form-profile" style="flex:1;">
+                <label style="font-weight:bold;">Replace With</label>
+                <div id="replaceInvigilatorContainer"></div>
+            </div>
+        </div>
         <input type="hidden" name="form_type" value="edit">
         <div class="button-wrapper">
-            <button type="submit" style="background:#d4edda;color:#155724;">
-                Update Invigilators
-            </button>
+            <button type="submit" style="background:#d4edda;color:#155724;">Update Invigilators</button>
         </div>
     </div>
 </form>
 {% endblock %}
+
 
 
 {% block content %}
@@ -462,39 +470,47 @@ document.addEventListener("DOMContentLoaded", () => {
         courseInfo.value = `${data.courseCode} - ${data.courseName}`;
         examTime.value = `${data.start} → ${data.end}`;
 
-        slotContainer.innerHTML = "";
+        const currentContainer = document.getElementById("currentInvigilatorContainer");
+        const replaceContainer = document.getElementById("replaceInvigilatorContainer");
+
+        currentContainer.innerHTML = "";
+        replaceContainer.innerHTML = "";
+
+        const invResp = await fetch("/admin/get_valid_invigilators");
+        const invigilators = await invResp.json();
 
         for (let att of data.attendances) {
-            const wrapper = document.createElement("div");
-            wrapper.style.marginBottom = "15px";
 
-            wrapper.innerHTML = `
-                <label>Current Invigilator</label>
+            // LEFT SIDE (Current Invigilator)
+            const currentDiv = document.createElement("div");
+            currentDiv.style.marginBottom = "15px";
+            currentDiv.innerHTML = `
                 <input type="text" value="${att.invigilatorName}" readonly>
-
-                <label>Replace With</label>
-                <select name="replace_${att.invigilatorId}" required>
-                    <option disabled selected>Loading...</option>
-                </select>
             `;
+            currentContainer.appendChild(currentDiv);
 
-            slotContainer.appendChild(wrapper);
+            // RIGHT SIDE (Replace With Dropdown)
+            const replaceDiv = document.createElement("div");
+            replaceDiv.style.marginBottom = "15px";
 
-            const dropdown = wrapper.querySelector("select");
-
-            const invResp = await fetch("/admin/get_valid_invigilators");
-            const invigilators = await invResp.json();
-
-            dropdown.innerHTML = "";
+            const select = document.createElement("select");
+            select.name = `replace_${att.invigilatorId}`;
+            select.required = true;
 
             invigilators.forEach(u => {
-                dropdown.innerHTML += `
-                    <option value="${u.userId}" 
-                        ${u.userId == att.invigilatorId ? "selected" : ""}>
-                        ${u.userName}
-                    </option>
-                `;
+                const option = document.createElement("option");
+                option.value = u.userId;
+                option.textContent = u.userName;
+
+                if (u.userId == att.invigilatorId) {
+                    option.selected = true;
+                }
+
+                select.appendChild(option);
             });
+
+            replaceDiv.appendChild(select);
+            replaceContainer.appendChild(replaceDiv);
         }
     }
 
