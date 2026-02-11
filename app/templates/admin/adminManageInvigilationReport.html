@@ -217,53 +217,62 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const startY = margin + 30;
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
-    const rows = [];
 
-    let lastExamNo = "";
-    let lastExamDetails = "";
-    let lastVenue = "";
-    let lastCourse = "";
-
-    document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr, idx) => {
+    document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
+        if (tds.length === 0) return;
         let row = [];
 
-        // Helper to extract multiline invigilator info
         function getInvigilatorText(td) {
             const lines = [];
             td.querySelectorAll("div.info-grid div").forEach((div, i) => {
                 if (i % 2 === 0) {
-                    lines.push(div.innerText.trim() + " "); // label
+                    lines.push(div.innerText.trim() + " ");
                 } else {
-                    lines[lines.length - 1] += div.innerText.trim(); // value
+                    lines[lines.length - 1] += div.innerText.trim();
                 }
             });
             return lines.join("\n");
         }
 
-        if (tds.length === 9) {
-            // first row of exam group
+        const firstCellText = tds[0].innerText.trim();
+
+        const isNewExamRow = !isNaN(firstCellText);
+
+        if (isNewExamRow) {
+            // First row of exam group
             lastExamNo = tds[0].innerText.trim();
             lastExamDetails = tds[1].innerText.trim();
             lastVenue = tds[2].innerText.trim();
             lastCourse = tds[3].innerText.trim();
 
-            row.push(lastExamNo, lastExamDetails, lastVenue, lastCourse);
-            row.push(getInvigilatorText(tds[4])); // invigilator details
-            row.push(tds[5].innerText.trim()); // invigilation status
-            row.push(tds[6].innerText.trim()); // attendance status
-            row.push(tds[7].innerText.trim()); // checkin/out
-        } else if (tds.length === 6) {
-            // continuation row
-            row.push(lastExamNo, lastExamDetails, lastVenue, lastCourse);
-            row.push(getInvigilatorText(tds[0])); // invigilator details
-            row.push(tds[1].innerText.trim());
-            row.push(tds[2].innerText.trim());
-            row.push(tds[3].innerText.trim());
+            row.push(
+                lastExamNo,
+                lastExamDetails,
+                lastVenue,
+                lastCourse,
+                getInvigilatorText(tds[4]),
+                tds[5].innerText.trim(),
+                tds[6].innerText.trim(),
+                tds[7].innerText.trim()
+            );
+        } else {
+            // Continuation row (rowspan row)
+            row.push(
+                lastExamNo,
+                lastExamDetails,
+                lastVenue,
+                lastCourse,
+                getInvigilatorText(tds[0]),
+                tds[1].innerText.trim(),
+                tds[2].innerText.trim(),
+                tds[3].innerText.trim()
+            );
         }
 
         rows.push(row);
     });
+
     
     // Generate PDF table
     doc.autoTable({
