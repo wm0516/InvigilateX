@@ -2026,17 +2026,6 @@ def get_report(exam_id):
     })
 
 
-# -------------------------------
-# Get Valid Invigilators
-# -------------------------------
-@app.route('/get_valid_invigilators')
-@login_required
-def get_valid_invigilators():
-    valid = User.query.filter_by(userLevel=1).all()
-    return jsonify([{"userId": u.userId, "userName": u.userName} for u in valid])
-
-
-
 
 # -------------------------------
 # Calculate All InvigilatorAttendance and InvigilationReport Data
@@ -2071,7 +2060,43 @@ def calculate_invigilation_stats():
 
 
 
+@app.route('/admin/get_session_details/<int:session_id>')
+@login_required
+def get_session_details(session_id):
 
+    session = VenueSession.query.get(session_id)
+    if not session:
+        return jsonify({"error": "Session not found"})
+
+    venue_exam = VenueExam.query.filter_by(venueSessionId=session_id).first()
+    if not venue_exam or not venue_exam.exam or not venue_exam.exam.course:
+        return jsonify({"error": "Course not found"})
+
+    course = venue_exam.exam.course
+
+    attendances = []
+    for vsi in session.invigilators:
+        attendances.append({
+            "invigilatorId": vsi.invigilatorId,
+            "invigilatorName": vsi.invigilator.userName
+        })
+
+    return jsonify({
+        "courseCode": course.courseCodeSectionIntake,
+        "courseName": course.courseName,
+        "start": session.startDateTime.strftime("%d/%b/%Y %H:%M"),
+        "end": session.endDateTime.strftime("%d/%b/%Y %H:%M"),
+        "attendances": attendances
+    })
+
+# -------------------------------
+# Get Valid Invigilators
+# -------------------------------
+@app.route('/admin/get_valid_invigilators')
+@login_required
+def get_valid_invigilators():
+    users = User.query.filter(User.userLevel.in_(["LECTURER", "PO", "LAB_ACC"])).all()
+    return jsonify([{"userId": u.userId, "userName": u.userName} for u in users])
 
 
 # -------------------------------
@@ -2138,37 +2163,34 @@ def admin_manageInvigilationReport():
                 skiprows=0
             )
         elif form_type == 'edit':
-            # Fetch session + invigilator IDs from hidden inputs
             venue_session_id = int(request.form.get('venueSessionId', ''))
-            invigilator_id = int(request.form.get('invigilatorId', ''))
-            
-            vsi = VenueSessionInvigilator.query.filter_by(
-                venueSessionId=venue_session_id,
-                invigilatorId=invigilator_id
-            ).first()
-            
-            if not vsi:
-                flash("Assignment not found.", "error")
-                return redirect(url_for('admin_manageInvigilationReport'))
-            
-            # Example: reassign invigilator
-            new_invigilator_id = int(request.form.get('newInvigilatorId', ''))
-            new_invigilator = User.query.get(new_invigilator_id)
-            if not new_invigilator:
-                flash("New invigilator not found.", "error")
+            session = VenueSession.query.get(venue_session_id)
+            if not session:
+                flash("Session not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
 
-            old_invigilator = vsi.invigilator
-            session_duration_hours = ((vsi.session.endDateTime - vsi.session.startDateTime).total_seconds()) / 3600
+            for vsi in session.invigilators:
+                field_name = f"replace_{vsi.invigilatorId}"
+                new_invigilator_id = request.form.get(field_name)
 
-            # Update cumulative hours
-            if old_invigilator.userId != new_invigilator.userId:
-                old_invigilator.userPendingCumulativeHours = max(0, old_invigilator.userPendingCumulativeHours - session_duration_hours)
-                new_invigilator.userPendingCumulativeHours += session_duration_hours
-                vsi.invigilatorId = new_invigilator.userId
-                db.session.commit()
-            
-            flash("Invigilator updated successfully.", "success")
+                if not new_invigilator_id:
+                    continue
+                new_invigilator_id = int(new_invigilator_id)
+                if new_invigilator_id == vsi.invigilatorId:
+                    continue
+                new_user = User.query.get(new_invigilator_id)
+                if not new_user:
+                    continue
+
+                old_user = vsi.invigilator
+                duration = ((session.endDateTime - session.startDateTime).total_seconds() / 3600)
+                # Adjust cumulative hours
+                old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
+                new_user.userPendingCumulativeHours += duration
+                vsi.invigilatorId = new_invigilator_id
+            db.session.commit()
+
+            flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
 
     return render_template(

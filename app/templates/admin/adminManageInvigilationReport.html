@@ -68,7 +68,7 @@
 {% block edit_section %}
 <form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" class="function-frame">
-        <h4 style="text-align:center;">Edit Invigilation Assignments</h4>
+        <h4 style="text-align:center;">Edit Invigilation Report</h4>
         <div class="profile-frame">
             <div class="form-profile">
                 <label>Select Venue Session</label>
@@ -80,15 +80,22 @@
                             {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }} - Venue [{{ venue }}]
                         </option>
                     {% endfor %}
-                </select><br>
-                <label>Assigned Invigilators</label>
-                <div id="invigilatorList"></div>
+                </select>
+
+                <label>Course Code - Name</label>
+                <input type="text" id="courseInfo" readonly>
+
+                <label>Exam Time</label>
+                <input type="text" id="examTime" readonly>
             </div>
+            <div class="form-profile" id="slotContainer"></div>
         </div>
 
         <input type="hidden" name="form_type" value="edit">
         <div class="button-wrapper">
-            <button type="submit" style="background:#d4edda;color:#155724;">Update Invigilators</button>
+            <button type="submit" style="background:#d4edda;color:#155724;">
+                Update Invigilators
+            </button>
         </div>
     </div>
 </form>
@@ -438,64 +445,64 @@ function formatExamDateTime(dtString) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const reportSelect = document.getElementById("editReport");
+    const sessionSelect = document.getElementById("editSession");
     const courseInfo = document.getElementById("courseInfo");
     const examTime = document.getElementById("examTime");
-    const middleSlots = document.getElementById("middleSlots");
-    const rightSlots = document.getElementById("rightSlots");
+    const slotContainer = document.getElementById("slotContainer");
 
-    async function loadReport(id) {
-        const resp = await fetch(`/get_report/${id}`);
+    async function loadSession(sessionId) {
+        const resp = await fetch(`/admin/get_session_details/${sessionId}`);
         const data = await resp.json();
-        if (data.error) { alert(data.error); return; }
 
-        // ✔ Combined Course field
+        if (data.error) {
+            alert(data.error);
+            return;
+        }
+
         courseInfo.value = `${data.courseCode} - ${data.courseName}`;
-        // ✔ Combined Exam Time
-        examTime.value = `${formatExamDateTime(data.examStart)} → ${formatExamDateTime(data.examEnd)}`;
-        middleSlots.innerHTML = "";
-        rightSlots.innerHTML = "";
+        examTime.value = `${data.start} → ${data.end}`;
 
-        for (let i = 0; i < data.attendances.length; i++) {
-            const att = data.attendances[i];
+        slotContainer.innerHTML = "";
 
-            middleSlots.innerHTML += `
-                <div>
-                    <label>Assigned Invigilator [<b>Venue</b>: ${att.venue}]</label>
-                    <input type="text" value="${att.invigilatorName}" readonly>
-                </div>
-                ${i < data.attendances.length - 1 ? '<br>' : ''}
-            `;
+        for (let att of data.attendances) {
+            const wrapper = document.createElement("div");
+            wrapper.style.marginBottom = "15px";
 
-            const slotWrapper = document.createElement("div");
-            slotWrapper.innerHTML = `
-                <label>New Invigilator [<b>Gender</b>: ${att.gender}]</label>
-                <select name="slot_${att.attendanceId}" required>
-                    <option disabled>Loading...</option>
+            wrapper.innerHTML = `
+                <label>Current Invigilator</label>
+                <input type="text" value="${att.invigilatorName}" readonly>
+
+                <label>Replace With</label>
+                <select name="replace_${att.invigilatorId}" required>
+                    <option disabled selected>Loading...</option>
                 </select>
             `;
 
-            rightSlots.appendChild(slotWrapper);
-            if (i < data.attendances.length - 1) {
-                rightSlots.appendChild(document.createElement("br"));
-            }
+            slotContainer.appendChild(wrapper);
 
-            const dropdown = slotWrapper.querySelector("select");
-            fetch(`/get_valid_invigilators`)
-                .then(res => res.json())
-                .then(invigilators => {
-                    dropdown.innerHTML = "";
-                    for (let u of invigilators) {
-                        dropdown.innerHTML += `
-                            <option value="${u.userId}" ${u.userId == att.invigilatorId ? "selected" : ""}>
-                                ${u.userName}
-                            </option>`;
-                    }
-                });
+            const dropdown = wrapper.querySelector("select");
+
+            const invResp = await fetch("/admin/get_valid_invigilators");
+            const invigilators = await invResp.json();
+
+            dropdown.innerHTML = "";
+
+            invigilators.forEach(u => {
+                dropdown.innerHTML += `
+                    <option value="${u.userId}" 
+                        ${u.userId == att.invigilatorId ? "selected" : ""}>
+                        ${u.userName}
+                    </option>
+                `;
+            });
         }
     }
-    reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
+
+    sessionSelect.addEventListener("change", () => {
+        loadSession(sessionSelect.value);
+    });
 });
+
 
 function renumberVisibleRows() {
     const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
