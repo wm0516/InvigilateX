@@ -1971,6 +1971,7 @@ def process_attendance_row(row):
 
         if updated_count > 0:
             db.session.commit()
+            record_action("REPORT", "UPLOAD", updated_count, user)
             return True, f"Attendance updated for {user.userName} ({updated_count} record(s))"
         else:
             return False, f"No attendance sessions updated for {user.userName} at {dt_obj}"
@@ -2110,7 +2111,9 @@ def get_valid_invigilators():
 @app.route('/admin/manageInvigilationReport', methods=['GET', 'POST'])
 @login_required
 def admin_manageInvigilationReport():
-    # Fetch all invigilator assignments with session, venue, exam, and course info
+    user_id = session.get('user_id')
+
+    # Fetch all invigilator assignments
     vsi_entries = (
         VenueSessionInvigilator.query
         .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
@@ -2119,83 +2122,91 @@ def admin_manageInvigilationReport():
         .join(Exam, VenueExam.examId == Exam.examId)
         .join(Course, Exam.examId == Course.courseExamId)
         .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
-        .order_by(VenueSession.startDateTime, Venue.venueNumber, Course.courseCodeSectionIntake)
-        .all()
+        .order_by(
+            VenueSession.startDateTime,
+            Venue.venueNumber,
+            Course.courseCodeSectionIntake
+        ).all()
     )
 
-    grouped_att = defaultdict(lambda: {"courses": [],"invigilators": []})
+    # Group by venue + datetime
+    grouped_att = defaultdict(lambda: {"courses": [], "invigilators": []})
     for vsi in vsi_entries:
-        session = vsi.session
-        if not session:
+        venue_session = vsi.session
+        if not venue_session:
             continue
 
         key = (
-            session.venue.venueNumber,
-            session.startDateTime,
-            session.endDateTime
+            venue_session.venue.venueNumber,
+            venue_session.startDateTime,
+            venue_session.endDateTime
         )
 
-        # add invigilator (avoid duplicates)
+        # Add invigilator
         grouped_att[key]["invigilators"].append(vsi)
-
-        # add courses (avoid duplicates)
-        for ve in session.exams:
+        # Add courses (avoid duplicates)
+        for ve in venue_session.exams:
             if ve.exam and ve.exam.course:
-                course = {
+                course_data = {
                     "code": ve.exam.course.courseCodeSectionIntake,
-                    "name": ve.exam.course.courseName
+                    "name": ve.exam.course.course.courseName
                 }
-                if course not in grouped_att[key]["courses"]:
-                    grouped_att[key]["courses"].append(course)
 
-    # Stats (reuse your existing function)
+                if course_data not in grouped_att[key]["courses"]:
+                    grouped_att[key]["courses"].append(course_data)
+
     stats = calculate_invigilation_stats()
-
-    # Attach grouping key for Jinja2 rowspan
     for vsi in vsi_entries:
         vsi.group_key = vsi.session.venueSessionId if vsi.session else None
 
-    # Handle POST (upload or edit)
     if request.method == 'POST':
         form_type = request.form.get('form_type')
+
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
                 expected_cols=['card iud', 'name', 'date', 'time', 'in/out'],
-                process_row_fn=process_attendance_row,
+                process_row_fn=(process_attendance_row, user_id),
                 redirect_endpoint='admin_manageInvigilationReport',
                 usecols="A:E",
                 skiprows=0
             )
+        
         elif form_type == 'edit':
-            venue_session_id = int(request.form.get('venueSessionId', ''))
-            session = VenueSession.query.get(venue_session_id)
-            if not session:
+            venue_session_id = request.form.get('venueSessionId')
+
+            if not venue_session_id:
+                flash("Invalid session ID.", "error")
+                return redirect(url_for('admin_manageInvigilationReport'))
+
+            venue_session = VenueSession.query.get(int(venue_session_id))
+            if not venue_session:
                 flash("Session not found.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
 
-            for vsi in session.invigilators:
+            for vsi in venue_session.invigilators:
                 field_name = f"replace_{vsi.invigilatorId}"
                 new_invigilator_id = request.form.get(field_name)
-
                 if not new_invigilator_id:
                     continue
+
                 new_invigilator_id = int(new_invigilator_id)
                 if new_invigilator_id == vsi.invigilatorId:
                     continue
+
                 new_user = User.query.get(new_invigilator_id)
                 if not new_user:
                     continue
 
                 old_user = vsi.invigilator
-                duration = ((session.endDateTime - session.startDateTime).total_seconds() / 3600)
+                duration = ((venue_session.endDateTime - venue_session.startDateTime).total_seconds() / 3600)
                 # Adjust cumulative hours
                 old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
                 new_user.userPendingCumulativeHours += duration
                 vsi.invigilatorId = new_invigilator_id
                 vsi.invigilationStatus = False
             db.session.commit()
-
+            record_action("REPORT", "EDIT", new_invigilator_id, user_id)
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
 
@@ -2206,7 +2217,6 @@ def admin_manageInvigilationReport():
         grouped_att=grouped_att,
         **stats
     )
-
 
 
 
