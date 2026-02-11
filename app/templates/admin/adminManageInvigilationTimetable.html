@@ -69,13 +69,13 @@
                         {% set card_ns = namespace(total_students=0) %}
                         <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
                             <h3>Venue: {{ venue_name }} | Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}</h3>
-                            <span>---------------</span>
+                            <span> ------------------------------ </span><br>
                             {% for item in items %}
                                 {% set exam = item.exam %}
                                 <span>{{ exam.course_code }}/{{ exam.section }} –{{ exam.course_name }} | Students: {{ exam.students }}</span><br>
                                 {% set card_ns.total_students = card_ns.total_students + exam.students %}
                             {% endfor %}<br>
-                            <span>---------------</span>
+                            <span> ------------------------------ </span><br>
                             <span>Total Students: {{ card_ns.total_students }}</span>
                         </div>
                     {% endfor %}
