@@ -72,7 +72,7 @@ def user_invigilationReport():
     )
 
     # Filter based on user level
-    if user.userLevel in ["LECTURER", "PO", "LAB_ACC"]:
+    if user.userLevel in ["LECTURER", "PO", "LAB_ASS"]:
         # Only show this user's invigilations
         vsi_query = vsi_query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
     elif user.userLevel in ["DEAN", "HOP", "HOS"]:
@@ -172,6 +172,7 @@ def get_venue_calendar_data(userId):
             "start_time": session.startDateTime,
             "end_time": session.endDateTime,
             "students": ve.studentCount,
+            "total_invigilators": len(session.invigilators),
             "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
         })
 
