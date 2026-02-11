@@ -153,6 +153,7 @@
                                 <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>
                                 <div>Contact</div><div><strong>: {{ att.invigilator.userContact if att.invigilator.userContact else "None" }}</strong></div>
                             </div>
+                        </td>
                         <td>
                             {% if att.invigilationStatus %}
                                 <span class="status frame-completed invigilation-status">ACCEPTED</span>
