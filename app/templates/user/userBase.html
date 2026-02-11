@@ -35,7 +35,7 @@
                     <span>Merge Timetable</span>
                 </a>
                 {% endif %}
-                {% if user_level in ["DEAN", "HOS", "HOP", "PO", "LAB_ASS"]%}
+                {% if user_level in ["DEAN", "HOS", "HOP", "PO", "LAB_ASST"]%}
                 <a href="{{ url_for('user_viewStaff') }}" class="tab-link {% if active_tab  == 'user_viewStafftab' %}active{% endif %}">
                     <i class="fas fa-user-tie"></i>
                     <span>View Staff</span>

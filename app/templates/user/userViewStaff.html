@@ -86,7 +86,7 @@
                 <td>{{ row.userLevel }}</td>
                 <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">N/A</span>' | safe }}</td>
                 <td>
-                    {% if row.userLevel in ["LECTURER", "PO", "LAB_ASS"] %}
+                    {% if row.userLevel in ["LECTURER", "PO", "LAB_ASST"] %}
                         <div class="info-grid">
                             <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
                             <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>
@@ -234,8 +234,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const charts = [
         {
             id: 'staffPieChart',
-            labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer', 'PO', 'LAB_ASS'],
-            data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}, {{ total_po }}, {{ total_lab_ass }}],
+            labels: ['Admin', 'HOP', 'HOS', 'Dean', 'Lecturer', 'PO', 'LAB_ASST'],
+            data: [{{ total_admin }}, {{ total_hop }}, {{ total_hos }}, {{ total_dean }}, {{ total_lecturer }}, {{ total_po }}, {{ total_lab_asst }}],
             label: 'Staff Distribution'
         },
         {

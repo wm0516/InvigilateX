@@ -108,7 +108,7 @@
 </div>
 {% endif %}
 
-{% if user_level in ["LECTURER", "PO", "LAB_ASS"] %}
+{% if user_level in ["LECTURER", "PO", "LAB_ASST"] %}
 <div class="dashboard-row" style="grid-template-columns: repeat(3, 1fr);">
     <div class="dashboard-frame">
         <h3>Completed Invigilation Hours</h3>
@@ -264,7 +264,7 @@
 </div>
 {% endif %}
 
-{% if user_level in ["LECTURER", "PO", "LAB_ASS"] and not waiting and not confirm and not open and not reject %}
+{% if user_level in ["LECTURER", "PO", "LAB_ASST"] and not waiting and not confirm and not open and not reject %}
     <h2>No Invigilation Slot</h2>
 {% endif %}
 {% endif %}

@@ -72,7 +72,7 @@ def user_invigilationReport():
     )
 
     # Filter based on user level
-    if user.userLevel in ["LECTURER", "PO", "LAB_ASS"]:
+    if user.userLevel in ["LECTURER", "PO", "LAB_ASST"]:
         # Only show this user's invigilations
         vsi_query = vsi_query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
     elif user.userLevel in ["DEAN", "HOP", "HOS"]:
@@ -137,7 +137,7 @@ def get_venue_calendar_data(userId):
     user = User.query.get_or_404(userId)
 
     # Case 1: Lecturer / PO / Lab Assistant
-    if user.userLevel in ["LECTURER", "PO", "LAB_ASS"]:
+    if user.userLevel in ["LECTURER", "PO", "LAB_ASST"]:
         query = (
             query
             .join(VenueSessionInvigilator,
@@ -319,7 +319,7 @@ def user_viewStaff():
     total_dean = User.query.filter_by(userLevel="DEAN").count()
     total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
     total_po = User.query.filter_by(userLevel="PO").count()
-    total_lab_ass = User.query.filter_by(userLevel="LAB_ASS").count()
+    total_lab_asst = User.query.filter_by(userLevel="LAB_ASST").count()
     total_male_staff = User.query.filter_by(userGender=True).count()
     total_female_staff = User.query.filter_by(userGender=False).count()
     total_activated = User.query.filter_by(userStatus=1).count()
@@ -327,7 +327,7 @@ def user_viewStaff():
     total_deleted = User.query.filter_by(userStatus=2).count()
 
 
-    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,total_po=total_po, total_lab_ass=total_lab_ass,
+    return render_template('user/userViewStaff.html', active_tab='user_viewStafftab',lecturers=lecturers,total_admin=total_admin,total_hop=total_hop,total_hos=total_hos,total_dean=total_dean,total_po=total_po, total_lab_asst=total_lab_asst,
         total_lecturer=total_lecturer,total_male_staff=total_male_staff,total_female_staff=total_female_staff,total_activated=total_activated,total_deactivate=total_deactivate,total_deleted=total_deleted)
 
 # -------------------------------

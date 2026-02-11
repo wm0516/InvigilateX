@@ -1161,7 +1161,7 @@ def process_staff_row(row):
     contact_cleaned = clean_contact(row['contact'])
     ROLE_MAP = {
         "PROGRAM OFFICER": "PO",
-        "LAB ASSISSTANT": "LAB_ASS",
+        "LAB ASSISSTANT": "LAB_ASST",
         "LECTURER": "LECTURER",
         "DEAN": "DEAN",
         "HOS": "HOS",
@@ -1228,7 +1228,7 @@ def admin_manageStaff():
     total_dean = User.query.filter_by(userLevel="DEAN").count()
     total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
     total_po = User.query.filter_by(userLevel="PO").count()
-    total_lab_ass = User.query.filter_by(userLevel="LAB_ASS").count()
+    total_lab_asst = User.query.filter_by(userLevel="LAB_ASST").count()
     total_male_staff = User.query.filter_by(userGender=True).count()
     total_female_staff = User.query.filter_by(userGender=False).count()
     total_activated = User.query.filter_by(userStatus=1).count()
@@ -1350,7 +1350,7 @@ def admin_manageStaff():
         total_dean=total_dean,
         total_lecturer=total_lecturer,
         total_po=total_po,
-        total_lab_ass=total_lab_ass,
+        total_lab_asst=total_lab_asst,
         total_male_staff=total_male_staff,
         total_female_staff=total_female_staff,
         total_activated=total_activated,
@@ -2095,7 +2095,12 @@ def get_session_details(session_id):
 @app.route('/admin/get_valid_invigilators')
 @login_required
 def get_valid_invigilators():
-    users = User.query.filter(User.userLevel.in_(["LECTURER", "PO", "LAB_ACC"])).all()
+    users = (User.query
+        .filter(User.userLevel.in_(["LECTURER", "PO", "LAB_ASS"]))
+        .filter_by(userStatus=1)
+        .all()
+    )
+
     return jsonify([{"userId": u.userId, "userName": u.userName} for u in users])
 
 

@@ -166,7 +166,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, {align: "right"});
         }
     });
-    if (["LECTURER", "PO", "LAB_ASS"].includes(userLevel)) {
+    if (["LECTURER", "PO", "LAB_ASST"].includes(userLevel)) {
         doc.save(`${userName}'s_Invigilation_Report.pdf`);
     } else {
         doc.save(`${userDepartment}_Invigilation_Report.pdf`);
