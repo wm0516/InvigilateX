@@ -131,7 +131,7 @@
                 {% for att in data.invigilators %}
                     <tr>
                         {% if loop.first %}
-                            <td rowspan="{{ num_invigilators }}">{{ ns.rowno }}</td>
+                            <td rowspan="{{ num_invigilators }}" class="row-number">{{ ns.rowno }}</td>
                             <td rowspan="{{ num_invigilators }}">
                                 <div class="info-grid">
                                     <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
@@ -525,14 +525,85 @@ document.addEventListener("DOMContentLoaded", () => {
     reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
 });
 
-// ----------------------
-// Renumber visible rows
-// ----------------------
-function renumberVisibleRows() {
+function initIntakeSwipeInvigilation({
+    tableId,
+    intakeAttribute = "data-intake",
+    noResultsId,
+    dashboardUpdater
+}) {
+    const table = document.getElementById(tableId);
+    const rows = table.querySelectorAll("tbody tr");
+    const noResults = document.getElementById(noResultsId);
+
+    // Get unique intakes
+    const intakes = [...new Set(
+        [...rows].map(r => r.getAttribute(intakeAttribute))
+    )];
+
+    // Create swipe bar
+    const swipeBar = document.createElement("div");
+    swipeBar.className = "intake-swipe-bar";
+    swipeBar.innerHTML = `
+        <button class="intake-btn active" data-intake="ALL">ALL</button>
+        ${intakes.map(i =>
+            `<button class="intake-btn" data-intake="${i}">${i}</button>`
+        ).join("")}
+    `;
+
+    table.parentNode.insertBefore(swipeBar, table);
+
+    function filterByIntake(selectedIntake) {
+        const sessionGroups = {};
+
+        rows.forEach(row => {
+            const session = row.getAttribute("data-session");
+            if (!sessionGroups[session]) sessionGroups[session] = [];
+            sessionGroups[session].push(row);
+        });
+
+        let visibleCount = 0;
+
+        Object.values(sessionGroups).forEach(groupRows => {
+            const groupIntake = groupRows[0].getAttribute(intakeAttribute);
+
+            const show =
+                selectedIntake === "ALL" ||
+                groupIntake === selectedIntake;
+
+            groupRows.forEach(r => {
+                r.style.display = show ? "" : "none";
+            });
+
+            if (show) visibleCount++;
+        });
+
+        noResults.style.display = visibleCount === 0 ? "block" : "none";
+
+        renumberVisibleRowsInvigilation();
+        if (dashboardUpdater) dashboardUpdater();
+    }
+
+    swipeBar.addEventListener("click", e => {
+        if (!e.target.classList.contains("intake-btn")) return;
+
+        document.querySelectorAll(".intake-btn")
+            .forEach(b => b.classList.remove("active"));
+
+        e.target.classList.add("active");
+
+        filterByIntake(e.target.dataset.intake);
+    });
+
+    filterByIntake("ALL");
+}
+
+
+function renumberVisibleRowsInvigilation() {
     const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
     let index = 1;
+
     rows.forEach(row => {
-        if (row.offsetParent !== null) {            
+        if (row.style.display !== "none") {
             const cell = row.querySelector("td.row-number");
             if (cell) {
                 cell.textContent = index++;
@@ -541,98 +612,46 @@ function renumberVisibleRows() {
     });
 }
 
-// ----------------------
-// Update dashboard stats
-// ----------------------
+
 function updateInvigilationDashboardFromTable() {
     const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
+
     const visibleRows = [...rows].filter(r => r.style.display !== "none");
 
     let total = 0;
-    let activeReport = 0;
-    let checkInLate = 0;
-    let checkOutEarly = 0;
+    let late = 0;
+    let early = 0;
+    let pending = 0;
 
     visibleRows.forEach(r => {
         total++;
 
-        // Count active invigilation
-        const invStatus = r.querySelector(".inv-status");
-        if (invStatus && invStatus.textContent.trim() === "ACTIVE") {
-            activeReport++;
-        }
+        const attendanceStatus = r.children[6]?.innerText.trim();
 
-        // Check check-in / check-out status
-        const checkIn = r.querySelector(".check-in");
-        const checkOut = r.querySelector(".check-out");
-        if (checkIn && checkIn.classList.contains("late")) checkInLate++;
-        if (checkOut && checkOut.classList.contains("early")) checkOutEarly++;
+        if (attendanceStatus === "CHECK IN LATE") late++;
+        if (attendanceStatus === "CHECK OUT EARLY") early++;
+        if (attendanceStatus === "PENDING") pending++;
     });
 
-    document.getElementById("dashTotalInvigilation").textContent = total;
-    document.getElementById("dashActiveInvigilation").textContent = activeReport;
-    document.getElementById("dashCheckInLate").textContent = checkInLate;
-    document.getElementById("dashCheckOutEarly").textContent = checkOutEarly;
+    document.querySelector(".dashboard-frame:nth-child(1) .dashboard-text").textContent = pending;
+    document.querySelector(".dashboard-frame:nth-child(3) .dashboard-text").textContent = late;
+    document.querySelector(".dashboard-frame:nth-child(4) .dashboard-text").textContent = early;
 }
 
-// ----------------------
-// Adjust rowspan dynamically for visible rows
-// ----------------------
-function adjustRowspanAfterFilter() {
-    const tbody = document.querySelector("#manageInvigilationReport tbody");
-    const rows = Array.from(tbody.querySelectorAll("tr"));
 
-    let currentGroup = null;
-    let visibleCount = 0;
-
-    rows.forEach(row => {
-        const firstCell = row.querySelector("td[rowspan]");
-
-        if (firstCell) {
-            // Finish previous group
-            if (currentGroup) {
-                currentGroup.rowSpan = visibleCount;
-            }
-
-            // Start new group
-            currentGroup = firstCell;
-            visibleCount = row.style.display !== "none" ? 1 : 0;
-        } else {
-            if (row.style.display !== "none") visibleCount++;
-        }
-    });
-
-    // Apply rowspan for last group
-    if (currentGroup) currentGroup.rowSpan = visibleCount || 1;
-}
-
-// ----------------------
-// Initialize filtering/swiping by intake
-// ----------------------
 document.addEventListener("DOMContentLoaded", () => {
-    initIntakeSwipe({
+
+    initIntakeSwipeInvigilation({
         tableId: "manageInvigilationReport",
-        intakeCol: 3,
-        noResultsId: "noResultsInvigilation",
+        intakeAttribute: "data-intake",
+        noResultsId: "noResults",
         dashboardUpdater: updateInvigilationDashboardFromTable
     });
 
-    renumberVisibleRows();
-    updateInvigilationDashboardFromTable();
-    adjustRowspanAfterFilter();
-});
-
-// Also adjust rowspan after filtering in real-time
-document.getElementById("searchInput")?.addEventListener("input", () => {
-    adjustRowspanAfterFilter();
-    renumberVisibleRows();
+    renumberVisibleRowsInvigilation();
     updateInvigilationDashboardFromTable();
 });
 
-window.addEventListener("load", () => {
-    renumberVisibleRows();
-    updateInvigilationDashboardFromTable();
-    adjustRowspanAfterFilter();
-});
+
 </script>
 {% endblock %}
