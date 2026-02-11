@@ -34,10 +34,6 @@
             <span style="width: 20px; height: 20px; background-color: #b5deff; display: inline-block; border-radius: 4px;"></span>
             <span>Upcoming Exam</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <span style="width: 20px; height: 20px; background-color: #e3bded; display: inline-block; border-radius: 4px;"></span>
-            <span>Overnight Exam (Starts Today, Ends Tomorrow)</span>
-        </div>
     </div>
     
     <div class="calendar-container">
@@ -53,7 +49,7 @@
 
             {% for date, day_exams in exams_by_date.items() %}
                 <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
-                    <h2 data-venue="{{ venue }}">{{ date }} | Venue: {{ venue }} | Total Exams: {{ day_exams|length }}</h2>
+                    <h2 data-venue="{{ venue }}">{{ date }} | Total Exams: {{ day_exams|length }}</h2>
                     <div class="exam-grid">
                         {% set grouped = {} %}
                         {% for exam in day_exams %}
@@ -73,9 +69,6 @@
                                 <h3>Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}<br>Venue: {{ venue_name }}<br></h3>
                                 {% for exam in exams %}
                                     <strong>{{ exam.course_code }}/{{ exam.section }} – {{ exam.course_name }} | Students: {{ exam.students }}</strong><br>
-                                    {% if exam.is_overnight %}
-                                        <span style="color: #b400b4;">Overnight Exam</span><br>
-                                    {% endif %}
                                     {% set card_ns.total_students = card_ns.total_students + exam.students %}
                                 {% endfor %}
                                 <br><strong>Total Students: {{ card_ns.total_students }}</strong>
