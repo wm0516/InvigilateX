@@ -1918,6 +1918,7 @@ def get_venue_calendar_data():
             "start_time": session.startDateTime,
             "end_time": session.endDateTime,
             "students": ve.studentCount,
+            "total_invigilators": len(session.invigilators),
             "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
         })
 

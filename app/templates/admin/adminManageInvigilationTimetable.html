@@ -65,18 +65,20 @@
                     {% endfor %}
 
                     {% for key, items in grouped.items() %}
+                        {% set first_exam = items[0].exam %}
                         {% set start_time, end_time, venue_name = key %}
                         {% set card_ns = namespace(total_students=0) %}
                         <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
                             <h3>Venue: {{ venue_name }} | Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}</h3>
-                            <span> ------------------------------ </span><br>
+                            <span> ------------------------------ </span>
                             {% for item in items %}
                                 {% set exam = item.exam %}
-                                <span>{{ exam.course_code }}/{{ exam.section }} –{{ exam.course_name }} | Students: {{ exam.students }}</span><br>
+                                <br><span>{{ exam.course_code }} – {{ exam.course_name }} | Students: {{ exam.students }}</span>
                                 {% set card_ns.total_students = card_ns.total_students + exam.students %}
-                            {% endfor %}<br>
-                            <span> ------------------------------ </span><br>
-                            <span>Total Students: {{ card_ns.total_students }}</span>
+                            {% endfor %}
+                            <br><span> ------------------------------ </span><br>
+                            <span>Total Students: {{ card_ns.total_students }}</span><br>
+                            <span>Total Invigilators Assigned: {{ first_exam.total_invigilators }}</span>
                         </div>
                     {% endfor %}
                 </div>
