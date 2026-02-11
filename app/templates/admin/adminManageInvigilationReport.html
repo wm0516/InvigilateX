@@ -179,8 +179,8 @@
                         </td>
                         <td>
                             <div class="info-grid">
-                                <div>CheckIn</div><div><strong class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                                <div>CheckOut</div><div><strong class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                                <div>CheckIn</div><div><strong class="checkin-text">: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                <div>CheckOut</div><div><strong class="checkout-text">: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
                             </div>
                         </td>
                         <td>
