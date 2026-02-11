@@ -148,14 +148,14 @@
 
                         <td>
                             <div class="info-grid">
-                                <div>StaffID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                <div>Staff ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
                                 <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
                                 <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>
                                 <div>Contact</div><div><strong>: {{ att.invigilator.userContact if att.invigilator.userContact else "None" }}</strong></div>
                             </div>
                         <td>
                             {% if att.invigilationStatus %}
-                                <span class="status frame-completed">ACCEPTED</span>
+                                <span class="status frame-completed invigilation-status">ACCEPTED</span>
                             {% elif not att.invigilationStatus and att.rejectReason %}
                                 <span class="status frame-expired">REJECTED</span>
                                 <div style="max-width: 200px;">
@@ -174,16 +174,18 @@
                                 "CHECK OUT EARLY": "frame-expired",
                                 "EXPIRED": "frame-expired"
                             } %}
-                            <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
+                            <span class="status {{ remark_classes.get(att.remark, '') }} attendance-remark">{{ att.remark }}</span>
                         </td>
                         <td>
                             <div class="info-grid">
-                                <div>CheckIn</div><div><strong>: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                                <div>CheckOut</div><div><strong>: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                                <div>CheckIn</div><div><strong class="checkin-text">{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                <div>CheckOut</div><div><strong class="checkout-text">{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
                             </div>
                         </td>
                         <td>
-                            <button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button>
+                            <button type="button" class="edit-btn" data-session="{{ att.venueSessionId }}" data-invigilator="{{ att.invigilatorId }}">
+                                <i class="fa fa-edit"></i>
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -309,124 +311,78 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Main function to handle row editing
     function makeRowEditable(btn) {
-        const tr = btn.closest("tr");
-        const attendanceId = btn.dataset.id;
-        const tbody = tr.closest("tbody");
 
-        const checkInSpan = tr.querySelector(`.${checkinClass}`);
-        const checkOutSpan = tr.querySelector(`.${checkoutClass}`);
-        const statusSpan = tr.querySelector(`.invigilation-status`);
-        
+        const tr = btn.closest("tr");
+        const venueSessionId = btn.dataset.session;
+        const invigilatorId = btn.dataset.invigilator;
+        const checkInSpan = tr.querySelector(".checkin-text");
+        const checkOutSpan = tr.querySelector(".checkout-text");
+        const statusSpan = tr.querySelector(".invigilation-status");
+        const remarkSpan = tr.querySelector(".attendance-remark");
         const originalCheckIn = checkInSpan.textContent.trim();
         const originalCheckOut = checkOutSpan.textContent.trim();
         const originalStatus = statusSpan.textContent.trim();
-        const originalStatusBoolean = originalStatus === "ACCEPTED";
+        const originalRemark = remarkSpan.textContent.trim();
 
         if (tr.classList.contains("editing")) return;
         tr.classList.add("editing");
 
-        const checkInValue = toLocalInput(originalCheckIn);
-        const checkOutValue = toLocalInput(originalCheckOut);
-        
-        checkInSpan.innerHTML = `<input type="datetime-local" step="1" class="checkin-input" value="${checkInValue}" style="width: 180px;">`;
-        checkOutSpan.innerHTML = `<input type="datetime-local" step="1" class="checkout-input" value="${checkOutValue}" style="width: 180px;">`;
-        
-        // Create dropdown for status
+        function toLocalInput(dateText) {
+            if (!dateText || dateText === "None") return "";
+            const d = new Date(dateText.replace(" ", "T"));
+            return d.toISOString().slice(0, 19);
+        }
+
+        checkInSpan.innerHTML = `<input type="datetime-local" step="1" class="checkin-input" value="${toLocalInput(originalCheckIn)}">`;
+        checkOutSpan.innerHTML = `<input type="datetime-local" step="1" class="checkout-input" value="${toLocalInput(originalCheckOut)}">`;
+
         statusSpan.innerHTML = `
-            <select class="status-select" style="width: 120px;">
-                <option value="true" ${originalStatusBoolean ? 'selected' : ''}>ACCEPTED</option>
-                <option value="false" ${!originalStatusBoolean ? 'selected' : ''}>PENDING</option>
+            <select class="status-select">
+                <option value="true" ${originalStatus === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
+                <option value="false" ${originalStatus === "PENDING" ? "selected" : ""}>PENDING</option>
             </select>
         `;
 
-        const actionTd = btn.closest("td");
-        actionTd.innerHTML = `
-            <div class="action-buttons">
-                <button type="button" class="save-btn" title="Save"><i class="fa fa-save"></i></button>
-                <button type="button" class="cancel-btn" title="Cancel"><i class="fa fa-times"></i></button>
-            </div>
+        remarkSpan.innerHTML = `
+            <select class="remark-select">
+                <option>PENDING</option>
+                <option>CHECK IN</option>
+                <option>CHECK IN LATE</option>
+                <option>CHECK OUT EARLY</option>
+                <option>COMPLETED</option>
+                <option>EXPIRED</option>
+            </select>
         `;
 
-        const saveBtn = actionTd.querySelector(".save-btn");
-        const cancelBtn = actionTd.querySelector(".cancel-btn");
+        remarkSpan.querySelector("select").value = originalRemark;
+        const actionTd = btn.closest("td");
 
-        // Save button
-        saveBtn.addEventListener("click", async () => {
+        actionTd.innerHTML = `
+            <button class="save-btn"><i class="fa fa-save"></i></button>
+            <button class="cancel-btn"><i class="fa fa-times"></i></button>
+        `;
+
+        actionTd.querySelector(".save-btn").addEventListener("click", async () => {
             const newCheckIn = tr.querySelector(".checkin-input").value;
             const newCheckOut = tr.querySelector(".checkout-input").value;
             const newStatus = tr.querySelector(".status-select").value === "true";
-            
-            try {
-                const response = await fetch("/admin/updateAttendanceTime", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        venueSessionId: att.venueSessionId,
-                        invigilatorId: att.invigilatorId,
-                        check_in: newCheckIn,
-                        check_out: newCheckOut,
-                        invigilation_status: newStatus
-                    })
-                });
+            const newRemark = tr.querySelector(".remark-select").value;
 
-                const result = await response.json();
-                if (result.success) {
-                    alert(result.message);
+            const response = await fetch("/admin/updateAttendanceTime", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({venueSessionId, invigilatorId, check_in: newCheckIn, check_out: newCheckOut, invigilation_status: newStatus, remark: newRemark})
+            });
 
-                    // Restore Check-in/out text
-                    checkInSpan.textContent = result.check_in;
-                    checkOutSpan.textContent = result.check_out;
-
-                    // Update attendance remark
-                    tr.querySelector(".status").textContent = result.remark;
-
-                    // Update invigilation status
-                    const statusClass = result.invigilation_status ? "frame-completed" : "frame-pending";
-                    const statusText = result.invigilation_status ? "ACCEPTED" : "PENDING";
-
-                    statusSpan.className = `status ${statusClass} invigilation-status`;
-                    statusSpan.textContent = statusText;
-
-                    // Remove total time display (regenerated on refresh)
-                    const totalDiv = tr.querySelector("div[style*='color: green']");
-                    if (totalDiv) totalDiv.remove();
-
-                    // Restore Edit button
-                    actionTd.innerHTML = `
-                        <button type="button" class="edit-btn" data-id="${attendanceId}">
-                            <i class="fa fa-edit"></i>
-                        </button>
-                    `;
-                    attachEditListener(actionTd.querySelector(".edit-btn"));
-
-                    tr.classList.remove("editing");
-                } else {
-                    alert("Failed: " + result.message);
-                }
-            } catch (err) {
-                console.error(err);
-                alert("An error occurred while updating attendance.");
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                alert(result.message);
             }
         });
-
-        // Cancel button
-        cancelBtn.addEventListener("click", () => {
-            checkInSpan.textContent = originalCheckIn;
-            checkOutSpan.textContent = originalCheckOut;
-            statusSpan.textContent = originalStatus;
-
-            const statusClass = originalStatusBoolean ? "frame-completed" : "frame-pending";
-            statusSpan.className = `status ${statusClass} invigilation-status`;
-
-            // Restore Edit button
-            actionTd.innerHTML = `
-                <button type="button" class="edit-btn" data-id="${attendanceId}">
-                    <i class="fa fa-edit"></i>
-                </button>
-            `;
-            attachEditListener(actionTd.querySelector(".edit-btn"));
-
-            tr.classList.remove("editing");
+        actionTd.querySelector(".cancel-btn").addEventListener("click", () => {
+            location.reload();
         });
     }
 
