@@ -2187,13 +2187,7 @@ def admin_manageInvigilationReport():
         .all()
     )
 
-    grouped_att = defaultdict(lambda: {
-        "courses": [],
-        "invigilators": [],
-        "intake": None,
-        "_course_codes": set()   # internal helper set
-    })
-
+    grouped_att = defaultdict(lambda: {"courses": [],"invigilators": []})
     for vsi in vsi_entries:
         session = vsi.session
         if not session:
@@ -2205,25 +2199,18 @@ def admin_manageInvigilationReport():
             session.endDateTime
         )
 
+        # add invigilator (avoid duplicates)
         grouped_att[key]["invigilators"].append(vsi)
 
+        # add courses (avoid duplicates)
         for ve in session.exams:
             if ve.exam and ve.exam.course:
-                course_obj = ve.exam.course
-                course_code = course_obj.courseCodeSectionIntake
-
-                # Use set to prevent duplicates
-                if course_code not in grouped_att[key]["_course_codes"]:
-                    grouped_att[key]["_course_codes"].add(course_code)
-
-                    grouped_att[key]["courses"].append({
-                        "code": course_code,
-                        "name": course_obj.courseName
-                    })
-
-                # Set intake once
-                if grouped_att[key]["intake"] is None:
-                    grouped_att[key]["intake"] = course_code.split("-")[-1]
+                course = {
+                    "code": ve.exam.course.courseCodeSectionIntake,
+                    "name": ve.exam.course.courseName
+                }
+                if course not in grouped_att[key]["courses"]:
+                    grouped_att[key]["courses"].append(course)
 
     # Stats (reuse your existing function)
     stats = calculate_invigilation_stats()
@@ -2277,10 +2264,6 @@ def admin_manageInvigilationReport():
             
             flash("Invigilator updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
-
-    # Remove internal helper sets
-    for data in grouped_att.values():
-        data.pop("_course_codes", None)
 
     return render_template(
         'admin/adminManageInvigilationReport.html',

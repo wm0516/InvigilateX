@@ -131,7 +131,7 @@
                 {% for att in data.invigilators %}
                     <tr>
                         {% if loop.first %}
-                            <td rowspan="{{ num_invigilators }}" class="row-number">{{ ns.rowno }}</td>
+                            <td rowspan="{{ num_invigilators }}">{{ ns.rowno }}</td>
                             <td rowspan="{{ num_invigilators }}">
                                 <div class="info-grid">
                                     <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
@@ -146,7 +146,13 @@
                             </td>
                         {% endif %}
 
-                        <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
+                        <td>
+                            <div class="info-grid">
+                                <div>StaffID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>
+                                <div>Contact</div><div><strong>: {{ att.invigilator.userContact if att.invigilator.userContact else "None" }}</strong></div>
+                            </div>
                         <td>
                             {% if att.invigilationStatus %}
                                 <span class="status frame-completed">ACCEPTED</span>
@@ -525,85 +531,11 @@ document.addEventListener("DOMContentLoaded", () => {
     reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
 });
 
-function initIntakeSwipeInvigilation({
-    tableId,
-    intakeAttribute = "data-intake",
-    noResultsId,
-    dashboardUpdater
-}) {
-    const table = document.getElementById(tableId);
-    const rows = table.querySelectorAll("tbody tr");
-    const noResults = document.getElementById(noResultsId);
-
-    // Get unique intakes
-    const intakes = [...new Set(
-        [...rows].map(r => r.getAttribute(intakeAttribute))
-    )];
-
-    // Create swipe bar
-    const swipeBar = document.createElement("div");
-    swipeBar.className = "intake-swipe-bar";
-    swipeBar.innerHTML = `
-        <button class="intake-btn active" data-intake="ALL">ALL</button>
-        ${intakes.map(i =>
-            `<button class="intake-btn" data-intake="${i}">${i}</button>`
-        ).join("")}
-    `;
-
-    table.parentNode.insertBefore(swipeBar, table);
-
-    function filterByIntake(selectedIntake) {
-        const sessionGroups = {};
-
-        rows.forEach(row => {
-            const session = row.getAttribute("data-session");
-            if (!sessionGroups[session]) sessionGroups[session] = [];
-            sessionGroups[session].push(row);
-        });
-
-        let visibleCount = 0;
-
-        Object.values(sessionGroups).forEach(groupRows => {
-            const groupIntake = groupRows[0].getAttribute(intakeAttribute);
-
-            const show =
-                selectedIntake === "ALL" ||
-                groupIntake === selectedIntake;
-
-            groupRows.forEach(r => {
-                r.style.display = show ? "" : "none";
-            });
-
-            if (show) visibleCount++;
-        });
-
-        noResults.style.display = visibleCount === 0 ? "block" : "none";
-
-        renumberVisibleRowsInvigilation();
-        if (dashboardUpdater) dashboardUpdater();
-    }
-
-    swipeBar.addEventListener("click", e => {
-        if (!e.target.classList.contains("intake-btn")) return;
-
-        document.querySelectorAll(".intake-btn")
-            .forEach(b => b.classList.remove("active"));
-
-        e.target.classList.add("active");
-
-        filterByIntake(e.target.dataset.intake);
-    });
-
-    filterByIntake("ALL");
-}
-
-
-function renumberVisibleRowsInvigilation() {
+function renumberVisibleRows() {
     const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
     let index = 1;
-
     rows.forEach(row => {
-        if (row.style.display !== "none") {
+        if (row.offsetParent !== null) {            
             const cell = row.querySelector("td.row-number");
             if (cell) {
                 cell.textContent = index++;
@@ -611,46 +543,6 @@ function renumberVisibleRowsInvigilation() {
         }
     });
 }
-
-
-function updateInvigilationDashboardFromTable() {
-    const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
-
-    const visibleRows = [...rows].filter(r => r.style.display !== "none");
-
-    let total = 0;
-    let late = 0;
-    let early = 0;
-    let pending = 0;
-
-    visibleRows.forEach(r => {
-        total++;
-
-        const attendanceStatus = r.children[6]?.innerText.trim();
-
-        if (attendanceStatus === "CHECK IN LATE") late++;
-        if (attendanceStatus === "CHECK OUT EARLY") early++;
-        if (attendanceStatus === "PENDING") pending++;
-    });
-
-    document.querySelector(".dashboard-frame:nth-child(1) .dashboard-text").textContent = pending;
-    document.querySelector(".dashboard-frame:nth-child(3) .dashboard-text").textContent = late;
-    document.querySelector(".dashboard-frame:nth-child(4) .dashboard-text").textContent = early;
-}
-
-
-document.addEventListener("DOMContentLoaded", () => {
-
-    initIntakeSwipeInvigilation({
-        tableId: "manageInvigilationReport",
-        intakeAttribute: "data-intake",
-        noResultsId: "noResults",
-        dashboardUpdater: updateInvigilationDashboardFromTable
-    });
-
-    renumberVisibleRowsInvigilation();
-    updateInvigilationDashboardFromTable();
-});
 
 
 </script>
