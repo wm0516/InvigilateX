@@ -1915,7 +1915,7 @@ def get_venue_calendar_data():
             "exam_id": exam.examId,
             "course_code": course.courseCodeSectionIntake,
             "course_name": course.courseName,
-            "start_time": session.startDateTime.asc(),
+            "start_time": session.startDateTime,
             "end_time": session.endDateTime,
             "students": ve.studentCount,
             "total_invigilators": len(session.invigilators),

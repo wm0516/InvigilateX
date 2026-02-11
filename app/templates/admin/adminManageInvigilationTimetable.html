@@ -40,7 +40,7 @@
         {% set exams_by_date = {} %}
         {% for venue, exams in venue_data.items() %}
             {% for exam in exams %}
-                {% set exam_date = exam.start_time.strftime("%d %b %Y") %}
+                {% set exam_date = exam.start_time.date() %}
                 {% if exam_date not in exams_by_date %}
                     {% set _ = exams_by_date.update({exam_date: []}) %}
                 {% endif %}
@@ -48,9 +48,9 @@
             {% endfor %}
         {% endfor %}
 
-        {% for date, day_exams in exams_by_date.items() %}
+        {% for date, day_exams in exams_by_date|dictsort %}
             <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
-                <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
+                <h2>{{ date.strftime("%d %b %Y") }} | Total Exams: {{ day_exams|length }}</h2>
                 <div class="exam-grid">
                     {% set grouped = {} %}
                     {% for item in day_exams %}
