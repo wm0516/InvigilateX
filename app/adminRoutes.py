@@ -2149,7 +2149,7 @@ def admin_manageInvigilationReport():
             if ve.exam and ve.exam.course:
                 course_data = {
                     "code": ve.exam.course.courseCodeSectionIntake,
-                    "name": ve.exam.course.course.courseName
+                    "name": ve.exam.course.courseName
                 }
 
                 if course_data not in grouped_att[key]["courses"]:
