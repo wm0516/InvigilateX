@@ -224,26 +224,29 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     // Table headers
     const headers = ["No", "Exam Date & Time", "Venue", "Courses", "Invigilator Details", "Status", "Attendance", "Check-in/out"];
-    const rows = Array.from(table.querySelectorAll("tbody tr"))
-        .filter(tr => tr.offsetParent !== null)
-        .map(tr => {
-            return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
-                let text = td.innerText.trim();
+    const rows = [];
+    let lastValues = Array(headers.length).fill(""); // Store previous row's values
 
-                text = text
-                    .replace(/\s*Date\s*:/g, "Date:")
-                    .replace(/\s*Time\s*:/g, "\Time:")
-                    .replace(/\s*Staff ID\s*:/g, "Staff ID:")
-                    .replace(/\s*Name*:/g, "\Name:")
-                    .replace(/\s*Email\s*:/g, "Email:")
-                    .replace(/\s*Contact\s*:/g, "\Contact:")                    
-                    .replace(/\s*CheckIn\s*:/g, "CheckIn:")
-                    .replace(/\s*CheckOut\s*:/g, "\CheckOut:")
-                    .trim();
-                return text.replace(/\s*\n\n\s*/g, " ");
+    Array.from(table.querySelectorAll("tbody tr"))
+        .filter(tr => tr.offsetParent !== null) // only visible rows
+        .forEach(tr => {
+            const tds = Array.from(tr.querySelectorAll("td"));
+            const row = [];
+
+            tds.forEach((td, idx) => {
+                let text = td.innerText.trim().replace(/\s*\n\n\s*/g, " ");
+                // If the cell is empty, use the last value for this column
+                if (!text) {
+                    text = lastValues[idx] || "";
+                } else {
+                    lastValues[idx] = text;
+                }
+                row.push(text);
             });
-        });
 
+            rows.push(row);
+        });
+        
     // Generate PDF table
     doc.autoTable({
         head: [headers],
