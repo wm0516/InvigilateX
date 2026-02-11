@@ -525,58 +525,75 @@ document.addEventListener("DOMContentLoaded", () => {
     reportSelect.addEventListener("change", () => loadReport(reportSelect.value));
 });
 
+// ----------------------
+// Renumber visible rows
+// ----------------------
 function renumberVisibleRows() {
     const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
     let index = 1;
     rows.forEach(row => {
-        if (row.offsetParent !== null) {
+        if (row.offsetParent !== null) {            
             const cell = row.querySelector("td.row-number");
-            if (cell) cell.textContent = index++;
+            if (cell) {
+                cell.textContent = index++;
+            }
         }
     });
 }
 
-let dashboardChart = null;
-function updateDashboardFromTable() {
+// ----------------------
+// Update dashboard stats
+// ----------------------
+function updateInvigilationDashboardFromTable() {
     const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
-    const visibleRows = [...rows].filter(r => r.offsetParent !== null);
+    const visibleRows = [...rows].filter(r => r.style.display !== "none");
 
-    let pending = 0, completed = 0, late = 0, early = 0;
-    const venueCount = {};
+    let total = 0;
+    let activeReport = 0;
+    let checkInLate = 0;
+    let checkOutEarly = 0;
 
     visibleRows.forEach(r => {
-        const statusText = r.children[5]?.innerText.trim();
-        const attendanceText = r.children[6]?.innerText.trim();
+        total++;
 
-        if (statusText === "PENDING") pending++;
-        else completed++;
+        // Count active invigilation
+        const invStatus = r.querySelector(".inv-status");
+        if (invStatus && invStatus.textContent.trim() === "ACTIVE") {
+            activeReport++;
+        }
 
-        if (attendanceText === "CHECK IN LATE") late++;
-        if (attendanceText === "CHECK OUT EARLY") early++;
-
-        const venue = r.children[2]?.innerText.trim() || "Unknown";
-        venueCount[venue] = (venueCount[venue] || 0) + 1;
+        // Check check-in / check-out status
+        const checkIn = r.querySelector(".check-in");
+        const checkOut = r.querySelector(".check-out");
+        if (checkIn && checkIn.classList.contains("late")) checkInLate++;
+        if (checkOut && checkOut.classList.contains("early")) checkOutEarly++;
     });
 
-    document.querySelector("#dashboardSection .dashboard-frame:nth-child(1) p").textContent = pending;
-    document.querySelector("#dashboardSection .dashboard-frame:nth-child(2) p").textContent = completed;
-    document.querySelector("#dashboardSection .dashboard-frame:nth-child(3) p").textContent = late;
-    document.querySelector("#dashboardSection .dashboard-frame:nth-child(4) p").textContent = early;
+    document.getElementById("dashTotalInvigilation").textContent = total;
+    document.getElementById("dashActiveInvigilation").textContent = activeReport;
+    document.getElementById("dashCheckInLate").textContent = checkInLate;
+    document.getElementById("dashCheckOutEarly").textContent = checkOutEarly;
 }
 
+// ----------------------
+// Initialize filtering/swiping by intake
+// ----------------------
 document.addEventListener("DOMContentLoaded", () => {
-    renumberVisibleRows();
-    updateDashboardFromTable();
-
-    const tbody = document.querySelector("#manageInvigilationReport tbody");
-    if (!tbody) return;
-
-    const observer = new MutationObserver(() => {
-        renumberVisibleRows();
-        updateDashboardFromTable();
+    initIntakeSwipe({
+        tableId: "manageInvigilationReport",
+        intakeCol: 3,
+        noResultsId: "noResultsInvigilation",
+        dashboardUpdater: updateInvigilationDashboardFromTable
     });
 
-    observer.observe(tbody, { subtree: true, attributes: true, attributeFilter: ["style"] });
+    renumberVisibleRows();
+    updateInvigilationDashboardFromTable();
 });
+
+window.addEventListener("load", () => {
+    renumberVisibleRows();
+    updateInvigilationDashboardFromTable();
+});
+
 </script>
 {% endblock %}
