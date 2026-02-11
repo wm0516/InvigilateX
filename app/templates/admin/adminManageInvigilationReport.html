@@ -138,7 +138,7 @@
                                     <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
                                 </div>
                             </td>
-                            <td rowspan="{{ num_invigilators }}">[ {{ venue }} ]</td>
+                            <td rowspan="{{ num_invigilators }}">{{ venue }}</td>
                             <td rowspan="{{ num_invigilators }}">
                                 {% for c in data.courses %}
                                     <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
@@ -218,16 +218,9 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
     const rows = [];
-
-    let lastExamNo = "";
-    let lastExamDetails = "";
-    let lastVenue = "";
-    let lastCourse = "";
-
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
-
         let row = [];
 
         function getInvigilatorText(td) {
@@ -243,8 +236,11 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         }
 
         const firstCellText = tds[0].innerText.trim();
-
         const isNewExamRow = !isNaN(firstCellText);
+        let lastExamNo = "";
+        let lastExamDetails = "";
+        let lastVenue = "";
+        let lastCourse = "";
 
         if (isNewExamRow) {
             // First row of exam group
@@ -254,10 +250,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             lastCourse = tds[3].innerText.trim();
 
             row.push(
-                lastExamNo,
-                lastExamDetails,
-                lastVenue,
-                lastCourse,
+                lastExamNo, lastExamDetails, lastVenue, lastCourse,
                 getInvigilatorText(tds[4]),
                 tds[5].innerText.trim(),
                 tds[6].innerText.trim(),
@@ -266,20 +259,15 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         } else {
             // Continuation row (rowspan row)
             row.push(
-                lastExamNo,
-                lastExamDetails,
-                lastVenue,
-                lastCourse,
+                lastExamNo, lastExamDetails, lastVenue, lastCourse,
                 getInvigilatorText(tds[0]),
                 tds[1].innerText.trim(),
                 tds[2].innerText.trim(),
                 tds[3].innerText.trim()
             );
         }
-
         rows.push(row);
     });
-
     
     // Generate PDF table
     doc.autoTable({
