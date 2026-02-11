@@ -130,15 +130,15 @@
                 {% set num_invigilators = data.invigilators | length %}
                 {% for att in data.invigilators %}
                     <tr>
-                        <td>{{ ns.rowno }}</td>
                         {% if loop.first %}
+                            <td rowspan="{{ num_invigilators }}">{{ ns.rowno }}</td>
                             <td rowspan="{{ num_invigilators }}">
                                 <div class="info-grid">
                                     <div>Date: </div><div><strong>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Time: </div><div><strong>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
                                 </div>
                             </td>
-                            <td rowspan="{{ num_invigilators }}">[{{ venue }}]</td>
+                            <td rowspan="{{ num_invigilators }}">[ {{ venue }} ]</td>
                             <td rowspan="{{ num_invigilators }}">
                                 {% for c in data.courses %}
                                     <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
@@ -149,12 +149,14 @@
                         <td>[{{ att.invigilator.userId }}] {{ att.invigilator.userName }}</td>
                         <td>
                             {% if att.invigilationStatus %}
-                                <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                                <span class="status frame-completed">ACCEPTED</span>
                             {% elif not att.invigilationStatus and att.rejectReason %}
-                                <span class="status frame-expired invigilation-status">REJECTED</span>
-                                <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
-                            {% elif not att.invigilationStatus and not att.rejectReason %}
-                                <span class="status frame-pending invigilation-status">PENDING</span>
+                                <span class="status frame-expired">REJECTED</span>
+                                <div style="max-width: 200px;">
+                                    <strong>Reason: </strong>{{ att.rejectReason }}
+                                </div>
+                            {% else %}
+                                <span class="status frame-pending">PENDING</span>
                             {% endif %}
                         </td>
                         <td>
@@ -170,14 +172,16 @@
                         </td>
                         <td>
                             <div class="info-grid">
-                                <div>CheckIn: </div><div><strong>{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                                <div>CheckOut: </div><div><strong>{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                                <div>CheckIn:</div><div><strong>{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                <div>CheckOut:</div><div><strong>{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
                             </div>
                         </td>
-                        <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
+                        <td>
+                            <button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button>
+                        </td>
                     </tr>
-                    {% set ns.rowno = ns.rowno + 1 %}
                 {% endfor %}
+                {% set ns.rowno = ns.rowno + 1 %}
             {% endfor %}
         </tbody>
     </table>
