@@ -129,10 +129,14 @@
                 {% set num_invigilators = data.invigilators | length %}
                 {% for att in data.invigilators %}
                     <tr>
-                        <td>{ loop.index }</td>
+                        <td>{{ loop.index }}</td>
                         {% if loop.first %}
-                            <td rowspan="{{ num_invigilators }}">Date: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}
-                                <br>Time: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
+                            <td rowspan="{{ num_invigilators }}">
+                                <div class="info-grid">
+                                    <div>Date: </div><div><strong>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
+                                    <div>Time: </div><div><strong>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
+                                </div>
+                            </td>
                             <td rowspan="{{ num_invigilators }}">[{{ venue }}]</td>
                             <td rowspan="{{ num_invigilators }}">
                                 {% for c in data.courses %}
@@ -164,8 +168,10 @@
                             <span class="status {{ remark_classes.get(att.remark, '') }}">{{ att.remark }}</span>
                         </td>
                         <td>
-                            CheckIn {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }} <br>
-                            CheckOut {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}
+                            <div class="info-grid">
+                                <div>CheckIn: </div><div><strong>{{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                <div>CheckOut: </div><div><strong>{{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                            </div>
                         </td>
                         <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
                     </tr>
