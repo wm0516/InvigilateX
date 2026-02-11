@@ -216,75 +216,33 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
     const startY = margin + 30;
 
+    const table = document.querySelector(".user-data-table");
+    if (!table) {
+        alert("No table found to export!");
+        return;
+    }
+
     // Table headers
     const headers = ["No", "Exam Date & Time", "Venue", "Courses", "Invigilator Details", "Status", "Attendance", "Check-in/out"];
-    const rows = [];
+    const rows = Array.from(table.querySelectorAll("tbody tr"))
+        .filter(tr => tr.offsetParent !== null)
+        .map(tr => {
+            return Array.from(tr.querySelectorAll("td")).map((td, idx) => {
+                let text = td.innerText.trim();
 
-    let rowNo = 1;
-
-    document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(tr => {
-        const tds = tr.querySelectorAll("td");
-
-        // Skip header row or empty rows
-        if (tds.length < 8) return;
-
-        // Extract Exam Date & Time in one line
-        let examDateTime = "";
-        if (tds[1]) {
-            const dateDivs = tds[1].querySelectorAll(".info-grid div");
-            if (dateDivs.length >= 4) {
-                const dateLabel = dateDivs[0].innerText.trim();
-                const dateValue = dateDivs[1].innerText.trim();
-                const timeLabel = dateDivs[2].innerText.trim();
-                const timeValue = dateDivs[3].innerText.trim();
-                examDateTime = `${dateLabel} ${dateValue} ${timeLabel} ${timeValue}`;
-            } else {
-                examDateTime = tds[1].innerText.trim();
-            }
-        }
-
-        // Venue
-        const venue = tds[2] ? tds[2].innerText.trim() : "";
-
-        // Courses
-        const courses = tds[3] ? tds[3].innerText.trim().replace(/\n/g, " | ") : "";
-
-        // Invigilator Details
-        let invDetails = "";
-        if (tds[4]) {
-            const infoDivs = tds[4].querySelectorAll(".info-grid div");
-            for (let i = 0; i < infoDivs.length; i += 2) {
-                const label = infoDivs[i].innerText.trim();
-                const value = infoDivs[i + 1]?.innerText.trim() || "";
-                invDetails += `${label}: ${value}\n`;
-            }
-        }
-
-        // Status
-        const status = tds[5] ? tds[5].innerText.trim() : "";
-
-        // Attendance Remark
-        const attendance = tds[6] ? tds[6].innerText.trim() : "";
-
-        // Check-in/out
-        let checkTimes = "";
-        if (tds[7]) {
-            const checkDivs = tds[7].querySelectorAll(".info-grid div");
-            for (let i = 0; i < checkDivs.length; i += 2) {
-                const label = checkDivs[i].innerText.trim();
-                const value = checkDivs[i + 1]?.innerText.trim() || "";
-                checkTimes += `${label}: ${value}\n`;
-            }
-        }
-
-        // Determine row number
-        let no = tds[0]?.innerText.trim() || rowNo;
-
-        rows.push([no, examDateTime, venue, courses, invDetails, status, attendance, checkTimes]);
-
-        // Increment rowNo only for first invigilator row
-        if (tds[0]?.rowSpan) rowNo++;
-    });
+                text = text
+                    .replace(/\s*Date\s*:/g, "Date:")
+                    .replace(/\s*Time\s*:/g, "\Time:")
+                    .replace(/\s*Staff ID\s*:/g, "Staff ID:")
+                    .replace(/\s*Name*:/g, "\Name:")
+                    .replace(/\s*Email\s*:/g, "Email:")
+                    .replace(/\s*Contact\s*:/g, "\Contact:")                    
+                    .replace(/\s*CheckIn\s*:/g, "CheckIn:")
+                    .replace(/\s*CheckOut\s*:/g, "\CheckOut:")
+                    .trim();
+                return text.replace(/\s*\n\n\s*/g, " ");
+            });
+        });
 
     // Generate PDF table
     doc.autoTable({
