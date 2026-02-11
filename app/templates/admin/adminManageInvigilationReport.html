@@ -220,46 +220,57 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const headers = ["No", "Exam Date", "Venue", "Courses", "Invigilator", "Status", "Attendance", "Check-in/out"];
     const rows = [];
 
+    let lastNo = "";
+    let lastExamDate = "";
+    let lastVenue = "";
+    let lastCourses = "";
+
     document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
         const tds = tr.querySelectorAll("td");
         const tdCount = tds.length;
 
-        // Handle rowspan — fill missing columns from previous values
         let no = "";
-        let examID = "";
-        let examDetails = "";
-        let invCount = "";
-        let invDetails = "";
-        let checkTimes = "";
-        let attendance = "";
+        let examDate = "";
+        let venue = "";
+        let courses = "";
+        let invigilator = "";
         let invStatus = "";
+        let attendance = "";
+        let checkTimes = "";
 
         if (tdCount === 9) {
-            // Normal full row
+            // FULL ROW (first invigilator of session)
             no = tds[0]?.innerText.trim() || "";
-            examID = tds[1]?.innerText.trim() || "";
-            examDetails = tds[2]?.innerText.trim() || "";
-            invCount = tds[3]?.innerText.trim() || "";
-            invDetails = tds[4]?.innerText.trim() || "";
+            examDate = tds[1]?.innerText.trim() || "";
+            venue = tds[2]?.innerText.trim() || "";
+            courses = tds[3]?.innerText.trim() || "";
+            invigilator = tds[4]?.innerText.trim() || "";
             invStatus = tds[5]?.innerText.trim() || "";
             attendance = tds[6]?.innerText.trim() || "";
             checkTimes = tds[7]?.innerText.trim() || "";
+
+            // Store values for rowspan reuse
+            lastNo = no;
+            lastExamDate = examDate;
+            lastVenue = venue;
+            lastCourses = courses;
+
         } else if (tdCount === 6) {
-            // This is a "continuation row" — missing rowspan columns
-            invDetails = tds[0]?.innerText.trim() || "";
+            // CONTINUATION ROW (rowspan columns missing)
+            no = lastNo;
+            examDate = lastExamDate;
+            venue = lastVenue;
+            courses = lastCourses;
+
+            invigilator = tds[0]?.innerText.trim() || "";
             invStatus = tds[1]?.innerText.trim() || "";
             attendance = tds[2]?.innerText.trim() || "";
             checkTimes = tds[3]?.innerText.trim() || "";
         }
 
-        // Clean up text formatting
-        [no, examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-            text.replace(/\s*:\s*/g, " : ")
-        );
-
-        rows.push([no, examID, examDetails, invCount, invDetails, invStatus, attendance, checkTimes]);
+        rows.push([no, examDate, venue, courses, invigilator, invStatus, attendance, checkTimes]);
     });
-    
+
     // Generate PDF table
     doc.autoTable({
         head: [headers],
