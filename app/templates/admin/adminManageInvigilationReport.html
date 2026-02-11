@@ -70,7 +70,7 @@
 <form id="editForm" action="{{ url_for('admin_manageInvigilationReport') }}" method="POST">
     <div id="editSection" class="function-frame">
         <h4 style="text-align:center;">Edit Invigilation Report</h4>
-        <div class="profile-frame" style="display:flex; gap:30px; align-items:flex-start;">
+        <div class="profile-frame" style="gap: 30px; padding: 1%">
             <div class="form-profile" style="flex:1;">
                 <label>Select Venue Session</label>
                 <select id="editSession" name="venueSessionId" required>
@@ -86,7 +86,7 @@
                 <label>Course Code - Name</label>
                 <input type="text" id="courseInfo" readonly>
 
-                <label>Exam Time</label>
+                <br><label>Exam Time</label>
                 <input type="text" id="examTime" readonly>
             </div>
 

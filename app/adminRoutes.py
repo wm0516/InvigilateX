@@ -2188,6 +2188,7 @@ def admin_manageInvigilationReport():
                 old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
                 new_user.userPendingCumulativeHours += duration
                 vsi.invigilatorId = new_invigilator_id
+                vsi.invigilationStatus = False
             db.session.commit()
 
             flash("Invigilators updated successfully.", "success")
