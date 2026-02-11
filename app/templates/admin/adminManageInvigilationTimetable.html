@@ -35,61 +35,92 @@
             <span>Upcoming Exam</span>
         </div>
     </div>
-    
     <div class="calendar-container">
 
-        {# STEP 1: Group ALL exams by DATE first #}
+        {# ============================= #}
+        {# STEP 1: GROUP ALL BY DATE    #}
+        {# ============================= #}
         {% set exams_by_date = {} %}
+
         {% for venue, exams in venue_data.items() %}
             {% for exam in exams %}
                 {% set exam_date = exam.start_time.strftime("%d %b %Y") %}
+
                 {% if exam_date not in exams_by_date %}
                     {% set _ = exams_by_date.update({exam_date: []}) %}
                 {% endif %}
-                {% set _ = exams_by_date[exam_date].append(exam) %}
+
+                {# Store BOTH exam and venue together #}
+                {% set _ = exams_by_date[exam_date].append({
+                    'exam': exam,
+                    'venue': venue
+                }) %}
             {% endfor %}
         {% endfor %}
 
-        {# STEP 2: Loop by DATE #}
+
+        {# ============================= #}
+        {# STEP 2: LOOP EACH DATE       #}
+        {# ============================= #}
         {% for date, day_exams in exams_by_date.items() %}
 
-            <div class="venue-block" style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
+            <div class="venue-block"
+                style="margin-bottom: 20px; padding: 20px; border: 1px solid #aaa; border-radius: 8px;">
+
                 <h2>{{ date }} | Total Exams: {{ day_exams|length }}</h2>
 
                 <div class="exam-grid">
 
-                    {# STEP 3: Group by (start_time, end_time, venue) inside the same date #}
+                    {# ============================= #}
+                    {# STEP 3: GROUP BY TIME+VENUE  #}
+                    {# ============================= #}
                     {% set grouped = {} %}
-                    {% for exam in day_exams %}
-                        {% set key = (exam.start_time, exam.end_time, exam.venue) %}
+
+                    {% for item in day_exams %}
+                        {% set exam = item.exam %}
+                        {% set venue = item.venue %}
+                        {% set key = (exam.start_time, exam.end_time, venue) %}
+
                         {% if key not in grouped %}
-                            {% set grouped = grouped.update({key: [exam]}) or grouped %}
+                            {% set grouped = grouped.update({key: [item]}) or grouped %}
                         {% else %}
-                            {% set grouped = grouped.update({key: grouped[key] + [exam]}) or grouped %}
+                            {% set grouped = grouped.update({key: grouped[key] + [item]}) or grouped %}
                         {% endif %}
                     {% endfor %}
 
-                    {# STEP 4: Display grouped slots #}
-                    {% for key, exams in grouped.items() %}
-                        {% set card_ns = namespace(total_students=0) %}
-                        {% set start_time, end_time, venue_name = key %}
 
-                        <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                    {# ============================= #}
+                    {# STEP 4: DISPLAY EACH SLOT    #}
+                    {# ============================= #}
+                    {% for key, items in grouped.items() %}
+
+                        {% set start_time, end_time, venue_name = key %}
+                        {% set card_ns = namespace(total_students=0) %}
+
+                        <div class="exam-card"
+                            style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+
                             <h3>
-                                Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}<br>
+                                Time: {{ start_time.strftime("%H:%M") }}
+                                - {{ end_time.strftime("%H:%M") }}<br>
                                 Venue: {{ venue_name }}
                             </h3>
 
-                            {% for exam in exams %}
+                            {% for item in items %}
+                                {% set exam = item.exam %}
                                 <strong>
                                     {{ exam.course_code }}/{{ exam.section }} –
                                     {{ exam.course_name }} |
                                     Students: {{ exam.students }}
                                 </strong><br>
-                                {% set card_ns.total_students = card_ns.total_students + exam.students %}
+
+                                {% set card_ns.total_students =
+                                    card_ns.total_students + exam.students %}
                             {% endfor %}
 
-                            <br><strong>Total Students: {{ card_ns.total_students }}</strong>
+                            <br>
+                            <strong>Total Students: {{ card_ns.total_students }}</strong>
+
                         </div>
 
                     {% endfor %}
@@ -97,6 +128,7 @@
             </div>
 
         {% endfor %}
+
     </div>
 </div>
 {% endblock %}
