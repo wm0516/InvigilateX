@@ -218,46 +218,39 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
     const rows = [];
-    let lastExamID = "", lastExamDetails = "", lastInvCount = "";
 
-    document.querySelectorAll(".user-data-table tbody tr").forEach(tr => {
+    // Track last seen exam info (for rowspan)
+    let lastExamNo = "";
+    let lastExamDetails = "";
+    let lastVenue = "";
+    let lastCourse = "";
+
+    document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr, idx) => {
         const tds = tr.querySelectorAll("td");
-        const tdCount = tds.length;
+        let row = [];
 
-        // Handle rowspan — fill missing columns from previous values
-        let examID = "";
-        let examDetails = "";
-        let invCount = "";
-        let invDetails = "";
-        let checkTimes = "";
-        let attendance = "";
-        let invStatus = "";
-
-        if (tdCount === 8) {
-            // Normal full row
-            examID = tds[0]?.innerText.trim() || "";
-            examDetails = tds[1]?.innerText.trim() || "";
-            invCount = tds[2]?.innerText.trim() || "";
-            invDetails = tds[3]?.innerText.trim() || "";
-            invStatus = tds[4]?.innerText.trim() || "";
-            attendance = tds[5]?.innerText.trim() || "";
-            checkTimes = tds[6]?.innerText.trim() || "";
-
-
-        } else if (tdCount === 5) {
-            // This is a "continuation row" — missing rowspan columns
-            invDetails = tds[0]?.innerText.trim() || "";
-            invStatus = tds[1]?.innerText.trim() || "";
-            attendance = tds[2]?.innerText.trim() || "";
-            checkTimes = tds[3]?.innerText.trim() || "";
+        if (tds.length === 9) { 
+            // first row of exam group (all columns)
+            lastExamNo = tds[0].innerText.trim();
+            lastExamDetails = tds[1].innerText.trim();
+            lastVenue = tds[2].innerText.trim();
+            lastCourse = tds[3].innerText.trim();
+            
+            row.push(lastExamNo, lastExamDetails, lastVenue, lastCourse);
+            row.push(tds[4].innerText.trim()); // invigilator details
+            row.push(tds[5].innerText.trim()); // invigilation status
+            row.push(tds[6].innerText.trim()); // attendance status
+            row.push(tds[7].innerText.trim()); // checkin/out
+        } else if (tds.length === 6) {
+            // continuation rows (rowspan for exam info)
+            row.push(lastExamNo, lastExamDetails, lastVenue, lastCourse);
+            row.push(tds[0].innerText.trim()); // invigilator details
+            row.push(tds[1].innerText.trim()); // invigilation status
+            row.push(tds[2].innerText.trim()); // attendance status
+            row.push(tds[3].innerText.trim()); // checkin/out
         }
 
-        // Clean up text formatting
-        [examDetails, invDetails, checkTimes] = [examDetails, invDetails, checkTimes].map(text =>
-            text.replace(/\s*:\s*/g, " : ")
-        );
-
-        rows.push([examID, examDetails, invCount, invDetails, invStatus, attendance, checkTimes]);
+        rows.push(row);
     });
 
     // Generate PDF table
