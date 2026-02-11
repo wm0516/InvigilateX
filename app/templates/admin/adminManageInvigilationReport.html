@@ -144,6 +144,11 @@
             {% for (venue, start, end), data in grouped_att.items() %}
                 {% set num_invigilators = data.invigilators | length %}
                 {% for att in data.invigilators %}
+                {% set duration = end - start %}
+                {% set total_seconds = duration.total_seconds() %}
+                {% set days = total_seconds // 86400 %}
+                {% set hours = (total_seconds % 86400) // 3600 %}
+                {% set minutes = (total_seconds % 3600) // 60 %}
                     <tr>
                         {% if loop.first %}
                             <td rowspan="{{ num_invigilators }}">{{ ns.rowno }}</td>
@@ -151,6 +156,15 @@
                                 <div class="info-grid">
                                     <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
+                                    <div>Duration</div>
+                                    <div>
+                                        <strong>:
+                                            {% if days > 0 %}
+                                                {{ days|int }}d 
+                                            {% endif %}
+                                            {{ hours|int }}h {{ minutes|int }}m
+                                        </strong>
+                                    </div>
                                 </div>
                             </td>
                             <td rowspan="{{ num_invigilators }}">{{ venue }}</td>
