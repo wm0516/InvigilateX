@@ -217,10 +217,17 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     const startY = margin + 30;
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
+    const rows = [];
+
+    let lastExamNo = "";
+    let lastExamDetails = "";
+    let lastVenue = "";
+    let lastCourse = "";
 
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
+
         let row = [];
 
         function getInvigilatorText(td) {
