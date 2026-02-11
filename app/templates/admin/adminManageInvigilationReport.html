@@ -125,11 +125,12 @@
             </tr>
         </thead>
         <tbody>
+            {% set ns = namespace(rowno=1) %}
             {% for (venue, start, end), data in grouped_att.items() %}
                 {% set num_invigilators = data.invigilators | length %}
                 {% for att in data.invigilators %}
                     <tr>
-                        <td>{{ loop.index }}</td>
+                        <td>{{ ns.rowno }}</td>
                         {% if loop.first %}
                             <td rowspan="{{ num_invigilators }}">
                                 <div class="info-grid">
@@ -175,6 +176,7 @@
                         </td>
                         <td><button type="button" class="edit-btn" data-id="{{ att.attendanceId }}"><i class="fa fa-edit"></i></button></td>
                     </tr>
+                    {% set ns.rowno = ns.rowno + 1 %}
                 {% endfor %}
             {% endfor %}
         </tbody>
