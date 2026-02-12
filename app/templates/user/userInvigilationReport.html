@@ -48,7 +48,7 @@
             </thead>
             <tbody>
                 {% for (venue, start, end), data in grouped_att.items() %}
-                    {% if current_user.userLevel in ["LECTURER", "PO", "LAB_ACC"] %}
+                    {% if current_user.userLevel in ["LECTURER", "PO", "LAB_ASST"] %}
                         {% set invigilators_to_show = data.invigilators | selectattr("invigilator.userId", "equalto", current_user.userId) | list %}
                     {% else %}
                         {% set invigilators_to_show = data.invigilators %}
