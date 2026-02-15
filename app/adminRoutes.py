@@ -2162,7 +2162,7 @@ def admin_manageInvigilationReport():
         grouped_att[key]["invigilators"].append(vsi)
 
         if venue_session.backupInvigilatorId:
-            grouped_att[key]["backup"] = venue_session.backupInvigilatorId
+            grouped_att[key]["backup"] = venue_session.backupInvigilator
             flash(f"Here is the: {venue_session.backupInvigilatorId}", "success")
             print(f"Here is the: {venue_session.backupInvigilatorId}")
 
