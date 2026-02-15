@@ -659,7 +659,7 @@ def confirm_record(user_id):
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == True,
-            ~func.trim(func.upper(VenueSessionInvigilator.position)).in_(["BACKUP"])
+            VenueSessionInvigilator.position != "BACKUP"
         )
         .all()
     )
