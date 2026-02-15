@@ -455,7 +455,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             # Update pending hours
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + duration_hours
             # Determine role
-            role = "Chief Invigilator" if idx == 0 else "Invigilator"  # first is always Chief
+            role = "CHIEF INVIGILATOR" if idx == 0 else "INVIGILATOR"  # first is always Chief
             db.session.add(VenueSessionInvigilator(
                 venueSessionId=session.venueSessionId,
                 invigilatorId=inv.userId,
