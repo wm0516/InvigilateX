@@ -25,7 +25,7 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # cleanup_expired_timetable_rows()
-    # update_attendanceStatus()
+    update_exam_status()
     login_text = ''
     password_text = ''
 
@@ -671,6 +671,29 @@ def cleanup_expired_timetable_rows():
             db.session.delete(row)
 
     db.session.commit()  # Commit even if 0, or you can add a check
+
+
+def update_exam_status():
+    now = datetime.now(timezone.utc)
+
+    # Join Exam -> VenueExam -> VenueSession
+    expired_exams = (
+        db.session.query(Exam)
+        .join(VenueExam)
+        .join(VenueSession)
+        .filter(VenueSession.endDateTime < now)
+        .filter(Exam.examStatus == True)
+        .all()
+    )
+
+    for exam in expired_exams:
+        exam.examStatus = False
+
+    db.session.commit()
+
+
+
+
 
 '''
 def update_attendanceStatus():
