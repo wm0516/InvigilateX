@@ -383,6 +383,19 @@ def user_homepage():
                 flash(f"Slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
                 record_action("ACCEPT", "USER", session_obj.venue.venueNumber, user_id)
                 return redirect(url_for('user_homepage'))
+            
+            elif action == 'backup':
+                # Check session exists
+                if not session_obj:
+                    flash("Session not found for this slot.", "error")
+                    return redirect(url_for('user_homepage'))
+
+                session_obj.backupInvigilatorId = user_id
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
+                db.session.commit()
+                flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.","success")
+                record_action("BACKUP", "USER", session_obj.venue.venueNumber, user_id)
+                return redirect(url_for('user_homepage'))
 
             elif action == 'reject':
                 raw_reason = request.form.get('reject_reason', '')
