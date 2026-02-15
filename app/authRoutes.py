@@ -482,7 +482,7 @@ def user_homepage():
             # 2️⃣ Create a new VenueSessionInvigilator row for backup
             new_backup_slot = VenueSessionInvigilator(
                 venueSessionId=session_obj.venueSessionId,
-                invigilatorId=None,
+                invigilatorId=user_id,
                 checkIn=None,
                 checkOut=None,
                 timeCreate=datetime.now() + timedelta(hours=8),
