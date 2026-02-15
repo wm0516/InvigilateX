@@ -178,10 +178,12 @@ class VenueSession(db.Model):
     );
     '''
 
+
 class VenueSessionInvigilator(db.Model):
     __tablename__       = 'VenueSessionInvigilator'
-    venueSessionId      = Column(Integer, ForeignKey('VenueSession.venueSessionId'), primary_key=True)
-    invigilatorId       = Column(Integer, ForeignKey('User.userId'), primary_key=True)
+    sessionId           = Column(Integer, primary_key=True, autoincrement=True) 
+    venueSessionId      = Column(Integer, ForeignKey('VenueSession.venueSessionId'), nullable=False)
+    invigilatorId       = Column(Integer, ForeignKey('User.userId'), nullable=True)
     position            = Column(String(20), nullable=True)
     checkIn             = Column(DateTime, nullable=True)
     checkOut            = Column(DateTime, nullable=True)
@@ -197,8 +199,9 @@ class VenueSessionInvigilator(db.Model):
     invigilator = relationship("User")
     '''
     CREATE TABLE VenueSessionInvigilator (
+        sessionId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
         venueSessionId INT NOT NULL,
-        invigilatorId INT NOT NULL,
+        invigilatorId INT NULL,
         position VARCHAR(20) NOT NULL,
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
