@@ -40,15 +40,22 @@
             {% elif col == 'action' and show_actions %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
-                            <input type="hidden" name="w_id" value="{{ slot.venueSessionId }}">
-                            <button type="submit" name="action" value="accept">Accept</button>
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
+                            <input type="hidden" name="w_id" value="{{  slot.venueSessionId}}">
+                            <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" 
+                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
                         </form>
-                        <button class="reject-btn" data-id="{{ slot.venueSessionId }}">Reject</button>
+                        <button type="button" class="reject-btn" data-id="{{  slot.venueSessionId }}"
+                            style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
+                        <button type="button" style="background-color: #afafaf; color: #000000; padding: 5%; cursor: not-allowed;">
+                            <strong>Expired</strong>
+                        </button>
                     {% elif action_type == 'open' %}
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
                             <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
-                            <button type="submit" name="action" value="open_accept">Accept</button>
+                            <button type="submit" name="action" value="open_accept" 
+                                onclick="return confirm('Are you sure to additional choose this slot?')" 
+                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
                         </form>
                     {% endif %}
                 </td>
