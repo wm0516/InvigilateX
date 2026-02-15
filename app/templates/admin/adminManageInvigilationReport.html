@@ -84,7 +84,7 @@
                 </select><br>
 
                 <label>Course Code - Name</label>
-                <input type="text" id="courseInfo" readonly>
+                <div id="courseInfo" style="display: flex; flex-direction: column; gap: 5px;"></div>
 
                 <br><label>Exam Time</label>
                 <input type="text" id="examTime" readonly>
@@ -499,9 +499,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        courseInfo.value = `${data.courseCode} - ${data.courseName}`;
-        examTime.value = `${data.start} → ${data.end}`;
+        const courseContainer = document.getElementById("courseInfo");
+        courseContainer.innerHTML = ""; // clear previous courses
 
+        data.courses.forEach(c => {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.readOnly = true;
+            input.value = `${c.code} - ${c.name}`;
+            courseContainer.appendChild(input);
+        });
+
+        examTime.value = `${data.start} → ${data.end}`;
         const currentContainer = document.getElementById("currentInvigilatorContainer");
         const replaceContainer = document.getElementById("replaceInvigilatorContainer");
 
