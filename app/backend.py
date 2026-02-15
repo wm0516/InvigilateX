@@ -641,8 +641,7 @@ def waiting_record(user_id):
             VenueSessionInvigilator.rejectReason.is_(None),
             VenueSessionInvigilator.timeAction.is_(None),
             VenueSessionInvigilator.timeCreate <= current_time,
-            ~VenueSessionInvigilator.venueSessionId.in_(select(rejected_subq)),
-            ~func.trim(func.upper(VenueSessionInvigilator.position)).in_(["BACKUP"])
+            ~VenueSessionInvigilator.venueSessionId.in_(select(rejected_subq))
         )
         .all()
     )
@@ -660,6 +659,7 @@ def confirm_record(user_id):
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == True,
+            ~func.trim(func.upper(VenueSessionInvigilator.position)).in_(["BACKUP"])
         )
         .all()
     )
