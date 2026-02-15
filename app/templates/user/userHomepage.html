@@ -5,7 +5,7 @@
 {% block content %}
 <h1 style="margin-left: 2%;">Hey! 👋 <i>{{ user_name }}</i></h1>
 
-{% macro slot_row(slot, columns=[], show_actions=False, action_type="", backup=False) %}
+{% macro slot_row(slot, columns=[], show_actions=False, action_type="") %}
     {% set session_obj = slot.session %}
     {% if session_obj %}
         {% set start = session_obj.startDateTime %}
@@ -26,13 +26,7 @@
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
-                <td>
-                    {% if backup %}
-                        <strong style="color:orange;">BACKUP</strong>
-                    {% else %}
-                        {{ position }}
-                    {% endif %}
-                </td>
+                <td>{{ position }}</td>
             {% elif col == 'venue' %}
                 <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
             {% elif col == 'examDate' %}
@@ -186,7 +180,7 @@
             </thead>
             <tbody>
                 {% for c in confirm %}
-                    {{ slot_row(c, columns=['timeAction', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode'], backup=(c.position=='BACKUP')) }}
+                    {{ slot_row(c, columns=['timeAction', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode']) }}
                 {% endfor %}
             </tbody>
         </table>
@@ -293,7 +287,7 @@
             </thead>
             <tbody>
                 {% for r in reject %}
-                    {{ slot_row(r, columns=['timeAction', 'reason', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode'], backup=False) }}
+                    {{ slot_row(r, columns=['timeAction', 'reason', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode']) }}
                 {% endfor %}
             </tbody>
         </table>

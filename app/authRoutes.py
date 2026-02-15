@@ -475,13 +475,29 @@ def user_homepage():
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
+            # 1️⃣ Assign the current user as backup
             session_obj.backupInvigilatorId = user_id
-            slot.timeAction = datetime.now() + timedelta(hours=8)
 
+            # 2️⃣ Create a new VenueSessionInvigilator row for backup
+            new_backup_slot = VenueSessionInvigilator(
+                venueSessionId=session_obj.venueSessionId,
+                invigilatorId=None,
+                checkIn=None,
+                checkOut=None,
+                timeCreate=datetime.now() + timedelta(hours=8),
+                position='BACKUP',   # Set position as BACKUP
+                timeExpire=datetime.now() + timedelta(hours=8),  
+                timeAction=datetime.now() + timedelta(hours=8),
+                invigilationStatus=False,
+                remark="PENDING"
+            )
+            db.session.add(new_backup_slot)
             db.session.commit()
+
             flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.", "success")
             record_action("BACKUP", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
+
 
     return render_template(
         'user/userHomepage.html',
