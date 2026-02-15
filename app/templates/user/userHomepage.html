@@ -19,17 +19,19 @@
                 {% set _ = course_list.append(course.courseCodeSectionIntake ~ " - " ~ course.courseName) %}
             {% endif %}
         {% endfor %}
-    <tr>
+
+        {# --- Determine row class --- #}
+        {% set row_class = "" %}
+        {% if position.lower() == "backup" or 'backup' in position.lower() %}
+            {% set row_class = "background-backup" %} 
+        {% endif %}
+
+    <tr class="{{ row_class }}">
         {% for col in columns %}
             {% if col == 'timeAction' %}
                 <td>{{ slot.timeAction }}</td>
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
-            {% elif col == 'position' %}
-                <td {% if position == "BACKUP" %} 
-                        class="status frame-pending invigilation-status" 
-                    {% endif %}>{{ position }}
-                </td>
             {% elif col == 'position' %}
                 <td>{{ position }}</td>
             {% elif col == 'venue' %}

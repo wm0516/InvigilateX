@@ -356,11 +356,9 @@ html, body {
     color: #222;
 }
 
-
-
-
-
-
+.background-backup {
+    background-color: #fff3cd; /* light yellow */
+}
 
 
 
