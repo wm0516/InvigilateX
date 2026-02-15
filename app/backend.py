@@ -676,6 +676,7 @@ def reject_record(user_id):
         )
         .all()
     )
+
 # -------------------------------
 # HELPER 3: Open Slots
 # -------------------------------
@@ -688,33 +689,30 @@ def open_record(user_id):
 
     user_gender = user.userGender
 
-    # Subquery: exams the user rejected
-    rejected_exam_subq = (
-        db.session.query(VenueExam.examId)
-        .join(VenueSessionInvigilator, VenueSessionInvigilator.venueSessionId == VenueExam.venueSessionId)
-        .filter(
-            VenueSessionInvigilator.invigilatorId == user_id,
-            VenueSessionInvigilator.rejectReason.isnot(None)
-        )
-        .distinct()
-        .subquery()
-    )
-
-    # All open slots not yet accepted or rejected and matching gender
+    # Slots that are either:
+    # 1) Not yet accepted or rejected
+    # 2) Rejected but not yet taken by someone else
     slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
         .filter(
-            VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.rejectReason.is_(None),
-            VenueSessionInvigilator.timeExpire >= current_time,
-            VenueSessionInvigilator.invigilator.has(userGender=user_gender),
-            ~VenueSessionInvigilator.session.has(VenueSession.exams.any(VenueExam.examId.in_(select(rejected_exam_subq))))
+            VenueSessionInvigilator.timeExpire <= current_time,   # already expired
+            VenueSessionInvigilator.invigilationStatus == False, # not accepted yet
+            VenueSessionInvigilator.invigilator.has(userGender=user_gender)
+        )
+        .filter(
+            (VenueSessionInvigilator.rejectReason.is_(None)) |  # not rejected
+            ((VenueSessionInvigilator.rejectReason.isnot(None)) & 
+             (~VenueSessionInvigilator.session.has(
+                 VenueSession.invigilators.any(
+                     VenueSessionInvigilator.invigilationStatus == True
+                 )
+             )))
         )
         .all()
     )
 
-    # Fetch accepted slots for conflict checking
+    # Check conflict with already assigned slots
     assigned_slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
@@ -731,7 +729,7 @@ def open_record(user_id):
     unique_slots = {}
     for slot in slots:
         vs = slot.session
-        # Check conflict with assigned slots
+        # Conflict check
         conflict = False
         for assigned in assigned_slots:
             a_vs = assigned.session
@@ -746,6 +744,7 @@ def open_record(user_id):
             unique_slots[vs.venueSessionId] = slot
 
     return list(unique_slots.values())
+
 
 
 # -------------------------------

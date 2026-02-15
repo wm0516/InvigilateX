@@ -367,12 +367,14 @@ def user_homepage():
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
-                flash(f"Slot at {session_obj.venue.venueNumber} accepted successfully.", "success")
+                flash(f"Slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
+                record_action("USER", "ACCEPT", session_obj.venue.venueNumber, user_id)
                 return redirect(url_for('user_homepage'))
 
             elif action == 'reject':
                 raw_reason = request.form.get('reject_reason', '')
                 waiting_slot.remark = "REJECTED"
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 waiting_slot.rejectReason = raw_reason.strip()
                 waiting_slot.invigilationStatus = False
 
@@ -395,7 +397,8 @@ def user_homepage():
                     )
                 )
                 db.session.commit()
-                flash(f"Slot at {session_obj.venue.venueNumber} rejected successfully.", "success")
+                flash(f"Slot at Venue: {session_obj.venue.venueNumber} rejected successfully.", "success")
+                record_action("USER", "REJECT", session_obj.venue.venueNumber, user_id)
                 return redirect(url_for('user_homepage'))
 
         # -----------------------------
@@ -449,7 +452,8 @@ def user_homepage():
             user.userPendingCumulativeHours = (user.userPendingCumulativeHours or 0) + hours_to_add
 
             db.session.commit()
-            flash(f"Open slot at {session_obj.venue.venueNumber} accepted successfully.", "success")
+            flash(f"Open slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
+            record_action("USER", "EXTRA", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
 
     return render_template(
