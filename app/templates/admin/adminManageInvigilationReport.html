@@ -221,12 +221,6 @@
                             Email<strong>: {{ data.backup.userEmail if data.backup.userEmail else "None" }}</strong> | 
                             Contact<strong>: {{ data.backup.userContact if data.backup.userContact else "None" }}</strong>
                         </div>
-                        <div class="info-grid">
-                            <div>Staff ID</div><div><strong>: {{ data.backup.userId if data.backup.userId else "None" }}</strong></div>
-                            <div>Name</div><div><strong>: {{ data.backup.userName if data.backup.userName else "None" }}</strong></div>
-                            <div>Email</div><div><strong>: {{ data.backup.userEmail if data.backup.userEmail else "None" }}</strong></div>
-                            <div>Contact</div><div><strong>: {{ data.backup.userContact if data.backup.userContact else "None" }}</strong></div>
-                        </div>
                     </td>
                 </tr>
                 {% set ns.rowno = ns.rowno + 1 %}

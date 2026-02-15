@@ -2162,9 +2162,8 @@ def admin_manageInvigilationReport():
         grouped_att[key]["invigilators"].append(vsi)
 
         if venue_session.backupInvigilatorId:
-            grouped_att[key]["backup"] = venue_session.backupInvigilator
-            flash(f"Here is the: {venue_session.backupInvigilatorId}", "success")
-            print(f"Here is the: {venue_session.backupInvigilatorId}")
+            backup_user = User.query.get(venue_session.backupInvigilatorId)
+            grouped_att[key]["backup"] = backup_user
 
         for ve in venue_session.exams:
             if ve.exam and ve.exam.course:
