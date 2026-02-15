@@ -159,7 +159,7 @@
                                 <div class="info-grid">
                                     <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
-                                    <div>Duration</div><div><strong>:{% if days > 0 %}{{ days|int }}d {% endif %}{{ hours|int }}h {{ minutes|int }}m</strong></div>
+                                    <div>Duration</div><div><strong>: {% if days > 0 %}{{ days|int }}d {% endif %}{{ hours|int }}h {{ minutes|int }}m</strong></div>
                                 </div>
                             </td>
                             <td rowspan="{{ total_rows }}">{{ venue }}</td>
