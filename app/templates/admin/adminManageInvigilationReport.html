@@ -257,6 +257,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     let lastExamDetails = "";
     let lastVenue = "";
     let lastCourse = "";
+    let previousExamKey = ""; // Track exam uniqueness
 
     function getInvigilatorText(td) {
         const lines = [];
@@ -274,9 +275,9 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
 
-        // Handle backup row (colspan row)
+        // Handle backup row (merge all columns)
         if (tds[0].hasAttribute("colspan") && parseInt(tds[0].getAttribute("colspan")) > 1) {
-            rows.push([`⮝ BACKUP INVIGILATOR ⮝ ${tds[0].innerText.trim()}`, "", "", "", "", "", "", ""]);            
+            rows.push([`⮝ BACKUP INVIGILATOR ⮝ ${tds[0].innerText.trim()}`, "", "", "", "", "", "", ""]);
             return;
         }
 
@@ -289,15 +290,21 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             lastVenue = tds[2].innerText.trim();
             lastCourse = tds[3].innerText.trim();
 
+            // Generate a key to detect same exam multiple invigilators
+            previousExamKey = lastExamNo + lastExamDetails + lastVenue + lastCourse;
+
             rows.push([
-                lastExamNo, lastExamDetails, lastVenue, lastCourse,
+                lastExamNo,
+                lastExamDetails,
+                lastVenue,
+                lastCourse,
                 getInvigilatorText(tds[4]),
                 tds[5].innerText.trim(),
                 tds[6].innerText.trim(),
                 tds[7].innerText.trim()
             ]);
         } else {
-            // continuation row (rowspan row)
+            // Continuation row for the same exam → blank first 4 columns
             rows.push([
                 "", "", "", "",
                 getInvigilatorText(tds[0]),
