@@ -327,9 +327,10 @@ def user_homepage():
         remark="PENDING"
     ).all()
 
-    confirm = VenueSessionInvigilator.query.filter_by(
-        invigilatorId=user_id,
-        invigilationStatus=True
+    confirm = VenueSessionInvigilator.query.filter(
+        VenueSessionInvigilator.invigilatorId == user_id,
+        VenueSessionInvigilator.invigilationStatus == True,
+        VenueSessionInvigilator.position != "Backup" 
     ).all()
 
     reject = VenueSessionInvigilator.query.filter(
