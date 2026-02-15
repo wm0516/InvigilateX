@@ -276,8 +276,9 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         if (tds.length === 0) return;
 
         // Handle backup row (merge all columns)
+        // colSpan: 8 -> merge 8 columns into 1
         if (tds[0].hasAttribute("colspan") && parseInt(tds[0].getAttribute("colspan")) > 1) {
-            rows.push([`⮝ BACKUP INVIGILATOR ⮝ ${tds[0].innerText.trim()}`, "", "", "", "", "", "", ""]);
+            rows.push([{content: `${tds[0].innerText.trim()}`, colSpan: 8, styles: { halign: 'left' }}]);
             return;
         }
 
