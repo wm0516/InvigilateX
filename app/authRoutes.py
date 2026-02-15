@@ -345,7 +345,9 @@ def user_homepage():
         .filter(
             VenueSession.backupInvigilatorId.is_(None),
             Exam.examStatus == 1
-        ).all()
+        )
+        .group_by(VenueSession.venueNumber)
+        .all()
     )
 
     # --- Open slots filtered by user gender ---
