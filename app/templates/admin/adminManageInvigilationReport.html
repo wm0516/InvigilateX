@@ -216,10 +216,11 @@
                     <td colspan="100%">
                         <div style="margin-top:5px;">
                             <span class="status frame-pending">BACKUP INVIGILATOR</span><br>
-                            Staff ID<strong>: {{ data.backup.userId if data.backup.userId else "None" }}</strong> |
-                            Name<strong>: {{ data.backup.userName if data.backup.userName else "None" }}</strong> | 
-                            Email<strong>: {{ data.backup.userEmail if data.backup.userEmail else "None" }}</strong> | 
-                            Contact<strong>: {{ data.backup.userContact if data.backup.userContact else "None" }}</strong>
+                            {% set backup = data.backup %}
+                            Staff ID<strong>: {{ backup.userId if backup else "None" }}</strong> |
+                            Name<strong>: {{ backup.userName if backup else "None" }}</strong> |
+                            Email<strong>: {{ backup.userEmail if backup else "None" }}</strong> |
+                            Contact<strong>: {{ backup.userContact if backup and backup.userContact else "None" }}</strong>
                         </div>
                     </td>
                 </tr>
