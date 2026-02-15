@@ -143,6 +143,10 @@
             {% set ns = namespace(rowno=1) %}
             {% for (venue, start, end), data in grouped_att.items() %}
                 {% set num_invigilators = data.invigilators | length %}
+                {% set has_backup = data.backup is not none %}
+                {% set total_rows = num_invigilators + (1 if has_backup else 0) %}
+
+
                 {% for att in data.invigilators %}
                 {% set duration = end - start %}
                 {% set total_seconds = duration.total_seconds() %}
@@ -151,8 +155,8 @@
                 {% set minutes = (total_seconds % 3600) // 60 %}
                     <tr>
                         {% if loop.first %}
-                            <td rowspan="{{ num_invigilators }}">{{ ns.rowno }}</td>
-                            <td rowspan="{{ num_invigilators }}">
+                            <td rowspan="{{ total_rows  }}">{{ ns.rowno }}</td>
+                            <td rowspan="{{ total_rows  }}">
                                 <div class="info-grid">
                                     <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
@@ -167,8 +171,8 @@
                                     </div>
                                 </div>
                             </td>
-                            <td rowspan="{{ num_invigilators }}">{{ venue }}</td>
-                            <td rowspan="{{ num_invigilators }}">
+                            <td rowspan="{{ total_rows  }}">{{ venue }}</td>
+                            <td rowspan="{{ total_rows  }}">
                                 {% for c in data.courses %}
                                     <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
                                 {% endfor %}
@@ -219,6 +223,26 @@
                         </td>
                     </tr>
                 {% endfor %}
+                {% if data.backup %}
+                <tr style="background-color:#f5f5f5;">
+                    <td>
+                        <div class="info-grid">
+                            <div>Staff ID</div><div><strong>: {{ data.backup.userId }}</strong></div>
+                            <div>Name</div><div><strong>: {{ data.backup.userName }}</strong></div>
+                            <div>Email</div><div><strong>: {{ data.backup.userEmail }}</strong></div>
+                            <div>Contact</div>
+                            <div><strong>: {{ data.backup.userContact if data.backup.userContact else "None" }}</strong></div>
+                        </div>
+                        <div style="margin-top:5px;">
+                            <span class="status frame-pending">BACKUP INVIGILATOR</span>
+                        </div>
+                    </td>
+
+                    <td colspan="4" style="text-align:center; font-style:italic; color:#666;">
+                        Backup — No attendance record
+                    </td>
+                </tr>
+                {% endif %}
                 {% set ns.rowno = ns.rowno + 1 %}
             {% endfor %}
         </tbody>

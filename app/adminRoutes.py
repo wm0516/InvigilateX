@@ -9,6 +9,7 @@ import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import NamedStyle
+from typing import Dict, Tuple, Any
 import PyPDF2
 from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
@@ -2059,7 +2060,6 @@ def calculate_invigilation_stats():
     return stats
 
 
-
 @app.route('/admin/get_session_details/<int:session_id>')
 @login_required
 def get_session_details(session_id):
@@ -2081,13 +2081,23 @@ def get_session_details(session_id):
             "invigilatorName": vsi.invigilator.userName
         })
 
+    # Fetch backup invigilator
+    backup_invigilator = None
+    if session.backupInvigilator:
+        backup_invigilator = {
+            "invigilatorId": session.backupInvigilator.userId,
+            "invigilatorName": session.backupInvigilator.userName
+        }
+
     return jsonify({
         "courseCode": course.courseCodeSectionIntake,
         "courseName": course.courseName,
         "start": session.startDateTime.strftime("%d/%b/%Y %H:%M"),
         "end": session.endDateTime.strftime("%d/%b/%Y %H:%M"),
-        "attendances": attendances
+        "attendances": attendances,
+        "backupInvigilator": backup_invigilator
     })
+
 
 # -------------------------------
 # Get Valid Invigilators
@@ -2128,8 +2138,7 @@ def admin_manageInvigilationReport():
         ).all()
     )
 
-    # Group by venue + datetime
-    grouped_att = defaultdict(lambda: {"courses": [], "invigilators": []})
+    grouped_att: Dict[Tuple[str, datetime, datetime],Dict[str, Any]] = {}
     for vsi in vsi_entries:
         venue_session = vsi.session
         if not venue_session:
@@ -2141,18 +2150,31 @@ def admin_manageInvigilationReport():
             venue_session.endDateTime
         )
 
-        # Add invigilator
+        # Initialize if not exists
+        if key not in grouped_att:
+            grouped_att[key] = {
+                "courses": [],
+                "course_codes": set(), 
+                "invigilators": [],
+                "backup": None
+            }
+
         grouped_att[key]["invigilators"].append(vsi)
-        # Add courses (avoid duplicates)
+
+        if venue_session.backupInvigilator:
+            grouped_att[key]["backup"] = venue_session.backupInvigilator
+
         for ve in venue_session.exams:
             if ve.exam and ve.exam.course:
-                course_data = {
-                    "code": ve.exam.course.courseCodeSectionIntake,
-                    "name": ve.exam.course.courseName
-                }
+                course_code = ve.exam.course.courseCodeSectionIntake
+                course_name = ve.exam.course.courseName
 
-                if course_data not in grouped_att[key]["courses"]:
-                    grouped_att[key]["courses"].append(course_data)
+                if course_code not in grouped_att[key]["course_codes"]:
+                    grouped_att[key]["courses"].append({
+                        "code": course_code,
+                        "name": course_name
+                    })
+                    grouped_att[key]["course_codes"].add(course_code)
 
     stats = calculate_invigilation_stats()
     for vsi in vsi_entries:
