@@ -276,7 +276,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
         // Handle backup row (colspan row)
         if (tds[0].hasAttribute("colspan") && parseInt(tds[0].getAttribute("colspan")) > 1) {
-            rows.push([lastExamNo, lastExamDetails, lastVenue, lastCourse, tds[0].innerText.trim(), "-", "-", "-"]);
+            rows.push([`⮝ BACKUP INVIGILATOR ⮝ ${tds[0].innerText.trim()}`, "", "", "", "", "", "", ""]);            
             return;
         }
 
@@ -299,7 +299,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         } else {
             // continuation row (rowspan row)
             rows.push([
-                lastExamNo, lastExamDetails, lastVenue, lastCourse,
+                "", "", "", "",
                 getInvigilatorText(tds[0]),
                 tds[1].innerText.trim(),
                 tds[2].innerText.trim(),
