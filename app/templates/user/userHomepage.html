@@ -28,7 +28,7 @@
             {% elif col == 'position' %}
                 <td>{{ position }}</td>
             {% elif col == 'venue' %}
-                <td>{{ position }}</td>
+                <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
             {% elif col == 'examDate' %}
                 <td>{{ start.strftime("%d/%b/%Y") }}</td>
             {% elif col == 'examTime' %}
