@@ -3,38 +3,61 @@
 {% block title %}Homepage{% endblock %}
 
 {% block content %}
-<h1>Hey! 👋 <i>{{ user_name }}</i></h1>
+<h1 style="margin-left: 2%;">Hey! 👋 <i>{{ user_name }}</i></h1>
 
-{% macro slot_row(slot, show_actions=False, action_type="") %}
+{% macro slot_row(slot, columns=[], show_actions=False, action_type="") %}
     {% set session_obj = slot.session %}
     {% if session_obj %}
         {% set start = session_obj.startDateTime %}
         {% set end = session_obj.endDateTime %}
         {% set duration = (end - start).total_seconds() %}
-<tr>
-    <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
-    <td>{{ start.strftime("%A, %d/%b/%Y") }} - {{ end.strftime("%A, %d/%b/%Y") }}</td>
-    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
-    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
-    {% if show_actions %}
-    <td>
-        {% if action_type == 'waiting' %}
-            <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
-                <input type="hidden" name="w_id" value="{{ slot.venueSessionId }}">
-                <button type="submit" name="action" value="accept">Accept</button>
-            </form>
-            <button class="reject-btn" data-id="{{ slot.venueSessionId }}">Reject</button>
-        {% elif action_type == 'open' %}
-            <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
-                <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
-                <button type="submit" name="action" value="open_accept">Accept</button>
-            </form>
-        {% endif %}
-    </td>
-    {% endif %}
-</tr>
+        {% set position = slot.position if slot.position else '' %}
+        {% set course_list = [] %}
+        {% for venue_exam in session_obj.exams %}
+            {% set course = venue_exam.exam.course %}
+            {% if course %}
+                {% set _ = course_list.append(course.courseCodeSectionIntake ~ " - " ~ course.courseName) %}
+            {% endif %}
+        {% endfor %}
+    <tr>
+        {% for col in columns %}
+            {% if col == 'timeAction' %}
+                <td>{{ slot.timeAction }}</td>
+            {% elif col == 'reason' %}
+                <td><strong>{{ slot.rejectReason }}</strong></td>
+            {% elif col == 'position' %}
+                <td>{{ position }}</td>
+            {% elif col == 'venue' %}
+                <td>{{ position }}</td>
+            {% elif col == 'examDate' %}
+                <td>{{ start.strftime("%d/%b/%Y") }}</td>
+            {% elif col == 'examTime' %}
+                <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
+            {% elif col == 'examPeriod' %}
+                <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
+            {% elif col == 'courseCode' %}
+                <td>{{ course_list | join('<br>') | safe }}</td>
+            {% elif col == 'action' and show_actions %}
+                <td>
+                    {% if action_type == 'waiting' %}
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="w_id" value="{{ slot.venueSessionId }}">
+                            <button type="submit" name="action" value="accept">Accept</button>
+                        </form>
+                        <button class="reject-btn" data-id="{{ slot.venueSessionId }}">Reject</button>
+                    {% elif action_type == 'open' %}
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:inline;">
+                            <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
+                            <button type="submit" name="action" value="open_accept">Accept</button>
+                        </form>
+                    {% endif %}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
     {% endif %}
 {% endmacro %}
+
 
 
 {% if user_level in ["DEAN", "HOS", "HOP"] %}
@@ -133,35 +156,22 @@
             <thead>
                 <tr>
                     <th>Time Accepted</th>
+                    <th>Position</th>
+                    <th>Exam Venue</th>
                     <th>Exam Date</th>
-                    <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
-                    <th>Course Name</th>
-                    <th>Course Code</th>
+                    <th>Course Code-Name</th>
                 </tr>
             </thead>
             <tbody>
                 {% for c in confirm %}
-                    {% set start = c.session.startDateTime %}
-                    {% set end = c.session.endDateTime %}
-                    {% set duration = (end - start).total_seconds() %}
-                    {% set venue_exam = c.session.exams[0] if c.session.exams else None %}
-                    {% set course = venue_exam.exam.course if venue_exam else None %}
-                <tr>
-                    <td>{{ c.timeAction }}</td>
-                    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
-                    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
-                    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
-                    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
-                    <td>{{ course.courseName if course else '' }}</td>
-                    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
-                </tr>
+                    {{ slot_row(c, columns=['timeAction', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode']) }}
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div><br>
+</div>
 
 {# --- Waiting Slots --- #}
 <div style="padding: 10px;">
@@ -171,21 +181,23 @@
         <table class="user-data-table">
             <thead>
                 <tr>
+                    <th>Position</th>
                     <th>Exam Venue</th>
                     <th>Exam Date</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
+                    <th>Course Code-Name</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for w in waiting %}
-                    {{ slot_row(w, show_actions=True, action_type='waiting') }}
+                    {{ slot_row(w, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='waiting') }}
                 {% endfor %}
             </tbody>
         </table>
     </div>
-</div><br>
+</div>
 
 {# --- Open Slots --- #}
 <div style="padding: 10px;">
@@ -197,16 +209,18 @@
         <table class="user-data-table">
             <thead>
                 <tr>
+                    <th>Position</th>
                     <th>Exam Venue</th>
                     <th>Exam Date</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
+                    <th>Course Code-Name</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for a in open %}
-                    {{ slot_row(a, show_actions=True, action_type='open') }}
+                    {{ slot_row(a, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='open') }}
                 {% endfor %}
             </tbody>
         </table>
@@ -221,33 +235,19 @@
         <table class="user-data-table">
             <thead>
                 <tr>
-                    <th>Time Rejected</th>
+                    <th>Time Reject</th>
                     <th>Reason</th>
+                    <th>Position</th>
+                    <th>Exam Venue</th>
                     <th>Exam Date</th>
-                    <th>Exam Day</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
-                    <th>Course Name</th>
-                    <th>Course Code</th>
+                    <th>Course Code-Name</th>
                 </tr>
             </thead>
             <tbody>
                 {% for r in reject %}
-                    {% set start = r.session.startDateTime %}
-                    {% set end = r.session.endDateTime %}
-                    {% set duration = (end - start).total_seconds() %}
-                    {% set venue_exam = r.session.exams[0] if r.session.exams else None %}
-                    {% set course = venue_exam.exam.course if venue_exam else None %}
-                <tr>
-                    <td>{{ r.timeAction }}</td>
-                    <td><strong>{{ r.rejectReason }}</strong></td>
-                    <td>{{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</td>
-                    <td>{{ start.strftime("%A") }} - {{ end.strftime("%A") }}</td>
-                    <td>{{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</td>
-                    <td>{{ (duration // 3600)|int }}h {{ ((duration % 3600) // 60)|int }}m</td>
-                    <td>{{ course.courseName if course else '' }}</td>
-                    <td>{{ course.courseCodeSectionIntake if course else '' }}</td>
-                </tr>
+                    {{ slot_row(r, columns=['timeAction', 'reason', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode']) }}
                 {% endfor %}
             </tbody>
         </table>
