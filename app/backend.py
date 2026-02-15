@@ -641,7 +641,8 @@ def waiting_record(user_id):
             VenueSessionInvigilator.rejectReason.is_(None),
             VenueSessionInvigilator.timeAction.is_(None),
             VenueSessionInvigilator.timeCreate <= current_time,
-            ~VenueSessionInvigilator.venueSessionId.in_(select(rejected_subq))
+            ~VenueSessionInvigilator.venueSessionId.in_(select(rejected_subq)),
+            ~VenueSessionInvigilator.position.in_(["BACKUP"])
         )
         .all()
     )
