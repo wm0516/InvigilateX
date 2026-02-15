@@ -214,14 +214,18 @@
                 {% endfor %}
                 <tr style="background-color:#f5f5f5;">
                     <td colspan="100%">
+                        <div style="margin-top:5px;">
+                            <span class="status frame-pending">BACKUP INVIGILATOR</span><br>
+                            Staff ID<strong>: {{ data.backup.userId if data.backup.userId else "None" }}</strong> |
+                            Name<strong>: {{ data.backup.userName if data.backup.userName else "None" }}</strong> | 
+                            Email<strong>: {{ data.backup.userEmail if data.backup.userEmail else "None" }}</strong> | 
+                            Contact<strong>: {{ data.backup.userContact if data.backup.userContact else "None" }}</strong>
+                        </div>
                         <div class="info-grid">
                             <div>Staff ID</div><div><strong>: {{ data.backup.userId if data.backup.userId else "None" }}</strong></div>
                             <div>Name</div><div><strong>: {{ data.backup.userName if data.backup.userName else "None" }}</strong></div>
                             <div>Email</div><div><strong>: {{ data.backup.userEmail if data.backup.userEmail else "None" }}</strong></div>
                             <div>Contact</div><div><strong>: {{ data.backup.userContact if data.backup.userContact else "None" }}</strong></div>
-                        </div>
-                        <div style="margin-top:5px;">
-                            <span class="status frame-pending">BACKUP INVIGILATOR</span>
                         </div>
                     </td>
                 </tr>
