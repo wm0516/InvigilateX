@@ -234,6 +234,33 @@
     </div>
 </div>
 
+
+{# --- Backup Slots --- #}
+<div style="padding: 10px;">
+    <h2>Backup Self-Selection Invigilation Slot</h2>
+    <span>The slots below are act as backup</span>
+    <div class="user-table-container">
+        <table class="user-data-table">
+            <thead>
+                <tr>
+                    <th>Position</th>
+                    <th>Exam Venue</th>
+                    <th>Exam Date</th>
+                    <th>Exam Time</th>
+                    <th>Exam Period</th>
+                    <th>Course Code-Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in backup %}
+                    {{ slot_row(a, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='backup') }}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
 {# --- Rejected Slots --- #}
 <div style="padding: 10px;">
     <h2>Rejected Invigilation Slot</h2>

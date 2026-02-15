@@ -337,6 +337,8 @@ def user_homepage():
         VenueSessionInvigilator.remark.notin_(["PENDING", "CHECK IN", "CHECK IN LATE", "COMPLETED"])
     ).all()]
 
+    backup = VenueSession.query.filter(VenueSession.backupInvigilatorId.is_(None)).all()
+
     # --- Open slots filtered by user gender ---
     open_slots = open_record(user_id)
     if user:
@@ -368,7 +370,7 @@ def user_homepage():
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
                 flash(f"Slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
-                record_action("USER", "ACCEPT", session_obj.venue.venueNumber, user_id)
+                record_action("ACCEPT", "USER", session_obj.venue.venueNumber, user_id)
                 return redirect(url_for('user_homepage'))
 
             elif action == 'reject':
@@ -398,7 +400,7 @@ def user_homepage():
                 )
                 db.session.commit()
                 flash(f"Slot at Venue: {session_obj.venue.venueNumber} rejected successfully.", "success")
-                record_action("USER", "REJECT", session_obj.venue.venueNumber, user_id)
+                record_action("REJECT", "USER", session_obj.venue.venueNumber, user_id)
                 return redirect(url_for('user_homepage'))
 
         # -----------------------------
@@ -453,7 +455,7 @@ def user_homepage():
 
             db.session.commit()
             flash(f"Open slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
-            record_action("USER", "EXTRA", session_obj.venue.venueNumber, user_id)
+            record_action("EXTRA", "USER", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
 
     return render_template(
@@ -462,7 +464,8 @@ def user_homepage():
         waiting=waiting,
         confirm=confirm,
         open=open_slots,
-        reject=reject
+        reject=reject,
+        backup=backup
     )
 
 

@@ -677,6 +677,15 @@ def reject_record(user_id):
         .all()
     )
 
+def backup_record():
+    sessions = (
+        db.session.query(VenueSession)
+        .filter(VenueSession.backupInvigilatorId.is_(None))
+        .all()
+    )
+    return sessions
+
+
 # -------------------------------
 # HELPER 3: Open Slots
 # -------------------------------
@@ -780,8 +789,7 @@ def build_exam_block(exams):
 
 # -------------------------------
 # Email: Notify Invigilator
-# -------------------------------from sqlalchemy import func
-
+# -------------------------------
 def send_invigilator_slot_notifications_for_all():
     now = datetime.now() + timedelta(hours=8)
 

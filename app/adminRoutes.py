@@ -2135,6 +2135,7 @@ def admin_manageInvigilationReport():
         .join(Course, Exam.examId == Course.courseExamId)
         .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .order_by(
+            Exam.examOutput.desc(),
             VenueSession.startDateTime,
             Venue.venueNumber,
             Course.courseCodeSectionIntake
@@ -2237,7 +2238,7 @@ def admin_manageInvigilationReport():
                 vsi.invigilationStatus = False
 
             db.session.commit()
-            record_action("REPORT", "EDIT", new_invigilator_id, user_id)
+            record_action("EDIT", "REPORT", new_invigilator_id, user_id)
             flash("Invigilators updated successfully.", "success")
             return redirect(url_for('admin_manageInvigilationReport'))
 
