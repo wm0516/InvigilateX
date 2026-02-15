@@ -256,10 +256,14 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
     const rows = [];
+    let lastExamNo = "";
+    let lastExamDetails = "";
+    let lastVenue = "";
+    let lastCourse = "";
+
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
-        let row = [];
 
         function getInvigilatorText(td) {
             const lines = [];
@@ -275,10 +279,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
         const firstCellText = tds[0].innerText.trim();
         const isNewExamRow = !isNaN(firstCellText);
-        let lastExamNo = "";
-        let lastExamDetails = "";
-        let lastVenue = "";
-        let lastCourse = "";
+        let row = [];
 
         if (isNewExamRow) {
             // First row of exam group
@@ -306,10 +307,11 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         }
 
         if (tds[0].colSpan > 1) {
+            // Backup invigilator row
             rows.push([
                 lastExamNo, lastExamDetails, lastVenue, lastCourse,
                 tds[0].innerText.trim(), // backup info
-                "-", "-", "-" // placeholders for invigilation/attendance
+                "-", "-", "-" // placeholders
             ]);
             return;
         }
