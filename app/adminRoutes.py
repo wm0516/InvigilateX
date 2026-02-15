@@ -2063,16 +2063,9 @@ def calculate_invigilation_stats():
 @app.route('/admin/get_session_details/<int:session_id>')
 @login_required
 def get_session_details(session_id):
-
     session = VenueSession.query.get(session_id)
     if not session:
         return jsonify({"error": "Session not found"})
-
-    venue_exam = VenueExam.query.filter_by(venueSessionId=session_id).first()
-    if not venue_exam or not venue_exam.exam or not venue_exam.exam.course:
-        return jsonify({"error": "Course not found"})
-
-    course = venue_exam.exam.course
 
     attendances = []
     for vsi in session.invigilators:
@@ -2090,14 +2083,23 @@ def get_session_details(session_id):
             "invigilatorName": session.backupInvigilatorId.userName
         }
 
+    # Collect all courses for the session
+    courses_list = []
+    for ve in session.exams:
+        if ve.exam and ve.exam.course:
+            courses_list.append({
+                "code": ve.exam.course.courseCodeSectionIntake,
+                "name": ve.exam.course.courseName
+            })
+
     return jsonify({
-        "courseCode": course.courseCodeSectionIntake,
-        "courseName": course.courseName,
+        "courses": courses_list,
         "start": session.startDateTime.strftime("%d/%b/%Y %H:%M"),
         "end": session.endDateTime.strftime("%d/%b/%Y %H:%M"),
         "attendances": attendances,
         "backupInvigilatorId": backup_invigilator
     })
+
 
 
 # -------------------------------
