@@ -689,30 +689,22 @@ def open_record(user_id):
 
     user_gender = user.userGender
 
-    # Slots that are either:
-    # 1) Not yet accepted or rejected
-    # 2) Rejected but not yet taken by someone else
+    # All slots that:
+    # - Have timeExpire <= current_time (expired, meaning open for selection)
+    # - Not yet accepted (invigilationStatus == False)
+    # - Match the user's gender
     slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
         .filter(
-            VenueSessionInvigilator.timeExpire <= current_time,   # already expired
-            VenueSessionInvigilator.invigilationStatus == False, # not accepted yet
+            VenueSessionInvigilator.timeExpire <= current_time,
+            VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.invigilator.has(userGender=user_gender)
-        )
-        .filter(
-            (VenueSessionInvigilator.rejectReason.is_(None)) |  # not rejected
-            ((VenueSessionInvigilator.rejectReason.isnot(None)) & 
-            (~VenueSessionInvigilator.session.has(
-            VenueSession.invigilators.any(
-                VenueSessionInvigilator.invigilationStatus == False
-            )
-            )))
         )
         .all()
     )
 
-    # Check conflict with already assigned slots
+    # Fetch accepted slots for conflict checking
     assigned_slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
@@ -729,7 +721,7 @@ def open_record(user_id):
     unique_slots = {}
     for slot in slots:
         vs = slot.session
-        # Conflict check
+        # Check conflict with assigned slots
         conflict = False
         for assigned in assigned_slots:
             a_vs = assigned.session
@@ -744,6 +736,7 @@ def open_record(user_id):
             unique_slots[vs.venueSessionId] = slot
 
     return list(unique_slots.values())
+
 
 
 
