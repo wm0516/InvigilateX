@@ -696,17 +696,10 @@ def open_record(user_id):
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
         .filter(
-            VenueSessionInvigilator.invigilationStatus == False,
             or_(
-                # Expired -> open to all
+                VenueSessionInvigilator.invigilationStatus == False,
                 VenueSessionInvigilator.timeExpire <= current_time,
-                # must match gender
-                and_(
-                    VenueSessionInvigilator.invigilator.has(
-                        userGender=user_gender
-                    )
-                ),
-                # Always show unassigned
+                VenueSessionInvigilator.invigilator.has(userGender=user_gender),
                 VenueSessionInvigilator.invigilatorId == None
             )
         ).all()
