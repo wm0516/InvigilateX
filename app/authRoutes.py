@@ -321,11 +321,11 @@ def user_homepage():
     user = User.query.get(user_id)
 
     # --- Fetch slots ---
-    waiting = VenueSessionInvigilator.query.filter_by(
-        invigilatorId=user_id,
-        invigilationStatus=False,
-        remark="PENDING",
-        position="BACKUP"
+    waiting = VenueSessionInvigilator.query.filter(
+        VenueSessionInvigilator.invigilatorId == user_id,
+        VenueSessionInvigilator.invigilationStatus == False,
+        VenueSessionInvigilator.remark == "PENDING",
+        VenueSessionInvigilator.position != "BACKUP"  # Exclude BACKUP
     ).all()
 
     confirm = VenueSessionInvigilator.query.filter_by(
