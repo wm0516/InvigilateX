@@ -477,6 +477,7 @@ def user_homepage():
             session_obj = slot.session
             # 1️⃣ Assign the current user as backup
             session_obj.backupInvigilatorId = user_id
+            db.session.flush()
 
             # 2️⃣ Create a new VenueSessionInvigilator row for backup
             new_backup_slot = VenueSessionInvigilator(
