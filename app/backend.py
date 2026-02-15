@@ -682,25 +682,31 @@ def reject_record(user_id):
 # -------------------------------
 def open_record(user_id):
     current_time = datetime.now() + timedelta(hours=8)
-
     user = User.query.get(user_id)
     if not user:
         return []
 
     user_gender = user.userGender
 
-    # All slots that:
-    # - Have timeExpire <= current_time (expired, meaning open for selection)
-    # - Not yet accepted (invigilationStatus == False)
-    # - Either match the user's gender or are unassigned (invigilatorId is NULL)
+    # Slots logic:
+    # 1. If expired -> open to ALL
+    # 2. If expired -> only same gender
+    # 3. Always include invigilatorId == NULL
     slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
         .filter(
-            VenueSessionInvigilator.timeExpire <= current_time,
             VenueSessionInvigilator.invigilationStatus == False,
             or_(
-                VenueSessionInvigilator.invigilator.has(userGender=user_gender),
+                # Expired -> open to all
+                VenueSessionInvigilator.timeExpire <= current_time,
+                # must match gender
+                and_(
+                    VenueSessionInvigilator.invigilator.has(
+                        userGender=user_gender
+                    )
+                ),
+                # Always show unassigned
                 VenueSessionInvigilator.invigilatorId == None
             )
         ).all()
@@ -720,18 +726,25 @@ def open_record(user_id):
         return max(start1, start2) < min(end1, end2)
 
     unique_slots = {}
+
     for slot in slots:
         vs = slot.session
-        # Check conflict with assigned slots
+
+        # Conflict check
         conflict = False
         for assigned in assigned_slots:
             a_vs = assigned.session
-            if is_overlap(vs.startDateTime, vs.endDateTime, a_vs.startDateTime, a_vs.endDateTime):
+            if is_overlap(
+vs.startDateTime,
+                vs.endDateTime,
+                a_vs.startDateTime,
+                a_vs.endDateTime
+            ):
                 conflict = True
                 break
+
         if conflict:
             continue
-
         # Deduplicate by venueSessionId
         if vs.venueSessionId not in unique_slots:
             unique_slots[vs.venueSessionId] = slot
