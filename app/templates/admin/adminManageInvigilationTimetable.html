@@ -68,7 +68,10 @@
                         {% set first_exam = items[0].exam %}
                         {% set start_time, end_time, venue_name = key %}
                         {% set card_ns = namespace(total_students=0) %}
-                        <div class="exam-card" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px;">
+                        {% set is_expired = end_time < current_time %}
+
+                        <div class="exam-card"
+                            style="margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 5px; background-color: {{ 'lightgrey' if is_expired else '#b5deff' }};">
                             <h3>Venue: {{ venue_name }} | Time: {{ start_time.strftime("%H:%M") }} - {{ end_time.strftime("%H:%M") }}</h3>
                             <span> ------------------------------------------------------------ </span>
                             {% for item in items %}

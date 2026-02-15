@@ -1842,8 +1842,7 @@ def get_venue_calendar_data():
 @login_required
 def admin_manageInvigilationTimetable():
     venue_data = get_venue_calendar_data()
-    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data)
-
+    return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data, current_time=datetime.now())
 
 
 
