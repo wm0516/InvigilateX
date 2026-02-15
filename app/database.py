@@ -182,6 +182,7 @@ class VenueSessionInvigilator(db.Model):
     __tablename__       = 'VenueSessionInvigilator'
     venueSessionId      = Column(Integer, ForeignKey('VenueSession.venueSessionId'), primary_key=True)
     invigilatorId       = Column(Integer, ForeignKey('User.userId'), primary_key=True)
+    position            = Column(String(20), nullable=True)
     checkIn             = Column(DateTime, nullable=True)
     checkOut            = Column(DateTime, nullable=True)
     timeAction          = Column(DateTime, nullable=True)
@@ -198,6 +199,7 @@ class VenueSessionInvigilator(db.Model):
     CREATE TABLE VenueSessionInvigilator (
         venueSessionId INT NOT NULL,
         invigilatorId INT NOT NULL,
+        position VARCHAR(20) NOT NULL,
         checkIn DATETIME NULL,
         checkOut DATETIME NULL,
         timeAction DATETIME NULL,
