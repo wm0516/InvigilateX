@@ -384,17 +384,16 @@ def user_homepage():
                 db.session.add(
                     VenueSessionInvigilator(
                         venueSessionId=waiting_slot.venueSessionId,
-                        invigilatorId=None,
+                        invigilatorId=waiting_slot.invigilatorId,
                         checkIn=None,
                         checkOut=None,
-                        timeCreate=datetime.now(timezone.utc) + timedelta(hours=8),
-                        timeExpire=session_obj.endDateTime,
+                        timeCreate=waiting_slot.timeCreate,
+                        position=waiting_slot.position,
+                        timeExpire=waiting_slot.timeExpire,
                         invigilationStatus=False,
                         remark="PENDING"
                     )
                 )
-
-                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
                 flash(f"Slot at {session_obj.venue.venueNumber} rejected successfully.", "success")
                 return redirect(url_for('user_homepage'))
