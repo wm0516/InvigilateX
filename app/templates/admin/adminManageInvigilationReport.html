@@ -259,6 +259,18 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
+
+        if (tds[0].colSpan > 1) {
+            rows.push([
+                lastExamNo,
+                lastExamDetails,
+                lastVenue,
+                lastCourse,
+                tds[0].innerText.trim(), // backup info
+                "-", "-", "-" // placeholders for invigilation/attendance
+            ]);
+            return;
+        }
         let row = [];
 
         function getInvigilatorText(td) {
@@ -303,15 +315,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
                 tds[2].innerText.trim(),
                 tds[3].innerText.trim()
             );
-        } 
-
-        if (tds[0].colSpan > 1) {
-            rows.push([
-                lastExamNo, lastExamDetails, lastVenue, lastCourse,
-                tds[0].innerText.trim(), // backup info
-                "-", "-", "-" // placeholders for invigilation/attendance
-            ]);
-            return;
         }
         rows.push(row);
     });
