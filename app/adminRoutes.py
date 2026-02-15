@@ -2083,10 +2083,10 @@ def get_session_details(session_id):
 
     # Fetch backup invigilator
     backup_invigilator = None
-    if session.backupInvigilator:
+    if session.backupInvigilatorId:
         backup_invigilator = {
-            "invigilatorId": session.backupInvigilator.userId,
-            "invigilatorName": session.backupInvigilator.userName
+            "invigilatorId": session.backupInvigilatorId.userId,
+            "invigilatorName": session.backupInvigilatorId.userName
         }
 
     return jsonify({
@@ -2161,9 +2161,10 @@ def admin_manageInvigilationReport():
 
         grouped_att[key]["invigilators"].append(vsi)
 
-        if venue_session.backupInvigilator:
-            grouped_att[key]["backup"] = venue_session.backupInvigilator
-            flash(f"Here is the: {venue_session.backupInvigilator}", "success")
+        if venue_session.backupInvigilatorId:
+            grouped_att[key]["backup"] = venue_session.backupInvigilatorId
+            flash(f"Here is the: {venue_session.backupInvigilatorId}", "success")
+            print(f"Here is the: {venue_session.backupInvigilatorId}")
 
         for ve in venue_session.exams:
             if ve.exam and ve.exam.course:
