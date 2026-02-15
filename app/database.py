@@ -189,7 +189,7 @@ class VenueSessionInvigilator(db.Model):
     timeCreate          = Column(DateTime, nullable=False)
     timeExpire          = Column(DateTime, nullable=False)
     invigilationStatus  = Column(Boolean, default=False)
-    remark              = Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED", name="attendance_remark_enum"), nullable=False, default="PENDING")
+    remark              = Column(Enum("PENDING","CHECK IN LATE","CHECK IN","CHECK OUT EARLY","COMPLETED","EXPIRED", "REJECTED", name="attendance_remark_enum"), nullable=False, default="PENDING")
     rejectReason        = Column(String(255), nullable=True)
     
     # Relationships
@@ -206,7 +206,7 @@ class VenueSessionInvigilator(db.Model):
         timeCreate DATETIME NOT NULL,
         timeExpire DATETIME NOT NULL,
         invigilationStatus BOOLEAN NOT NULL DEFAULT FALSE,
-        remark ENUM('PENDING','CHECK IN LATE','CHECK IN','CHECK OUT EARLY','COMPLETED','EXPIRED') NOT NULL DEFAULT 'PENDING',
+        remark ENUM('PENDING','CHECK IN LATE','CHECK IN','CHECK OUT EARLY','COMPLETED','EXPIRED','REJECTED') NOT NULL DEFAULT 'PENDING',
         rejectReason VARCHAR(255) NULL,
         PRIMARY KEY (venueSessionId, invigilatorId),
         FOREIGN KEY (venueSessionId) REFERENCES VenueSession(venueSessionId),
