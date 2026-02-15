@@ -184,7 +184,7 @@ class VenueSessionInvigilator(db.Model):
     sessionId           = Column(Integer, primary_key=True, autoincrement=True) 
     venueSessionId      = Column(Integer, ForeignKey('VenueSession.venueSessionId'), nullable=False)
     invigilatorId       = Column(Integer, ForeignKey('User.userId'), nullable=True)
-    position            = Column(String(20), nullable=True)
+    position            = Column(String(20), nullable=False)
     checkIn             = Column(DateTime, nullable=True)
     checkOut            = Column(DateTime, nullable=True)
     timeAction          = Column(DateTime, nullable=True)

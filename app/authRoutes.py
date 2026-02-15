@@ -324,13 +324,13 @@ def user_homepage():
     waiting = VenueSessionInvigilator.query.filter_by(
         invigilatorId=user_id,
         invigilationStatus=False,
-        remark="PENDING"
+        remark="PENDING",
+        position="BACKUP"
     ).all()
 
-    confirm = VenueSessionInvigilator.query.filter(
-        VenueSessionInvigilator.invigilatorId == user_id,
-        VenueSessionInvigilator.invigilationStatus == True,
-        VenueSessionInvigilator.position != "BACKUP" 
+    confirm = VenueSessionInvigilator.query.filter_by(
+        invigilatorId=user_id,
+        invigilationStatus=True
     ).all()
 
     reject = VenueSessionInvigilator.query.filter(

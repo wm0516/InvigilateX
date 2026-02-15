@@ -47,9 +47,6 @@
                         </form>
                         <button type="button" class="reject-btn" data-id="{{  slot.venueSessionId }}"
                             style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
-                        <button type="button" style="background-color: #afafaf; color: #000000; padding: 5%; cursor: not-allowed;">
-                            <strong>Expired</strong>
-                        </button>
                     {% elif action_type == 'open' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
                             <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
