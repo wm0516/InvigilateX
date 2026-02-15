@@ -2163,6 +2163,7 @@ def admin_manageInvigilationReport():
 
         if venue_session.backupInvigilator:
             grouped_att[key]["backup"] = venue_session.backupInvigilator
+            flash(f"Here is the: {venue_session.backupInvigilator}", "success")
 
         for ve in venue_session.exams:
             if ve.exam and ve.exam.course:
