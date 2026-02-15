@@ -256,21 +256,10 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
     const rows = [];
-    let lastExamNo = "";
-    let lastExamDetails = "";
-    let lastVenue = "";
-    let lastCourse = "";
-
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
-
-        // Handle backup row first
-        if (tds[0].colSpan > 1) {
-            // Backup row
-            rows.push([lastExamNo, lastExamDetails, lastVenue, lastCourse, tds[0].innerText.trim(), "-", "-", "-"]);
-            return; // skip rest of loop
-        }
+        let row = [];
 
         function getInvigilatorText(td) {
             const lines = [];
@@ -283,8 +272,13 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             });
             return lines.join("\n");
         }
+
         const firstCellText = tds[0].innerText.trim();
         const isNewExamRow = !isNaN(firstCellText);
+        let lastExamNo = "";
+        let lastExamDetails = "";
+        let lastVenue = "";
+        let lastCourse = "";
 
         if (isNewExamRow) {
             // First row of exam group
@@ -292,22 +286,43 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             lastExamDetails = tds[1].innerText.trim();
             lastVenue = tds[2].innerText.trim();
             lastCourse = tds[3].innerText.trim();
-            rows.push([lastExamNo, lastExamDetails, lastVenue, lastCourse, 
-                getInvigilatorText(tds[4]), tds[5].innerText.trim(), tds[6].innerText.trim(), tds[7].innerText.trim()]);
+
+            row.push(
+                lastExamNo, lastExamDetails, lastVenue, lastCourse,
+                getInvigilatorText(tds[4]),
+                tds[5].innerText.trim(),
+                tds[6].innerText.trim(),
+                tds[7].innerText.trim()
+            );
         } else {
             // Continuation row (rowspan row)
-            rows.push([lastExamNo, lastExamDetails, lastVenue, lastCourse, 
-                getInvigilatorText(tds[0]), tds[1].innerText.trim(), tds[2].innerText.trim(), tds[3].innerText.trim()]);
+            row.push(
+                lastExamNo, lastExamDetails, lastVenue, lastCourse,
+                getInvigilatorText(tds[0]),
+                tds[1].innerText.trim(),
+                tds[2].innerText.trim(),
+                tds[3].innerText.trim()
+            );
         }
-    });
 
+        if (tds[0].colSpan > 1) {
+            rows.push([
+                lastExamNo, lastExamDetails, lastVenue, lastCourse,
+                tds[0].innerText.trim(), // backup info
+                "-", "-", "-" // placeholders for invigilation/attendance
+            ]);
+            return;
+        }
+        rows.push(row);
+    });
+    
     // Generate PDF table
     doc.autoTable({
         head: [headers],
         body: rows,
         startY: startY,
         theme: "grid",
-        styles: {font: "helvetica", fontSize: 7, cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left"},
+        styles: {font: "helvetica", fontSize: , cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left"},
         headStyles: {fillColor: [33, 37, 41], textColor: 255, fontStyle: "bold" },
         tableWidth: "auto",
         margin: { top: margin, left: margin, right: margin, bottom: margin },
