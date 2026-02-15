@@ -57,6 +57,13 @@
                                 onclick="return confirm('Are you sure to additional choose this slot?')" 
                                 style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
                         </form>
+                    {% elif action_type == 'backup' %}
+                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
+                            <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
+                            <button type="submit" name="action" value="backup" 
+                                onclick="return confirm('Are you sure to choose this backup slot?')" 
+                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                        </form>
                     {% endif %}
                 </td>
             {% endif %}
@@ -254,7 +261,7 @@
             </thead>
             <tbody>
                 {% for b in backup %}
-                    {{ slot_row(a, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='backup') }}
+                    {{ slot_row(b, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='backup') }}
                 {% endfor %}
             </tbody>
         </table>
