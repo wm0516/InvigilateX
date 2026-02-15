@@ -52,14 +52,14 @@
                         </button>
                     {% elif action_type == 'open' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                            <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
+                            <input type="hidden" name="w_id" value="{{ slot.venueSessionId }}">
                             <button type="submit" name="action" value="open_accept" 
                                 onclick="return confirm('Are you sure to additional choose this slot?')" 
                                 style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
                         </form>
                     {% elif action_type == 'backup' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                            <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
+                            <input type="hidden" name="w_id" value="{{ slot.venueSessionId }}">
                             <button type="submit" name="action" value="backup" 
                                 onclick="return confirm('Are you sure to choose this backup slot?')" 
                                 style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
