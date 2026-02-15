@@ -524,11 +524,17 @@ document.addEventListener("DOMContentLoaded", () => {
             // RIGHT SIDE (Replace With Dropdown)
             const replaceDiv = document.createElement("div");
             replaceDiv.style.marginBottom = "15px";
-
             const select = document.createElement("select");
             select.name = `replace_${att.invigilatorId}`;
             select.required = true;
 
+            // Add "None" option first
+            const noneOption = document.createElement("option");
+            noneOption.value = ""; // empty value = None
+            noneOption.textContent = "None";
+            select.appendChild(noneOption);
+
+            // Add all valid invigilators
             invigilators.forEach(u => {
                 const option = document.createElement("option");
                 option.value = u.userId;

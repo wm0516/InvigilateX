@@ -2207,7 +2207,16 @@ def admin_manageInvigilationReport():
             for vsi in venue_session.invigilators:
                 field_name = f"replace_{vsi.invigilatorId}"
                 new_invigilator_id = request.form.get(field_name)
-                if not new_invigilator_id:
+
+                if new_invigilator_id is None:
+                    continue  # skip
+
+                if new_invigilator_id == "":  # user selected None → remove invigilator
+                    old_user = vsi.invigilator
+                    duration = ((venue_session.endDateTime - venue_session.startDateTime).total_seconds() / 3600)
+                    old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
+
+                    db.session.delete(vsi)  # remove this invigilator assignment
                     continue
 
                 new_invigilator_id = int(new_invigilator_id)
@@ -2220,11 +2229,11 @@ def admin_manageInvigilationReport():
 
                 old_user = vsi.invigilator
                 duration = ((venue_session.endDateTime - venue_session.startDateTime).total_seconds() / 3600)
-                # Adjust cumulative hours
                 old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
                 new_user.userPendingCumulativeHours += duration
                 vsi.invigilatorId = new_invigilator_id
                 vsi.invigilationStatus = False
+
             db.session.commit()
             record_action("REPORT", "EDIT", new_invigilator_id, user_id)
             flash("Invigilators updated successfully.", "success")
