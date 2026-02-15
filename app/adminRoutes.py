@@ -2078,7 +2078,8 @@ def get_session_details(session_id):
     for vsi in session.invigilators:
         attendances.append({
             "invigilatorId": vsi.invigilatorId,
-            "invigilatorName": vsi.invigilator.userName
+            "invigilatorName": vsi.invigilator.userName,
+            "position": vsi.position
         })
 
     # Fetch backup invigilator
@@ -2106,7 +2107,7 @@ def get_session_details(session_id):
 @login_required
 def get_valid_invigilators():
     users = (User.query
-        .filter(User.userLevel.in_(["LECTURER", "PO", "LAB_ASS"]))
+        .filter(User.userLevel.in_(["LECTURER", "PO", "LAB_ASST"]))
         .filter_by(userStatus=1)
         .all()
     )

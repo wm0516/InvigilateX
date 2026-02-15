@@ -172,7 +172,7 @@
 
                         <td>
                             <div class="info-grid">
-                                <div>Position</div><div><strong>: {{ att.invigilator.position }}</strong></div>
+                                <div>Position</div><div><strong>: {{ att.position }}</strong></div>
                                 <div>Staff ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
                                 <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
                                 <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>
@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentDiv = document.createElement("div");
             currentDiv.style.marginBottom = "15px";
             currentDiv.innerHTML = `
-                <input type="text" value="${att.invigilatorName}" readonly>
+                <input type="text" value=" [${att.position}] ${att.invigilatorName}" readonly>
             `;
             currentContainer.appendChild(currentDiv);
 
