@@ -330,7 +330,7 @@ def user_homepage():
     confirm = VenueSessionInvigilator.query.filter(
         VenueSessionInvigilator.invigilatorId == user_id,
         VenueSessionInvigilator.invigilationStatus == True,
-        VenueSessionInvigilator.position != "Backup" 
+        VenueSessionInvigilator.position != "BACKUP" 
     ).all()
 
     reject = VenueSessionInvigilator.query.filter(
