@@ -328,9 +328,12 @@ def user_homepage():
         VenueSessionInvigilator.position != "BACKUP"  # Exclude BACKUP
     ).all()
 
-    confirm = VenueSessionInvigilator.query.filter_by(
-        invigilatorId=user_id,
-        invigilationStatus=True
+    confirm = VenueSessionInvigilator.query.filter(
+        VenueSessionInvigilator.invigilatorId == user_id,
+        or_(
+            VenueSessionInvigilator.invigilationStatus == True,
+            VenueSessionInvigilator.position == "BACKUP"
+        )
     ).all()
 
     reject = VenueSessionInvigilator.query.filter(
