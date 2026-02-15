@@ -692,16 +692,18 @@ def open_record(user_id):
     # All slots that:
     # - Have timeExpire <= current_time (expired, meaning open for selection)
     # - Not yet accepted (invigilationStatus == False)
-    # - Match the user's gender
+    # - Either match the user's gender or are unassigned (invigilatorId is NULL)
     slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
         .filter(
             VenueSessionInvigilator.timeExpire <= current_time,
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.invigilator.has(userGender=user_gender)
-        )
-        .all()
+            or_(
+                VenueSessionInvigilator.invigilator.has(userGender=user_gender),
+                VenueSessionInvigilator.invigilatorId == None
+            )
+        ).all()
     )
 
     # Fetch accepted slots for conflict checking
@@ -711,8 +713,7 @@ def open_record(user_id):
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == True
-        )
-        .all()
+        ).all()
     )
 
     def is_overlap(start1, end1, start2, end2):
@@ -736,8 +737,6 @@ def open_record(user_id):
             unique_slots[vs.venueSessionId] = slot
 
     return list(unique_slots.values())
-
-
 
 
 # -------------------------------
