@@ -677,15 +677,6 @@ def reject_record(user_id):
         .all()
     )
 
-def backup_record():
-    sessions = (
-        db.session.query(VenueSession)
-        .filter(VenueSession.backupInvigilatorId.is_(None))
-        .all()
-    )
-    return sessions
-
-
 # -------------------------------
 # HELPER 3: Open Slots
 # -------------------------------

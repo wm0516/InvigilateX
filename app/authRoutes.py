@@ -337,7 +337,16 @@ def user_homepage():
         VenueSessionInvigilator.remark.notin_(["PENDING", "CHECK IN", "CHECK IN LATE", "COMPLETED"])
     ).all()]
 
-    backup = VenueSession.query.filter(VenueSession.backupInvigilatorId.is_(None)).all()
+    backup = (
+        VenueSessionInvigilator.query
+        .join(VenueSession)
+        .join(VenueExam)
+        .join(Exam)
+        .filter(
+            VenueSession.backupInvigilatorId.is_(None),
+            Exam.examStatus == 1
+        ).all()
+    )
 
     # --- Open slots filtered by user gender ---
     open_slots = open_record(user_id)
