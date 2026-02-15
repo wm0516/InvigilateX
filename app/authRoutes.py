@@ -321,21 +321,21 @@ def user_homepage():
     user = User.query.get(user_id)
 
     # --- Fetch slots ---
-    waiting = [slot for slot in VenueSessionInvigilator.query.filter_by(
+    waiting = VenueSessionInvigilator.query.filter_by(
         invigilatorId=user_id,
         invigilationStatus=False,
         remark="PENDING"
-    ).all()]
+    ).all()
 
-    confirm = [slot for slot in VenueSessionInvigilator.query.filter_by(
+    confirm = VenueSessionInvigilator.query.filter_by(
         invigilatorId=user_id,
         invigilationStatus=True
-    ).all()]
+    ).all()
 
-    reject = [slot for slot in VenueSessionInvigilator.query.filter(
+    reject = VenueSessionInvigilator.query.filter(
         VenueSessionInvigilator.invigilatorId == user_id,
         VenueSessionInvigilator.remark.notin_(["PENDING", "CHECK IN", "CHECK IN LATE", "COMPLETED"])
-    ).all()]
+    ).all()
 
     backup = (
         VenueSessionInvigilator.query
@@ -359,20 +359,20 @@ def user_homepage():
         action = request.form.get('action')
 
         # -----------------------------
-        # Handle waiting approval/rejection
+        # Handle waiting slot accept/reject
         # -----------------------------
-        waiting_id = request.form.get('w_id')
-        waiting_slot = VenueSessionInvigilator.query.filter_by(
-            venueSessionId=waiting_id,
-            invigilatorId=user_id  # optional if you want to ensure current user
-        ).first()
+        if action in ['accept', 'reject']:
+            waiting_id = request.form.get('w_id')
+            waiting_slot = VenueSessionInvigilator.query.filter_by(
+                venueSessionId=waiting_id,
+                invigilatorId=user_id
+            ).first()
 
-        if waiting_slot and waiting_slot.invigilatorId == user_id:
-            session_obj = waiting_slot.session
-            if not session_obj:
-                flash("Session not found for this slot.", "error")
+            if not waiting_slot or not waiting_slot.session:
+                flash("Selected slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
+            session_obj = waiting_slot.session
             candidate_start, candidate_end = session_obj.startDateTime, session_obj.endDateTime
             hours = (candidate_end - candidate_start).total_seconds() / 3600.0
 
@@ -383,25 +383,12 @@ def user_homepage():
                 flash(f"Slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
                 record_action("ACCEPT", "USER", session_obj.venue.venueNumber, user_id)
                 return redirect(url_for('user_homepage'))
-            
-            elif action == 'backup':
-                # Check session exists
-                if not session_obj:
-                    flash("Session not found for this slot.", "error")
-                    return redirect(url_for('user_homepage'))
-
-                session_obj.backupInvigilatorId = user_id
-                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
-                db.session.commit()
-                flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.","success")
-                record_action("BACKUP", "USER", session_obj.venue.venueNumber, user_id)
-                return redirect(url_for('user_homepage'))
 
             elif action == 'reject':
                 raw_reason = request.form.get('reject_reason', '')
                 waiting_slot.remark = "REJECTED"
-                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 waiting_slot.rejectReason = raw_reason.strip()
+                waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 waiting_slot.invigilationStatus = False
 
                 # Rollback pending hours
@@ -430,18 +417,14 @@ def user_homepage():
         # -----------------------------
         # Handle open slot acceptance
         # -----------------------------
-        open_attendance_id = request.form.get('a_id')
-        if action == 'open_accept' and user:
+        elif action == 'open_accept':
+            open_attendance_id = request.form.get('a_id')
             slot = VenueSessionInvigilator.query.get(open_attendance_id)
-            if not slot:
+            if not slot or not slot.session:
                 flash("Selected slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
-            if not session_obj:
-                flash("Session not found for this slot.", "error")
-                return redirect(url_for('user_homepage'))
-
             candidate_start, candidate_end = session_obj.startDateTime, session_obj.endDateTime
             hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
 
@@ -463,7 +446,7 @@ def user_homepage():
                 flash("Cannot accept this slot: timing overlaps with another assigned session.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Reassign slot to current user
+            # Reassign slot
             if slot.invigilatorId and slot.invigilatorId != user_id:
                 prev_user = User.query.get(slot.invigilatorId)
                 if prev_user:
@@ -473,13 +456,30 @@ def user_homepage():
             slot.invigilationStatus = True
             slot.rejectReason = None
             slot.timeAction = datetime.now() + timedelta(hours=8)
-
-            # Add pending hours for current user
             user.userPendingCumulativeHours = (user.userPendingCumulativeHours or 0) + hours_to_add
-
+            
             db.session.commit()
             flash(f"Open slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
             record_action("EXTRA", "USER", session_obj.venue.venueNumber, user_id)
+            return redirect(url_for('user_homepage'))
+
+        # -----------------------------
+        # Handle backup slot assignment
+        # -----------------------------
+        elif action == 'backup':
+            backup_attendance_id = request.form.get('b_id')
+            slot = VenueSessionInvigilator.query.get(backup_attendance_id)
+            if not slot or not slot.session:
+                flash("Selected backup slot not found.", "error")
+                return redirect(url_for('user_homepage'))
+
+            session_obj = slot.session
+            session_obj.backupInvigilatorId = user_id
+            slot.timeAction = datetime.now() + timedelta(hours=8)
+
+            db.session.commit()
+            flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.", "success")
+            record_action("BACKUP", "USER", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
 
     return render_template(
@@ -491,6 +491,7 @@ def user_homepage():
         reject=reject,
         backup=backup
     )
+
 
 
 # -------------------------------
