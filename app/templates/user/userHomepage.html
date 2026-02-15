@@ -26,6 +26,11 @@
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
+                <td {% if position == "BACKUP" %} 
+                        class="status frame-pending invigilation-status" 
+                    {% endif %}>{{ position }}
+                </td>
+            {% elif col == 'position' %}
                 <td>{{ position }}</td>
             {% elif col == 'venue' %}
                 <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
