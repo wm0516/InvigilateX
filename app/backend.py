@@ -703,11 +703,11 @@ def open_record(user_id):
         .filter(
             (VenueSessionInvigilator.rejectReason.is_(None)) |  # not rejected
             ((VenueSessionInvigilator.rejectReason.isnot(None)) & 
-             (~VenueSessionInvigilator.session.has(
-                 VenueSession.invigilators.any(
-                     VenueSessionInvigilator.invigilationStatus == True
-                 )
-             )))
+            (~VenueSessionInvigilator.session.has(
+            VenueSession.invigilators.any(
+                VenueSessionInvigilator.invigilationStatus == False
+            )
+            )))
         )
         .all()
     )
