@@ -22,7 +22,7 @@ from app import db
 # UPDATE User SET userPendingCumulativeHours = 0, userCumulativeHours = 0;
 # UPDATE InvigilatorAttendance SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0;
 # UPDATE Exam SET examStartTime = NULL, examEndTime = NULL, examNoInvigilator = NULL, examOutput = NULL;
-# UPDATE Exam SET examOutput = NULL;
+# UPDATE Exam SET examOutput = NULL, examStatus = 1;
 # DELETE FROM User WHERE userId = 21013604; 
 
 # ------------------------------
@@ -199,7 +199,7 @@ class VenueSessionInvigilator(db.Model):
     invigilator = relationship("User")
     '''
     CREATE TABLE VenueSessionInvigilator (
-        sessionId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+        sessionId INT NOT NULL AUTO_INCREMENT,
         venueSessionId INT NOT NULL,
         invigilatorId INT NULL,
         position VARCHAR(20) NOT NULL,
@@ -209,11 +209,12 @@ class VenueSessionInvigilator(db.Model):
         timeCreate DATETIME NOT NULL,
         timeExpire DATETIME NOT NULL,
         invigilationStatus BOOLEAN NOT NULL DEFAULT FALSE,
-        remark ENUM('PENDING','CHECK IN LATE','CHECK IN','CHECK OUT EARLY','COMPLETED','EXPIRED','REJECTED') NOT NULL DEFAULT 'PENDING',
+        remark ENUM('PENDING', 'CHECK IN LATE', 'CHECK IN', 'CHECK OUT EARLY', 'COMPLETED', 'EXPIRED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
         rejectReason VARCHAR(255) NULL,
-        PRIMARY KEY (venueSessionId, invigilatorId),
-        FOREIGN KEY (venueSessionId) REFERENCES VenueSession(venueSessionId),
-        FOREIGN KEY (invigilatorId) REFERENCES User(userId)
+        PRIMARY KEY (sessionId),
+        UNIQUE KEY unique_session_invigilator (venueSessionId, invigilatorId),
+        FOREIGN KEY (venueSessionId) REFERENCES VenueSession(venueSessionId) ON DELETE CASCADE,
+        FOREIGN KEY (invigilatorId) REFERENCES User(userId) ON DELETE SET NULL
     );
     '''
 
