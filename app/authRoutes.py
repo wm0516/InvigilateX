@@ -451,6 +451,7 @@ def user_homepage():
                 waiting_slot.rejectReason = raw_reason.strip()
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 waiting_slot.invigilationStatus = False
+
                 # Rollback pending hours
                 if user:
                     user.userPendingCumulativeHours = max((user.userPendingCumulativeHours or 0) - hours, 0)
@@ -564,6 +565,7 @@ def user_homepage():
             flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.", "success")
             record_action("BACKUP", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
+
 
         elif action == 'update_position':
             c_id = request.form.get('c_id')

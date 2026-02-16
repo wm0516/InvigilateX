@@ -41,7 +41,8 @@
                                 <option disabled>-- Select Role --</option>
                                 {% for role in slot.allowed_roles %}
                                     <option value="{{ role }}"
-                                        {% if slot.position == role %}selected{% endif %}>{{ role }}
+                                        {% if slot.position == role %}selected{% endif %}>
+                                        {{ role }}
                                     </option>
                                 {% endfor %}
                             </select>
