@@ -33,18 +33,22 @@
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
-                <td>
-                    {% if action_type == 'waiting' %}
-                        <select name="new_position" class="roleDropdown" required>
+            <td>
+                {% if action_type == 'waiting' %}
+                    {% set form_id = "waitingForm_" ~ slot.venueSessionId %}
+                    <form id="{{ form_id }}" action="{{ url_for('user_homepage') }}" method="POST">
+                        <input type="hidden" name="w_id" value="{{ slot.venueSessionId }}">
+                        <select name="new_position" class="roleDropdown" data-form="{{ form_id }}" required>
                             <option value="" disabled selected>-- Select Role --</option>
                             {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
                                 <option value="{{ pos }}">{{ pos }}</option>
                             {% endfor %}
                         </select>
-                    {% else %}
-                        {{ position }}
-                    {% endif %}
-                </td>
+                    </form>
+                {% else %}
+                    {{ position }}
+                {% endif %}
+            </td>
             {% elif col == 'venue' %}
                 <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
             {% elif col == 'examDate' %}
@@ -58,13 +62,12 @@
             {% elif col == 'action' and show_actions %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
-                            <input type="hidden" name="w_id" value="{{  slot.venueSessionId}}">
-                            <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" 
-                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
-                        </form>
-                        <button type="button" class="reject-btn" data-id="{{  slot.venueSessionId }}"
-                            style="background-color: #f8d7da; color: #721c24; padding: 5%;">Reject</button>
+                        {% set form_id = "waitingForm_" ~ slot.venueSessionId %}
+                        <button type="submit" name="action" value="accept" form="{{ form_id }}" class="acceptBtn" data-form="{{ form_id }}" disabled
+                            onclick="return confirm('Are you sure to accept this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">
+                            Accept</button>
+                        <button type="button" class="reject-btn" data-id="{{ slot.venueSessionId }}" style="background-color: #f8d7da; color: #721c24; padding: 5%;">
+                            Reject</button>
                     {% elif action_type == 'open' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
                             <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
@@ -345,8 +348,8 @@ document.querySelectorAll('.reject-btn').forEach(btn => {
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".roleDropdown").forEach(function (dropdown) {
         dropdown.addEventListener("change", function () {
-            const form = this.closest("form");
-            const button = form.querySelector(".acceptBtn");
+            const formId = this.dataset.form;
+            const button = document.querySelector('.acceptBtn[data-form="' + formId + '"]');
             if (this.value) {
                 button.disabled = false;
             } else {
