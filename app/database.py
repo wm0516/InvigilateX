@@ -18,10 +18,8 @@ from app import db
 # DELETE FROM Exam WHERE examId = '1';                                                      -> remove certain row of data
 # NOT NULL = MUST HAVE DATA 
 # NULL = OPTIONAL HAVE DATA
-# DROP TABLE Course, Exam, VenueExam, InvigilationReport, InvigilatorAttendance;
 # UPDATE User SET userPendingCumulativeHours = 0, userCumulativeHours = 0;
 # UPDATE VenueSessionInvigilator SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0;
-# UPDATE Exam SET examStartTime = NULL, examEndTime = NULL, examNoInvigilator = NULL, examOutput = NULL;
 # UPDATE Exam SET examOutput = NULL, examStatus = 1;
 # DELETE FROM User WHERE userId = 21013604; 
 
