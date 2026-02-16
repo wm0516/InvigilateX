@@ -532,46 +532,6 @@ def user_homepage():
             record_action("BACKUP", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
 
-
-        elif action == 'update_position':
-            c_id = request.form.get('c_id')
-            new_position = request.form.get('new_position')
-
-            if not c_id or not new_position:
-                flash("Invalid request.", "error")
-                return redirect(url_for('user_homepage'))
-
-            slot = (
-                db.session.query(VenueSessionInvigilator)
-                .filter_by(sessionId=c_id)
-                .with_for_update()  # ✅ RACE SAFE
-                .first()
-            )
-
-            if not slot:
-                flash("Slot not found.", "danger")
-                return redirect(url_for('user_homepage'))
-
-            if slot.invigilatorId != user_id:
-                flash("Unauthorized action.", "error")
-                return redirect(url_for('user_homepage'))
-
-            allowed = get_available_positions(
-                slot.session,
-                exclude_slot_id=slot.sessionId  # ✅ FIX
-            )
-
-            if new_position not in allowed:
-                flash("Selected role is no longer available.", "danger")
-                return redirect(url_for('user_homepage'))
-
-            slot.position = new_position
-            db.session.commit()
-            flash("Position updated successfully.", "success")
-            return redirect(url_for('user_homepage'))
-
-
-
     return render_template(
         'user/userHomepage.html',
         active_tab='user_hometab',

@@ -36,7 +36,6 @@
                 <td>
                     {% if action_type == 'waiting' %}
                         <form method="POST" action="{{ url_for('user_homepage') }}">
-                            <input type="hidden" name="action" value="update_position">
                             <input type="hidden" name="c_id" value="{{ slot.sessionId }}">
                             <select name="new_position" onchange="this.form.submit()">
                                 <option disabled selected>Change Role</option>
