@@ -35,15 +35,13 @@
             {% elif col == 'position' %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        <form method="POST" action="{{ url_for('user_homepage') }}">
-                            <input type="hidden" name="c_id" value="{{ slot.sessionId }}">
-                            <select name="new_position" onchange="this.form.submit()">
-                                <option disabled selected>Change Role</option>
-                                {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
-                                    <option value="{{ pos }}">{{ pos }}</option>
-                                {% endfor %}
-                            </select>
-                        </form>
+                        <label for="roleDropdown">Change Role:</label>
+                        <select id="roleDropdown" name="new_position">
+                            <option disabled selected>Select Role</option>
+                            {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
+                                <option value="{{ pos }}">{{ pos }}</option>
+                            {% endfor %}
+                        </select>
                     {% else %}
                         {{ position }}
                     {% endif %}
