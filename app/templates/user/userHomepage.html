@@ -33,18 +33,7 @@
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
-                <td>
-                    {% if action_type == 'waiting' %}
-                        <select id="roleDropdown" name="new_position" required>
-                            <option disabled selected>-- Select Role --</option>
-                            {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
-                                <option value="{{ pos }}" >{{ pos }}</option>
-                            {% endfor %}
-                        </select>
-                    {% else %}
-                        {{ position }}
-                    {% endif %}
-                </td>
+                <td>{{ position }}</td>
             {% elif col == 'venue' %}
                 <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
             {% elif col == 'examDate' %}
@@ -60,6 +49,12 @@
                     {% if action_type == 'waiting' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display:contents;">
                             <input type="hidden" name="w_id" value="{{  slot.venueSessionId}}">
+                            <select name="new_position" class="roleDropdown" required>
+                                <option value="" disabled selected>-- Select Role --</option>
+                                {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
+                                    <option value="{{ pos }}">{{ pos }}</option>
+                                {% endfor %}
+                            </select>
                             <button type="submit" name="action" value="accept" onclick="return confirm('Are you sure to accept this slot?')" 
                                 style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
                         </form>
@@ -339,6 +334,20 @@ function closeRejectModal() {
 document.querySelectorAll('.reject-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         openRejectModal(this.dataset.id);
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".roleDropdown").forEach(function (dropdown) {
+        dropdown.addEventListener("change", function () {
+            const form = this.closest("form");
+            const button = form.querySelector(".acceptBtn");
+            if (this.value) {
+                button.disabled = false;
+            } else {
+                button.disabled = true;
+            }
+        });
     });
 });
 </script>
