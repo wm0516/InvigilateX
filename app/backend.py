@@ -636,8 +636,7 @@ def confirm_record(user_id):
         .join(Course, Course.courseExamId == Exam.examId)
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
-            VenueSessionInvigilator.invigilationStatus == True,
-            VenueSessionInvigilator.position != "BACKUP"
+            VenueSessionInvigilator.invigilationStatus == True
         )
         .all()
     )
