@@ -684,63 +684,23 @@ def open_record(user_id):
         return []
 
     user_gender = user.userGender
-
-    # Slots logic:
-    # 1. If expired -> open to ALL
-    # 2. If expired -> only same gender
-    # 3. Always include invigilatorId == NULL
     slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
         .filter(
+            # Slot is NOT confirmed
+            VenueSessionInvigilator.invigilationStatus == False,
+            VenueSessionInvigilator.invigilator.userGender == user_gender,
+            # Either expired OR unassigned OR rejected
             or_(
-                VenueSessionInvigilator.invigilationStatus == False,
                 VenueSessionInvigilator.timeExpire <= current_time,
-                VenueSessionInvigilator.invigilator.has(userGender=user_gender),
                 VenueSessionInvigilator.invigilatorId == None,
-                VenueSessionInvigilator.remark == "REJECTED" 
+                VenueSessionInvigilator.remark == "REJECTED"
             )
         ).all()
     )
+    return slots
 
-    # Fetch accepted slots for conflict checking
-    assigned_slots = (
-        db.session.query(VenueSessionInvigilator)
-        .join(VenueSession)
-        .filter(
-            VenueSessionInvigilator.invigilatorId == user_id,
-            VenueSessionInvigilator.invigilationStatus == True
-        ).all()
-    )
-
-    def is_overlap(start1, end1, start2, end2):
-        return max(start1, start2) < min(end1, end2)
-
-    unique_slots = {}
-
-    for slot in slots:
-        vs = slot.session
-
-        # Conflict check
-        conflict = False
-        for assigned in assigned_slots:
-            a_vs = assigned.session
-            if is_overlap(
-                vs.startDateTime,
-                vs.endDateTime,
-                a_vs.startDateTime,
-                a_vs.endDateTime
-            ):
-                conflict = True
-                break
-
-        if conflict:
-            continue
-        # Deduplicate by venueSessionId
-        if vs.venueSessionId not in unique_slots:
-            unique_slots[vs.venueSessionId] = slot
-
-    return list(unique_slots.values())
 
 
 # -------------------------------
