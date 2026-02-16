@@ -368,8 +368,7 @@ def user_homepage():
     waiting = VenueSessionInvigilator.query.filter(
         VenueSessionInvigilator.invigilatorId == user_id,
         VenueSessionInvigilator.invigilationStatus == False,
-        VenueSessionInvigilator.remark == "PENDING",
-        VenueSessionInvigilator.position != "BACKUP"  # Exclude BACKUP
+        VenueSessionInvigilator.timeAction == "",
     ).all()
 
     confirm = VenueSessionInvigilator.query.filter(

@@ -613,34 +613,17 @@ def check_profile(user_id, cardId, contact, password1, password2):
 # HELPER 1: Waiting Slots
 # -------------------------------
 def waiting_record(user_id):
-    current_time = datetime.now() + timedelta(hours=8)
-
-    # Subquery: sessions the user rejected
-    rejected_subq = (
-        db.session.query(VenueSessionInvigilator.venueSessionId)
-        .filter(
-            VenueSessionInvigilator.invigilatorId == user_id,
-            VenueSessionInvigilator.rejectReason.isnot(None)
-        )
-        .subquery()
-    )
-
-    # Fetch waiting slots: assigned to user but not yet checked in, not rejected
     return (
         db.session.query(VenueSessionInvigilator)
-        .join(VenueSession)
-        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
-        .join(Exam, Exam.examId == VenueExam.examId)
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.rejectReason.is_(None),
-            VenueSessionInvigilator.timeAction.is_(None),
-            VenueSessionInvigilator.timeCreate <= current_time,
-            ~VenueSessionInvigilator.venueSessionId.in_(select(rejected_subq))
+            VenueSessionInvigilator.remark == "PENDING",
+            VenueSessionInvigilator.rejectReason.is_(None)
         )
         .all()
     )
+
 
 # -------------------------------
 # HELPER 2: Confirmed Slots
