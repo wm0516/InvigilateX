@@ -280,7 +280,7 @@
             </thead>
             <tbody>
                 {% for b in backup %}
-                    {{ slot_row(b, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='backup', override={'position': 'BACKUP'}) }}
+                    {{ slot_row(b, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='backup') }}
                 {% endfor %}
             </tbody>
         </table>
