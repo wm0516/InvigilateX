@@ -321,7 +321,7 @@ def admin_homepage():
 def get_available_positions(session_obj, exclude_slot_id=None):
     # Calculate total students
     total_students = sum(
-        ve.exam.totalStudents or 0
+        ve.studentCount or 0
         for ve in session_obj.exams
         if ve.exam
     )
