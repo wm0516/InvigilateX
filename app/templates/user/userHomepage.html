@@ -35,9 +35,8 @@
             {% elif col == 'position' %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        <label for="roleDropdown">Change Role:</label>
                         <select id="roleDropdown" name="new_position">
-                            <option disabled selected>Select Role</option>
+                            <option disabled selected>-- Select Role --</option>
                             {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
                                 <option value="{{ pos }}">{{ pos }}</option>
                             {% endfor %}
