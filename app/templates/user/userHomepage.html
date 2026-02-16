@@ -41,6 +41,7 @@
                                 <option value="{{ pos }}">{{ pos }}</option>
                             {% endfor %}
                         </select>
+                    {% elif backup %} BACKUP
                     {% else %}
                         {{ position }}
                     {% endif %}
@@ -209,18 +210,18 @@
         <table class="user-data-table">
             <thead>
                 <tr>
-                    <th>Position</th>
                     <th>Exam Venue</th>
                     <th>Exam Date</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
                     <th>Course Code-Name</th>
+                    <th>Position</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for w in waiting %}
-                    {{ slot_row(w, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='waiting') }}
+                    {{ slot_row(w, columns=['venue', 'examDate', 'examTime', 'examPeriod', 'courseCode',' position', 'action'], show_actions=True, action_type='waiting') }}
                 {% endfor %}
             </tbody>
         </table>
@@ -237,18 +238,18 @@
         <table class="user-data-table">
             <thead>
                 <tr>
-                    <th>Position</th>
                     <th>Exam Venue</th>
                     <th>Exam Date</th>
                     <th>Exam Time</th>
                     <th>Exam Period</th>
                     <th>Course Code-Name</th>
+                    <th>Position</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for a in open %}
-                    {{ slot_row(a, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='open') }}
+                    {{ slot_row(a, columns=['venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'position', 'action'], show_actions=True, action_type='open') }}
                 {% endfor %}
             </tbody>
         </table>

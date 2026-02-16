@@ -369,7 +369,7 @@ def user_homepage():
         .filter(
             VenueSession.backupInvigilatorId.is_(None),   # Backup not yet assigned
             Exam.examStatus == 1,                         # Only active exams
-            (VenueSessionInvigilator.invigilatorId != user_id) | (VenueSessionInvigilator.invigilatorId.is_(None))  # Not assigned to current user
+            VenueSessionInvigilator.invigilatorId.is_(None) # Not assigned to current user
         )
         .group_by(VenueSession.venueNumber)
         .all()
