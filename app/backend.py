@@ -687,10 +687,11 @@ def open_record(user_id):
     slots = (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
+        .outerjoin(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .filter(
             # Slot is NOT confirmed
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.invigilator.userGender == user_gender,
+            User.userGender == user_gender,
             # Either expired OR unassigned OR rejected
             or_(
                 VenueSessionInvigilator.timeExpire <= current_time,
