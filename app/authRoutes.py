@@ -451,7 +451,6 @@ def user_homepage():
                 waiting_slot.rejectReason = raw_reason.strip()
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 waiting_slot.invigilationStatus = False
-
                 # Rollback pending hours
                 if user:
                     user.userPendingCumulativeHours = max((user.userPendingCumulativeHours or 0) - hours, 0)
@@ -531,26 +530,37 @@ def user_homepage():
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
-            # 1️⃣ Assign the current user as backup
+            # Assign backup user to session
             session_obj.backupInvigilatorId = user_id
-            db.session.flush()
 
-            # 2️⃣ Create a new VenueSessionInvigilator row for backup
-            new_backup_slot = VenueSessionInvigilator(
+            # Check if this user already has a row for this session
+            existing_slot = VenueSessionInvigilator.query.filter_by(
                 venueSessionId=session_obj.venueSessionId,
-                invigilatorId=user_id,
-                checkIn=None,
-                checkOut=None,
-                timeCreate=datetime.now() + timedelta(hours=8),
-                position='BACKUP',   # Set position as BACKUP
-                timeExpire=datetime.now() + timedelta(hours=8),  
-                timeAction=datetime.now() + timedelta(hours=8),
-                invigilationStatus=False,
-                remark="PENDING"
-            )
-            db.session.add(new_backup_slot)
-            db.session.commit()
+                invigilatorId=user_id
+            ).first()
 
+            if existing_slot:
+                # Just convert existing record into BACKUP
+                existing_slot.position = 'BACKUP'
+                existing_slot.invigilationStatus = False
+                existing_slot.remark = "PENDING"
+                existing_slot.timeAction = datetime.now() + timedelta(hours=8)
+            else:
+                # Create new record safely
+                new_backup_slot = VenueSessionInvigilator(
+                    venueSessionId=session_obj.venueSessionId,
+                    invigilatorId=user_id,
+                    checkIn=None,
+                    checkOut=None,
+                    timeCreate=datetime.now() + timedelta(hours=8),
+                    position='BACKUP',
+                    timeExpire=datetime.now() + timedelta(hours=8),
+                    timeAction=datetime.now() + timedelta(hours=8),
+                    invigilationStatus=False,
+                    remark="PENDING"
+                )
+                db.session.add(new_backup_slot)
+            db.session.commit()
             flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.", "success")
             record_action("BACKUP", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))

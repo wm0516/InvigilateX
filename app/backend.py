@@ -697,7 +697,8 @@ def open_record(user_id):
                 VenueSessionInvigilator.invigilationStatus == False,
                 VenueSessionInvigilator.timeExpire <= current_time,
                 VenueSessionInvigilator.invigilator.has(userGender=user_gender),
-                VenueSessionInvigilator.invigilatorId == None
+                VenueSessionInvigilator.invigilatorId == None,
+                VenueSessionInvigilator.remark == "REJECTED" 
             )
         ).all()
     )
@@ -725,7 +726,7 @@ def open_record(user_id):
         for assigned in assigned_slots:
             a_vs = assigned.session
             if is_overlap(
-vs.startDateTime,
+                vs.startDateTime,
                 vs.endDateTime,
                 a_vs.startDateTime,
                 a_vs.endDateTime
