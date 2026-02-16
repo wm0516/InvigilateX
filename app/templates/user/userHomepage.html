@@ -11,7 +11,11 @@
         {% set start = session_obj.startDateTime %}
         {% set end = session_obj.endDateTime %}
         {% set duration = (end - start).total_seconds() %}
-        {% set position = slot.position if slot.position else '' %}
+        {% if action_type == 'backup' %}
+            {% set position = 'BACKUP' %}
+        {% else %}
+            {% set position = slot.position if slot.position else '' %}
+        {% endif %}
         {% set course_list = [] %}
         {% for venue_exam in session_obj.exams %}
             {% set course = venue_exam.exam.course %}
