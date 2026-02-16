@@ -618,10 +618,8 @@ def waiting_record(user_id):
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.remark == "PENDING",
-            VenueSessionInvigilator.rejectReason.is_(None)
-        )
-        .all()
+            VenueSessionInvigilator.timeAction == ""
+        ).all()
     )
 
 
