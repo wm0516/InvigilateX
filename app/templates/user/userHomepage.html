@@ -33,7 +33,25 @@
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
-                <td>{{ position }}</td>
+                <td>
+                    {% if action_type == 'incoming_edit' %}
+                        <form method="POST" action="{{ url_for('user_homepage') }}">
+                            <input type="hidden" name="action" value="update_position">
+                            <input type="hidden" name="c_id" value="{{ slot.venueSessionId }}">
+                            <select name="new_position" onchange="this.form.submit()">
+                                <option disabled>Select Role</option>
+                                {% for role in slot.allowed_roles %}
+                                    <option value="{{ role }}"
+                                        {% if slot.position == role %}selected{% endif %}>
+                                        {{ role }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    {% else %}
+                        {{ position }}
+                    {% endif %}
+                </td>
             {% elif col == 'venue' %}
                 <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
             {% elif col == 'examDate' %}
@@ -183,7 +201,7 @@
             </thead>
             <tbody>
                 {% for c in confirm %}
-                    {{ slot_row(c, columns=['timeAction', 'position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode']) }}
+                    {{ slot_row(c, columns=['timeAction','position','venue','examDate','examTime','examPeriod','courseCode'], show_actions=False, action_type='incoming_edit') }}
                 {% endfor %}
             </tbody>
         </table>

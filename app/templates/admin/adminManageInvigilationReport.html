@@ -172,7 +172,7 @@
 
                         <td>
                             <div class="info-grid">
-                                <div>Position</div><div><strong>: {{ att.position }}</strong></div>
+                                <div>Position</div><div><strong>: {{ att.position if att.position else "None" }}</strong></div>
                                 <div>Staff ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
                                 <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
                                 <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>

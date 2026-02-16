@@ -449,17 +449,13 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         # --- Assign chosen invigilators ---
         existing_invigilators = {v.invigilatorId for v in session.invigilators}
 
-        for idx, inv in enumerate(chosen):
+        for inv in chosen:
             if inv.userId in existing_invigilators:
                 continue  # skip duplicates
-            # Update pending hours
             inv.userPendingCumulativeHours = (inv.userPendingCumulativeHours or 0.0) + duration_hours
-            # Determine role
-            role = "CHIEF INVIGILATOR" if idx == 0 else "INVIGILATOR"  # first is always Chief
             db.session.add(VenueSessionInvigilator(
                 venueSessionId=session.venueSessionId,
                 invigilatorId=inv.userId,
-                postion=role,
                 timeCreate=open,
                 timeExpire=close
             ))

@@ -311,6 +311,50 @@ def admin_homepage():
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
+
+
+
+
+
+
+
+def get_available_positions(session_obj, exclude_slot_id=None):
+    # Calculate total students
+    total_students = sum(
+        ve.exam.totalStudents or 0
+        for ve in session_obj.exams
+        if ve.exam
+    )
+
+    # Required roles logic
+    required_chief = 1
+    required_inv = 1 if total_students <= 32 else 2
+
+    # Count existing confirmed roles
+    query = VenueSessionInvigilator.query.filter(
+        VenueSessionInvigilator.venueSessionId == session_obj.venueSessionId,
+        VenueSessionInvigilator.invigilationStatus == True
+    )
+
+    # Exclude the current slot row (important for editing)
+    if exclude_slot_id:
+        query = query.filter(VenueSessionInvigilator.venueSessionId != exclude_slot_id)
+
+    existing = query.all()
+    chief_count = sum(1 for e in existing if e.position == "CHIEF INVIGILATOR")
+    inv_count = sum(1 for e in existing if e.position == "INVIGILATOR")
+
+    # Determine available roles
+    available = []
+    if chief_count < required_chief:
+        available.append("CHIEF INVIGILATOR")
+    if inv_count < required_inv:
+        available.append("INVIGILATOR")
+
+    return available
+
+
+
 # -------------------------------
 # Main User Homepage
 # -------------------------------
@@ -354,6 +398,18 @@ def user_homepage():
         .group_by(VenueSession.venueNumber)
         .all()
     )
+
+    confirm_with_roles = []
+    for c in confirm:
+        if c.session:
+            c.allowed_roles = get_available_positions(
+                c.session,
+                exclude_slot_id=c.venueSessionId
+            )
+        else:
+            c.allowed_roles = []
+        confirm_with_roles.append(c)
+
 
     # --- Open slots filtered by user gender ---
     open_slots = open_record(user_id)
@@ -425,44 +481,40 @@ def user_homepage():
         elif action == 'open_accept':
             open_attendance_id = request.form.get('a_id')
             slot = VenueSessionInvigilator.query.get(open_attendance_id)
+
             if not slot or not slot.session:
                 flash("Selected slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
-            candidate_start, candidate_end = session_obj.startDateTime, session_obj.endDateTime
+            candidate_start = session_obj.startDateTime
+            candidate_end = session_obj.endDateTime
             hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
 
-            # Gender check
-            if slot.invigilator and slot.invigilator.userGender != user.userGender:
-                flash("Cannot accept: slot reserved for same-gender invigilators only.", "error")
-                return redirect(url_for('user_homepage'))
-
-            # Check conflicts with already assigned slots
-            conflict = False
+            # Conflict Check
             for assigned in confirm:
                 assigned_session = assigned.session
                 if assigned_session:
-                    a_start, a_end = assigned_session.startDateTime, assigned_session.endDateTime
+                    a_start = assigned_session.startDateTime
+                    a_end = assigned_session.endDateTime
                     if max(a_start, candidate_start) < min(a_end, candidate_end):
-                        conflict = True
-                        break
-            if conflict:
-                flash("Cannot accept this slot: timing overlaps with another assigned session.", "error")
+                        flash("Cannot accept: Time overlap detected.", "error")
+                        return redirect(url_for('user_homepage'))
+
+            # Re-check available positions (race condition safe)
+            available_positions = get_available_positions(session_obj)
+            if not available_positions:
+                flash("All positions have already been filled.", "error")
                 return redirect(url_for('user_homepage'))
 
-            # Reassign slot
-            if slot.invigilatorId and slot.invigilatorId != user_id:
-                prev_user = User.query.get(slot.invigilatorId)
-                if prev_user:
-                    prev_user.userPendingCumulativeHours = max((prev_user.userPendingCumulativeHours or 0) - hours_to_add, 0)
-
+            # Assign position safely
+            slot.position = available_positions[0]
             slot.invigilatorId = user_id
             slot.invigilationStatus = True
             slot.rejectReason = None
             slot.timeAction = datetime.now() + timedelta(hours=8)
             user.userPendingCumulativeHours = (user.userPendingCumulativeHours or 0) + hours_to_add
-
+            
             db.session.commit()
             flash(f"Open slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
             record_action("EXTRA", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
@@ -503,12 +555,31 @@ def user_homepage():
             record_action("BACKUP", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
 
+        elif action == 'update_position':
+            c_id = request.form.get('c_id')
+            new_position = request.form.get('new_position')
+            slot = VenueSessionInvigilator.query.get(c_id)
+
+            if not slot or not slot.session:
+                flash("Slot not found.", "error")
+                return redirect(url_for('user_homepage'))
+
+            allowed = get_available_positions(slot.session, exclude_slot_id=slot.id)
+            if new_position not in allowed:
+                flash("Position already filled by another user.", "error")
+                return redirect(url_for('user_homepage'))
+
+            slot.position = new_position
+            db.session.commit()
+            flash("Position updated successfully.", "success")
+            return redirect(url_for('user_homepage'))
+
 
     return render_template(
         'user/userHomepage.html',
         active_tab='user_hometab',
         waiting=waiting,
-        confirm=confirm,
+        confirm=confirm_with_roles,
         open=open_slots,
         reject=reject,
         backup=backup
