@@ -37,13 +37,11 @@
                     {% if action_type == 'incoming_edit' %}
                         <form method="POST" action="{{ url_for('user_homepage') }}">
                             <input type="hidden" name="action" value="update_position">
+                            <input type="hidden" name="c_id" value="{{ slot.sessionId }}">
                             <select name="new_position" onchange="this.form.submit()">
-                                <option disabled>-- Select Role --</option>
-                                {% for role in slot.allowed_roles %}
-                                    <option value="{{ role }}"
-                                        {% if slot.position == role %}selected{% endif %}>
-                                        {{ role }}
-                                    </option>
+                                <option disabled selected>Change Role</option>
+                                {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
+                                    <option value="{{ pos }}">{{ pos }}</option>
                                 {% endfor %}
                             </select>
                         </form>

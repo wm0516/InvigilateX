@@ -326,32 +326,29 @@ def get_available_positions(session_obj, exclude_slot_id=None):
         if ve.exam
     )
 
-    # Required roles logic
     required_chief = 1
     required_inv = 1 if total_students <= 32 else 2
 
-    # Count existing confirmed roles
     query = VenueSessionInvigilator.query.filter(
         VenueSessionInvigilator.venueSessionId == session_obj.venueSessionId,
         VenueSessionInvigilator.invigilationStatus == True
     )
 
-    # Exclude the current slot row (important for editing)
+    # FIX: exclude by PRIMARY KEY (sessionId)
     if exclude_slot_id:
-        query = query.filter(VenueSessionInvigilator.venueSessionId != exclude_slot_id)
+        query = query.filter(VenueSessionInvigilator.sessionId != exclude_slot_id)
 
-    existing = query.all()
-    chief_count = sum(1 for e in existing if e.position == "CHIEF INVIGILATOR")
-    inv_count = sum(1 for e in existing if e.position == "INVIGILATOR")
+    confirmed = query.all()
+    chief_count = sum(1 for c in confirmed if c.position == "CHIEF")
+    inv_count = sum(1 for c in confirmed if c.position == "INVIGILATOR")
 
-    # Determine available roles
-    available = []
+    allowed = []
     if chief_count < required_chief:
-        available.append("CHIEF INVIGILATOR")
+        allowed.append("CHIEF")
     if inv_count < required_inv:
-        available.append("INVIGILATOR")
+        allowed.append("INVIGILATOR")
+    return allowed
 
-    return available
 
 
 
@@ -363,26 +360,10 @@ def get_available_positions(session_obj, exclude_slot_id=None):
 def user_homepage():
     user_id = session.get('user_id')
     user = User.query.get(user_id)
-
-    # --- Fetch slots ---
-    waiting = VenueSessionInvigilator.query.filter(
-        VenueSessionInvigilator.invigilatorId == user_id,
-        VenueSessionInvigilator.invigilationStatus == False,
-        VenueSessionInvigilator.timeAction == "",
-    ).all()
-
-    confirm = VenueSessionInvigilator.query.filter(
-        VenueSessionInvigilator.invigilatorId == user_id,
-        or_(
-            VenueSessionInvigilator.invigilationStatus == True,
-            VenueSessionInvigilator.position == "BACKUP"
-        )
-    ).all()
-
-    reject = VenueSessionInvigilator.query.filter(
-        VenueSessionInvigilator.invigilatorId == user_id,
-        VenueSessionInvigilator.remark.notin_(["PENDING", "CHECK IN", "CHECK IN LATE", "COMPLETED"])
-    ).all()
+    waiting = waiting_record(user_id)
+    confirm = confirm_record(user_id)
+    reject = reject_record(user_id)
+    open_slots = open_record(user_id)
 
     backup = (
         VenueSessionInvigilator.query
@@ -409,11 +390,6 @@ def user_homepage():
             c.allowed_roles = []
         confirm_with_roles.append(c)
 
-
-    # --- Open slots filtered by user gender ---
-    open_slots = open_record(user_id)
-    if user:
-        open_slots = [slot for slot in open_slots if slot.invigilator.userGender == user.userGender]
 
     if request.method == 'POST':
         action = request.form.get('action')
@@ -478,46 +454,53 @@ def user_homepage():
         # Handle open slot acceptance
         # -----------------------------
         elif action == 'open_accept':
-            open_attendance_id = request.form.get('a_id')
-            slot = VenueSessionInvigilator.query.get(open_attendance_id)
+            open_attendance_id = request.form.get('open_id')
 
-            if not slot or not slot.session:
-                flash("Selected slot not found.", "error")
+            slot = (
+                db.session.query(VenueSessionInvigilator)
+                .filter_by(sessionId=open_attendance_id)
+                .with_for_update()  # ✅ Prevent double booking
+                .first()
+            )
+
+            if not slot:
+                flash("Slot not found.", "danger")
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
-            candidate_start = session_obj.startDateTime
-            candidate_end = session_obj.endDateTime
-            hours_to_add = (candidate_end - candidate_start).total_seconds() / 3600.0
 
-            # Conflict Check
-            for assigned in confirm:
-                assigned_session = assigned.session
-                if assigned_session:
-                    a_start = assigned_session.startDateTime
-                    a_end = assigned_session.endDateTime
-                    if max(a_start, candidate_start) < min(a_end, candidate_end):
-                        flash("Cannot accept: Time overlap detected.", "error")
-                        return redirect(url_for('user_homepage'))
+            # Conflict check
+            user_confirmed = VenueSessionInvigilator.query.filter(
+                VenueSessionInvigilator.invigilatorId == user_id,
+                VenueSessionInvigilator.invigilationStatus == True
+            ).all()
 
-            # Re-check available positions (race condition safe)
+            for c in user_confirmed:
+                if c.venueSessionId == session_obj.venueSessionId:
+                    flash("You are already assigned to this session.", "danger")
+                    return redirect(url_for('user_homepage'))
+
+                if c.session.startTime == session_obj.startTime:
+                    flash("Time conflict detected.", "danger")
+                    return redirect(url_for('user_homepage'))
+
             available_positions = get_available_positions(session_obj)
+
             if not available_positions:
-                flash("All positions have already been filled.", "error")
+                flash("No available roles left.", "danger")
                 return redirect(url_for('user_homepage'))
 
-            # Assign position safely
-            slot.position = available_positions[0]
+            chosen_position = available_positions[0]
+
             slot.invigilatorId = user_id
+            slot.position = chosen_position
             slot.invigilationStatus = True
-            slot.rejectReason = None
-            slot.timeAction = datetime.now() + timedelta(hours=8)
-            user.userPendingCumulativeHours = (user.userPendingCumulativeHours or 0) + hours_to_add
-            
+            slot.remark = None
             db.session.commit()
-            flash(f"Open slot at Venue: {session_obj.venue.venueNumber} accepted successfully.", "success")
-            record_action("EXTRA", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
+
+            flash("Open slot accepted successfully!", "success")
             return redirect(url_for('user_homepage'))
+
 
         # -----------------------------
         # Handle backup slot assignment
@@ -569,21 +552,40 @@ def user_homepage():
         elif action == 'update_position':
             c_id = request.form.get('c_id')
             new_position = request.form.get('new_position')
-            slot = VenueSessionInvigilator.query.get(c_id)
 
-            if not slot or not slot.session:
-                flash("Slot not found.", "error")
+            if not c_id or not new_position:
+                flash("Invalid request.", "error")
                 return redirect(url_for('user_homepage'))
 
-            allowed = get_available_positions(slot.session, exclude_slot_id=slot.id)
+            slot = (
+                db.session.query(VenueSessionInvigilator)
+                .filter_by(sessionId=c_id)
+                .with_for_update()  # ✅ RACE SAFE
+                .first()
+            )
+
+            if not slot:
+                flash("Slot not found.", "danger")
+                return redirect(url_for('user_homepage'))
+
+            if slot.invigilatorId != user_id:
+                flash("Unauthorized action.", "error")
+                return redirect(url_for('user_homepage'))
+
+            allowed = get_available_positions(
+                slot.session,
+                exclude_slot_id=slot.sessionId  # ✅ FIX
+            )
+
             if new_position not in allowed:
-                flash("Position already filled by another user.", "error")
+                flash("Selected role is no longer available.", "danger")
                 return redirect(url_for('user_homepage'))
 
             slot.position = new_position
             db.session.commit()
             flash("Position updated successfully.", "success")
             return redirect(url_for('user_homepage'))
+
 
 
     return render_template(

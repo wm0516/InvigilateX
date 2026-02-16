@@ -618,9 +618,10 @@ def waiting_record(user_id):
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.timeAction == ""
+            VenueSessionInvigilator.remark == "PENDING"
         ).all()
     )
+
 
 
 # -------------------------------
@@ -667,21 +668,28 @@ def open_record(user_id):
     user_gender = user.userGender
     slots = (
         db.session.query(VenueSessionInvigilator)
-        .join(VenueSession)
         .outerjoin(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .filter(
-            # Slot is NOT confirmed
             VenueSessionInvigilator.invigilationStatus == False,
-            User.userGender == user_gender,
-            # Either expired OR unassigned OR rejected
             or_(
-                VenueSessionInvigilator.timeExpire <= current_time,
+                # Always show unassigned
                 VenueSessionInvigilator.invigilatorId == None,
-                VenueSessionInvigilator.remark == "REJECTED"
+                # Expired + same gender
+                and_(
+                    VenueSessionInvigilator.timeExpire <= current_time,
+                    User.userGender == user_gender
+                ),
+                # Rejected by THIS user only
+                and_(
+                    VenueSessionInvigilator.remark == "REJECTED",
+                    VenueSessionInvigilator.invigilatorId == user_id
+                )
             )
-        ).all()
+        ).all()  # ✅ FIX: ensure list returned
     )
     return slots
+
+
 
 
 
