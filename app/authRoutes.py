@@ -340,7 +340,7 @@ def get_available_positions(session_obj, exclude_slot_id=None):
 
     allowed = []
     if chief_count < required_chief:
-        allowed.append("CHIEF")
+        allowed.append("CHIEF INVIGILATOR")
     if inv_count < required_inv:
         allowed.append("INVIGILATOR")
     return allowed

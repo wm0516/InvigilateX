@@ -34,7 +34,7 @@
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
                 <td>
-                    {% if action_type == 'waiting_edit' %}
+                    {% if action_type == 'waiting' %}
                         <form method="POST" action="{{ url_for('user_homepage') }}">
                             <input type="hidden" name="action" value="update_position">
                             <input type="hidden" name="c_id" value="{{ slot.sessionId }}">
@@ -224,7 +224,7 @@
             </thead>
             <tbody>
                 {% for w in waiting %}
-                    {{ slot_row(w, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='waiting_edit') }}
+                    {{ slot_row(w, columns=['position', 'venue', 'examDate', 'examTime', 'examPeriod', 'courseCode', 'action'], show_actions=True, action_type='waiting') }}
                 {% endfor %}
             </tbody>
         </table>
