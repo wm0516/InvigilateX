@@ -320,11 +320,7 @@ def admin_homepage():
 
 def get_available_positions(session_obj, exclude_slot_id=None):
     # Calculate total students
-    total_students = sum(
-        ve.studentCount or 0
-        for ve in session_obj.exams
-        if ve.exam
-    )
+    total_students = sum(ve.studentCount for ve in session_obj.exams)
 
     required_chief = 1
     required_inv = 1 if total_students <= 32 else 2
@@ -583,7 +579,8 @@ def user_homepage():
         confirm=confirm,
         open=open_slots,
         reject=reject,
-        backup=backup
+        backup=backup,
+        get_available_positions=get_available_positions
     )
 
 
