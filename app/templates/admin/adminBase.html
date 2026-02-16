@@ -193,19 +193,11 @@
         setInterval(updateDateTime, 1000); // update every second
         
         function initIntakeSwipe({tableId, intakeCol, dashboardUpdater, noResultsId = null}) {
-            const order = ["JAN", "MAR", "APR", "JULY", "AUG", "OCT"];
-            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-            const $ = id => document.getElementById(id);
             const now = new Date();
-            const m = now.getMonth();
 
             let state = {
                 year: now.getFullYear(),
-                intake:
-                    m <= 2 ? "JAN" :
-                    m <= 6 ? "APR" :
-                    m <= 9 ? "AUG" :
-                    "OCT"
+                intake: order[now.getMonth()]
             };
 
             function shift(dir) {
