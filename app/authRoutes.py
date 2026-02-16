@@ -379,18 +379,6 @@ def user_homepage():
         .all()
     )
 
-    confirm_with_roles = []
-    for c in confirm:
-        if c.session:
-            c.allowed_roles = get_available_positions(
-                c.session,
-                exclude_slot_id=c.venueSessionId
-            )
-        else:
-            c.allowed_roles = []
-        confirm_with_roles.append(c)
-
-
     if request.method == 'POST':
         action = request.form.get('action')
 
@@ -592,7 +580,7 @@ def user_homepage():
         'user/userHomepage.html',
         active_tab='user_hometab',
         waiting=waiting,
-        confirm=confirm_with_roles,
+        confirm=confirm,
         open=open_slots,
         reject=reject,
         backup=backup
