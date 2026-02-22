@@ -81,8 +81,8 @@ def user_invigilationReport():
             Department.departmentCode == user.department.departmentCode
         )
 
-    vsi_query = vsi_query.order_by(VenueSessionInvigilator.position.asc())
-
+    vsi_entries = vsi_query.order_by(VenueSessionInvigilator.position.asc())
+    
     # Group by venue + start/end time
     grouped_att = defaultdict(lambda: {"courses": [], "invigilators": []})
     for vsi in vsi_entries:
