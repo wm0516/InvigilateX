@@ -145,8 +145,10 @@
                 {% set num_invigilators = data.invigilators | length %}
                 {% set has_backup = data.backup is not none %}
                 {% set total_rows = num_invigilators %}
+                {% set position_order = ["CHIEF INVIGILATOR", "INVIGILATOR", "BACKUP"] %}
+                {% set sorted_invigilators = data.invigilators | sort(attribute='position', key=lambda x: position_order.index(x.position) if x.position in position_order else 99) %}
 
-                {% for att in data.invigilators %}
+                {% for att in sorted_invigilators %}
                     {% set duration = end - start %}
                     {% set total_seconds = duration.total_seconds() %}
                     {% set days = total_seconds // 86400 %}
@@ -319,40 +321,32 @@ document.getElementById("generatePDF").addEventListener("click", function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-    const checkinClass = "checkin-text";
-    const checkoutClass = "checkout-text";
+    const table = document.getElementById("manageInvigilationReport");
 
-    // Convert displayed date text to ISO format for input[type="datetime-local"]
-    function toLocalInput(dateText) {
-        if (!dateText || dateText === "None") return "";
+    // Event delegation for edit/save/cancel buttons
+    table.addEventListener("click", async function(e) {
+        const editBtn = e.target.closest(".edit-btn");
+        const saveBtn = e.target.closest(".save-btn");
+        const cancelBtn = e.target.closest(".cancel-btn");
+        if (editBtn) {
+            handleEdit(editBtn);
+        }
+        if (saveBtn) {
+            await handleSave(saveBtn);
+        }
+        if (cancelBtn) {
+            handleCancel(cancelBtn);
+        }
+    });
 
-        // Parse browser-local date
-        const parsed = new Date(dateText);
-        // Add 8 hours if necessary
-        parsed.setHours(parsed.getHours());
-        // Format as: yyyy-MM-ddTHH:mm:ss (for datetime-local with seconds)
-        const pad = (n) => n.toString().padStart(2, "0");
-
-        const yyyy = parsed.getFullYear();
-        const mm = pad(parsed.getMonth() + 1);
-        const dd = pad(parsed.getDate());
-        const hh = pad(parsed.getHours());
-        const min = pad(parsed.getMinutes());
-        const ss = pad(parsed.getSeconds());
-        return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
-    }
-
-    // Attach edit listener to a single button
-    function attachEditListener(btn) {
-        btn.addEventListener("click", () => makeRowEditable(btn));
-    }
-
-    // Main function to handle row editing
-    function makeRowEditable(btn) {
-
+    function handleEdit(btn) {
         const tr = btn.closest("tr");
+        if (tr.classList.contains("editing")) return;
+        tr.classList.add("editing");
+
         const venueSessionId = btn.dataset.session;
         const invigilatorId = btn.dataset.invigilator;
+
         const checkInSpan = tr.querySelector(".checkin-text");
         const checkOutSpan = tr.querySelector(".checkout-text");
         const statusSpan = tr.querySelector(".invigilation-status");
@@ -361,15 +355,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const originalCheckOut = checkOutSpan.textContent.trim();
         const originalStatus = statusSpan.textContent.trim();
         const originalRemark = remarkSpan.textContent.trim();
-
-        if (tr.classList.contains("editing")) return;
-        tr.classList.add("editing");
-
-        function toLocalInput(dateText) {
-            if (!dateText || dateText === "None") return "";
-            const d = new Date(dateText.replace(" ", "T"));
-            return d.toISOString().slice(0, 19);
-        }
 
         checkInSpan.innerHTML = `<input type="datetime-local" step="1" class="checkin-input" value="${toLocalInput(originalCheckIn)}">`;
         checkOutSpan.innerHTML = `<input type="datetime-local" step="1" class="checkout-input" value="${toLocalInput(originalCheckOut)}">`;
@@ -391,41 +376,56 @@ document.addEventListener("DOMContentLoaded", function () {
                 <option>EXPIRED</option>
             </select>
         `;
-
         remarkSpan.querySelector("select").value = originalRemark;
-        const actionTd = btn.closest("td");
 
+        // Replace action buttons
+        const actionTd = btn.closest("td");
         actionTd.innerHTML = `
             <button class="save-btn"><i class="fa fa-save"></i></button>
             <button class="cancel-btn"><i class="fa fa-times"></i></button>
         `;
+        // Store IDs in dataset for save/cancel
+        actionTd.dataset.session = venueSessionId;
+        actionTd.dataset.invigilator = invigilatorId;
+    }
 
-        actionTd.querySelector(".save-btn").addEventListener("click", async () => {
-            const newCheckIn = tr.querySelector(".checkin-input").value;
-            const newCheckOut = tr.querySelector(".checkout-input").value;
-            const newStatus = tr.querySelector(".status-select").value === "true";
-            const newRemark = tr.querySelector(".remark-select").value;
+    async function handleSave(btn) {
+        const td = btn.closest("td");
+        const tr = btn.closest("tr");
 
+        const venueSessionId = td.dataset.session;
+        const invigilatorId = td.dataset.invigilator;
+        const newCheckIn = tr.querySelector(".checkin-input").value;
+        const newCheckOut = tr.querySelector(".checkout-input").value;
+        const newStatus = tr.querySelector(".status-select").value === "true";
+        const newRemark = tr.querySelector(".remark-select").value;
+
+        try {
             const response = await fetch("/admin/updateAttendanceTime", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({venueSessionId, invigilatorId, check_in: newCheckIn, check_out: newCheckOut, invigilation_status: newStatus, remark: newRemark})
             });
-
             const result = await response.json();
             if (result.success) {
                 location.reload();
             } else {
                 alert(result.message);
             }
-        });
-        actionTd.querySelector(".cancel-btn").addEventListener("click", () => {
-            location.reload();
-        });
+        } catch (err) {
+            console.error(err);
+            alert("Error saving data. Check console.");
+        }
     }
 
-    // Attach edit to all edit buttons on page load
-    document.querySelectorAll(".edit-btn").forEach(attachEditListener);
+    function handleCancel(btn) {
+        location.reload(); // Simple reload to reset
+    }
+    function toLocalInput(dateText) {
+        if (!dateText || dateText === "None") return "";
+        const d = new Date(dateText.replace(" ", "T"));
+        return d.toISOString().slice(0, 19);
+    }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
