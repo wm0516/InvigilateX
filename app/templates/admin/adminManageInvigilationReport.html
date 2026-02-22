@@ -145,10 +145,8 @@
                 {% set num_invigilators = data.invigilators | length %}
                 {% set has_backup = data.backup is not none %}
                 {% set total_rows = num_invigilators %}
-                {% set position_order = ["CHIEF INVIGILATOR", "INVIGILATOR", "BACKUP"] %}
-                {% set sorted_invigilators = data.invigilators | sort(attribute='position', key=lambda x: position_order.index(x.position) if x.position in position_order else 99) %}
 
-                {% for att in sorted_invigilators %}
+                {% for att in data.invigilators %}
                     {% set duration = end - start %}
                     {% set total_seconds = duration.total_seconds() %}
                     {% set days = total_seconds // 86400 %}

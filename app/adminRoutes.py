@@ -2178,6 +2178,11 @@ def admin_manageInvigilationReport():
                         "name": course_name
                     })
                     grouped_att[key]["course_codes"].add(course_code)
+                    
+    # Sort invigilators in each session according to position order
+    position_order = ["CHIEF INVIGILATOR", "INVIGILATOR", "BACKUP"]
+    for key, data in grouped_att.items():
+        data["invigilators"].sort(key=lambda x: position_order.index(x.position) if x.position in position_order else 99)
 
     stats = calculate_invigilation_stats()
     for vsi in vsi_entries:
