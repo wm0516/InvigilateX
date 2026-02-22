@@ -507,7 +507,7 @@ def user_homepage():
 
             # Assign the current user as the backup
             slot.invigilatorId = user_id
-            slot.invigilationStatus = False  # Backup slots are not active
+            slot.invigilationStatus = True  # Backup slots are not active
             slot.remark = "PENDING"
             slot.timeAction = datetime.now() + timedelta(hours=8)
 

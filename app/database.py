@@ -22,6 +22,8 @@ from app import db
 # UPDATE VenueSessionInvigilator SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0, remark = "PENDING", position = NULL;
 # UPDATE Exam SET examOutput = NULL, examStatus = 1;
 # DELETE FROM VenueSessionInvigilator WHERE sessionId = 8; 
+# UPDATE VenueSessionInvigilator SET invigilationStatus = True WHERE sessionId = 3;
+
 
 # ------------------------------
 # DEPARTMENT
