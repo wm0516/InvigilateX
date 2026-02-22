@@ -26,10 +26,34 @@
             {% set row_class = "background-backup" %} 
         {% endif %}
 
-    {% if action_type == 'waiting' %}
-    <form method="POST" action="{{ url_for('user_homepage') }}" class="waiting-form">
-        <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
-    {% endif %}
+        {% if action_type == 'waiting' %}
+        <td>
+            <form method="POST" action="{{ url_for('user_homepage') }}">
+                <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
+                <select name="new_position" required>
+                    {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
+                        <option value="{{ pos }}">{{ pos }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit"
+                        name="action"
+                        value="accept"
+                        class="acceptBtn"
+                        onclick="return confirm('Are you sure to accept this slot?')"
+                        style="background-color:#d4edda; color:#155724; padding:5%;">
+                    Accept
+                </button>
+            </form>
+
+            <button type="button"
+                    class="reject-btn"
+                    data-id="{{ slot.sessionId }}"
+                    style="background-color:#f8d7da; color:#721c24; padding:5%;">
+                Reject
+            </button>
+        </td>
+        {% endif %}
 
     <tr class="{{ row_class }}">
         {% for col in columns %}
@@ -46,10 +70,6 @@
                             <option value="{{ pos }}">{{ pos }}</option>
                         {% endfor %}
                     </select>
-
-                    <button type="submit" name="action" value="accept" class="acceptBtn" data-form="{{ slot.sessionId }}" disabled
-                        onclick="return confirm('Are you sure to accept this slot?')">Accept
-                    </button>
                 {% else %}
                     {{ position }}
                 {% endif %}
@@ -349,13 +369,18 @@ document.addEventListener("DOMContentLoaded", function () {
             openRejectModal(this.dataset.id);
         });
     });
+});
 
-    // Role dropdown enable
+document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".roleDropdown").forEach(function (dropdown) {
         dropdown.addEventListener("change", function () {
             const formId = this.dataset.form;
             const button = document.querySelector('.acceptBtn[data-form="' + formId + '"]');
-            if (button) button.disabled = !this.value;
+            if (this.value) {
+                button.disabled = false;
+            } else {
+                button.disabled = true;
+            }
         });
     });
 });

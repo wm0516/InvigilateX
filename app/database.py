@@ -21,7 +21,7 @@ from app import db
 # UPDATE User SET userPendingCumulativeHours = 0, userCumulativeHours = 0;
 # UPDATE VenueSessionInvigilator SET timeAction = NULL, rejectReason = NULL, invigilationStatus = 0, remark = "PENDING";
 # UPDATE Exam SET examOutput = NULL, examStatus = 1;
-# DELETE FROM User WHERE userId = 21013604; 
+# DELETE FROM VenueSessionInvigilator WHERE sessionId = 7; 
 
 # ------------------------------
 # DEPARTMENT
