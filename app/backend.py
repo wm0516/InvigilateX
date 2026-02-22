@@ -423,15 +423,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         )
         db.session.add(venue_exam)
         
-        # Create Backup
-        bakcup_inv = VenueSessionInvigilator(
-            venueSessionId=session.venueSessionId,
-            invigilatorId=None,
-            timeCreate=open,
-            timeExpire=close,
-            position='BACKUP'
-        )
-        db.session.add(bakcup_inv)
+
 
         # --- Pick invigilators ---
         chosen = []
@@ -471,7 +463,14 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                 timeCreate=open,
                 timeExpire=close
             ))
-
+        # Create Backup
+        db.session.add(VenueSessionInvigilator(
+            venueSessionId=session.venueSessionId,
+            invigilatorId=None,
+            timeCreate=open,
+            timeExpire=close,
+            position='BACKUP'
+        ))
     db.session.commit()
     record_action("UPLOAD NEW EXAM", "EXAM", exam.examId, user)
     return True, f"Exam scheduled successfully for {courseSection}"
