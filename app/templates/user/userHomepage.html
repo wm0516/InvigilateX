@@ -59,7 +59,7 @@
                 <td>
                     {% if action_type == 'waiting' %}
                         <!-- ACCEPT FORM -->
-                        <form id="form-{{ slot.sessionId }}" method="POST" action="{{ url_for('user_homepage') }}" style="display:inline;">
+                        <form id="form-{{ slot.sessionId }}" method="POST" action="{{ url_for('user_homepage') }}" style="display:contents;">
                             <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
                             <button type="submit" name="action" value="accept" class="acceptBtn" onclick="return confirm('Are you sure to accept this slot?')"
                                     style="background-color:#d4edda; color:#155724; padding:5%;">Accept
@@ -324,6 +324,7 @@
         <h3>Reject Slot</h3>
         <form id="rejectModalForm" method="POST" action="{{ url_for('user_homepage') }}">
             <input type="hidden" name="w_id" id="reject_wid">
+            <input type="hidden" name="new_position" id="reject_position">
             <textarea name="reject_reason" placeholder="Enter rejection reason" required style="width:100%; height:100px; margin-top:10px;"></textarea>
             <div style="margin-top:15px; text-align:right;">
                 <button type="button" onclick="closeRejectModal()" style="padding:5px 12px; margin-right:10px;">Cancel</button>
@@ -344,10 +345,24 @@ function closeRejectModal() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Reject button
-    document.querySelectorAll('.reject-btn').forEach(function(btn) {
-        btn.addEventListener('click', function () {
-            openRejectModal(this.dataset.id);
+    document.querySelectorAll(".reject-btn").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const sessionId = this.dataset.id;
+            // find dropdown linked to this form
+            const dropdown = document.querySelector(
+                'select[form="form-' + sessionId + '"]'
+            );
+
+            // MUST select role
+            if (!dropdown || !dropdown.value) {
+                alert("Please select a role first.");
+                return;
+            }
+            // pass values into modal form
+            document.getElementById("reject_wid").value = sessionId;
+            document.getElementById("reject_position").value = dropdown.value;
+            // show modal
+            document.getElementById("rejectModal").style.display = "flex";
         });
     });
 });
