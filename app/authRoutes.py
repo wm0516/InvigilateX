@@ -318,6 +318,7 @@ def admin_homepage():
 
 
 
+
 def get_available_positions(session_obj, exclude_slot_id=None):
     # Calculate total students
     total_students = sum(ve.studentCount for ve in session_obj.exams)
@@ -344,9 +345,6 @@ def get_available_positions(session_obj, exclude_slot_id=None):
     if inv_count < required_inv:
         allowed.append("INVIGILATOR")
     return allowed
-
-
-
 
 # -------------------------------
 # Main User Homepage
@@ -383,12 +381,9 @@ def user_homepage():
         # -----------------------------
         if action in ['accept', 'reject']:
             waiting_id = request.form.get('w_id')
-            waiting_slot = VenueSessionInvigilator.query.filter_by(
-                venueSessionId=waiting_id,
-                invigilatorId=user_id
-            ).first()
+            waiting_slot = VenueSessionInvigilator.query.get(waiting_id)
 
-            if not waiting_slot or not waiting_slot.session:
+            if not waiting_slot or waiting_slot.invigilatorId != user_id:
                 flash("Selected slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
@@ -397,6 +392,11 @@ def user_homepage():
             hours = (candidate_end - candidate_start).total_seconds() / 3600.0
 
             if action == 'accept':
+                new_position = request.form.get('new_position')
+                if not new_position:
+                    flash("Please select a role first.", "danger")
+                    return redirect(url_for('user_homepage'))
+                waiting_slot.position = new_position
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
                 db.session.commit()
@@ -542,6 +542,22 @@ def user_homepage():
         backup=backup,
         get_available_positions=get_available_positions
     )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
