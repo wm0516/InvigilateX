@@ -395,6 +395,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
 
         assigned_students = min(spv, venue.venueCapacity)
         required_invigilators = 3 if assigned_students > 32 else 2
+        total_invigilators = required_invigilators + 1  # +1 for backup
 
         # Reuse existing VenueSession if exists
         session = VenueSession.query.filter_by(
@@ -409,7 +410,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                 startDateTime=start_dt,
                 endDateTime=end_dt,
                 backupInvigilatorId=None,
-                noInvigilator=required_invigilators
+                noInvigilator=total_invigilators
             )
             db.session.add(session)
             db.session.flush()  # to get session ID
