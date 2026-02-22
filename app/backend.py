@@ -421,6 +421,17 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             studentCount=assigned_students
         )
         db.session.add(venue_exam)
+        
+        # Create Backup
+        bakcup_inv = VenueSessionInvigilator(
+            venueSessionId=session.venueSessionId,
+            invigilatorId=None,
+            timeCreate=open,
+            timeExpire=close,
+            position='BACKUP'
+        )
+        db.session.add(bakcup_inv)
+
         # --- Pick invigilators ---
         chosen = []
 
