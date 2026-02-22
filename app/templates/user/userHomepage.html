@@ -63,7 +63,9 @@
             {% elif col == 'action' and show_actions %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        <button type="submit" name="action" value="accept" class="acceptBtn" style="background-color:#d4edda; color:#155724; padding:5%;">Accept</button>
+                        <button type="submit" name="action" value="accept" class="acceptBtn" onclick="return confirm('Are you sure to accept this slot?')"
+                                style="background-color:#d4edda; color:#155724; padding:5%;">Accept
+                        </button>
                         <button type="button" class="reject-btn" data-id="{{ slot.sessionId }}" style="background-color:#f8d7da; color:#721c24; padding:5%;">Reject</button>
                     {% elif action_type == 'open' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
@@ -337,31 +339,12 @@ function closeRejectModal() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-
     // Reject button
     document.querySelectorAll('.reject-btn').forEach(function(btn) {
         btn.addEventListener('click', function () {
             openRejectModal(this.dataset.id);
         });
     });
-
-    // Confirm accept
-    document.querySelectorAll('.waiting-form').forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-
-            // If it's reject, skip confirm
-            if (document.activeElement.value === "reject") return;
-
-            if (!form.checkValidity()) {
-                return;
-            }
-
-            if (!confirm("Are you sure to accept this slot?")) {
-                e.preventDefault();
-            }
-        });
-    });
-
 });
 
 document.addEventListener("DOMContentLoaded", function () {
