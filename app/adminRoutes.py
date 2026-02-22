@@ -227,7 +227,9 @@ def admin_manageCourse():
     # === Get all courses, optionally filtered by intake ===
     course_query = Course.query.order_by(
         Course.courseStatus.desc(),
-        Course.courseCodeSectionIntake.asc()
+        Course.courseCodeSectionIntake.asc(),
+        Course.courseDepartment.asc(),
+        Course.courseName.asc()
     )
 
     course_data = course_query.all()
