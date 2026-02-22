@@ -24,36 +24,7 @@
         {% set row_class = "" %}
         {% if position.lower() == "backup" or 'backup' in position.lower() %}
             {% set row_class = "background-backup" %} 
-        {% endif %}
-
-        {% if action_type == 'waiting' %}
-        <td>
-            <form method="POST" action="{{ url_for('user_homepage') }}">
-                <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
-                <select name="new_position" required>
-                    {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
-                        <option value="{{ pos }}">{{ pos }}</option>
-                    {% endfor %}
-                </select>
-
-                <button type="submit"
-                        name="action"
-                        value="accept"
-                        class="acceptBtn"
-                        onclick="return confirm('Are you sure to accept this slot?')"
-                        style="background-color:#d4edda; color:#155724; padding:5%;">
-                    Accept
-                </button>
-            </form>
-
-            <button type="button"
-                    class="reject-btn"
-                    data-id="{{ slot.sessionId }}"
-                    style="background-color:#f8d7da; color:#721c24; padding:5%;">
-                Reject
-            </button>
-        </td>
-        {% endif %}
+    {% endif %}
 
     <tr class="{{ row_class }}">
         {% for col in columns %}
@@ -62,18 +33,18 @@
             {% elif col == 'reason' %}
                 <td><strong>{{ slot.rejectReason }}</strong></td>
             {% elif col == 'position' %}
-            <td>
-                {% if action_type == 'waiting' %}
-                    <select name="new_position" class="roleDropdown" required>
-                        <option value="" disabled selected>-- Select Role --</option>
-                        {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
-                            <option value="{{ pos }}">{{ pos }}</option>
-                        {% endfor %}
-                    </select>
-                {% else %}
-                    {{ position }}
-                {% endif %}
-            </td>
+                <td>
+                    {% if action_type == 'waiting' %}
+                        <select name="new_position" class="roleDropdown" form="form-{{ slot.sessionId }}" required>
+                            <option value="" disabled selected>-- Select Role --</option>
+                            {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
+                                <option value="{{ pos }}">{{ pos }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {{ position }}
+                    {% endif %}
+                </td>
             {% elif col == 'venue' %}
                 <td>{{ session_obj.venue.venueNumber if session_obj.venue else '' }}</td>
             {% elif col == 'examDate' %}
@@ -87,23 +58,34 @@
             {% elif col == 'action' and show_actions %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        <button type="submit" name="action" value="accept" class="acceptBtn" onclick="return confirm('Are you sure to accept this slot?')"
-                                style="background-color:#d4edda; color:#155724; padding:5%;">Accept
-                        </button>
-                        <button type="button" class="reject-btn" data-id="{{ slot.sessionId }}" style="background-color:#f8d7da; color:#721c24; padding:5%;">Reject</button>
-                    {% elif action_type == 'open' %}
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                            <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
-                            <button type="submit" name="action" value="open_accept" 
-                                onclick="return confirm('Are you sure to additional choose this slot?')" 
-                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                        <!-- ACCEPT FORM -->
+                        <form id="form-{{ slot.sessionId }}" method="POST" action="{{ url_for('user_homepage') }}" style="display:inline;">
+                            <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
+                            <button type="submit" name="action" value="accept" class="acceptBtn" onclick="return confirm('Are you sure to accept this slot?')"
+                                    style="background-color:#d4edda; color:#155724; padding:5%;">Accept
+                            </button>
                         </form>
+                        <!-- REJECT BUTTON -->
+                        <button type="button" class="reject-btn" data-id="{{ slot.sessionId }}" style="background-color:#f8d7da; color:#721c24; padding:5%;">Reject</button>
+                    
+                        {% elif action_type == 'open' %}
+                        <form method="POST"
+                            action="{{ url_for('user_homepage') }}"
+                            style="display:inline;">
+                            <input type="hidden" name="open_id" value="{{ slot.sessionId }}">
+                            <button type="submit" name="action" value="open_accept" onclick="return confirm('Are you sure to additional choose this slot?')"
+                                    style="background-color:#d4edda; color:#155724; padding:5%;">Accept
+                            </button>
+                        </form>
+
                     {% elif action_type == 'backup' %}
-                        <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                            <input type="hidden" name="b_id" value="{{ slot.venueSessionId }}">
-                            <button type="submit" name="action" value="backup" 
-                                onclick="return confirm('Are you sure to choose this backup slot?')" 
-                                style="background-color: #d4edda; color: #155724; padding: 5%;">Accept</button>
+                        <form method="POST"
+                            action="{{ url_for('user_homepage') }}"
+                            style="display:inline;">
+                            <input type="hidden" name="b_id" value="{{ slot.sessionId }}">
+                            <button type="submit" name="action" value="backup" onclick="return confirm('Are you sure to choose this backup slot?')"
+                                    style="background-color:#d4edda; color:#155724; padding:5%;">Accept
+                            </button>
                         </form>
                     {% endif %}
                 </td>
@@ -112,7 +94,6 @@
     </tr>
     {% endif %}
 {% endmacro %}
-
 
 
 {% if user_level in ["DEAN", "HOS", "HOP"] %}
