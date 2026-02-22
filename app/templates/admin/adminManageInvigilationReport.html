@@ -187,7 +187,7 @@
                                 <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
                             {% else %}
                                 <span class="status frame-pending invigilation-status">PENDING</span>
-                            {% endif %}
+                            {% endif %} 
                         </td>
                         <td>
                             {% set remark_classes = {
@@ -213,18 +213,6 @@
                         </td>
                     </tr>
                 {% endfor %}
-                <tr style="background-color:#f5f5f5;">
-                    <td colspan="100%">
-                        <div style="margin-top:5px;">
-                            <span class="status frame-pending">⮝ BACKUP INVIGILATOR ⮝</span>
-                            {% set backup = data.backup %}
-                            Staff ID<strong>: {{ backup.userId if backup else "None" }}</strong> |
-                            Name<strong>: {{ backup.userName if backup else "None" }}</strong> |
-                            Email<strong>: {{ backup.userEmail if backup else "None" }}</strong> |
-                            Contact<strong>: {{ backup.userContact if backup and backup.userContact else "None" }}</strong>
-                        </div>
-                    </td>
-                </tr>
                 {% set ns.rowno = ns.rowno + 1 %}
             {% endfor %}
         </tbody>
@@ -274,13 +262,6 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     document.querySelectorAll("#manageInvigilationReport tbody tr").forEach((tr) => {
         const tds = tr.querySelectorAll("td");
         if (tds.length === 0) return;
-
-        // Handle backup row (merge all columns)
-        // colSpan: 8 -> merge 8 columns into 1
-        if (tds[0].hasAttribute("colspan") && parseInt(tds[0].getAttribute("colspan")) > 1) {
-            rows.push([{content: `${tds[0].innerText.trim()}`, colSpan: 8, styles: { halign: 'left' }}]);
-            return;
-        }
 
         const firstCellText = tds[0].innerText.trim();
         const isNewExamRow = !isNaN(firstCellText);
