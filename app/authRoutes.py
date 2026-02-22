@@ -336,7 +336,7 @@ def get_available_positions(session_obj, exclude_slot_id=None):
         query = query.filter(VenueSessionInvigilator.sessionId != exclude_slot_id)
 
     confirmed = query.all()
-    chief_count = sum(1 for c in confirmed if c.position == "CHIEF")
+    chief_count = sum(1 for c in confirmed if c.position == "CHIEF INVIGILATOR")
     inv_count = sum(1 for c in confirmed if c.position == "INVIGILATOR")
 
     allowed = []
