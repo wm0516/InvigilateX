@@ -2135,6 +2135,7 @@ def admin_manageInvigilationReport():
         .join(Exam, VenueExam.examId == Exam.examId)
         .join(Course, Exam.examId == Course.courseExamId)
         .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
+        .filter(VenueSessionInvigilator.position != "BACKUP")
         .order_by(
             Exam.examOutput.desc(),
             VenueSession.startDateTime,
