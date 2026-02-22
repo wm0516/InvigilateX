@@ -46,6 +46,10 @@
                             <option value="{{ pos }}">{{ pos }}</option>
                         {% endfor %}
                     </select>
+
+                    <button type="submit" name="action" value="accept" class="acceptBtn" data-form="{{ slot.sessionId }}" disabled
+                        onclick="return confirm('Are you sure to accept this slot?')">Accept
+                    </button>
                 {% else %}
                     {{ position }}
                 {% endif %}
@@ -345,18 +349,13 @@ document.addEventListener("DOMContentLoaded", function () {
             openRejectModal(this.dataset.id);
         });
     });
-});
 
-document.addEventListener("DOMContentLoaded", function () {
+    // Role dropdown enable
     document.querySelectorAll(".roleDropdown").forEach(function (dropdown) {
         dropdown.addEventListener("change", function () {
             const formId = this.dataset.form;
             const button = document.querySelector('.acceptBtn[data-form="' + formId + '"]');
-            if (this.value) {
-                button.disabled = false;
-            } else {
-                button.disabled = true;
-            }
+            if (button) button.disabled = !this.value;
         });
     });
 });
