@@ -394,7 +394,7 @@ def user_homepage():
             if action == 'accept':
                 new_position = request.form.get('new_position')
                 if not new_position:
-                    flash("Please select a role first.", "danger")
+                    flash("Please select a role first.", "error")
                     return redirect(url_for('user_homepage'))
                 waiting_slot.position = new_position
                 waiting_slot.invigilationStatus = True

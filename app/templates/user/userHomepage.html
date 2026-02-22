@@ -26,6 +26,11 @@
             {% set row_class = "background-backup" %} 
         {% endif %}
 
+    {% if action_type == 'waiting' %}
+    <form method="POST" action="{{ url_for('user_homepage') }}" class="waiting-form">
+        <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
+    {% endif %}
+
     <tr class="{{ row_class }}">
         {% for col in columns %}
             {% if col == 'timeAction' %}
@@ -35,16 +40,12 @@
             {% elif col == 'position' %}
             <td>
                 {% if action_type == 'waiting' %}
-                    {% set form_id = "waitingForm_" ~ slot.venueSessionId %}
-                    <form id="{{ form_id }}" action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
-                        <input type="hidden" name="w_id" value="{{ slot.sessionId }}">
-                        <select name="new_position" class="roleDropdown" data-form="{{ form_id }}" required>
-                            <option value="" disabled selected>-- Select Role --</option>
-                            {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
-                                <option value="{{ pos }}">{{ pos }}</option>
-                            {% endfor %}
-                        </select>
-                    </form>
+                    <select name="new_position" class="roleDropdown" required>
+                        <option value="" disabled selected>-- Select Role --</option>
+                        {% for pos in get_available_positions(slot.session, exclude_slot_id=slot.sessionId) %}
+                            <option value="{{ pos }}">{{ pos }}</option>
+                        {% endfor %}
+                    </select>
                 {% else %}
                     {{ position }}
                 {% endif %}
@@ -62,12 +63,8 @@
             {% elif col == 'action' and show_actions %}
                 <td>
                     {% if action_type == 'waiting' %}
-                        {% set form_id = "waitingForm_" ~ slot.venueSessionId %}
-                        <button type="submit" name="action" value="accept" form="{{ form_id }}" class="acceptBtn" data-form="{{ form_id }}" disabled
-                            onclick="return confirm('Are you sure to accept this slot?')" style="background-color: #d4edda; color: #155724; padding: 5%;">
-                            Accept</button>
-                        <button type="button" class="reject-btn" data-id="{{ slot.venueSessionId }}" style="background-color: #f8d7da; color: #721c24; padding: 5%;">
-                            Reject</button>
+                        <button type="submit" name="action" value="accept" class="acceptBtn" style="background-color:#d4edda; color:#155724; padding:5%;">Accept</button>
+                        <button type="button" class="reject-btn" data-id="{{ slot.sessionId }}" style="background-color:#f8d7da; color:#721c24; padding:5%;">Reject</button>
                     {% elif action_type == 'open' %}
                         <form action="{{ url_for('user_homepage') }}" method="POST" style="display: contents;">
                             <input type="hidden" name="a_id" value="{{ slot.venueSessionId }}">
@@ -340,26 +337,31 @@ function closeRejectModal() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Reject button listener
+
+    // Reject button
     document.querySelectorAll('.reject-btn').forEach(function(btn) {
         btn.addEventListener('click', function () {
             openRejectModal(this.dataset.id);
         });
     });
 
-    // Enable accept button when dropdown selected
-    document.querySelectorAll(".roleDropdown").forEach(function (dropdown) {
-        dropdown.addEventListener("change", function () {
-            const formId = this.dataset.form;
-            const button = document.querySelector('.acceptBtn[data-form="' + formId + '"]');
+    // Confirm accept
+    document.querySelectorAll('.waiting-form').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
 
-            if (this.value) {
-                button.disabled = false;
-            } else {
-                button.disabled = true;
+            // If it's reject, skip confirm
+            if (document.activeElement.value === "reject") return;
+
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            if (!confirm("Are you sure to accept this slot?")) {
+                e.preventDefault();
             }
         });
     });
+
 });
 
 document.addEventListener("DOMContentLoaded", function () {
