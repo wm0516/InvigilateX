@@ -367,18 +367,12 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         return False, "No eligible invigilators available due to timetable conflicts or workload limits"
 
     # --- Male / Female pools ---
-    male_pool = sorted(
-        [i for i in eligible_invigilators if i.userGender is True],
-        key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
-    )
-    female_pool = sorted(
-        [i for i in eligible_invigilators if i.userGender is False],
-        key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0)
-    )
+    male_pool = sorted([i for i in eligible_invigilators if i.userGender is True], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
+    female_pool = sorted([i for i in eligible_invigilators if i.userGender is False], key=lambda x: (x.userCumulativeHours or 0) + (x.userPendingCumulativeHours or 0))
 
     # --- Store summary for reporting ---
     not_flex_ids = [str(i.userId) for i, t, a in not_flexible]
-    exam.examOutput = [base_query.count(), len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids, len(male_pool), len(female_pool)]
+    exam.examOutput = [base_query.count(), len(eligible_invigilators), len(flexible), len(not_flexible), not_flex_ids, len(male_pool),len(female_pool)]
     db.session.add(exam)
 
     # --- Require at least 1 male and 1 female ---
@@ -397,7 +391,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         required_invigilators = 3 if assigned_students > 32 else 2
         total_invigilators = required_invigilators + 1  # +1 for backup
 
-        # Reuse existing VenueSession if exists
+        # --- Reuse existing VenueSession if exists ---
         session = VenueSession.query.filter_by(
             venueNumber=venue.venueNumber,
             startDateTime=start_dt,
@@ -414,16 +408,17 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
             )
             db.session.add(session)
             db.session.flush()  # to get session ID
+        else:
+            # Update total invigilators if session exists
+            session.noInvigilator = total_invigilators
 
-        # Create VenueExam
+        # --- Create VenueExam ---
         venue_exam = VenueExam(
             examId=exam.examId,
             venueSessionId=session.venueSessionId,
             studentCount=assigned_students
         )
         db.session.add(venue_exam)
-        
-
 
         # --- Pick invigilators ---
         chosen = []
@@ -438,7 +433,6 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
         if required_invigilators == 3:
             candidate = None
             if male_pool and female_pool:
-                # Pick who has higher cumulative hours
                 candidate = male_pool[0] if (male_pool[0].userCumulativeHours or 0) > (female_pool[0].userCumulativeHours or 0) else female_pool[0]
             elif male_pool:
                 candidate = male_pool[0]
@@ -451,7 +445,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                 if candidate in female_pool: female_pool.remove(candidate)
 
         # --- Assign chosen invigilators ---
-        existing_invigilators = {v.invigilatorId for v in session.invigilators}
+        existing_invigilators = {v.invigilatorId for v in session.invigilators if v.invigilatorId}
 
         for inv in chosen:
             if inv.userId in existing_invigilators:
@@ -463,18 +457,25 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
                 timeCreate=open,
                 timeExpire=close
             ))
-        # Create Backup
-        db.session.add(VenueSessionInvigilator(
+
+        # --- Create exactly one backup if not exists ---
+        existing_backup = VenueSessionInvigilator.query.filter_by(
             venueSessionId=session.venueSessionId,
-            invigilatorId=None,
-            timeCreate=open,
-            timeExpire=close,
             position='BACKUP'
-        ))
+        ).first()
+
+        if not existing_backup:
+            db.session.add(VenueSessionInvigilator(
+                venueSessionId=session.venueSessionId,
+                invigilatorId=None,
+                timeCreate=open,
+                timeExpire=close,
+                position='BACKUP'
+            ))
+
     db.session.commit()
     record_action("UPLOAD NEW EXAM", "EXAM", exam.examId, user)
     return True, f"Exam scheduled successfully for {courseSection}"
-
 
 # -------------------------------
 # Adjust invigilators based on venue & capacity
