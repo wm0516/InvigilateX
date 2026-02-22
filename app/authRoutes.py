@@ -391,11 +391,12 @@ def user_homepage():
             candidate_start, candidate_end = session_obj.startDateTime, session_obj.endDateTime
             hours = (candidate_end - candidate_start).total_seconds() / 3600.0
 
+            new_position = request.form.get('new_position')
+            if not new_position:
+                flash("Please select a role first.", "error")
+                return redirect(url_for('user_homepage'))
+
             if action == 'accept':
-                new_position = request.form.get('new_position')
-                if not new_position:
-                    flash("Please select a role first.", "error")
-                    return redirect(url_for('user_homepage'))
                 waiting_slot.position = new_position
                 waiting_slot.invigilationStatus = True
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
@@ -406,6 +407,7 @@ def user_homepage():
 
             elif action == 'reject':
                 raw_reason = request.form.get('reject_reason', '')
+                waiting_slot.position = new_position
                 waiting_slot.remark = "REJECTED"
                 waiting_slot.rejectReason = raw_reason.strip()
                 waiting_slot.timeAction = datetime.now() + timedelta(hours=8)
