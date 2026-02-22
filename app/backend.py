@@ -11,7 +11,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
 from datetime import datetime, timedelta
-from sqlalchemy import and_, or_, exists, tuple_, func, select
+from sqlalchemy import and_, or_, exists, tuple_, func, select, distinct
 
 
 # -------------------------------
@@ -665,29 +665,33 @@ def open_record(user_id):
         return []
 
     user_gender = user.userGender
-    slots = (
-        db.session.query(VenueSessionInvigilator)
+    subquery = (
+        select(VenueSessionInvigilator.venueSessionId)
         .outerjoin(User, VenueSessionInvigilator.invigilatorId == User.userId)
-        .filter(
+        .where(
             VenueSessionInvigilator.invigilationStatus == False,
             or_(
-                # Always show unassigned
                 VenueSessionInvigilator.invigilatorId == None,
-                # Expired + same gender
                 and_(
                     VenueSessionInvigilator.timeExpire <= current_time,
                     User.userGender == user_gender
                 ),
-                # Rejected by THIS user only
                 and_(
                     VenueSessionInvigilator.remark == "REJECTED",
                     VenueSessionInvigilator.invigilatorId == user_id
                 )
             )
-        ).all()  # ✅ FIX: ensure list returned
+        )
+        .distinct()
     )
-    return slots
+    # Now fetch grouped venue sessions
+    slots = (
+        db.session.query(VenueSession)
+        .filter(VenueSession.venueSessionId.in_(subquery))
+        .all()
+    )
 
+    return slots
 
 
 
