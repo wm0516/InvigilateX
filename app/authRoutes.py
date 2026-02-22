@@ -493,42 +493,27 @@ def user_homepage():
         # -----------------------------
         elif action == 'backup':
             backup_attendance_id = request.form.get('b_id')
+            
+            # Fetch the existing backup row (already created during exam scheduling)
             slot = VenueSessionInvigilator.query.get(backup_attendance_id)
-            if not slot or not slot.session:
-                flash("Selected backup slot not found.", "error")
+            if not slot or slot.position != 'BACKUP':
+                flash("Backup slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
-            # Assign backup user to session
+            if not session_obj:
+                flash("Venue session not found.", "error")
+                return redirect(url_for('user_homepage'))
+
+            # Assign the current user as the backup
+            slot.invigilatorId = user_id
+            slot.invigilationStatus = False  # Backup slots are not active
+            slot.remark = "PENDING"
+            slot.timeAction = datetime.now() + timedelta(hours=8)
+
+            # Also update VenueSession.backupInvigilatorId for reference
             session_obj.backupInvigilatorId = user_id
 
-            # Check if this user already has a row for this session
-            existing_slot = VenueSessionInvigilator.query.filter_by(
-                venueSessionId=session_obj.venueSessionId,
-                invigilatorId=user_id
-            ).first()
-
-            if existing_slot:
-                # Just convert existing record into BACKUP
-                existing_slot.position = 'BACKUP'
-                existing_slot.invigilationStatus = False
-                existing_slot.remark = "PENDING"
-                existing_slot.timeAction = datetime.now() + timedelta(hours=8)
-            else:
-                # Create new record safely
-                new_backup_slot = VenueSessionInvigilator(
-                    venueSessionId=session_obj.venueSessionId,
-                    invigilatorId=user_id,
-                    checkIn=None,
-                    checkOut=None,
-                    timeCreate=datetime.now() + timedelta(hours=8),
-                    position='BACKUP',
-                    timeExpire=datetime.now() + timedelta(hours=8),
-                    timeAction=datetime.now() + timedelta(hours=8),
-                    invigilationStatus=False,
-                    remark="PENDING"
-                )
-                db.session.add(new_backup_slot)
             db.session.commit()
             flash(f"You are now assigned as BACKUP for Venue: {session_obj.venue.venueNumber}.", "success")
             record_action("BACKUP", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
