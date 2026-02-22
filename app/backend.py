@@ -490,9 +490,8 @@ def recalc_invigilators_for_new_exams():
         total_students = sum(ve.studentCount for ve in session.exams)
         # Required invigilators
         required_invigilators = 3 if total_students > 32 else 2
-        # Current invigilators assigned to this session
-        current_assignments = session.invigilators
-        # Sort invigilators by total workload
+        current_assignments = [vsi for vsi in session.invigilators if vsi.invigilator is not None]
+
         sorted_assignments = sorted(
             current_assignments,
             key=lambda vsi: (
@@ -500,7 +499,7 @@ def recalc_invigilators_for_new_exams():
                 (vsi.invigilator.userPendingCumulativeHours or 0.0)
             )
         )
-
+        
         # Remove excess invigilators
         duration_hours = (end_dt - start_dt).total_seconds() / 3600.0
         to_remove = sorted_assignments[required_invigilators:]
