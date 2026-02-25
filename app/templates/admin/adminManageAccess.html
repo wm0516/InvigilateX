@@ -98,17 +98,22 @@
             <table class="user-data-table" id="access">
                 <thead>
                     <tr>
+                        <th>No</th>
                         <th>Role Code</th>
                         <th>Role Name</th>
+                        <th>Role General Access</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in role_data %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td>{{ row.roleCode }}</td>
-                        <td>{{ row.roleName }}</td>
-                    </tr>
+                        {% for staff in staff_data %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ row.roleCode }}</td>
+                                <td>{{ row.roleName }}</td>
+                                <td>{{ staff.userAccess }}</td>
+                            </tr>
+                        {% endfor %}
                     {% endfor %}
                 </tbody>
             </table>
