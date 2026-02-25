@@ -177,6 +177,9 @@
                 {% if show_manual %}
                     {% block manual_section %}{% endblock %}
                 {% endif %}
+                {% if show_second_edit %}
+                    {% block edit_section %}{% endblock %}
+                {% endif %}
                 {% if show_edit %}
                     {% block edit_section %}{% endblock %}
                 {% endif %}
