@@ -2370,6 +2370,7 @@ def admin_manageAccess():
     user_id = session.get('user_id')
     record = Action.query.order_by(desc(Action.actionTime)).all()
     role_data = Role.query.all()
+    staff_data = User.query.all()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -2394,7 +2395,7 @@ def admin_manageAccess():
                 record_action("ADD NEW ROLE", "ROLE", roleCode, user_id)
                 return redirect(url_for('admin_manageAccess'))
 
-    return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', record=record, role_data=role_data)
+    return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', record=record, role_data=role_data, staff_data=staff_data)
 
 
 

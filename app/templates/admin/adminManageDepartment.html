@@ -77,7 +77,7 @@
                     {% for dept in department_data %}
                         <option value="{{ dept.departmentCode }}"
                                 {% if department_select and dept.departmentCode == department_select.departmentCode %}selected{% endif %}>
-                            {{ dept.departmentCode }} - {{ dept.departmentName }}
+                            [{{ dept.departmentCode }}] - {{ dept.departmentName }}
                         </option>
                     {% endfor %}
                 </select><br>

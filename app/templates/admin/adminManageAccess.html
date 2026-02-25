@@ -48,7 +48,18 @@
                     {% for role in role_data %}
                         <option value="{{ role.roleCode }}"
                                 {% if role_select and role.roleCode == role_select.roleCode %}selected{% endif %}>
-                            {{ role.roleCode }} - {{ role.roleName }}
+                            [{{ role.roleCode }}] - {{ role.roleName }}
+                        </option>
+                    {% endfor %}
+                </select><br>
+
+                <label>Select Staff</label>
+                <select id="editRole" name="editRole" required>
+                    <option value="" disabled selected>-- Select Staff --</option>
+                    {% for staff in staff_data %}
+                        <option value="{{ staff.userAccess }}"
+                                {% if staff_select and staff.userId == staff_select.userId %}selected{% endif %}>
+                            [{{ staff.userId }}] - {{ staff.userName }}
                         </option>
                     {% endfor %}
                 </select><br>
