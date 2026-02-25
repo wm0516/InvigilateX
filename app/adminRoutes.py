@@ -1864,7 +1864,7 @@ def get_venue_calendar_data():
 
         total_invigilators = sum(
             1 for vsi in session.invigilators
-            if vsi.invigilationStatus == True and vsi.position != "BACKUP"
+            if vsi.rejectReason == None and vsi.invigilatorId != None
         )
 
         venue_data[session.venueNumber].append({
