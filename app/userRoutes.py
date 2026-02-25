@@ -19,10 +19,10 @@ def calculate_invigilation_stats(user):
     # Base query joining VenueSessionInvigilator -> VenueSession -> Exam -> Course -> Department
     query = VenueSessionInvigilator.query.join(VenueSession).join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId).join(Exam, VenueExam.examId == Exam.examId).join(Course, Exam.examId == Course.courseExamId)
 
-    if user.userLevel in ["LECTURER", "PO", "LAB_ACC"]:
+    if user.userRole in ["LECTURER", "PO", "LAB_ACC"]:
         # Only the user's own invigilation
         query = query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
-    elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+    elif user.userRole in ["DEAN", "HOP", "HOS"]:
         # All invigilations for courses under the same department
         query = query.join(Course.department).filter(Department.departmentCode == user.department.departmentCode)
 
@@ -72,10 +72,10 @@ def user_invigilationReport():
     )
 
     # Filter based on user level
-    if user.userLevel in ["LECTURER", "PO", "LAB_ASST"]:
+    if user.userRole in ["LECTURER", "PO", "LAB_ASST"]:
         # Only show this user's invigilations
         vsi_query = vsi_query.filter(VenueSessionInvigilator.invigilatorId == user.userId)
-    elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+    elif user.userRole in ["DEAN", "HOP", "HOS"]:
         # Show all invigilators for courses under the same department
         vsi_query = vsi_query.join(Course.department).filter(
             Department.departmentCode == user.department.departmentCode
@@ -98,7 +98,7 @@ def user_invigilationReport():
         # Add invigilator
         if vsi not in grouped_att[key]["invigilators"]:
             # For Lecturers only include themselves (safety)
-            if user.userLevel in ["LECTURER", "PO", "LAB_ASST"] and vsi.invigilatorId != user.userId:
+            if user.userRole in ["LECTURER", "PO", "LAB_ASST"] and vsi.invigilatorId != user.userId:
                 continue
             grouped_att[key]["invigilators"].append(vsi)
 
@@ -106,7 +106,7 @@ def user_invigilationReport():
         for ve in vsi.session.exams:
             if ve.exam and ve.exam.course:
                 # For DEAN/HOP/HOS, only include courses in their department
-                if user.userLevel in ["DEAN", "HOP", "HOS"] and ve.exam.course.department.departmentCode != user.department.departmentCode:
+                if user.userRole in ["DEAN", "HOP", "HOS"] and ve.exam.course.department.departmentCode != user.department.departmentCode:
                     continue
                 course = {
                     "code": ve.exam.course.courseCodeSectionIntake,
@@ -137,7 +137,7 @@ def get_venue_calendar_data(userId):
     user = User.query.get_or_404(userId)
 
     # Case 1: Lecturer / PO / Lab Assistant
-    if user.userLevel in ["LECTURER", "PO", "LAB_ASST"]:
+    if user.userRole in ["LECTURER", "PO", "LAB_ASST"]:
         query = (
             query
             .join(VenueSessionInvigilator,
@@ -151,7 +151,7 @@ def get_venue_calendar_data(userId):
         )
 
     # Case 2: Dean / HOP / HOS
-    elif user.userLevel in ["DEAN", "HOP", "HOS"]:
+    elif user.userRole in ["DEAN", "HOP", "HOS"]:
         query = query.filter(Course.courseDepartment == user.userDepartment)
 
     # Otherwise (admin, exam unit, etc.) → no filter
@@ -317,17 +317,17 @@ def user_viewStaff():
         .filter(
             User.userDepartment == current_user.userDepartment,
             User.userStatus.in_([1, 0, 2]))
-        .order_by(User.userLevel.asc(), User.userName.asc())
+        .order_by(User.userRole.asc(), User.userName.asc())
         .all()
     )
     # Counts filtered by department
-    total_admin = User.query.filter_by(userLevel="ADMIN").count()
-    total_hop = User.query.filter_by(userLevel="HOP").count()
-    total_hos = User.query.filter_by(userLevel="HOS").count()
-    total_dean = User.query.filter_by(userLevel="DEAN").count()
-    total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
-    total_po = User.query.filter_by(userLevel="PO").count()
-    total_lab_asst = User.query.filter_by(userLevel="LAB_ASST").count()
+    total_admin = User.query.filter_by(userRole="ADMIN").count()
+    total_hop = User.query.filter_by(userRole="HOP").count()
+    total_hos = User.query.filter_by(userRole="HOS").count()
+    total_dean = User.query.filter_by(userRole="DEAN").count()
+    total_lecturer = User.query.filter_by(userRole="LECTURER").count()
+    total_po = User.query.filter_by(userRole="PO").count()
+    total_lab_asst = User.query.filter_by(userRole="LAB_ASST").count()
     total_male_staff = User.query.filter_by(userGender=True).count()
     total_female_staff = User.query.filter_by(userGender=False).count()
     total_activated = User.query.filter_by(userStatus=1).count()

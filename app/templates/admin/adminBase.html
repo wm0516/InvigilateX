@@ -129,7 +129,11 @@
                         {% if show_edit %}
                             <a href="#edit" class="tab-link" data-section="editSection">
                                 <i class="fas fa-edit"></i>
-                                <span>Editing</span>
+                                {% if access %}
+                                    <span>Editing Access</span>
+                                {% else %}
+                                    <span>Editing</span>
+                                {% endif %}
                             </a>
                         {% endif %}
                     </div>

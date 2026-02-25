@@ -80,7 +80,7 @@
 
 {% block extra_scripts %}
 <script>
-const userLevel = {{ user_level | tojson }};
+const userRole = {{ user_level | tojson }};
 const userName = {{ user_name | tojson }};  
 const userDepartment = {{ user_department | tojson }};
 
@@ -116,7 +116,7 @@ document.getElementById("generatePDF").addEventListener("click", async () => {
     const pageWidth = doc.internal.pageSize.getWidth(); 
     const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
     
-    if (["LECTURER", "PO", "LAB_ASST"].includes(userLevel)) {
+    if (["LECTURER", "PO", "LAB_ASST"].includes(userRole)) {
         doc.text(`${userName}'s Invigilation Timetable`, pageWidth/2, margin, {align: "center"});
     } else {
         doc.text(`${userDepartment} Invigilation Timetable`, pageWidth/2, margin, {align: "center"});

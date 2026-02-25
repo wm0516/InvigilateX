@@ -83,10 +83,10 @@
                             {{ row.userContact }}
                         {% else %}---{% endif %}
                     </td>
-                <td>{{ row.userLevel }}</td>
+                <td>{{ row.userRole }}</td>
                 <td>{{ row.userDepartment if row.userDepartment else '<span style="color:red;">N/A</span>' | safe }}</td>
                 <td>
-                    {% if row.userLevel in ["LECTURER", "PO", "LAB_ASST"] %}
+                    {% if row.userRole in ["LECTURER", "PO", "LAB_ASST"] %}
                         <div class="info-grid">
                             <div>Cumulative</div><div><strong>: {{ row.userCumulativeHours }}</strong></div>
                             <div>Pending</div><div><strong>: {{ row.userPendingCumulativeHours }}</strong></div>

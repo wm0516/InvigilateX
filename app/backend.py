@@ -138,10 +138,10 @@ def check_login(loginEmail, loginPassword):
         return False, "Invalid Email or Password", None, None
     if not bcrypt.check_password_hash(user.userPassword, loginPassword):
         return False, "Invalid Password", None, None
-    if user.userLevel not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER", "PO"]:
+    if user.userRole not in ["ADMIN", "DEAN", "HOS", "HOP", "LECTURER", "PO"]:
         return False, "User Role is NotRecognized", None, None
 
-    return True, user.userId, user.userLevel, user.userDepartment
+    return True, user.userId, user.userRole, user.userDepartment
 
 # -------------------------------
 # Auth Function 2: Check Access [If Not User Will Show "Unauthorized Access"]
@@ -402,7 +402,7 @@ def create_exam_and_related(user, start_dt, end_dt, courseSection, venue_list, s
     duration_hours = (adj_end_dt - start_dt).total_seconds() / 3600.0
 
     # --- Eligible invigilators ---
-    base_query = User.query.filter(User.userLevel == "LECTURER", User.userStatus == True)
+    base_query = User.query.filter(User.userRole == "LECTURER", User.userStatus == True)
     if exclude_ids:
         base_query = base_query.filter(~User.userId.in_(exclude_ids))
 
@@ -597,7 +597,7 @@ def create_staff(userId, id, department, name, role, email, contact, gender, has
         userId=id,
         userDepartment=department_code,
         userName=name.upper(),
-        userLevel=role,
+        userRole=role,
         userEmail=email,
         userContact=contact,
         userGender=gender,

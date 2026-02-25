@@ -133,7 +133,7 @@ def register():
                 userGender=gender_bool,
                 userStatus=0,  # not verified yet
                 userCardId=card_text,
-                userLevel=role_text
+                userRole=role_text
             )
             db.session.add(new_user)
             record_action(f"REGISTER AS [{department_text.upper()}-{role_text}]", "REGISTER", id_text, id_text)
@@ -249,7 +249,7 @@ def inject_user_data():
                 'user_id': userId,
                 'user_name': user.userName,
                 'user_department': user.userDepartment,
-                'user_level': user.userLevel,
+                'user_role': user.userRole,
                 'user_email': user.userEmail,
                 'user_contact': user.userContact,
                 'user_password': user.userPassword,
@@ -261,7 +261,7 @@ def inject_user_data():
         'user_id': None,
         'user_name': '',
         'user_department': '',
-        'user_level': '',
+        'user_role': '',
         'user_email': '',
         'user_contact': '',
         'user_password': '',

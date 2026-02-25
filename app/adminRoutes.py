@@ -190,8 +190,8 @@ def process_course_row(row):
 @app.route('/get_lecturers_by_department/<department_code>')
 @login_required
 def get_lecturers_by_department(department_code):
-    # Filter userDepartment and multiple userLevel values
-    lecturers = User.query.filter(User.userDepartment == department_code,User.userLevel.in_([1, 2, 3, 4])).all()
+    # Filter userDepartment and multiple userRole values
+    lecturers = User.query.filter(User.userDepartment == department_code,User.userRole.in_([1, 2, 3, 4])).all()
     lecturers_list = [{"userId": l.userId, "userName": l.userName} for l in lecturers]
     return jsonify(lecturers_list)
 
@@ -400,7 +400,7 @@ def validate_user_role(user_id, expected_level, department_code, role_name):
     if not user_id:
         return None
 
-    user = User.query.filter_by(userId=user_id, userLevel=expected_level).first()
+    user = User.query.filter_by(userId=user_id, userRole=expected_level).first()
     if not user or user.userDepartment != department_code:
         flash(f"Selected {role_name} does not belong to this department. Ignoring {role_name} selection.", "error")
         return None
@@ -417,9 +417,9 @@ def admin_manageDepartment():
     # Load all departments and stats
     department_data     = Department.query.all()
     total_department    = len(department_data)
-    deans               = User.query.filter_by(userLevel="DEAN").all()
-    hoss                = User.query.filter_by(userLevel="HOS").all()
-    hops                = User.query.filter_by(userLevel="HOP").all()
+    deans               = User.query.filter_by(userRole="DEAN").all()
+    hoss                = User.query.filter_by(userRole="HOS").all()
+    hops                = User.query.filter_by(userRole="HOP").all()
 
     # For edit section
     department_selected_code = request.form.get('editDepartment')
@@ -1206,7 +1206,7 @@ def get_staff(id):
         "userEmail": user.userEmail,
         "userContact": user.userContact or "",
         "userStatus": str(user.userStatus),
-        "userLevel": user.userLevel,
+        "userRole": user.userRole,
         "userDepartment": user.userDepartment or "",
         "userCardId": user.userCardId or "",
         "userGender": 1 if user.userGender else 0
@@ -1219,18 +1219,18 @@ def get_staff(id):
 @login_required
 def admin_manageStaff():
     user_id = session.get('user_id')
-    user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userLevel.asc(), User.userName.asc()).all()
+    user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userRole.asc(), User.userName.asc()).all()
     department_data = Department.query.all()
 
     # === Dashboard Counts ===
     total_staff = User.query.count()
-    total_admin = User.query.filter_by(userLevel="ADMIN").count()
-    total_hop = User.query.filter_by(userLevel="HOP").count()
-    total_hos = User.query.filter_by(userLevel="HOS").count()
-    total_dean = User.query.filter_by(userLevel="DEAN").count()
-    total_lecturer = User.query.filter_by(userLevel="LECTURER").count()
-    total_po = User.query.filter_by(userLevel="PO").count()
-    total_lab_asst = User.query.filter_by(userLevel="LAB_ASST").count()
+    total_admin = User.query.filter_by(userRole="ADMIN").count()
+    total_hop = User.query.filter_by(userRole="HOP").count()
+    total_hos = User.query.filter_by(userRole="HOS").count()
+    total_dean = User.query.filter_by(userRole="DEAN").count()
+    total_lecturer = User.query.filter_by(userRole="LECTURER").count()
+    total_po = User.query.filter_by(userRole="PO").count()
+    total_lab_asst = User.query.filter_by(userRole="LAB_ASST").count()
     total_male_staff = User.query.filter_by(userGender=True).count()
     total_female_staff = User.query.filter_by(userGender=False).count()
     total_activated = User.query.filter_by(userStatus=1).count()
@@ -1270,7 +1270,7 @@ def admin_manageStaff():
                 user_select.userEmail = request.form['editEmail']
                 user_select.userContact = request.form['editContact']
                 user_select.userGender = int(request.form['editGender'])
-                user_select.userLevel = request.form['editRole']
+                user_select.userRole = request.form['editRole']
                 user_select.userStatus = int(request.form['editStatus'])
                 user_select.userCardId = request.form['editCardId']
                 new_department_code = request.form['editDepartment']
@@ -1290,11 +1290,11 @@ def admin_manageStaff():
 
                 # Assign to new department
                 if new_department:
-                    if user_select.userLevel == "HOS":  # HOS
+                    if user_select.userRole == "HOS":  # HOS
                         new_department.hosId = user_select.userId
-                    elif user_select.userLevel == "HOP":  # HOP
+                    elif user_select.userRole == "HOP":  # HOP
                         new_department.hopId = user_select.userId
-                    elif user_select.userLevel == "DEAN":  # Dean
+                    elif user_select.userRole == "DEAN":  # Dean
                         new_department.deanId = user_select.userId
 
                 # Update user department & timestamp
@@ -1698,7 +1698,7 @@ def admin_manageTimetable():
 
     # Staff list (exclude certain levels/status)
     staff_all  = User.query.filter(
-        User.userLevel != 5,
+        User.userRole != 5,
         User.userStatus != 2
     ).all()
     unassigned_staff_list = [staff for staff in staff_all if staff.userId not in timetable_map]
@@ -2142,7 +2142,7 @@ def get_session_details(session_id):
 @login_required
 def get_valid_invigilators():
     users = (User.query
-        .filter(User.userLevel.in_(["LECTURER", "PO", "LAB_ASST"]))
+        .filter(User.userRole.in_(["LECTURER", "PO", "LAB_ASST"]))
         .filter_by(userStatus=1)
         .all()
     )

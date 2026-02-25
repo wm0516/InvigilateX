@@ -53,6 +53,20 @@ class Department(db.Model):
     '''
 
 # ------------------------------
+# Role
+# ------------------------------
+class Role(db.Model):
+    __tablename__   = 'Role'
+    roleCode  = Column(String(10), primary_key=True)
+    roleName  = Column(String(60), nullable=False)
+    '''
+    CREATE TABLE Role (
+        roleCode VARCHAR(10) NOT NULL PRIMARY KEY,
+        roleName VARCHAR(60) NOT NULL
+    );
+    '''
+
+# ------------------------------
 # USER
 # ------------------------------
 class User(db.Model):
@@ -60,7 +74,7 @@ class User(db.Model):
     userId                      = Column(Integer, primary_key=True)
     userDepartment              = Column(String(10), ForeignKey('Department.departmentCode'), nullable=False)
     userName                    = Column(String(255), nullable=False)
-    userLevel                   = Column(String(50), nullable=False)
+    userRole                    = Column(String(50), nullable=False)
     userEmail                   = Column(String(255), nullable=False)
     userContact                 = Column(String(15), nullable=True)
     userGender                  = Column(Boolean, nullable=False)
@@ -81,7 +95,7 @@ class User(db.Model):
         userId INT NOT NULL PRIMARY KEY,
         userDepartment VARCHAR(10) NOT NULL,
         userName VARCHAR(255) NOT NULL,
-        userLevel VARCHAR(50) NOT NULL,
+        userRole VARCHAR(50) NOT NULL,
         userEmail VARCHAR(255) NOT NULL,
         userContact VARCHAR(15) NULL,
         userGender BOOLEAN NOT NULL,
