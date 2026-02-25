@@ -1539,13 +1539,19 @@ def save_timetable_to_db(structured):
     filename = structured.get("filename")
 
     if not lecturer:
-        return
+        return {
+            "total_inserted": 0,
+            "inserted_rows": [],
+            "updated_courses": []
+        }
 
     # Normalize lecturer name (remove all spaces)
     normalized_lecturer = ''.join(lecturer.split())
 
     # Find user where username (spaces removed) matches normalized lecturer
-    user = User.query.filter(func.replace(User.userName, " ", "") == normalized_lecturer).first()
+    user = User.query.filter(
+        func.replace(User.userName, " ", "") == normalized_lecturer
+    ).first()
 
     # Ensure timetable exists for user
     timetable = None
@@ -1554,28 +1560,29 @@ def save_timetable_to_db(structured):
         if not timetable:
             timetable = Timetable(user_id=user.userId)
             db.session.add(timetable)
-            db.session.commit()
+            db.session.commit()  # only needed here to generate timetableId
 
     # ---- Delete old rows if lecturer already exists in DB ----
-    existing_rows = TimetableRow.query.filter_by(lecturerName=lecturer).count()
-    if existing_rows > 0:
-        TimetableRow.query.filter_by(lecturerName=lecturer).delete()
-        db.session.commit()
+    TimetableRow.query.filter_by(lecturerName=lecturer).delete()
+    db.session.commit()
 
     rows_inserted = 0
+    inserted_rows = []
+    updated_courses = []
 
     # ---- Insert new timetable rows ----
     for day, activities in structured.get("days", {}).items():
         for act in activities:
             class_type = act.get("class_type", "").strip()
             course_name_uploaded = act.get("course", "").strip()
+
             if not (class_type and act.get("time") and act.get("room") and course_name_uploaded):
                 continue
 
             # Normalize course name for comparison
             normalized_course_uploaded = ''.join(course_name_uploaded.split()).lower()
 
-            # Try to find matching course in database (ignoring spaces)
+            # ---- Try to find matching course in database ----
             matching_course = None
             for course in Course.query.all():
                 normalized_course_db = ''.join(course.courseName.split()).lower()
@@ -1583,18 +1590,33 @@ def save_timetable_to_db(structured):
                     matching_course = course
                     break
 
-            # If found and user exists, assign lecturer to tutorial/practical
+            # ---- Assign lecturer to tutorial/practical ----
             if matching_course and user:
+                assigned_type = None
+
                 if class_type.lower() == "tutorial":
                     matching_course.courseTutorial = user.userId
+                    assigned_type = "Tutorial"
+
                 elif class_type.lower() == "practical":
                     matching_course.coursePractical = user.userId
-                db.session.commit()
+                    assigned_type = "Practical"
 
-            # Insert timetable rows (if have sections)
+                if assigned_type:
+                    updated_courses.append({
+                        "courseName": matching_course.courseName,
+                        "assignedAs": assigned_type,
+                        "lecturerId": user.userId
+                    })
+
+            # ---- Insert timetable rows ----
             if act.get("sections"):
                 for sec in act["sections"]:
-                    if not (sec.get("intake") and sec.get("course_code") and sec.get("section")):
+                    if not (
+                        sec.get("intake") and 
+                        sec.get("course_code") and 
+                        sec.get("section")
+                    ):
                         continue
 
                     new_row = TimetableRow(
@@ -1609,14 +1631,32 @@ def save_timetable_to_db(structured):
                         courseIntake=sec.get("intake"),
                         courseCode=sec.get("course_code"),
                         courseSection=sec.get("section"),
-                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else None,
-                        classWeekDate=act.get("weeks_date"),
+                        classWeekRange=",".join(act.get("weeks_range", [])) if act.get("weeks_range") else "",
+                        classWeekDate=act.get("weeks_date") or "",
                     )
+
                     db.session.add(new_row)
+
+                    inserted_rows.append({
+                        "day": day,
+                        "time": act.get("time"),
+                        "room": act.get("room"),
+                        "course": course_name_uploaded,
+                        "intake": sec.get("intake"),
+                        "code": sec.get("course_code"),
+                        "section": sec.get("section")
+                    })
+
                     rows_inserted += 1
 
+    # 🔥 Single commit at the end (important for performance)
     db.session.commit()
-    return rows_inserted
+
+    return {
+        "total_inserted": rows_inserted,
+        "inserted_rows": inserted_rows,
+        "updated_courses": updated_courses
+    }
 
 
 
@@ -1718,7 +1758,7 @@ def admin_manageTimetable():
                 if (rows_inserted or 0) > 0:
                     total_files_processed += 1
                     total_rows_inserted += rows_inserted or 0
-            flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}, {rows_inserted}", "success")
+            flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             upload_file = f"{total_files_processed} sets timetable"
             record_action("UPLOAD TIMETABLE", "TIMETABLE", upload_file, user_id)
             return redirect(url_for('admin_manageTimetable'))
