@@ -1753,11 +1753,12 @@ def admin_manageTimetable():
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
                 structured = parse_timetable(raw_text)
                 structured['filename'] = file.filename
-                rows_inserted = save_timetable_to_db(structured)
+                rows_result = save_timetable_to_db(structured)
 
-                if (rows_inserted or 0) > 0:
+                if (rows_result.get("total_inserted", 0)) > 0:
+                    flash(f"{rows_result['total_inserted']} rows saved successfully!", "success")
                     total_files_processed += 1
-                    total_rows_inserted += rows_inserted or 0
+                    total_rows_inserted += rows_result['total_inserted']
             flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
             upload_file = f"{total_files_processed} sets timetable"
             record_action("UPLOAD TIMETABLE", "TIMETABLE", upload_file, user_id)
