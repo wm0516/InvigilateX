@@ -24,7 +24,6 @@ def index():
 # -------------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # cleanup_expired_timetable_rows()
     update_exam_status()
     login_text = ''
     password_text = ''
@@ -308,6 +307,10 @@ def login_required(f):
 @app.route('/admin/home', methods=['GET', 'POST'])
 @login_required
 def admin_homepage():
+    user_id = session.get('user_id')
+    if not check_access(user_id.userId, "homepage"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
@@ -358,6 +361,10 @@ def user_homepage():
     confirm = confirm_record(user_id)
     reject = reject_record(user_id)
     open_slots = open_record(user_id)
+
+    if not check_access(user_id.userId, "homepage"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
 
     backup = (
         VenueSessionInvigilator.query
@@ -734,28 +741,6 @@ def parse_date_range(date_range):
     except Exception as e:
         print(f"Date parse error for '{date_range}': {e}")
         return None, None
-
-
-# -------------------------------
-# Function run non-stop
-# -------------------------------
-def cleanup_expired_timetable_rows():
-    """Delete timetable rows whose classWeekDate end date has expired."""
-    now = datetime.now()
-    all_rows = TimetableRow.query.all()
-
-    for row in all_rows:
-        if not row.classWeekDate:
-            continue
-
-        start, end = parse_date_range(row.classWeekDate)
-        if end is None:
-            continue  # Skip malformed rows
-
-        if now > end:
-            db.session.delete(row)
-
-    db.session.commit()  # Commit even if 0, or you can add a check
 
 
 def update_exam_status():

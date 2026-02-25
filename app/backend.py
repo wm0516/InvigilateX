@@ -73,6 +73,63 @@ def record_action(action, target, targetId, userId):
     return True
 
 
+
+# -------------------------------
+# Basic User Details Function 6: Check Access
+# -------------------------------
+# homepage                == 1 (check with role)
+# course                  == 10
+# department              == 100
+# venue                   == 1000
+# exam                    == 1 0000
+# staff                   == 10 0000 (check with role)
+# timetable               == 100 0000 (check with role)
+# invigilationTimetable   == 1000 0000 (check with role)
+# invigilationReport      == 1 0000 0000 (check with role)
+# access                  == 10 0000 0000
+# activity                == 100 0000 0000
+# profile                 == 1000 0000 0000 (check with role)
+
+ACCESS = {
+    "homepage": 1,
+    "course": 2,
+    "department": 3,
+    "venue": 4,
+    "exam": 5,
+    "staff": 6,
+    "timetable": 7,
+    "invigilationTimetable": 8,
+    "invigilationReport": 9,
+    "access": 10,
+    "activity": 11,
+    "profile": 12,
+}
+
+
+def check_access(user_id, feature_name):
+    user = User.query.filter_by(userId=user_id).first()
+    if not user or not user.userAccess:
+        return False
+
+    try:
+        # Convert hex string to integer
+        access_int = int(user.userAccess, 16)
+
+        # Get the bit position from feature_name
+        position = ACCESS.get(feature_name)
+        if not position:
+            return False
+
+        # Create bitmask and check
+        mask = 1 << (position - 1)
+        return (access_int & mask) != 0
+
+    except ValueError:
+        return False
+
+
+
+
 # Auth Function
 # -------------------------------
 # Auth Function 1: Check Login [Email and Password]

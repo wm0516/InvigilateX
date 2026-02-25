@@ -71,6 +71,7 @@ class User(db.Model):
     userCardId                  = Column(String(15), nullable=True)
     isLocked                    = Column(Boolean, default=False, nullable=False)
     failedAttempts              = Column(Integer, default=0, nullable=False)
+    userAccess                  = Column(Integer, nullable=False, default=0)
 
     # Relationships
     department = relationship("Department", back_populates="users", foreign_keys=[userDepartment])
@@ -91,6 +92,7 @@ class User(db.Model):
         userCardId VARCHAR(15) NULL,
         isLocked BOOLEAN NOT NULL DEFAULT FALSE,
         failedAttempts INT NOT NULL DEFAULT 0,
+        userAccess INT NOT NULL DEFAULT 0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
     );
     '''
