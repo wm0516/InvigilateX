@@ -308,13 +308,10 @@ def login_required(f):
 @login_required
 def admin_homepage():
     user_id = session.get('user_id')
-    if not check_access(user_id.userId, "homepage"):
+    if not check_access(user_id, "homepage"):  # <-- use user_id directly
         flash("Access denied", "error")
         return redirect(url_for("admin_homepage"))
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
-
-
-
 
 
 
@@ -362,7 +359,7 @@ def user_homepage():
     reject = reject_record(user_id)
     open_slots = open_record(user_id)
 
-    if not check_access(user_id.userId, "homepage"):
+    if not check_access(user_id, "homepage"):
         flash("Access denied", "error")
         return redirect(url_for("user_homepage"))
 
