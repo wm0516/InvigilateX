@@ -189,17 +189,6 @@
                     <option value="2">Deleted</option>
                 </select><br>
 
-                <label>Select Role</label>
-                <select id="editRole" name="editRole" required>
-                    <option value="" disabled selected>-- Select Role --</option>
-                    {% for role in role_data %}
-                        <option value="{{ role.roleCode }}"
-                                {% if role_select and role.roleCode == role_select.roleCode %}selected{% endif %}>
-                            [{{ role.roleCode }}] - {{ role.roleName }}
-                        </option>
-                    {% endfor %}
-                </select><br>
-
                 <label>Staff Role</label>
                 <select id="editRoleSelect" name="editRole" required>
                     <option value="" disabled selected>-- Select Role --</option>
