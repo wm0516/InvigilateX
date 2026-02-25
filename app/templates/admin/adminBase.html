@@ -118,7 +118,11 @@
                         {% if show_manual %}
                             <a href="#manual" class="tab-link" data-section="manualSection">
                                 <i class="fas fa-plus"></i>
-                                <span>Manually Insert</span>
+                                {% if access %}
+                                    <span>Insert New Role</span>
+                                {% else %}
+                                    <span>Manually Insert</span>
+                                {% endif %}
                             </a>
                         {% endif %}
 

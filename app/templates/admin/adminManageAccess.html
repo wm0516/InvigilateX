@@ -1,5 +1,6 @@
 {% extends "admin/adminBase.html" %}
 {% set show_tabs = true %}
+{% set access = true %}
 {% set show_manual = true %}
 {% set show_edit = true %}
 {% set show_upload = false %}
@@ -66,7 +67,7 @@
 
 {% block content %}
 <div class="menu-section">
-    <h2>Manage Access</h2>
+    <h2>List of Role</h2>
     <form method="post" style="border-radius: None; border: None; box-shadow: None;">
         <div style="position: relative;">
             <input type="text" id="searchInput" name="search_data" placeholder="Search..." value="{{ search_data }}" style="border-radius: 6px; width: 100%;">
