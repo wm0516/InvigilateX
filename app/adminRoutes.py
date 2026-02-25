@@ -2076,14 +2076,6 @@ def get_session_details(session_id):
             "position": vsi.position
         })
 
-    # Fetch backup invigilator
-    backup_invigilator = None
-    if session.backupInvigilatorId:
-        backup_invigilator = {
-            "invigilatorId": session.backupInvigilatorId.userId,
-            "invigilatorName": session.backupInvigilatorId.userName
-        }
-
     # Collect all courses for the session
     courses_list = []
     for ve in session.exams:
@@ -2097,8 +2089,7 @@ def get_session_details(session_id):
         "courses": courses_list,
         "start": session.startDateTime.strftime("%d/%b/%Y %H:%M"),
         "end": session.endDateTime.strftime("%d/%b/%Y %H:%M"),
-        "attendances": attendances,
-        "backupInvigilatorId": backup_invigilator
+        "attendances": attendances
     })
 
 
