@@ -57,12 +57,15 @@ class Department(db.Model):
 # ------------------------------
 class Role(db.Model):
     __tablename__   = 'Role'
-    roleCode  = Column(String(10), primary_key=True)
-    roleName  = Column(String(60), nullable=False)
+    roleCode = Column(String(10), primary_key=True)
+    roleName = Column(String(50), nullable=False)
+
+    # Relationship
+    users = relationship("User", back_populates="role")
     '''
     CREATE TABLE Role (
         roleCode VARCHAR(10) NOT NULL PRIMARY KEY,
-        roleName VARCHAR(60) NOT NULL
+        roleName VARCHAR(50) NOT NULL
     );
     '''
 
@@ -73,8 +76,8 @@ class User(db.Model):
     __tablename__               = 'User'
     userId                      = Column(Integer, primary_key=True)
     userDepartment              = Column(String(10), ForeignKey('Department.departmentCode'), nullable=False)
+    userRole                    = Column(String(10), ForeignKey('Role.roleCode'), nullable=False)
     userName                    = Column(String(255), nullable=False)
-    userRole                    = Column(String(50), nullable=False)
     userEmail                   = Column(String(255), nullable=False)
     userContact                 = Column(String(15), nullable=True)
     userGender                  = Column(Boolean, nullable=False)
@@ -90,12 +93,13 @@ class User(db.Model):
     # Relationships
     department = relationship("Department", back_populates="users", foreign_keys=[userDepartment])
     timetable   = relationship("Timetable", back_populates="user", uselist=False)
+    role = relationship("Role", back_populates="users")
     '''
     CREATE TABLE User (
         userId INT NOT NULL PRIMARY KEY,
         userDepartment VARCHAR(10) NOT NULL,
         userName VARCHAR(255) NOT NULL,
-        userRole VARCHAR(50) NOT NULL,
+        userRole VARCHAR(10) NOT NULL,
         userEmail VARCHAR(255) NOT NULL,
         userContact VARCHAR(15) NULL,
         userGender BOOLEAN NOT NULL,
@@ -108,6 +112,7 @@ class User(db.Model):
         failedAttempts INT NOT NULL DEFAULT 0,
         userAccess INT NOT NULL DEFAULT 0,
         FOREIGN KEY (userDepartment) REFERENCES Department(departmentCode)
+        FOREIGN KEY (userRole) REFERENCES Role(roleCode)
     );
     '''
 

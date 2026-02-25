@@ -17,19 +17,19 @@
         <h4 style="text-align: center;">Manual Data Entry Section</h4>
         <div class="profile-frame">
             <div class="form-profile">
-                <label></label>
-                <input type="text" name="departmentCode" required>
+                <label>Role Code</label>
+                <input type="text" name="roleCode" required>
             </div>
             <div class="form-profile">
-                <label>Department Name</label>
-                <input type="text" name="departmentName" required>
+                <label>Role Name</label>
+                <input type="text" name="roleName" required>
             </div>
         </div>
         <input type="hidden" name="form_type" value="manual">
         <br><br>
 
         <div class="button-wrapper">
-            <button type="submit">Add A New Department</button>
+            <button type="submit">Add A New Role</button>
         </div>
     </div>
 </form>
@@ -39,9 +39,19 @@
 <!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
     <div id="editSection" class="function-frame">
-        <h4 style="text-align: center;">Edit Existing Department</h4>
+        <h4 style="text-align: center;">Edit Existing Role Access</h4>
         <div class="profile-frame">
             <div class="form-profile">
+                <label>Select Role</label>
+                <select id="editRole" name="editRole" required>
+                    <option value="" disabled selected>-- Select Role --</option>
+                    {% for role in role_data %}
+                        <option value="{{ role.roleCode }}"
+                                {% if role_select and role.roleCode == role_select.roleCode %}selected{% endif %}>
+                            {{ role.roleCode }} - {{ role.roleName }}
+                        </option>
+                    {% endfor %}
+                </select><br>
             </div>
             <div class="form-profile">
             </div> 
@@ -53,11 +63,11 @@
 
         <div class="button-wrapper" style="gap: 5%;">
             <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
-                <i class="fas fa-check"></i> Update Department
+                <i class="fas fa-check"></i> Update Role
             </button>
             <button type="submit" name="action" value="delete" style="background-color: #f8d7da; color: #721c24;"
-                    onclick="return confirm('Are you sure to delete this department?')">
-                <i class="fas fa-trash"></i> Delete Department
+                    onclick="return confirm('Are you sure to delete this role?')">
+                <i class="fas fa-trash"></i> Delete Role
             </button>
         </div>
     </div>

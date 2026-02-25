@@ -2367,8 +2367,34 @@ def admin_activity():
 @app.route('/admin/manageAccess', methods=['GET', 'POST'])
 @login_required
 def admin_manageAccess():
+    user_id = session.get('user_id')
     record = Action.query.order_by(desc(Action.actionTime)).all()
-    return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', record=record)
+    role_data = Role.query.all()
+
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
+
+        # ---------------- Manual Section ----------------
+        if form_type == 'manual':
+            roleCode = request.form.get('roleCode', '').strip().upper()
+            roleName = request.form.get('roleName', '').strip().upper()
+
+            # Check if role code already exists
+            if Role.query.filter_by(roleCode=roleCode).first():
+                flash("Role code already exists. Please use a unique code.", "error")
+            else:
+                db.session.add(
+                    Role(
+                        roleCode=roleCode, 
+                        roleName=roleName,
+                        )
+                    )
+                db.session.commit()
+                flash(f"New Role [{roleName}] added", "success")               
+                record_action("ADD NEW ROLE", "ROLE", roleCode, user_id)
+                return redirect(url_for('admin_manageAccess'))
+
+    return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', record=record, role_data=role_data)
 
 
 
