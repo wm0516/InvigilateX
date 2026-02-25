@@ -2387,8 +2387,10 @@ def admin_manageAccess():
     staff_data = User.query.all()
 
     # For edit section
-    role_selected_code = request.form.get('editRole')
-    role_select        = Role.query.filter_by(roleCode=role_selected_code).first()
+    role_selected_code  = request.form.get('editSecondRole')
+    role_select         = Role.query.filter_by(roleCode=role_selected_code).first()
+    role_code           = request.form.get('selectRole')
+    user_code           = request.form.get('selectUser')
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
@@ -2412,9 +2414,28 @@ def admin_manageAccess():
                 flash(f"New Role [{roleName}] added", "success")               
                 record_action("ADD NEW ROLE", "ROLE", roleCode, user_id)
                 return redirect(url_for('admin_manageAccess'))
-
+            
         # ---------------- Edit Section ----------------
-        elif form_type == 'edit' and role_select:
+        elif form_type == 'edit':
+            if not role_code and not user_code:
+                flash("Please select either a Role or a User to edit.", "error")
+                return redirect(url_for('admin_manageAccess'))
+
+            # If at least one has data, proceed with your edit logic
+            if role_code:
+                # your code to edit role here
+                flash(f"Role [{role_code}] updated successfully.", "success")
+                record_action("EDIT ROLE", "ROLE", role_code, user_id)
+
+            if user_code:
+                # your code to edit user here
+                flash(f"User [{user_code}] updated successfully.", "success")
+                record_action("EDIT USER", "USER", user_code, user_id)
+
+            return redirect(url_for('admin_manageAccess'))
+
+        # ---------------- Second Edit Section ----------------
+        elif form_type == 'second_edit' and role_select:
             action    = request.form.get('action')
             roleName  = request.form.get('roleName', '').strip().upper()
 

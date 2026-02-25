@@ -44,7 +44,7 @@
         <div class="profile-frame">
             <div class="form-profile">
                 <label>Select Role</label>
-                <select id="editRole" name="editRole" required>
+                <select id="editSecondRole" name="editSecondRole" required>
                     <option value="" disabled selected>-- Select Role --</option>
                     {% for role in role_data %}
                         <option value="{{ role.roleCode }}"
@@ -60,7 +60,7 @@
                 <input type="text" name="roleName" value="{{ role_select.roleName if role_select else '' }}" required>
             </div>
         </div>
-        <input type="hidden" name="form_type" value="edit">
+        <input type="hidden" name="form_type" value="second_edit">
         <br><br>
 
         <div class="button-wrapper" style="gap: 5%;">
@@ -84,7 +84,7 @@
         <div class="profile-frame">
             <div class="form-profile" style="width: 30%;">
                 <label>Select Role</label>
-                <select id="editRoleDropdown" name="editRole" required>
+                <select id="selectRole" name="selectRole">
                     <option value="" disabled selected>-- Select Role --</option>
                     {% for role in role_data %}
                         <option value="{{ role.roleCode }}"
@@ -96,7 +96,7 @@
             </div>
             <div class="form-profile" style="width: 30%;">
                 <label>Select Staff</label>
-                <select id="editStaffDropdown" name="editStaff" required>
+                <select id="selectUser" name="selectUser">
                     <option value="" disabled selected>-- Select Staff --</option>
                     {% for staff in staff_data %}
                         <option value="{{ staff.userAccess }}"
@@ -106,7 +106,7 @@
                     {% endfor %}
                 </select><br>
             </div>
-        </div>
+        </div><br>
                 
         <div class="profile-frame">
             <div class="form-profile" style="width: 24%;">
@@ -182,7 +182,7 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const roleSelect    = document.getElementById("editRole");
+    const roleSelect    = document.getElementById("editSecondRole");
     const roleNameInput = document.querySelector("#editSecondForm input[name='roleName']");
 
     async function fetchRoleData(roleCode) {
