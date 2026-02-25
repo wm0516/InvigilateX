@@ -1,11 +1,75 @@
 {% extends "admin/adminBase.html" %}
-{% block title %}Admin ManageAccess{% endblock %}
+{% set show_tabs = true %}
+{% set show_manual = true %}
+{% set show_edit = true %}
+{% set show_upload = false %}
+{% set show_cal = false %}
+{% set show_dashboard = false %}
+{% block title %}ManageAccess{% endblock %}
+{% block head_title %}<h2>Manage Access</h2>{% endblock %}
+
+
+{% block manual_section %}
+<!-- Manual Form -->
+<form id="manualForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
+    <div id="manualSection" class="function-frame">
+        <h4 style="text-align: center;">Manual Data Entry Section</h4>
+        <div class="profile-frame">
+            <div class="form-profile">
+                <label>Department Code</label>
+                <input type="text" name="departmentCode" required>
+            </div>
+            <div class="form-profile">
+                <label>Department Name</label>
+                <input type="text" name="departmentName" required>
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="manual">
+        <br><br>
+
+        <div class="button-wrapper">
+            <button type="submit">Add A New Department</button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block edit_section %}
+<!-- Edit Form -->
+<form id="editForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
+    <div id="editSection" class="function-frame">
+        <h4 style="text-align: center;">Edit Existing Department</h4>
+        <div class="profile-frame">
+            <div class="form-profile">
+            </div>
+            <div class="form-profile">
+            </div> 
+            <div class="form-profile">
+            </div>
+        </div>
+        <input type="hidden" name="form_type" value="edit">
+        <br><br>
+
+        <div class="button-wrapper" style="gap: 5%;">
+            <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
+                <i class="fas fa-check"></i> Update Department
+            </button>
+            <button type="submit" name="action" value="delete" style="background-color: #f8d7da; color: #721c24;"
+                    onclick="return confirm('Are you sure to delete this department?')">
+                <i class="fas fa-trash"></i> Delete Department
+            </button>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+
 {% block content %}
 <div class="menu-section">
     <h2>Manage Access</h2>
     <form method="post" style="border-radius: None; border: None; box-shadow: None;">
         <div style="position: relative;">
-            <input type="text" id="searchInput" name="search_department" placeholder="Search..." value="{{ search_department }}" style="border-radius: 6px; width: 100%;">
+            <input type="text" id="searchInput" name="search_data" placeholder="Search..." value="{{ search_data }}" style="border-radius: 6px; width: 100%;">
             <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
         </div>
         <div class="user-table-container">
