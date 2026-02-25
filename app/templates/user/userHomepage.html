@@ -163,6 +163,7 @@
 </div>
 {% endif %}
 
+{% if user_level not in ["DEAN", "HOS", "HOP"] %}
 <div class="dashboard-row" style="grid-template-columns: repeat(3, 1fr);">
     <div class="dashboard-frame">
         <h3>Completed Invigilation Hours</h3>
@@ -311,6 +312,7 @@
         </table>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_scripts %}

@@ -1,0 +1,44 @@
+{% extends "admin/adminBase.html" %}
+{% block title %}Admin ManageAccess{% endblock %}
+{% block content %}
+<div class="menu-section">
+    <h2>Manage Access</h2>
+    <form method="post" style="border-radius: None; border: None; box-shadow: None;">
+        <div style="position: relative;">
+            <input type="text" id="searchInput" name="search_department" placeholder="Search..." value="{{ search_department }}" style="border-radius: 6px; width: 100%;">
+            <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
+        </div>
+        <div class="user-table-container">
+            <table class="user-data-table" id="activity">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Section</th>
+                        <th>Action</th>
+                        <th>Action Id</th>
+                        <th>Action By</th>
+                        <th>Action Time</th>
+                        <th>IP address</th>
+                        <th>Browser</th>
+                        <th>Device</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in record %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row.actionTargetType }}</td>
+                        <td>{{ row.actionTake }}</td>
+                        <td>{{ row.actionTargetId }}</td>
+                        <td>{{ row.actionBy }}</td> 
+                        <td>{{ row.actionTime }}</td>
+                        <td>{{ row.actionIp }}</td>
+                        <td>{{ row.actionBrowser }}</td>
+                        <td>{{ row.actionDevice }}</td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+{% endblock %}

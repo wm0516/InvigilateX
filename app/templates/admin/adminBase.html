@@ -57,6 +57,10 @@
                 <a href="{{ url_for('admin_manageInvigilationReport') }}" class="tab-link {% if active_tab == 'admin_manageInvigilationReporttab' %}active{% endif %}">
                     <i class="fas fa-file-alt"></i>
                     <span>Manage Invigilation Report</span>
+                </a>                
+                <a href="{{ url_for('admin_manageAccess') }}" class="tab-link {% if active_tab == 'admin_manageAccesstab' %}active{% endif %}">
+                    <i class="fas fa-cog fa-spin"></i>
+                    <span>Manage Access</span>
                 </a>
                 <a href="{{ url_for('admin_activity') }}" class="tab-link {% if active_tab == 'admin_activitytab' %}active{% endif %}">
                     <i class="fas fa-cog fa-spin"></i>

@@ -2361,3 +2361,15 @@ def admin_activity():
     return render_template('admin/adminActivity.html', active_tab='admin_activitytab', record=record)
 
 
+# -------------------------------
+# Function for Admin ManageAccess Route
+# -------------------------------
+@app.route('/admin/manageAcess', methods=['GET', 'POST'])
+@login_required
+def admin_manageAcess():
+    record = Action.query.order_by(desc(Action.actionTime)).all()
+    return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', record=record)
+
+
+
+
