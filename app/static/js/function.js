@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function showSection(sectionId, event) {
         if (event) event.preventDefault();
 
-        ["dashboardForm", "uploadForm", "manualForm","editForm"].forEach(formId => {
+        ["dashboardForm", "uploadForm", "manualForm", "editRoleForm", "editForm"].forEach(formId => {
             const form = document.getElementById(formId);
             if (form) form.style.display = "none";
         });
