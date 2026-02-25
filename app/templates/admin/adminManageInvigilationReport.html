@@ -75,10 +75,10 @@
                 <label>Select Venue Session</label>
                 <select id="editSession" name="venueSessionId" required>
                     <option value="" disabled selected>-- Select Session --</option>
-                    {% for (venue, start, end), data in grouped_att.items() %}
+                    {% for (session_id, venue, start, end), data in grouped_att.items() %}
                         {% set first_att = data.invigilators[0] %}
                         <option value="{{ first_att.venueSessionId }}">
-                            {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }} - Venue [{{ venue }}]
+                            {{ first_att.venueSessionId }} | {{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }} - Venue [{{ venue }}]
                         </option>
                     {% endfor %}
                 </select><br>
@@ -141,7 +141,7 @@
         </thead>
         <tbody>
             {% set ns = namespace(rowno=1) %}
-            {% for (venue, start, end), data in grouped_att.items() %}
+            {% for (session_id, venue, start, end), data in grouped_att.items() %}
                 {% set num_invigilators = data.invigilators | length %}
                 {% set has_backup = data.backup is not none %}
                 {% set total_rows = num_invigilators %}

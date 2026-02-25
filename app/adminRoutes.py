@@ -2143,13 +2143,14 @@ def admin_manageInvigilationReport():
         ).all()
     )
 
-    grouped_att: Dict[Tuple[str, datetime, datetime],Dict[str, Any]] = {}
+    grouped_att: Dict[Tuple[int, str, datetime, datetime], Dict[str, Any]] = {}
     for vsi in vsi_entries:
         venue_session = vsi.session
         if not venue_session:
             continue
 
         key = (
+            venue_session.venueSessionId,
             venue_session.venue.venueNumber,
             venue_session.startDateTime,
             venue_session.endDateTime
