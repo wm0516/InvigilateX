@@ -121,37 +121,18 @@
 
 {% block extra_scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-
-    function makeDropdownSearchable(selectId) {
-        const select = document.getElementById(selectId);
-
-        // Create search input
-        const searchInput = document.createElement('input');
-        searchInput.type = 'text';
-        searchInput.placeholder = 'Type to search...';
-        searchInput.style.width = '100%';
-        searchInput.style.marginBottom = '5px';
-        searchInput.style.padding = '5px';
-        searchInput.style.boxSizing = 'border-box';
-
-        // Insert input before select
-        select.parentNode.insertBefore(searchInput, select);
-
-        searchInput.addEventListener('keyup', function() {
-            const filter = this.value.toLowerCase();
-            for (let i = 0; i < select.options.length; i++) {
-                const option = select.options[i];
-                const text = option.text.toLowerCase();
-                option.style.display = text.includes(filter) ? '' : 'none';
-            }
+    $(document).ready(function() {
+        $('#editRoleDropdown').select2({
+            placeholder: "-- Select Role --",
+            allowClear: true,
+            width: '100%'
         });
-    }
 
-    // Apply to both dropdowns
-    makeDropdownSearchable('editRoleDropdown');
-    makeDropdownSearchable('editStaffDropdown');
-
-});
+        $('#editStaffDropdown').select2({
+            placeholder: "-- Select Staff --",
+            allowClear: true,
+            width: '100%'
+        });
+    });
 </script>
 {% endblock %}
