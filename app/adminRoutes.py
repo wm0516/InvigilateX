@@ -1866,10 +1866,6 @@ def get_venue_calendar_data():
         if ve.studentCount <= 0:
             continue
 
-        # Condition 2: only courses starting with "CS" (example)
-        if not course.courseCodeSectionIntake.startswith("CS"):
-            continue
-
         total_invigilators = sum(
             1 for vsi in session.invigilators
             if vsi.invigilationStatus == True and vsi.position != "BACKUP"
