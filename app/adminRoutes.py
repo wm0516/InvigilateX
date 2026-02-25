@@ -1221,6 +1221,7 @@ def admin_manageStaff():
     user_id = session.get('user_id')
     user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userRole.asc(), User.userName.asc()).all()
     department_data = Department.query.all()
+    role_data = Role.query.all()
 
     # === Dashboard Counts ===
     total_staff = User.query.count()
@@ -1360,7 +1361,8 @@ def admin_manageStaff():
         total_deleted=total_deleted,
         user_select=user_select,
         staffDepartmentLabels=staffDepartmentLabels,
-        staffDepartmentCounts=staffDepartmentCounts
+        staffDepartmentCounts=staffDepartmentCounts,
+        role_data=role_data
     )
 
 
