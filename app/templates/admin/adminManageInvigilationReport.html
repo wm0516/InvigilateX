@@ -223,13 +223,21 @@
 {% block extra_scripts %}
 <script>
 document.getElementById("generatePDF").addEventListener("click", function () {
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
-    const nowMY = new Date().toLocaleString("en-GB", {timeZone: "Asia/Kuala_Lumpur", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true});
-    
-    // ===== Title =====
+    const nowMY = new Date().toLocaleString("en-GB", {
+        timeZone: "Asia/Kuala_Lumpur",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    });
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Admin View - Invigilation Report Download", pageWidth / 2, margin, { align: "center" });
@@ -237,15 +245,9 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
-    const startY = margin + 30;
 
     const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
     const rows = [];
-    let lastExamNo = "";
-    let lastExamDetails = "";
-    let lastVenue = "";
-    let lastCourse = "";
-    let previousExamKey = ""; // Track exam uniqueness
 
     function getInvigilatorText(td) {
         const lines = [];
@@ -267,26 +269,17 @@ document.getElementById("generatePDF").addEventListener("click", function () {
         const isNewExamRow = !isNaN(firstCellText);
 
         if (isNewExamRow) {
-            lastExamNo = tds[0].innerText.trim();
-            lastExamDetails = tds[1].innerText.trim();
-            lastVenue = tds[2].innerText.trim();
-            lastCourse = tds[3].innerText.trim();
-
-            // Generate a key to detect same exam multiple invigilators
-            previousExamKey = lastExamNo + lastExamDetails + lastVenue + lastCourse;
-
             rows.push([
-                lastExamNo,
-                lastExamDetails,
-                lastVenue,
-                lastCourse,
+                tds[0].innerText.trim(),
+                tds[1].innerText.trim(),
+                tds[2].innerText.trim(),
+                tds[3].innerText.trim(),
                 getInvigilatorText(tds[4]),
                 tds[5].innerText.trim(),
                 tds[6].innerText.trim(),
                 tds[7].innerText.trim()
             ]);
         } else {
-            // Continuation row for the same exam → blank first 4 columns
             rows.push([
                 "", "", "", "",
                 getInvigilatorText(tds[0]),
@@ -296,183 +289,136 @@ document.getElementById("generatePDF").addEventListener("click", function () {
             ]);
         }
     });
-    
-    // Generate PDF table
+
     doc.autoTable({
         head: [headers],
         body: rows,
-        startY: startY,
+        startY: margin + 30,
         theme: "grid",
-        styles: {font: "helvetica", fontSize: 7, cellPadding: 4, overflow: "linebreak", valign: "top", halign: "left"},
-        headStyles: {fillColor: [33, 37, 41], textColor: 255, fontStyle: "bold" },
-        tableWidth: "auto",
-        margin: { top: margin, left: margin, right: margin, bottom: margin },
-        didDrawPage: function (data) {
-            const pageCount = doc.internal.getNumberOfPages();
-            const pageHeight = doc.internal.pageSize.height;
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`Page ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: "right" });
-        }
+        styles: { fontSize: 7, cellPadding: 4 }
     });
+
     doc.save("Admin_ViewInvigilationReport.pdf");
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-    const checkinClass = "checkin-text";
-    const checkoutClass = "checkout-text";
-
-    // Convert displayed date text to ISO format for input[type="datetime-local"]
-    function toLocalInput(dateText) {
-        if (!dateText || dateText === "None") return "";
-
-        // Parse browser-local date
-        const parsed = new Date(dateText);
-        // Add 8 hours if necessary
-        parsed.setHours(parsed.getHours());
-        // Format as: yyyy-MM-ddTHH:mm:ss (for datetime-local with seconds)
-        const pad = (n) => n.toString().padStart(2, "0");
-
-        const yyyy = parsed.getFullYear();
-        const mm = pad(parsed.getMonth() + 1);
-        const dd = pad(parsed.getDate());
-        const hh = pad(parsed.getHours());
-        const min = pad(parsed.getMinutes());
-        const ss = pad(parsed.getSeconds());
-        return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
-    }
-
-    // Attach edit listener to a single button
-    function attachEditListener(btn) {
-        btn.addEventListener("click", () => makeRowEditable(btn));
-    }
-
-    // Main function to handle row editing
-    function makeRowEditable(btn) {
-
-        const tr = btn.closest("tr");
-        const venueSessionId = btn.dataset.session;
-        const invigilatorId = btn.dataset.invigilator;
-        const checkInSpan = tr.querySelector(".checkin-text");
-        const checkOutSpan = tr.querySelector(".checkout-text");
-        const statusSpan = tr.querySelector(".invigilation-status");
-        const remarkSpan = tr.querySelector(".attendance-remark");
-        const originalCheckIn = checkInSpan.textContent.trim();
-        const originalCheckOut = checkOutSpan.textContent.trim();
-        const originalStatus = statusSpan.textContent.trim();
-        const originalRemark = remarkSpan.textContent.trim();
-
-        if (tr.classList.contains("editing")) return;
-        tr.classList.add("editing");
-
-        function toLocalInput(dateText) {
-            if (!dateText || dateText === "None") return "";
-            const d = new Date(dateText.replace(" ", "T"));
-            return d.toISOString().slice(0, 19);
-        }
-
-        checkInSpan.innerHTML = `<input type="datetime-local" step="1" class="checkin-input" value="${toLocalInput(originalCheckIn)}">`;
-        checkOutSpan.innerHTML = `<input type="datetime-local" step="1" class="checkout-input" value="${toLocalInput(originalCheckOut)}">`;
-
-        statusSpan.innerHTML = `
-            <select class="status-select">
-                <option value="true" ${originalStatus === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
-                <option value="false" ${originalStatus === "PENDING" ? "selected" : ""}>PENDING</option>
-            </select>
-        `;
-
-        remarkSpan.innerHTML = `
-            <select class="remark-select">
-                <option>PENDING</option>
-                <option>CHECK IN</option>
-                <option>CHECK IN LATE</option>
-                <option>CHECK OUT EARLY</option>
-                <option>COMPLETED</option>
-                <option>EXPIRED</option>
-            </select>
-        `;
-
-        remarkSpan.querySelector("select").value = originalRemark;
-        const actionTd = btn.closest("td");
-
-        actionTd.innerHTML = `
-            <button class="save-btn"><i class="fa fa-save"></i></button>
-            <button class="cancel-btn"><i class="fa fa-times"></i></button>
-        `;
-
-        actionTd.querySelector(".save-btn").addEventListener("click", async () => {
-            const newCheckIn = tr.querySelector(".checkin-input").value;
-            const newCheckOut = tr.querySelector(".checkout-input").value;
-            const newStatus = tr.querySelector(".status-select").value === "true";
-            const newRemark = tr.querySelector(".remark-select").value;
-
-            const response = await fetch("/admin/updateAttendanceTime", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({venueSessionId, invigilatorId, check_in: newCheckIn, check_out: newCheckOut, invigilation_status: newStatus, remark: newRemark})
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                location.reload();
-            } else {
-                alert(result.message);
-            }
-        });
-        actionTd.querySelector(".cancel-btn").addEventListener("click", () => {
-            location.reload();
-        });
-    }
-
-    // Attach edit to all edit buttons on page load
-    document.querySelectorAll(".edit-btn").forEach(attachEditListener);
-});
 
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("searchInput");
     const noResults = document.getElementById("noResults");
-    const tableRows = document.querySelectorAll("#manageInvigilationReport tbody tr");
 
-    searchInput.addEventListener("input", function () {
-        const filter = this.value.toLowerCase().trim();
-        let foundAny = false;
+    if (searchInput) {
+        searchInput.addEventListener("input", function () {
+            const filter = this.value.toLowerCase().trim();
+            let foundAny = false;
 
-        tableRows.forEach(row => {
-            const text = row.innerText.toLowerCase();
-            if (!filter || text.includes(filter)) {
-                row.style.display = ""; // show row
-                foundAny = true;
-            } else {
-                row.style.display = "none"; // hide row
-            }
+            document.querySelectorAll("#manageInvigilationReport tbody tr").forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (!filter || text.includes(filter)) {
+                    row.style.display = "";
+                    foundAny = true;
+                } else {
+                    row.style.display = "none";
+                }
+            });
+
+            noResults.style.display = foundAny ? "none" : "block";
         });
+    }
 
-        noResults.style.display = foundAny ? "none" : "block";
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", async function () {
+
+            const tr = btn.closest("tr");
+            if (tr.classList.contains("editing")) return;
+            tr.classList.add("editing");
+
+            const venueSessionId = btn.dataset.session;
+            const invigilatorId = btn.dataset.invigilator;
+
+            const checkInSpan = tr.querySelector(".checkin-text");
+            const checkOutSpan = tr.querySelector(".checkout-text");
+            const statusSpan = tr.querySelector(".invigilation-status");
+            const remarkSpan = tr.querySelector(".attendance-remark");
+
+            const originalCheckIn = checkInSpan.textContent.trim();
+            const originalCheckOut = checkOutSpan.textContent.trim();
+            const originalStatus = statusSpan.textContent.trim();
+            const originalRemark = remarkSpan.textContent.trim();
+
+            function toLocalInput(dateText) {
+                if (!dateText || dateText === "None") return "";
+                const d = new Date(dateText.replace(" ", "T"));
+                return d.toISOString().slice(0, 19);
+            }
+
+            checkInSpan.innerHTML = `<input type="datetime-local" step="1" value="${toLocalInput(originalCheckIn)}">`;
+            checkOutSpan.innerHTML = `<input type="datetime-local" step="1" value="${toLocalInput(originalCheckOut)}">`;
+
+            statusSpan.innerHTML = `
+                <select>
+                    <option value="true" ${originalStatus === "ACCEPTED" ? "selected" : ""}>ACCEPTED</option>
+                    <option value="false" ${originalStatus === "PENDING" ? "selected" : ""}>PENDING</option>
+                </select>`;
+
+            remarkSpan.innerHTML = `
+                <select>
+                    <option>PENDING</option>
+                    <option>CHECK IN</option>
+                    <option>CHECK IN LATE</option>
+                    <option>CHECK OUT EARLY</option>
+                    <option>COMPLETED</option>
+                    <option>EXPIRED</option>
+                </select>`;
+
+            remarkSpan.querySelector("select").value = originalRemark;
+
+            const actionTd = btn.closest("td");
+            actionTd.innerHTML = `
+                <button class="save-btn">Save</button>
+                <button class="cancel-btn">Cancel</button>`;
+
+            actionTd.querySelector(".save-btn").addEventListener("click", async () => {
+
+                const newCheckIn = tr.querySelector(".checkin-text input").value;
+                const newCheckOut = tr.querySelector(".checkout-text input").value;
+                const newStatus = tr.querySelector(".invigilation-status select").value === "true";
+                const newRemark = tr.querySelector(".attendance-remark select").value;
+
+                const response = await fetch("/admin/updateAttendanceTime", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        venueSessionId,
+                        invigilatorId,
+                        check_in: newCheckIn,
+                        check_out: newCheckOut,
+                        invigilation_status: newStatus,
+                        remark: newRemark
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) location.reload();
+                else alert(result.message);
+            });
+
+            actionTd.querySelector(".cancel-btn").addEventListener("click", () => location.reload());
+        });
     });
-});
 
-function formatExamDateTime(dtString) {
-    // Make it a proper Date object
-    const d = new Date(dtString.replace(" ", "T")); // '2026-02-04 12:00' → ISO
-
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = d.toLocaleString("en-GB", { month: "short" }); // Feb
-    const year = d.getFullYear();
-    
-    const hours = String(d.getHours()).padStart(2, "0");
-    const minutes = String(d.getMinutes()).padStart(2, "0");
-
-    return `${day}${month}${year} ${hours}:${minutes}`;
-}
-
-document.addEventListener("DOMContentLoaded", () => {
     const sessionSelect = document.getElementById("editSession");
     const courseInfo = document.getElementById("courseInfo");
     const examTime = document.getElementById("examTime");
-    const slotContainer = document.getElementById("slotContainer");
+    const currentContainer = document.getElementById("currentInvigilatorContainer");
+    const replaceContainer = document.getElementById("replaceInvigilatorContainer");
 
-    async function loadSession(sessionId) {
-        const resp = await fetch(`/admin/get_session_details/${sessionId}`);
+    if (!sessionSelect) return;
+
+    sessionSelect.addEventListener("change", async function () {
+
+        if (!this.value) return;
+
+        const resp = await fetch(`/admin/get_session_details/${this.value}`);
         const data = await resp.json();
 
         if (data.error) {
@@ -480,87 +426,51 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const courseContainer = document.getElementById("courseInfo");
-        courseContainer.innerHTML = ""; // clear previous courses
+        courseInfo.innerHTML = "";
+        currentContainer.innerHTML = "";
+        replaceContainer.innerHTML = "";
 
         data.courses.forEach(c => {
             const input = document.createElement("input");
             input.type = "text";
             input.readOnly = true;
             input.value = `${c.code} - ${c.name}`;
-            courseContainer.appendChild(input);
+            courseInfo.appendChild(input);
         });
 
         examTime.value = `${data.start} → ${data.end}`;
-        const currentContainer = document.getElementById("currentInvigilatorContainer");
-        const replaceContainer = document.getElementById("replaceInvigilatorContainer");
-
-        currentContainer.innerHTML = "";
-        replaceContainer.innerHTML = "";
 
         const invResp = await fetch("/admin/get_valid_invigilators");
         const invigilators = await invResp.json();
 
-        for (let att of data.attendances) {
+        data.attendances.forEach(att => {
 
-            // LEFT SIDE (Current Invigilator)
             const currentDiv = document.createElement("div");
-            currentDiv.style.marginBottom = "15px";
-            currentDiv.innerHTML = `
-                <input type="text" value=" [${att.position}] ${att.invigilatorName}" readonly>
-            `;
+            currentDiv.innerHTML =
+                `<input type="text" value="[${att.position}] ${att.invigilatorName}" readonly>`;
             currentContainer.appendChild(currentDiv);
 
-            // RIGHT SIDE (Replace With Dropdown)
             const replaceDiv = document.createElement("div");
-            replaceDiv.style.marginBottom = "15px";
             const select = document.createElement("select");
             select.name = `replace_${att.invigilatorId}`;
-            select.required = false;
 
-            // Add "None" option first
             const noneOption = document.createElement("option");
-            noneOption.value = ""; // empty value = None
+            noneOption.value = "";
             noneOption.textContent = "None";
             select.appendChild(noneOption);
 
-            // Add all valid invigilators
             invigilators.forEach(u => {
                 const option = document.createElement("option");
                 option.value = u.userId;
                 option.textContent = u.userName;
-
-                if (u.userId == att.invigilatorId) {
-                    option.selected = true;
-                }
-
+                if (u.userId == att.invigilatorId) option.selected = true;
                 select.appendChild(option);
             });
 
             replaceDiv.appendChild(select);
             replaceContainer.appendChild(replaceDiv);
-        }
-    }
-
-    sessionSelect.addEventListener("change", () => {
-        loadSession(sessionSelect.value);
+        });
     });
 });
-
-
-function renumberVisibleRows() {
-    const rows = document.querySelectorAll("#manageInvigilationReport tbody tr");
-    let index = 1;
-    rows.forEach(row => {
-        if (row.offsetParent !== null) {            
-            const cell = row.querySelector("td.row-number");
-            if (cell) {
-                cell.textContent = index++;
-            }
-        }
-    });
-}
-
-
 </script>
 {% endblock %}
