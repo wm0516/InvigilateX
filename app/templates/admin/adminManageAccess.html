@@ -158,18 +158,40 @@
 
 {% block extra_scripts %}
 <script>
-    $(document).ready(function() {
-        $('#editRoleDropdown').select2({
-            placeholder: "-- Select Role --",
-            allowClear: true,
-            width: '100%'
+document.addEventListener("DOMContentLoaded", () => {
+    const roleSelect    = document.getElementById("editRole");
+    const roleNameInput = document.querySelector("#editForm input[name='roleName']");
+
+    async function fetchRoleData(roleCode) {
+        if (!roleCode) return;
+
+        try {
+            const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
+            const role = await resp.json();
+
+            if (role.error) {
+                alert(role.error);
+                return;
+            }
+
+            // Fill department name
+            roleNameInput.value = role.roleName || "";
+
+        } catch (err) {
+            console.error("Error fetching role:", err);
+        }
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener("change", () => {
+            fetchRoleData(roleSelect.value);
         });
 
-        $('#editStaffDropdown').select2({
-            placeholder: "-- Select Staff --",
-            allowClear: true,
-            width: '100%'
-        });
-    });
+        // Auto-fill on page load if already selected
+        if (roleSelect.value) {
+            fetchRoleData(roleSelect.value);
+        }
+    }
+});
 </script>
 {% endblock %}

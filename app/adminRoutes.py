@@ -2363,6 +2363,19 @@ def admin_activity():
     return render_template('admin/adminActivity.html', active_tab='admin_activitytab', record=record)
 
 
+
+
+@app.route('/get_role/<path:role_code>')
+@login_required
+def get_role(role_code):
+    role = Role.query.filter_by(roleCode=role_code).first()
+    if not role:
+        return jsonify({"error": "Role not found"}), 404
+    return jsonify({
+        "roleCode": role.roleCode,
+        "roleName": role.roleName
+    })
+
 # -------------------------------
 # Function for Admin ManageAccess Route
 # -------------------------------
