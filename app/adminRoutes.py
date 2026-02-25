@@ -1862,10 +1862,6 @@ def get_venue_calendar_data():
         session = ve.session
         course = exam.course
 
-        # Condition 1: only exams with students
-        if ve.studentCount <= 0:
-            continue
-
         total_invigilators = sum(
             1 for vsi in session.invigilators
             if vsi.invigilationStatus == True and vsi.position != "BACKUP"
