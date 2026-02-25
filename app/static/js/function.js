@@ -87,24 +87,15 @@ document.addEventListener("DOMContentLoaded", function () {
     const tabLinks = document.querySelectorAll(".second-nav .tab-link");
     const tabKey = window.location.pathname + "_activeTab"; // Unique key per page
 
-    const sectionToFormMap = {
-        "dashboardSection": "dashboardForm",
-        "uploadSection": "uploadForm",
-        "manualSection": "manualForm",
-        "editSecondSection": "editRoleForm",
-        "editSection": "editForm"
-    };
-
     function showSection(sectionId, event) {
         if (event) event.preventDefault();
 
-        // Hide all forms
-        Object.values(sectionToFormMap).forEach(formId => {
+        ["dashboardForm", "uploadForm", "manualForm", "editRoleForm", "editForm"].forEach(formId => {
             const form = document.getElementById(formId);
             if (form) form.style.display = "none";
         });
 
-        const selectedForm = document.getElementById(sectionToFormMap[sectionId]);
+        const selectedForm = document.getElementById(sectionId.replace("Section", "Form"));
         if (selectedForm) {
             selectedForm.style.display = "block";
 
@@ -112,6 +103,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const clickedTab = Array.from(tabLinks).find(tab => tab.dataset.section === sectionId);
             if (clickedTab) clickedTab.classList.add("active");
 
+            // Save the current tab to sessionStorage using a page-specific key
             sessionStorage.setItem(tabKey, sectionId);
         } else {
             console.warn("Section not found:", sectionId);
