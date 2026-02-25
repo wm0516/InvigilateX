@@ -2373,6 +2373,10 @@ def admin_manageAccess():
     role_data = Role.query.all()
     staff_data = User.query.all()
 
+    # For edit section
+    role_selected_code = request.form.get('editRole')
+    role_select        = Role.query.filter_by(roleCode=role_selected_code).first()
+
     if request.method == 'POST':
         form_type = request.form.get('form_type')
 
@@ -2395,6 +2399,28 @@ def admin_manageAccess():
                 flash(f"New Role [{roleName}] added", "success")               
                 record_action("ADD NEW ROLE", "ROLE", roleCode, user_id)
                 return redirect(url_for('admin_manageAccess'))
+
+        # ---------------- Edit Section ----------------
+        elif form_type == 'edit' and role_select:
+            action    = request.form.get('action')
+            roleName  = request.form.get('roleName', '').strip().upper()
+
+            if action == 'update':
+                role_select.roleName = roleName
+                db.session.commit()
+                flash(f"Department [{role_select.roleCode}] updated successfully", "success")
+                record_action("EDIT ROLE", "ROLE", role_select.roleCode, user_id)
+            
+            elif action == 'delete':
+                users_using_role = User.query.filter_by(userRole=role_select.roleCode).count()
+                if users_using_role > 0:
+                    flash(f"Cannot delete role. There are number of {users_using_role} users still assigned to this role.", "error")
+                else:
+                    db.session.delete(role_select)
+                    db.session.commit()
+                    flash(f"Role [{role_select.roleCode}] deleted successfully", "success")
+                    record_action("DELETE ROLE", "ROLE", role_select.roleCode, user_id)
+            return redirect(url_for('admin_manageAccess'))
 
     return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', role_data=role_data, staff_data=staff_data)
 

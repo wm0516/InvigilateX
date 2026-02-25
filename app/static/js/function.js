@@ -189,7 +189,7 @@ function searchContent() {
     const filter = input.value.toLowerCase();
     let anyVisible = false;
 
-    const tables = ["manageCourse","manageDepartment","manageVenue","manageExam","manageStaff","viewStaff","activity"];
+    const tables = ["manageCourse","manageDepartment","manageVenue","manageExam","manageStaff","viewStaff","activity","manageAccess"];
     for (const tableId of tables) {
         const table = document.getElementById(tableId);
         if (!table) continue;
