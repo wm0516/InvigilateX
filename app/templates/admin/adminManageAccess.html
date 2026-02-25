@@ -47,9 +47,9 @@
                 <select id="editRole" name="editRole" required>
                     <option value="" disabled selected>-- Select Role --</option>
                     {% for role in role_data %}
-                        <option value="{{ role.departmentCode }}"
-                                {% if role_select and role.departmentCode == role_select.roleCode %}selected{% endif %}>
-                            [{{ role.departmentCode }}] - {{ role.departmentName }}
+                        <option value="{{ role.roleCode }}"
+                                {% if role_select and role.roleCode == role_select.roleCode %}selected{% endif %}>
+                            [{{ role.roleCode }}] - {{ role.roleName }}
                         </option>
                     {% endfor %}
                 </select>
