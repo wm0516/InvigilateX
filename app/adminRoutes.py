@@ -1851,8 +1851,6 @@ def updateAttendanceTime():
 # -------------------------------
 # Function for Admin ManageInviglationTimetable Route (Simple Calendar View + Overnight Handling)
 # -------------------------------
-from collections import defaultdict
-
 def get_venue_calendar_data():
     venue_exams = VenueExam.query.join(Exam).join(VenueSession).join(Course).all()
     venue_data = defaultdict(list)
@@ -1862,11 +1860,6 @@ def get_venue_calendar_data():
         session = ve.session
         course = exam.course
 
-        total_invigilators = sum(
-            1 for vsi in session.invigilators
-            if vsi.rejectReason is None and vsi.invigilatorId is not None and vsi.position in ["CHIEF INVIGILATOR", "INVIGILATOR", "NULL"]
-        )
-
         venue_data[session.venueNumber].append({
             "exam_id": exam.examId,
             "course_code": course.courseCodeSectionIntake,
@@ -1874,7 +1867,7 @@ def get_venue_calendar_data():
             "start_time": session.startDateTime,
             "end_time": session.endDateTime,
             "students": ve.studentCount,
-            "total_invigilators": total_invigilators,
+            "total_invigilators": session.noInvigilator,
             "is_overnight": session.startDateTime.date() != session.endDateTime.date(),
         })
 
