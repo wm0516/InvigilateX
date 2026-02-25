@@ -43,7 +43,7 @@
         <div class="profile-frame">
             <div class="form-profile">
                 <label>Select Role</label>
-                <select id="editRole" name="editRole" required>
+                <select id="editRoleDropdown" name="editRole" required>
                     <option value="" disabled selected>-- Select Role --</option>
                     {% for role in role_data %}
                         <option value="{{ role.roleCode }}"
@@ -54,7 +54,7 @@
                 </select><br>
 
                 <label>Select Staff</label>
-                <select id="editRole" name="editRole" required>
+                <select id="editStaffDropdown" name="editStaff" required>
                     <option value="" disabled selected>-- Select Staff --</option>
                     {% for staff in staff_data %}
                         <option value="{{ staff.userAccess }}"
@@ -101,23 +101,40 @@
                         <th>No</th>
                         <th>Role Code</th>
                         <th>Role Name</th>
-                        <th>Role General Access</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in role_data %}
-                        {% for staff in staff_data %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ row.roleCode }}</td>
-                                <td>{{ row.roleName }}</td>
-                                <td>{{ staff.userAccess }}</td>
-                            </tr>
-                        {% endfor %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ row.roleCode }}</td>
+                        <td>{{ row.roleName }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </form>
 </div>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Choices on Role dropdown
+        new Choices('#editRoleDropdown', {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+        });
+
+        // Initialize Choices on Staff dropdown
+        new Choices('#editStaffDropdown', {
+            searchEnabled: true,
+            itemSelectText: '',
+            shouldSort: false,
+        });
+    });
+</script>
 {% endblock %}
