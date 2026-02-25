@@ -1718,7 +1718,7 @@ def admin_manageTimetable():
                 if (rows_inserted or 0) > 0:
                     total_files_processed += 1
                     total_rows_inserted += rows_inserted or 0
-            flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
+            flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}, {rows_inserted}", "success")
             upload_file = f"{total_files_processed} sets timetable"
             record_action("UPLOAD TIMETABLE", "TIMETABLE", upload_file, user_id)
             return redirect(url_for('admin_manageTimetable'))
