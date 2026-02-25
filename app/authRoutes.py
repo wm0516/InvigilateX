@@ -90,6 +90,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     department_data = Department.query.all()
+    role_data = Role.query.all()
     id_text = ''
     card_text = ''
     name_text = ''
@@ -149,7 +150,7 @@ def register():
             flash("Register successful! Log in with your registered email address.", "success")
             return redirect(url_for('login'))
 
-    return render_template('auth/register.html', id_text=id_text, name_text=name_text, email_text=email_text,
+    return render_template('auth/register.html', id_text=id_text, name_text=name_text, email_text=email_text, role_data=role_data,
                            contact_text=contact_text, password1_text=password1_text, password2_text=password2_text, gender_text=gender_text,
                            department_text=department_text, role_text=role_text, department_data=department_data, error_message=error_message)
 
