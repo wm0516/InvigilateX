@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const savedSection = sessionStorage.getItem(tabKey);
 
     // Check if the saved section actually exists on this page
-    const availableForms = ["dashboardForm", "uploadForm", "manualForm","editForm"].filter(id => document.getElementById(id));
+    const availableForms = ["dashboardForm", "uploadForm", "manualForm", "editRoleForm", "editForm"].filter(id => document.getElementById(id));
     const defaultSection = availableForms.length > 0 ? availableForms[0].replace("Form", "Section") : null;
 
     if (savedSection && document.getElementById(savedSection.replace("Section", "Form"))) {
