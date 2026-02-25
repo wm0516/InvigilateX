@@ -308,9 +308,9 @@ def login_required(f):
 @login_required
 def admin_homepage():
     user_id = session.get('user_id')
-    if not check_access(user_id, "homepage"):  # <-- use user_id directly
+    if not check_access(user_id, "homepage"):
         flash("Access denied", "error")
-        return redirect(url_for("admin_homepage"))
+        return redirect(url_for("login"))
     return render_template('admin/adminHomepage.html', active_tab='admin_hometab')
 
 
@@ -361,7 +361,7 @@ def user_homepage():
 
     if not check_access(user_id, "homepage"):
         flash("Access denied", "error")
-        return redirect(url_for("user_homepage"))
+        return redirect(url_for("login"))
 
     backup = (
         VenueSessionInvigilator.query
