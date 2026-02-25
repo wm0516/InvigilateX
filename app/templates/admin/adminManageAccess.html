@@ -95,32 +95,20 @@
             <i class="fa fa-search" id="searchBtn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;"></i>
         </div>
         <div class="user-table-container">
-            <table class="user-data-table" id="activity">
+            <table class="user-data-table" id="access">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Section</th>
-                        <th>Action</th>
-                        <th>Action Id</th>
-                        <th>Action By</th>
-                        <th>Action Time</th>
-                        <th>IP address</th>
-                        <th>Browser</th>
-                        <th>Device</th>
+                        <th>Role Code</th>
+                        <th>Role Name</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in record %}
+                    {% for row in role_data %}
                     <tr>
                         <td>{{ loop.index }}</td>
-                        <td>{{ row.actionTargetType }}</td>
-                        <td>{{ row.actionTake }}</td>
-                        <td>{{ row.actionTargetId }}</td>
-                        <td>{{ row.actionBy }}</td> 
-                        <td>{{ row.actionTime }}</td>
-                        <td>{{ row.actionIp }}</td>
-                        <td>{{ row.actionBrowser }}</td>
-                        <td>{{ row.actionDevice }}</td>
+                        <td>{{ row.roleCode }}</td>
+                        <td>{{ row.roleName }}</td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
