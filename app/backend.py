@@ -108,24 +108,22 @@ ACCESS = {
 
 def check_access(user_id, feature_name):
     user = User.query.filter_by(userId=user_id).first()
-    if not user or not user.userAccess:
+    if not user:
         return False
 
-    try:
-        # Convert hex string to integer
-        access_int = int(user.userAccess, 16)
-
-        # Get the bit position from feature_name
-        position = ACCESS.get(feature_name)
-        if not position:
-            return False
-
-        # Create bitmask and check
-        mask = 1 << (position - 1)
-        return (access_int & mask) != 0
-
-    except ValueError:
+    # If userAccess is 0, they have no permissions
+    access_int = user.userAccess
+    if access_int == 0:
         return False
+
+    # Get the bit position for the feature
+    position = ACCESS.get(feature_name)
+    if not position:
+        return False
+
+    # Create bitmask and check
+    mask = 1 << (position - 1)
+    return (access_int & mask) != 0
 
 
 
