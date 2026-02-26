@@ -14,7 +14,7 @@
             <i class="fas fa-bars"></i>
         </div>
         <div class="user-info">
-            {{ user_name }} [{{ user_id }}] | {{ user_level }} of {{ user_department }} | <span id="current-datetime"></span>
+            {{ user_name }} [{{ user_id }}] | {{ user_role }} of {{ user_department }} | <span id="current-datetime"></span>
         </div>
     </header>
 
@@ -29,13 +29,13 @@
                     <i class="fas fa-calendar-alt"></i>
                     <span>Timetable</span>
                 </a>
-                {% if user_level in ["DEAN", "HOS", "HOP"]%}
+                {% if user_role in ["DEAN", "HOS", "HOP"]%}
                 <a href="{{ url_for('user_mergeTimetable') }}" class="tab-link {% if active_tab == 'user_mergeTimetabletab' %}active{% endif %}">
                     <i class="fas fa-calendar-check"></i>
                     <span>Merge Timetable</span>
                 </a>
                 {% endif %}
-                {% if user_level in ["DEAN", "HOS", "HOP", "PO", "LAB_ASST"]%}
+                {% if user_role in ["DEAN", "HOS", "HOP", "PO", "LAB_ASST"]%}
                 <a href="{{ url_for('user_viewStaff') }}" class="tab-link {% if active_tab  == 'user_viewStafftab' %}active{% endif %}">
                     <i class="fas fa-user-tie"></i>
                     <span>View Staff</span>

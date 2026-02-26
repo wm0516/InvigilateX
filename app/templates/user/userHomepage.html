@@ -92,7 +92,7 @@
 {% endmacro %}
 
 
-{% if user_level in ["DEAN", "HOS", "HOP"] %}
+{% if user_role in ["DEAN", "HOS", "HOP"] %}
 <div class="menu-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1%; width: 100%;">
     <a href="{{ url_for('user_ownTimetable')}}" style="text-decoration: none;">
         <div class="menu-section">
@@ -163,7 +163,7 @@
 </div>
 {% endif %}
 
-{% if user_level not in ["DEAN", "HOS", "HOP"] %}
+{% if user_role not in ["DEAN", "HOS", "HOP"] %}
 <div class="dashboard-row" style="grid-template-columns: repeat(3, 1fr);">
     <div class="dashboard-frame">
         <h3>Completed Invigilation Hours</h3>
