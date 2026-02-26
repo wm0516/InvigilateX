@@ -2398,8 +2398,6 @@ def admin_manageAccess():
     role_data = Role.query.all()
     staff_data = User.query.all()
 
-
-
     # For edit section
     role_selected_code  = request.form.get('editSecondRole')
     role_select         = Role.query.filter_by(roleCode=role_selected_code).first()
