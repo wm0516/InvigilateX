@@ -233,7 +233,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!roleCode) return;
         const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
         const data = await resp.json();
-        if (!data.error) setDropdownsFromValue(data.roleValue || 0);
+        if (!data.error) {
+            // Set permission dropdowns
+            setDropdownsFromValue(data.roleValue || 0);
+
+            // Set the role name input
+            if (roleNameInput) {
+                roleNameInput.value = data.roleName || '';
+            }
+        }
     }
 
     async function fetchUserAccess(userId) {
@@ -253,9 +261,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Edit second role name
     if (roleSelect) {
         roleSelect.addEventListener("change", () => {
-            if (roleSelect.value) fetchRoleValue(roleSelect.value);
+            if (!roleSelect.value) {
+                roleNameInput.value = '';
+                resetDropdowns();
+            } else {
+                fetchRoleValue(roleSelect.value);
+            }
         });
-        if (roleSelect.value) fetchRoleValue(roleSelect.value);
     }
 
     const roleEdit = document.getElementById("selectRole");
