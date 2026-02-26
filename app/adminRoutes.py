@@ -16,7 +16,7 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import func, and_, or_, case, desc
 from app import app
-from .authRoutes import login_required
+from .authRoutes import login_required, admin_homepage
 from .backend import *
 from .database import *
 
@@ -223,6 +223,9 @@ def get_courseCodeSection(courseCodeSection_select):
 @login_required
 def admin_manageCourse():
     user_id = session.get('user_id')
+    if not check_access(user_id, "course"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
 
     # === Get all courses, optionally filtered by intake ===
     course_query = Course.query.order_by(
@@ -414,6 +417,10 @@ def validate_user_role(user_id, expected_level, department_code, role_name):
 @login_required
 def admin_manageDepartment():
     user_id = session.get('user_id')
+    if not check_access(user_id, "department"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+
     # Load all departments and stats
     department_data     = Department.query.all()
     total_department    = len(department_data)
@@ -510,6 +517,9 @@ def get_venue(venue_number):
 @login_required
 def admin_manageVenue():
     user_id = session.get('user_id')
+    if not check_access(user_id, "venue"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
     # Load all venues and stats
     venue_data = Venue.query.order_by(Venue.venueLevel.asc()).all()
 
@@ -912,6 +922,9 @@ def adjust_exam(exam, new_start, new_end, new_venues, new_students, time_open, t
 @login_required
 def admin_manageExam():
     user_id = session.get('user_id')
+    if not check_access(user_id, "exam"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
 
     # Load static data
     department_data = Department.query.all()
@@ -1219,6 +1232,10 @@ def get_staff(id):
 @login_required
 def admin_manageStaff():
     user_id = session.get('user_id')
+    if not check_access(user_id, "staff"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+    
     user_data = User.query.order_by(func.field(User.userStatus, 1, 0, 2), User.userRole.asc(), User.userName.asc()).all()
     department_data = Department.query.all()
     role_data = Role.query.all()
@@ -1669,6 +1686,10 @@ def save_timetable_to_db(structured):
 @login_required
 def admin_manageTimetable():
     user_id = session.get('user_id')
+    if not check_access(user_id, "timetable"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+    
     department_data = Department.query.all()
     selected_department = request.args.get("department")
     selected_lecturer = request.args.get("lecturer")
@@ -1886,6 +1907,11 @@ def get_venue_calendar_data():
 @app.route('/admin/admin_manageInvigilationTimetable', methods=['GET'])
 @login_required
 def admin_manageInvigilationTimetable():
+    user_id = session.get('user_id')
+    if not check_access(user_id, "invigilationTimetable"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+
     venue_data = get_venue_calendar_data()
     return render_template('admin/adminManageInvigilationTimetable.html', active_tab='admin_manageInvigilationTimetabletab', venue_data=venue_data, current_time=datetime.now())
 
@@ -2159,6 +2185,9 @@ def get_valid_invigilators():
 @login_required
 def admin_manageInvigilationReport():
     user_id = session.get('user_id')
+    if not check_access(user_id, "invigilationReport"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
 
     # Fetch all invigilator assignments
     vsi_entries = (
@@ -2316,6 +2345,10 @@ def admin_manageInvigilationReport():
 @login_required
 def admin_profile():
     adminId = session.get('user_id')
+    if not check_access(adminId, "profile"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+
     admin = User.query.filter_by(userId=adminId).first()
 
     # Default values for GET requests
@@ -2359,6 +2392,11 @@ def admin_profile():
 @app.route('/admin/activity', methods=['GET', 'POST'])
 @login_required
 def admin_activity():
+    user_id = session.get('user_id')
+    if not check_access(user_id, "activity"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+    
     record = Action.query.order_by(desc(Action.actionTime)).all()
     return render_template('admin/adminActivity.html', active_tab='admin_activitytab', record=record)
 
@@ -2405,6 +2443,10 @@ def permissions_to_bitmask(form, prefix=""):
 @login_required
 def admin_manageAccess():
     user_id = session.get('user_id')
+    if not check_access(user_id, "access"):
+        flash("Access denied", "error")
+        return redirect(url_for("admin_homepage"))
+    
     role_data = Role.query.all()
     staff_data = User.query.all()
 

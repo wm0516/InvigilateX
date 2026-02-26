@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
 from collections import defaultdict
 from app import app
-from .authRoutes import login_required
+from .authRoutes import login_required, user_homepage
 from .backend import *
 from .database import * 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -59,6 +59,10 @@ def calculate_invigilation_stats(user):
 def user_invigilationReport():
     current_user_id = session.get('user_id')
     user = User.query.get(current_user_id)
+    if not check_access(current_user_id, "invigilationReport"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
+
 
     # Base query joining VenueSessionInvigilator -> VenueSession -> VenueExam -> Exam -> Course
     vsi_query = (
@@ -189,6 +193,10 @@ def get_venue_calendar_data(userId):
 @login_required
 def user_invigilationTimetable():
     userId = session.get('user_id')
+    if not check_access(userId, "invigilationTimetable"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
+    
     venue_data = get_venue_calendar_data(userId)
     return render_template('user/userInvigilationTimetable.html', active_tab='user_invigilationTimetabletab', venue_data=venue_data)
 
@@ -200,6 +208,10 @@ def user_invigilationTimetable():
 @login_required
 def user_ownTimetable():
     userId = session.get('user_id')
+    if not check_access(userId, "timetable"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
+    
     user = User.query.filter_by(userId=userId).first()
     user_name = user.userName if user else "Unknown User"
     timetable = Timetable.query.filter_by(user_id=userId).first()
@@ -241,6 +253,9 @@ def user_ownTimetable():
 @login_required
 def user_mergeTimetable():
     userId = session.get('user_id')
+    if not check_access(userId, "timetable"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
 
     # Get the logged-in user's department
     current_user = User.query.filter_by(userId=userId).first()
@@ -305,6 +320,9 @@ def user_mergeTimetable():
 @login_required
 def user_viewStaff():
     userId = session.get('user_id')
+    if not check_access(userId, "staff"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
 
     current_user = User.query.filter_by(userId=userId).first()
     if not current_user:
@@ -345,8 +363,11 @@ def user_viewStaff():
 @login_required
 def user_profile():
     userId = session.get('user_id')
-    user = User.query.filter_by(userId=userId).first()
+    if not check_access(userId, "profile"):
+        flash("Access denied", "error")
+        return redirect(url_for("user_homepage"))
     
+    user = User.query.filter_by(userId=userId).first()
     # Pre-fill existing data
     user_cardUID = user.userCardId or ''
     user_contact_text = user.userContact or ''
