@@ -186,7 +186,7 @@
 <!-- Edit Form -->
 <form id="editForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
     <div id="editSection" class="function-frame">
-        <h4 style="text-align: center;">Edit Existing Role Access</h4>
+        <h4 style="text-align: center;">Edit Existing Role Access [Choose either one]</h4>
         <div class="profile-frame">
             <div class="form-profile" style="width: 30%;">
                 <label>Select Role</label>
@@ -406,8 +406,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const roleSelect = document.getElementById("selectRole"); // Edit section role dropdown
-    const userSelect = document.getElementById("selectUser"); // Edit section user dropdown
+    const roleSelect = document.getElementById("selectRole"); // Role dropdown
+    const userSelect = document.getElementById("selectUser"); // User dropdown
 
     // Map dropdown name → bit position
     const permissionMap = {
@@ -429,8 +429,7 @@ document.addEventListener("DOMContentLoaded", () => {
         Object.entries(permissionMap).forEach(([name, bit]) => {
             const select = document.querySelector(`select[name="${name}"]`);
             if (!select) return;
-            const isAllowed = (value & (1 << bit)) !== 0;
-            select.value = isAllowed ? "1" : "0";
+            select.value = (value & (1 << bit)) !== 0 ? "1" : "0";
         });
     }
 
@@ -439,9 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
             const data = await resp.json();
-            if (data.error) return;
-            // Role value must be passed from backend, e.g., roleValue
-            setDropdownsFromValue(data.roleValue || 0);
+            if (!data.error) setDropdownsFromValue(data.roleValue || 0);
         } catch (err) {
             console.error("Error fetching role value:", err);
         }
@@ -452,8 +449,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch(`/get_user/${encodeURIComponent(userId)}`);
             const data = await resp.json();
-            if (data.error) return;
-            setDropdownsFromValue(data.userAccess || 0);
+            if (!data.error) setDropdownsFromValue(data.userAccess || 0);
         } catch (err) {
             console.error("Error fetching user access:", err);
         }
@@ -466,18 +462,23 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ---------- Event Listeners ----------
     if (roleSelect) {
         roleSelect.addEventListener("change", () => {
+            // When role is selected, clear user selection
+            if (userSelect) userSelect.value = "";
             resetDropdowns();
             fetchRoleValue(roleSelect.value);
         });
 
-        // Prefill if already selected
+        // Prefill if already selected on page load
         if (roleSelect.value) fetchRoleValue(roleSelect.value);
     }
 
     if (userSelect) {
         userSelect.addEventListener("change", () => {
+            // When user is selected, clear role selection
+            if (roleSelect) roleSelect.value = "";
             resetDropdowns();
             fetchUserAccess(userSelect.value);
         });
