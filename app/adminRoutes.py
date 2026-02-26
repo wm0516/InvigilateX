@@ -2469,6 +2469,7 @@ def admin_manageAccess():
                 users = User.query.filter_by(userRole=role_code).all()
                 for user in users:
                     user.userAccess = value
+                    role_code.roleValue = value
                 flash(f"All users under Role [{role_code}] updated.", "success")
                 record_action("EDIT ROLE ACCESS", "ROLE", role_code, user_id)
 
