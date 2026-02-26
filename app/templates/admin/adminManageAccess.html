@@ -296,5 +296,61 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const userSelect = document.getElementById("selectUser");
+    // Map dropdown name → bit position
+    const permissionMap = {
+        "homepage_id": 0,
+        "course_id": 1,
+        "department_id": 2,
+        "venue_id": 3,
+        "exam_id": 4,
+        "staff_id": 5,
+        "timetable_id": 6,
+        "inv_timetable_id": 7,
+        "inv_report_id": 8,
+        "access_id": 9,
+        "activity_id": 10,
+        "profile_id": 11
+    };
+
+    function resetDropdowns() {
+        Object.keys(permissionMap).forEach(name => {
+            const select = document.querySelector(`select[name="${name}"]`);
+            if (select) select.value = "";
+        });
+    }
+
+    async function fetchUserAccess(userId) {
+        if (!userId) return;
+        try {
+            const resp = await fetch(`/get_user/${encodeURIComponent(userId)}`);
+            const data = await resp.json();
+            if (data.error) {
+                alert(data.error);
+                return;
+            }
+
+            const accessValue = data.userAccess || 0;
+            // Convert decimal to binary and prefill
+            Object.entries(permissionMap).forEach(([name, bit]) => {
+                const select = document.querySelector(`select[name="${name}"]`);
+                if (!select) return;
+
+                const isAllowed = (accessValue & (1 << bit)) !== 0;
+                select.value = isAllowed ? "1" : "0";
+            });
+        } catch (err) {
+            console.error("Error fetching user access:", err);
+        }
+    }
+    if (userSelect) {
+        userSelect.addEventListener("change", () => {
+            resetDropdowns(); // clear first
+            fetchUserAccess(userSelect.value);
+        });
+    }
+});
 </script>
 {% endblock %}

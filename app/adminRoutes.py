@@ -2376,6 +2376,18 @@ def get_role(role_code):
         "roleName": role.roleName
     })
 
+@app.route('/get_user/<path:id>')
+@login_required
+def get_access(id):
+    user = User.query.filter_by(userId=id).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    return jsonify({
+        "userId": user.userId,
+        "userAccess": user.userAccess,
+        "userDepartment": user.userDepartment
+    })
+
 # -------------------------------
 # Function for Admin ManageAccess Route
 # -------------------------------
@@ -2417,21 +2429,59 @@ def admin_manageAccess():
             
         # ---------------- Edit Section ----------------
         elif form_type == 'edit':
+            role_code = request.form.get('selectRole')
+            user_code = request.form.get('selectUser')
+
             if not role_code and not user_code:
                 flash("Please select either a Role or a User to edit.", "error")
                 return redirect(url_for('admin_manageAccess'))
 
-            # If at least one has data, proceed with your edit logic
+            # Get all permission inputs (0 or 1)
+            permissions = {
+                "homepage"      : int(request.form.get('homepage_id', 0)),
+                "course"        : int(request.form.get('course_id', 0)),
+                "department"    : int(request.form.get('department_id', 0)),
+                "venue"         : int(request.form.get('venue_id', 0)),
+                "exam"          : int(request.form.get('exam_id', 0)),
+                "staff"         : int(request.form.get('staff_id', 0)),
+                "timetable"     : int(request.form.get('timetable_id', 0)),
+                "inv_timetable" : int(request.form.get('inv_timetable_id', 0)),
+                "inv_report"    : int(request.form.get('inv_report_id', 0)),
+                "access"        : int(request.form.get('access_id', 0)),
+                "activity"      : int(request.form.get('activity_id', 0)),
+                "profile"       : int(request.form.get('profile_id', 0)),
+            }
+
+            # Convert to bitmask
+            value = 0
+            bit_position = 0
+
+            for key in permissions:
+                if permissions[key] == 1:
+                    value |= (1 << bit_position)
+                bit_position += 1
+
+            # ===============================
+            # If Role selected → update all users with that role
+            # ===============================
             if role_code:
-                # your code to edit role here
-                flash(f"Role [{role_code}] updated successfully.", "success")
-                record_action("EDIT ROLE", "ROLE", role_code, user_id)
+                users = User.query.filter_by(userRole=role_code).all()
+                for user in users:
+                    user.userAccess = value
+                flash(f"All users under Role [{role_code}] updated.", "success")
+                record_action("EDIT ROLE ACCESS", "ROLE", role_code, user_id)
 
+            # ===============================
+            # If User selected → update single user
+            # ===============================
             if user_code:
-                # your code to edit user here
-                flash(f"User [{user_code}] updated successfully.", "success")
-                record_action("EDIT USER", "USER", user_code, user_id)
+                user = User.query.filter_by(userId=user_code).first()
+                if user:
+                    user.userAccess = value
+                    flash(f"User [{user_code}] access updated.", "success")
+                    record_action("EDIT USER ACCESS", "USER", user_code, user_id)
 
+            db.session.commit()
             return redirect(url_for('admin_manageAccess'))
 
         # ---------------- Second Edit Section ----------------
