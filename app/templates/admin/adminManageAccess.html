@@ -10,7 +10,6 @@
 {% block title %}ManageAccess{% endblock %}
 {% block head_title %}<h2>Manage Access</h2>{% endblock %}
 
-
 {% block manual_section %}
 <!-- Manual Form -->
 <form id="manualForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
@@ -27,114 +26,37 @@
             </div>
         </div><br>
 
+        <!-- Permissions -->
         <div class="profile-frame" style="justify-content: center; width: 100%;">
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="homepage" value="{{ homepage }}" placeholder="Homepage" readonly>
-                    <input type="text" name="course" value="{{ course }}" placeholder="Manage Course" readonly>
-                    <input type="text" name="department" value="{{ department }}" placeholder="Manage Department" readonly>
+            {% set perms = ['homepage','course','department','venue','exam','staff','timetable','inv_timetable','inv_report','access','activity','profile'] %}
+            {% for i in range(0, perms|length, 3) %}
+                <div class="profile-frame" style="width: 100%">
+                    <div class="form-profile" style="width: 55%;">
+                        {% for j in range(3) %}
+                            {% set p = perms[i+j] if perms[i+j] is defined else '' %}
+                            {% if p %}
+                                <input type="text" name="{{ p }}" value="{{ p|capitalize }}" placeholder="{{ p|capitalize }}" readonly>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="form-profile" style="width: 40%;">
+                        {% for j in range(3) %}
+                            {% set p = perms[i+j] if perms[i+j] is defined else '' %}
+                            {% if p %}
+                                <select name="add_{{ p }}_id" required>
+                                    <option value="" disabled selected>-- Select Access --</option>
+                                    <option value="0">Not Allowed</option>
+                                    <option value="1">Allow</option>
+                                </select>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="add_homepage_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_course_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_department_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="venue" value="{{ venue }}" placeholder="Manage Venue" readonly>
-                    <input type="text" name="exam" value="{{ exam }}" placeholder="Manage Exam" readonly>
-                    <input type="text" name="staff" value="{{ staff }}" placeholder="Manage/View Staff" readonly>
-                </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="add_venue_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_exam_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_staff_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="timetable" value="{{ timetable }}" placeholder="Manage/View Timetable" readonly>
-                    <input type="text" name="invTimetable" value="{{ invTimetable }}" placeholder="Manage/View Invigilation Timetable" readonly>
-                    <input type="text" name="invReport" value="{{ invReport }}" placeholder="Manage/View Invigilation Report" readonly>
-                </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="add_timetable_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_inv_timetable_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_inv_report_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="access" value="{{ access }}" placeholder="Access" readonly>
-                    <input type="text" name="activity" value="{{ activity }}" placeholder="Activity" readonly>
-                    <input type="text" name="profile" value="{{ profile }}" placeholder="Profile" readonly>
-                </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="add_access_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_activity_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="add_profile_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+
         <input type="hidden" name="form_type" value="manual">
         <br><br>
-
         <div class="button-wrapper">
             <button type="submit">Add A New Role</button>
         </div>
@@ -143,7 +65,7 @@
 {% endblock %}
 
 {% block edit_second_section %}
-<!-- Edit Form -->
+<!-- Edit Role Name / Delete -->
 <form id="editSecondForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
     <div id="editSecondSection" class="function-frame">
         <h4 style="text-align: center;">Edit Existing Role</h4>
@@ -160,7 +82,6 @@
                     {% endfor %}
                 </select>
             </div>
-
             <div class="form-profile">
                 <label>Role Name</label>
                 <input type="text" name="roleName" value="{{ role_select.roleName if role_select else '' }}" required>
@@ -168,12 +89,11 @@
         </div>
         <input type="hidden" name="form_type" value="second_edit">
         <br><br>
-
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
+            <button type="submit" name="action" value="update" class="btn-success">
                 <i class="fas fa-check"></i> Update Role
             </button>
-            <button type="submit" name="action" value="delete" style="background-color: #f8d7da; color: #721c24;"
+            <button type="submit" name="action" value="delete" class="btn-danger"
                     onclick="return confirm('Are you sure to delete this role?')">
                 <i class="fas fa-trash"></i> Delete Role
             </button>
@@ -183,10 +103,10 @@
 {% endblock %}
 
 {% block edit_section %}
-<!-- Edit Form -->
+<!-- Edit Role/User Access -->
 <form id="editForm" action="{{ url_for('admin_manageAccess') }}" method="POST" enctype="multipart/form-data">
     <div id="editSection" class="function-frame">
-        <h4 style="text-align: center;">Edit Existing Role Access [Choose either one]</h4>
+        <h4 style="text-align: center;">Edit Existing Role/User Access</h4>
         <div class="profile-frame">
             <div class="form-profile" style="width: 30%;">
                 <label>Select Role</label>
@@ -210,120 +130,42 @@
                             [{{ staff.userId }}] - {{ staff.userName }}
                         </option>
                     {% endfor %}
-                </select><br>
+                </select>
             </div>
         </div><br>
-                
+
+        <!-- Permissions -->
         <div class="profile-frame" style="justify-content: center; width: 100%;">
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="homepage" value="{{ homepage }}" placeholder="Homepage" readonly>
-                    <input type="text" name="course" value="{{ course }}" placeholder="Manage Course" readonly>
-                    <input type="text" name="department" value="{{ department }}" placeholder="Manage Department" readonly>
+            {% for i in range(0, perms|length, 3) %}
+                <div class="profile-frame" style="width: 100%">
+                    <div class="form-profile" style="width: 55%;">
+                        {% for j in range(3) %}
+                            {% set p = perms[i+j] if perms[i+j] is defined else '' %}
+                            {% if p %}
+                                <input type="text" name="{{ p }}" value="{{ p|capitalize }}" placeholder="{{ p|capitalize }}" readonly>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="form-profile" style="width: 40%;">
+                        {% for j in range(3) %}
+                            {% set p = perms[i+j] if perms[i+j] is defined else '' %}
+                            {% if p %}
+                                <select name="{{ p }}_id" required>
+                                    <option value="" disabled selected>-- Select Access --</option>
+                                    <option value="0">Not Allowed</option>
+                                    <option value="1">Allow</option>
+                                </select>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="homepage_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="course_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="department_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="venue" value="{{ venue }}" placeholder="Manage Venue" readonly>
-                    <input type="text" name="exam" value="{{ exam }}" placeholder="Manage Exam" readonly>
-                    <input type="text" name="staff" value="{{ staff }}" placeholder="Manage/View Staff" readonly>
-                </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="venue_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="exam_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="staff_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="timetable" value="{{ timetable }}" placeholder="Manage/View Timetable" readonly>
-                    <input type="text" name="invTimetable" value="{{ invTimetable }}" placeholder="Manage/View Invigilation Timetable" readonly>
-                    <input type="text" name="invReport" value="{{ invReport }}" placeholder="Manage/View Invigilation Report" readonly>
-                </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="timetable_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="inv_timetable_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="inv_report_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="profile-frame" style="width: 100%">
-                <div class="form-profile" style="width: 55%;">
-                    <input type="text" name="access" value="{{ access }}" placeholder="Access" readonly>
-                    <input type="text" name="activity" value="{{ activity }}" placeholder="Activity" readonly>
-                    <input type="text" name="profile" value="{{ profile }}" placeholder="Profile" readonly>
-                </div>
-
-                <div class="form-profile" style="width: 40%;">
-                    <select name="access_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="activity_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                    <select name="profile_id" required>
-                        <option value="" disabled selected>-- Select Access --</option>
-                        <option value="0">Not Allowed</option>
-                        <option value="1">Allow</option>
-                    </select>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+
         <input type="hidden" name="form_type" value="edit">
         <br><br>
-
         <div class="button-wrapper" style="gap: 5%;">
-            <button type="submit" name="action" value="update" style="background-color: #d4edda; color: #155724;">
+            <button type="submit" name="action" value="update" class="btn-success">
                 <i class="fas fa-check"></i> Update Access
             </button>
         </div>
@@ -366,93 +208,38 @@
 </div>
 {% endblock %}
 
-
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const roleSelect    = document.getElementById("editSecondRole");
     const roleNameInput = document.querySelector("#editSecondForm input[name='roleName']");
-
-    async function fetchRoleData(roleCode) {
-        if (!roleCode) return;
-
-        try {
-            const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
-            const role = await resp.json();
-
-            if (role.error) {
-                alert(role.error);
-                return;
-            }
-
-            // Fill department name
-            roleNameInput.value = role.roleName || "";
-
-        } catch (err) {
-            console.error("Error fetching role:", err);
-        }
-    }
-
-    if (roleSelect) {
-        roleSelect.addEventListener("change", () => {
-            fetchRoleData(roleSelect.value);
-        });
-
-        // Auto-fill on page load if already selected
-        if (roleSelect.value) {
-            fetchRoleData(roleSelect.value);
-        }
-    }
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const roleSelect = document.getElementById("selectRole"); // Role dropdown
-    const userSelect = document.getElementById("selectUser"); // User dropdown
-
-    // Map dropdown name → bit position
     const permissionMap = {
-        "homepage_id": 0,
-        "course_id": 1,
-        "department_id": 2,
-        "venue_id": 3,
-        "exam_id": 4,
-        "staff_id": 5,
-        "timetable_id": 6,
-        "inv_timetable_id": 7,
-        "inv_report_id": 8,
-        "access_id": 9,
-        "activity_id": 10,
-        "profile_id": 11
+        "homepage_id": 0, "course_id": 1, "department_id": 2,
+        "venue_id": 3, "exam_id": 4, "staff_id": 5,
+        "timetable_id": 6, "inv_timetable_id": 7, "inv_report_id": 8,
+        "access_id": 9, "activity_id": 10, "profile_id": 11
     };
 
     function setDropdownsFromValue(value) {
         Object.entries(permissionMap).forEach(([name, bit]) => {
             const select = document.querySelector(`select[name="${name}"]`);
             if (!select) return;
-            select.value = (value & (1 << bit)) !== 0 ? "1" : "0";
+            select.value = (value & (1 << bit)) ? "1" : "0";
         });
     }
 
     async function fetchRoleValue(roleCode) {
         if (!roleCode) return;
-        try {
-            const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
-            const data = await resp.json();
-            if (!data.error) setDropdownsFromValue(data.roleValue || 0);
-        } catch (err) {
-            console.error("Error fetching role value:", err);
-        }
+        const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
+        const data = await resp.json();
+        if (!data.error) setDropdownsFromValue(data.roleValue || 0);
     }
 
     async function fetchUserAccess(userId) {
         if (!userId) return;
-        try {
-            const resp = await fetch(`/get_user/${encodeURIComponent(userId)}`);
-            const data = await resp.json();
-            if (!data.error) setDropdownsFromValue(data.userAccess || 0);
-        } catch (err) {
-            console.error("Error fetching user access:", err);
-        }
+        const resp = await fetch(`/get_user/${encodeURIComponent(userId)}`);
+        const data = await resp.json();
+        if (!data.error) setDropdownsFromValue(data.userAccess || 0);
     }
 
     function resetDropdowns() {
@@ -462,27 +249,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ---------- Event Listeners ----------
+    // Edit second role name
     if (roleSelect) {
         roleSelect.addEventListener("change", () => {
-            // When role is selected, clear user selection
-            if (userSelect) userSelect.value = "";
-            resetDropdowns();
-            fetchRoleValue(roleSelect.value);
+            if (roleSelect.value) fetchRoleValue(roleSelect.value);
         });
-
-        // Prefill if already selected on page load
         if (roleSelect.value) fetchRoleValue(roleSelect.value);
     }
 
-    if (userSelect) {
-        userSelect.addEventListener("change", () => {
-            // When user is selected, clear role selection
-            if (roleSelect) roleSelect.value = "";
-            resetDropdowns();
-            fetchUserAccess(userSelect.value);
-        });
-    }
+    const roleEdit = document.getElementById("selectRole");
+    const userEdit = document.getElementById("selectUser");
+    if (roleEdit) roleEdit.addEventListener("change", () => { userEdit.value=""; resetDropdowns(); fetchRoleValue(roleEdit.value); });
+    if (userEdit) userEdit.addEventListener("change", () => { roleEdit.value=""; resetDropdowns(); fetchUserAccess(userEdit.value); });
 });
 </script>
 {% endblock %}

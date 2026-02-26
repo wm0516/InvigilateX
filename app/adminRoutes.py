@@ -2388,153 +2388,96 @@ def get_access(id):
         "userAccess": user.userAccess
     })
 
+# Helper: convert form permissions to bitmask
+def permissions_to_bitmask(form, prefix=""):
+    keys = ["homepage","course","department","venue","exam","staff","timetable","inv_timetable","inv_report","access","activity","profile"]
+    value = 0
+    for i, key in enumerate(keys):
+        val = int(form.get(f"{prefix}{key}_id", 0))  # always use _id selects
+        if val == 1:
+            value |= (1 << i)
+    return value
+
 # -------------------------------
 # Function for Admin ManageAccess Route
 # -------------------------------
-@app.route('/admin/manageAccess', methods=['GET', 'POST'])
+@app.route('/admin/manageAccess', methods=['GET','POST'])
 @login_required
 def admin_manageAccess():
     user_id = session.get('user_id')
     role_data = Role.query.all()
     staff_data = User.query.all()
 
-    # For edit section
-    role_selected_code  = request.form.get('editSecondRole')
-    role_select         = Role.query.filter_by(roleCode=role_selected_code).first()
-    role_code           = request.form.get('selectRole')
-    user_code           = request.form.get('selectUser')
+    role_selected_code = request.form.get('editSecondRole')
+    role_select = Role.query.filter_by(roleCode=role_selected_code).first()
 
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-
-        # ---------------- Manual Section ----------------
+        
+        # ---------------- Manual / Add ----------------
         if form_type == 'manual':
-            roleCode = request.form.get('roleCode', '').strip().upper()
-            roleName = request.form.get('roleName', '').strip().upper()
-
-            # Get all permission inputs (0 or 1)
-            permissions = {
-                "homepage"      : int(request.form.get('add_homepage_id', 0)),
-                "course"        : int(request.form.get('add_course_id', 0)),
-                "department"    : int(request.form.get('add_department_id', 0)),
-                "venue"         : int(request.form.get('add_venue_id', 0)),
-                "exam"          : int(request.form.get('add_exam_id', 0)),
-                "staff"         : int(request.form.get('add_staff_id', 0)),
-                "timetable"     : int(request.form.get('add_timetable_id', 0)),
-                "inv_timetable" : int(request.form.get('add_inv_timetable_id', 0)),
-                "inv_report"    : int(request.form.get('add_inv_report_id', 0)),
-                "access"        : int(request.form.get('add_access_id', 0)),
-                "activity"      : int(request.form.get('add_activity_id', 0)),
-                "profile"       : int(request.form.get('add_profile_id', 0)),
-            }
-
-            # Convert to bitmask
-            value = 0
-            bit_position = 0
-
-            for key in permissions:
-                if permissions[key] == 1:
-                    value |= (1 << bit_position)
-                bit_position += 1
-
-            # Check if role code already exists
+            roleCode = request.form.get('roleCode','').strip().upper()
+            roleName = request.form.get('roleName','').strip().upper()
             if Role.query.filter_by(roleCode=roleCode).first():
-                flash("Role code already exists. Please use a unique code.", "error")
+                flash("Role code exists, use unique code", "error")
             else:
-                db.session.add(
-                    Role(
-                        roleCode=roleCode, 
-                        roleName=roleName,
-                        roleValue=value,
-                        )
-                    )
+                db.session.add(Role(
+                    roleCode=roleCode,
+                    roleName=roleName,
+                    roleValue=permissions_to_bitmask(request.form, prefix="add_")
+                ))
                 db.session.commit()
-                flash(f"New Role [{roleName}] added", "success")               
-                record_action("ADD NEW ROLE", "ROLE", roleCode, user_id)
-                return redirect(url_for('admin_manageAccess'))
-            
-        # ---------------- Edit Section ----------------
+                flash(f"New Role [{roleName}] added", "success")
+                record_action("ADD NEW ROLE","ROLE",roleCode,user_id)
+            return redirect(url_for('admin_manageAccess'))
+
+        # ---------------- Edit ----------------
         elif form_type == 'edit':
             role_code = request.form.get('selectRole')
             user_code = request.form.get('selectUser')
-
             if not role_code and not user_code:
-                flash("Please select either a Role or a User to edit.", "error")
+                flash("Select Role or User to edit", "error")
                 return redirect(url_for('admin_manageAccess'))
-                
-            # Get all permission inputs (0 or 1)
-            permissions = {
-                "homepage"      : int(request.form.get('homepage_id', 0)),
-                "course"        : int(request.form.get('course_id', 0)),
-                "department"    : int(request.form.get('department_id', 0)),
-                "venue"         : int(request.form.get('venue_id', 0)),
-                "exam"          : int(request.form.get('exam_id', 0)),
-                "staff"         : int(request.form.get('staff_id', 0)),
-                "timetable"     : int(request.form.get('timetable_id', 0)),
-                "inv_timetable" : int(request.form.get('inv_timetable_id', 0)),
-                "inv_report"    : int(request.form.get('inv_report_id', 0)),
-                "access"        : int(request.form.get('access_id', 0)),
-                "activity"      : int(request.form.get('activity_id', 0)),
-                "profile"       : int(request.form.get('profile_id', 0)),
-            }
 
-            # Convert to bitmask
-            value = 0
-            bit_position = 0
-
-            for key in permissions:
-                if permissions[key] == 1:
-                    value |= (1 << bit_position)
-                bit_position += 1
-
-            # ===============================
-            # If Role selected → update all users with that role
-            # ===============================
+            value = permissions_to_bitmask(request.form)
             if role_code:
-                users = User.query.filter_by(userRole=role_code).all()
-                for user in users:
-                    user.userAccess = value
-                    role_code.roleValue = value
-                flash(f"All users under Role [{role_code}] updated.", "success")
-                record_action("EDIT ROLE ACCESS", "ROLE", role_code, user_id)
+                role = Role.query.filter_by(roleCode=role_code).first()
+                if role:
+                    role.roleValue = value
+                    for user in User.query.filter_by(userRole=role_code).all():
+                        user.userAccess = value
+                    flash(f"All users under Role [{role_code}] updated", "success")
+                    record_action("EDIT ROLE ACCESS","ROLE",role_code,user_id)
 
-            # ===============================
-            # If User selected → update single user
-            # ===============================
             if user_code:
                 user = User.query.filter_by(userId=user_code).first()
                 if user:
                     user.userAccess = value
-                    flash(f"User [{user_code}] access updated.", "success")
-                    record_action("EDIT USER ACCESS", "USER", user_code, user_id)
+                    flash(f"User [{user_code}] access updated", "success")
+                    record_action("EDIT USER ACCESS","USER",user_code,user_id)
 
             db.session.commit()
             return redirect(url_for('admin_manageAccess'))
 
-        # ---------------- Second Edit Section ----------------
+        # ---------------- Second Edit (rename/delete role) ----------------
         elif form_type == 'second_edit' and role_select:
-            action    = request.form.get('action')
-            roleName  = request.form.get('roleName', '').strip().upper()
-
+            action = request.form.get('action')
+            roleName = request.form.get('roleName','').strip().upper()
             if action == 'update':
                 role_select.roleName = roleName
                 db.session.commit()
-                flash(f"Department [{role_select.roleCode}] updated successfully", "success")
-                record_action("EDIT ROLE", "ROLE", role_select.roleCode, user_id)
-            
+                flash(f"Role [{role_select.roleCode}] updated", "success")
+                record_action("EDIT ROLE","ROLE",role_select.roleCode,user_id)
             elif action == 'delete':
                 users_using_role = User.query.filter_by(userRole=role_select.roleCode).count()
                 if users_using_role > 0:
-                    flash(f"Cannot delete role. There are number of {users_using_role} users still assigned to this role.", "error")
+                    flash(f"Cannot delete role, {users_using_role} users assigned", "error")
                 else:
                     db.session.delete(role_select)
                     db.session.commit()
-                    flash(f"Role [{role_select.roleCode}] deleted successfully", "success")
-                    record_action("DELETE ROLE", "ROLE", role_select.roleCode, user_id)
+                    flash(f"Role [{role_select.roleCode}] deleted", "success")
+                    record_action("DELETE ROLE","ROLE",role_select.roleCode,user_id)
             return redirect(url_for('admin_manageAccess'))
 
     return render_template('admin/adminManageAccess.html', active_tab='admin_manageAccesstab', role_data=role_data, staff_data=staff_data)
-
-
-
 
