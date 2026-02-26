@@ -136,6 +136,7 @@
 
         <!-- Permissions -->
         <div class="profile-frame" style="justify-content: center; width: 100%;">
+            {% set perms = ['homepage','course','department','venue','exam','staff','timetable','inv_timetable','inv_report','access','activity','profile'] %}
             {% for i in range(0, perms|length, 3) %}
                 <div class="profile-frame" style="width: 100%">
                     <div class="form-profile" style="width: 55%;">
