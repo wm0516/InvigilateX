@@ -2384,8 +2384,7 @@ def get_access(id):
         return jsonify({"error": "User not found"}), 404
     return jsonify({
         "userId": user.userId,
-        "userAccess": user.userAccess,
-        "userDepartment": user.userDepartment
+        "userAccess": user.userAccess
     })
 
 # -------------------------------
