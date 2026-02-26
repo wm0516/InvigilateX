@@ -99,7 +99,7 @@
                 <select id="selectUser" name="selectUser">
                     <option value="" disabled selected>-- Select Staff --</option>
                     {% for staff in staff_data %}
-                        <option value="{{ staff.userAccess }}"
+                        <option value="{{ staff.userId }}"
                                 {% if staff_select and staff.userId == staff_select.userId %}selected{% endif %}>
                             [{{ staff.userId }}] - {{ staff.userName }}
                         </option>
@@ -109,10 +109,30 @@
         </div><br>
                 
         <div class="profile-frame">
-            <div class="form-profile" style="width: 24%;">
+            <div class="form-profile" style="width: 15%;">
                 <input type="text" name="homepage" value="{{ homepage }}" placeholder="Homepage" readonly><br>
                 <input type="text" name="course" value="{{ course }}" placeholder="Manage Course" readonly><br>
                 <input type="text" name="department" value="{{ department }}" placeholder="Manage Department" readonly>
+            </div>
+
+            <div class="form-profile" style="width: 9%;">
+                <select name="homepage_id" required>
+                    <option value="" disabled selected>-- Select Access --</option>
+                    <option value="0">Not Allowed</option>
+                    <option value="1">Allow</option>
+                </select><br>
+
+                 <select name="course_id" required>
+                    <option value="" disabled selected>-- Select Access --</option>
+                    <option value="0">Not Allowed</option>
+                    <option value="1">Allow</option>
+                </select><br>
+
+                <select name="department_id" required>
+                    <option value="" disabled selected>-- Select Access --</option>
+                    <option value="0">Not Allowed</option>
+                    <option value="1">Allow</option>
+                </select>
             </div>
 
             <div class="form-profile" style="width: 24%;">
