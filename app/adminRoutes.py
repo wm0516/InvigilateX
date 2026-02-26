@@ -2398,30 +2398,7 @@ def admin_manageAccess():
     role_data = Role.query.all()
     staff_data = User.query.all()
 
-    # Get all permission inputs (0 or 1)
-    permissions = {
-        "homepage"      : int(request.form.get('homepage_id', 0)),
-        "course"        : int(request.form.get('course_id', 0)),
-        "department"    : int(request.form.get('department_id', 0)),
-        "venue"         : int(request.form.get('venue_id', 0)),
-        "exam"          : int(request.form.get('exam_id', 0)),
-        "staff"         : int(request.form.get('staff_id', 0)),
-        "timetable"     : int(request.form.get('timetable_id', 0)),
-        "inv_timetable" : int(request.form.get('inv_timetable_id', 0)),
-        "inv_report"    : int(request.form.get('inv_report_id', 0)),
-        "access"        : int(request.form.get('access_id', 0)),
-        "activity"      : int(request.form.get('activity_id', 0)),
-        "profile"       : int(request.form.get('profile_id', 0)),
-    }
 
-    # Convert to bitmask
-    value = 0
-    bit_position = 0
-
-    for key in permissions:
-        if permissions[key] == 1:
-            value |= (1 << bit_position)
-        bit_position += 1
 
     # For edit section
     role_selected_code  = request.form.get('editSecondRole')
@@ -2436,6 +2413,31 @@ def admin_manageAccess():
         if form_type == 'manual':
             roleCode = request.form.get('roleCode', '').strip().upper()
             roleName = request.form.get('roleName', '').strip().upper()
+
+            # Get all permission inputs (0 or 1)
+            permissions = {
+                "homepage"      : int(request.form.get('add_homepage_id', 0)),
+                "course"        : int(request.form.get('add_course_id', 0)),
+                "department"    : int(request.form.get('add_department_id', 0)),
+                "venue"         : int(request.form.get('add_venue_id', 0)),
+                "exam"          : int(request.form.get('add_exam_id', 0)),
+                "staff"         : int(request.form.get('add_staff_id', 0)),
+                "timetable"     : int(request.form.get('add_timetable_id', 0)),
+                "inv_timetable" : int(request.form.get('add_inv_timetable_id', 0)),
+                "inv_report"    : int(request.form.get('add_inv_report_id', 0)),
+                "access"        : int(request.form.get('add_access_id', 0)),
+                "activity"      : int(request.form.get('add_activity_id', 0)),
+                "profile"       : int(request.form.get('add_profile_id', 0)),
+            }
+
+            # Convert to bitmask
+            value = 0
+            bit_position = 0
+
+            for key in permissions:
+                if permissions[key] == 1:
+                    value |= (1 << bit_position)
+                bit_position += 1
 
             # Check if role code already exists
             if Role.query.filter_by(roleCode=roleCode).first():
@@ -2461,6 +2463,31 @@ def admin_manageAccess():
             if not role_code and not user_code:
                 flash("Please select either a Role or a User to edit.", "error")
                 return redirect(url_for('admin_manageAccess'))
+                
+            # Get all permission inputs (0 or 1)
+            permissions = {
+                "homepage"      : int(request.form.get('homepage_id', 0)),
+                "course"        : int(request.form.get('course_id', 0)),
+                "department"    : int(request.form.get('department_id', 0)),
+                "venue"         : int(request.form.get('venue_id', 0)),
+                "exam"          : int(request.form.get('exam_id', 0)),
+                "staff"         : int(request.form.get('staff_id', 0)),
+                "timetable"     : int(request.form.get('timetable_id', 0)),
+                "inv_timetable" : int(request.form.get('inv_timetable_id', 0)),
+                "inv_report"    : int(request.form.get('inv_report_id', 0)),
+                "access"        : int(request.form.get('access_id', 0)),
+                "activity"      : int(request.form.get('activity_id', 0)),
+                "profile"       : int(request.form.get('profile_id', 0)),
+            }
+
+            # Convert to bitmask
+            value = 0
+            bit_position = 0
+
+            for key in permissions:
+                if permissions[key] == 1:
+                    value |= (1 << bit_position)
+                bit_position += 1
 
             # ===============================
             # If Role selected → update all users with that role
