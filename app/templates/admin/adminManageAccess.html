@@ -25,6 +25,112 @@
                 <label>Role Name</label>
                 <input type="text" name="roleName" required>
             </div>
+        </div><br>
+
+        <div class="profile-frame" style="justify-content: center; width: 100%;">
+            <div class="profile-frame" style="width: 100%">
+                <div class="form-profile" style="width: 55%;">
+                    <input type="text" name="homepage" value="{{ homepage }}" placeholder="Homepage" readonly>
+                    <input type="text" name="course" value="{{ course }}" placeholder="Manage Course" readonly>
+                    <input type="text" name="department" value="{{ department }}" placeholder="Manage Department" readonly>
+                </div>
+
+                <div class="form-profile" style="width: 40%;">
+                    <select name="add_homepage_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_course_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_department_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="profile-frame" style="width: 100%">
+                <div class="form-profile" style="width: 55%;">
+                    <input type="text" name="venue" value="{{ venue }}" placeholder="Manage Venue" readonly>
+                    <input type="text" name="exam" value="{{ exam }}" placeholder="Manage Exam" readonly>
+                    <input type="text" name="staff" value="{{ staff }}" placeholder="Manage/View Staff" readonly>
+                </div>
+
+                <div class="form-profile" style="width: 40%;">
+                    <select name="add_venue_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_exam_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_staff_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="profile-frame" style="width: 100%">
+                <div class="form-profile" style="width: 55%;">
+                    <input type="text" name="timetable" value="{{ timetable }}" placeholder="Manage/View Timetable" readonly>
+                    <input type="text" name="invTimetable" value="{{ invTimetable }}" placeholder="Manage/View Invigilation Timetable" readonly>
+                    <input type="text" name="invReport" value="{{ invReport }}" placeholder="Manage/View Invigilation Report" readonly>
+                </div>
+
+                <div class="form-profile" style="width: 40%;">
+                    <select name="add_timetable_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_inv_timetable_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_inv_report_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="profile-frame" style="width: 100%">
+                <div class="form-profile" style="width: 55%;">
+                    <input type="text" name="access" value="{{ access }}" placeholder="Access" readonly>
+                    <input type="text" name="activity" value="{{ activity }}" placeholder="Activity" readonly>
+                    <input type="text" name="profile" value="{{ profile }}" placeholder="Profile" readonly>
+                </div>
+
+                <div class="form-profile" style="width: 40%;">
+                    <select name="add_access_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_activity_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                    <select name="add_profile_id" required>
+                        <option value="" disabled selected>-- Select Access --</option>
+                        <option value="0">Not Allowed</option>
+                        <option value="1">Allow</option>
+                    </select>
+                </div>
+            </div>
         </div>
         <input type="hidden" name="form_type" value="manual">
         <br><br>
@@ -298,7 +404,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const userSelect = document.getElementById("selectUser");
+    const roleSelect = document.getElementById("selectRole"); // Edit section role dropdown
+    const userSelect = document.getElementById("selectUser"); // Edit section user dropdown
+
     // Map dropdown name → bit position
     const permissionMap = {
         "homepage_id": 0,
@@ -315,11 +423,26 @@ document.addEventListener("DOMContentLoaded", () => {
         "profile_id": 11
     };
 
-    function resetDropdowns() {
-        Object.keys(permissionMap).forEach(name => {
+    function setDropdownsFromValue(value) {
+        Object.entries(permissionMap).forEach(([name, bit]) => {
             const select = document.querySelector(`select[name="${name}"]`);
-            if (select) select.value = "";
+            if (!select) return;
+            const isAllowed = (value & (1 << bit)) !== 0;
+            select.value = isAllowed ? "1" : "0";
         });
+    }
+
+    async function fetchRoleValue(roleCode) {
+        if (!roleCode) return;
+        try {
+            const resp = await fetch(`/get_role/${encodeURIComponent(roleCode)}`);
+            const data = await resp.json();
+            if (data.error) return;
+            // Role value must be passed from backend, e.g., roleValue
+            setDropdownsFromValue(data.roleValue || 0);
+        } catch (err) {
+            console.error("Error fetching role value:", err);
+        }
     }
 
     async function fetchUserAccess(userId) {
@@ -327,27 +450,33 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const resp = await fetch(`/get_user/${encodeURIComponent(userId)}`);
             const data = await resp.json();
-            if (data.error) {
-                alert(data.error);
-                return;
-            }
-
-            const accessValue = data.userAccess || 0;
-            // Convert decimal to binary and prefill
-            Object.entries(permissionMap).forEach(([name, bit]) => {
-                const select = document.querySelector(`select[name="${name}"]`);
-                if (!select) return;
-
-                const isAllowed = (accessValue & (1 << bit)) !== 0;
-                select.value = isAllowed ? "1" : "0";
-            });
+            if (data.error) return;
+            setDropdownsFromValue(data.userAccess || 0);
         } catch (err) {
             console.error("Error fetching user access:", err);
         }
     }
+
+    function resetDropdowns() {
+        Object.keys(permissionMap).forEach(name => {
+            const select = document.querySelector(`select[name="${name}"]`);
+            if (select) select.value = "";
+        });
+    }
+
+    if (roleSelect) {
+        roleSelect.addEventListener("change", () => {
+            resetDropdowns();
+            fetchRoleValue(roleSelect.value);
+        });
+
+        // Prefill if already selected
+        if (roleSelect.value) fetchRoleValue(roleSelect.value);
+    }
+
     if (userSelect) {
         userSelect.addEventListener("change", () => {
-            resetDropdowns(); // clear first
+            resetDropdowns();
             fetchUserAccess(userSelect.value);
         });
     }

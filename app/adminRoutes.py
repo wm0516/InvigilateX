@@ -2373,7 +2373,8 @@ def get_role(role_code):
         return jsonify({"error": "Role not found"}), 404
     return jsonify({
         "roleCode": role.roleCode,
-        "roleName": role.roleName
+        "roleName": role.roleName,
+        "roleValue": role.roleValue
     })
 
 @app.route('/get_user/<path:id>')
@@ -2397,6 +2398,31 @@ def admin_manageAccess():
     role_data = Role.query.all()
     staff_data = User.query.all()
 
+    # Get all permission inputs (0 or 1)
+    permissions = {
+        "homepage"      : int(request.form.get('homepage_id', 0)),
+        "course"        : int(request.form.get('course_id', 0)),
+        "department"    : int(request.form.get('department_id', 0)),
+        "venue"         : int(request.form.get('venue_id', 0)),
+        "exam"          : int(request.form.get('exam_id', 0)),
+        "staff"         : int(request.form.get('staff_id', 0)),
+        "timetable"     : int(request.form.get('timetable_id', 0)),
+        "inv_timetable" : int(request.form.get('inv_timetable_id', 0)),
+        "inv_report"    : int(request.form.get('inv_report_id', 0)),
+        "access"        : int(request.form.get('access_id', 0)),
+        "activity"      : int(request.form.get('activity_id', 0)),
+        "profile"       : int(request.form.get('profile_id', 0)),
+    }
+
+    # Convert to bitmask
+    value = 0
+    bit_position = 0
+
+    for key in permissions:
+        if permissions[key] == 1:
+            value |= (1 << bit_position)
+        bit_position += 1
+
     # For edit section
     role_selected_code  = request.form.get('editSecondRole')
     role_select         = Role.query.filter_by(roleCode=role_selected_code).first()
@@ -2419,6 +2445,7 @@ def admin_manageAccess():
                     Role(
                         roleCode=roleCode, 
                         roleName=roleName,
+                        roleValue=value,
                         )
                     )
                 db.session.commit()
@@ -2434,31 +2461,6 @@ def admin_manageAccess():
             if not role_code and not user_code:
                 flash("Please select either a Role or a User to edit.", "error")
                 return redirect(url_for('admin_manageAccess'))
-
-            # Get all permission inputs (0 or 1)
-            permissions = {
-                "homepage"      : int(request.form.get('homepage_id', 0)),
-                "course"        : int(request.form.get('course_id', 0)),
-                "department"    : int(request.form.get('department_id', 0)),
-                "venue"         : int(request.form.get('venue_id', 0)),
-                "exam"          : int(request.form.get('exam_id', 0)),
-                "staff"         : int(request.form.get('staff_id', 0)),
-                "timetable"     : int(request.form.get('timetable_id', 0)),
-                "inv_timetable" : int(request.form.get('inv_timetable_id', 0)),
-                "inv_report"    : int(request.form.get('inv_report_id', 0)),
-                "access"        : int(request.form.get('access_id', 0)),
-                "activity"      : int(request.form.get('activity_id', 0)),
-                "profile"       : int(request.form.get('profile_id', 0)),
-            }
-
-            # Convert to bitmask
-            value = 0
-            bit_position = 0
-
-            for key in permissions:
-                if permissions[key] == 1:
-                    value |= (1 << bit_position)
-                bit_position += 1
 
             # ===============================
             # If Role selected → update all users with that role

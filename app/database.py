@@ -57,15 +57,17 @@ class Department(db.Model):
 # ------------------------------
 class Role(db.Model):
     __tablename__   = 'Role'
-    roleCode = Column(String(10), primary_key=True)
-    roleName = Column(String(50), nullable=False)
+    roleCode  = Column(String(10), primary_key=True)
+    roleName  = Column(String(50), nullable=False)
+    roleValue = Column(Integer, nullable=False, default=0)
 
     # Relationship
     users = relationship("User", back_populates="role")
     '''
     CREATE TABLE Role (
         roleCode VARCHAR(10) NOT NULL PRIMARY KEY,
-        roleName VARCHAR(50) NOT NULL
+        roleName VARCHAR(50) NOT NULL,
+        roleValue INT NOT NULL DEFAULT 0
     );
     '''
 
