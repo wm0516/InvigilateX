@@ -14,7 +14,7 @@ from app import db
 # SHOW TABLES;                                                                              -> display out all the table created
 # DROP TABLE (tableName);                                                                   -> to delete that table
 # SELECT * FROM (tableName);                                                                -> display out that table data
-# UPDATE User SET userEmail='p21013604@student.newinti.edu.my' WHERE userId='21013604';       -> changing the data
+# UPDATE User SET userEmail='minglw04@gmail.com' WHERE userId='21013604';                   -> changing the data
 # DELETE FROM Exam WHERE examId = '1';                                                      -> remove certain row of data
 # NOT NULL = MUST HAVE DATA 
 # NULL = OPTIONAL HAVE DATA
