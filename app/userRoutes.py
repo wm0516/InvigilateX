@@ -17,7 +17,10 @@ bcrypt = Bcrypt()
 # -------------------------------
 def calculate_invigilation_stats(user):
     # Base query joining VenueSessionInvigilator -> VenueSession -> Exam -> Course -> Department
-    query = VenueSessionInvigilator.query.join(VenueSession).join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId).join(Exam, VenueExam.examId == Exam.examId).join(Course, Exam.examId == Course.courseExamId)
+    query = VenueSessionInvigilator.query.join(VenueSession
+        ).join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId
+        ).join(Exam, VenueExam.examId == Exam.examId
+        ).join(Course, Exam.examId == Course.courseExamId)
 
     if user.userRole in ["LECTURER", "PO", "LAB_ACC"]:
         # Only the user's own invigilation

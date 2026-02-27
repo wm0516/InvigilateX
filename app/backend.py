@@ -736,17 +736,8 @@ def open_record(user_id):
         .outerjoin(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .where(
             VenueSessionInvigilator.invigilationStatus == False,
-            or_(
-                VenueSessionInvigilator.invigilatorId == None,
-                and_(
-                    VenueSessionInvigilator.timeExpire <= current_time,
-                    User.userGender == user_gender
-                ),
-                and_(
-                    VenueSessionInvigilator.remark == "REJECTED",
-                    VenueSessionInvigilator.invigilatorId == user_id
-                )
-            )
+            VenueSessionInvigilator.timeExpire <= current_time,
+            User.userGender == user_gender
         )
         .distinct()
     )

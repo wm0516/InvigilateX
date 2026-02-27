@@ -426,10 +426,10 @@ def user_homepage():
                 db.session.add(
                     VenueSessionInvigilator(
                         venueSessionId=waiting_slot.venueSessionId,
-                        invigilatorId=None,
+                        invigilatorId=waiting_slot.invigilatorId,
                         checkIn=None,
                         checkOut=None,
-                        timeCreate=waiting_slot.timeCreate,
+                        timeCreate=waiting_slot.timeExpire,
                         position=waiting_slot.position,
                         timeExpire=waiting_slot.timeExpire,
                         invigilationStatus=False,
