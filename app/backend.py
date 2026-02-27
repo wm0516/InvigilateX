@@ -733,18 +733,22 @@ def open_record(user_id):
     user_gender = user.userGender
     subquery = (
         select(VenueSessionInvigilator.venueSessionId)
+        .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .where(
-            VenueSessionInvigilator.rejectReason.isnot(None)
+            VenueSessionInvigilator.invigilationStatus == False,
+            VenueSessionInvigilator.rejectReason.is_(None),
+            VenueSessionInvigilator.timeExpire <= current_time,
+            User.userGender == user_gender
         )
         .distinct()
     )
-    # Now fetch grouped venue sessions
+
+    # Fetch VenueSession rows corresponding to the filtered invigilators
     slots = (
         db.session.query(VenueSession)
         .filter(VenueSession.venueSessionId.in_(subquery))
         .all()
     )
-
     return slots
 
 
