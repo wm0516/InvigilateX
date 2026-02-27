@@ -733,12 +733,8 @@ def open_record(user_id):
     user_gender = user.userGender
     subquery = (
         select(VenueSessionInvigilator.venueSessionId)
-        .outerjoin(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .where(
-            VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.timeExpire <= current_time
-
-            #User.userGender == user_gender
+            VenueSessionInvigilator.rejectReason.isnot(None)
         )
         .distinct()
     )
