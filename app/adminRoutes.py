@@ -2110,7 +2110,7 @@ def calculate_invigilation_stats():
         "total_report": len(query),
         "accept_report": active_report,  # total VenueSessionInvigilator records
         "reject_report": len(query) - active_report,
-        "total_pendingReport": completed_report,     # reports where checkIn or checkOut is missing
+        "completed_report": completed_report,     # reports where checkIn or checkOut is missing
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
