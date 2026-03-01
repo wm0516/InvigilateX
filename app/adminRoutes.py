@@ -2242,6 +2242,8 @@ def admin_manageInvigilationReport():
         key = (
             session_obj.venueSessionId,
             session_obj.venue.venueNumber,
+            session_obj.noInvigilator,
+            session_obj.totalStudent,
             session_obj.startDateTime,
             session_obj.endDateTime
         )
