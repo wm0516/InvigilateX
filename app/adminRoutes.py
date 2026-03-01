@@ -2103,7 +2103,7 @@ def get_report(exam_id):
 # -------------------------------
 def calculate_invigilation_stats():
     query = VenueSessionInvigilator.query.join(VenueSession).all()
-    active_report = VenueSessionInvigilator.query.filter(VenueSessionInvigilator.rejectReason.is_(None)).count()
+    active_report = VenueSessionInvigilator.query.filter(VenueSessionInvigilator.rejectReason.is_(None), VenueSessionInvigilator.position != "BACKUP").count()
     completed_report = VenueSessionInvigilator.query.filter(VenueSessionInvigilator.remark.in_(["COMPLETED", "EXPIRED"])).count()
 
     stats = {
