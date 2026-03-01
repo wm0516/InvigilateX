@@ -2224,7 +2224,7 @@ def admin_manageInvigilationReport():
             grouped_att[key] = {
                 "courses": [],
                 "course_codes": set(),
-                "invigilators": session_obj.noInvigilator,
+                "invigilators": [],
                 "backup": session_obj.backupInvigilator
             }
 
