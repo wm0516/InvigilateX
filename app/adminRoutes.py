@@ -2232,7 +2232,6 @@ def admin_manageInvigilationReport():
         key = (
             session_obj.venueSessionId,
             session_obj.venue.venueNumber,
-            session_obj.noInvigilator,
             getattr(session_obj, "totalStudent", 0),
             session_obj.startDateTime,
             session_obj.endDateTime
@@ -2261,7 +2260,7 @@ def admin_manageInvigilationReport():
     stats = calculate_invigilation_stats()
     for session_obj in sessions:    
         session_obj.group_key = session_obj.venueSessionId
-        
+
     # Handle POST actions (upload/edit)
     if request.method == 'POST':
         form_type = request.form.get('form_type')
