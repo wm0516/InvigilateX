@@ -18,7 +18,7 @@ from app import app
 from .authRoutes import login_required, admin_homepage
 from .backend import *
 from .database import *
-
+from sqlalchemy.orm import joinedload, contains_eager
 
 # Initialize serializer and bcrypt
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -2214,51 +2214,36 @@ def admin_manageInvigilationReport():
     if not check_access(user_id, "invigilationReport"):
         flash("Access denied", "error")
         return redirect(url_for("admin_homepage"))
-
-    # Fetch all invigilator assignments with proper ordering
-    vsi_entries = (
-        VenueSessionInvigilator.query
-        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
-        .join(Venue, VenueSession.venueNumber == Venue.venueNumber)
-        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
-        .join(Exam, VenueExam.examId == Exam.examId)
-        .join(Course, Exam.examId == Course.courseExamId)
-        .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
-        .order_by(
-            VenueSession.startDateTime.asc(),  # primary: session start
-            Venue.venueNumber.asc(),           # secondary: venue number
-            Course.courseCodeSectionIntake.asc()
-        )
-        .all()
+    
+    sessions = (VenueSession.query
+        .options(
+            joinedload(VenueSession.venue),       # load Venue
+            joinedload(VenueSession.exams).joinedload(VenueExam.exam).joinedload(Exam.course),  # load courses
+            joinedload(VenueSession.invigilators).joinedload(VenueSessionInvigilator.invigilator)  # load invigilators
+        ).order_by(
+            VenueSession.startDateTime.asc(),
+            VenueSession.venueNumber.asc()
+        ).all()
     )
 
-    # Group sessions into an ordered dict to preserve sort
+    # Build grouped structure
     grouped_att = OrderedDict()
-    for vsi in vsi_entries:
-        session_obj = vsi.session
-        if not session_obj:
-            continue
-
+    for session_obj in sessions:
         key = (
             session_obj.venueSessionId,
             session_obj.venue.venueNumber,
             session_obj.noInvigilator,
-            session_obj.totalStudent,
+            getattr(session_obj, "totalStudent", 0),
             session_obj.startDateTime,
             session_obj.endDateTime
         )
 
-        if key not in grouped_att:
-            grouped_att[key] = {
-                "courses": [],
-                "course_codes": set(),
-                "invigilators": [],
-                "backup": session_obj.backupInvigilator
-            }
+        grouped_att[key] = {
+            "courses": [],
+            "course_codes": set(),
+            "invigilators": list(session_obj.invigilators)  # can be empty
+        }
 
-        grouped_att[key]["invigilators"].append(vsi)
-
-        # Collect courses, avoid duplicates
         for ve in session_obj.exams:
             if ve.exam and ve.exam.course:
                 code = ve.exam.course.courseCodeSectionIntake
@@ -2269,12 +2254,12 @@ def admin_manageInvigilationReport():
 
     # Sort invigilators in each session by position
     position_order = ["CHIEF INVIGILATOR", "INVIGILATOR", "BACKUP"]
-    for key, data in grouped_att.items():
+    for data in grouped_att.values():
         data["invigilators"].sort(key=lambda x: position_order.index(x.position) if x.position in position_order else 99)
 
     # Calculate stats
     stats = calculate_invigilation_stats()
-    for vsi in vsi_entries:
+    for vsi in sessions:    
         vsi.group_key = vsi.session.venueSessionId if vsi.session else None
 
     # Handle POST actions (upload/edit)
@@ -2331,7 +2316,7 @@ def admin_manageInvigilationReport():
     return render_template(
         'admin/adminManageInvigilationReport.html',
         active_tab='admin_manageInvigilationReporttab',
-        attendances=vsi_entries,
+        attendances=sessions,
         grouped_att=grouped_att,
         **stats
     )

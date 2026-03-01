@@ -149,8 +149,10 @@
         <tbody>
             {% set ns = namespace(rowno=1) %}
             {% for (session_id, venue, noInv, student, start, end), data in grouped_att.items() %}
-                {% set total_rows = noInv %}
-                {% set has_backup = data.backup is not none %}
+                {% set total_rows = data.invigilators|length %}
+                {% if total_rows == 0 %}
+                    {% set total_rows = 1 %}
+                {% endif %}
 
                 {% for att in data.invigilators %}
                     {% set duration = end - start %}
