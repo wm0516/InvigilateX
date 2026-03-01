@@ -2106,9 +2106,16 @@ def calculate_invigilation_stats():
     accept_count    = query.filter(VenueSessionInvigilator.position != "BACKUP", VenueSessionInvigilator.rejectReason.is_(None)).count()
     reject_count    = query.filter(VenueSessionInvigilator.rejectReason.isnot(None)).count()
     backup_count    = query.filter(VenueSessionInvigilator.position == "BACKUP").count()
-    completed_count = query.join(VenueSession).join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)\
-        .join(Exam, VenueExam.examId == Exam.examId).filter(Exam.examStatus == False).count()
-
+    completed_count = query\
+        .join(VenueSession)\
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)\
+        .join(Exam, VenueExam.examId == Exam.examId)\
+        .filter(
+            VenueSessionInvigilator.position != "BACKUP",
+            VenueSessionInvigilator.rejectReason.is_(None),
+            Exam.examStatus == False
+        ).count()
+    
     stats = {
         "accept_report"         : accept_count,
         "reject_report"         : reject_count,
