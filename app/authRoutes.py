@@ -161,7 +161,7 @@ def verifyAccount(token):
         email = serializer.loads(token, salt='account-verify-salt', max_age=3600)
         user = User.query.filter_by(userEmail=email).first()
         if not user:
-            flash("Invalid verification link.", "danger")
+            flash("Invalid verification link.", "error")
             return redirect(url_for('login'))
 
         user.userStatus = True
@@ -173,7 +173,7 @@ def verifyAccount(token):
         flash("The verification link has expired.", "warning")
         return redirect(url_for('register'))
     except BadSignature:
-        flash("Invalid verification token.", "danger")
+        flash("Invalid verification token.", "error")
         return redirect(url_for('register'))
 
 
@@ -446,50 +446,95 @@ def user_homepage():
         # -----------------------------
         elif action == 'open_accept':
             open_attendance_id = request.form.get('open_id')
-
             slot = (
                 db.session.query(VenueSessionInvigilator)
                 .filter_by(sessionId=open_attendance_id)
-                .with_for_update()  # ✅ Prevent double booking
+                .with_for_update()
                 .first()
             )
 
             if not slot:
-                flash("Slot not found.", "danger")
+                flash("Slot not found.", "error")
                 return redirect(url_for('user_homepage'))
 
             session_obj = slot.session
+            user = User.query.get(user_id)
 
-            # Conflict check
-            user_confirmed = VenueSessionInvigilator.query.filter(
+            if not user:
+                flash("User not found.", "error")
+                return redirect(url_for('user_homepage'))
+
+            # Prevent duplicate or time conflict
+            confirmed_assignments = VenueSessionInvigilator.query.filter(
                 VenueSessionInvigilator.invigilatorId == user_id,
                 VenueSessionInvigilator.invigilationStatus == True
             ).all()
 
-            for c in user_confirmed:
-                if c.venueSessionId == session_obj.venueSessionId:
-                    flash("You are already assigned to this session.", "danger")
+            for assignment in confirmed_assignments:
+                # Same session
+                if assignment.venueSessionId == session_obj.venueSessionId:
+                    flash("You are already assigned to this session.", "error")
                     return redirect(url_for('user_homepage'))
 
-                if c.session.startTime == session_obj.startTime:
-                    flash("Time conflict detected.", "danger")
+                # Time conflict
+                if assignment.session.startDateTime == session_obj.startDateTime:
+                    flash("Time conflict detected.", "error")
                     return redirect(url_for('user_homepage'))
 
-            available_positions = get_available_positions(session_obj)
+            # Calculate total students in this venue session
+            venue_exams = VenueExam.query.filter_by(venueSessionId=session_obj.venueSessionId).all()
+            total_students = sum(exam.studentCount for exam in venue_exams)
 
-            if not available_positions:
-                flash("No available roles left.", "danger")
+            # Count confirmed male & female
+            confirmed_slots = (
+                db.session.query(VenueSessionInvigilator)
+                .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
+                .filter(
+                    VenueSessionInvigilator.venueSessionId == session_obj.venueSessionId,
+                    VenueSessionInvigilator.invigilationStatus == True
+                )
+                .all()
+            )
+
+            male_count = sum(1 for s in confirmed_slots if s.invigilator and s.invigilator.userGender == False)
+            female_count = sum(1 for s in confirmed_slots if s.invigilator and s.invigilator.userGender == True)
+            total_confirmed = male_count + female_count
+
+            # Determine required invigilator count
+            if total_students < 32:
+                required_total = 2
+            else:
+                required_total = 3
+
+            # Enforce rules
+            # Already full
+            if total_confirmed >= required_total:
+                flash("Required invigilator count already fulfilled.", "error")
                 return redirect(url_for('user_homepage'))
 
-            chosen_position = available_positions[0]
+            # First 2 must be 1 male + 1 female
+            if total_confirmed < 2:
+                if user.userGender == True and female_count >= 1:
+                    flash("Female already assigned. Male required.", "error")
+                    return redirect(url_for('user_homepage'))
 
+                if user.userGender == False and male_count >= 1:
+                    flash("Male already assigned. Female required.", "error")
+                    return redirect(url_for('user_homepage'))
+
+            # Third slot (>=32 students) has no gender restriction
+            # Assign slot
             slot.invigilatorId = user_id
-            slot.position = chosen_position
+            slot.position = slot.position or "INVIGILATOR"
             slot.invigilationStatus = True
-            slot.remark = None
-            db.session.commit()
+            slot.remark = "PENDING"
 
+            # Update pending cumulative hours
+            exam_hours = (session_obj.endDateTime - session_obj.startDateTime).total_seconds() / 3600
+            user.userPendingCumulativeHours = ((user.userPendingCumulativeHours or 0) + exam_hours)
+            db.session.commit()
             flash("Open slot accepted successfully!", "success")
+            record_action("OPEN", "INVIGILATOR", session_obj.venue.venueNumber, user_id)
             return redirect(url_for('user_homepage'))
 
 
