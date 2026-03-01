@@ -2113,7 +2113,7 @@ def calculate_invigilation_stats():
             VenueSessionInvigilator.invigilationStatus == True,
             VenueSessionInvigilator.position != "BACKUP",
             VenueSessionInvigilator.rejectReason.is_(None),
-            VenueSession.endDateTime < now
+            VenueSession.endDateTime > now
         )
         .count()
     )
