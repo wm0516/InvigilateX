@@ -149,7 +149,7 @@
         <tbody>
         {% set ns = namespace(rowno=1) %}
         {% for (session_id, venue, noInv, student, start, end), data in grouped_att.items() %}
-            {% set total_rows = data.invigilators|length %}
+            {% set total_rows = noInv %}
             {% if total_rows == 0 %}
                 {% set total_rows = 1 %}
             {% endif %}
