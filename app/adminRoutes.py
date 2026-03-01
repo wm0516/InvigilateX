@@ -2102,37 +2102,56 @@ def get_report(exam_id):
 # Calculate All InvigilatorAttendance and InvigilationReport Data
 # -------------------------------
 def calculate_invigilation_stats():
-    query = VenueSessionInvigilator.query
-    accept_count    = query.filter(VenueSessionInvigilator.position != "BACKUP", VenueSessionInvigilator.rejectReason.is_(None)).count()
-    reject_count    = query.filter(VenueSessionInvigilator.rejectReason.isnot(None)).count()
-    backup_count    = query.filter(VenueSessionInvigilator.position == "BACKUP").count()
-    completed_count = query\
-        .join(VenueSession)\
-        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)\
-        .join(Exam, VenueExam.examId == Exam.examId)\
+    now = datetime.now() + timedelta(hours=8)
+    base_query = VenueSessionInvigilator.query
+
+    # ACCEPT COUNT
+    accept_count = (
+        base_query
+        .join(VenueSession)
+        .filter(
+            VenueSessionInvigilator.invigilationStatus == True,
+            VenueSessionInvigilator.position != "BACKUP",
+            VenueSessionInvigilator.rejectReason.is_(None),
+            VenueSession.endDateTime < now
+        )
+        .count()
+    )
+
+    # REJECT COUNT
+    reject_count = base_query.filter(VenueSessionInvigilator.rejectReason.isnot(None)).count()
+
+    # BACKUP COUNT
+    backup_count = base_query.filter(VenueSessionInvigilator.position == "BACKUP").count()
+
+    # COMPLETED COUNT
+    completed_count = (
+        base_query
+        .join(VenueSession)
         .filter(
             VenueSessionInvigilator.position != "BACKUP",
             VenueSessionInvigilator.rejectReason.is_(None),
-            Exam.examStatus == False
-        ).count()
-    
+            VenueSession.endDateTime < now   # session already passed
+        )
+        .count()
+    )
+
     stats = {
-        "accept_report"         : accept_count,
-        "reject_report"         : reject_count,
-        "backup_report"         : backup_count,
-        "completed_report"      : completed_count,
-        "total_checkInLate"     : 0,
-        "total_checkOutEarly"   : 0,
+        "accept_report": accept_count,
+        "reject_report": reject_count,
+        "backup_report": backup_count,
+        "completed_report": completed_count,
+        "total_checkInLate": 0,
+        "total_checkOutEarly": 0,
     }
 
-    for att in query:
+    # LATE / EARLY CHECK CALCULATION
+    for att in base_query.join(VenueSession).all():
         session_start = att.session.startDateTime if att.session else None
         session_end = att.session.endDateTime if att.session else None
 
-        # Count late check-in
         if att.checkIn and session_start and att.checkIn > session_start:
             stats["total_checkInLate"] += 1
-        # Count early check-out
         if att.checkOut and session_end and att.checkOut < session_end:
             stats["total_checkOutEarly"] += 1
     return stats
