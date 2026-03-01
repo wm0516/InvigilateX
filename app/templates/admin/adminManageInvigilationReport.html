@@ -159,7 +159,7 @@
                     {% set days = total_seconds // 86400 %}
                     {% set hours = (total_seconds % 86400) // 3600 %}
                     {% set minutes = (total_seconds % 3600) // 60 %}
-                    <tr>
+                    <tr class="{% if not data.examStatus %}error-row-show{% endif %}">
                         {% if loop.first %}
                             <td rowspan="{{ total_rows }}">{{ ns.rowno }}</td>
                             <td rowspan="{{ total_rows }}">
