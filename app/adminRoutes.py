@@ -2104,12 +2104,13 @@ def get_report(exam_id):
 def calculate_invigilation_stats():
     query = VenueSessionInvigilator.query.join(VenueSession).all()
     active_report = VenueSessionInvigilator.query.filter(VenueSessionInvigilator.rejectReason.is_(None)).count()
+    completed_report = VenueSessionInvigilator.query.filter(VenueSessionInvigilator.remark.in_(["COMPLETED", "EXPIRED"])).count()
 
     stats = {
         "total_report": len(query),
         "accept_report": active_report,  # total VenueSessionInvigilator records
         "reject_report": len(query) - active_report,
-        "total_pendingReport": 0,     # reports where checkIn or checkOut is missing
+        "total_pendingReport": completed_report,     # reports where checkIn or checkOut is missing
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }
@@ -2117,10 +2118,6 @@ def calculate_invigilation_stats():
     for att in query:
         session_start = att.session.startDateTime if att.session else None
         session_end = att.session.endDateTime if att.session else None
-
-        # Count reports where check-in or check-out is missing
-        if not att.checkIn or not att.checkOut:
-            stats["total_pendingReport"] += 1
 
         # Count late check-in
         if att.checkIn and session_start and att.checkIn > session_start:
