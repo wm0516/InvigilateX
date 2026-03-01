@@ -14,7 +14,7 @@
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-profile" style="width: 100%">
-            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
+            <div class="dashboard-row" style="grid-template-columns: repeat(6, 1fr);">
                 <div class="dashboard-frame">
                     <h3>Pending Invigilation Duties</h3>
                     <p class="dashboard-text">{{ accept_report }}</p>
@@ -22,6 +22,10 @@
                 <div class="dashboard-frame">
                     <h3>Rejected Invigilation Duties</h3>
                     <p class="dashboard-text">{{ reject_report }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Backup Invigilation Duties</h3>
+                    <p class="dashboard-text">{{ backup_report }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Completed Invigilation Duties</h3>
