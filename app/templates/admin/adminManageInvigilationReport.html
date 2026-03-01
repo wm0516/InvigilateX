@@ -148,8 +148,8 @@
         </thead>
         <tbody>
             {% set ns = namespace(rowno=1) %}
-            {% for (session_id, venue, inv, student, start, end), data in grouped_att.items() %}
-                {% set total_rows = inv %}
+            {% for (session_id, venue, noInv, student, start, end), data in grouped_att.items() %}
+                {% set total_rows = noInv %}
                 {% set has_backup = data.backup is not none %}
 
                 {% for att in data.invigilators %}
