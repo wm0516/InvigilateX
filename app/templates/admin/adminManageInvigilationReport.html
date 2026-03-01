@@ -149,9 +149,8 @@
         <tbody>
             {% set ns = namespace(rowno=1) %}
             {% for (session_id, venue, start, end), data in grouped_att.items() %}
-                {% set num_invigilators = data.invigilators | length %}
+                {% set total_rows = data.invigilators | length %}
                 {% set has_backup = data.backup is not none %}
-                {% set total_rows = num_invigilators %}
 
                 {% for att in data.invigilators %}
                     {% set duration = end - start %}
@@ -159,7 +158,7 @@
                     {% set days = total_seconds // 86400 %}
                     {% set hours = (total_seconds % 86400) // 3600 %}
                     {% set minutes = (total_seconds % 3600) // 60 %}
-                    <tr class="{% if not data.examStatus %}error-row-show{% endif %}">
+                    <tr>
                         {% if loop.first %}
                             <td rowspan="{{ total_rows }}">{{ ns.rowno }}</td>
                             <td rowspan="{{ total_rows }}">
