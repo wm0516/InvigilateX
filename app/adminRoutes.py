@@ -2215,9 +2215,9 @@ def admin_manageInvigilationReport():
 
         key = (
             session_obj.venueSessionId,
-            session_obj.venue.venueNumber,
             session_obj.startDateTime,
-            session_obj.endDateTime
+            session_obj.endDateTime,
+            session_obj.venue.venueNumber
         )
 
         if key not in grouped_att:
@@ -2242,9 +2242,7 @@ def admin_manageInvigilationReport():
     # Sort invigilators in each session by position
     position_order = ["CHIEF INVIGILATOR", "INVIGILATOR", "BACKUP"]
     for key, data in grouped_att.items():
-        data["invigilators"].sort(
-            key=lambda x: position_order.index(x.position) if x.position in position_order else 99
-        )
+        data["invigilators"].sort(key=lambda x: position_order.index(x.position) if x.position in position_order else 99)
 
     # Calculate stats
     stats = calculate_invigilation_stats()
