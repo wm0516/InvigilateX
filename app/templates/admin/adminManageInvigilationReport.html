@@ -29,7 +29,7 @@
                 </div>
                 <div class="dashboard-frame">
                     <h3>Completed Duties</h3>
-                    <p class="dashboard-text">{{ completed_report }}</p>
+                    <p class="dashboard-text" style="color:green;">{{ completed_report }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>CheckIn Late</h3>
@@ -138,7 +138,6 @@
             <tr>
                 <th>No</th>
                 <th>Exam Date</th>
-                <th>Exam Venue</th>
                 <th>Exam CourseCode</th>
                 <th>Invigilator Details</th>
                 <th>Invigilation Status</th>
@@ -168,9 +167,9 @@
                                     <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
                                     <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
                                     <div>Duration</div><div><strong>: {% if days > 0 %}{{ days|int }}d {% endif %}{{ hours|int }}h {{ minutes|int }}m</strong></div>
+                                    <div>Venue</div><div><strong>: {{ venue }}</strong></div>
                                 </div>
                             </td>
-                            <td rowspan="{{ total_rows }}">{{ venue }}</td>
                             <td rowspan="{{ total_rows }}">
                                 {% for c in data.courses %}
                                     <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
@@ -254,7 +253,7 @@ document.getElementById("generatePDF").addEventListener("click", function () {
     doc.setFontSize(10);
     doc.text(`Downloaded on: ${nowMY}`, pageWidth / 2, margin + 18, { align: "center" });
 
-    const headers = ["No", "Exam Date & Time", "Venue", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
+    const headers = ["No", "Exam Details", "Exam Course", "Invigilator Details", "Invigilation Status", "Attendance Status", "Check-in/out Time"];
     const rows = [];
 
     function getInvigilatorText(td) {
@@ -281,11 +280,10 @@ document.getElementById("generatePDF").addEventListener("click", function () {
                 tds[0].innerText.trim(),
                 tds[1].innerText.trim(),
                 tds[2].innerText.trim(),
-                tds[3].innerText.trim(),
-                getInvigilatorText(tds[4]),
+                getInvigilatorText(tds[3]),
+                tds[4].innerText.trim(),
                 tds[5].innerText.trim(),
-                tds[6].innerText.trim(),
-                tds[7].innerText.trim()
+                tds[6].innerText.trim()
             ]);
         } else {
             rows.push([
