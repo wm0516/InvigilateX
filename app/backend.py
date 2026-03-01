@@ -728,12 +728,14 @@ def reject_record(user_id):
 # HELPER 3: Open Slots
 # -------------------------------
 def open_record():
+    now = datetime.now() + timedelta(hours=8)
     return (
         VenueSessionInvigilator.query
         .join(VenueSession)
         .filter(
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.rejectReason.is_(None)
+            VenueSessionInvigilator.rejectReason.is_(None),
+            VenueSessionInvigilator.timeExpire <= now,
         )
         .order_by(VenueSession.startDateTime.asc())
         .all()
