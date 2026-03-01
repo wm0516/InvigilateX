@@ -2199,9 +2199,9 @@ def admin_manageInvigilationReport():
         .join(Course, Exam.examId == Course.courseExamId)
         .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .order_by(
-            VenueSession.startDateTime,  # primary ordering: session start time
-            Venue.venueNumber,           # secondary: venue number if same datetime
-            Course.courseCodeSectionIntake
+            VenueSession.startDateTime.asc(),  # primary ordering: session start time
+            Venue.venueNumber.asc(),           # secondary: venue number if same datetime
+            Course.courseCodeSectionIntake.asc()
         )
         .all()
     )
