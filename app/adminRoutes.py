@@ -2120,7 +2120,7 @@ def calculate_invigilation_stats():
 
         # Count reports where check-in or check-out is missing
         if not att.checkIn or not att.checkOut:
-            stats["total_activeReport"] += 1
+            stats["total_pendingReport"] += 1
 
         # Count late check-in
         if att.checkIn and session_start and att.checkIn > session_start:
