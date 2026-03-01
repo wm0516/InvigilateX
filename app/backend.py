@@ -11,7 +11,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
 from datetime import datetime, timedelta
-from sqlalchemy import and_, or_, exists, tuple_, func, select, distinct, asc
+from sqlalchemy import and_, or_, exists, tuple_, func, select, distinct
 
 
 # -------------------------------
@@ -681,15 +681,16 @@ def check_profile(user_id, cardId, contact, password1, password2):
 def waiting_record(user_id):
     return (
         db.session.query(VenueSessionInvigilator)
-        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+        .join(VenueSession)
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.remark == "PENDING",
         )
-        .order_by(asc(VenueSession.startDateTime))
+        .order_by(VenueSession.startDateTime.asc())
         .all()
     )
+
 
 # -------------------------------
 # HELPER 2: Confirmed Slots
@@ -705,6 +706,7 @@ def confirm_record(user_id):
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == True
         )
+        .order_by(VenueSession.startDateTime.asc())  # sort ascending
         .all()
     )
 
@@ -712,30 +714,29 @@ def reject_record(user_id):
     return (
         db.session.query(VenueSessionInvigilator)
         .join(VenueSession)
-        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
-        .join(Exam, Exam.examId == VenueExam.examId)
-        .join(Course, Course.courseExamId == Exam.examId)
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.rejectReason.isnot(None)
         )
+        .order_by(VenueSession.startDateTime.asc())
         .all()
     )
+
 
 # -------------------------------
 # HELPER 3: Open Slots
 # -------------------------------
 def open_record():
-    slots = (
+    return (
         VenueSessionInvigilator.query
+        .join(VenueSession)
         .filter(
             VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.rejectReason.is_(None)
         )
+        .order_by(VenueSession.startDateTime.asc())
         .all()
     )
-
-    return slots
 
 # -------------------------------
 # Helper: Slot Summary
@@ -743,7 +744,7 @@ def open_record():
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
     confirmed = confirm_record(user_id)
-    open_slots = open_record(user_id)
+    open_slots = open_record()
     open_times = [slot.timeExpire.strftime("%Y-%m-%d %H:%M:%S") for slot in waiting]
 
     return {
