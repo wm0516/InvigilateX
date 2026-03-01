@@ -2189,7 +2189,7 @@ def admin_manageInvigilationReport():
         flash("Access denied", "error")
         return redirect(url_for("admin_homepage"))
 
-    # Fetch all invigilator assignments
+    # Fetch all invigilator assignments with proper ordering
     vsi_entries = (
         VenueSessionInvigilator.query
         .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
@@ -2199,62 +2199,61 @@ def admin_manageInvigilationReport():
         .join(Course, Exam.examId == Course.courseExamId)
         .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .order_by(
-            VenueSession.startDateTime.asc(),  # primary ordering: session start time
-            Venue.venueNumber.asc(),           # secondary: venue number if same datetime
+            VenueSession.startDateTime.asc(),  # primary: session start
+            Venue.venueNumber.asc(),           # secondary: venue number
             Course.courseCodeSectionIntake.asc()
         )
         .all()
     )
 
-    grouped_att: Dict[Tuple[int, str, datetime, datetime], Dict[str, Any]] = {}
+    # Group sessions into an ordered dict to preserve sort
+    grouped_att = OrderedDict()
     for vsi in vsi_entries:
-        venue_session = vsi.session
-        if not venue_session:
+        session_obj = vsi.session
+        if not session_obj:
             continue
 
         key = (
-            venue_session.venueSessionId,
-            venue_session.venue.venueNumber,
-            venue_session.startDateTime,
-            venue_session.endDateTime
+            session_obj.venueSessionId,
+            session_obj.venue.venueNumber,
+            session_obj.startDateTime,
+            session_obj.endDateTime
         )
 
-        # Initialize if not exists
         if key not in grouped_att:
             grouped_att[key] = {
                 "courses": [],
-                "course_codes": set(), 
+                "course_codes": set(),
                 "invigilators": [],
-                "backup": None
+                "backup": session_obj.backupInvigilator
             }
 
         grouped_att[key]["invigilators"].append(vsi)
-        grouped_att[key]["backup"] = venue_session.backupInvigilator
 
-        for ve in venue_session.exams:
+        # Collect courses, avoid duplicates
+        for ve in session_obj.exams:
             if ve.exam and ve.exam.course:
-                course_code = ve.exam.course.courseCodeSectionIntake
-                course_name = ve.exam.course.courseName
+                code = ve.exam.course.courseCodeSectionIntake
+                name = ve.exam.course.courseName
+                if code not in grouped_att[key]["course_codes"]:
+                    grouped_att[key]["courses"].append({"code": code, "name": name})
+                    grouped_att[key]["course_codes"].add(code)
 
-                if course_code not in grouped_att[key]["course_codes"]:
-                    grouped_att[key]["courses"].append({
-                        "code": course_code,
-                        "name": course_name
-                    })
-                    grouped_att[key]["course_codes"].add(course_code)
-                    
-    # Sort invigilators in each session according to position order
+    # Sort invigilators in each session by position
     position_order = ["CHIEF INVIGILATOR", "INVIGILATOR", "BACKUP"]
     for key, data in grouped_att.items():
-        data["invigilators"].sort(key=lambda x: position_order.index(x.position) if x.position in position_order else 99)
+        data["invigilators"].sort(
+            key=lambda x: position_order.index(x.position) if x.position in position_order else 99
+        )
 
+    # Calculate stats
     stats = calculate_invigilation_stats()
     for vsi in vsi_entries:
         vsi.group_key = vsi.session.venueSessionId if vsi.session else None
 
+    # Handle POST actions (upload/edit)
     if request.method == 'POST':
         form_type = request.form.get('form_type')
-
         if form_type == 'upload':
             return handle_file_upload(
                 file_key='attendance_file',
@@ -2264,14 +2263,11 @@ def admin_manageInvigilationReport():
                 usecols="A:E",
                 skiprows=0
             )
-        
         elif form_type == 'edit':
             venue_session_id = request.form.get('venueSessionId')
-
             if not venue_session_id:
                 flash("Invalid session ID.", "error")
                 return redirect(url_for('admin_manageInvigilationReport'))
-
             venue_session = VenueSession.query.get(int(venue_session_id))
             if not venue_session:
                 flash("Session not found.", "error")
@@ -2280,26 +2276,20 @@ def admin_manageInvigilationReport():
             for vsi in venue_session.invigilators:
                 field_name = f"replace_{vsi.invigilatorId}"
                 new_invigilator_id = request.form.get(field_name)
-
                 if new_invigilator_id is None:
-                    continue  # skip
-
-                if new_invigilator_id == "":  # user selected None → remove invigilator
+                    continue
+                if new_invigilator_id == "":
                     old_user = vsi.invigilator
                     duration = ((venue_session.endDateTime - venue_session.startDateTime).total_seconds() / 3600)
                     old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
-
-                    db.session.delete(vsi)  # remove this invigilator assignment
+                    db.session.delete(vsi)
                     continue
-
                 new_invigilator_id = int(new_invigilator_id)
                 if new_invigilator_id == vsi.invigilatorId:
                     continue
-
                 new_user = User.query.get(new_invigilator_id)
                 if not new_user:
                     continue
-
                 old_user = vsi.invigilator
                 duration = ((venue_session.endDateTime - venue_session.startDateTime).total_seconds() / 3600)
                 old_user.userPendingCumulativeHours = max(0, old_user.userPendingCumulativeHours - duration)
@@ -2319,7 +2309,6 @@ def admin_manageInvigilationReport():
         grouped_att=grouped_att,
         **stats
     )
-
 
 
 
