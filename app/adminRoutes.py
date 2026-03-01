@@ -2199,11 +2199,11 @@ def admin_manageInvigilationReport():
         .join(Course, Exam.examId == Course.courseExamId)
         .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
         .order_by(
-            Exam.examOutput.desc(),
-            VenueSession.startDateTime,
-            Venue.venueNumber,
+            VenueSession.startDateTime,  # primary ordering: session start time
+            Venue.venueNumber,           # secondary: venue number if same datetime
             Course.courseCodeSectionIntake
-        ).all()
+        )
+        .all()
     )
 
     grouped_att: Dict[Tuple[int, str, datetime, datetime], Dict[str, Any]] = {}

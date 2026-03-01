@@ -181,6 +181,7 @@ class VenueSession(db.Model):
     startDateTime       = Column(DateTime, nullable=False)
     endDateTime         = Column(DateTime, nullable=False)
     noInvigilator       = Column(Integer, nullable=True)
+    totalStudent        = Column(Integer, nullable=True)
     backupInvigilatorId = Column(Integer, ForeignKey('User.userId'), nullable=True)
 
     # Relationships
@@ -195,6 +196,7 @@ class VenueSession(db.Model):
         startDateTime DATETIME NOT NULL,
         endDateTime DATETIME NOT NULL,
         noInvigilator INT NULL,
+        totalStudent INT NULL,
         backupInvigilatorId INT NULL,
         UNIQUE (venueNumber, startDateTime, endDateTime),
         FOREIGN KEY (venueNumber) REFERENCES Venue(venueNumber),
