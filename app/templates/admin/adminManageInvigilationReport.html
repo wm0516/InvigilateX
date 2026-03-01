@@ -160,68 +160,83 @@
                     {% set days = total_seconds // 86400 %}
                     {% set hours = (total_seconds % 86400) // 3600 %}
                     {% set minutes = (total_seconds % 3600) // 60 %}
-                    <tr>
-                        {% if loop.first %}
-                            <td rowspan="{{ total_rows }}">{{ ns.rowno }}</td>
-                            <td rowspan="{{ total_rows }}">
+
+                    
+                    {% if data.invigilators|length > 0 %}
+                        {% for att in data.invigilators %}
+                        <tr>
+                            {% if loop.first %}
+                                <td rowspan="{{ total_rows }}">{{ ns.rowno }}</td>
+                                <td rowspan="{{ total_rows }}">
+                                    <div class="info-grid">
+                                        <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
+                                        <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
+                                        <div>Duration</div><div><strong>: {% if days > 0 %}{{ days|int }}d {% endif %}{{ hours|int }}h {{ minutes|int }}m</strong></div>
+                                        <div>Venue</div><div><strong>: {{ venue }}</strong></div>
+                                        <div>Student</div><div><strong>: {{ student }}</strong></div>
+                                    </div>
+                                </td>
+                                <td rowspan="{{ total_rows }}">
+                                    {% for c in data.courses %}
+                                        <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
+                                    {% endfor %}
+                                </td>
+                            {% endif %}
+
+                            <td>
                                 <div class="info-grid">
-                                    <div>Date</div><div><strong>: {{ start.strftime("%d/%b/%Y") }} - {{ end.strftime("%d/%b/%Y") }}</strong></div>
-                                    <div>Time</div><div><strong>: {{ start.strftime("%H:%M") }} - {{ end.strftime("%H:%M") }}</strong></div>
-                                    <div>Duration</div><div><strong>: {% if days > 0 %}{{ days|int }}d {% endif %}{{ hours|int }}h {{ minutes|int }}m</strong></div>
-                                    <div>Venue</div><div><strong>: {{ venue }}</strong></div>
-                                    <div>Student</div><div><strong>: {{ student }}</strong></div>
+                                    <div>Position</div><div><strong>: {{ att.position if att.position else "None" }}</strong></div>
+                                    <div>Staff ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
+                                    <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
+                                    <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>
+                                    <div>Contact</div><div><strong>: {{ att.invigilator.userContact if att.invigilator.userContact else "None" }}</strong></div>
                                 </div>
                             </td>
-                            <td rowspan="{{ total_rows }}">
-                                {% for c in data.courses %}
-                                    <div><strong>{{ c.code }}</strong> - {{ c.name }}</div>
-                                {% endfor %}
+                            <td>
+                                {% if att.invigilationStatus %}
+                                    <span class="status frame-completed invigilation-status">ACCEPTED</span>
+                                {% elif not att.invigilationStatus and att.rejectReason %}
+                                    <span class="status frame-expired invigilation-status">REJECTED</span>
+                                    <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
+                                {% else %}
+                                    <span class="status frame-pending invigilation-status">PENDING</span>
+                                {% endif %} 
                             </td>
-                        {% endif %}
-
-                        <td>
-                            <div class="info-grid">
-                                <div>Position</div><div><strong>: {{ att.position if att.position else "None" }}</strong></div>
-                                <div>Staff ID</div><div><strong>: {{ att.invigilator.userId }}</strong></div>
-                                <div>Name</div><div><strong>: {{ att.invigilator.userName }}</strong></div>
-                                <div>Email</div><div><strong>: {{ att.invigilator.userEmail }}</strong></div>
-                                <div>Contact</div><div><strong>: {{ att.invigilator.userContact if att.invigilator.userContact else "None" }}</strong></div>
-                            </div>
-                        </td>
-                        <td>
-                            {% if att.invigilationStatus %}
-                                <span class="status frame-completed invigilation-status">ACCEPTED</span>
-                            {% elif not att.invigilationStatus and att.rejectReason %}
-                                <span class="status frame-expired invigilation-status">REJECTED</span>
-                                <div style="max-width: 200px;"><strong>Reason: </strong>{{ att.rejectReason }}</div>
-                            {% else %}
-                                <span class="status frame-pending invigilation-status">PENDING</span>
-                            {% endif %} 
-                        </td>
-                        <td>
-                            {% set remark_classes = {
-                                "PENDING": "frame-pending",
-                                "CHECK IN": "frame-completed",
-                                "COMPLETED": "frame-completed",
-                                "CHECK IN LATE": "frame-expired",
-                                "CHECK OUT EARLY": "frame-expired",
-                                "EXPIRED": "frame-expired",
-                                "REJECTED": "frame-expired"
-                            } %}
-                            <span class="status {{ remark_classes.get(att.remark, '') }} attendance-remark">{{ att.remark }}</span>
-                        </td>
-                        <td>
-                            <div class="info-grid">
-                                <div>CheckIn</div><div><strong class="checkin-text">: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
-                                <div>CheckOut</div><div><strong class="checkout-text">: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
-                            </div>
-                        </td>
-                        <td>
-                            <button type="button" class="edit-btn" data-session="{{ att.venueSessionId }}" data-invigilator="{{ att.invigilatorId }}">
-                                <i class="fa fa-edit"></i>
-                            </button>
-                        </td>
-                    </tr>
+                            <td>
+                                {% set remark_classes = {
+                                    "PENDING": "frame-pending",
+                                    "CHECK IN": "frame-completed",
+                                    "COMPLETED": "frame-completed",
+                                    "CHECK IN LATE": "frame-expired",
+                                    "CHECK OUT EARLY": "frame-expired",
+                                    "EXPIRED": "frame-expired",
+                                    "REJECTED": "frame-expired"
+                                } %}
+                                <span class="status {{ remark_classes.get(att.remark, '') }} attendance-remark">{{ att.remark }}</span>
+                            </td>
+                            <td>
+                                <div class="info-grid">
+                                    <div>CheckIn</div><div><strong class="checkin-text">: {{ att.checkIn.strftime("%d/%b/%Y %H:%M:%S") if att.checkIn else "None" }}</strong></div>
+                                    <div>CheckOut</div><div><strong class="checkout-text">: {{ att.checkOut.strftime("%d/%b/%Y %H:%M:%S") if att.checkOut else "None" }}</strong></div>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="button" class="edit-btn" data-session="{{ att.venueSessionId }}" data-invigilator="{{ att.invigilatorId }}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td rowspan="{{ total_rows }}">{{ loop.index }}</td>
+                            <td rowspan="{{ total_rows }}">{{ start.strftime("%d/%b/%Y %H:%M") }} → {{ end.strftime("%d/%b/%Y %H:%M") }}</td>
+                            <td rowspan="{{ total_rows }}">
+                                {% for c in data.courses %}{{ c.code }} - {{ c.name }}<br>{% endfor %}
+                            </td>
+                            <td colspan="5" style="text-align:center; color:gray;">No invigilators assigned yet</td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
                 {% set ns.rowno = ns.rowno + 1 %}
             {% endfor %}

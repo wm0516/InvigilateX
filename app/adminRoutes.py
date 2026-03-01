@@ -2259,9 +2259,9 @@ def admin_manageInvigilationReport():
 
     # Calculate stats
     stats = calculate_invigilation_stats()
-    for vsi in sessions:    
-        vsi.group_key = vsi.session.venueSessionId if vsi.session else None
-
+    for session_obj in sessions:    
+        session_obj.group_key = session_obj.venueSessionId
+        
     # Handle POST actions (upload/edit)
     if request.method == 'POST':
         form_type = request.form.get('form_type')
