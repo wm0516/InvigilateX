@@ -2,9 +2,8 @@ import os
 import re
 import warnings
 from io import BytesIO
-from collections import defaultdict
-from datetime import datetime, time, date
-import random
+from collections import defaultdict, OrderedDict
+from datetime import datetime, time
 import pandas as pd
 import openpyxl
 from openpyxl.worksheet.datavalidation import DataValidation
@@ -19,6 +18,7 @@ from app import app
 from .authRoutes import login_required, admin_homepage
 from .backend import *
 from .database import *
+
 
 # Initialize serializer and bcrypt
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
