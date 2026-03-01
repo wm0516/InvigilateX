@@ -528,6 +528,7 @@ def user_homepage():
             slot.position = slot.position or "INVIGILATOR"
             slot.invigilationStatus = True
             slot.remark = "PENDING"
+            slot.timeAction = datetime.now() + timedelta(hours=8) 
 
             # Update pending cumulative hours
             exam_hours = (session_obj.endDateTime - session_obj.startDateTime).total_seconds() / 3600

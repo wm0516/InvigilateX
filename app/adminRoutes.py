@@ -2103,10 +2103,13 @@ def get_report(exam_id):
 # -------------------------------
 def calculate_invigilation_stats():
     query = VenueSessionInvigilator.query.join(VenueSession).all()
+    active_report = VenueSessionInvigilator.query.filter(VenueSessionInvigilator.rejectReason.is_(None)).count()
 
     stats = {
-        "total_report": len(query),  # total VenueSessionInvigilator records
-        "total_activeReport": 0,     # reports where checkIn or checkOut is missing
+        "total_report": len(query),
+        "accept_report": active_report,  # total VenueSessionInvigilator records
+        "reject_report": len(query) - active_report,
+        "total_pendingReport": 0,     # reports where checkIn or checkOut is missing
         "total_checkInLate": 0,
         "total_checkOutEarly": 0,
     }

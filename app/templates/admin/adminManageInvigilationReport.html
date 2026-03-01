@@ -14,14 +14,18 @@
     <div id="dashboardSection">
         <input type="hidden" name="form_type" value="dashboard">
         <div class="form-profile" style="width: 100%">
-            <div class="dashboard-row">
+            <div class="dashboard-row" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
                 <div class="dashboard-frame">
                     <h3>Pending Invigilation Duties</h3>
-                    <p class="dashboard-text">{{ total_activeReport }}</p>
+                    <p class="dashboard-text">{{ accept_report }}</p>
+                </div>
+                <div class="dashboard-frame">
+                    <h3>Rejected Invigilation Duties</h3>
+                    <p class="dashboard-text">{{ reject_report }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Completed Invigilation Duties</h3>
-                    <p class="dashboard-text">{{ total_report - total_activeReport }}</p>
+                    <p class="dashboard-text">{{ total_report - reject_report - total_pendingReport }}</p>
                 </div>
                 <div class="dashboard-frame">
                     <h3>Checked In Late</h3>
