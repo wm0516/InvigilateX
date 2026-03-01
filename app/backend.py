@@ -11,7 +11,7 @@ serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 bcrypt = Bcrypt()
 from functools import wraps
 from datetime import datetime, timedelta
-from sqlalchemy import and_, or_, exists, tuple_, func, select, distinct
+from sqlalchemy import and_, or_, exists, tuple_, func, select, distinct, asc
 
 
 # -------------------------------
@@ -681,13 +681,15 @@ def check_profile(user_id, cardId, contact, password1, password2):
 def waiting_record(user_id):
     return (
         db.session.query(VenueSessionInvigilator)
+        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
         .filter(
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == False,
-            VenueSessionInvigilator.remark == "PENDING"
-        ).all()
+            VenueSessionInvigilator.remark == "PENDING",
+        )
+        .order_by(asc(VenueSession.startDateTime))
+        .all()
     )
-
 
 
 # -------------------------------
@@ -704,6 +706,7 @@ def confirm_record(user_id):
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == True
         )
+        .order_by(asc(VenueSession.startDateTime))
         .all()
     )
 
@@ -724,13 +727,14 @@ def reject_record(user_id):
 # -------------------------------
 # HELPER 3: Open Slots
 # -------------------------------
-def open_record(user_id):
+def open_record():
     slots = (
         VenueSessionInvigilator.query
         .filter(
             VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.rejectReason.is_(None)
         )
+        .order_by(asc(VenueSession.startDateTime))
         .all()
     )
 
@@ -742,7 +746,7 @@ def open_record(user_id):
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
     confirmed = confirm_record(user_id)
-    open_slots = open_record(user_id)
+    open_slots = open_record()
     open_times = [slot.timeExpire.strftime("%Y-%m-%d %H:%M:%S") for slot in waiting]
 
     return {

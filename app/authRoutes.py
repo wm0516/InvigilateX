@@ -358,7 +358,7 @@ def user_homepage():
     waiting = waiting_record(user_id)
     confirm = confirm_record(user_id)
     reject = reject_record(user_id)
-    open_slots = open_record(user_id)
+    open_slots = open_record()
 
     if not check_access(user_id, "homepage"):
         flash("Access denied", "error")
