@@ -152,9 +152,7 @@
             {% set total_rows = noInv %}
             {% if total_rows == 0 %}
                 {% set total_rows = 1 %}
-            {% endif %}
-
-            {% if data.invigilators %}
+            {% else %}
                 {% for att in data.invigilators %}
                 {% set duration = end - start %}
                 {% set total_seconds = duration.total_seconds() %}
