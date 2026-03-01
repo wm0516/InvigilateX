@@ -365,16 +365,18 @@ def user_homepage():
         return redirect(url_for("login"))
 
     backup = (
-        VenueSessionInvigilator.query
-        .join(VenueSession)
-        .join(VenueExam)
-        .join(Exam)
+        db.session.query(VenueSessionInvigilator)
+        .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
+        .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
+        .join(Exam, Exam.examId == VenueExam.examId)
         .filter(
             VenueSession.backupInvigilatorId.is_(None),   # Backup not yet assigned
-            Exam.examStatus == 1,                         # Only active exams
-            VenueSessionInvigilator.invigilatorId.is_(None) # Not assigned to current user
+            VenueSessionInvigilator.invigilatorId.is_(None),  # Slot not assigned
+            VenueSessionInvigilator.position == 'BACKUP',     # Only backup positions
+            Exam.examStatus == 1                              # Only active exams
         )
         .group_by(VenueSession.venueNumber)
+        .order_by(VenueSession.startDateTime.asc())
         .all()
     )
 
