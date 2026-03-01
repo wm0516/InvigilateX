@@ -2110,7 +2110,6 @@ def calculate_invigilation_stats():
         base_query
         .join(VenueSession)
         .filter(
-            VenueSessionInvigilator.invigilationStatus == True,
             VenueSessionInvigilator.position != "BACKUP",
             VenueSessionInvigilator.rejectReason.is_(None),
             VenueSession.endDateTime > now
