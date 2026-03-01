@@ -211,7 +211,7 @@ class VenueSessionInvigilator(db.Model):
     position            = Column(String(20), nullable=True)
     checkIn             = Column(DateTime, nullable=True)
     checkOut            = Column(DateTime, nullable=True)
-    timeAction          = Column(DateTime, nullable=True)
+    timeAction          = Column(DateTime, nullable=True)   
     timeCreate          = Column(DateTime, nullable=False)
     timeExpire          = Column(DateTime, nullable=False)
     invigilationStatus  = Column(Boolean, default=False)

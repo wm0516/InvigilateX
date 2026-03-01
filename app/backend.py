@@ -691,7 +691,6 @@ def waiting_record(user_id):
         .all()
     )
 
-
 # -------------------------------
 # HELPER 2: Confirmed Slots
 # -------------------------------
@@ -706,7 +705,6 @@ def confirm_record(user_id):
             VenueSessionInvigilator.invigilatorId == user_id,
             VenueSessionInvigilator.invigilationStatus == True
         )
-        .order_by(asc(VenueSession.startDateTime))
         .all()
     )
 
@@ -734,7 +732,6 @@ def open_record():
             VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.rejectReason.is_(None)
         )
-        .order_by(asc(VenueSession.startDateTime))
         .all()
     )
 
@@ -746,7 +743,7 @@ def open_record():
 def get_invigilator_slot_summary(user_id):
     waiting = waiting_record(user_id)
     confirmed = confirm_record(user_id)
-    open_slots = open_record()
+    open_slots = open_record(user_id)
     open_times = [slot.timeExpire.strftime("%Y-%m-%d %H:%M:%S") for slot in waiting]
 
     return {
