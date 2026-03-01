@@ -230,10 +230,7 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
-    /* =========================
-       PDF GENERATION
-    ========================== */
+    /* PDF GENERATION */
     const generateBtn = document.getElementById("generatePDF");
 
     if (generateBtn) {
@@ -323,9 +320,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
 
-    /* =========================
-       SEARCH FUNCTION
-    ========================== */
+    /* SEARCH FUNCTION */
     const searchInput = document.getElementById("searchInput");
     const noResults = document.getElementById("noResults");
 
@@ -350,10 +345,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
-    /* =========================
-       EDIT BUTTON (EVENT DELEGATION)
-    ========================== */
+    /* EDIT BUTTON (EVENT DELEGATION) */
     document.addEventListener("click", async function (e) {
 
         const editBtn = e.target.closest(".edit-btn");
@@ -443,9 +435,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 
-    /* =========================
-       SESSION EDIT SECTION
-    ========================== */
+    /* SESSION EDIT SECTION */
     const sessionSelect = document.getElementById("editSession");
     const courseInfo = document.getElementById("courseInfo");
     const examTime = document.getElementById("examTime");
@@ -454,12 +444,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (sessionSelect) {
         sessionSelect.addEventListener("change", async function () {
-
             if (!this.value) return;
-
             const resp = await fetch(`/admin/get_session_details/${this.value}`);
             const data = await resp.json();
-
+            
             if (data.error) {
                 alert(data.error);
                 return;
@@ -468,7 +456,6 @@ document.addEventListener("DOMContentLoaded", function () {
             courseInfo.innerHTML = "";
             currentContainer.innerHTML = "";
             replaceContainer.innerHTML = "";
-
             data.courses.forEach(c => {
                 const input = document.createElement("input");
                 input.type = "text";
@@ -478,15 +465,12 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             examTime.value = `${data.start} → ${data.end}`;
-
             const invResp = await fetch("/admin/get_valid_invigilators");
             const invigilators = await invResp.json();
 
             data.attendances.forEach(att => {
-
                 const currentDiv = document.createElement("div");
-                currentDiv.innerHTML =
-                    `<input type="text" value="[${att.position}] ${att.invigilatorName}" readonly>`;
+                currentDiv.innerHTML = `<input type="text" value="[${att.position}] ${att.invigilatorName}" readonly>`;
                 currentContainer.appendChild(currentDiv);
 
                 const replaceDiv = document.createElement("div");
@@ -511,7 +495,6 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
-
 });
 </script>
 {% endblock %}

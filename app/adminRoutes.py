@@ -2103,18 +2103,19 @@ def get_report(exam_id):
 # -------------------------------
 def calculate_invigilation_stats():
     query = VenueSessionInvigilator.query
-    accept_count = query.filter(VenueSessionInvigilator.position != "BACKUP", VenueSessionInvigilator.rejectReason.is_(None)).count()
-    reject_count = query.filter(VenueSessionInvigilator.rejectReason.isnot(None)).count()
-    backup_count = query.filter(VenueSessionInvigilator.position == "BACKUP").count()
-    completed_count = query.filter(VenueSessionInvigilator.remark.in_(["COMPLETED", "EXPIRED"])).count()
+    accept_count    = query.filter(VenueSessionInvigilator.position != "BACKUP", VenueSessionInvigilator.rejectReason.is_(None)).count()
+    reject_count    = query.filter(VenueSessionInvigilator.rejectReason.isnot(None)).count()
+    backup_count    = query.filter(VenueSessionInvigilator.position == "BACKUP").count()
+    completed_count = query.join(VenueSession).join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)\
+        .join(Exam, VenueExam.examId == Exam.examId).filter(Exam.examStatus == False).count()
 
     stats = {
-        "accept_report": accept_count,  # total VenueSessionInvigilator records
-        "reject_report": reject_count,
-        "backup_report": backup_count,
-        "completed_report": completed_count,     # reports where checkIn or checkOut is missing
-        "total_checkInLate": 0,
-        "total_checkOutEarly": 0,
+        "accept_report"         : accept_count,
+        "reject_report"         : reject_count,
+        "backup_report"         : backup_count,
+        "completed_report"      : completed_count,
+        "total_checkInLate"     : 0,
+        "total_checkOutEarly"   : 0,
     }
 
     for att in query:
