@@ -726,29 +726,17 @@ def reject_record(user_id):
 # -------------------------------
 def open_record(user_id):
     current_time = datetime.now() + timedelta(hours=8)
-    user = User.query.get(user_id)
-    if not user:
-        return []
 
-    user_gender = user.userGender
-    subquery = (
-        select(VenueSessionInvigilator.venueSessionId)
-        .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
-        .where(
+    slots = (
+        VenueSessionInvigilator.query
+        .filter(
             VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.rejectReason.is_(None),
-            VenueSessionInvigilator.timeExpire <= current_time,
-            User.userGender == user_gender
+            VenueSessionInvigilator.timeExpire <= current_time
         )
-        .distinct()
-    )
-
-    # Fetch VenueSession rows corresponding to the filtered invigilators
-    slots = (
-        db.session.query(VenueSession)
-        .filter(VenueSession.venueSessionId.in_(subquery))
         .all()
     )
+
     return slots
 
 

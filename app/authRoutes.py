@@ -426,7 +426,7 @@ def user_homepage():
                 db.session.add(
                     VenueSessionInvigilator(
                         venueSessionId=waiting_slot.venueSessionId,
-                        invigilatorId=waiting_slot.invigilatorId,
+                        invigilatorId=None,
                         checkIn=None,
                         checkOut=None,
                         timeCreate=waiting_slot.timeExpire,
