@@ -2215,9 +2215,9 @@ def admin_manageInvigilationReport():
 
         key = (
             session_obj.venueSessionId,
+            session_obj.venue.venueNumber,
             session_obj.startDateTime,
-            session_obj.endDateTime,
-            session_obj.venue.venueNumber
+            session_obj.endDateTime
         )
 
         if key not in grouped_att:
