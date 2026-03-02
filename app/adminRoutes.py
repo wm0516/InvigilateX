@@ -1457,7 +1457,6 @@ def parse_activity(line):
 # -------------------------------
 def parse_timetable(raw_text):
     text_no_whitespace = re.sub(r"\s+", "", raw_text)
-
     lecturer_name = "UNKNOWN"
     timerow = ""
 
@@ -1773,6 +1772,7 @@ def admin_manageTimetable():
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
+                flash(f"{raw_text}", "info")
                 structured = parse_timetable(raw_text)
                 flash(f"{structured}", "info")
                 structured['filename'] = file.filename
