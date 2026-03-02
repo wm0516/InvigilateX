@@ -19,6 +19,11 @@ from .authRoutes import login_required, admin_homepage
 from .backend import *
 from .database import *
 from sqlalchemy.orm import joinedload, contains_eager
+from PyPDF2 import PdfReader
+from pdf2image import convert_from_bytes
+import pytesseract
+import re
+import io
 
 # Initialize serializer and bcrypt
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -1676,7 +1681,27 @@ def save_timetable_to_db(structured):
         "updated_courses": updated_courses
     }
 
+def extract_pdf_text(file):
+    file_bytes = file.read()
+    # Step 1: Try normal extraction
+    reader = PdfReader(io.BytesIO(file_bytes))
+    raw_text = ""
 
+    for page in reader.pages:
+        text = page.extract_text()
+        if text:
+            raw_text += text + " "
+
+    # Step 2: Detect failure
+    if len(raw_text.strip()) < 50 or not re.search(r'[A-Za-z]', raw_text):
+        print("⚠ Text extraction failed. Switching to OCR...")
+        images = convert_from_bytes(file_bytes)
+        raw_text = ""
+
+        for img in images:
+            raw_text += pytesseract.image_to_string(img)
+
+    return raw_text
 
 # -------------------------------
 # Function for Admin ManageTimetable Route
@@ -1771,9 +1796,12 @@ def admin_manageTimetable():
             # Process each latest file
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
-                raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
-                flash(f"{raw_text}", "info")
+                raw_text = extract_pdf_text(file)
                 structured = parse_timetable(raw_text)
+
+                # raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
+                flash(f"{raw_text}", "info")
+                # structured = parse_timetable(raw_text)
                 flash(f"{structured}", "info")
                 structured['filename'] = file.filename
                 rows_result = save_timetable_to_db(structured)
