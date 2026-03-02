@@ -1,28 +1,27 @@
 import os
 import re
+import io
 import warnings
-from io import BytesIO
-from collections import defaultdict, OrderedDict
-from datetime import datetime, time
+import pytesseract
+import PyPDF2
 import pandas as pd
 import openpyxl
+
+from collections import defaultdict
+from datetime import datetime
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import NamedStyle
-from typing import Dict, Tuple, Any
-import PyPDF2
-from flask import render_template, request, redirect, url_for,flash, session, jsonify, send_file
+from PyPDF2 import PdfReader
+from pdf2image import convert_from_bytes
+from flask import render_template, request, redirect, url_for, flash, session, jsonify, send_file
 from flask_bcrypt import Bcrypt
 from itsdangerous import URLSafeTimedSerializer
-from sqlalchemy import func, and_, or_, case, desc
+from sqlalchemy import func, and_, desc
+from sqlalchemy.orm import joinedload
 from app import app
 from .authRoutes import login_required, admin_homepage
 from .backend import *
 from .database import *
-from sqlalchemy.orm import joinedload, contains_eager
-from PyPDF2 import PdfReader
-from pdf2image import convert_from_bytes
-import pytesseract
-import io
 
 
 
@@ -1684,24 +1683,29 @@ def save_timetable_to_db(structured):
     }
 
 def extract_pdf_text(file):
+    file.seek(0)
     file_bytes = file.read()
-    # Step 1: Try normal extraction
-    reader = PdfReader(io.BytesIO(file_bytes))
+    if not file_bytes:
+        return ""
     raw_text = ""
 
-    for page in reader.pages:
-        text = page.extract_text()
-        if text:
-            raw_text += text + " "
-
-    # Step 2: Detect failure
-    if len(raw_text.strip()) < 50 or not re.search(r'[A-Za-z]', raw_text):
-        print("⚠ Text extraction failed. Switching to OCR...")
-        images = convert_from_bytes(file_bytes)
+    try:
+        reader = PdfReader(io.BytesIO(file_bytes))
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                raw_text += text + " "
+    except Exception:
         raw_text = ""
 
-        for img in images:
-            raw_text += pytesseract.image_to_string(img)
+    if len(raw_text.strip()) < 50:
+        try:
+            images = convert_from_bytes(file_bytes)
+            raw_text = ""
+            for img in images:
+                raw_text += pytesseract.image_to_string(img)
+        except Exception:
+            pass
 
     return raw_text
 
