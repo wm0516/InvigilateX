@@ -1769,17 +1769,16 @@ def admin_manageTimetable():
 
             total_rows_inserted = 0
             total_files_processed = 0
-
             # Process each latest file
             for base_name, (timestamp, file) in latest_files.items():
                 reader = PyPDF2.PdfReader(file.stream)
                 raw_text = "".join(page.extract_text() + " " for page in reader.pages if page.extract_text())
                 structured = parse_timetable(raw_text)
+                flash(f"{structured}", "info")
                 structured['filename'] = file.filename
                 rows_result = save_timetable_to_db(structured)
 
                 if (rows_result.get("total_inserted", 0)) > 0:
-                    flash(f"{rows_result['total_inserted']} rows saved successfully!", "success")
                     total_files_processed += 1
                     total_rows_inserted += rows_result['total_inserted']
             flash(f"Files read: {len(files)}, Processed: {total_files_processed}, Rows inserted: {total_rows_inserted}, Files skipped: {len(skipped_files)}", "success")
