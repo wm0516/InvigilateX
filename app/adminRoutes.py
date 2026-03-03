@@ -7,7 +7,7 @@ import PyPDF2
 import pandas as pd
 import openpyxl
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.styles import NamedStyle
@@ -22,7 +22,6 @@ from app import app
 from .authRoutes import login_required, admin_homepage
 from .backend import *
 from .database import *
-
 
 
 
@@ -1330,7 +1329,6 @@ def admin_manageStaff():
                         flash("Wrong Password Format", "error")
                     if password1_text != password2_text:
                         flash("Passwords Do Not Match", "error")
-                    
 
                 # Update user department & timestamp
                 user_select.userDepartment = new_department_code
