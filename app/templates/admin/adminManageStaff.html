@@ -207,7 +207,23 @@
                             [{{ dept.departmentCode }}] {{ dept.departmentName }}
                         </option>
                     {% endfor %}
-                </select>
+                </select><br>
+
+                <div class="password-container">
+                    <label>Password</label> 
+                    <input type="password" name="password1" value="{{ password1_text }}">
+                    <button type="button" class="toggle-password-btn">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div><br>
+
+                <div class="password-container">
+                    <label> Confirm Password</label>
+                    <input type="password" name="password2" value="{{ password2_text }}">
+                    <button type="button" class="toggle-password-btn">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
         </div> 
 

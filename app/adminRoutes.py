@@ -1298,6 +1298,8 @@ def admin_manageStaff():
                 user_select.userStatus = int(request.form['editStatus'])
                 user_select.userCardId = request.form['editCardId']
                 new_department_code = request.form['editDepartment']
+                password1_text = request.form.get('password1', '').strip()
+                password2_text = request.form.get('password2', '').strip()
 
                 # Always update department and related dean/hop/hos fields
                 old_department = Department.query.filter_by(departmentCode=user_select.userDepartment).first()
@@ -1321,11 +1323,22 @@ def admin_manageStaff():
                     elif user_select.userRole == "DEAN":  # Dean
                         new_department.deanId = user_select.userId
 
+                if password1_text or password2_text:
+                    if not password1_text or not password2_text:
+                        flash("Both Password Fields Are Required", "error")
+                    if not password_format(password1_text) or not password_format(password2_text):
+                        flash("Wrong Password Format", "error")
+                    if password1_text != password2_text:
+                        flash("Passwords Do Not Match", "error")
+                    
+
                 # Update user department & timestamp
                 user_select.userDepartment = new_department_code
-                
                 if user_select.userContact == '':
                     user_select.userContact = None
+                if password1_text == password2_text:
+                    hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
+                    user_select.userPassword = hashed_pw
 
                 db.session.commit()
                 flash(f"Staff [{user_select.userId} - {user_select.userName}] updated successfully", "success")
