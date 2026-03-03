@@ -1329,15 +1329,16 @@ def admin_manageStaff():
                         flash("Wrong Password Format", "error")
                     if password1_text != password2_text:
                         flash("Passwords Do Not Match", "error")
+                    
+                    # When both valid, then update
+                    hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
+                    user_select.userPassword = hashed_pw
 
                 # Update user department & timestamp
                 user_select.userDepartment = new_department_code
                 if user_select.userContact == '':
                     user_select.userContact = None
-                if password1_text == password2_text:
-                    hashed_pw = bcrypt.generate_password_hash(password1_text).decode('utf-8')
-                    user_select.userPassword = hashed_pw
-
+                
                 db.session.commit()
                 flash(f"Staff [{user_select.userId} - {user_select.userName}] updated successfully", "success")
                 record_action("EDIT STAFF", "STAFF", user_select.userId, user_id)
