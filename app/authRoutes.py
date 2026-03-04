@@ -372,6 +372,7 @@ def user_homepage():
         .filter(
             VenueSession.backupInvigilatorId.is_(None),   # Backup not yet assigned
             VenueSessionInvigilator.position == 'BACKUP',     # Only backup positions
+            VenueSessionInvigilator.remark == 'PENDING',     # Only backup positions
             Exam.examStatus == 1                              # Only active exams
         )
         .group_by(VenueSession.venueNumber)
