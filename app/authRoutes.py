@@ -369,12 +369,12 @@ def user_homepage():
         .join(VenueSession, VenueSessionInvigilator.venueSessionId == VenueSession.venueSessionId)
         .join(VenueExam, VenueExam.venueSessionId == VenueSession.venueSessionId)
         .join(Exam, Exam.examId == VenueExam.examId)
-        .join(User, VenueSessionInvigilator.invigilatorId == User.userId)
-        .join(Role, User.userRole == Role.roleCode)
         .filter(
-            VenueSession.backupInvigilatorId.is_(None),   # Backup not assigned
-            Exam.examStatus.is_(True)                     # Exam is active
+            VenueSession.backupInvigilatorId.is_(None),   # Backup not yet assigned
+            VenueSessionInvigilator.position == 'BACKUP',     # Only backup positions
+            Exam.examStatus == 1                              # Only active exams
         )
+        .group_by(VenueSession.venueNumber)
         .order_by(VenueSession.startDateTime.asc())
         .all()
     )
