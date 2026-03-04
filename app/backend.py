@@ -736,6 +736,7 @@ def open_record():
             VenueSessionInvigilator.invigilationStatus == False,
             VenueSessionInvigilator.rejectReason.is_(None),
             VenueSessionInvigilator.timeExpire <= now,
+            VenueSessionInvigilator.position!="BACKUP"
         )
         .order_by(VenueSession.startDateTime.asc())
         .all()
