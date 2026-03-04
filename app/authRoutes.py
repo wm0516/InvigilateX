@@ -371,7 +371,6 @@ def user_homepage():
         .join(Exam, Exam.examId == VenueExam.examId)
         .filter(
             VenueSession.backupInvigilatorId.is_(None),   # Backup not yet assigned
-            VenueSessionInvigilator.invigilatorId.is_(None),  # Slot not assigned
             VenueSessionInvigilator.position == 'BACKUP',     # Only backup positions
             Exam.examStatus == 1                              # Only active exams
         )
